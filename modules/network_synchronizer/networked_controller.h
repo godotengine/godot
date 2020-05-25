@@ -45,7 +45,7 @@
 #define NETWORKED_CONTROLLER_H
 
 struct Controller;
-class SceneRewinder;
+class SceneSynchronizer;
 
 /// The `NetworkedController` is responsible to sync the `Player` inputs between
 /// the peers. This allows to control a character, or an object with high precision
@@ -56,7 +56,7 @@ class SceneRewinder;
 /// The result of these operations, are guaranteed to be the same accross the
 /// peers, if we stay under the assumption that the initial state is the same.
 ///
-/// Is possible to use the `SceneRewinder` to keep the state in sync with the
+/// Is possible to use the `SceneSynchronizer` to keep the state in sync with the
 /// peers.
 ///
 // # Implementation details
@@ -142,7 +142,7 @@ private:
 	Controller *controller = nullptr;
 	InputsBuffer inputs_buffer;
 
-	SceneRewinder *scene_rewinder = nullptr;
+	SceneSynchronizer *scene_synchronizer = nullptr;
 
 	Vector<int> active_doll_peers;
 	// Disabled peers is used to stop information propagation to a particular peer.
@@ -260,9 +260,9 @@ public:
 public:
 	void set_inputs_buffer(const BitArray &p_new_buffer);
 
-	void set_scene_rewinder(SceneRewinder *p_rewinder);
-	SceneRewinder *get_scene_rewinder() const;
-	bool has_scene_rewinder() const;
+	void set_scene_synchronizer(SceneSynchronizer *p_synchronizer);
+	SceneSynchronizer *get_scene_synchronizer() const;
+	bool has_scene_synchronizer() const;
 
 	/* On server rpc functions. */
 	void _rpc_server_send_inputs(Vector<uint8_t> p_data);

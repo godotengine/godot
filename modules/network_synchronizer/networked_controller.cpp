@@ -36,7 +36,7 @@
 
 #include "core/engine.h"
 #include "core/io/marshalls.h"
-#include "scene_rewinder.h"
+#include "scene_synchronizer.h"
 #include <stdint.h>
 #include <algorithm>
 
@@ -336,16 +336,16 @@ void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
 }
 
-void NetworkedController::set_scene_rewinder(SceneRewinder *p_rewinder) {
-	scene_rewinder = p_rewinder;
+void NetworkedController::set_scene_synchronizer(SceneSynchronizer *p_synchronizer) {
+	scene_synchronizer = p_synchronizer;
 }
 
-SceneRewinder *NetworkedController::get_scene_rewinder() const {
-	return scene_rewinder;
+SceneSynchronizer *NetworkedController::get_scene_synchronizer() const {
+	return scene_synchronizer;
 }
 
-bool NetworkedController::has_scene_rewinder() const {
-	return scene_rewinder;
+bool NetworkedController::has_scene_synchronizer() const {
+	return scene_synchronizer;
 }
 
 void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
@@ -392,7 +392,7 @@ void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
 
 void NetworkedController::process(real_t p_delta) {
 	if (controller) {
-		// This is called by the `sceneRewinder` that is not aware of the
+		// This is called by the `SceneSynchronizer` that is not aware of the
 		// controller state; so check that the controller is not null.
 		controller->process(p_delta);
 	}

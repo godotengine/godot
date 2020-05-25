@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_rewinder.h                                                     */
+/*  scene_synchronizer.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -37,22 +37,22 @@
 #include "core/oa_hash_map.h"
 #include <deque>
 
-#ifndef SCENE_REWINDER_H
-#define SCENE_REWINDER_H
+#ifndef SCENE_SYNCHRONIZER_H
+#define SCENE_SYNCHRONIZER_H
 
-class Rewinder;
+class Synchronizer;
 class NetworkedController;
 
-/// # SceneRewinder
+/// # SceneSynchronizer
 ///
-/// The `SceneRewinder` is responsible to keep the scene of all peers in sync.
+/// The `SceneSynchronizer` is responsible to keep the scene of all peers in sync.
 /// Usually each peer has it istantiated, and depending if it's istantiated in
 /// the server or in the client, it does a different thing.
 ///
 /// ## The `Player` is playing the game on the server.
 ///
 /// The server is authoritative and it can't never be wrong. For this reason
-/// the `SceneRewinder` on the server sends at a fixed interval (defined by
+/// the `SceneSynchronizer` on the server sends at a fixed interval (defined by
 /// `server_notify_state_interval`) a snapshot to all peers.
 ///
 /// The clients receives the server snapshot, so it compares with the local
@@ -60,13 +60,13 @@ class NetworkedController;
 ///
 /// ## Variable traking
 ///
-/// The `SceneRewinder` is able to track any node variable. It's possible to specify
+/// The `SceneSynchronizer` is able to track any node variable. It's possible to specify
 /// the variables to track using the function `register_variable`.
 ///
 /// ## NetworkedController
 /// The `NetworkedController` is able to aquire the `Player` input and perform
 /// operation in sync with other peers. When a discrepancy is found by the
-/// `SceneRewinder`, it will drive the `NetworkedController` so to recover that
+/// `SceneSynchronizer`, it will drive the `NetworkedController` so to recover that
 /// missalignment.
 ///
 ///
@@ -76,7 +76,7 @@ class NetworkedController;
 /// not necessary use the `NetworkedController`.
 ///
 /// It's possible to specify some process functions using `register_process`.
-/// The `SceneRewinder` will call these functions each frame, in sync with the
+/// The `SceneSynchronizer` will call these functions each frame, in sync with the
 /// other peers.
 ///
 /// As example object we may think about a moving platform, or a bridge that
@@ -87,10 +87,10 @@ class NetworkedController;
 ///
 /// func _ready():
 /// 	# Make sure this never go out of sync.
-/// 	SceneRewinder.register_variable(self, "time")
+/// 	SceneSynchronizer.register_variable(self, "time")
 ///
 /// 	# Make sure to call this in sync with other peers.
-/// 	SceneRewinder.register_process(self, "in_sync_process")
+/// 	SceneSynchronizer.register_process(self, "in_sync_process")
 ///
 /// func in_sync_process(delta: float):
 /// 	time += delta
@@ -100,24 +100,24 @@ class NetworkedController;
 //
 // # Implementation details.
 //
-// The entry point of the above mechanism is the function `SceneRewinder::process()`.
-// The server `SceneRewinder` code is inside the class `ServerRewinder`.
-// The client `SceneRewinder` code is inside the class `ClientRewinder`.
-// The no networking `SceneRewinder` code is inside the class `NoNetRewinder`.
-class SceneRewinder : public Node {
-	GDCLASS(SceneRewinder, Node);
+// The entry point of the above mechanism is the function `SceneSynchronizer::process()`.
+// The server `SceneSynchronizer` code is inside the class `ServerSynchronizer`.
+// The client `SceneSynchronizer` code is inside the class `ClientSynchronizer`.
+// The no networking `SceneSynchronizer` code is inside the class `NoNetSynchronizer`.
+class SceneSynchronizer : public Node {
+	GDCLASS(SceneSynchronizer, Node);
 
-	friend class Rewinder;
-	friend class ServerRewinder;
-	friend class ClientRewinder;
-	friend class NoNetRewinder;
+	friend class Synchronizer;
+	friend class ServerSynchronizer;
+	friend class ClientSynchronizer;
+	friend class NoNetSynchronizer;
 
 public:
-	enum RewinderType {
-		REWINDER_TYPE_NULL,
-		REWINDER_TYPE_NONET,
-		REWINDER_TYPE_CLIENT,
-		REWINDER_TYPE_SERVER
+	enum SynchronizerType {
+		SYNCHRONIZER_TYPE_NULL,
+		SYNCHRONIZER_TYPE_NONET,
+		SYNCHRONIZER_TYPE_CLIENT,
+		SYNCHRONIZER_TYPE_SERVER
 	};
 
 	typedef ObjectID ControllerID;
@@ -179,21 +179,21 @@ public:
 
 	struct Snapshot {
 		OAHashMap<ObjectID, uint64_t> controllers_input_id;
-		OAHashMap<ObjectID, Vector<SceneRewinder::VarData>> node_vars;
+		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
 
 		operator String() const;
 	};
 
 	struct IsleSnapshot {
 		uint64_t input_id;
-		OAHashMap<ObjectID, Vector<SceneRewinder::VarData>> node_vars;
+		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
 
 		operator String() const;
 	};
 
 	struct PostponedRecover {
-		SceneRewinder::NodeData *node_data = nullptr;
-		Vector<SceneRewinder::Var> vars;
+		SceneSynchronizer::NodeData *node_data = nullptr;
+		Vector<SceneSynchronizer::Var> vars;
 	};
 
 private:
@@ -204,8 +204,8 @@ private:
 	real_t server_notify_state_interval = 1.0;
 	real_t comparison_float_tolerance = 0.001;
 
-	RewinderType rewinder_type = REWINDER_TYPE_NULL;
-	Rewinder *rewinder = nullptr;
+	SynchronizerType synchronizer_type = SYNCHRONIZER_TYPE_NULL;
+	Synchronizer *synchronizer = nullptr;
 	bool recover_in_progress = false;
 	bool reset_in_progress = false;
 	bool rewinding_in_progress = false;
@@ -228,8 +228,8 @@ public:
 	virtual void _notification(int p_what);
 
 public:
-	SceneRewinder();
-	~SceneRewinder();
+	SceneSynchronizer();
+	~SceneSynchronizer();
 
 	void set_doll_desync_tolerance(int p_tolerance);
 	int get_doll_desync_tolerance() const;
@@ -297,18 +297,18 @@ private:
 	// Returns true when the vectors are the same.
 	bool vec3_evaluation(const Vector3 a, const Vector3 b);
 	// Returns true when the variants are the same.
-	bool rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2);
+	bool synchronizer_variant_evaluation(const Variant &v_1, const Variant &v_2);
 
 	bool is_client() const;
 };
 
-class Rewinder {
+class Synchronizer {
 protected:
-	SceneRewinder *scene_rewinder;
+	SceneSynchronizer *scene_synchronizer;
 
 public:
-	Rewinder(SceneRewinder *p_node);
-	virtual ~Rewinder();
+	Synchronizer(SceneSynchronizer *p_node);
+	virtual ~Synchronizer();
 
 	virtual void clear() = 0;
 
@@ -319,11 +319,11 @@ public:
 	virtual void on_variable_changed(ObjectID p_node_id, StringName p_var_name) {}
 };
 
-class NoNetRewinder : public Rewinder {
-	friend class SceneRewinder;
+class NoNetSynchronizer : public Synchronizer {
+	friend class SceneSynchronizer;
 
 public:
-	NoNetRewinder(SceneRewinder *p_node);
+	NoNetSynchronizer(SceneSynchronizer *p_node);
 
 	virtual void clear();
 
@@ -331,8 +331,8 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot);
 };
 
-class ServerRewinder : public Rewinder {
-	friend class SceneRewinder;
+class ServerSynchronizer : public Synchronizer {
+	friend class SceneSynchronizer;
 
 	real_t state_notifier_timer;
 
@@ -344,7 +344,7 @@ class ServerRewinder : public Rewinder {
 	OAHashMap<ObjectID, Change> changes;
 
 public:
-	ServerRewinder(SceneRewinder *p_node);
+	ServerSynchronizer(SceneSynchronizer *p_node);
 
 	virtual void clear();
 	virtual void process();
@@ -357,20 +357,20 @@ public:
 	Variant generate_snapshot(bool p_full_snapshot) const;
 };
 
-class ClientRewinder : public Rewinder {
-	friend class SceneRewinder;
+class ClientSynchronizer : public Synchronizer {
+	friend class SceneSynchronizer;
 
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
-	SceneRewinder::Snapshot server_snapshot;
-	OAHashMap<SceneRewinder::ControllerID, std::deque<SceneRewinder::IsleSnapshot>> client_controllers_snapshots;
-	OAHashMap<SceneRewinder::ControllerID, std::deque<SceneRewinder::IsleSnapshot>> server_controllers_snapshots;
+	SceneSynchronizer::Snapshot server_snapshot;
+	OAHashMap<SceneSynchronizer::ControllerID, std::deque<SceneSynchronizer::IsleSnapshot>> client_controllers_snapshots;
+	OAHashMap<SceneSynchronizer::ControllerID, std::deque<SceneSynchronizer::IsleSnapshot>> server_controllers_snapshots;
 
 	bool need_full_snapshot_notified = false;
 
 public:
-	ClientRewinder(SceneRewinder *p_node);
+	ClientSynchronizer(SceneSynchronizer *p_node);
 
 	virtual void clear();
 
@@ -382,12 +382,12 @@ private:
 	void store_snapshot(const NetworkedController *p_controller);
 
 	void store_controllers_snapshot(
-			const SceneRewinder::Snapshot &p_snapshot,
-			OAHashMap<SceneRewinder::ControllerID, std::deque<SceneRewinder::IsleSnapshot>> &r_snapshot_storage);
+			const SceneSynchronizer::Snapshot &p_snapshot,
+			OAHashMap<SceneSynchronizer::ControllerID, std::deque<SceneSynchronizer::IsleSnapshot>> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
-	bool compare_vars(const SceneRewinder::NodeData *p_rewinder_node_data, const Vector<SceneRewinder::VarData> &p_server_vars, const Vector<SceneRewinder::VarData> &p_client_vars, Vector<SceneRewinder::Var> &r_postponed_recover);
+	bool compare_vars(const SceneSynchronizer::NodeData *p_synchronizer_node_data, const Vector<SceneSynchronizer::VarData> &p_server_vars, const Vector<SceneSynchronizer::VarData> &p_client_vars, Vector<SceneSynchronizer::Var> &r_postponed_recover);
 
 	void notify_server_full_snapshot_is_needed();
 };

@@ -35,13 +35,12 @@
 #include "register_types.h"
 
 #include "networked_controller.h"
-#include "scene_rewinder.h"
+#include "scene_synchronizer.h"
 
 void register_network_synchronizer_types() {
-
 	ClassDB::register_class<PlayerInputsReference>();
 	ClassDB::register_class<NetworkedController>();
-	ClassDB::register_class<SceneRewinder>();
+	ClassDB::register_class<SceneSynchronizer>();
 }
 
 void unregister_network_synchronizer_types() {
