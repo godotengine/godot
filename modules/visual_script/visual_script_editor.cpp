@@ -3126,6 +3126,7 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 	{
 		List<VisualScript::DataConnection> data_connections;
 		script->get_data_connection_list(p_func_from, &data_connections);
+		int func_from_node_id = script->get_function_node_id(p_func_from);
 
 		HashMap<int, Map<int, Pair<int, int> > > connections;
 
@@ -3134,6 +3135,11 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 			int to = E->get().to_node;
 			int out_p = E->get().from_port;
 			int in_p = E->get().to_port;
+
+			// skip if the from_node is a function node
+			if (from == func_from_node_id) {
+				continue;
+			}
 
 			if (!connections.has(to))
 				connections.set(to, Map<int, Pair<int, int> >());
