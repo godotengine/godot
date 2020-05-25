@@ -1058,12 +1058,12 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 
 		if (peer_it.value->need_full_snapshot) {
 			peer_it.value->need_full_snapshot = false;
-			if (full_snapshot.is_null()) {
+			if (full_snapshot.get_type() == Variant::NIL) {
 				full_snapshot = generate_snapshot(true);
 			}
 			scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", full_snapshot);
 		} else {
-			if (delta_snapshot.is_null()) {
+			if (delta_snapshot.get_type() == Variant::NIL) {
 				delta_snapshot = generate_snapshot(false);
 			}
 			scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", delta_snapshot);
