@@ -430,6 +430,12 @@
 				Saves the image as a PNG file to [code]path[/code].
 			</description>
 		</method>
+		<method name="save_png_to_buffer" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_pixel">
 			<return type="void">
 			</return>

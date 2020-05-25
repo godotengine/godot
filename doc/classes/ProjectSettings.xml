@@ -460,7 +460,7 @@
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
-		<member name="display/window/tablet_driver" type="String" setter="" getter="" default="&quot;wintab&quot;">
+		<member name="display/window/tablet_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">

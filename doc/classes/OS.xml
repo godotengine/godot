@@ -954,7 +954,7 @@
 		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation" default="0">
 			The current screen orientation.
 		</member>
-		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;wintab&quot;">
+		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
 			The current tablet drvier in use.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
