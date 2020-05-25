@@ -30,7 +30,7 @@
 
 #include "face3.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 
 int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_over[3]) const {
 	ERR_FAIL_COND_V(is_degenerate(), 0);
@@ -108,11 +108,11 @@ int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_
 }
 
 bool Face3::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const {
-	return Geometry::ray_intersects_triangle(p_from, p_dir, vertex[0], vertex[1], vertex[2], p_intersection);
+	return Geometry3D::ray_intersects_triangle(p_from, p_dir, vertex[0], vertex[1], vertex[2], p_intersection);
 }
 
 bool Face3::intersects_segment(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const {
-	return Geometry::segment_intersects_triangle(p_from, p_dir, vertex[0], vertex[1], vertex[2], p_intersection);
+	return Geometry3D::segment_intersects_triangle(p_from, p_dir, vertex[0], vertex[1], vertex[2], p_intersection);
 }
 
 bool Face3::is_degenerate() const {

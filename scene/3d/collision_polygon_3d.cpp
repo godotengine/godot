@@ -31,6 +31,7 @@
 #include "collision_polygon_3d.h"
 
 #include "collision_object_3d.h"
+#include "core/math/geometry_2d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 
@@ -45,7 +46,7 @@ void CollisionPolygon3D::_build_polygon() {
 		return;
 	}
 
-	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(polygon);
+	Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(polygon);
 	if (decomp.size() == 0) {
 		return;
 	}

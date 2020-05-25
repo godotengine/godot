@@ -2245,12 +2245,12 @@ void RenderingServer::_camera_set_orthogonal(RID p_camera, float p_size, float p
 	camera_set_orthogonal(p_camera, p_size, p_z_near, p_z_far);
 }
 
-void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data) {
+void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data) {
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
 
 	for (int i = 0; i < p_mesh_data.faces.size(); i++) {
-		const Geometry::MeshData::Face &f = p_mesh_data.faces[i];
+		const Geometry3D::MeshData::Face &f = p_mesh_data.faces[i];
 
 		for (int j = 2; j < f.indices.size(); j++) {
 #define _ADD_VERTEX(m_idx)                                      \
@@ -2271,7 +2271,7 @@ void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry
 }
 
 void RenderingServer::mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes) {
-	Geometry::MeshData mdata = Geometry::build_convex_mesh(p_planes);
+	Geometry3D::MeshData mdata = Geometry3D::build_convex_mesh(p_planes);
 	mesh_add_surface_from_mesh_data(p_mesh, mdata);
 }
 

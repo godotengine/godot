@@ -30,12 +30,13 @@
 
 #include "segment_shape_2d.h"
 
+#include "core/math/geometry_2d.h"
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 
 bool SegmentShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector2 l[2] = { a, b };
-	Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, l);
+	Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, l);
 	return p_point.distance_to(closest) < p_tolerance;
 }
 

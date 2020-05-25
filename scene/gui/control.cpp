@@ -30,6 +30,7 @@
 
 #include "control.h"
 
+#include "core/math/geometry_2d.h"
 #include "core/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -2293,8 +2294,8 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 					Vector2 fb = points[(j + 1) % 4];
 
 					Vector2 pa, pb;
-					float d = Geometry::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					//float d = Geometry::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
+					float d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
+					//float d = Geometry2D::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
 					if (d < r_closest_dist) {
 						r_closest_dist = d;
 						*r_closest = c;

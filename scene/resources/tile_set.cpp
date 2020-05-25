@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "tile_set.h"
+
 #include "core/array.h"
 #include "core/engine.h"
+#include "core/math/geometry_2d.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	String n = p_name;
@@ -1033,7 +1035,7 @@ void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
 	if (!convex.is_valid()) {
 		return;
 	}
-	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(convex->get_points());
+	Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(convex->get_points());
 	if (decomp.size() > 1) {
 		Array sub_shapes;
 		for (int i = 0; i < decomp.size(); i++) {

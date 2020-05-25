@@ -30,7 +30,7 @@
 
 #include "animation_blend_space_2d.h"
 
-#include "core/math/delaunay_2d.h"
+#include "core/math/geometry_2d.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
@@ -366,7 +366,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 			points[j] = get_blend_point_position(get_triangle_point(i, j));
 		}
 
-		if (Geometry::is_point_in_triangle(p_point, points[0], points[1], points[2])) {
+		if (Geometry2D::is_point_in_triangle(p_point, points[0], points[1], points[2])) {
 			return p_point;
 		}
 
@@ -375,7 +375,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 				points[j],
 				points[(j + 1) % 3]
 			};
-			Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, s);
+			Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, s);
 			if (first || closest.distance_to(p_point) < best_point.distance_to(p_point)) {
 				best_point = closest;
 				first = false;
@@ -455,7 +455,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 				points[j] = get_blend_point_position(get_triangle_point(i, j));
 			}
 
-			if (Geometry::is_point_in_triangle(blend_pos, points[0], points[1], points[2])) {
+			if (Geometry2D::is_point_in_triangle(blend_pos, points[0], points[1], points[2])) {
 				blend_triangle = i;
 				_blend_triangle(blend_pos, points, blend_weights);
 				break;
@@ -466,7 +466,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 					points[j],
 					points[(j + 1) % 3]
 				};
-				Vector2 closest2 = Geometry::get_closest_point_to_segment_2d(blend_pos, s);
+				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, s);
 				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
 					best_point = closest2;
 					blend_triangle = i;

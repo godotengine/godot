@@ -30,7 +30,7 @@
 
 #include "shape_2d_sw.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
 #include "core/sort_array.h"
 
 void Shape2DSW::configure(const Rect2 &p_aabb) {
@@ -205,7 +205,7 @@ bool SegmentShape2DSW::contains_point(const Vector2 &p_point) const {
 }
 
 bool SegmentShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
-	if (!Geometry::segment_intersects_segment_2d(p_begin, p_end, a, b, &r_point)) {
+	if (!Geometry2D::segment_intersects_segment(p_begin, p_end, a, b, &r_point)) {
 		return false;
 	}
 
@@ -556,7 +556,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 
 		Vector2 res;
 
-		if (!Geometry::segment_intersects_segment_2d(p_begin, p_end, points[i].pos, points[(i + 1) % point_count].pos, &res)) {
+		if (!Geometry2D::segment_intersects_segment(p_begin, p_end, points[i].pos, points[(i + 1) % point_count].pos, &res)) {
 			continue;
 		}
 
@@ -735,7 +735,7 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Ve
 
 						Vector2 res;
 
-						if (Geometry::segment_intersects_segment_2d(p_begin, p_end, a, b, &res)) {
+						if (Geometry2D::segment_intersects_segment(p_begin, p_end, a, b, &res)) {
 							real_t nd = n.dot(res);
 							if (nd < d) {
 								d = nd;

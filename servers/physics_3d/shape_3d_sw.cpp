@@ -30,7 +30,7 @@
 
 #include "shape_3d_sw.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/quick_hull.h"
 #include "core/sort_array.h"
 
@@ -195,7 +195,7 @@ Vector3 RayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		Vector3(0, 0, length)
 	};
 
-	return Geometry::get_closest_point_to_segment(p_point, s);
+	return Geometry3D::get_closest_point_to_segment(p_point, s);
 }
 
 Vector3 RayShape3DSW::get_moment_of_inertia(real_t p_mass) const {
@@ -252,7 +252,7 @@ void SphereShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 }
 
 bool SphereShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
-	return Geometry::segment_intersects_sphere(p_begin, p_end, Vector3(), radius, &r_result, &r_normal);
+	return Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(), radius, &r_result, &r_normal);
 }
 
 bool SphereShape3DSW::intersect_point(const Vector3 &p_point) const {
@@ -441,7 +441,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		s[1] = closest_vertex;
 		s[1][i] = -s[1][i]; //edge
 
-		Vector3 closest_edge = Geometry::get_closest_point_to_segment(p_point, s);
+		Vector3 closest_edge = Geometry3D::get_closest_point_to_segment(p_point, s);
 
 		float d = p_point.distance_to(closest_edge);
 		if (d < min_distance) {
@@ -540,7 +540,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 
 	// test against cylinder and spheres :-|
 
-	collided = Geometry::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -552,7 +552,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * 0.5), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * 0.5), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -564,7 +564,7 @@ bool CapsuleShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &
 		}
 	}
 
-	collided = Geometry::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * -0.5), radius, &auxres, &auxn);
+	collided = Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(0, 0, height * -0.5), radius, &auxres, &auxn);
 
 	if (collided) {
 		real_t d = norm.dot(auxres);
@@ -600,7 +600,7 @@ Vector3 CapsuleShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		Vector3(0, 0, height * 0.5),
 	};
 
-	Vector3 p = Geometry::get_closest_point_to_segment(p_point, s);
+	Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, s);
 
 	if (p.distance_to(p_point) < radius) {
 		return p_point;
@@ -691,10 +691,10 @@ Vector3 ConvexPolygonShape3DSW::get_support(const Vector3 &p_normal) const {
 }
 
 void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int fc = mesh.faces.size();
 
-	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int ec = mesh.edges.size();
 
 	const Vector3 *vertices = mesh.vertices.ptr();
@@ -755,7 +755,7 @@ void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Ve
 }
 
 bool ConvexPolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int fc = mesh.faces.size();
 
 	const Vector3 *vertices = mesh.vertices.ptr();
@@ -793,7 +793,7 @@ bool ConvexPolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Vec
 }
 
 bool ConvexPolygonShape3DSW::intersect_point(const Vector3 &p_point) const {
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int fc = mesh.faces.size();
 
 	for (int i = 0; i < fc; i++) {
@@ -806,7 +806,7 @@ bool ConvexPolygonShape3DSW::intersect_point(const Vector3 &p_point) const {
 }
 
 Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int fc = mesh.faces.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
 
@@ -844,7 +844,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 	Vector3 min_point;
 
 	//check edges
-	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int ec = mesh.edges.size();
 	for (int i = 0; i < ec; i++) {
 		Vector3 s[2] = {
@@ -852,7 +852,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 			vertices[edges[i].b]
 		};
 
-		Vector3 closest = Geometry::get_closest_point_to_segment(p_point, s);
+		Vector3 closest = Geometry3D::get_closest_point_to_segment(p_point, s);
 		float d = closest.distance_to(p_point);
 		if (d < min_distance) {
 			min_distance = d;
@@ -986,7 +986,7 @@ void FaceShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_
 }
 
 bool FaceShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
-	bool c = Geometry::segment_intersects_triangle(p_begin, p_end, vertex[0], vertex[1], vertex[2], &r_result);
+	bool c = Geometry3D::segment_intersects_triangle(p_begin, p_end, vertex[0], vertex[1], vertex[2], &r_result);
 	if (c) {
 		r_normal = Plane(vertex[0], vertex[1], vertex[2]).normal;
 		if (r_normal.dot(p_end - p_begin) > 0) {
@@ -1095,7 +1095,7 @@ void ConcavePolygonShape3DSW::_cull_segment(int p_idx, _SegmentCullParams *p_par
 			p_params->vertices[p_params->faces[bvh->face_index].indices[2]]
 		};
 
-		if (Geometry::segment_intersects_triangle(
+		if (Geometry3D::segment_intersects_triangle(
 					p_params->from,
 					p_params->to,
 					vertices[0],

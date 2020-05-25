@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "rendering_server_canvas.h"
+
+#include "core/math/geometry_2d.h"
 #include "rendering_server_globals.h"
 #include "rendering_server_raster.h"
 #include "rendering_server_viewport.h"
@@ -774,7 +776,7 @@ void RenderingServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Poi
 	ERR_FAIL_COND(color_size != 0 && color_size != 1 && color_size != pointcount);
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
-	Vector<int> indices = Geometry::triangulate_polygon(p_points);
+	Vector<int> indices = Geometry2D::triangulate_polygon(p_points);
 	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = canvas_item->alloc_command<Item::CommandPolygon>();

@@ -30,6 +30,8 @@
 
 #include "path_3d_editor_plugin.h"
 
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
@@ -344,7 +346,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 							Vector2 s[2];
 							s[0] = p_camera->unproject_position(from);
 							s[1] = p_camera->unproject_position(to);
-							Vector2 inters = Geometry::get_closest_point_to_segment_2d(mbpos, s);
+							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, s);
 							float d = inters.distance_to(mbpos);
 
 							if (d < 10 && d < closest_d) {
@@ -354,7 +356,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 								Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
 
 								Vector3 ra, rb;
-								Geometry::get_closest_points_between_segments(ray_from, ray_from + ray_dir * 4096, from, to, ra, rb);
+								Geometry3D::get_closest_points_between_segments(ray_from, ray_from + ray_dir * 4096, from, to, ra, rb);
 
 								closest_seg_point = it.xform(rb);
 							}

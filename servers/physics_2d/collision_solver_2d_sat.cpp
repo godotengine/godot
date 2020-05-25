@@ -30,7 +30,7 @@
 
 #include "collision_solver_2d_sat.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
 
 struct _CollectorCallback2D {
 	CollisionSolver2DSW::CallbackResult callback;
@@ -70,7 +70,7 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector2 closest_B = Geometry::get_closest_point_to_segment_uncapped_2d(*p_points_A, p_points_B);
+	Vector2 closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
 	p_collector->call(*p_points_A, closest_B);
 }
 

@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
-#include "core/math/delaunay_2d.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_scale.h"
@@ -191,7 +191,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				transition_lines[i].from,
 				transition_lines[i].to
 			};
-			Vector2 cpoint = Geometry::get_closest_point_to_segment_2d(mb->get_position(), s);
+			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), s);
 			float d = cpoint.distance_to(mb->get_position());
 			if (d > transition_lines[i].width) {
 				continue;

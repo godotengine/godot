@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "collision_solver_3d_sat.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.02
 
@@ -67,7 +67,7 @@ static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector3 closest_B = Geometry::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
+	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
 	p_callback->call(*p_points_A, closest_B);
 }
 
@@ -124,7 +124,7 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 	}
 
 	Vector3 closest_A = p_points_A[0] + rel_A * d;
-	Vector3 closest_B = Geometry::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
+	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
 	p_callback->call(closest_A, closest_B);
 }
 
@@ -542,11 +542,11 @@ static void _collision_sphere_convex_polygon(const Shape3DSW *p_a, const Transfo
 		return;
 	}
 
-	const Geometry::MeshData &mesh = convex_polygon_B->get_mesh();
+	const Geometry3D::MeshData &mesh = convex_polygon_B->get_mesh();
 
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int face_count = mesh.faces.size();
-	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vertex_count = mesh.vertices.size();
@@ -839,11 +839,11 @@ static void _collision_box_convex_polygon(const Shape3DSW *p_a, const Transform 
 		return;
 	}
 
-	const Geometry::MeshData &mesh = convex_polygon_B->get_mesh();
+	const Geometry3D::MeshData &mesh = convex_polygon_B->get_mesh();
 
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int face_count = mesh.faces.size();
-	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vertex_count = mesh.vertices.size();
@@ -1124,11 +1124,11 @@ static void _collision_capsule_convex_polygon(const Shape3DSW *p_a, const Transf
 		return;
 	}
 
-	const Geometry::MeshData &mesh = convex_polygon_B->get_mesh();
+	const Geometry3D::MeshData &mesh = convex_polygon_B->get_mesh();
 
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int face_count = mesh.faces.size();
-	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
 
@@ -1257,20 +1257,20 @@ static void _collision_convex_polygon_convex_polygon(const Shape3DSW *p_a, const
 		return;
 	}
 
-	const Geometry::MeshData &mesh_A = convex_polygon_A->get_mesh();
+	const Geometry3D::MeshData &mesh_A = convex_polygon_A->get_mesh();
 
-	const Geometry::MeshData::Face *faces_A = mesh_A.faces.ptr();
+	const Geometry3D::MeshData::Face *faces_A = mesh_A.faces.ptr();
 	int face_count_A = mesh_A.faces.size();
-	const Geometry::MeshData::Edge *edges_A = mesh_A.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges_A = mesh_A.edges.ptr();
 	int edge_count_A = mesh_A.edges.size();
 	const Vector3 *vertices_A = mesh_A.vertices.ptr();
 	int vertex_count_A = mesh_A.vertices.size();
 
-	const Geometry::MeshData &mesh_B = convex_polygon_B->get_mesh();
+	const Geometry3D::MeshData &mesh_B = convex_polygon_B->get_mesh();
 
-	const Geometry::MeshData::Face *faces_B = mesh_B.faces.ptr();
+	const Geometry3D::MeshData::Face *faces_B = mesh_B.faces.ptr();
 	int face_count_B = mesh_B.faces.size();
-	const Geometry::MeshData::Edge *edges_B = mesh_B.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges_B = mesh_B.edges.ptr();
 	int edge_count_B = mesh_B.edges.size();
 	const Vector3 *vertices_B = mesh_B.vertices.ptr();
 	int vertex_count_B = mesh_B.vertices.size();
@@ -1362,11 +1362,11 @@ static void _collision_convex_polygon_face(const Shape3DSW *p_a, const Transform
 
 	SeparatorAxisTest<ConvexPolygonShape3DSW, FaceShape3DSW, withMargin> separator(convex_polygon_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
-	const Geometry::MeshData &mesh = convex_polygon_A->get_mesh();
+	const Geometry3D::MeshData &mesh = convex_polygon_A->get_mesh();
 
-	const Geometry::MeshData::Face *faces = mesh.faces.ptr();
+	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int face_count = mesh.faces.size();
-	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
+	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vertex_count = mesh.vertices.size();

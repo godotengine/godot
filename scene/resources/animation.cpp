@@ -31,7 +31,7 @@
 #include "animation.h"
 #include "scene/scene_string_names.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 
 #define ANIM_MIN_LENGTH 0.001
 
@@ -2730,7 +2730,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			}
 
 			Vector3 s[2] = { v0, v2 };
-			real_t d = Geometry::get_closest_point_to_segment(v1, s).distance_to(v1);
+			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
 				return false; //beyond allowed error for colinearity
@@ -2820,7 +2820,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			}
 
 			Vector3 s[2] = { v0, v2 };
-			real_t d = Geometry::get_closest_point_to_segment(v1, s).distance_to(v1);
+			real_t d = Geometry3D::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
 				return false; //beyond allowed error for colinearity

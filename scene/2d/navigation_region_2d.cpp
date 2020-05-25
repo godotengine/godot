@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 #include "navigation_2d.h"
 #include "servers/navigation_server_2d.h"
@@ -73,7 +74,7 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 		if (outline_size < 3) {
 			continue;
 		}
-		if (Geometry::is_point_in_polygon(p_point, Variant(outline))) {
+		if (Geometry2D::is_point_in_polygon(p_point, Variant(outline))) {
 			return true;
 		}
 	}
@@ -269,7 +270,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			const Vector2 *r2 = ol2.ptr();
 
 			for (int l = 0; l < olsize2; l++) {
-				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
+				if (Geometry2D::segment_intersects_segment(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
 					interscount++;
 				}
 			}
