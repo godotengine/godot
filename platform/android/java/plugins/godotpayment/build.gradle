@@ -3,7 +3,6 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         minSdkVersion versions.minSdk
@@ -21,6 +20,7 @@ android {
 dependencies {
     implementation libraries.supportCoreUtils
     implementation libraries.v4Support
+    implementation 'com.android.billingclient:billing:2.2.1'
 
     if (rootProject.findProject(":lib")) {
         compileOnly project(":lib")
