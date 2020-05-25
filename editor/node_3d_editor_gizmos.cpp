@@ -30,7 +30,8 @@
 
 #include "node_3d_editor_gizmos.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/quick_hull.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
@@ -482,7 +483,7 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 			transformed_frustum.push_back(it.xform(p_frustum[i]));
 		}
 
-		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(p_frustum.ptr(), p_frustum.size());
+		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(p_frustum.ptr(), p_frustum.size());
 		if (collision_mesh->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
 			return true;
 		}
@@ -616,7 +617,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 			s[0] = p_camera->unproject_position(a);
 			s[1] = p_camera->unproject_position(b);
 
-			Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, s);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
 
 			float pd = p.distance_to(p_point);
 
@@ -831,7 +832,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 		Vector3 n = Vector3(Math::cos(an), 0, -Math::sin(an)) * p_arc_radius;
 
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(p, n, p_from, p_to, ra, rb);
+		Geometry3D::get_closest_points_between_segments(p, n, p_from, p_to, ra, rb);
 
 		float d = ra.distance_to(rb);
 		if (d < min_d) {
@@ -857,7 +858,7 @@ void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 	if (p_idx == 0) {
 		if (Object::cast_to<SpotLight3D>(light)) {
 			Vector3 ra, rb;
-			Geometry::get_closest_points_between_segments(Vector3(), Vector3(0, 0, -4096), s[0], s[1], ra, rb);
+			Geometry3D::get_closest_points_between_segments(Vector3(), Vector3(0, 0, -4096), s[0], s[1], ra, rb);
 
 			float d = -ra.z;
 			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
@@ -1100,7 +1101,7 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int 
 		Vector3 to(Math::sin(an), 0, -Math::cos(an));
 
 		Vector3 r1, r2;
-		Geometry::get_closest_points_between_segments(from, to, ray_from, ray_to, r1, r2);
+		Geometry3D::get_closest_points_between_segments(from, to, ray_from, ray_to, r1, r2);
 		float d = r1.distance_to(r2);
 		if (d < closest_dist) {
 			closest_dist = d;
@@ -1238,7 +1239,7 @@ void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Came
 		camera->set("fov", CLAMP(a * 2.0, 1, 179));
 	} else {
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(0, 0, -1), Vector3(4096, 0, -1), s[0], s[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(0, 0, -1), Vector3(4096, 0, -1), s[0], s[1], ra, rb);
 		float d = ra.x * 2.0;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -2169,7 +2170,7 @@ void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int
 
 	if (move) {
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
 		float d = ra[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
@@ -2181,7 +2182,7 @@ void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int
 
 	} else {
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
 		float d = ra[p_idx] - ofs[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
@@ -2360,7 +2361,7 @@ void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx
 
 	if (move) {
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
 		float d = ra[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
@@ -2372,7 +2373,7 @@ void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx
 
 	} else {
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
 
 		float d = ra[p_idx] - ofs[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
@@ -2523,7 +2524,7 @@ void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_id
 		axis[p_idx] = 1.0;
 
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -2550,7 +2551,7 @@ void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_id
 		axis[p_idx] = 1.0;
 
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(origin - axis * 16384, origin + axis * 16384, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(origin - axis * 16384, origin + axis * 16384, sg[0], sg[1], ra, rb);
 		// Adjust the actual position to account for the gizmo handle position
 		float d = ra[p_idx] + 0.25;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
@@ -2701,7 +2702,7 @@ void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3
 	axis[p_idx] = 1.0;
 
 	Vector3 ra, rb;
-	Geometry::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
+	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
 	float d = ra[p_idx];
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -2842,7 +2843,7 @@ void GIProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 	axis[p_idx] = 1.0;
 
 	Vector3 ra, rb;
-	Geometry::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
+	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
 	float d = ra[p_idx];
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -3354,7 +3355,7 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 	if (Object::cast_to<SphereShape3D>(*s)) {
 		Ref<SphereShape3D> ss = s;
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
 		float d = ra.x;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -3370,7 +3371,7 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 	if (Object::cast_to<RayShape3D>(*s)) {
 		Ref<RayShape3D> rs = s;
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(), Vector3(0, 0, 4096), sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(), Vector3(0, 0, 4096), sg[0], sg[1], ra, rb);
 		float d = ra.z;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -3388,7 +3389,7 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 		axis[p_idx] = 1.0;
 		Ref<BoxShape3D> bs = s;
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = ra[p_idx];
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -3408,7 +3409,7 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 		axis[p_idx == 0 ? 0 : 2] = 1.0;
 		Ref<CapsuleShape3D> cs2 = s;
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
 		if (p_idx == 1) {
 			d -= cs2->get_radius();
@@ -3434,7 +3435,7 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 		axis[p_idx == 0 ? 0 : 1] = 1.0;
 		Ref<CylinderShape3D> cs2 = s;
 		Vector3 ra, rb;
-		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
@@ -3802,7 +3803,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		if (points.size() > 3) {
 			Vector<Vector3> varr = Variant(points);
-			Geometry::MeshData md;
+			Geometry3D::MeshData md;
 			Error err = QuickHull::build(varr, md);
 			if (err == OK) {
 				Vector<Vector3> points2;

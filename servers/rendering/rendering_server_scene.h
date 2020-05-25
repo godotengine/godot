@@ -33,7 +33,6 @@
 
 #include "servers/rendering/rasterizer.h"
 
-#include "core/math/geometry.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"

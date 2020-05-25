@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
-#include "core/math/delaunay_2d.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_scale.h"
@@ -165,7 +165,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 					triangle.push_back(points[idx]);
 				}
 
-				if (Geometry::is_point_in_triangle(mb->get_position(), triangle[0], triangle[1], triangle[2])) {
+				if (Geometry2D::is_point_in_triangle(mb->get_position(), triangle[0], triangle[1], triangle[2])) {
 					selected_triangle = i;
 					_update_tool_erase();
 					return;

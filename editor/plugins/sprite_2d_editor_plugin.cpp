@@ -31,6 +31,7 @@
 #include "sprite_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/math/geometry_2d.h"
 #include "editor/editor_scale.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/light_occluder_2d.h"
@@ -233,7 +234,7 @@ void Sprite2DEditor::_update_mesh_data() {
 				computed_vertices.push_back(vtx);
 			}
 
-			Vector<int> poly = Geometry::triangulate_polygon(lines[j]);
+			Vector<int> poly = Geometry2D::triangulate_polygon(lines[j]);
 
 			for (int i = 0; i < poly.size(); i += 3) {
 				for (int k = 0; k < 3; k++) {

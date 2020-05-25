@@ -31,6 +31,7 @@
 #include "navigation_agent_2d.h"
 
 #include "core/engine.h"
+#include "core/math/geometry_2d.h"
 #include "scene/2d/navigation_2d.h"
 #include "servers/navigation_server_2d.h"
 
@@ -304,7 +305,7 @@ void NavigationAgent2D::update_navigation() {
 			Vector2 segment[2];
 			segment[0] = navigation_path[nav_path_index - 1];
 			segment[1] = navigation_path[nav_path_index];
-			Vector2 p = Geometry::get_closest_point_to_segment_2d(o, segment);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(o, segment);
 			if (o.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;

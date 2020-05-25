@@ -33,7 +33,7 @@
 
 #include "core/list.h"
 #include "core/math/aabb.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/set.h"
 
 class QuickHull {
@@ -74,13 +74,13 @@ private:
 		FaceConnect() {}
 	};
 	struct RetFaceConnect {
-		List<Geometry::MeshData::Face>::Element *left, *right = nullptr;
+		List<Geometry3D::MeshData::Face>::Element *left, *right = nullptr;
 		RetFaceConnect() {}
 	};
 
 public:
 	static uint32_t debug_stop_after;
-	static Error build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh);
+	static Error build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh);
 };
 
 #endif // QUICK_HULL_H

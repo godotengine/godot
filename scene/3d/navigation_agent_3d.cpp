@@ -323,7 +323,7 @@ void NavigationAgent3D::update_navigation() {
 			segment[1] = navigation_path[nav_path_index];
 			segment[0].y -= navigation_height_offset;
 			segment[1].y -= navigation_height_offset;
-			Vector3 p = Geometry::get_closest_point_to_segment(o, segment);
+			Vector3 p = Geometry3D::get_closest_point_to_segment(o, segment);
 			if (o.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;

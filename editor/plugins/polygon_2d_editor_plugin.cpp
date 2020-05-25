@@ -32,6 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/input/input.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
@@ -693,7 +694,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							polys.write[j] = mtx.xform(points_prev[idx]);
 						}
 
-						if (Geometry::is_point_in_polygon(Vector2(mb->get_position().x, mb->get_position().y), polys)) {
+						if (Geometry2D::is_point_in_polygon(Vector2(mb->get_position().x, mb->get_position().y), polys)) {
 							erase_index = i;
 							break;
 						}

@@ -34,7 +34,7 @@
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 
-Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
+Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
 	/* CREATE AABB VOLUME */
 
 	AABB aabb;
@@ -334,17 +334,17 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	//make a map of edges again
 	Map<Edge, RetFaceConnect> ret_edges;
-	List<Geometry::MeshData::Face> ret_faces;
+	List<Geometry3D::MeshData::Face> ret_faces;
 
 	for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
-		Geometry::MeshData::Face f;
+		Geometry3D::MeshData::Face f;
 		f.plane = E->get().plane;
 
 		for (int i = 0; i < 3; i++) {
 			f.indices.push_back(E->get().vertices[i]);
 		}
 
-		List<Geometry::MeshData::Face>::Element *F = ret_faces.push_back(f);
+		List<Geometry3D::MeshData::Face>::Element *F = ret_faces.push_back(f);
 
 		for (int i = 0; i < 3; i++) {
 			uint32_t a = E->get().vertices[i];
@@ -366,8 +366,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	//fill faces
 
-	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
-		Geometry::MeshData::Face &f = E->get();
+	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
+		Geometry3D::MeshData::Face &f = E->get();
 
 		for (int i = 0; i < f.indices.size(); i++) {
 			int a = E->get().indices[i];
@@ -377,7 +377,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			Map<Edge, RetFaceConnect>::Element *F = ret_edges.find(e);
 
 			ERR_CONTINUE(!F);
-			List<Geometry::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
+			List<Geometry3D::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
 			ERR_CONTINUE(O == E);
 			ERR_CONTINUE(O == nullptr);
 
@@ -439,13 +439,13 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	r_mesh.faces.resize(ret_faces.size());
 
 	int idx = 0;
-	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
+	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		r_mesh.faces.write[idx++] = E->get();
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
 	for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
-		Geometry::MeshData::Edge e;
+		Geometry3D::MeshData::Edge e;
 		e.a = E->key().vertices[0];
 		e.b = E->key().vertices[1];
 		r_mesh.edges.write[idx++] = e;

@@ -79,8 +79,8 @@ public:
 		Vector<Vector3> vts;
 
 		/*
-		Vector<Plane> sp = Geometry::build_sphere_planes(2,5,5);
-		Geometry::MeshData md2 = Geometry::build_convex_mesh(sp);
+		Vector<Plane> sp = Geometry3D::build_sphere_planes(2,5,5);
+		Geometry3D::MeshData md2 = Geometry3D::build_convex_mesh(sp);
 		vts=md2.vertices;
 */
 		/*
@@ -118,7 +118,7 @@ public:
 		vts.push_back(Vector3(-1, 1, -1));
 		vts.push_back(Vector3(-1, -1, -1));
 
-		Geometry::MeshData md;
+		Geometry3D::MeshData md;
 		Error err = QuickHull::build(vts, md);
 		print_line("ERR: " + itos(err));
 		test_cube = vs->mesh_create();

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "voxelizer.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/os/os.h"
 #include "core/os/threaded_array_processor.h"
 
@@ -124,7 +124,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 half = (to - from) * 0.5;
 
 				//is in this cell?
-				if (!Geometry::triangle_box_overlap(from + half, half, p_vtx)) {
+				if (!Geometry3D::triangle_box_overlap(from + half, half, p_vtx)) {
 					continue; //face does not span this cell
 				}
 
@@ -267,7 +267,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
 				Vector3 qsize = test_aabb.size * 0.5; //quarter size, for fast aabb test
 
-				if (!Geometry::triangle_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
+				if (!Geometry3D::triangle_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
 					//if (!Face3(p_vtx[0],p_vtx[1],p_vtx[2]).intersects_aabb2(aabb)) {
 					//does not fit in child, go on
 					continue;
@@ -439,7 +439,7 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 				}
 
 				//test against original bounds
-				if (!Geometry::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
+				if (!Geometry3D::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
 				}
 				//plot
@@ -471,7 +471,7 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 				}
 
 				//test against original bounds
-				if (!Geometry::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
+				if (!Geometry3D::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
 				}
 				//plot face

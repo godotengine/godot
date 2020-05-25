@@ -34,7 +34,7 @@
 #include "core/list.h"
 #include "core/map.h"
 #include "core/math/aabb.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
 #include "core/print_string.h"
 #include "core/variant.h"
@@ -1201,7 +1201,7 @@ int Octree<T, use_pairs, AL>::cull_convex(const Vector<Plane> &p_convex, T **p_r
 		return 0;
 	}
 
-	Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
+	Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
 	if (convex_points.size() == 0) {
 		return 0;
 	}

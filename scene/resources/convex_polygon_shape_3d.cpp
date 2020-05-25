@@ -37,7 +37,7 @@ Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() {
 
 	if (points.size() > 3) {
 		Vector<Vector3> varr = Variant(points);
-		Geometry::MeshData md;
+		Geometry3D::MeshData md;
 		Error err = QuickHull::build(varr, md);
 		if (err == OK) {
 			Vector<Vector3> lines;

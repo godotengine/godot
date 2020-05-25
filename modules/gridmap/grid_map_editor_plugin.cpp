@@ -35,7 +35,6 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 
-#include "core/math/geometry.h"
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 

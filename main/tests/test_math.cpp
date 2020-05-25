@@ -33,6 +33,7 @@
 #include "core/math/basis.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/delaunay_3d.h"
+#include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/transform.h"
 #include "core/method_ptrcall.h"
@@ -635,7 +636,7 @@ MainLoop *test() {
 		b["44"] = 4;
 	}
 
-	print_line("inters: " + rtos(Geometry::segment_intersects_circle(Vector2(-5, 0), Vector2(-2, 0), Vector2(), 1.0)));
+	print_line("inters: " + rtos(Geometry2D::segment_intersects_circle(Vector2(-5, 0), Vector2(-2, 0), Vector2(), 1.0)));
 
 	print_line("cross: " + Vector3(1, 2, 3).cross(Vector3(4, 5, 7)));
 	print_line("dot: " + rtos(Vector3(1, 2, 3).dot(Vector3(4, 5, 7))));

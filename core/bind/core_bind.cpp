@@ -35,7 +35,8 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -828,55 +829,43 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
 }
 
-////// _Geometry //////
+////// _Geometry2D //////
 
-_Geometry *_Geometry::singleton = nullptr;
+_Geometry2D *_Geometry2D::singleton = nullptr;
 
-_Geometry *_Geometry::get_singleton() {
+_Geometry2D *_Geometry2D::get_singleton() {
 	return singleton;
 }
 
-Vector<Plane> _Geometry::build_box_planes(const Vector3 &p_extents) {
-	return Geometry::build_box_planes(p_extents);
+bool _Geometry2D::is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius) {
+	return Geometry2D::is_point_in_circle(p_point, p_circle_pos, p_circle_radius);
 }
 
-Vector<Plane> _Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
-	return Geometry::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
+real_t _Geometry2D::segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
+	return Geometry2D::segment_intersects_circle(p_from, p_to, p_circle_pos, p_circle_radius);
 }
 
-Vector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
-	return Geometry::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
-}
-
-bool _Geometry::is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-	return Geometry::is_point_in_circle(p_point, p_circle_pos, p_circle_radius);
-}
-
-real_t _Geometry::segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-	return Geometry::segment_intersects_circle(p_from, p_to, p_circle_pos, p_circle_radius);
-}
-
-Variant _Geometry::segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b) {
+Variant _Geometry2D::segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b) {
 	Vector2 result;
-	if (Geometry::segment_intersects_segment_2d(p_from_a, p_to_a, p_from_b, p_to_b, &result)) {
+	if (Geometry2D::segment_intersects_segment(p_from_a, p_to_a, p_from_b, p_to_b, &result)) {
 		return result;
 	} else {
 		return Variant();
 	}
 }
 
-Variant _Geometry::line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b) {
+Variant _Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b) {
 	Vector2 result;
-	if (Geometry::line_intersects_line_2d(p_from_a, p_dir_a, p_from_b, p_dir_b, result)) {
+	if (Geometry2D::line_intersects_line(p_from_a, p_dir_a, p_from_b, p_dir_b, result)) {
 		return result;
 	} else {
 		return Variant();
 	}
 }
 
-Vector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
+Vector<Vector2> _Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
 	Vector2 r1, r2;
-	Geometry::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
+	Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
 	Vector<Vector2> r;
 	r.resize(2);
 	r.set(0, r1);
@@ -884,123 +873,42 @@ Vector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vector2 
 	return r;
 }
 
-Vector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
-	Vector3 r1, r2;
-	Geometry::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
-	Vector<Vector3> r;
-	r.resize(2);
-	r.set(0, r1);
-	r.set(1, r2);
-	return r;
-}
-
-Vector2 _Geometry::get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
+Vector2 _Geometry2D::get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
 	Vector2 s[2] = { p_a, p_b };
-	return Geometry::get_closest_point_to_segment_2d(p_point, s);
+	return Geometry2D::get_closest_point_to_segment(p_point, s);
 }
 
-Vector3 _Geometry::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return Geometry::get_closest_point_to_segment(p_point, s);
-}
-
-Vector2 _Geometry::get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
+Vector2 _Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
 	Vector2 s[2] = { p_a, p_b };
-	return Geometry::get_closest_point_to_segment_uncapped_2d(p_point, s);
+	return Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
 }
 
-Vector3 _Geometry::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return Geometry::get_closest_point_to_segment_uncapped(p_point, s);
+bool _Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
+	return Geometry2D::is_point_in_triangle(s, a, b, c);
 }
 
-Variant _Geometry::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
-	Vector3 res;
-	if (Geometry::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res)) {
-		return res;
-	} else {
-		return Variant();
-	}
+bool _Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+	return Geometry2D::is_polygon_clockwise(p_polygon);
 }
 
-Variant _Geometry::segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
-	Vector3 res;
-	if (Geometry::segment_intersects_triangle(p_from, p_to, p_v0, p_v1, p_v2, &res)) {
-		return res;
-	} else {
-		return Variant();
-	}
+bool _Geometry2D::is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon) {
+	return Geometry2D::is_point_in_polygon(p_point, p_polygon);
 }
 
-bool _Geometry::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
-	return Geometry::is_point_in_triangle(s, a, b, c);
+Vector<int> _Geometry2D::triangulate_polygon(const Vector<Vector2> &p_polygon) {
+	return Geometry2D::triangulate_polygon(p_polygon);
 }
 
-Vector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
-	Vector<Vector3> r;
-	Vector3 res, norm;
-	if (!Geometry::segment_intersects_sphere(p_from, p_to, p_sphere_pos, p_sphere_radius, &res, &norm)) {
-		return r;
-	}
-
-	r.resize(2);
-	r.set(0, res);
-	r.set(1, norm);
-	return r;
+Vector<int> _Geometry2D::triangulate_delaunay(const Vector<Vector2> &p_points) {
+	return Geometry2D::triangulate_delaunay(p_points);
 }
 
-Vector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius) {
-	Vector<Vector3> r;
-	Vector3 res, norm;
-	if (!Geometry::segment_intersects_cylinder(p_from, p_to, p_height, p_radius, &res, &norm)) {
-		return r;
-	}
-
-	r.resize(2);
-	r.set(0, res);
-	r.set(1, norm);
-	return r;
+Vector<Point2> _Geometry2D::convex_hull(const Vector<Point2> &p_points) {
+	return Geometry2D::convex_hull(p_points);
 }
 
-Vector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
-	Vector<Vector3> r;
-	Vector3 res, norm;
-	if (!Geometry::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm)) {
-		return r;
-	}
-
-	r.resize(2);
-	r.set(0, res);
-	r.set(1, norm);
-	return r;
-}
-
-bool _Geometry::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
-	return Geometry::is_polygon_clockwise(p_polygon);
-}
-
-bool _Geometry::is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon) {
-	return Geometry::is_point_in_polygon(p_point, p_polygon);
-}
-
-Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2> &p_polygon) {
-	return Geometry::triangulate_polygon(p_polygon);
-}
-
-Vector<int> _Geometry::triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
-	return Geometry::triangulate_delaunay_2d(p_points);
-}
-
-Vector<Point2> _Geometry::convex_hull_2d(const Vector<Point2> &p_points) {
-	return Geometry::convex_hull_2d(p_points);
-}
-
-Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane) {
-	return Geometry::clip_polygon(p_points, p_plane);
-}
-
-Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
+Array _Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	Vector<Vector<Point2>> polys = Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1010,8 +918,8 @@ Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vec
 	return ret;
 }
 
-Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = Geometry::clip_polygons_2d(p_polygon_a, p_polygon_b);
+Array _Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	Vector<Vector<Point2>> polys = Geometry2D::clip_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1021,8 +929,8 @@ Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vect
 	return ret;
 }
 
-Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = Geometry::intersect_polygons_2d(p_polygon_a, p_polygon_b);
+Array _Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	Vector<Vector<Point2>> polys = Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1032,8 +940,8 @@ Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const
 	return ret;
 }
 
-Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = Geometry::exclude_polygons_2d(p_polygon_a, p_polygon_b);
+Array _Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
+	Vector<Vector<Point2>> polys = Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
 
 	Array ret;
 
@@ -1043,8 +951,8 @@ Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const V
 	return ret;
 }
 
-Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> polys = Geometry::clip_polyline_with_polygon_2d(p_polyline, p_polygon);
+Array _Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+	Vector<Vector<Point2>> polys = Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
 
 	Array ret;
 
@@ -1054,8 +962,8 @@ Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline
 	return ret;
 }
 
-Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> polys = Geometry::intersect_polyline_with_polygon_2d(p_polyline, p_polygon);
+Array _Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+	Vector<Vector<Point2>> polys = Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
 
 	Array ret;
 
@@ -1065,8 +973,8 @@ Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_pol
 	return ret;
 }
 
-Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-	Vector<Vector<Point2>> polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
+Array _Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+	Vector<Vector<Point2>> polys = Geometry2D::offset_polygon(p_polygon, p_delta, Geometry2D::PolyJoinType(p_join_type));
 
 	Array ret;
 
@@ -1076,8 +984,8 @@ Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_de
 	return ret;
 }
 
-Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-	Vector<Vector<Point2>> polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
+Array _Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+	Vector<Vector<Point2>> polys = Geometry2D::offset_polyline(p_polygon, p_delta, Geometry2D::PolyJoinType(p_join_type), Geometry2D::PolyEndType(p_end_type));
 
 	Array ret;
 
@@ -1087,7 +995,7 @@ Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_d
 	return ret;
 }
 
-Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
+Dictionary _Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	Dictionary ret;
 
 	Vector<Size2i> rects;
@@ -1098,7 +1006,7 @@ Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 	Vector<Point2i> result;
 	Size2i size;
 
-	Geometry::make_atlas(rects, result, size);
+	Geometry2D::make_atlas(rects, result, size);
 
 	Size2 r_size = size;
 	Vector<Point2> r_result;
@@ -1112,56 +1020,37 @@ Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 	return ret;
 }
 
-int _Geometry::get_uv84_normal_bit(const Vector3 &p_vector) {
-	return Geometry::get_uv84_normal_bit(p_vector);
-}
+void _Geometry2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_point_in_circle", "point", "circle_position", "circle_radius"), &_Geometry2D::is_point_in_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_segment", "from_a", "to_a", "from_b", "to_b"), &_Geometry2D::segment_intersects_segment);
+	ClassDB::bind_method(D_METHOD("line_intersects_line", "from_a", "dir_a", "from_b", "dir_b"), &_Geometry2D::line_intersects_line);
 
-void _Geometry::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &_Geometry::build_box_planes);
-	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &_Geometry::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
-	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &_Geometry::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
-	ClassDB::bind_method(D_METHOD("is_point_in_circle", "point", "circle_position", "circle_radius"), &_Geometry::is_point_in_circle);
-	ClassDB::bind_method(D_METHOD("segment_intersects_circle", "segment_from", "segment_to", "circle_position", "circle_radius"), &_Geometry::segment_intersects_circle);
-	ClassDB::bind_method(D_METHOD("segment_intersects_segment_2d", "from_a", "to_a", "from_b", "to_b"), &_Geometry::segment_intersects_segment_2d);
-	ClassDB::bind_method(D_METHOD("line_intersects_line_2d", "from_a", "dir_a", "from_b", "dir_b"), &_Geometry::line_intersects_line_2d);
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments", "p1", "q1", "p2", "q2"), &_Geometry2D::get_closest_points_between_segments);
 
-	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments_2d", "p1", "q1", "p2", "q2"), &_Geometry::get_closest_points_between_segments_2d);
-	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments", "p1", "p2", "q1", "q2"), &_Geometry::get_closest_points_between_segments);
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &_Geometry2D::get_closest_point_to_segment);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_2d", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment_2d);
-	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment);
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &_Geometry2D::get_closest_point_to_segment_uncapped);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped_2d", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment_uncapped_2d);
-	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &_Geometry::get_closest_point_to_segment_uncapped);
+	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry2D::point_is_inside_triangle);
 
-	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit", "normal"), &_Geometry::get_uv84_normal_bit);
+	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &_Geometry2D::is_polygon_clockwise);
+	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &_Geometry2D::is_point_in_polygon);
+	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry2D::triangulate_polygon);
+	ClassDB::bind_method(D_METHOD("triangulate_delaunay", "points"), &_Geometry2D::triangulate_delaunay);
+	ClassDB::bind_method(D_METHOD("convex_hull", "points"), &_Geometry2D::convex_hull);
 
-	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &_Geometry::ray_intersects_triangle);
-	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &_Geometry::segment_intersects_triangle);
-	ClassDB::bind_method(D_METHOD("segment_intersects_sphere", "from", "to", "sphere_position", "sphere_radius"), &_Geometry::segment_intersects_sphere);
-	ClassDB::bind_method(D_METHOD("segment_intersects_cylinder", "from", "to", "height", "radius"), &_Geometry::segment_intersects_cylinder);
-	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &_Geometry::segment_intersects_convex);
-	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
+	ClassDB::bind_method(D_METHOD("merge_polygons", "polygon_a", "polygon_b"), &_Geometry2D::merge_polygons);
+	ClassDB::bind_method(D_METHOD("clip_polygons", "polygon_a", "polygon_b"), &_Geometry2D::clip_polygons);
+	ClassDB::bind_method(D_METHOD("intersect_polygons", "polygon_a", "polygon_b"), &_Geometry2D::intersect_polygons);
+	ClassDB::bind_method(D_METHOD("exclude_polygons", "polygon_a", "polygon_b"), &_Geometry2D::exclude_polygons);
 
-	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &_Geometry::is_polygon_clockwise);
-	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &_Geometry::is_point_in_polygon);
-	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);
-	ClassDB::bind_method(D_METHOD("triangulate_delaunay_2d", "points"), &_Geometry::triangulate_delaunay_2d);
-	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
-	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &_Geometry::clip_polygon);
+	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon", "polyline", "polygon"), &_Geometry2D::clip_polyline_with_polygon);
+	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon", "polyline", "polygon"), &_Geometry2D::intersect_polyline_with_polygon);
 
-	ClassDB::bind_method(D_METHOD("merge_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::merge_polygons_2d);
-	ClassDB::bind_method(D_METHOD("clip_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::clip_polygons_2d);
-	ClassDB::bind_method(D_METHOD("intersect_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::intersect_polygons_2d);
-	ClassDB::bind_method(D_METHOD("exclude_polygons_2d", "polygon_a", "polygon_b"), &_Geometry::exclude_polygons_2d);
+	ClassDB::bind_method(D_METHOD("offset_polygon", "polygon", "delta", "join_type"), &_Geometry2D::offset_polygon, DEFVAL(JOIN_SQUARE));
+	ClassDB::bind_method(D_METHOD("offset_polyline", "polyline", "delta", "join_type", "end_type"), &_Geometry2D::offset_polyline, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
 
-	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::clip_polyline_with_polygon_2d);
-	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon_2d", "polyline", "polygon"), &_Geometry::intersect_polyline_with_polygon_2d);
-
-	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "join_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
-	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "join_type", "end_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
-
-	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry::make_atlas);
+	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry2D::make_atlas);
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_DIFFERENCE);
@@ -1177,6 +1066,133 @@ void _Geometry::_bind_methods() {
 	BIND_ENUM_CONSTANT(END_BUTT);
 	BIND_ENUM_CONSTANT(END_SQUARE);
 	BIND_ENUM_CONSTANT(END_ROUND);
+}
+
+////// _Geometry3D //////
+
+_Geometry3D *_Geometry3D::singleton = nullptr;
+
+_Geometry3D *_Geometry3D::get_singleton() {
+	return singleton;
+}
+
+Vector<Plane> _Geometry3D::build_box_planes(const Vector3 &p_extents) {
+	return Geometry3D::build_box_planes(p_extents);
+}
+
+Vector<Plane> _Geometry3D::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+	return Geometry3D::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
+}
+
+Vector<Plane> _Geometry3D::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	return Geometry3D::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
+}
+
+Vector<Vector3> _Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
+	Vector3 r1, r2;
+	Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
+	Vector<Vector3> r;
+	r.resize(2);
+	r.set(0, r1);
+	r.set(1, r2);
+	return r;
+}
+
+Vector3 _Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
+	Vector3 s[2] = { p_a, p_b };
+	return Geometry3D::get_closest_point_to_segment(p_point, s);
+}
+
+Vector3 _Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
+	Vector3 s[2] = { p_a, p_b };
+	return Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+}
+
+Variant _Geometry3D::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
+	Vector3 res;
+	if (Geometry3D::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res)) {
+		return res;
+	} else {
+		return Variant();
+	}
+}
+
+Variant _Geometry3D::segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
+	Vector3 res;
+	if (Geometry3D::segment_intersects_triangle(p_from, p_to, p_v0, p_v1, p_v2, &res)) {
+		return res;
+	} else {
+		return Variant();
+	}
+}
+
+Vector<Vector3> _Geometry3D::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
+	Vector<Vector3> r;
+	Vector3 res, norm;
+	if (!Geometry3D::segment_intersects_sphere(p_from, p_to, p_sphere_pos, p_sphere_radius, &res, &norm)) {
+		return r;
+	}
+
+	r.resize(2);
+	r.set(0, res);
+	r.set(1, norm);
+	return r;
+}
+
+Vector<Vector3> _Geometry3D::segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius) {
+	Vector<Vector3> r;
+	Vector3 res, norm;
+	if (!Geometry3D::segment_intersects_cylinder(p_from, p_to, p_height, p_radius, &res, &norm)) {
+		return r;
+	}
+
+	r.resize(2);
+	r.set(0, res);
+	r.set(1, norm);
+	return r;
+}
+
+Vector<Vector3> _Geometry3D::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
+	Vector<Vector3> r;
+	Vector3 res, norm;
+	if (!Geometry3D::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm)) {
+		return r;
+	}
+
+	r.resize(2);
+	r.set(0, res);
+	r.set(1, norm);
+	return r;
+}
+
+Vector<Vector3> _Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane) {
+	return Geometry3D::clip_polygon(p_points, p_plane);
+}
+
+int _Geometry3D::get_uv84_normal_bit(const Vector3 &p_vector) {
+	return Geometry3D::get_uv84_normal_bit(p_vector);
+}
+
+void _Geometry3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &_Geometry3D::build_box_planes);
+	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &_Geometry3D::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
+	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &_Geometry3D::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
+
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments", "p1", "p2", "q1", "q2"), &_Geometry3D::get_closest_points_between_segments);
+
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &_Geometry3D::get_closest_point_to_segment);
+
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &_Geometry3D::get_closest_point_to_segment_uncapped);
+
+	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit", "normal"), &_Geometry3D::get_uv84_normal_bit);
+
+	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &_Geometry3D::ray_intersects_triangle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &_Geometry3D::segment_intersects_triangle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_sphere", "from", "to", "sphere_position", "sphere_radius"), &_Geometry3D::segment_intersects_sphere);
+	ClassDB::bind_method(D_METHOD("segment_intersects_cylinder", "from", "to", "height", "radius"), &_Geometry3D::segment_intersects_cylinder);
+	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &_Geometry3D::segment_intersects_convex);
+
+	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &_Geometry3D::clip_polygon);
 }
 
 ////// _File //////

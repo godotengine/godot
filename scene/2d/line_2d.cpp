@@ -31,6 +31,7 @@
 #include "line_2d.h"
 
 #include "core/core_string_names.h"
+#include "core/math/geometry_2d.h"
 #include "line_builder.h"
 
 // Needed so we can bind functions
@@ -72,7 +73,7 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	const real_t d = _width / 2 + p_tolerance;
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
-		Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
 		if (p.distance_to(p_point) <= d) {
 			return true;
 		}
