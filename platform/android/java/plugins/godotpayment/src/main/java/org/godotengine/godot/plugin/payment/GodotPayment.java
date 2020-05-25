@@ -32,214 +32,178 @@ package org.godotengine.godot.plugin.payment;
 
 import org.godotengine.godot.Dictionary;
 import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.plugin.GodotPlugin;
-
-import android.content.Intent;
-import android.util.Log;
+import org.godotengine.godot.plugin.SignalInfo;
+import org.godotengine.godot.plugin.payment.utils.GodotPaymentUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.collection.ArraySet;
 
-import java.util.ArrayList;
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
+import com.android.billingclient.api.ConsumeResponseListener;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
+
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+public class GodotPayment extends GodotPlugin implements PurchasesUpdatedListener, BillingClientStateListener {
 
-public class GodotPayment extends GodotPlugin {
-	private Long purchaseCallbackId = 0L;
-	private String accessToken;
-	private String purchaseValidationUrlPrefix;
-	private String transactionId;
-	private final PaymentsManager mPaymentManager;
-	private final Dictionary mSkuDetails = new Dictionary();
+	private final BillingClient billingClient;
+	private final HashMap<String, SkuDetails> skuDetailsCache = new HashMap<>(); // sku → SkuDetails
 
 	public GodotPayment(Godot godot) {
 		super(godot);
-		mPaymentManager = new PaymentsManager(godot, this);
-		mPaymentManager.initService();
+
+		billingClient = BillingClient
+								.newBuilder(getGodot())
+								.enablePendingPurchases()
+								.setListener(this)
+								.build();
 	}
 
-	@Override
-	public void onMainActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE) {
-			mPaymentManager.processPurchaseResponse(resultCode, data);
-		}
+	public void startConnection() {
+		billingClient.startConnection(this);
 	}
 
-	@Override
-	public void onMainDestroy() {
-		super.onMainDestroy();
-		if (mPaymentManager != null) {
-			mPaymentManager.destroy();
-		}
+	public void endConnection() {
+		billingClient.endConnection();
 	}
 
-	public void purchase(final String sku, final String transactionId) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				mPaymentManager.requestPurchase(sku, transactionId);
-			}
-		});
+	public boolean isReady() {
+		return this.billingClient.isReady();
 	}
 
-	public void consumeUnconsumedPurchases() {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				mPaymentManager.consumeUnconsumedPurchases();
-			}
-		});
-	}
+	public Dictionary queryPurchases(String type) {
+		Purchase.PurchasesResult result = billingClient.queryPurchases(type);
 
-	private String signature;
-
-	public String getSignature() {
-		return this.signature;
-	}
-
-	public void callbackSuccess(String ticket, String signature, String sku) {
-		GodotLib.calldeferred(purchaseCallbackId, "purchase_success", new Object[] { ticket, signature, sku });
-	}
-
-	public void callbackSuccessProductMassConsumed(String ticket, String signature, String sku) {
-		Log.d(this.getClass().getName(), "callbackSuccessProductMassConsumed > " + ticket + "," + signature + "," + sku);
-		GodotLib.calldeferred(purchaseCallbackId, "consume_success", new Object[] { ticket, signature, sku });
-	}
-
-	public void callbackSuccessNoUnconsumedPurchases() {
-		GodotLib.calldeferred(purchaseCallbackId, "consume_not_required", new Object[] {});
-	}
-
-	public void callbackFailConsume(String message) {
-		GodotLib.calldeferred(purchaseCallbackId, "consume_fail", new Object[] { message });
-	}
-
-	public void callbackFail(String message) {
-		GodotLib.calldeferred(purchaseCallbackId, "purchase_fail", new Object[] { message });
-	}
-
-	public void callbackCancel() {
-		GodotLib.calldeferred(purchaseCallbackId, "purchase_cancel", new Object[] {});
-	}
-
-	public void callbackAlreadyOwned(String sku) {
-		GodotLib.calldeferred(purchaseCallbackId, "purchase_owned", new Object[] { sku });
-	}
-
-	public long getPurchaseCallbackId() {
-		return purchaseCallbackId;
-	}
-
-	public void setPurchaseCallbackId(long purchaseCallbackId) {
-		this.purchaseCallbackId = purchaseCallbackId;
-	}
-
-	public String getPurchaseValidationUrlPrefix() {
-		return this.purchaseValidationUrlPrefix;
-	}
-
-	public void setPurchaseValidationUrlPrefix(String url) {
-		this.purchaseValidationUrlPrefix = url;
-	}
-
-	public String getAccessToken() {
-		return accessToken;
-	}
-
-	public void setAccessToken(String accessToken) {
-		this.accessToken = accessToken;
-	}
-
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-	}
-
-	public String getTransactionId() {
-		return this.transactionId;
-	}
-
-	// request purchased items are not consumed
-	public void requestPurchased() {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				mPaymentManager.requestPurchased();
-			}
-		});
-	}
-
-	// callback for requestPurchased()
-	public void callbackPurchased(String receipt, String signature, String sku) {
-		GodotLib.calldeferred(purchaseCallbackId, "has_purchased", new Object[] { receipt, signature, sku });
-	}
-
-	public void callbackDisconnected() {
-		GodotLib.calldeferred(purchaseCallbackId, "iap_disconnected", new Object[] {});
-	}
-
-	public void callbackConnected() {
-		GodotLib.calldeferred(purchaseCallbackId, "iap_connected", new Object[] {});
-	}
-
-	// true if connected, false otherwise
-	public boolean isConnected() {
-		return mPaymentManager.isConnected();
-	}
-
-	// consume item automatically after purchase. default is true.
-	public void setAutoConsume(boolean autoConsume) {
-		mPaymentManager.setAutoConsume(autoConsume);
-	}
-
-	// consume a specific item
-	public void consume(String sku) {
-		mPaymentManager.consume(sku);
-	}
-
-	// query in app item detail info
-	public void querySkuDetails(String[] list) {
-		List<String> nKeys = Arrays.asList(list);
-		List<String> cKeys = Arrays.asList(mSkuDetails.get_keys());
-		ArrayList<String> fKeys = new ArrayList<String>();
-		for (String key : nKeys) {
-			if (!cKeys.contains(key)) {
-				fKeys.add(key);
-			}
-		}
-		if (fKeys.size() > 0) {
-			mPaymentManager.querySkuDetails(fKeys.toArray(new String[0]));
+		Dictionary returnValue = new Dictionary();
+		if (result.getBillingResult().getResponseCode() == BillingClient.BillingResponseCode.OK) {
+			returnValue.put("status", 0); // OK = 0
+			returnValue.put("purchases", GodotPaymentUtils.convertPurchaseListToDictionaryObjectArray(result.getPurchasesList()));
 		} else {
-			completeSkuDetail();
+			returnValue.put("status", 1); // FAILED = 1
+			returnValue.put("response_code", result.getBillingResult().getResponseCode());
+			returnValue.put("debug_message", result.getBillingResult().getDebugMessage());
+		}
+
+		return returnValue;
+	}
+
+	public void querySkuDetails(final String[] list, String type) {
+		List<String> skuList = Arrays.asList(list);
+
+		SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder()
+												  .setSkusList(skuList)
+												  .setType(type);
+
+		billingClient.querySkuDetailsAsync(params.build(), new SkuDetailsResponseListener() {
+			@Override
+			public void onSkuDetailsResponse(BillingResult billingResult,
+					List<SkuDetails> skuDetailsList) {
+				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+					for (SkuDetails skuDetails : skuDetailsList) {
+						skuDetailsCache.put(skuDetails.getSku(), skuDetails);
+					}
+					emitSignal("sku_details_query_completed", (Object)GodotPaymentUtils.convertSkuDetailsListToDictionaryObjectArray(skuDetailsList));
+				} else {
+					emitSignal("sku_details_query_error", billingResult.getResponseCode(), billingResult.getDebugMessage(), list);
+				}
+			}
+		});
+	}
+
+	public void acknowledgePurchase(final String purchaseToken) {
+		AcknowledgePurchaseParams acknowledgePurchaseParams =
+				AcknowledgePurchaseParams.newBuilder()
+						.setPurchaseToken(purchaseToken)
+						.build();
+		billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
+			@Override
+			public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
+				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+					emitSignal("purchase_acknowledged", purchaseToken);
+				} else {
+					emitSignal("purchase_acknowledgement_error", billingResult.getResponseCode(), billingResult.getDebugMessage(), purchaseToken);
+				}
+			}
+		});
+	}
+
+	public void consumePurchase(String purchaseToken) {
+		ConsumeParams consumeParams = ConsumeParams.newBuilder()
+											  .setPurchaseToken(purchaseToken)
+											  .build();
+
+		billingClient.consumeAsync(consumeParams, new ConsumeResponseListener() {
+			@Override
+			public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
+				if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+					emitSignal("purchase_consumed", purchaseToken);
+				} else {
+					emitSignal("purchase_consumption_error", billingResult.getResponseCode(), billingResult.getDebugMessage(), purchaseToken);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onBillingSetupFinished(BillingResult billingResult) {
+		if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+			emitSignal("connected");
+		} else {
+			emitSignal("connect_error", billingResult.getResponseCode(), billingResult.getDebugMessage());
 		}
 	}
 
-	public void addSkuDetail(String itemJson) {
-		JSONObject o = null;
-		try {
-			o = new JSONObject(itemJson);
-			Dictionary item = new Dictionary();
-			item.put("type", o.optString("type"));
-			item.put("product_id", o.optString("productId"));
-			item.put("title", o.optString("title"));
-			item.put("description", o.optString("description"));
-			item.put("price", o.optString("price"));
-			item.put("price_currency_code", o.optString("price_currency_code"));
-			item.put("price_amount", 0.000001d * o.optLong("price_amount_micros"));
-			mSkuDetails.put(item.get("product_id").toString(), item);
-		} catch (JSONException e) {
-			e.printStackTrace();
+	@Override
+	public void onBillingServiceDisconnected() {
+		emitSignal("disconnected");
+	}
+
+	public Dictionary purchase(String sku) {
+		if (!skuDetailsCache.containsKey(sku)) {
+			emitSignal("purchase_error", null, "You must query the sku details and wait for the result before purchasing!");
 		}
+
+		SkuDetails skuDetails = skuDetailsCache.get(sku);
+		BillingFlowParams purchaseParams = BillingFlowParams.newBuilder()
+												   .setSkuDetails(skuDetails)
+												   .build();
+
+		BillingResult result = billingClient.launchBillingFlow(getGodot(), purchaseParams);
+
+		Dictionary returnValue = new Dictionary();
+		if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+			returnValue.put("status", 0); // OK = 0
+		} else {
+			returnValue.put("status", 1); // FAILED = 1
+			returnValue.put("response_code", result.getResponseCode());
+			returnValue.put("debug_message", result.getDebugMessage());
+		}
+
+		return returnValue;
 	}
 
-	public void completeSkuDetail() {
-		GodotLib.calldeferred(purchaseCallbackId, "sku_details_complete", new Object[] { mSkuDetails });
-	}
-
-	public void errorSkuDetail(String errorMessage) {
-		GodotLib.calldeferred(purchaseCallbackId, "sku_details_error", new Object[] { errorMessage });
+	@Override
+	public void onPurchasesUpdated(final BillingResult billingResult, @Nullable final List<Purchase> list) {
+		if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null) {
+			emitSignal("purchases_updated", (Object)GodotPaymentUtils.convertPurchaseListToDictionaryObjectArray(list));
+		} else {
+			emitSignal("purchase_error", billingResult.getResponseCode(), billingResult.getDebugMessage());
+		}
 	}
 
 	@NonNull
@@ -251,8 +215,26 @@ public class GodotPayment extends GodotPlugin {
 	@NonNull
 	@Override
 	public List<String> getPluginMethods() {
-		return Arrays.asList("purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix",
-				"setTransactionId", "getSignature", "consumeUnconsumedPurchases", "requestPurchased",
-				"setAutoConsume", "consume", "querySkuDetails", "isConnected");
+		return Arrays.asList("startConnection", "endConnection", "purchase", "querySkuDetails", "isReady", "queryPurchases", "acknowledgePurchase");
+	}
+
+	@NonNull
+	@Override
+	public Set<SignalInfo> getPluginSignals() {
+		Set<SignalInfo> signals = new ArraySet<>();
+
+		signals.add(new SignalInfo("connected"));
+		signals.add(new SignalInfo("disconnected"));
+		signals.add(new SignalInfo("connect_error", Integer.class, String.class));
+		signals.add(new SignalInfo("purchases_updated", Object[].class));
+		signals.add(new SignalInfo("purchase_error", Integer.class, String.class));
+		signals.add(new SignalInfo("sku_details_query_completed", Object[].class));
+		signals.add(new SignalInfo("sku_details_query_error", Integer.class, String.class, String[].class));
+		signals.add(new SignalInfo("purchase_acknowledged", String.class));
+		signals.add(new SignalInfo("purchase_acknowledgement_error", Integer.class, String.class, String.class));
+		signals.add(new SignalInfo("purchase_consumed", String.class));
+		signals.add(new SignalInfo("purchase_consumption_error", Integer.class, String.class, String.class));
+
+		return signals;
 	}
 }
