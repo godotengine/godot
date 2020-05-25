@@ -70,14 +70,14 @@ Error AudioDriverJavaScript::init() {
 	/* clang-format off */
 	_driver_id = EM_ASM_INT({
 		const MIX_RATE = $0;
-		const LATENCY = $1;
+		const LATENCY = $1 / 1000;
 		return Module.IDHandler.add({
 			'context': new (window.AudioContext || window.webkitAudioContext)({ sampleRate: MIX_RATE, latencyHint: LATENCY}),
 			'input': null,
 			'stream': null,
 			'script': null
 		});
-	});
+	}, mix_rate, latency);
 	/* clang-format on */
 
 	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
