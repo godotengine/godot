@@ -76,7 +76,7 @@ Error AudioDriverJavaScript::init() {
 	/* clang-format off */
 	EM_ASM({
 		const MIX_RATE = $0;
-		const LATENCY = $1;
+		const LATENCY = $1 / 1000;
 		_audioDriver_audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: MIX_RATE, latencyHint: LATENCY});
 		_audioDriver_audioInput = null;
 		_audioDriver_inputStream = null;
