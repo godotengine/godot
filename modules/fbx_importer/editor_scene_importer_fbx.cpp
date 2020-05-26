@@ -304,16 +304,9 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 	bool no_material_found = material_indices.size() == 0;
 
 	if (no_material_found) {
-		print_error("no material is configured for mesh...");
-	} else {
-		for (size_t x = 0; x < material_indices.size(); x++) {
-			// so this array is by vertex
-			print_verbose("material index: " + itos(material_indices[x]) + "indices idx: " + itos(x));
-			// x is the vertex id
-			// material id is the surface id
-		}
+		print_error("no material is configured for mesh " + FBXNodeToName(model->Name()));
 	}
-
+	
 	std::vector<Vector3> vertices = mesh_geometry->GetVertices();
 	AssimpUtils::AlignMeshAxes(vertices);
 	std::vector<uint32_t> face_vertex_counts = mesh_geometry->GetFaceIndexCounts();
@@ -1481,7 +1474,6 @@ void EditorSceneImporterFBX::create_mesh_data_skin(ImportState &state, const Ref
 			}
 		}
 		state.MeshSkins[mesh_id] = skin;
-		//print_verbose("[doc] configured skin for " + itos(mesh_id));
 	}
 }
 
