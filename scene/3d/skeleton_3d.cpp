@@ -67,6 +67,8 @@ SkinReference::~SkinReference() {
 	RS::get_singleton()->free(skeleton);
 }
 
+///////////////////////////////////////
+
 bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -853,6 +855,15 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 	return skin_ref;
 }
 
+// helper functions
+Transform Skeleton3D::bone_transform_to_world_transform(Transform p_bone_transform) {
+	return get_global_transform() * p_bone_transform;
+}
+
+Transform Skeleton3D::world_transform_to_bone_transform(Transform p_world_transform) {
+	return get_global_transform().affine_inverse() * p_world_transform;
+}
+
 void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_process_orders"), &Skeleton3D::get_bone_process_orders);
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton3D::add_bone);
@@ -891,6 +902,9 @@ void Skeleton3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_custom_pose", "bone_idx"), &Skeleton3D::get_bone_custom_pose);
 	ClassDB::bind_method(D_METHOD("set_bone_custom_pose", "bone_idx", "custom_pose"), &Skeleton3D::set_bone_custom_pose);
+
+	ClassDB::bind_method(D_METHOD("bone_transform_to_world_transform", "bone_transform"), &Skeleton3D::bone_transform_to_world_transform);
+	ClassDB::bind_method(D_METHOD("world_transform_to_bone_transform", "world_transform"), &Skeleton3D::world_transform_to_bone_transform);
 
 #ifndef _3D_DISABLED
 
