@@ -47,15 +47,17 @@ Quat AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder mode, const Vec
 		rotation.z = 0;
 	}
 
-	// // we want to convert from rot order to ZXY
+	print_verbose("[euler->quat] rotation input: " + rotation);
+	if(rotation.x == 0 && rotation.y == 0 && rotation.z == 0)
+	{
+		return Quat();
+	}
+
+	// we want to convert from rot order to ZXY
 	const Quat x = Quat(Vector3(Math::deg2rad(rotation.x), 0, 0));
 	const Quat y = Quat(Vector3(0, Math::deg2rad(rotation.y), 0));
 	const Quat z = Quat(Vector3(0, 0, Math::deg2rad(rotation.z)));
 
-	//return Quat(Vector3(Math::deg2rad(rotation.x), Math::deg2rad(rotation.y), Math::deg2rad(rotation.z));
-	//		if (Math::is_equal_approx(0, rotation.x) && Math::is_equal_approx(0, rotation.y) && Math::is_equal_approx(0, rotation.z)) {
-	//			return Quat();
-	//		}
 
 	Quat result;
 	// So we can theoretically convert calls
@@ -93,7 +95,7 @@ Quat AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder mode, const Vec
 			break;
 	}
 	//print_verbose("euler input data:" + rotation);
-	//print_verbose("euler to quaternion: " + (result.get_euler_xyz() * (180 / Math_PI)));
+	print_verbose("euler to quaternion: " + (result.get_euler() * (180 / Math_PI)));
 
 	return result;
 }

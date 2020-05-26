@@ -306,7 +306,7 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 	if (no_material_found) {
 		print_error("no material is configured for mesh " + FBXNodeToName(model->Name()));
 	}
-	
+
 	std::vector<Vector3> vertices = mesh_geometry->GetVertices();
 	AssimpUtils::AlignMeshAxes(vertices);
 	std::vector<uint32_t> face_vertex_counts = mesh_geometry->GetFaceIndexCounts();
@@ -1728,6 +1728,7 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 
 		// model is the current node
 		if (nullptr != model) {
+			print_verbose("begin node resolution...");
 			uint64_t current_node_id = model->ID();
 
 			Ref<FBXNode> new_node;
@@ -1737,6 +1738,9 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 
 			Ref<PivotTransform> fbx_transform;
 			fbx_transform.instance();
+			if(parent_node.is_valid()) {
+				print_verbose("parent name: " + parent_node->node_name);
+			}
 			fbx_transform->set_parent(parent_transform);
 			fbx_transform->set_model(model);
 			fbx_transform->debug_pivot_xform("name: " + new_node->node_name);
@@ -1772,7 +1776,7 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 
 			// print node name
 			print_verbose("[doc] new node " + new_node->node_name);
-
+			print_verbose("----------------------------------------------------");
 			// sub branches
 			BuildDocumentNodes(new_node->pivot_transform, state, p_doc, current_node_id, new_node);
 		}

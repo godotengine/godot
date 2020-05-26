@@ -126,11 +126,12 @@ void PivotTransform::ComputePivotTransform() {
 	}
 
 	Transform local_rotation_m, parent_global_rotation_m;
-	Quat parent_global_rotation = parent_global_xform.basis.get_rotation_quat();
-	parent_global_rotation_m.basis.set_quat(parent_global_rotation);
+	AssimpUtils::debug_xform("parent global xform", parent_global_xform);
+	Basis parent_basis = parent_global_xform.get_basis();
+	parent_basis = parent_basis.orthonormalized();
+	Vector3 parent_global_rotation = parent_basis.get_euler();
+	parent_global_rotation_m.basis.set_euler(parent_global_rotation);
 	local_rotation_m = Rpre * R * Rpost;
-
-	//Basis parent_global_rotation = Basis(parent_global_xform.get_basis().get_rotation_quat().normalized());
 
 	Transform local_shear_scaling, parent_shear_scaling, parent_shear_rotation, parent_shear_translation;
 	Vector3 parent_translation = parent_global_xform.get_origin();
@@ -156,7 +157,6 @@ void PivotTransform::ComputePivotTransform() {
 	Vector3 global_translation_pivoted = parent_global_xform.xform(local_translation_pivoted);
 	GlobalTransform = Transform();
 	GlobalTransform.origin = global_translation_pivoted;
-
 	GlobalTransform = GlobalTransform * global_rotation_scale;
 
 	AssimpUtils::debug_xform("local xform calculation", LocalTransform);
