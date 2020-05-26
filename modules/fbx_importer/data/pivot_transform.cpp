@@ -125,6 +125,7 @@ void PivotTransform::ComputePivotTransform() {
 		parent_local_scaling_m = parent_transform->Local_Scaling_Matrix;
 	}
 
+	// rotation - inherit type shearing handler (pre-rotation, post-rotation handler)
 	Transform local_rotation_m, parent_global_rotation_m;
 	AssimpUtils::debug_xform("parent global xform", parent_global_xform);
 	Basis parent_basis = parent_global_xform.get_basis();
@@ -133,6 +134,7 @@ void PivotTransform::ComputePivotTransform() {
 	parent_global_rotation_m.basis.set_euler(parent_global_rotation);
 	local_rotation_m = Rpre * R * Rpost;
 
+	// translation / scaling - Inherit type shearing handler
 	Transform local_shear_scaling, parent_shear_scaling, parent_shear_rotation, parent_shear_translation;
 	Vector3 parent_translation = parent_global_xform.get_origin();
 	parent_shear_translation.origin = parent_translation;
@@ -151,6 +153,7 @@ void PivotTransform::ComputePivotTransform() {
 		global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_global_shear_m_noLocal * local_shear_scaling;
 	}
 
+	// Local xform data - pivoted
 	LocalTransform = T * Roff * Rp * Rpre * R * Rpost.inverse() * Rp.inverse() * Soff * Sp * S * Sp.inverse();
 
 	Vector3 local_translation_pivoted = LocalTransform.origin;
