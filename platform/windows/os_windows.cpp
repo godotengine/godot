@@ -3508,6 +3508,9 @@ String OS_Windows::get_current_tablet_driver() const {
 }
 
 void OS_Windows::set_current_tablet_driver(const String &p_driver) {
+	if (get_tablet_driver_count() == 0) {
+		return;
+	}
 	bool found = false;
 	for (int i = 0; i < get_tablet_driver_count(); i++) {
 		if (p_driver == get_tablet_driver_name(i)) {
