@@ -5490,6 +5490,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
 	pan_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PAN));
+	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), KEY_G));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
 	ruler_button = memnew(ToolButton);
