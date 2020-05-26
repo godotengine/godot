@@ -519,6 +519,34 @@
               ]
             },
             {
+              "name": "godot_packed_int64_array_ptr",
+              "return_type": "const int64_t *",
+              "arguments": [
+                ["const godot_packed_int64_array *", "p_self"]
+              ]
+            },
+            {
+              "name": "godot_packed_int64_array_ptrw",
+              "return_type": "int64_t *",
+              "arguments": [
+                ["godot_packed_int64_array *", "p_self"]
+              ]
+            },
+            {
+              "name": "godot_packed_float64_array_ptr",
+              "return_type": "const double *",
+              "arguments": [
+                ["const godot_packed_float64_array *", "p_self"]
+              ]
+            },
+            {
+              "name": "godot_packed_float64_array_ptrw",
+              "return_type": "double *",
+              "arguments": [
+                ["godot_packed_float64_array *", "p_self"]
+              ]
+            },
+            {
               "name": "godot_rect2_as_rect2i",
               "return_type": "godot_rect2i",
               "arguments": [
@@ -2854,6 +2882,20 @@
         ]
       },
       {
+        "name": "godot_packed_byte_array_ptr",
+        "return_type": "const uint8_t *",
+        "arguments": [
+          ["const godot_packed_byte_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_byte_array_ptrw",
+        "return_type": "uint8_t *",
+        "arguments": [
+          ["godot_packed_byte_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_byte_array_set",
         "return_type": "void",
         "arguments": [
@@ -2961,6 +3003,20 @@
         "arguments": [
           ["godot_packed_int32_array *", "p_self"],
           ["const godot_int", "p_size"]
+        ]
+      },
+      {
+        "name": "godot_packed_int32_array_ptr",
+        "return_type": "const int32_t *",
+        "arguments": [
+          ["const godot_packed_int32_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_int32_array_ptrw",
+        "return_type": "int32_t *",
+        "arguments": [
+          ["godot_packed_int32_array *", "p_self"]
         ]
       },
       {
@@ -3074,6 +3130,20 @@
         ]
       },
       {
+        "name": "godot_packed_float32_array_ptr",
+        "return_type": "const float *",
+        "arguments": [
+          ["const godot_packed_float32_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_float32_array_ptrw",
+        "return_type": "float *",
+        "arguments": [
+          ["godot_packed_float32_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_float32_array_set",
         "return_type": "void",
         "arguments": [
@@ -3181,6 +3251,20 @@
         "arguments": [
           ["godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_size"]
+        ]
+      },
+      {
+        "name": "godot_packed_string_array_ptr",
+        "return_type": "const godot_string *",
+        "arguments": [
+          ["const godot_packed_string_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_string_array_ptrw",
+        "return_type": "godot_string *",
+        "arguments": [
+          ["godot_packed_string_array *", "p_self"]
         ]
       },
       {
@@ -3294,6 +3378,20 @@
         ]
       },
       {
+        "name": "godot_packed_vector2_array_ptr",
+        "return_type": "const godot_vector2 *",
+        "arguments": [
+          ["const godot_packed_vector2_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2_array_ptrw",
+        "return_type": "godot_vector2 *",
+        "arguments": [
+          ["godot_packed_vector2_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_vector2_array_set",
         "return_type": "void",
         "arguments": [
@@ -3404,6 +3502,20 @@
         ]
       },
       {
+        "name": "godot_packed_vector3_array_ptr",
+        "return_type": "const godot_vector3 *",
+        "arguments": [
+          ["const godot_packed_vector3_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector3_array_ptrw",
+        "return_type": "godot_vector3 *",
+        "arguments": [
+          ["godot_packed_vector3_array *", "p_self"]
+        ]
+      },
+      {
         "name": "godot_packed_vector3_array_set",
         "return_type": "void",
         "arguments": [
@@ -3511,6 +3623,20 @@
         "arguments": [
           ["godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_size"]
+        ]
+      },    
+      {
+        "name": "godot_packed_color_array_ptr",
+        "return_type": "const godot_color *",
+        "arguments": [
+          ["const godot_packed_color_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_color_array_ptrw",
+        "return_type": "godot_color *",
+        "arguments": [
+          ["godot_packed_color_array *", "p_self"]
         ]
       },
       {
