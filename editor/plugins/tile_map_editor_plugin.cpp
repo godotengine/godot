@@ -1951,7 +1951,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar->add_child(paint_button);
 
 	bucket_fill_button = memnew(ToolButton);
-	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_G));
+	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_B));
 	bucket_fill_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_BUCKET));
 	bucket_fill_button->set_toggle_mode(true);
 	toolbar->add_child(bucket_fill_button);
