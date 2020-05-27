@@ -1557,6 +1557,17 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 
+		case FILE_OPEN_IN_SHELL: {
+			// Open the file/folder in the OS Shell.
+			String fpath = path;
+			if (path == "Favorites") {
+				fpath = p_selected[0];
+			}
+
+			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
+			OS::get_singleton()->shell_open(String("file://") + dir);
+		} break;
+
 		case FILE_OPEN: {
 			// Open folders.
 			TreeItem *selected = tree->get_root();
@@ -2242,6 +2253,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		String fpath = p_paths[0];
 		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		p_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), item_text, FILE_SHOW_IN_EXPLORER);
+		if (!shell_ignored_extensions.find(fpath.get_extension())) {
+			p_popup->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open With Default Program"), FILE_OPEN_IN_SHELL);
+		}
 	}
 }
 
@@ -2736,6 +2750,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	always_show_folders = false;
+
+	shell_ignored_extensions.push_back("scn");
+	shell_ignored_extensions.push_back("tscn");
+	shell_ignored_extensions.push_back("res");
+	shell_ignored_extensions.push_back("tres");
+	shell_ignored_extensions.push_back("stex");
+	shell_ignored_extensions.push_back("material");
+	shell_ignored_extensions.push_back("shader");
+	shell_ignored_extensions.push_back("anim");
+	shell_ignored_extensions.push_back("vs");
+	shell_ignored_extensions.push_back("gd");
 }
 
 FileSystemDock::~FileSystemDock() {
