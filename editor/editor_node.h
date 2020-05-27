@@ -685,6 +685,8 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
+	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
+
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
 	void set_docks_visible(bool p_show);
