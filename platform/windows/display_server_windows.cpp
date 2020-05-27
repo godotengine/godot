@@ -525,6 +525,24 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		wintab_WTClose(windows[p_window].wtctx);
 		windows[p_window].wtctx = 0;
 	}
+
+	// we only want this to happen if we close an active/focused window
+	if (GetActiveWindow() == windows[p_window].hWnd) {
+		Map<WindowID, WindowData>::Element *E = windows.back();
+		if (E->key() == p_window) {
+			E = E->prev();
+		}
+
+		WindowID next_active = E->key();
+
+		if (next_active != INVALID_WINDOW_ID) {
+			// we do this before DestroyWindow to prevent the OS to automatically activate another Window
+			SetActiveWindow(windows[next_active].hWnd);
+		} else {
+			WARN_PRINT("No top window found.");
+		}
+	}
+
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
 }
