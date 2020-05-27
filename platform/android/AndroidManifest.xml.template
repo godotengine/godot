@@ -10,7 +10,7 @@
                       android:largeScreens="true"
                       android:xlargeScreens="true"/>
 
-    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
+    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" android:requestLegacyExternalStorage="true" $$ADD_APPATTRIBUTE_CHUNKS$$ >
         <activity android:name="org.godotengine.godot.Godot"
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
