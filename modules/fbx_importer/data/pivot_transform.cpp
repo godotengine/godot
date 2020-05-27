@@ -162,7 +162,7 @@ void PivotTransform::ComputePivotTransform() {
 	GlobalTransform = global_translation_pivoted * global_rotation_scale;
 
 	AssimpUtils::debug_xform("local xform calculation", LocalTransform);
-	print_verbose("scale of node: " + S.basis.get_scale_local());
+	print_verbose("scale of node: " + S.basis.get_scale() + " global scale: " + GlobalTransform.get_basis().get_scale());
 	print_verbose("---------------------------------------------------------------");
 }
 void PivotTransform::Execute() {
