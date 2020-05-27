@@ -200,6 +200,7 @@ public:
 
 	void localize_rests(); // used for loaders and tools
 	int get_process_order(int p_idx);
+	Vector<int> get_bone_process_orders();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
