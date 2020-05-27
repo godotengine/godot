@@ -114,8 +114,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 	String signal_name = jstring_to_string(j_signal_name, env);
 
 	int count = env->GetArrayLength(j_signal_params);
-	Variant variant_params[count];
-	const Variant *args[count];
+	ERR_FAIL_COND_MSG(count > VARIANT_ARG_MAX, "Maximum argument count exceeded!");
+
+	Variant variant_params[VARIANT_ARG_MAX];
+	const Variant *args[VARIANT_ARG_MAX];
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
