@@ -156,11 +156,10 @@ void PivotTransform::ComputePivotTransform() {
 	// Local xform data - pivoted
 	LocalTransform = T * Roff * Rp * Rpre * R * Rpost.inverse() * Rp.inverse() * Soff * Sp * S * Sp.inverse();
 
-	Vector3 local_translation_pivoted = LocalTransform.origin;
-	Vector3 global_translation_pivoted = parent_global_xform.xform(local_translation_pivoted);
+	Transform local_translation = Transform(Basis(), LocalTransform.origin);
+	Transform global_translation_pivoted = parent_global_xform * local_translation;
 	GlobalTransform = Transform();
-	GlobalTransform.origin = global_translation_pivoted;
-	GlobalTransform = GlobalTransform * global_rotation_scale;
+	GlobalTransform = global_translation_pivoted * global_rotation_scale;
 
 	AssimpUtils::debug_xform("local xform calculation", LocalTransform);
 	print_verbose("scale of node: " + S.basis.get_scale_local());
