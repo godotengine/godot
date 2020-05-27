@@ -56,6 +56,8 @@ class BodyPair2DSW : public Constraint2DSW {
 		Vector2 position;
 		Vector2 normal;
 		Vector2 local_A, local_B;
+		Vector2 acc_impulse_A; // accumulated impulse vector applied to body A
+		Vector2 acc_impulse_B; // accumulated impulse vector applieb to body B
 		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
 		real_t acc_tangent_impulse; // accumulated tangent impulse (Pt)
 		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
