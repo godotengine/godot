@@ -72,17 +72,12 @@ ext.getGodotPluginsRemoteBinaries = { ->
 /**
  * Parse the project properties for the 'plugins_local_binaries' property and return
  * their binaries for inclusion in the build dependencies.
- *
- * Returns the prebuilt plugins if the 'plugins_local_binaries' property is unavailable.
  */
 ext.getGodotPluginsLocalBinaries = { ->
-    // Set the prebuilt plugins as default. If custom build is enabled,
-    // the 'plugins_local_binaries' will be defined so we can use it instead.
-    Set<String> binDeps = ["libs/plugins/GodotPayment.release.aar"]
+    Set<String> binDeps = []
 
     // Retrieve the list of local plugins binaries.
     if (project.hasProperty("plugins_local_binaries")) {
-        binDeps.clear()
         String pluginsList = project.property("plugins_local_binaries")
         if (pluginsList != null && !pluginsList.trim().isEmpty()) {
             for (String plugin : pluginsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
