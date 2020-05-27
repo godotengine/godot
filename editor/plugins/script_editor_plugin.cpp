@@ -1731,6 +1731,19 @@ void ScriptEditor::_update_script_names() {
 			sedata.push_back(sd);
 		}
 
+		Vector<String> disambiguated_script_names;
+		Vector<String> full_script_paths;
+		for (int j = 0; j < sedata.size(); j++) {
+			disambiguated_script_names.append(sedata[j].name);
+			full_script_paths.append(sedata[j].tooltip);
+		}
+
+		EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
+
+		for (int j = 0; j < sedata.size(); j++) {
+			sedata.write[j].name = disambiguated_script_names[j];
+		}
+
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
 		if (eh) {
 			String name = eh->get_class();
