@@ -93,7 +93,7 @@ private:
 	Vector3 spOv_gravityVec = Vector3(0, -1, 0);
 	real_t spOv_gravityMag = 10;
 	real_t spOv_linearDump = 0.1;
-	real_t spOv_angularDump = 1;
+	real_t spOv_angularDump = 0.1;
 	int spOv_priority = 0;
 
 	bool isScratched = false;
