@@ -38,6 +38,11 @@ void PivotTransform::ReadTransformChain() {
 	inherit_type = inheritType; // copy the inherit type we need it in the second step.
 	print_verbose("Model: " + String(fbx_model->Name().c_str()) + " Has inherit type: " + itos(fbx_model->InheritType()));
 	bool ok = false;
+	pre_rotation = Quat();
+	post_rotation = Quat();
+	rotation = Quat();
+	geometric_rotation = Quat();
+
 	raw_pre_rotation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "PreRotation", ok));
 	if (ok) {
 		pre_rotation = AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder_EulerXYZ, raw_pre_rotation);
@@ -72,10 +77,20 @@ void PivotTransform::ReadTransformChain() {
 	if (ok) {
 		rotation = AssimpUtils::EulerToQuaternion(rot, raw_rotation);
 	}
+	else
+	{
+		rotation = Quat();
+	}
+
 	const Vector3 &Scaling = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Scaling", ok));
 	if (ok) {
 		scaling = Scaling;
 	}
+	else
+	{
+		scaling = Vector3(1,1,1);
+	}
+
 	const Vector3 &GeometricScaling = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricScaling", ok));
 	if (ok) {
 		geometric_scaling = GeometricScaling;
@@ -125,44 +140,58 @@ void PivotTransform::ComputePivotTransform() {
 		parent_local_scaling_m = parent_transform->Local_Scaling_Matrix;
 	}
 
-	// rotation - inherit type shearing handler (pre-rotation, post-rotation handler)
-	Transform local_rotation_m, parent_global_rotation_m;
-	AssimpUtils::debug_xform("parent global xform", parent_global_xform);
-	Basis parent_basis = parent_global_xform.get_basis();
-	parent_basis = parent_basis.orthonormalized();
-	Vector3 parent_global_rotation = parent_basis.get_euler();
-	parent_global_rotation_m.basis.set_euler(parent_global_rotation);
-	local_rotation_m = Rpre * R * Rpost;
+	if(inherit_type == Assimp::FBX::Transform_RSrs)	{
+		// Local xform data - pivoted
+		LocalTransform = T * Roff * Rp * Rpre * R * Rpost.inverse() * Rp.inverse() * Soff * Sp * S * Sp.inverse();
 
-	// translation / scaling - Inherit type shearing handler
-	Transform local_shear_scaling, parent_shear_scaling, parent_shear_rotation, parent_shear_translation;
-	Vector3 parent_translation = parent_global_xform.get_origin();
-	parent_shear_translation.origin = parent_translation;
-	parent_shear_rotation = parent_shear_translation.inverse() * parent_global_xform;
-	parent_shear_scaling = parent_global_rotation_m.inverse() * parent_shear_rotation;
-	local_shear_scaling = S;
+		Transform local_translation = Transform(Basis(), LocalTransform.origin);
+		Transform global_translation_pivoted = parent_global_xform * LocalTransform;
+		GlobalTransform = Transform();
+		GlobalTransform = global_translation_pivoted;
+		AssimpUtils::debug_xform("a) local translation" ,local_translation);
+		AssimpUtils::debug_xform("b) parent_global_xform" , parent_global_xform);
+		AssimpUtils::debug_xform("b&c) global_translation_pivoted", global_translation_pivoted);
+		AssimpUtils::debug_xform("result GlobalTransform", GlobalTransform);
+	} else {
+		// rotation - inherit type shearing handler (pre-rotation, post-rotation handler)
+		Transform local_rotation_m, parent_global_rotation_m;
+		AssimpUtils::debug_xform("parent global xform", parent_global_xform);
+		Quat parent_global_rotation = parent_global_xform.basis.get_rotation_quat();
+		parent_global_rotation_m.basis.set_quat(parent_global_rotation);
+		local_rotation_m = Rpre * R * Rpost;
 
-	// Inherit type handler - we don't care about T here, just reordering RSrs etc.
-	Transform global_rotation_scale;
-	if (inherit_type == Assimp::FBX::Transform_RrSs) {
-		global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_shear_scaling * local_shear_scaling;
-	} else if (inherit_type == Assimp::FBX::Transform_RSrs) {
-		global_rotation_scale = parent_global_rotation_m * parent_shear_scaling * local_rotation_m * local_shear_scaling;
-	} else if (inherit_type == Assimp::FBX::Transform_Rrs) {
-		Transform parent_global_shear_m_noLocal = parent_shear_scaling * parent_local_scaling_m.inverse();
-		global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_global_shear_m_noLocal * local_shear_scaling;
+		// translation / scaling - Inherit type shearing handler
+		Transform local_shear_scaling, parent_shear_scaling, parent_shear_rotation, parent_shear_translation;
+		Vector3 parent_translation = parent_global_xform.get_origin();
+		parent_shear_translation.origin = parent_translation;
+		parent_shear_rotation = parent_shear_translation.inverse() * parent_global_xform;
+		parent_shear_scaling = parent_global_rotation_m.inverse() * parent_shear_rotation;
+		local_shear_scaling = S;
+
+		// Inherit type handler - we don't care about T here, just reordering RSrs etc.
+		Transform global_rotation_scale;
+		if (inherit_type == Assimp::FBX::Transform_RrSs) {
+			global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_shear_scaling * local_shear_scaling;
+		} else if (inherit_type == Assimp::FBX::Transform_Rrs) {
+			Transform parent_global_shear_m_noLocal = parent_shear_scaling * parent_local_scaling_m.inverse();
+			global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_global_shear_m_noLocal * local_shear_scaling;
+		}
+
+		// Local xform data - pivoted
+		LocalTransform = T * Roff * Rp * Rpre * R * Rpost.inverse() * Rp.inverse() * Soff * Sp * S * Sp.inverse();
+
+		Transform local_translation = Transform(Basis(), LocalTransform.origin);
+		Transform global_translation_pivoted = parent_global_xform * local_translation;
+		GlobalTransform = Transform();
+		GlobalTransform = global_translation_pivoted * global_rotation_scale;
+
+		AssimpUtils::debug_xform("a) local translation" ,local_translation);
+		AssimpUtils::debug_xform("b) parent_global_xform" , parent_global_xform);
+		AssimpUtils::debug_xform("b&c) global_translation_pivoted", global_translation_pivoted);
+		AssimpUtils::debug_xform("c) global_rotation_scale", global_rotation_scale);
+		AssimpUtils::debug_xform("result GlobalTransform", GlobalTransform);
 	}
 
-	// Local xform data - pivoted
-	LocalTransform = T * Roff * Rp * Rpre * R * Rpost.inverse() * Rp.inverse() * Soff * Sp * S * Sp.inverse();
-
-	Transform local_translation = Transform(Basis(), LocalTransform.origin);
-	Transform global_translation_pivoted = parent_global_xform * local_translation;
-	GlobalTransform = Transform();
-	GlobalTransform = global_translation_pivoted * global_rotation_scale;
-
-	AssimpUtils::debug_xform("local xform calculation", LocalTransform);
-	print_verbose("scale of node: " + S.basis.get_scale() + " global scale: " + GlobalTransform.get_basis().get_scale());
 	print_verbose("---------------------------------------------------------------");
 }
 void PivotTransform::Execute() {

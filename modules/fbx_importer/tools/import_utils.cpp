@@ -47,11 +47,12 @@ Quat AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder mode, const Vec
 		rotation.z = 0;
 	}
 
-	print_verbose("[euler->quat] rotation input: " + rotation);
 	if(rotation.x == 0 && rotation.y == 0 && rotation.z == 0)
 	{
 		return Quat();
 	}
+
+	print_verbose("[euler->quat] rotation input: " + rotation);
 
 	// we want to convert from rot order to ZXY
 	const Quat x = Quat(Vector3(Math::deg2rad(rotation.x), 0, 0));

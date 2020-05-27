@@ -96,7 +96,7 @@ public:
 	static Quat EulerToQuaternion(Assimp::FBX::Model::RotOrder mode, const Vector3 &p_rotation);
 
 	static void debug_xform(String name, const Transform &t) {
-		print_verbose(name + " " + t.origin + " rotation: " + (t.basis.get_euler() * (180 / Math_PI)));
+		print_verbose(name + " " + t.origin + " rotation: " + (t.basis.get_euler() * (180 / Math_PI)) + "| scale " + t.basis.get_scale());
 	}
 
 	static Vector3 safe_import_vector3(const Vector3 &p_vec) {
