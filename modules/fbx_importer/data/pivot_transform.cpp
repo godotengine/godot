@@ -171,9 +171,12 @@ void PivotTransform::ComputePivotTransform() {
 		// Inherit type handler - we don't care about T here, just reordering RSrs etc.
 		Transform global_rotation_scale;
 		if (inherit_type == Assimp::FBX::Transform_RrSs) {
-			global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_shear_scaling * local_shear_scaling;
+			global_rotation_scale = global_rotation_scale * parent_global_rotation_m;
+			global_rotation_scale = global_rotation_scale * local_rotation_m;
+			global_rotation_scale = global_rotation_scale * parent_shear_scaling;
+			global_rotation_scale = global_rotation_scale * local_shear_scaling;
 		} else if (inherit_type == Assimp::FBX::Transform_Rrs) {
-			Transform parent_global_shear_m_noLocal = parent_shear_scaling * parent_local_scaling_m.inverse();
+			Transform parent_global_shear_m_noLocal = parent_shear_scaling * parent_local_scaling_m.affine_inverse();
 			global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_global_shear_m_noLocal * local_shear_scaling;
 		}
 
