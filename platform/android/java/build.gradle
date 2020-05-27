@@ -193,4 +193,6 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/android_source.zip")
     delete("$binDir/godot-lib.debug.aar")
     delete("$binDir/godot-lib.release.aar")
+
+    finalizedBy getTasksByName("clean", true)
 }

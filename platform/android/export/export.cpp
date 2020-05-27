@@ -1900,6 +1900,15 @@ public:
 			}
 		}
 
+		// Ensure that `Use Custom Build` is enabled if a plugin is selected.
+		String enabled_plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
+		bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
+		if (!enabled_plugins_names.empty() && !custom_build_enabled) {
+			valid = false;
+			err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
+			err += "\n";
+		}
+
 		r_error = err;
 		return valid;
 	}
