@@ -630,14 +630,14 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Array, min);
 
 	static void _call_PackedByteArray_get_string_from_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
+		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
 		String s;
-		if (ba->size() > 0) {
-			const uint8_t *r = ba->ptr();
+		if (ba->array.size() > 0) {
+			const uint8_t *r = ba->array.ptr();
 			CharString cs;
-			cs.resize(ba->size() + 1);
-			copymem(cs.ptrw(), r, ba->size());
-			cs[ba->size()] = 0;
+			cs.resize(ba->array.size() + 1);
+			copymem(cs.ptrw(), r, ba->array.size());
+			cs[ba->array.size()] = 0;
 
 			s = cs.get_data();
 		}
@@ -645,11 +645,12 @@ struct _VariantCall {
 	}
 
 	static void _call_PackedByteArray_get_string_from_utf8(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
+		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
+
 		String s;
-		if (ba->size() > 0) {
-			const uint8_t *r = ba->ptr();
-			s.parse_utf8((const char *)r, ba->size());
+		if (ba->array.size() > 0) {
+			const uint8_t *r = ba->array.ptr();
+			s.parse_utf8((const char *)r, ba->array.size());
 		}
 		r_ret = s;
 	}
@@ -675,22 +676,23 @@ struct _VariantCall {
 	}
 
 	static void _call_PackedByteArray_compress(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
+		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
 		PackedByteArray compressed;
-		if (ba->size() > 0) {
-			Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
 
-			compressed.resize(Compression::get_max_compressed_buffer_size(ba->size(), mode));
-			int result = Compression::compress(compressed.ptrw(), ba->ptr(), ba->size(), mode);
+		if (ba->array.size() > 0) {
+			Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
+			compressed.resize(Compression::get_max_compressed_buffer_size(ba->array.size(), mode));
+			int result = Compression::compress(compressed.ptrw(), ba->array.ptr(), ba->array.size(), mode);
 
 			result = result >= 0 ? result : 0;
 			compressed.resize(result);
 		}
+
 		r_ret = compressed;
 	}
 
 	static void _call_PackedByteArray_decompress(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
+		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
 		PackedByteArray decompressed;
 		Compression::Mode mode = (Compression::Mode)(int)(*p_args[1]);
 
@@ -702,7 +704,7 @@ struct _VariantCall {
 		}
 
 		decompressed.resize(buffer_size);
-		int result = Compression::decompress(decompressed.ptrw(), buffer_size, ba->ptr(), ba->size(), mode);
+		int result = Compression::decompress(decompressed.ptrw(), buffer_size, ba->array.ptr(), ba->array.size(), mode);
 
 		result = result >= 0 ? result : 0;
 		decompressed.resize(result);
@@ -711,13 +713,13 @@ struct _VariantCall {
 	}
 
 	static void _call_PackedByteArray_hex_encode(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
-		if (ba->size() == 0) {
+		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
+		if (ba->array.size() == 0) {
 			r_ret = String();
 			return;
 		}
-		const uint8_t *r = ba->ptr();
-		String s = String::hex_encode_buffer(&r[0], ba->size());
+		const uint8_t *r = ba->array.ptr();
+		String s = String::hex_encode_buffer(&r[0], ba->array.size());
 		r_ret = s;
 	}
 
