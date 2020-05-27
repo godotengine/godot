@@ -454,7 +454,8 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		return deviceInfo.reqGlEsVersion;
 	}
 
-	private String[] getCommandLine() {
+	@CallSuper
+	protected String[] getCommandLine() {
 		InputStream is;
 		try {
 			is = getAssets().open("_cl_");
