@@ -4,16 +4,17 @@
     android:versionCode="1"
     android:versionName="1.0">
 
-    <application>
+    <!-- TODO: Remove the 'requestLegacyExternalStorage' attribute when https://github.com/godotengine/godot/issues/38913 is resolved -->
+    <application android:requestLegacyExternalStorage="true">
 
         <service android:name=".GodotDownloaderService" />
 
     </application>
 
     <instrumentation
+        android:name=".GodotInstrumentation"
         android:icon="@mipmap/icon"
         android:label="@string/godot_project_name_string"
-        android:name=".GodotInstrumentation"
         android:targetPackage="org.godotengine.godot" />
 
 </manifest>
