@@ -243,54 +243,181 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 	return "";
 }
 
-static bool _teststr(const String &p_what, const String &p_str) {
-	String what = p_what;
-
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
-		what = what.substr(0, what.length() - 1);
+String ResourceImporterScene::_import_hint_string(ResourceImporterScene::NodeHint p_hint) {
+	switch (p_hint) {
+		case NODE_HINT_NONE:
+			return "";
+		case NODE_HINT_NO_IMPORT:
+			return "noimp";
+		case NODE_HINT_COLLISION:
+			return "col";
+		case NODE_HINT_CONVEX_COLLISION:
+			return "convcol";
+		case NODE_HINT_COLLISION_ONLY:
+			return "colonly";
+		case NODE_HINT_CONVEX_COLLISION_ONLY:
+			return "convcolonly";
+		case NODE_HINT_RIGID:
+			return "rigid";
+		case NODE_HINT_NAVMESH:
+			return "navmesh";
+		case NODE_HINT_VEHICLE:
+			return "vehicle";
+		case NODE_HINT_WHEEL:
+			return "wheel";
+		default:
+			ERR_FAIL_V_MSG(String(), "Node import hint out of range");
 	}
-
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
-		return true;
-	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return true;
-	}
-	return false;
 }
 
-static String _fixstr(const String &p_what, const String &p_str) {
-	String what = p_what;
-
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && ((what[what.length() - 1] >= '0' && what[what.length() - 1] <= '9') || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
-		what = what.substr(0, what.length() - 1);
+String ResourceImporterScene::_import_hint_string(ResourceImporterScene::MaterialHint p_hint) {
+	switch (p_hint) {
+		case MATERIAL_HINT_ALPHA:
+			return "alpha";
+		case MATERIAL_HINT_VERTEX_COLOR:
+			return "vcol";
+		default:
+			ERR_FAIL_V_MSG(String(), "Material import hint out of range");
 	}
-
-	String end = p_what.substr(what.length(), p_what.length() - what.length());
-
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
-		return what.replace("$" + p_str, "") + end;
-	}
-	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
-	}
-	if (what.to_lower().ends_with("_" + p_str)) { //collada only supports "_" and "-" besides letters
-		return what.substr(0, what.length() - (p_str.length() + 1)) + end;
-	}
-	return what;
 }
 
-static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
+ResourceImporterScene::ParsedNode ResourceImporterScene::_get_node_import_hint(String p_name) {
+	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
+	for (int i = p_name.length(); i > 0 && !is_alpha(p_name[i - 1]); --i) {
+		p_name.resize(p_name.size() - 1);
+	}
+
+	for (int enum_index = 1; enum_index < NODE_HINT_LAST; ++enum_index) {
+		NodeHint hint = static_cast<NodeHint>(enum_index);
+		String hint_suffix = '-' + _import_hint_string(hint);
+		if (p_name.ends_with(hint_suffix)) {
+			p_name.erase(p_name.length() - hint_suffix.length(), hint_suffix.length());
+			return { p_name, hint };
+		}
+	}
+	return { p_name, NODE_HINT_NONE };
+}
+
+ResourceImporterScene::ParsedMaterial ResourceImporterScene::_get_material_import_hints(const String &p_name) {
+	Vector<MaterialHint> hints;
+	Vector<String> name_parts = p_name.split("-");
+	for (int enum_index = 1; enum_index < MATERIAL_HINT_LAST; ++enum_index) {
+		MaterialHint hint = static_cast<MaterialHint>(enum_index);
+		int part_index = name_parts.find(_import_hint_string(hint));
+		if (part_index != -1) {
+			hints.append(hint);
+			name_parts.remove(part_index);
+		}
+	}
+
+	String fixed_name;
+	for (int i = 0; i < name_parts.size(); ++i) {
+		fixed_name += name_parts[i];
+		if (i != 0)
+			fixed_name += '-';
+	}
+
+	return { fixed_name, hints };
+}
+
+void ResourceImporterScene::_add_shapes(Node *p_node, List<Ref<Shape3D>> p_shapes, const Transform &p_transform, const String &p_basename) {
+	for (List<Ref<Shape3D>>::Element *E = p_shapes.front(); E; E = E->next()) {
+		CollisionShape3D *cshape = memnew(CollisionShape3D);
+		cshape->set_shape(E->get());
+		cshape->set_transform(p_transform);
+		cshape->set_name(p_basename);
+
+		p_node->add_child(cshape);
+		cshape->set_owner(p_node->get_owner() ? p_node->get_owner() : p_node);
+	}
+}
+
+CollisionShape3D *ResourceImporterScene::_shape_from_empty_meta(Node *p_node) {
+	if (!p_node->has_meta("empty_draw_type")) {
+		return nullptr;
+	}
+
+	const String empty_draw_type = p_node->get_meta("empty_draw_type");
+	CollisionShape3D *colshape = memnew(CollisionShape3D);
+	if (empty_draw_type == "CUBE") {
+		BoxShape3D *box_shape = memnew(BoxShape3D);
+		box_shape->set_size(Vector3(2, 2, 2));
+		colshape->set_shape(box_shape);
+	} else if (empty_draw_type == "SINGLE_ARROW") {
+		RayShape3D *ray_shape = memnew(RayShape3D);
+		ray_shape->set_length(1);
+		colshape->set_shape(ray_shape);
+	} else if (empty_draw_type == "IMAGE") {
+		WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
+		colshape->set_shape(world_margin_shape);
+	} else {
+		SphereShape3D *sphere_shape = memnew(SphereShape3D);
+		sphere_shape->set_radius(1);
+		colshape->set_shape(sphere_shape);
+	}
+
+	return colshape;
+}
+
+void ResourceImporterScene::_fix_materials(MeshInstance3D *p_mesh, LightBakeMode p_light_bake_mode) {
+	Ref<ArrayMesh> array_mesh = p_mesh->get_mesh();
+	if (array_mesh.is_valid()) {
+		for (int surface_index = 0; surface_index < array_mesh->get_surface_count(); ++surface_index) {
+			Ref<StandardMaterial3D> mat = array_mesh->surface_get_material(surface_index);
+			if (!mat.is_valid()) {
+				continue;
+			}
+
+			const ParsedMaterial parsed_material = _get_material_import_hints(mat->get_name());
+			for (int hint_index = 0; hint_index < parsed_material.hints.size(); ++hint_index) {
+				switch (parsed_material.hints[hint_index]) {
+					case MATERIAL_HINT_ALPHA:
+						mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+						break;
+					case MATERIAL_HINT_VERTEX_COLOR:
+						mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+						mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+						break;
+					default:
+						break;
+				}
+			}
+			mat->set_name(parsed_material.name);
+		}
+	}
+
+	if (p_light_bake_mode != LIGHT_BAKE_DISABLED) {
+		p_mesh->set_gi_mode(GeometryInstance3D::GI_MODE_BAKED);
+	}
+}
+
+void ResourceImporterScene::_fix_animations(AnimationPlayer *p_player) {
+	//remove animations referencing non-importable nodes
+	List<StringName> anims;
+	p_player->get_animation_list(&anims);
+	for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
+		Ref<Animation> anim = p_player->get_animation(E->get());
+		ERR_CONTINUE(anim.is_null());
+		for (int i = 0; i < anim->get_track_count(); i++) {
+			NodePath path = anim->track_get_path(i);
+
+			for (int j = 0; j < path.get_name_count(); j++) {
+				if (_get_node_import_hint(path.get_name(j)).hint == NODE_HINT_NO_IMPORT) {
+					anim->remove_track(i);
+					i--;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void ResourceImporterScene::_gen_shape_list(const Ref<Mesh> &p_mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	if (!p_convex) {
-		Ref<Shape3D> shape = mesh->create_trimesh_shape();
+		Ref<Shape3D> shape = p_mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
 	} else {
-		Vector<Ref<Shape3D>> cd = mesh->convex_decompose();
+		Vector<Ref<Shape3D>> cd = p_mesh->convex_decompose();
 		if (cd.size()) {
 			for (int i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
@@ -308,159 +435,77 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		}
 	}
 
-	String name = p_node->get_name();
+	const ParsedNode parsed_node = _get_node_import_hint(p_node->get_name());
+	const bool is_root = p_node == p_root;
 
-	bool isroot = p_node == p_root;
-
-	if (!isroot && _teststr(name, "noimp")) {
+	if (!is_root && parsed_node.hint == NODE_HINT_NO_IMPORT) {
 		memdelete(p_node);
 		return nullptr;
 	}
 
-	if (Object::cast_to<MeshInstance3D>(p_node)) {
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
-
-		Ref<ArrayMesh> m = mi->get_mesh();
-
-		if (m.is_valid()) {
-			for (int i = 0; i < m->get_surface_count(); i++) {
-				Ref<StandardMaterial3D> mat = m->surface_get_material(i);
-				if (!mat.is_valid()) {
-					continue;
-				}
-
-				if (_teststr(mat->get_name(), "alpha")) {
-					mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-					mat->set_name(_fixstr(mat->get_name(), "alpha"));
-				}
-				if (_teststr(mat->get_name(), "vcol")) {
-					mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-					mat->set_name(_fixstr(mat->get_name(), "vcol"));
-				}
-			}
-		}
-
-		if (p_light_bake_mode != LIGHT_BAKE_DISABLED) {
-			mi->set_gi_mode(GeometryInstance3D::GI_MODE_BAKED);
-		}
+	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+	if (ap) {
+		_fix_animations(ap);
+		return p_node;
 	}
 
-	if (Object::cast_to<AnimationPlayer>(p_node)) {
-		//remove animations referencing non-importable nodes
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
-
-		List<StringName> anims;
-		ap->get_animation_list(&anims);
-		for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
-			Ref<Animation> anim = ap->get_animation(E->get());
-			ERR_CONTINUE(anim.is_null());
-			for (int i = 0; i < anim->get_track_count(); i++) {
-				NodePath path = anim->track_get_path(i);
-
-				for (int j = 0; j < path.get_name_count(); j++) {
-					String node = path.get_name(j);
-					if (_teststr(node, "noimp")) {
-						anim->remove_track(i);
-						i--;
-						break;
-					}
-				}
-			}
-		}
+	MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
+	if (mesh_instance) {
+		_fix_materials(mesh_instance, p_light_bake_mode);
 	}
 
-	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
-		if (isroot) {
+	if (parsed_node.hint == NODE_HINT_COLLISION_ONLY || parsed_node.hint == NODE_HINT_CONVEX_COLLISION_ONLY) {
+		if (is_root) {
 			return p_node;
 		}
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
-		if (mi) {
-			Ref<Mesh> mesh = mi->get_mesh();
+		if (mesh_instance) {
+			Ref<Mesh> mesh = mesh_instance->get_mesh();
 
 			if (mesh.is_valid()) {
 				List<Ref<Shape3D>> shapes;
-				String fixed_name;
 				if (collision_map.has(mesh)) {
 					shapes = collision_map[mesh];
-				} else if (_teststr(name, "colonly")) {
-					_gen_shape_list(mesh, shapes, false);
-					collision_map[mesh] = shapes;
-				} else if (_teststr(name, "convcolonly")) {
-					_gen_shape_list(mesh, shapes, true);
+				} else {
+					_gen_shape_list(mesh, shapes, parsed_node.hint == NODE_HINT_CONVEX_COLLISION_ONLY);
 					collision_map[mesh] = shapes;
 				}
 
-				if (_teststr(name, "colonly")) {
-					fixed_name = _fixstr(name, "colonly");
-				} else if (_teststr(name, "convcolonly")) {
-					fixed_name = _fixstr(name, "convcolonly");
-				}
-
-				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
+				ERR_FAIL_COND_V(parsed_node.name == String(), nullptr);
 
 				if (shapes.size()) {
-					StaticBody3D *col = memnew(StaticBody3D);
-					col->set_transform(mi->get_transform());
-					col->set_name(fixed_name);
-					p_node->replace_by(col);
+					StaticBody3D *static_body = memnew(StaticBody3D);
+					static_body->set_transform(mesh_instance->get_transform());
+					static_body->set_name(parsed_node.name);
+					p_node->replace_by(static_body);
 					memdelete(p_node);
-					p_node = col;
+					p_node = static_body;
 
-					int idx = 0;
-					for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-						CollisionShape3D *cshape = memnew(CollisionShape3D);
-						cshape->set_shape(E->get());
-						col->add_child(cshape);
-
-						cshape->set_name("shape" + itos(idx));
-						cshape->set_owner(col->get_owner());
-						idx++;
-					}
+					_add_shapes(static_body, shapes);
 				}
 			}
 
-		} else if (p_node->has_meta("empty_draw_type")) {
-			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			StaticBody3D *sb = memnew(StaticBody3D);
-			sb->set_name(_fixstr(name, "colonly"));
-			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
-			p_node->replace_by(sb);
+		} else if (CollisionShape3D *colshape = _shape_from_empty_meta(p_node); colshape) {
+			StaticBody3D *static_body = memnew(StaticBody3D);
+			static_body->set_name(parsed_node.name);
+			p_node->replace_by(static_body);
 			memdelete(p_node);
-			p_node = nullptr;
-			CollisionShape3D *colshape = memnew(CollisionShape3D);
-			if (empty_draw_type == "CUBE") {
-				BoxShape3D *boxShape = memnew(BoxShape3D);
-				boxShape->set_size(Vector3(2, 2, 2));
-				colshape->set_shape(boxShape);
-				colshape->set_name("BoxShape3D");
-			} else if (empty_draw_type == "SINGLE_ARROW") {
-				RayShape3D *rayShape = memnew(RayShape3D);
-				rayShape->set_length(1);
-				colshape->set_shape(rayShape);
-				colshape->set_name("RayShape3D");
-				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
-			} else if (empty_draw_type == "IMAGE") {
-				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
-				colshape->set_shape(world_margin_shape);
-				colshape->set_name("WorldMarginShape3D");
-			} else {
-				SphereShape3D *sphereShape = memnew(SphereShape3D);
-				sphereShape->set_radius(1);
-				colshape->set_shape(sphereShape);
-				colshape->set_name("SphereShape3D");
+			p_node = static_body;
+
+			static_body->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
+			if (Object::cast_to<RayShape3D>(*colshape->get_shape())) {
+				static_body->rotate_x(Math_PI / 2);
 			}
-			sb->add_child(colshape);
-			colshape->set_owner(sb->get_owner());
+
+			static_body->add_child(colshape);
+			colshape->set_owner(static_body->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && Object::cast_to<MeshInstance3D>(p_node)) {
-		if (isroot) {
+	} else if (parsed_node.hint == NODE_HINT_RIGID && mesh_instance) {
+		if (is_root) {
 			return p_node;
 		}
 
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
-		Ref<Mesh> mesh = mi->get_mesh();
+		Ref<Mesh> mesh = mesh_instance->get_mesh();
 
 		if (mesh.is_valid()) {
 			List<Ref<Shape3D>> shapes;
@@ -471,171 +516,127 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
-			rigid_body->set_name(_fixstr(name, "rigid"));
+			rigid_body->set_name(parsed_node.name);
 			p_node->replace_by(rigid_body);
-			rigid_body->set_transform(mi->get_transform());
+			rigid_body->set_transform(mesh_instance->get_transform());
 			p_node = rigid_body;
-			mi->set_name("mesh");
-			mi->set_transform(Transform());
-			rigid_body->add_child(mi);
-			mi->set_owner(rigid_body->get_owner());
+			mesh_instance->set_transform(Transform());
+			rigid_body->add_child(mesh_instance);
+			mesh_instance->set_owner(rigid_body->get_owner());
 
-			int idx = 0;
-			for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-				CollisionShape3D *cshape = memnew(CollisionShape3D);
-				cshape->set_shape(E->get());
-				rigid_body->add_child(cshape);
-
-				cshape->set_name("shape" + itos(idx));
-				cshape->set_owner(p_node->get_owner());
-				idx++;
-			}
+			_add_shapes(rigid_body, shapes);
 		}
 
-	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<MeshInstance3D>(p_node)) {
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
-
-		Ref<Mesh> mesh = mi->get_mesh();
+	} else if ((parsed_node.hint == NODE_HINT_COLLISION || parsed_node.hint == NODE_HINT_CONVEX_COLLISION) && mesh_instance) {
+		Ref<Mesh> mesh = mesh_instance->get_mesh();
 
 		if (mesh.is_valid()) {
 			List<Ref<Shape3D>> shapes;
-			String fixed_name;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
-			} else if (_teststr(name, "col")) {
-				_gen_shape_list(mesh, shapes, false);
-				collision_map[mesh] = shapes;
-			} else if (_teststr(name, "convcol")) {
-				_gen_shape_list(mesh, shapes, true);
+			} else {
+				_gen_shape_list(mesh, shapes, parsed_node.hint == NODE_HINT_CONVEX_COLLISION);
 				collision_map[mesh] = shapes;
 			}
 
-			if (_teststr(name, "col")) {
-				fixed_name = _fixstr(name, "col");
-			} else if (_teststr(name, "convcol")) {
-				fixed_name = _fixstr(name, "convcol");
-			}
-
-			if (fixed_name != String()) {
-				if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
-					mi->set_name(fixed_name);
+			if (!parsed_node.name.is_empty()) {
+				if (mesh_instance->get_parent()) {
+					mesh_instance->set_name(parsed_node.name);
 				}
 			}
 
 			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
-				col->set_name("static_collision");
-				mi->add_child(col);
-				col->set_owner(mi->get_owner());
+				StaticBody3D *static_body = memnew(StaticBody3D);
+				mesh_instance->add_child(static_body);
+				static_body->set_owner(mesh_instance->get_owner());
 
-				int idx = 0;
-				for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-					CollisionShape3D *cshape = memnew(CollisionShape3D);
-					cshape->set_shape(E->get());
-					col->add_child(cshape);
-
-					cshape->set_name("shape" + itos(idx));
-					cshape->set_owner(p_node->get_owner());
-
-					idx++;
-				}
+				_add_shapes(static_body, shapes);
 			}
 		}
 
-	} else if (_teststr(name, "navmesh") && Object::cast_to<MeshInstance3D>(p_node)) {
-		if (isroot) {
+	} else if (parsed_node.hint == NODE_HINT_NAVMESH && mesh_instance) {
+		if (is_root) {
 			return p_node;
 		}
 
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
-
-		Ref<ArrayMesh> mesh = mi->get_mesh();
+		Ref<ArrayMesh> mesh = mesh_instance->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
-		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+		NavigationRegion3D *nav_region = memnew(NavigationRegion3D);
 
-		nmi->set_name(_fixstr(name, "navmesh"));
+		nav_region->set_name(parsed_node.name);
 		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 		nmesh->create_from_mesh(mesh);
-		nmi->set_navigation_mesh(nmesh);
-		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
-		p_node->replace_by(nmi);
+		nav_region->set_navigation_mesh(nmesh);
+		Object::cast_to<Node3D>(nav_region)->set_transform(mesh_instance->get_transform());
+		p_node->replace_by(nav_region);
 		memdelete(p_node);
-		p_node = nmi;
-	} else if (_teststr(name, "vehicle")) {
-		if (isroot) {
+		p_node = nav_region;
+	} else if (parsed_node.hint == NODE_HINT_VEHICLE) {
+		if (is_root) {
 			return p_node;
 		}
 
 		Node *owner = p_node->get_owner();
-		Node3D *s = Object::cast_to<Node3D>(p_node);
-		VehicleBody3D *bv = memnew(VehicleBody3D);
-		String n = _fixstr(p_node->get_name(), "vehicle");
-		bv->set_name(n);
-		p_node->replace_by(bv);
-		p_node->set_name(n);
-		bv->add_child(p_node);
-		bv->set_owner(owner);
+		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+		VehicleBody3D *vehicle_body = memnew(VehicleBody3D);
+		vehicle_body->set_name(parsed_node.name);
+		p_node->replace_by(vehicle_body);
+		p_node->set_name(parsed_node.name);
+		vehicle_body->add_child(p_node);
+		vehicle_body->set_owner(owner);
 		p_node->set_owner(owner);
-		bv->set_transform(s->get_transform());
-		s->set_transform(Transform());
+		vehicle_body->set_transform(node_3d->get_transform());
+		node_3d->set_transform(Transform());
 
-		p_node = bv;
+		p_node = vehicle_body;
 
-	} else if (_teststr(name, "wheel")) {
-		if (isroot) {
+	} else if (parsed_node.hint == NODE_HINT_WHEEL) {
+		if (is_root) {
 			return p_node;
 		}
 
 		Node *owner = p_node->get_owner();
-		Node3D *s = Object::cast_to<Node3D>(p_node);
-		VehicleWheel3D *bv = memnew(VehicleWheel3D);
-		String n = _fixstr(p_node->get_name(), "wheel");
-		bv->set_name(n);
-		p_node->replace_by(bv);
-		p_node->set_name(n);
-		bv->add_child(p_node);
-		bv->set_owner(owner);
+		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+		VehicleWheel3D *vehicle_wheel = memnew(VehicleWheel3D);
+		vehicle_wheel->set_name(parsed_node.name);
+		p_node->replace_by(vehicle_wheel);
+		p_node->set_name(parsed_node.name);
+		vehicle_wheel->add_child(p_node);
+		vehicle_wheel->set_owner(owner);
 		p_node->set_owner(owner);
-		bv->set_transform(s->get_transform());
-		s->set_transform(Transform());
+		vehicle_wheel->set_transform(node_3d->get_transform());
+		node_3d->set_transform(Transform());
 
-		p_node = bv;
+		p_node = vehicle_wheel;
 
-	} else if (Object::cast_to<MeshInstance3D>(p_node)) {
-		//last attempt, maybe collision inside the mesh data
-
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
-
-		Ref<ArrayMesh> mesh = mi->get_mesh();
+	} else if (mesh_instance) {
+		// Last attempt, maybe collision inside the mesh data
+		p_node->set_name(parsed_node.name);
+		Ref<ArrayMesh> mesh = mesh_instance->get_mesh();
 		if (!mesh.is_null()) {
+			const ParsedNode parsed_mesh = _get_node_import_hint(mesh->get_name());
 			List<Ref<Shape3D>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
-			} else if (_teststr(mesh->get_name(), "col")) {
+			} else if (parsed_mesh.hint == NODE_HINT_COLLISION) {
 				_gen_shape_list(mesh, shapes, false);
 				collision_map[mesh] = shapes;
-				mesh->set_name(_fixstr(mesh->get_name(), "col"));
-			} else if (_teststr(mesh->get_name(), "convcol")) {
+				mesh->set_name(parsed_mesh.name);
+			} else if (parsed_mesh.hint == NODE_HINT_CONVEX_COLLISION) {
 				_gen_shape_list(mesh, shapes, true);
 				collision_map[mesh] = shapes;
-				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
+				mesh->set_name(parsed_mesh.name);
 			}
 
 			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
-				col->set_name("static_collision");
-				p_node->add_child(col);
-				col->set_owner(p_node->get_owner());
+				if (parsed_mesh.hint == NODE_HINT_COLLISION || parsed_mesh.hint == NODE_HINT_CONVEX_COLLISION) {
+					StaticBody3D *static_body = memnew(StaticBody3D);
+					p_node->add_child(static_body);
+					static_body->set_owner(p_node->get_owner());
 
-				int idx = 0;
-				for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
-					CollisionShape3D *cshape = memnew(CollisionShape3D);
-					cshape->set_shape(E->get());
-					col->add_child(cshape);
-
-					cshape->set_name("shape" + itos(idx));
-					cshape->set_owner(p_node->get_owner());
-					idx++;
+					_add_shapes(static_body, shapes);
+				} else {
+					_add_shapes(p_root, shapes, mesh_instance->get_transform());
 				}
 			}
 		}

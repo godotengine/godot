@@ -38,7 +38,10 @@
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/skin.h"
 
+class AnimationPlayer;
 class Material;
+class MeshInstance3D;
+class CollisionShape3D;
 
 class EditorSceneImporter : public Reference {
 	GDCLASS(EditorSceneImporter, Reference);
@@ -120,8 +123,52 @@ class ResourceImporterScene : public ResourceImporter {
 		LIGHT_BAKE_LIGHTMAPS
 	};
 
-	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
-	void _generate_meshes(Node *p_node, bool p_generate_lods);
+	enum NodeHint {
+		NODE_HINT_NONE,
+		NODE_HINT_NO_IMPORT,
+		NODE_HINT_COLLISION,
+		NODE_HINT_CONVEX_COLLISION,
+		NODE_HINT_COLLISION_ONLY,
+		NODE_HINT_CONVEX_COLLISION_ONLY,
+		NODE_HINT_RIGID,
+		NODE_HINT_NAVMESH,
+		NODE_HINT_VEHICLE,
+		NODE_HINT_WHEEL,
+		NODE_HINT_LAST,
+	};
+
+	enum MaterialHint {
+		MATERIAL_HINT_NONE,
+		MATERIAL_HINT_ALPHA,
+		MATERIAL_HINT_VERTEX_COLOR,
+		MATERIAL_HINT_LAST,
+	};
+
+	struct ParsedNode {
+		String name;
+		NodeHint hint;
+	};
+
+	struct ParsedMaterial {
+		String name;
+		Vector<MaterialHint> hints;
+	};
+
+	static void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
+	static void _generate_meshes(Node *p_node, bool p_generate_lods);
+
+	static String _import_hint_string(NodeHint p_hint);
+	static String _import_hint_string(MaterialHint p_hint);
+
+	static ParsedNode _get_node_import_hint(String p_name);
+	static ParsedMaterial _get_material_import_hints(const String &p_name);
+
+	static void _gen_shape_list(const Ref<Mesh> &p_mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex);
+	static void _add_shapes(Node *p_node, List<Ref<Shape3D>> p_shapes, const Transform &p_transform = Transform(), const String &p_basename = String());
+	static CollisionShape3D *_shape_from_empty_meta(Node *p_node);
+
+	static void _fix_materials(MeshInstance3D *p_mesh, LightBakeMode p_light_bake_mode);
+	static void _fix_animations(AnimationPlayer *p_player);
 
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
