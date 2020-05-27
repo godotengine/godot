@@ -53,7 +53,7 @@ AreaBullet::AreaBullet() :
 		spOv_gravityVec(0, -1, 0),
 		spOv_gravityMag(10),
 		spOv_linearDump(0.1),
-		spOv_angularDump(1),
+		spOv_angularDump(0.1),
 		spOv_priority(0),
 		isScratched(false) {
 
