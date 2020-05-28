@@ -308,10 +308,6 @@ Error DirAccessWindows::remove(String p_path) {
 
 	p_path = fix_path(p_path);
 
-	printf("erasing %s\n", p_path.utf8().get_data());
-	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
-	//DWORD fileAttr = GetFileAttributesExW(p_path.c_str(), GetFileExInfoStandard, &fileInfo);
-
 	DWORD fileAttr;
 
 	fileAttr = GetFileAttributesW(p_path.c_str());
