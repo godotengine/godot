@@ -105,12 +105,6 @@ void PivotTransform::ReadTransformChain() {
 	}
 }
 void PivotTransform::ComputePivotTransform() {
-	// in maya we use geometric_rotation too
-	// print_verbose("pre_rotation : " + (pre_rotation.get_euler() * (180 / Math_PI)));
-	// print_verbose("post_rotation : " + (post_rotation.get_euler() * (180 / Math_PI)));
-	// print_verbose("rotation : " + (rotation.get_euler() * (180 / Math_PI)));
-	// print_verbose("geometric_rotation : " + (geometric_rotation.get_euler() * (180 / Math_PI)));
-
 	Transform T, Roff, Rp, Soff, Sp, S;
 
 	// Here I assume this is the operation which needs done.
@@ -136,8 +130,12 @@ void PivotTransform::ComputePivotTransform() {
 	if (parent_transform.is_valid()) {
 		parent_global_xform = parent_transform->GlobalTransform;
 	}
+	else
+	{
+		parent_global_xform = Transform();
+	}
 
-	if(inherit_type == Assimp::FBX::Transform_RSrs)	{
+	//if(inherit_type == Assimp::FBX::Transform_RSrs)	{
 		// Local xform data - pivoted
 		LocalTransform = T * Roff * Rp * Rpre * R * Rpost.inverse() * Rp.inverse() * Soff * Sp * S * Sp.inverse();
 
@@ -149,7 +147,7 @@ void PivotTransform::ComputePivotTransform() {
 		AssimpUtils::debug_xform("b) parent_global_xform" , parent_global_xform);
 		AssimpUtils::debug_xform("b&c) global_translation_pivoted", global_translation_pivoted);
 		AssimpUtils::debug_xform("result GlobalTransform", GlobalTransform);
-	} else {
+	/*} else {
 		// rotation - inherit type shearing handler (pre-rotation, post-rotation handler)
 		AssimpUtils::debug_xform("parent global xform", parent_global_xform);
 		Basis parent_global_rotation = parent_global_xform.basis;
@@ -193,7 +191,7 @@ void PivotTransform::ComputePivotTransform() {
 		AssimpUtils::debug_xform("b&c) global_translation_pivoted", global_translation_pivoted);
 		AssimpUtils::debug_xform("c) global_rotation_scale", global_rotation_scale);
 		AssimpUtils::debug_xform("result GlobalTransform", GlobalTransform);
-	}
+	}*/
 
 	print_verbose("---------------------------------------------------------------");
 }
