@@ -4338,13 +4338,14 @@ String TTR(const String &p_text) {
 }
 
 String DTR(const String &p_text) {
+	// Comes straight from the XML, so remove indentation and any trailing whitespace.
+	const String text = p_text.dedent().strip_edges();
+
 	if (TranslationServer::get_singleton()) {
-		// Comes straight from the XML, so remove indentation and any trailing whitespace.
-		const String text = p_text.dedent().strip_edges();
 		return TranslationServer::get_singleton()->doc_translate(text);
 	}
 
-	return p_text;
+	return text;
 }
 #endif
 

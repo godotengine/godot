@@ -357,7 +357,7 @@ void PropertySelector::_item_selected() {
 			if (E) {
 				for (int i = 0; i < E->get().properties.size(); i++) {
 					if (E->get().properties[i].name == name) {
-						text = E->get().properties[i].description;
+						text = DTR(E->get().properties[i].description);
 					}
 				}
 			}
@@ -372,7 +372,7 @@ void PropertySelector::_item_selected() {
 			if (E) {
 				for (int i = 0; i < E->get().methods.size(); i++) {
 					if (E->get().methods[i].name == name) {
-						text = E->get().methods[i].description;
+						text = DTR(E->get().methods[i].description);
 					}
 				}
 			}
