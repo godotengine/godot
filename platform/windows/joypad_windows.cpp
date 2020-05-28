@@ -70,7 +70,8 @@ JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
 	HRESULT result;
 	result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, NULL);
 	if (FAILED(result)) {
-		printf("failed init DINPUT: %ld\n", result);
+		printf("Couldn't initialize DirectInput: %ld\n", result);
+		printf("Rebooting your PC may solve this issue.\n");
 	}
 	probe_joypads();
 }
