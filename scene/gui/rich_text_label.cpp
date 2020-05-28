@@ -646,7 +646,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				}
 
 				if (p_mode == PROCESS_DRAW && visible) {
-					img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - font->get_descent() - img->size.height), img->size));
+					img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, y + lh - font->get_descent() - img->size.height), img->size), false, img->color);
 				}
 				p_char_count++;
 
@@ -1443,6 +1443,46 @@ void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack
 	}
 }
 
+Color RichTextLabel::_get_color_from_string(const String &p_color_str, const Color &p_default_color) {
+	if (p_color_str.begins_with("#")) {
+		return Color::html(p_color_str);
+	} else if (p_color_str == "aqua") {
+		return Color(0, 1, 1);
+	} else if (p_color_str == "black") {
+		return Color(0, 0, 0);
+	} else if (p_color_str == "blue") {
+		return Color(0, 0, 1);
+	} else if (p_color_str == "fuchsia") {
+		return Color(1, 0, 1);
+	} else if (p_color_str == "gray" || p_color_str == "grey") {
+		return Color(0.5, 0.5, 0.5);
+	} else if (p_color_str == "green") {
+		return Color(0, 0.5, 0);
+	} else if (p_color_str == "lime") {
+		return Color(0, 1, 0);
+	} else if (p_color_str == "maroon") {
+		return Color(0.5, 0, 0);
+	} else if (p_color_str == "navy") {
+		return Color(0, 0, 0.5);
+	} else if (p_color_str == "olive") {
+		return Color(0.5, 0.5, 0);
+	} else if (p_color_str == "purple") {
+		return Color(0.5, 0, 0.5);
+	} else if (p_color_str == "red") {
+		return Color(1, 0, 0);
+	} else if (p_color_str == "silver") {
+		return Color(0.75, 0.75, 0.75);
+	} else if (p_color_str == "teal") {
+		return Color(0, 0.5, 0.5);
+	} else if (p_color_str == "white") {
+		return Color(1, 1, 1);
+	} else if (p_color_str == "yellow") {
+		return Color(1, 1, 0);
+	} else {
+		return p_default_color;
+	}
+}
+
 bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 	Item *item = p_item;
 
@@ -1636,7 +1676,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 	}
 }
 
-void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height) {
+void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color) {
 	if (current->type == ITEM_TABLE) {
 		return;
 	}
@@ -1645,6 +1685,7 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, 
 	ItemImage *item = memnew(ItemImage);
 
 	item->image = p_image;
+	item->color = p_color;
 
 	if (p_width > 0) {
 		// custom width
@@ -2034,7 +2075,32 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 
 		String tag = p_bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 		Vector<String> split_tag_block = tag.split(" ", false);
-		String bbcode = !split_tag_block.empty() ? split_tag_block[0] : "";
+
+		// Find optional parameters.
+		String bbcode_name;
+		typedef Map<String, String> OptionMap;
+		OptionMap bbcode_options;
+		if (!split_tag_block.empty()) {
+			bbcode_name = split_tag_block[0];
+			for (int i = 1; i < split_tag_block.size(); i++) {
+				const String &expr = split_tag_block[i];
+				int value_pos = expr.find("=");
+				if (value_pos > -1) {
+					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1);
+				}
+			}
+		} else {
+			bbcode_name = tag;
+		}
+
+		// Find main parameter.
+		String bbcode_value;
+		int main_value_pos = bbcode_name.find("=");
+		if (main_value_pos > -1) {
+			bbcode_value = bbcode_name.substr(main_value_pos + 1);
+			bbcode_name = bbcode_name.substr(0, main_value_pos);
+		}
+
 		if (tag.begins_with("/") && tag_stack.size()) {
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
 
@@ -2160,7 +2226,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			push_meta(url);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
-		} else if (tag == "img") {
+		} else if (bbcode_name == "img") {
 			int end = p_bbcode.find("[", brk_end);
 			if (end == -1) {
 				end = p_bbcode.length();
@@ -2170,80 +2236,42 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 
 			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
 			if (texture.is_valid()) {
-				add_image(texture);
+				Color color = Color(1.0, 1.0, 1.0);
+				OptionMap::Element *color_option = bbcode_options.find("color");
+				if (color_option) {
+					color = _get_color_from_string(color_option->value(), color);
+				}
+
+				int width = 0;
+				int height = 0;
+				if (!bbcode_value.empty()) {
+					int sep = bbcode_value.find("x");
+					if (sep == -1) {
+						width = bbcode_value.to_int();
+					} else {
+						width = bbcode_value.substr(0, sep).to_int();
+						height = bbcode_value.substr(sep + 1).to_int();
+					}
+				} else {
+					OptionMap::Element *width_option = bbcode_options.find("width");
+					if (width_option) {
+						width = width_option->value().to_int();
+					}
+
+					OptionMap::Element *height_option = bbcode_options.find("height");
+					if (height_option) {
+						height = height_option->value().to_int();
+					}
+				}
+
+				add_image(texture, width, height, color);
 			}
 
 			pos = end;
-			tag_stack.push_front(tag);
-		} else if (tag.begins_with("img=")) {
-			int width = 0;
-			int height = 0;
-
-			String params = tag.substr(4, tag.length());
-			int sep = params.find("x");
-			if (sep == -1) {
-				width = params.to_int();
-			} else {
-				width = params.substr(0, sep).to_int();
-				height = params.substr(sep + 1, params.length()).to_int();
-			}
-
-			int end = p_bbcode.find("[", brk_end);
-			if (end == -1) {
-				end = p_bbcode.length();
-			}
-
-			String image = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
-
-			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture");
-			if (texture.is_valid()) {
-				add_image(texture, width, height);
-			}
-
-			pos = end;
-			tag_stack.push_front("img");
+			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("color=")) {
-			String col = tag.substr(6, tag.length());
-			Color color;
-
-			if (col.begins_with("#")) {
-				color = Color::html(col);
-			} else if (col == "aqua") {
-				color = Color(0, 1, 1);
-			} else if (col == "black") {
-				color = Color(0, 0, 0);
-			} else if (col == "blue") {
-				color = Color(0, 0, 1);
-			} else if (col == "fuchsia") {
-				color = Color(1, 0, 1);
-			} else if (col == "gray" || col == "grey") {
-				color = Color(0.5, 0.5, 0.5);
-			} else if (col == "green") {
-				color = Color(0, 0.5, 0);
-			} else if (col == "lime") {
-				color = Color(0, 1, 0);
-			} else if (col == "maroon") {
-				color = Color(0.5, 0, 0);
-			} else if (col == "navy") {
-				color = Color(0, 0, 0.5);
-			} else if (col == "olive") {
-				color = Color(0.5, 0.5, 0);
-			} else if (col == "purple") {
-				color = Color(0.5, 0, 0.5);
-			} else if (col == "red") {
-				color = Color(1, 0, 0);
-			} else if (col == "silver") {
-				color = Color(0.75, 0.75, 0.75);
-			} else if (col == "teal") {
-				color = Color(0, 0.5, 0.5);
-			} else if (col == "white") {
-				color = Color(1, 1, 1);
-			} else if (col == "yellow") {
-				color = Color(1, 1, 0);
-			} else {
-				color = base_color;
-			}
-
+			String color_str = tag.substr(6, tag.length());
+			Color color = _get_color_from_string(color_str, base_color);
 			push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
@@ -2261,113 +2289,90 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
 
-		} else if (bbcode == "fade") {
-			int startIndex = 0;
-			int length = 10;
-
-			if (split_tag_block.size() > 1) {
-				split_tag_block.remove(0);
-				for (int i = 0; i < split_tag_block.size(); i++) {
-					String expr = split_tag_block[i];
-					if (expr.begins_with("start=")) {
-						String start_str = expr.substr(6, expr.length());
-						startIndex = start_str.to_int();
-					} else if (expr.begins_with("length=")) {
-						String end_str = expr.substr(7, expr.length());
-						length = end_str.to_int();
-					}
-				}
+		} else if (bbcode_name == "fade") {
+			int start_index = 0;
+			OptionMap::Element *start_option = bbcode_options.find("start");
+			if (start_option) {
+				start_index = start_option->value().to_int();
 			}
 
-			push_fade(startIndex, length);
+			int length = 10;
+			OptionMap::Element *length_option = bbcode_options.find("length");
+			if (length_option) {
+				length = length_option->value().to_int();
+			}
+
+			push_fade(start_index, length);
 			pos = brk_end + 1;
 			tag_stack.push_front("fade");
-		} else if (bbcode == "shake") {
+		} else if (bbcode_name == "shake") {
 			int strength = 5;
-			float rate = 20.0f;
+			OptionMap::Element *strength_option = bbcode_options.find("level");
+			if (strength_option) {
+				strength = strength_option->value().to_int();
+			}
 
-			if (split_tag_block.size() > 1) {
-				split_tag_block.remove(0);
-				for (int i = 0; i < split_tag_block.size(); i++) {
-					String expr = split_tag_block[i];
-					if (expr.begins_with("level=")) {
-						String str_str = expr.substr(6, expr.length());
-						strength = str_str.to_int();
-					} else if (expr.begins_with("rate=")) {
-						String rate_str = expr.substr(5, expr.length());
-						rate = rate_str.to_float();
-					}
-				}
+			float rate = 20.0f;
+			OptionMap::Element *rate_option = bbcode_options.find("rate");
+			if (rate_option) {
+				rate = rate_option->value().to_float();
 			}
 
 			push_shake(strength, rate);
 			pos = brk_end + 1;
 			tag_stack.push_front("shake");
 			set_process_internal(true);
-		} else if (bbcode == "wave") {
+		} else if (bbcode_name == "wave") {
 			float amplitude = 20.0f;
-			float period = 5.0f;
+			OptionMap::Element *amplitude_option = bbcode_options.find("amp");
+			if (amplitude_option) {
+				amplitude = amplitude_option->value().to_float();
+			}
 
-			if (split_tag_block.size() > 1) {
-				split_tag_block.remove(0);
-				for (int i = 0; i < split_tag_block.size(); i++) {
-					String expr = split_tag_block[i];
-					if (expr.begins_with("amp=")) {
-						String amp_str = expr.substr(4, expr.length());
-						amplitude = amp_str.to_float();
-					} else if (expr.begins_with("freq=")) {
-						String period_str = expr.substr(5, expr.length());
-						period = period_str.to_float();
-					}
-				}
+			float period = 5.0f;
+			OptionMap::Element *period_option = bbcode_options.find("freq");
+			if (period_option) {
+				period = period_option->value().to_float();
 			}
 
 			push_wave(period, amplitude);
 			pos = brk_end + 1;
 			tag_stack.push_front("wave");
 			set_process_internal(true);
-		} else if (bbcode == "tornado") {
+		} else if (bbcode_name == "tornado") {
 			float radius = 10.0f;
-			float frequency = 1.0f;
+			OptionMap::Element *radius_option = bbcode_options.find("radius");
+			if (radius_option) {
+				radius = radius_option->value().to_float();
+			}
 
-			if (split_tag_block.size() > 1) {
-				split_tag_block.remove(0);
-				for (int i = 0; i < split_tag_block.size(); i++) {
-					String expr = split_tag_block[i];
-					if (expr.begins_with("radius=")) {
-						String amp_str = expr.substr(7, expr.length());
-						radius = amp_str.to_float();
-					} else if (expr.begins_with("freq=")) {
-						String period_str = expr.substr(5, expr.length());
-						frequency = period_str.to_float();
-					}
-				}
+			float frequency = 1.0f;
+			OptionMap::Element *frequency_option = bbcode_options.find("freq");
+			if (frequency_option) {
+				frequency = frequency_option->value().to_float();
 			}
 
 			push_tornado(frequency, radius);
 			pos = brk_end + 1;
 			tag_stack.push_front("tornado");
 			set_process_internal(true);
-		} else if (bbcode == "rainbow") {
+		} else if (bbcode_name == "rainbow") {
 			float saturation = 0.8f;
-			float value = 0.8f;
-			float frequency = 1.0f;
+			OptionMap::Element *saturation_option = bbcode_options.find("sat");
+			if (saturation_option) {
+				saturation = saturation_option->value().to_float();
+			}
 
-			if (split_tag_block.size() > 1) {
-				split_tag_block.remove(0);
-				for (int i = 0; i < split_tag_block.size(); i++) {
-					String expr = split_tag_block[i];
-					if (expr.begins_with("sat=")) {
-						String sat_str = expr.substr(4, expr.length());
-						saturation = sat_str.to_float();
-					} else if (expr.begins_with("val=")) {
-						String val_str = expr.substr(4, expr.length());
-						value = val_str.to_float();
-					} else if (expr.begins_with("freq=")) {
-						String freq_str = expr.substr(5, expr.length());
-						frequency = freq_str.to_float();
-					}
-				}
+			float value = 0.8f;
+			OptionMap::Element *value_option = bbcode_options.find("val");
+			if (value_option) {
+				value = value_option->value().to_float();
+			}
+
+			float frequency = 1.0f;
+			OptionMap::Element *frequency_option = bbcode_options.find("freq");
+			if (frequency_option) {
+				frequency = frequency_option->value().to_float();
 			}
 
 			push_rainbow(saturation, value, frequency);
@@ -2634,7 +2639,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &RichTextLabel::get_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
-	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font", "font"), &RichTextLabel::push_font);
