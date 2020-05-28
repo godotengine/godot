@@ -1525,8 +1525,6 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
-	Control *rp = which;
-
 	Control *base_tooltip = which->make_custom_tooltip(tooltip);
 
 	if (!base_tooltip) {
@@ -1545,7 +1543,7 @@ void Viewport::_gui_show_tooltip() {
 
 	gui.tooltip_popup = panel;
 
-	rp->add_child(gui.tooltip_popup);
+	which->add_child(gui.tooltip_popup);
 
 	//if (gui.tooltip) // Avoids crash when rapidly switching controls.
 	//	gui.tooltip_popup->set_scale(gui.tooltip->get_global_transform().get_scale());

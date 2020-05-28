@@ -815,7 +815,6 @@ void EditorProperty::set_object_and_property(Object *p_object, const StringName 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	tooltip_text = p_text;
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	//help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	String text;
