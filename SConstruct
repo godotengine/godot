@@ -7,6 +7,7 @@ import glob
 import os
 import pickle
 import sys
+from collections import OrderedDict
 
 # Local
 import methods
@@ -177,7 +178,7 @@ for k in platform_opts.keys():
         opts.Add(o)
 
 # Detect modules.
-modules_detected = {}
+modules_detected = OrderedDict()
 module_search_paths = ["modules"]  # Built-in path.
 
 if ARGUMENTS.get("custom_modules"):
@@ -450,11 +451,11 @@ if selected_platform in platform_list:
     sys.path.remove(tmppath)
     sys.modules.pop('detect')
 
-    modules_enabled = {}
+    modules_enabled = OrderedDict()
     env.module_icons_paths = []
     env.doc_class_path = {}
 
-    for name, path in sorted(modules_detected.items()):
+    for name, path in modules_detected.items():
         if not env["module_" + name + "_enabled"]:
             continue
         sys.path.insert(0, path)

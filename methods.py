@@ -2,6 +2,7 @@ import os
 import re
 import glob
 import subprocess
+from collections import OrderedDict
 from compat import iteritems, isbasestring, decode_utf8
 
 
@@ -131,7 +132,7 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
 
 
 def detect_modules(at_path):
-    module_list = {}  # name : path
+    module_list = OrderedDict()  # name : path
 
     modules_glob = os.path.join(at_path, "*")
     files = glob.glob(modules_glob)
