@@ -192,7 +192,7 @@ if ARGUMENTS.get("custom_modules"):
             module_search_paths.append(methods.convert_custom_modules_path(p))
         except ValueError as e:
             print(e)
-            sys.exit(255)
+            Exit(255)
 
 for path in module_search_paths:
     # Note: custom modules can override built-in ones.
@@ -393,7 +393,7 @@ if selected_platform in platform_list:
                 'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
                 "to the SCons command line."
             )
-            sys.exit(255)
+            Exit(255)
         elif cc_version_major < 7:
             print(
                 "Detected GCC version older than 7, which does not fully support "
@@ -401,7 +401,7 @@ if selected_platform in platform_list:
                 'version, or Clang 6 or later by passing "use_llvm=yes" to the '
                 "SCons command line."
             )
-            sys.exit(255)
+            Exit(255)
     elif methods.using_clang(env):
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
@@ -412,19 +412,19 @@ if selected_platform in platform_list:
                     "Detected Clang version older than 6, which does not fully support "
                     "C++17. Supported versions are Clang 6 and later."
                 )
-                sys.exit(255)
+                Exit(255)
             elif not vanilla and cc_version_major < 10:
                 print(
                     "Detected Apple Clang version older than 10, which does not fully "
                     "support C++17. Supported versions are Apple Clang 10 and later."
                 )
-                sys.exit(255)
+                Exit(255)
         elif cc_version_major < 6:
             print(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
-            sys.exit(255)
+            Exit(255)
 
     # Configure compiler warnings
     if env.msvc:
@@ -497,7 +497,7 @@ if selected_platform in platform_list:
     if env["target"] == "release":
         if env["tools"]:
             print("Tools can only be built with targets 'debug' and 'release_debug'.")
-            sys.exit(255)
+            Exit(255)
         suffix += ".opt"
         env.Append(CPPDEFINES=["NDEBUG"])
 
@@ -586,7 +586,7 @@ if selected_platform in platform_list:
                 "Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), "
                 "only with 'tools=no' (export template)."
             )
-            sys.exit(255)
+            Exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
     if env["disable_advanced_gui"]:
@@ -595,7 +595,7 @@ if selected_platform in platform_list:
                 "Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), "
                 "only with 'tools=no' (export template)."
             )
-            sys.exit(255)
+            Exit(255)
         else:
             env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
     if env["minizip"]:
@@ -609,7 +609,7 @@ if selected_platform in platform_list:
                     "Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), "
                     "only with 'tools=no' (export template)."
                 )
-                sys.exit(255)
+                Exit(255)
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)
@@ -685,9 +685,9 @@ elif selected_platform != "":
 
     if selected_platform == "list":
         # Exit early to suppress the rest of the built-in SCons messages
-        sys.exit(0)
+        Exit()
     else:
-        sys.exit(255)
+        Exit(255)
 
 # The following only makes sense when the env is defined, and assumes it is
 if "env" in locals():
