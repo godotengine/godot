@@ -1583,9 +1583,9 @@ void EditorInspector::update_tree() {
 					DocData *dd = EditorHelp::get_doc_data();
 					Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(type2);
 					if (E) {
-						descr = E->get().brief_description;
+						descr = DTR(E->get().brief_description);
 					}
-					class_descr_cache[type2] = DTR(descr);
+					class_descr_cache[type2] = descr;
 				}
 
 				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
@@ -1755,7 +1755,7 @@ void EditorInspector::update_tree() {
 				while (F && descr == String()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
-							descr = DTR(F->get().properties[i].description.strip_edges());
+							descr = DTR(F->get().properties[i].description);
 							break;
 						}
 					}
@@ -1765,7 +1765,7 @@ void EditorInspector::update_tree() {
 						// Likely a theme property.
 						for (int i = 0; i < F->get().theme_properties.size(); i++) {
 							if (F->get().theme_properties[i].name == slices[1]) {
-								descr = DTR(F->get().theme_properties[i].description.strip_edges());
+								descr = DTR(F->get().theme_properties[i].description);
 								break;
 							}
 						}
