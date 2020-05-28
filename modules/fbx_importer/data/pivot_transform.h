@@ -83,7 +83,6 @@ struct PivotTransform : Reference, ModelAbstraction {
 	// cached for later use
 	Transform GlobalTransform;
 	Transform LocalTransform;
-	Transform Local_Scaling_Matrix; // used for inherit type.
 	Transform GeometricTransform; // 3DS max only
 	Assimp::FBX::TransformInheritance inherit_type; // maya fbx requires this - sorry <3
 };

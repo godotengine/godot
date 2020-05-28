@@ -125,7 +125,6 @@ void PivotTransform::ComputePivotTransform() {
 
 	// Scaling node
 	S.scale(scaling);
-	Local_Scaling_Matrix = S; // copy for when node / child is looking for the value of this.
 
 	// Rotation pivots
 	Transform Rpre = Transform(pre_rotation);
@@ -133,11 +132,9 @@ void PivotTransform::ComputePivotTransform() {
 	Transform Rpost = Transform(post_rotation);
 
 	Transform parent_global_xform;
-	Transform parent_local_scaling_m;
 
 	if (parent_transform.is_valid()) {
 		parent_global_xform = parent_transform->GlobalTransform;
-		parent_local_scaling_m = parent_transform->Local_Scaling_Matrix;
 	}
 
 	if(inherit_type == Assimp::FBX::Transform_RSrs)	{
@@ -154,18 +151,17 @@ void PivotTransform::ComputePivotTransform() {
 		AssimpUtils::debug_xform("result GlobalTransform", GlobalTransform);
 	} else {
 		// rotation - inherit type shearing handler (pre-rotation, post-rotation handler)
-		Transform local_rotation_m, parent_global_rotation_m;
 		AssimpUtils::debug_xform("parent global xform", parent_global_xform);
-		Quat parent_global_rotation = parent_global_xform.basis.get_rotation_quat();
-		parent_global_rotation_m.basis.set_quat(parent_global_rotation);
-		local_rotation_m = Rpre * R * Rpost;
+		Basis parent_global_rotation = parent_global_xform.basis;
+		Transform parent_global_rotation_m = Transform( parent_global_rotation );
+		Transform local_rotation_m = Rpre * R * Rpost;
 
 		// translation / scaling - Inherit type shearing handler
 		Transform local_shear_scaling, parent_shear_scaling, parent_shear_rotation, parent_shear_translation;
 		Vector3 parent_translation = parent_global_xform.get_origin();
 		parent_shear_translation.origin = parent_translation;
-		parent_shear_rotation = parent_shear_translation.inverse() * parent_global_xform;
-		parent_shear_scaling = parent_global_rotation_m.inverse() * parent_shear_rotation;
+		parent_shear_rotation = parent_shear_translation.affine_inverse() * parent_global_xform;
+		parent_shear_scaling = parent_global_rotation_m.affine_inverse() * parent_shear_rotation;
 		local_shear_scaling = S;
 
 		// Inherit type handler - we don't care about T here, just reordering RSrs etc.
@@ -176,7 +172,11 @@ void PivotTransform::ComputePivotTransform() {
 			global_rotation_scale = global_rotation_scale * parent_shear_scaling;
 			global_rotation_scale = global_rotation_scale * local_shear_scaling;
 		} else if (inherit_type == Assimp::FBX::Transform_Rrs) {
-			Transform parent_global_shear_m_noLocal = parent_shear_scaling * parent_local_scaling_m.affine_inverse();
+			const Vector3 non_fixed_scale = parent_transform->scaling;
+			Vector3 parent_scale = Vector3( 1/ non_fixed_scale.x, 1/non_fixed_scale.y, 1/non_fixed_scale.z );
+			Transform scale_xform = Transform();
+			scale_xform.scale(parent_scale);
+			Transform parent_global_shear_m_noLocal = parent_shear_scaling * scale_xform.affine_inverse();
 			global_rotation_scale = parent_global_rotation_m * local_rotation_m * parent_global_shear_m_noLocal * local_shear_scaling;
 		}
 
