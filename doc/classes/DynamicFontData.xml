@@ -12,7 +12,7 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="true">
-			If [code]true[/code], the font is rendered with anti-aliasing.
+			If [code]true[/code], the font is rendered with anti-aliasing. This property applies both to the main font and its outline (if it has one).
 		</member>
 		<member name="font_path" type="String" setter="set_font_path" getter="get_font_path" default="&quot;&quot;">
 			The path to the vector font file.
