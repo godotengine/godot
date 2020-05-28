@@ -445,7 +445,7 @@ void VisualScriptPropertySelector::_item_selected() {
 		if (E) {
 			for (int i = 0; i < E->get().properties.size(); i++) {
 				if (E->get().properties[i].name == name) {
-					text = E->get().properties[i].description;
+					text = DTR(E->get().properties[i].description);
 				}
 			}
 		}
@@ -459,7 +459,7 @@ void VisualScriptPropertySelector::_item_selected() {
 		if (C) {
 			for (int i = 0; i < C->get().methods.size(); i++) {
 				if (C->get().methods[i].name == name) {
-					text = C->get().methods[i].description;
+					text = DTR(C->get().methods[i].description);
 				}
 			}
 		}
@@ -472,7 +472,7 @@ void VisualScriptPropertySelector::_item_selected() {
 	if (T) {
 		for (int i = 0; i < T->get().methods.size(); i++) {
 			if (T->get().methods[i].name == functions[functions.size() - 1]) {
-				text = T->get().methods[i].description;
+				text = DTR(T->get().methods[i].description);
 			}
 		}
 	}
@@ -491,7 +491,7 @@ void VisualScriptPropertySelector::_item_selected() {
 		if (typecast_node.is_valid()) {
 			Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(typecast_node->get_class_name());
 			if (F) {
-				text = F->get().description;
+				text = DTR(F->get().description);
 			}
 		}
 
@@ -501,7 +501,7 @@ void VisualScriptPropertySelector::_item_selected() {
 			if (F) {
 				for (int i = 0; i < F->get().constants.size(); i++) {
 					if (F->get().constants[i].value.to_int() == int(builtin_node->get_func())) {
-						text = F->get().constants[i].description;
+						text = DTR(F->get().constants[i].description);
 					}
 				}
 			}
