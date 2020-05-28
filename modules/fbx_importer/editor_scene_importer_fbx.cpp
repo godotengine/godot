@@ -342,6 +342,10 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 		uint32_t cursor = 0;
 		for (uint32_t face_id = 0; face_id < face_vertex_counts.size(); face_id++) {
 			uint32_t vertex_count = face_vertex_counts[face_id];
+			if(vertex_count != 3 && vertex_count != 4)
+			{
+				print_error("unsupported vertex count! " + itos(vertex_count));
+			}
 			for (uint32_t y = 0; y < vertex_count; y++) {
 
 				// some files don't have these configured at all :P
