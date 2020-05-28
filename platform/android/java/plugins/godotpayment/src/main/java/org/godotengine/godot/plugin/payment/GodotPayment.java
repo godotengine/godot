@@ -215,7 +215,7 @@ public class GodotPayment extends GodotPlugin implements PurchasesUpdatedListene
 	@NonNull
 	@Override
 	public List<String> getPluginMethods() {
-		return Arrays.asList("startConnection", "endConnection", "purchase", "querySkuDetails", "isReady", "queryPurchases", "acknowledgePurchase");
+		return Arrays.asList("startConnection", "endConnection", "purchase", "querySkuDetails", "isReady", "queryPurchases", "acknowledgePurchase", "consumePurchase");
 	}
 
 	@NonNull
