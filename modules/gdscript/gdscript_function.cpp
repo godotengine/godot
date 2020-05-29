@@ -386,6 +386,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 	}
 
+	static_ref = script;
+
 	String err_text;
 
 #ifdef DEBUG_ENABLED
