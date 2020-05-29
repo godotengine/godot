@@ -31,7 +31,7 @@
 #ifndef SHAPE_SW_H
 #define SHAPE_SW_H
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "servers/physics_server_3d.h"
 /*
 
@@ -252,12 +252,12 @@ public:
 };
 
 struct ConvexPolygonShape3DSW : public Shape3DSW {
-	Geometry::MeshData mesh;
+	Geometry3D::MeshData mesh;
 
 	void _setup(const Vector<Vector3> &p_vertices);
 
 public:
-	const Geometry::MeshData &get_mesh() const { return mesh; }
+	const Geometry3D::MeshData &get_mesh() const { return mesh; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CONVEX_POLYGON; }
 

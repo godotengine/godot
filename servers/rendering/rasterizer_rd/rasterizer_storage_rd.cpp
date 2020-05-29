@@ -4295,7 +4295,7 @@ void RasterizerStorageRD::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p
 	uint32_t *tetrahedron = (uint32_t *)&lm->tetrahedra[node * 4];
 	Vector3 points[4] = { lm->points[tetrahedron[0]], lm->points[tetrahedron[1]], lm->points[tetrahedron[2]], lm->points[tetrahedron[3]] };
 	const Color *sh_colors[4]{ &lm->point_sh[tetrahedron[0] * 9], &lm->point_sh[tetrahedron[1] * 9], &lm->point_sh[tetrahedron[2] * 9], &lm->point_sh[tetrahedron[3] * 9] };
-	Color barycentric = Geometry::tetrahedron_get_barycentric_coords(points[0], points[1], points[2], points[3], p_point);
+	Color barycentric = Geometry3D::tetrahedron_get_barycentric_coords(points[0], points[1], points[2], points[3], p_point);
 
 	for (int i = 0; i < 4; i++) {
 		float c = CLAMP(barycentric[i], 0.0, 1.0);

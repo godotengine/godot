@@ -136,9 +136,9 @@ protected:
 
 		/* BOX SHAPE */
 
-		Vector<Plane> box_planes = Geometry::build_box_planes(Vector3(0.5, 0.5, 0.5));
+		Vector<Plane> box_planes = Geometry3D::build_box_planes(Vector3(0.5, 0.5, 0.5));
 		RID box_mesh = vs->mesh_create();
-		Geometry::MeshData box_data = Geometry::build_convex_mesh(box_planes);
+		Geometry3D::MeshData box_data = Geometry3D::build_convex_mesh(box_planes);
 		vs->mesh_add_surface_from_mesh_data(box_mesh, box_data);
 		type_mesh_map[PhysicsServer3D::SHAPE_BOX] = box_mesh;
 
@@ -148,10 +148,10 @@ protected:
 
 		/* CAPSULE SHAPE */
 
-		Vector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 0.7, 12, Vector3::AXIS_Z);
+		Vector<Plane> capsule_planes = Geometry3D::build_capsule_planes(0.5, 0.7, 12, Vector3::AXIS_Z);
 
 		RID capsule_mesh = vs->mesh_create();
-		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
+		Geometry3D::MeshData capsule_data = Geometry3D::build_convex_mesh(capsule_planes);
 		vs->mesh_add_surface_from_mesh_data(capsule_mesh, capsule_data);
 
 		type_mesh_map[PhysicsServer3D::SHAPE_CAPSULE] = capsule_mesh;
@@ -165,10 +165,10 @@ protected:
 
 		/* CONVEX SHAPE */
 
-		Vector<Plane> convex_planes = Geometry::build_cylinder_planes(0.5, 0.7, 5, Vector3::AXIS_Z);
+		Vector<Plane> convex_planes = Geometry3D::build_cylinder_planes(0.5, 0.7, 5, Vector3::AXIS_Z);
 
 		RID convex_mesh = vs->mesh_create();
-		Geometry::MeshData convex_data = Geometry::build_convex_mesh(convex_planes);
+		Geometry3D::MeshData convex_data = Geometry3D::build_convex_mesh(convex_planes);
 		QuickHull::build(convex_data.vertices, convex_data);
 		vs->mesh_add_surface_from_mesh_data(convex_mesh, convex_data);
 
@@ -341,10 +341,10 @@ public:
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
-		Vector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 1, 12, 5, Vector3::AXIS_Y);
+		Vector<Plane> capsule_planes = Geometry3D::build_capsule_planes(0.5, 1, 12, 5, Vector3::AXIS_Y);
 
 		RID capsule_mesh = vs->mesh_create();
-		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
+		Geometry3D::MeshData capsule_data = Geometry3D::build_convex_mesh(capsule_planes);
 		vs->mesh_add_surface_from_mesh_data(capsule_mesh, capsule_data);
 		type_mesh_map[PhysicsServer3D::SHAPE_CAPSULE] = capsule_mesh;
 

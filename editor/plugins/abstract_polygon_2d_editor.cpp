@@ -31,6 +31,7 @@
 #include "abstract_polygon_2d_editor.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 
@@ -671,7 +672,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 			Vector2 segment[2] = { xform.xform(points[i] + offset),
 				xform.xform(points[(i + 1) % n_points] + offset) };
 
-			Vector2 cp = Geometry::get_closest_point_to_segment_2d(p_pos, segment);
+			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment);
 
 			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2) {
 				continue; //not valid to reuse point

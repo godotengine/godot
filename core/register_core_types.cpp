@@ -60,7 +60,8 @@
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/expression.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/os/main_loop.h"
@@ -87,7 +88,8 @@ static _JSON *_json = nullptr;
 
 static IP *ip = nullptr;
 
-static _Geometry *_geometry = nullptr;
+static _Geometry2D *_geometry_2d = nullptr;
+static _Geometry3D *_geometry_3d = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -213,7 +215,8 @@ void register_core_types() {
 
 	ip = IP::create();
 
-	_geometry = memnew(_Geometry);
+	_geometry_2d = memnew(_Geometry2D);
+	_geometry_3d = memnew(_Geometry3D);
 
 	_resource_loader = memnew(_ResourceLoader);
 	_resource_saver = memnew(_ResourceSaver);
@@ -238,7 +241,8 @@ void register_core_settings() {
 void register_core_singletons() {
 	ClassDB::register_class<ProjectSettings>();
 	ClassDB::register_virtual_class<IP>();
-	ClassDB::register_class<_Geometry>();
+	ClassDB::register_class<_Geometry2D>();
+	ClassDB::register_class<_Geometry3D>();
 	ClassDB::register_class<_ResourceLoader>();
 	ClassDB::register_class<_ResourceSaver>();
 	ClassDB::register_class<_OS>();
@@ -253,7 +257,8 @@ void register_core_singletons() {
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry", _Geometry::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", _Geometry2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
@@ -275,7 +280,8 @@ void unregister_core_types() {
 	memdelete(_marshalls);
 	memdelete(_json);
 
-	memdelete(_geometry);
+	memdelete(_geometry_2d);
+	memdelete(_geometry_3d);
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();

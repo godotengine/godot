@@ -155,7 +155,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					least_cost_poly->poly->points[(i + 1) % least_cost_poly->poly->points.size()].pos
 				};
 
-				const Vector3 new_entry = Geometry::get_closest_point_to_segment(least_cost_poly->entry, edge_line);
+				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly->entry, edge_line);
 				const float new_distance = least_cost_poly->entry.distance_to(new_entry) + least_cost_poly->traveled_distance;
 #else
 				const float new_distance = least_cost_poly->poly->center.distance_to(edge.other_polygon->center) + least_cost_poly->traveled_distance;
@@ -413,7 +413,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
 				Vector3 a, b;
 
-				Geometry::get_closest_points_between_segments(
+				Geometry3D::get_closest_points_between_segments(
 						p_from,
 						p_to,
 						p.points[point_id].pos,

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "lightmapper_rd.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
 #include "core/project_settings.h"
 #include "lm_blendseams.glsl.gen.h"
 #include "lm_compute.glsl.gen.h"
@@ -137,7 +137,7 @@ void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Ve
 		{
 			Vector3 qsize = aabb.size * 0.5; //quarter size, for fast aabb test
 
-			if (!Geometry::triangle_box_overlap(aabb.position + qsize, qsize, p_points)) {
+			if (!Geometry3D::triangle_box_overlap(aabb.position + qsize, qsize, p_points)) {
 				//does not fit in child, go on
 				continue;
 			}
@@ -198,7 +198,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		int slices = 0;
 
 		while (source_sizes.size() > 0) {
-			Vector<Vector3i> offsets = Geometry::partial_pack_rects(source_sizes, atlas_size);
+			Vector<Vector3i> offsets = Geometry2D::partial_pack_rects(source_sizes, atlas_size);
 			Vector<int> new_indices;
 			Vector<Vector2i> new_sources;
 			for (int i = 0; i < offsets.size(); i++) {
@@ -488,9 +488,9 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	//generate SDF for raytracing
-	Vector<uint32_t> euclidean_pos = Geometry::generate_edf(solid, Vector3i(grid_size, grid_size, grid_size), false);
-	Vector<uint32_t> euclidean_neg = Geometry::generate_edf(solid, Vector3i(grid_size, grid_size, grid_size), true);
-	Vector<int8_t> sdf8 = Geometry::generate_sdf8(euclidean_pos, euclidean_neg);
+	Vector<uint32_t> euclidean_pos = Geometry3D::generate_edf(solid, Vector3i(grid_size, grid_size, grid_size), false);
+	Vector<uint32_t> euclidean_neg = Geometry3D::generate_edf(solid, Vector3i(grid_size, grid_size, grid_size), true);
+	Vector<int8_t> sdf8 = Geometry3D::generate_sdf8(euclidean_pos, euclidean_neg);
 
 	/*****************************/
 	/*** CREATE GPU STRUCTURES ***/

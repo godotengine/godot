@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "csg_shape.h"
+#include "core/math/geometry_2d.h"
 #include "scene/3d/path_3d.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
@@ -1728,7 +1729,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		final_polygon.invert();
 	}
 
-	Vector<int> triangles = Geometry::triangulate_polygon(final_polygon);
+	Vector<int> triangles = Geometry2D::triangulate_polygon(final_polygon);
 
 	if (triangles.size() < 3) {
 		return nullptr;

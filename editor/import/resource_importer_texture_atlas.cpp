@@ -33,6 +33,7 @@
 #include "atlas_import_failed.xpm"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/file_access.h"
 #include "editor/editor_atlas_packer.h"
 #include "scene/resources/mesh.h"
@@ -247,7 +248,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				chart.vertices = polygons[j];
 				chart.can_transpose = true;
 
-				Vector<int> poly = Geometry::triangulate_polygon(polygons[j]);
+				Vector<int> poly = Geometry2D::triangulate_polygon(polygons[j]);
 				for (int i = 0; i < poly.size(); i += 3) {
 					EditorAtlasPacker::Chart::Face f;
 					f.vertex[0] = poly[i + 0];
