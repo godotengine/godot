@@ -389,8 +389,8 @@ private:
 	void _scroll_changed(double);
 
 	void _gui_input(Ref<InputEvent> p_event);
-	Item *_get_next_item(Item *p_item, bool p_free = false);
-	Item *_get_prev_item(Item *p_item, bool p_free = false);
+	Item *_get_next_item(Item *p_item, bool p_free = false) const;
+	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
 	Rect2 _get_text_rect();
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
@@ -407,7 +407,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	String get_text();
+	String get_text() const;
 	void add_text(const String &p_text);
 	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0));
 	void add_newline();
