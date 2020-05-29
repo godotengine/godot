@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
-		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] Assignments to [member text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member text] will erase previous edits made from other manual sources such as [method append_text] and the [code]push_*[/code] / [method pop] methods.
 		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
 		[b]Note:[/b] [code]push_*/pop[/code] functions won't affect BBCode.
 		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
@@ -35,18 +35,18 @@
 				Adds raw non-BBCode-parsed text to the tag stack.
 			</description>
 		</method>
-		<method name="append_bbcode">
+		<method name="append_text">
 			<return type="int" enum="Error" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
 				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
-				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
+				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_text] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member text] instead of using [method append_text].
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the tag stack and sets [member bbcode_text] to an empty string.
+				Clears the tag stack and sets [member text] to an empty string.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
@@ -65,6 +65,12 @@
 			<return type="int" />
 			<description>
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
+			</description>
+		</method>
+		<method name="get_parsed_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the text without BBCode mark-up.
 			</description>
 		</method>
 		<method name="get_selected_text" qualifiers="const">
@@ -126,7 +132,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="bbcode" type="String" />
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_text]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">
@@ -368,10 +374,6 @@
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
 		</member>
-		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
-			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
-		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
@@ -413,8 +415,8 @@
 			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
-			The raw text of the label.
-			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse BBCodes. Does not modify [member bbcode_text].
+			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
+			[b]Note:[/b] If [member bbcode_enabled] is [code]true[/code], it is unadvised to use the [code]+=[/code] operator with [code]text[/code] (e.g. [code]text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_text] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
