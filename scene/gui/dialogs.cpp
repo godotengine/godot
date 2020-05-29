@@ -51,7 +51,7 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void AcceptDialog::_parent_focused() {
-	_cancel_pressed();
+	//_cancel_pressed();
 }
 
 void AcceptDialog::_notification(int p_what) {
