@@ -76,13 +76,17 @@ JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
 			ERR_PRINT("The Windows DirectInput subsystem could not allocate sufficient memory.");
 			ERR_PRINT("Rebooting your PC may solve this issue.");
 		}
+		// Ensure dinput is still a nullptr.
+		dinput = nullptr;
 	}
 }
 
 JoypadWindows::~JoypadWindows() {
 
 	close_joypad();
-	dinput->Release();
+	if (dinput) {
+		dinput->Release();
+	}
 	unload_xinput();
 }
 
@@ -146,6 +150,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 
 bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
+	ERR_FAIL_NULL_V_MSG(dinput, false, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	HRESULT hr;
 	int num = input->get_unused_joy_id();
 
@@ -284,6 +289,7 @@ void JoypadWindows::close_joypad(int id) {
 
 void JoypadWindows::probe_joypads() {
 
+	ERR_FAIL_NULL_MSG(dinput, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	DWORD dwResult;
 	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
 
