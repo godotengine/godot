@@ -4580,7 +4580,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								case Variant::NODE_PATH: {
 									if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER) {
 										current_export = PropertyInfo();
-										_set_error("Hint expects a Node Type. (e.g. Control or Sprite2D)");
+										_set_error("Hint expects a Node Type. (e.g. Control or Sprite)");
 										return;
 									}
 
