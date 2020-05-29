@@ -67,13 +67,16 @@ JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
 	for (int i = 0; i < JOYPADS_MAX; i++)
 		attached_joypads[i] = false;
 
-	HRESULT result;
-	result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, NULL);
-	if (FAILED(result)) {
-		printf("Couldn't initialize DirectInput: %ld\n", result);
-		printf("Rebooting your PC may solve this issue.\n");
+	HRESULT result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, nullptr);
+	if (result == DI_OK) {
+		probe_joypads();
+	} else {
+		ERR_PRINT("Couldn't initialize DirectInput. Error: " + itos(result));
+		if (result == DIERR_OUTOFMEMORY) {
+			ERR_PRINT("The Windows DirectInput subsystem could not allocate sufficient memory.");
+			ERR_PRINT("Rebooting your PC may solve this issue.");
+		}
 	}
-	probe_joypads();
 }
 
 JoypadWindows::~JoypadWindows() {
