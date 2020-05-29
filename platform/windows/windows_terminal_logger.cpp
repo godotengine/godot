@@ -108,47 +108,47 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 		switch (p_type) {
 			case ERR_ERROR:
-				logf("ERROR:");
+				logf_error("ERROR:");
 				break;
 			case ERR_WARNING:
-				logf("WARNING:");
+				logf_error("WARNING:");
 				break;
 			case ERR_SCRIPT:
-				logf("SCRIPT ERROR:");
+				logf_error("SCRIPT ERROR:");
 				break;
 			case ERR_SHADER:
-				logf("SHADER ERROR:");
+				logf_error("SHADER ERROR:");
 				break;
 		}
 
 		SetConsoleTextAttribute(hCon, basecol);
 		if (p_rationale && p_rationale[0]) {
-			logf(" %s\n", p_rationale);
+			logf_error(" %s\n", p_rationale);
 		} else {
-			logf(" %s\n", p_code);
+			logf_error(" %s\n", p_code);
 		}
 
 		// `FOREGROUND_INTENSITY` alone results in gray text.
 		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
 		switch (p_type) {
 			case ERR_ERROR:
-				logf("   at: ");
+				logf_error("   at: ");
 				break;
 			case ERR_WARNING:
-				logf("     at: ");
+				logf_error("     at: ");
 				break;
 			case ERR_SCRIPT:
-				logf("          at: ");
+				logf_error("          at: ");
 				break;
 			case ERR_SHADER:
-				logf("          at: ");
+				logf_error("          at: ");
 				break;
 		}
 
 		if (p_rationale && p_rationale[0]) {
-			logf("(%s:%i)\n", p_file, p_line);
+			logf_error("(%s:%i)\n", p_file, p_line);
 		} else {
-			logf("%s (%s:%i)\n", p_function, p_file, p_line);
+			logf_error("%s (%s:%i)\n", p_function, p_file, p_line);
 		}
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);
