@@ -194,6 +194,21 @@ void TileMapEditor::_palette_multi_selected(int index, bool selected) {
 	_update_palette();
 }
 
+void TileMapEditor::_palette_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+
+	// Zoom in/out using Ctrl + mouse wheel.
+	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			size_slider->set_value(size_slider->get_value() + 0.2);
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			size_slider->set_value(size_slider->get_value() - 0.2);
+		}
+	}
+}
+
 void TileMapEditor::_canvas_mouse_enter() {
 	mouse_over = true;
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -1913,6 +1928,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette->add_theme_constant_override("vseparation", 8 * EDSCALE);
 	palette->connect("item_selected", callable_mp(this, &TileMapEditor::_palette_selected));
 	palette->connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
+	palette->connect("gui_input", callable_mp(this, &TileMapEditor::_palette_input));
 	palette_container->add_child(palette);
 
 	// Add message for when no texture is selected.
