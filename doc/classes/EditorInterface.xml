@@ -204,6 +204,7 @@
 	</methods>
 	<members>
 		<member name="distraction_free_mode" type="bool" setter="set_distraction_free_mode" getter="is_distraction_free_mode_enabled">
+			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
 		</member>
 	</members>
 	<constants>
