@@ -4159,7 +4159,6 @@ void EditorNode::_update_dock_slots_visibility() {
 		}
 
 		right_hsplit->hide();
-		bottom_panel->hide();
 	} else {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 			int tabs_visible = 0;
@@ -4189,7 +4188,6 @@ void EditorNode::_update_dock_slots_visibility() {
 				dock_slot[i]->set_current_tab(0);
 			}
 		}
-		bottom_panel->show();
 
 		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible()) {
 			right_hsplit->show();
