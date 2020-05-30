@@ -814,7 +814,7 @@ public:
 			item_mask = 1;
 			scale = 1.0;
 			energy = 1.0;
-			item_shadow_mask = -1;
+			item_shadow_mask = 1;
 			mode = RS::CANVAS_LIGHT_MODE_ADD;
 			//			texture_cache = nullptr;
 			next_ptr = nullptr;
