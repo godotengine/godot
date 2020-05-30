@@ -425,10 +425,10 @@ void GDMono::initialize_load_assemblies() {
 #if defined(TOOLS_ENABLED)
 	bool tool_assemblies_loaded = _load_tools_assemblies();
 	CRASH_COND_MSG(!tool_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
-#endif
 
 	if (Main::is_project_manager())
 		return;
+#endif
 
 	// Load the project's main assembly. This doesn't necessarily need to succeed.
 	// The game may not be using .NET at all, or if the project does use .NET and
