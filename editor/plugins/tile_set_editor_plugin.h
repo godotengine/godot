@@ -201,6 +201,7 @@ private:
 	void _on_workspace_overlay_draw();
 	void _on_workspace_draw();
 	void _on_workspace_process();
+	void _on_scroll_container_input(const Ref<InputEvent> &p_event);
 	void _on_workspace_input(const Ref<InputEvent> &p_ie);
 	void _on_tool_clicked(int p_tool);
 	void _on_priority_changed(float val);
