@@ -45,7 +45,7 @@ typedef enum {
 	GODOT_METHOD_RPC_MODE_REMOTESYNC,
 	GODOT_METHOD_RPC_MODE_MASTERSYNC,
 	GODOT_METHOD_RPC_MODE_PUPPETSYNC,
-} godot_method_rpc_mode;
+} godot_nativescript_method_rpc_mode;
 
 typedef enum {
 	GODOT_PROPERTY_HINT_NONE, ///< no hint provided.
@@ -82,7 +82,7 @@ typedef enum {
 	GODOT_PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
 	GODOT_PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
 	GODOT_PROPERTY_HINT_MAX,
-} godot_property_hint;
+} godot_nativescript_property_hint;
 
 typedef enum {
 
@@ -106,71 +106,80 @@ typedef enum {
 	GODOT_PROPERTY_USAGE_DEFAULT = GODOT_PROPERTY_USAGE_STORAGE | GODOT_PROPERTY_USAGE_EDITOR | GODOT_PROPERTY_USAGE_NETWORK,
 	GODOT_PROPERTY_USAGE_DEFAULT_INTL = GODOT_PROPERTY_USAGE_STORAGE | GODOT_PROPERTY_USAGE_EDITOR | GODOT_PROPERTY_USAGE_NETWORK | GODOT_PROPERTY_USAGE_INTERNATIONALIZED,
 	GODOT_PROPERTY_USAGE_NOEDITOR = GODOT_PROPERTY_USAGE_STORAGE | GODOT_PROPERTY_USAGE_NETWORK,
-} godot_property_usage_flags;
+} godot_nativescript_property_usage_flags;
 
 typedef struct {
-	godot_method_rpc_mode rset_type;
+	godot_nativescript_method_rpc_mode rset_type;
 
 	godot_int type;
-	godot_property_hint hint;
+	godot_nativescript_property_hint hint;
 	godot_string hint_string;
-	godot_property_usage_flags usage;
+	godot_nativescript_property_usage_flags usage;
 	godot_variant default_value;
-} godot_property_attributes;
+} godot_nativescript_property_attributes;
 
 typedef struct {
 	// instance pointer, method_data - return user data
 	GDCALLINGCONV void *(*create_func)(godot_object *, void *);
 	void *method_data;
 	GDCALLINGCONV void (*free_func)(void *);
-} godot_instance_create_func;
+} godot_nativescript_instance_create_func;
 
 typedef struct {
 	// instance pointer, method data, user data
 	GDCALLINGCONV void (*destroy_func)(godot_object *, void *, void *);
 	void *method_data;
 	GDCALLINGCONV void (*free_func)(void *);
-} godot_instance_destroy_func;
+} godot_nativescript_instance_destroy_func;
 
-void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func);
+void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_nativescript_instance_create_func p_create_func, godot_nativescript_instance_destroy_func p_destroy_func);
 
-void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func);
+void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_nativescript_instance_create_func p_create_func, godot_nativescript_instance_destroy_func p_destroy_func);
 
 typedef struct {
-	godot_method_rpc_mode rpc_type;
-} godot_method_attributes;
+	godot_nativescript_method_rpc_mode rpc_type;
+} godot_nativescript_method_attributes;
+
+typedef struct {
+	godot_string name;
+
+	godot_variant_type type;
+	godot_nativescript_property_hint hint;
+	godot_string hint_string;
+} godot_nativescript_method_argument;
 
 typedef struct {
 	// instance pointer, method data, user data, num args, args - return result as varaint
 	GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **);
 	void *method_data;
 	GDCALLINGCONV void (*free_func)(void *);
-} godot_instance_method;
+} godot_nativescript_instance_method;
 
-void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const char *p_name, const char *p_function_name, godot_method_attributes p_attr, godot_instance_method p_method);
+void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const char *p_name, const char *p_function_name, godot_nativescript_method_attributes p_attr, godot_nativescript_instance_method p_method);
+void GDAPI godot_nativescript_set_method_argument_information(void *p_gdnative_handle, const char *p_name, const char *p_function_name, int p_num_args, const godot_nativescript_method_argument *p_args);
 
 typedef struct {
 	// instance pointer, method data, user data, value
 	GDCALLINGCONV void (*set_func)(godot_object *, void *, void *, godot_variant *);
 	void *method_data;
 	GDCALLINGCONV void (*free_func)(void *);
-} godot_property_set_func;
+} godot_nativescript_property_set_func;
 
 typedef struct {
 	// instance pointer, method data, user data, value
 	GDCALLINGCONV godot_variant (*get_func)(godot_object *, void *, void *);
 	void *method_data;
 	GDCALLINGCONV void (*free_func)(void *);
-} godot_property_get_func;
+} godot_nativescript_property_get_func;
 
-void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const char *p_name, const char *p_path, godot_property_attributes *p_attr, godot_property_set_func p_set_func, godot_property_get_func p_get_func);
+void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const char *p_name, const char *p_path, godot_nativescript_property_attributes *p_attr, godot_nativescript_property_set_func p_set_func, godot_nativescript_property_get_func p_get_func);
 
 typedef struct {
 	godot_string name;
 	godot_int type;
-	godot_property_hint hint;
+	godot_nativescript_property_hint hint;
 	godot_string hint_string;
-	godot_property_usage_flags usage;
+	godot_nativescript_property_usage_flags usage;
 	godot_variant default_value;
 } godot_nativescript_signal_argument;
 
@@ -185,26 +194,6 @@ typedef struct {
 void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_nativescript_signal *p_signal);
 
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance);
-
-/*
- *
- *
- * NativeScript 1.1
- *
- *
- */
-
-// method registering with argument names
-
-typedef struct {
-	godot_string name;
-
-	godot_variant_type type;
-	godot_property_hint hint;
-	godot_string hint_string;
-} godot_method_arg;
-
-void GDAPI godot_nativescript_set_method_argument_information(void *p_gdnative_handle, const char *p_name, const char *p_function_name, int p_num_args, const godot_method_arg *p_args);
 
 // documentation
 
@@ -230,9 +219,9 @@ typedef struct {
 	GDCALLINGCONV bool (*refcount_decremented_instance_binding)(void *, godot_object *);
 	void *data;
 	GDCALLINGCONV void (*free_func)(void *);
-} godot_instance_binding_functions;
+} godot_nativescript_instance_binding_functions;
 
-int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_instance_binding_functions p_binding_functions);
+int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_nativescript_instance_binding_functions p_binding_functions);
 void GDAPI godot_nativescript_unregister_instance_binding_data_functions(int p_idx);
 
 void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object *p_object);

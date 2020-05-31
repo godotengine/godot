@@ -48,7 +48,7 @@
 
 struct NativeScriptDesc {
 	struct Method {
-		godot_instance_method method;
+		godot_nativescript_instance_method method;
 		MethodInfo info;
 		int rpc_mode;
 		uint16_t rpc_method_id;
@@ -56,8 +56,8 @@ struct NativeScriptDesc {
 	};
 
 	struct Property {
-		godot_property_set_func setter;
-		godot_property_get_func getter;
+		godot_nativescript_property_set_func setter;
+		godot_nativescript_property_get_func getter;
 		PropertyInfo info;
 		Variant default_value;
 		int rset_mode;
@@ -78,8 +78,8 @@ struct NativeScriptDesc {
 	StringName base;
 	StringName base_native_type;
 	NativeScriptDesc *base_data;
-	godot_instance_create_func create_func;
-	godot_instance_destroy_func destroy_func;
+	godot_nativescript_instance_create_func create_func;
+	godot_nativescript_instance_destroy_func destroy_func;
 
 	String documentation;
 
@@ -88,8 +88,8 @@ struct NativeScriptDesc {
 	bool is_tool;
 
 	inline NativeScriptDesc() {
-		zeromem(&create_func, sizeof(godot_instance_create_func));
-		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
+		zeromem(&create_func, sizeof(godot_nativescript_instance_create_func));
+		zeromem(&destroy_func, sizeof(godot_nativescript_instance_destroy_func));
 	}
 };
 
@@ -267,7 +267,7 @@ private:
 
 	void call_libraries_cb(const StringName &name);
 
-	Vector<Pair<bool, godot_instance_binding_functions>> binding_functions;
+	Vector<Pair<bool, godot_nativescript_instance_binding_functions>> binding_functions;
 	Set<Vector<void *> *> binding_instances;
 
 	Map<int, HashMap<StringName, const void *>> global_type_tags;
@@ -360,7 +360,7 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max);
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max);
 
-	int register_binding_functions(godot_instance_binding_functions p_binding_functions);
+	int register_binding_functions(godot_nativescript_instance_binding_functions p_binding_functions);
 	void unregister_binding_functions(int p_idx);
 
 	void *get_instance_binding_data(int p_idx, Object *p_object);

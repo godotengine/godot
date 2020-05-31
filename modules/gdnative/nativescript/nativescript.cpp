@@ -1498,7 +1498,7 @@ void NativeScriptLanguage::profiling_add_data(StringName p_signature, uint64_t p
 #endif
 }
 
-int NativeScriptLanguage::register_binding_functions(godot_instance_binding_functions p_binding_functions) {
+int NativeScriptLanguage::register_binding_functions(godot_nativescript_instance_binding_functions p_binding_functions) {
 	// find index
 
 	int idx = -1;
