@@ -2591,6 +2591,11 @@ void SceneTreeDock::_focus_node() {
 }
 
 void SceneTreeDock::attach_script_to_selected(bool p_extend) {
+	if (ScriptServer::get_language_count() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("Cannot attach a script: there are no languages registered.\nThis is probably because this editor was built with all language modules disabled."));
+		return;
+	}
+
 	if (!profile_allow_script_editing) {
 		return;
 	}
