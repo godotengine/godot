@@ -498,16 +498,8 @@ Dictionary _OS::get_time_zone_info() const {
 	return infod;
 }
 
-uint64_t _OS::get_unix_time() const {
+double _OS::get_unix_time() const {
 	return OS::get_singleton()->get_unix_time();
-}
-
-uint64_t _OS::get_system_time_secs() const {
-	return OS::get_singleton()->get_system_time_secs();
-}
-
-uint64_t _OS::get_system_time_msecs() const {
-	return OS::get_singleton()->get_system_time_msecs();
 }
 
 void _OS::delay_usec(uint32_t p_usec) const {
@@ -729,8 +721,6 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unix_time"), &_OS::get_unix_time);
 	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
-	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
-	ClassDB::bind_method(D_METHOD("get_system_time_msecs"), &_OS::get_system_time_msecs);
 
 	ClassDB::bind_method(D_METHOD("get_exit_code"), &_OS::get_exit_code);
 	ClassDB::bind_method(D_METHOD("set_exit_code", "code"), &_OS::set_exit_code);
