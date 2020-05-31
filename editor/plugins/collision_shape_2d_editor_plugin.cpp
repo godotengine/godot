@@ -36,6 +36,7 @@
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/line_shape_2d.h"
+#include "scene/resources/ray_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
 
