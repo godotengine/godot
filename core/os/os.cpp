@@ -728,19 +728,25 @@ PoolStringArray OS::get_connected_midi_inputs() {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 
 	PoolStringArray list;
-	return list;
+	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 }
 
 void OS::open_midi_inputs() {
 
-	if (MIDIDriver::get_singleton())
+	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->open();
+	} else {
+		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+	}
 }
 
 void OS::close_midi_inputs() {
 
-	if (MIDIDriver::get_singleton())
+	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->close();
+	} else {
+		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+	}
 }
 
 OS::OS() {
