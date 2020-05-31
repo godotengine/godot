@@ -1304,14 +1304,18 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
 	export_project->get_line_edit()->connect("text_changed", callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
+	const String export_debug_tooltip =
+			TTR("By default, projects are exported in release mode.\nExporting in debug mode enables various runtime checks at the cost of larger and slower binaries.\nOnly enable this option if you actually need it.");
 	export_debug = memnew(CheckBox);
-	export_debug->set_text(TTR("Export With Debug"));
-	export_debug->set_pressed(true);
+	export_debug->set_text(TTR("Export In Debug Mode"));
+	export_debug->set_tooltip(export_debug_tooltip);
+	export_debug->set_pressed(false);
 	export_project->get_vbox()->add_child(export_debug);
 
 	export_pck_zip_debug = memnew(CheckBox);
-	export_pck_zip_debug->set_text(TTR("Export With Debug"));
-	export_pck_zip_debug->set_pressed(true);
+	export_pck_zip_debug->set_text(TTR("Export In Debug Mode"));
+	export_pck_zip_debug->set_tooltip(export_debug_tooltip);
+	export_pck_zip_debug->set_pressed(false);
 	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
 
 	set_hide_on_ok(false);
