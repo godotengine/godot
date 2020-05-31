@@ -691,7 +691,7 @@ public:
 	bool get_docks_visible() const;
 
 	void set_distraction_free_mode(bool p_enter);
-	bool get_distraction_free_mode() const;
+	bool is_distraction_free_mode_enabled() const;
 
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);

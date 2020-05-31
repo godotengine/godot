@@ -4945,7 +4945,7 @@ void EditorNode::set_distraction_free_mode(bool p_enter) {
 	}
 }
 
-bool EditorNode::get_distraction_free_mode() const {
+bool EditorNode::is_distraction_free_mode_enabled() const {
 	return distraction_free->is_pressed();
 }
 

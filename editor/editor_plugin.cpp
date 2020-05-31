@@ -281,6 +281,10 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 
 EditorInterface *EditorInterface::singleton = NULL;
 
+bool EditorInterface::is_distraction_free_mode_enabled() const {
+	return EditorNode::get_singleton()->is_distraction_free_mode_enabled();
+}
+
 void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorInterface::inspect_object, DEFVAL(String()));
@@ -312,6 +316,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
+	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 }
 
 EditorInterface::EditorInterface() {
