@@ -83,15 +83,7 @@ uint64_t OS::get_splash_tick_msec() const {
 	return _msec_splash;
 }
 
-uint64_t OS::get_unix_time() const {
-	return 0;
-}
-
-uint64_t OS::get_system_time_secs() const {
-	return 0;
-}
-
-uint64_t OS::get_system_time_msecs() const {
+double OS::get_unix_time() const {
 	return 0;
 }
 
