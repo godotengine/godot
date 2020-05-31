@@ -129,9 +129,7 @@ public:
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
-	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_secs() const;
-	virtual uint64_t get_system_time_msecs() const;
+	virtual double get_unix_time() const;
 
 	virtual Error set_cwd(const String &p_cwd);
 
