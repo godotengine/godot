@@ -325,7 +325,7 @@
 			</description>
 		</method>
 		<method name="get_unix_time" qualifiers="const">
-			<return type="int">
+			<return type="float">
 			</return>
 			<description>
 				Returns the current UNIX epoch timestamp.

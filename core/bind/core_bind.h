@@ -199,9 +199,7 @@ public:
 	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
 	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
 	Dictionary get_time_zone_info() const;
-	uint64_t get_unix_time() const;
-	uint64_t get_system_time_secs() const;
-	uint64_t get_system_time_msecs() const;
+	double get_unix_time() const;
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
