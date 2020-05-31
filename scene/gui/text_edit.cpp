@@ -6002,7 +6002,13 @@ void TextEdit::toggle_fold_line(int p_line) {
 }
 
 int TextEdit::get_line_count() const {
-	return text.size();
+	int line_count = text.size();
+
+	for (int i = 0; i < text.size(); ++i) {
+		line_count += times_line_wraps(i);
+	}
+
+	return line_count;
 }
 
 void TextEdit::_do_text_op(const TextOperation &p_op, bool p_reverse) {
