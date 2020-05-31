@@ -1764,16 +1764,16 @@ public:
 
 		if (!FileAccess::exists(js)) {
 			valid = false;
-			err += TTR("OpenJDK jarsigner not configured in the Editor Settings.") + "\n";
+			err += TTR("OpenJDK 8 jarsigner not configured in the Editor Settings.") + "\n";
 		}
 
 		String dk = p_preset->get("keystore/debug");
 
 		if (!FileAccess::exists(dk)) {
-			dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
+			dk = EditorSettings::get_singleton()->get("export/android/default_keystore");
 			if (!FileAccess::exists(dk)) {
 				valid = false;
-				err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
+				err += TTR("Keystore not configured in the Editor Settings nor in the preset.") + "\n";
 			}
 		}
 
@@ -2016,10 +2016,6 @@ public:
 		String package_name = p_preset->get("package/unique_name");
 
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
-
-		String release_keystore = p_preset->get("keystore/release");
-		String release_username = p_preset->get("keystore/release_user");
-		String release_password = p_preset->get("keystore/release_password");
 
 		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
@@ -2269,22 +2265,24 @@ public:
 				keystore = p_preset->get("keystore/debug");
 				password = p_preset->get("keystore/debug_password");
 				user = p_preset->get("keystore/debug_user");
+			} else {
+				keystore = p_preset->get("keystore/release");
+				password = p_preset->get("keystore/release_password");
+				user = p_preset->get("keystore/release_user");
+			}
 
-				if (keystore.empty()) {
-					keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
-					password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
-					user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
-				}
+			if (keystore.empty()) {
+				// Fall back to the default editor keystore (not specific to the preset).
+				keystore = EditorSettings::get_singleton()->get("export/android/default_keystore");
+				password = EditorSettings::get_singleton()->get("export/android/default_keystore_pass");
+				user = EditorSettings::get_singleton()->get("export/android/default_keystore_user");
+			}
 
+			if (p_debug) {
 				if (ep.step("Signing debug APK...", 103)) {
 					CLEANUP_AND_RETURN(ERR_SKIP);
 				}
-
 			} else {
-				keystore = release_keystore;
-				password = release_password;
-				user = release_username;
-
 				if (ep.step("Signing release APK...", 103)) {
 					CLEANUP_AND_RETURN(ERR_SKIP);
 				}
@@ -2332,7 +2330,8 @@ public:
 
 			OS::get_singleton()->execute(jarsigner, args, true, nullptr, nullptr, &retval);
 			if (retval) {
-				EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
+				EditorNode::add_io_error(
+						"'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8, not a newer version.");
 				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 			}
 		}
@@ -2460,10 +2459,10 @@ void register_android_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/adb", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
 	EDITOR_DEF("export/android/jarsigner", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/jarsigner", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
-	EDITOR_DEF("export/android/debug_keystore", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore"));
-	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
-	EDITOR_DEF("export/android/debug_keystore_pass", "android");
+	EDITOR_DEF("export/android/default_keystore", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/default_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore"));
+	EDITOR_DEF("export/android/default_keystore_user", "androiddebugkey");
+	EDITOR_DEF("export/android/default_keystore_pass", "android");
 	EDITOR_DEF("export/android/force_system_user", false);
 	EDITOR_DEF("export/android/custom_build_sdk_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/custom_build_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
