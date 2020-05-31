@@ -1351,7 +1351,7 @@ String EditorSettings::get_feature_profiles_dir() const {
 
 void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, Variant p_data) {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
+	String path = get_project_settings_dir().plus_file("project_metadata.ini");
 	Error err;
 	err = cf->load(path);
 	ERR_FAIL_COND_MSG(err != OK && err != ERR_FILE_NOT_FOUND, "Cannot load editor settings from file '" + path + "'.");
@@ -1362,7 +1362,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
+	String path = get_project_settings_dir().plus_file("project_metadata.ini");
 	Error err = cf->load(path);
 	if (err != OK) {
 		return p_default;
@@ -1571,7 +1571,7 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 }
 
 String EditorSettings::get_editor_layouts_config() const {
-	return get_settings_dir().plus_file("editor_layouts.cfg");
+	return get_settings_dir().plus_file("editor_layouts.ini");
 }
 
 // Shortcuts

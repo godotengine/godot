@@ -369,7 +369,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK) {
 			// Optional, we don't mind if it fails
-			_load_settings_text("res://override.cfg");
+			_load_settings_text("res://override.ini");
 		}
 		return err;
 	}
@@ -384,7 +384,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (err == OK) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.cfg"));
+			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.ini"));
 		}
 		return err;
 	}
@@ -434,7 +434,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			if (err == OK) {
 				// Load override from location of the executable.
 				// Optional, we don't mind if it fails.
-				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
+				_load_settings_text(exec_path.get_base_dir().plus_file("override.ini"));
 			}
 			return err;
 		}
@@ -454,7 +454,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text("res://override.cfg");
+			_load_settings_text("res://override.ini");
 		}
 		return err;
 	}
@@ -477,7 +477,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.plus_file("override.cfg"));
+			_load_settings_text(current_dir.plus_file("override.ini"));
 			found = true;
 			break;
 		}
@@ -906,7 +906,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		custom_features += f;
 	}
 
-	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
+	if (p_path.ends_with(".godot") || p_path.ends_with("override.ini")) {
 		return _save_settings_text(p_path, props, p_custom, custom_features);
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, props, p_custom, custom_features);

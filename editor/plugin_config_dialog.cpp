@@ -68,7 +68,7 @@ void PluginConfigDialog::_on_confirmed() {
 	cf->set_value("plugin", "version", version_edit->get_text());
 	cf->set_value("plugin", "script", script_edit->get_text());
 
-	cf->save(path.plus_file("plugin.cfg"));
+	cf->save(path.plus_file("plugin.ini"));
 
 	if (!_edit_mode) {
 		int lang_idx = script_option_edit->get_selected();
@@ -130,7 +130,7 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 }
 
 String PluginConfigDialog::_to_absolute_plugin_path(const String &p_plugin_name) {
-	return "res://addons/" + p_plugin_name + "/plugin.cfg";
+	return "res://addons/" + p_plugin_name + "/plugin.ini";
 }
 
 void PluginConfigDialog::_notification(int p_what) {

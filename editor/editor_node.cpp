@@ -803,16 +803,16 @@ void EditorNode::_fs_changed() {
 
 		if (preset.is_null()) {
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			if (da->file_exists("res://export_presets.cfg")) {
+			if (da->file_exists("res://export_presets.ini")) {
 				export_error = vformat(
-						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
+						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.ini`:\n\n",
 						preset_name);
 				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
 					// Write the preset name between double quotes since it needs to be written between quotes on the command line if it contains spaces.
 					export_error += vformat("        \"%s\"\n", EditorExport::get_singleton()->get_export_preset(i)->get_name());
 				}
 			} else {
-				export_error = "This project doesn't have an `export_presets.cfg` file at its root.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
+				export_error = "This project doesn't have an `export_presets.ini` file at its root.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
 			}
 		} else {
 			Ref<EditorExportPlatform> platform = preset->get_platform();
@@ -1216,7 +1216,7 @@ void EditorNode::_get_scene_metadata(const String &p_file) {
 		return;
 	}
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
+	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".ini");
 
 	Ref<ConfigFile> cf;
 	cf.instance();
@@ -1250,7 +1250,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	scene->set_meta("__editor_run_settings__", Variant()); //clear it (no point in keeping it)
 	scene->set_meta("__editor_plugin_states__", Variant());
 
-	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
+	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".ini");
 
 	Ref<ConfigFile> cf;
 	cf.instance();
@@ -4367,7 +4367,7 @@ void EditorNode::_save_docks() {
 	_save_open_scenes_to_config(config, "EditorNode");
 	editor_data.get_plugin_window_layout(config);
 
-	config->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	config->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.ini"));
 }
 
 void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
@@ -4425,7 +4425,7 @@ void EditorNode::_dock_split_dragged(int ofs) {
 void EditorNode::_load_docks() {
 	Ref<ConfigFile> config;
 	config.instance();
-	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.ini"));
 	if (err != OK) {
 		//no config
 		if (overridden_default_layout >= 0) {
@@ -4658,7 +4658,7 @@ bool EditorNode::has_scenes_in_session() {
 	}
 	Ref<ConfigFile> config;
 	config.instance();
-	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.ini"));
 	if (err != OK) {
 		return false;
 	}

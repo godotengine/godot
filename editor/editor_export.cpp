@@ -1441,7 +1441,7 @@ void EditorExport::_save() {
 		}
 	}
 
-	config->save("res://export_presets.cfg");
+	config->save("res://export_presets.ini");
 }
 
 void EditorExport::save_presets() {
@@ -1547,7 +1547,7 @@ void EditorExport::_notification(int p_what) {
 void EditorExport::load_config() {
 	Ref<ConfigFile> config;
 	config.instance();
-	Error err = config->load("res://export_presets.cfg");
+	Error err = config->load("res://export_presets.ini");
 	if (err != OK) {
 		return;
 	}

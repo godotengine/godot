@@ -54,7 +54,7 @@ void EditorFolding::save_resource_folding(const RES &p_resource, const String &p
 	Vector<String> unfolds = _get_unfolds(p_resource.ptr());
 	config->set_value("folding", "sections_unfolded", unfolds);
 
-	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
+	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".ini";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
 }
@@ -72,7 +72,7 @@ void EditorFolding::load_resource_folding(RES p_resource, const String &p_path) 
 	Ref<ConfigFile> config;
 	config.instance();
 
-	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
+	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".ini";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 
 	if (config->load(file) != OK) {
@@ -148,7 +148,7 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	config->set_value("folding", "resource_unfolds", res_unfolds);
 	config->set_value("folding", "nodes_folded", nodes_folded);
 
-	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
+	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".ini";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
 }
@@ -158,7 +158,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	config.instance();
 
 	String path = EditorSettings::get_singleton()->get_project_settings_dir();
-	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
+	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".ini";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 
 	if (config->load(file) != OK) {
@@ -215,7 +215,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 }
 
 bool EditorFolding::has_folding_data(const String &p_path) {
-	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
+	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".ini";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	return FileAccess::exists(file);
 }

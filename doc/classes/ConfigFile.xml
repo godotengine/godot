@@ -16,7 +16,7 @@
 		[codeblocks]
 		[gdscript]
 		var config = ConfigFile.new()
-		var err = config.load("user://settings.cfg")
+		var err = config.load("user://settings.ini")
 		if err == OK: # If not, something went wrong with the file loading
 		    # Look for the display/width pair, and default to 1024 if missing
 		    var screen_width = config.get_value("display", "width", 1024)
@@ -24,11 +24,11 @@
 		    if not config.has_section_key("audio", "mute"):
 		        config.set_value("audio", "mute", false)
 		    # Save the changes by overwriting the previous file
-		    config.save("user://settings.cfg")
+		    config.save("user://settings.ini")
 		[/gdscript]
 		[csharp]
 		var config = new ConfigFile();
-		Error err = config.Load("user://settings.cfg");
+		Error err = config.Load("user://settings.ini");
 		if (err == Error.Ok) // If not, something went wrong with the file loading
 		{
 		    // Look for the display/width pair, and default to 1024 if missing
@@ -39,7 +39,7 @@
 		        config.SetValue("audio", "mute", false);
 		    }
 		    // Save the changes by overwriting the previous file
-		    config.Save("user://settings.cfg");
+		    config.Save("user://settings.ini");
 		}
 		[/csharp]
 		[/codeblocks]

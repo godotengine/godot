@@ -684,7 +684,7 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 		return false;
 	}
 
-	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.cfg");
+	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.ini");
 
 	if (!FileAccess::exists(cached_api_hash_path)) {
 		return false;
@@ -714,7 +714,7 @@ static bool try_get_cached_api_hash_for(const String &p_api_assemblies_dir, bool
 static void create_cached_api_hash_for(const String &p_api_assemblies_dir) {
 	String core_api_assembly_path = p_api_assemblies_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
 	String editor_api_assembly_path = p_api_assemblies_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
-	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.cfg");
+	String cached_api_hash_path = p_api_assemblies_dir.plus_file("api_hash_cache.ini");
 
 	Ref<ConfigFile> cfg;
 	cfg.instance();
