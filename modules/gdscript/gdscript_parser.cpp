@@ -184,6 +184,11 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	clear();
 	tokenizer.set_source_code(p_source_code);
 	current = tokenizer.scan();
+	// Avoid error as the first token.
+	while (current.type == GDScriptTokenizer::Token::ERROR) {
+		push_error(current.literal);
+		current = tokenizer.scan();
+	}
 
 	push_multiline(false); // Keep one for the whole parsing.
 	parse_program();
@@ -555,6 +560,10 @@ void GDScriptParser::parse_class_body() {
 }
 
 GDScriptParser::VariableNode *GDScriptParser::parse_variable() {
+	return parse_variable(true);
+}
+
+GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_property) {
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
 		return nullptr;
 	}
@@ -563,10 +572,26 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable() {
 	variable->identifier = parse_identifier();
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
-		if (check((GDScriptTokenizer::Token::EQUAL))) {
+		if (check(GDScriptTokenizer::Token::NEWLINE)) {
+			if (p_allow_property) {
+				advance();
+
+				return parse_property(variable, true);
+			} else {
+				push_error(R"(Expected type after ":")");
+				return nullptr;
+			}
+		} else if (check((GDScriptTokenizer::Token::EQUAL))) {
 			// Infer type.
 			variable->infer_datatype = true;
 		} else {
+			if (p_allow_property && check(GDScriptTokenizer::Token::IDENTIFIER)) {
+				// Check if get or set.
+				if (current.get_identifier() == "get" || current.get_identifier() == "set") {
+					return parse_property(variable, false);
+				}
+			}
+
 			// Parse type.
 			variable->datatype_specifier = parse_type();
 		}
@@ -577,11 +602,138 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable() {
 		variable->initializer = parse_expression(false);
 	}
 
+	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
+		if (match(GDScriptTokenizer::Token::NEWLINE)) {
+			return parse_property(variable, true);
+		} else {
+			return parse_property(variable, false);
+		}
+	}
+
 	end_statement("variable declaration");
 
 	variable->export_info.name = variable->identifier->name;
 
 	return variable;
+}
+
+GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_variable, bool p_need_indent) {
+	if (p_need_indent) {
+		if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block for property after ":".)")) {
+			return nullptr;
+		}
+	}
+
+	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected "get" or "set" for property declaration.)")) {
+		return nullptr;
+	}
+
+	VariableNode *property = p_variable;
+
+	IdentifierNode *function = parse_identifier();
+
+	if (check(GDScriptTokenizer::Token::EQUAL)) {
+		p_variable->property = VariableNode::PROP_SETGET;
+	} else {
+		p_variable->property = VariableNode::PROP_INLINE;
+		if (!p_need_indent) {
+			push_error("Property with inline code must go to an indented block.");
+		}
+	}
+
+	bool getter_used = false;
+	bool setter_used = false;
+
+	// Run with a loop because order doesn't matter.
+	for (int i = 0; i < 2; i++) {
+		if (function->name == "set") {
+			if (setter_used) {
+				push_error(R"(Properties can only have one setter.)");
+			} else {
+				parse_property_setter(property);
+				setter_used = true;
+			}
+		} else if (function->name == "get") {
+			if (getter_used) {
+				push_error(R"(Properties can only have one getter.)");
+			} else {
+				parse_property_getter(property);
+				getter_used = true;
+			}
+		} else {
+			// TODO: Update message to only have the missing one if it's the case.
+			push_error(R"(Expected "get" or "set" for property declaration.)");
+		}
+
+		if (i == 0 && p_variable->property == VariableNode::PROP_SETGET) {
+			if (match(GDScriptTokenizer::Token::COMMA)) {
+				// Consume potential newline.
+				if (match(GDScriptTokenizer::Token::NEWLINE)) {
+					if (!p_need_indent) {
+						push_error(R"(Inline setter/getter setting cannot span across multiple lines (use "\\"" if needed).)");
+					}
+				}
+			} else {
+				break;
+			}
+		}
+
+		if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
+			break;
+		}
+		function = parse_identifier();
+	}
+
+	if (p_variable->property == VariableNode::PROP_SETGET) {
+		end_statement("property declaration");
+	}
+
+	if (p_need_indent) {
+		consume(GDScriptTokenizer::Token::DEDENT, R"(Expected end of indented block for property.)");
+	}
+	return property;
+}
+
+void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
+	switch (p_variable->property) {
+		case VariableNode::PROP_INLINE:
+			consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "set".)");
+			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected parameter name after "(".)")) {
+				p_variable->setter_parameter = parse_identifier();
+			}
+			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after parameter name.)*");
+			consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after ")".)*");
+
+			p_variable->setter = parse_suite("setter definition");
+			break;
+
+		case VariableNode::PROP_SETGET:
+			consume(GDScriptTokenizer::Token::EQUAL, R"(Expected "=" after "set")");
+			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected setter function name after "=".)")) {
+				p_variable->setter_pointer = parse_identifier();
+			}
+			break;
+		case VariableNode::PROP_NONE:
+			break; // Unreachable.
+	}
+}
+
+void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
+	switch (p_variable->property) {
+		case VariableNode::PROP_INLINE:
+			consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "get".)");
+
+			p_variable->getter = parse_suite("getter definition");
+			break;
+		case VariableNode::PROP_SETGET:
+			consume(GDScriptTokenizer::Token::EQUAL, R"(Expected "=" after "get")");
+			if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected getter function name after "=".)")) {
+				p_variable->getter_pointer = parse_identifier();
+			}
+			break;
+		case VariableNode::PROP_NONE:
+			break; // Unreachable.
+	}
 }
 
 GDScriptParser::ConstantNode *GDScriptParser::parse_constant() {
@@ -1021,6 +1173,9 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 		default: {
 			// Expression statement.
 			ExpressionNode *expression = parse_expression(true); // Allow assignment here.
+			if (expression == nullptr) {
+				push_error(vformat(R"(Expected statement, found "%s" instead.)", previous.get_name()));
+			}
 			end_statement("expression");
 			result = expression;
 			break;
@@ -1402,7 +1557,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing literal node without literal token.");
 	}
 	IdentifierNode *identifier = alloc_node<IdentifierNode>();
-	identifier->name = previous.literal;
+	identifier->name = previous.get_identifier();
 	return identifier;
 }
 
@@ -3016,6 +3171,15 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 	push_text("Variable ");
 	print_identifier(p_variable->identifier);
 
+	push_text(" : ");
+	if (p_variable->datatype_specifier != nullptr) {
+		print_type(p_variable->datatype_specifier);
+	} else if (p_variable->infer_datatype) {
+		push_text("<inferred type>");
+	} else {
+		push_text("Variant");
+	}
+
 	increase_indent();
 
 	push_line();
@@ -3025,6 +3189,46 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 	} else {
 		print_expression(p_variable->initializer);
 	}
+	push_line();
+
+	if (p_variable->property != VariableNode::PROP_NONE) {
+		if (p_variable->getter != nullptr) {
+			push_text("Get");
+			if (p_variable->property == VariableNode::PROP_INLINE) {
+				push_line(":");
+				increase_indent();
+				print_suite(p_variable->getter);
+				decrease_indent();
+			} else {
+				push_line(" =");
+				increase_indent();
+				print_identifier(p_variable->getter_pointer);
+				push_line();
+				decrease_indent();
+			}
+		}
+		if (p_variable->setter != nullptr) {
+			push_text("Set (");
+			if (p_variable->property == VariableNode::PROP_INLINE) {
+				if (p_variable->setter_parameter != nullptr) {
+					print_identifier(p_variable->setter_parameter);
+				} else {
+					push_text("<missing>");
+				}
+				push_line("):");
+				increase_indent();
+				print_suite(p_variable->setter);
+				decrease_indent();
+			} else {
+				push_line(" =");
+				increase_indent();
+				print_identifier(p_variable->setter_pointer);
+				push_line();
+				decrease_indent();
+			}
+		}
+	}
+
 	decrease_indent();
 	push_line();
 }
