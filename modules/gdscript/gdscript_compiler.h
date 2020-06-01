@@ -45,6 +45,7 @@ class GDScriptCompiler {
 		GDScript *script;
 		const GDScriptParser::ClassNode *class_node;
 		const GDScriptParser::FunctionNode *function_node;
+		StringName function_name;
 		bool debug_stack;
 
 		List<Map<StringName, int>> stack_id_stack;
@@ -153,6 +154,7 @@ class GDScriptCompiler {
 	Error _parse_match_pattern(CodeGen &codegen, const GDScriptParser::PatternNode *p_pattern, int p_stack_level, int p_value_addr, int p_type_addr, int &r_bound_variables, Vector<int> &r_patch_addresses, Vector<int> &r_block_patch_address);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, int p_stack_level = 0, int p_break_addr = -1, int p_continue_addr = -1);
 	Error _parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false);
+	Error _parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter);
 	Error _parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error _parse_class_blocks(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	void _make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
