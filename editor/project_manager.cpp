@@ -257,25 +257,10 @@ private:
 			}
 
 		} else {
-			// check if the specified folder is empty, even though this is not an error, it is good to check here
-			d->list_dir_begin();
-			bool is_empty = true;
-			String n = d->get_next();
-			while (n != String()) {
-				if (!n.begins_with(".")) {
-					// Allow `.`, `..` (reserved current/parent folder names)
-					// and hidden files/folders to be present.
-					// For instance, this lets users initialize a Git repository
-					// and still be able to create a project in the directory afterwards.
-					is_empty = false;
-					break;
-				}
-				n = d->get_next();
-			}
-			d->list_dir_end();
+			// check that we won't overwrite an existing file
+			if (d->file_exists("project.godot") || d->file_exists("icon.png") || d->file_exists("default_env.tres")) {
 
-			if (!is_empty) {
-				set_message(TTR("Please choose an empty folder."), MESSAGE_ERROR);
+				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR);
 				memdelete(d);
 				get_ok()->set_disabled(true);
 				return "";
