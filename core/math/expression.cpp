@@ -1004,6 +1004,7 @@ Error Expression::_get_token(Token &r_token) {
 
 				return OK;
 			};
+			case '\'':
 			case '"': {
 
 				String str;
@@ -1015,7 +1016,8 @@ Error Expression::_get_token(Token &r_token) {
 						_set_error("Unterminated String");
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
-					} else if (ch == '"') {
+					} else if (ch == cchar) {
+						// cchar contain a corresponding quote symbol
 						break;
 					} else if (ch == '\\') {
 						//escaped characters...
