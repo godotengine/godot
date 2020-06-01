@@ -777,10 +777,28 @@ public:
 	};
 
 	struct VariableNode : public Node {
+		enum PropertyStyle {
+			PROP_NONE,
+			PROP_INLINE,
+			PROP_SETGET,
+		};
+
 		IdentifierNode *identifier = nullptr;
 		ExpressionNode *initializer = nullptr;
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
+
+		PropertyStyle property = PROP_NONE;
+		union {
+			SuiteNode *setter = nullptr;
+			IdentifierNode *setter_pointer;
+		};
+		IdentifierNode *setter_parameter = nullptr;
+		union {
+			SuiteNode *getter = nullptr;
+			IdentifierNode *getter_pointer;
+		};
+
 		bool exported = false;
 		bool onready = false;
 		PropertyInfo export_info;
@@ -923,6 +941,10 @@ private:
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable();
+	VariableNode *parse_variable(bool p_allow_property);
+	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
+	void parse_property_getter(VariableNode *p_variable);
+	void parse_property_setter(VariableNode *p_variable);
 	ConstantNode *parse_constant();
 	AssertNode *parse_assert();
 	BreakNode *parse_break();

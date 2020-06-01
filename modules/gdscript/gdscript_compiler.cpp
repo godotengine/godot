@@ -273,8 +273,22 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				// TRY MEMBER VARIABLES!
 				//static function
 				if (codegen.script->member_indices.has(identifier)) {
-					int idx = codegen.script->member_indices[identifier].index;
-					return idx | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS); //argument (stack root)
+					if (codegen.script->member_indices[identifier].getter != StringName() && codegen.script->member_indices[identifier].getter != codegen.function_name) {
+						// Perform getter.
+						codegen.opcodes.push_back(GDScriptFunction::OPCODE_CALL_RETURN);
+						codegen.opcodes.push_back(0); // Argument count.
+						codegen.opcodes.push_back(GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS); // Base (self).
+						codegen.opcodes.push_back(codegen.get_name_map_pos(codegen.script->member_indices[identifier].getter)); // Method name.
+						// Destination.
+						int dst_addr = (p_stack_level) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+						codegen.opcodes.push_back(dst_addr); // append the stack level as destination address of the opcode
+						codegen.alloc_stack(p_stack_level);
+						return dst_addr;
+					} else {
+						// No getter or inside getter: direct member access.
+						int idx = codegen.script->member_indices[identifier].index;
+						return idx | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS); //argument (stack root)
+					}
 				}
 			}
 
@@ -779,12 +793,12 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			if (p_index_addr != 0) {
 				index = p_index_addr;
 			} else if (subscript->is_attribute) {
-				if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script && codegen.function_node && !codegen.function_node->is_static) {
+				if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
 					GDScriptParser::IdentifierNode *identifier = subscript->attribute;
 					const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(identifier->name);
 
 #ifdef DEBUG_ENABLED
-					if (MI && MI->get().getter == codegen.function_node->identifier->name) {
+					if (MI && MI->get().getter == codegen.function_name) {
 						String n = identifier->name;
 						_set_error("Must use '" + n + "' instead of 'self." + n + "' in getter.", identifier);
 						return -1;
@@ -1095,9 +1109,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				const GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(assignment->assignee);
 #ifdef DEBUG_ENABLED
 				if (subscript->is_attribute) {
-					if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script && codegen.function_node && !codegen.function_node->is_static) {
+					if (subscript->base->type == GDScriptParser::Node::SELF && codegen.script) {
 						const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(subscript->attribute->name);
-						if (MI && MI->get().setter == codegen.function_node->identifier->name) {
+						if (MI && MI->get().setter == codegen.function_name) {
 							String n = subscript->attribute->name;
 							_set_error("Must use '" + n + "' instead of 'self." + n + "' in setter.", subscript);
 							return -1;
@@ -1263,15 +1277,43 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				//REGULAR ASSIGNMENT MODE!!
 
 				int slevel = p_stack_level;
+				int dst_address_a = -1;
 
-				int dst_address_a = _parse_expression(codegen, assignment->assignee, slevel);
-				if (dst_address_a < 0) {
-					return -1;
+				bool has_setter = false;
+				bool is_in_setter = false;
+				StringName setter_function;
+				if (assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+					StringName var_name = static_cast<const GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
+					if (!codegen.stack_identifiers.has(var_name) && codegen.script->member_indices.has(var_name)) {
+						setter_function = codegen.script->member_indices[var_name].setter;
+						if (setter_function != StringName()) {
+							has_setter = true;
+							is_in_setter = setter_function == codegen.function_name;
+							dst_address_a = codegen.script->member_indices[var_name].index;
+						}
+					}
 				}
 
-				if (dst_address_a & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
-					slevel++;
-					codegen.alloc_stack(slevel);
+				if (has_setter) {
+					if (is_in_setter) {
+						// Use direct member access.
+						dst_address_a |= GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS;
+					} else {
+						// Store stack slot for the temp value.
+						dst_address_a = slevel++;
+						codegen.alloc_stack(slevel);
+						dst_address_a |= GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS;
+					}
+				} else {
+					dst_address_a = _parse_expression(codegen, assignment->assignee, slevel);
+					if (dst_address_a < 0) {
+						return -1;
+					}
+
+					if (dst_address_a & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+						slevel++;
+						codegen.alloc_stack(slevel);
+					}
 				}
 
 				int src_address_b = _parse_assign_right_expression(codegen, assignment, slevel);
@@ -1330,6 +1372,18 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					codegen.opcodes.push_back(dst_address_a); // argument 1
 					codegen.opcodes.push_back(src_address_b); // argument 2 (unary only takes one parameter)
 				}
+
+				if (has_setter && !is_in_setter) {
+					// Call setter.
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CALL);
+					codegen.opcodes.push_back(1); // Argument count.
+					codegen.opcodes.push_back(GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS); // Base (self).
+					codegen.opcodes.push_back(codegen.get_name_map_pos(setter_function)); // Method name.
+					codegen.opcodes.push_back(dst_address_a); // Argument.
+					codegen.opcodes.push_back(dst_address_a); // Result address (won't be used here).
+					codegen.alloc_call(1);
+				}
+
 				return dst_address_a; //if anything, returns wathever was assigned or correct stack position
 			}
 		} break;
@@ -2157,13 +2211,14 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 			}
 			defarg_addr.invert();
 		}
+		func_name = p_func->identifier->name;
+		codegen.function_name = func_name;
 
 		Error err = _parse_block(codegen, p_func->body, stack_level);
 		if (err) {
 			return err;
 		}
 
-		func_name = p_func->identifier->name;
 	} else {
 		if (p_for_ready) {
 			func_name = "_ready";
@@ -2172,6 +2227,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		}
 	}
 
+	codegen.function_name = func_name;
 	codegen.opcodes.push_back(GDScriptFunction::OPCODE_END);
 
 	/*
@@ -2327,6 +2383,150 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	return OK;
 }
 
+Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter) {
+	Vector<int> bytecode;
+	CodeGen codegen;
+
+	codegen.class_node = p_class;
+	codegen.script = p_script;
+	codegen.function_node = nullptr;
+	codegen.stack_max = 0;
+	codegen.current_line = 0;
+	codegen.call_max = 0;
+	codegen.debug_stack = EngineDebugger::is_active();
+	Vector<StringName> argnames;
+
+	int stack_level = 0;
+
+	if (p_is_setter) {
+		codegen.add_stack_identifier(p_variable->setter_parameter->name, stack_level++);
+		argnames.push_back(p_variable->setter_parameter->name);
+	}
+
+	codegen.alloc_stack(stack_level);
+
+	StringName func_name;
+
+	if (p_is_setter) {
+		func_name = "@" + p_variable->identifier->name + "_setter";
+	} else {
+		func_name = "@" + p_variable->identifier->name + "_getter";
+	}
+	codegen.function_name = func_name;
+
+	Error err = _parse_block(codegen, p_is_setter ? p_variable->setter : p_variable->getter, stack_level);
+	if (err != OK) {
+		return err;
+	}
+
+	codegen.opcodes.push_back(GDScriptFunction::OPCODE_END);
+
+	p_script->member_functions[func_name] = memnew(GDScriptFunction);
+	GDScriptFunction *gdfunc = p_script->member_functions[func_name];
+
+	gdfunc->_static = false;
+	gdfunc->rpc_mode = p_variable->rpc_mode;
+	gdfunc->argument_types.resize(p_is_setter ? 1 : 0);
+	gdfunc->return_type = GDScriptDataType(); // TODO
+#ifdef TOOLS_ENABLED
+	gdfunc->arg_names = argnames;
+#endif
+
+	// TODO: Unify this with function compiler.
+	//constants
+	if (codegen.constant_map.size()) {
+		gdfunc->_constant_count = codegen.constant_map.size();
+		gdfunc->constants.resize(codegen.constant_map.size());
+		gdfunc->_constants_ptr = gdfunc->constants.ptrw();
+		const Variant *K = nullptr;
+		while ((K = codegen.constant_map.next(K))) {
+			int idx = codegen.constant_map[*K];
+			gdfunc->constants.write[idx] = *K;
+		}
+	} else {
+		gdfunc->_constants_ptr = nullptr;
+		gdfunc->_constant_count = 0;
+	}
+	//global names
+	if (codegen.name_map.size()) {
+		gdfunc->global_names.resize(codegen.name_map.size());
+		gdfunc->_global_names_ptr = &gdfunc->global_names[0];
+		for (Map<StringName, int>::Element *E = codegen.name_map.front(); E; E = E->next()) {
+			gdfunc->global_names.write[E->get()] = E->key();
+		}
+		gdfunc->_global_names_count = gdfunc->global_names.size();
+
+	} else {
+		gdfunc->_global_names_ptr = nullptr;
+		gdfunc->_global_names_count = 0;
+	}
+
+#ifdef TOOLS_ENABLED
+	// Named globals
+	if (codegen.named_globals.size()) {
+		gdfunc->named_globals.resize(codegen.named_globals.size());
+		gdfunc->_named_globals_ptr = gdfunc->named_globals.ptr();
+		for (int i = 0; i < codegen.named_globals.size(); i++) {
+			gdfunc->named_globals.write[i] = codegen.named_globals[i];
+		}
+		gdfunc->_named_globals_count = gdfunc->named_globals.size();
+	}
+#endif
+
+	gdfunc->code = codegen.opcodes;
+	gdfunc->_code_ptr = &gdfunc->code[0];
+	gdfunc->_code_size = codegen.opcodes.size();
+	gdfunc->_default_arg_count = 0;
+	gdfunc->_default_arg_ptr = nullptr;
+	gdfunc->_argument_count = argnames.size();
+	gdfunc->_stack_size = codegen.stack_max;
+	gdfunc->_call_size = codegen.call_max;
+	gdfunc->name = func_name;
+#ifdef DEBUG_ENABLED
+	if (EngineDebugger::is_active()) {
+		String signature;
+		//path
+		if (p_script->get_path() != String()) {
+			signature += p_script->get_path();
+		}
+		//loc
+		signature += "::" + itos(p_is_setter ? p_variable->setter->start_line : p_variable->getter->start_line);
+
+		//function and class
+
+		if (p_class->identifier) {
+			signature += "::" + String(p_class->identifier->name) + "." + String(func_name);
+		} else {
+			signature += "::" + String(func_name);
+		}
+
+		gdfunc->profile.signature = signature;
+	}
+#endif
+	gdfunc->_script = p_script;
+	gdfunc->source = source;
+
+#ifdef DEBUG_ENABLED
+
+	{
+		gdfunc->func_cname = (String(source) + " - " + String(func_name)).utf8();
+		gdfunc->_func_cname = gdfunc->func_cname.get_data();
+	}
+
+#endif
+	gdfunc->_initial_line = p_is_setter ? p_variable->setter->start_line : p_variable->getter->start_line;
+#ifdef TOOLS_ENABLED
+
+	p_script->member_lines[func_name] = gdfunc->_initial_line;
+#endif
+
+	if (codegen.debug_stack) {
+		gdfunc->stack_debug = codegen.stack_debug;
+	}
+
+	return OK;
+}
+
 Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	parsing_classes.insert(p_script);
 
@@ -2407,9 +2607,26 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 				GDScript::MemberInfo minfo;
 				minfo.index = p_script->member_indices.size();
-				// FIXME: Getter and setter.
-				// minfo.setter = p_class->variables[i].setter;
-				// minfo.getter = p_class->variables[i].getter;
+				switch (variable->property) {
+					case GDScriptParser::VariableNode::PROP_NONE:
+						break; // Nothing to do.
+					case GDScriptParser::VariableNode::PROP_SETGET:
+						if (variable->setter_pointer != nullptr) {
+							minfo.setter = variable->setter_pointer->name;
+						}
+						if (variable->getter_pointer != nullptr) {
+							minfo.getter = variable->getter_pointer->name;
+						}
+						break;
+					case GDScriptParser::VariableNode::PROP_INLINE:
+						if (variable->setter != nullptr) {
+							minfo.setter = "@" + variable->identifier->name + "_setter";
+						}
+						if (variable->getter != nullptr) {
+							minfo.getter = "@" + variable->identifier->name + "_getter";
+						}
+						break;
+				}
 				minfo.rpc_mode = variable->rpc_mode;
 				// FIXME: Types.
 				// minfo.data_type = _gdtype_from_datatype(p_class->variables[i].data_type);
@@ -2565,16 +2782,31 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 	for (int i = 0; i < p_class->members.size(); i++) {
 		const GDScriptParser::ClassNode::Member &member = p_class->members[i];
-		if (member.type != member.FUNCTION) {
-			continue;
-		}
-		const GDScriptParser::FunctionNode *function = member.function;
-		if (!has_ready && function->identifier->name == "_ready") {
-			has_ready = true;
-		}
-		Error err = _parse_function(p_script, p_class, function);
-		if (err) {
-			return err;
+		if (member.type == member.FUNCTION) {
+			const GDScriptParser::FunctionNode *function = member.function;
+			if (!has_ready && function->identifier->name == "_ready") {
+				has_ready = true;
+			}
+			Error err = _parse_function(p_script, p_class, function);
+			if (err) {
+				return err;
+			}
+		} else if (member.type == member.VARIABLE) {
+			const GDScriptParser::VariableNode *variable = member.variable;
+			if (variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
+				if (variable->setter != nullptr) {
+					Error err = _parse_setter_getter(p_script, p_class, variable, true);
+					if (err) {
+						return err;
+					}
+				}
+				if (variable->getter != nullptr) {
+					Error err = _parse_setter_getter(p_script, p_class, variable, false);
+					if (err) {
+						return err;
+					}
+				}
+			}
 		}
 	}
 
