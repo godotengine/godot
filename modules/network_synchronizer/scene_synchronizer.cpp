@@ -51,7 +51,7 @@ SceneSynchronizer::VarData::VarData(uint32_t p_id, StringName p_name, Variant p_
 		skip_rewinding(p_skip_rewinding),
 		enabled(p_enabled) {
 	var.name = p_name;
-	var.value = p_val;
+	var.value = p_val.duplicate(true);
 }
 
 bool SceneSynchronizer::VarData::operator==(const VarData &p_other) const {
@@ -774,6 +774,19 @@ bool SceneSynchronizer::synchronizer_variant_evaluation(const Variant &v_1, cons
 			}
 			return false;
 		}
+		case Variant::ARRAY: {
+			const Array a = v_1;
+			const Array b = v_2;
+			if (a.size() != b.size()) {
+				return false;
+			}
+			for (int i = 0; i < a.size(); i += 1) {
+				if (synchronizer_variant_evaluation(a[i], b[i]) == false) {
+					return false;
+				}
+			}
+			return true;
+		}
 		case Variant::DICTIONARY: {
 			const Dictionary a = v_1;
 			const Dictionary b = v_2;
@@ -874,7 +887,7 @@ void SceneSynchronizer::pull_node_changes(NodeData *p_node_data) {
 		const Variant new_val = node->get(object_vars[i].var.name);
 
 		if (!synchronizer_variant_evaluation(old_val, new_val)) {
-			object_vars[i].var.value = new_val;
+			object_vars[i].var.value = new_val.duplicate(true);
 			node->emit_signal(get_changed_event_name(object_vars[i].var.name));
 			synchronizer->on_variable_changed(node->get_instance_id(), object_vars[i].var.name);
 		}
@@ -1589,6 +1602,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		// --- Phase three, recover and reply. ---
 
 		if (need_recover) {
+			NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(controller->get_stored_input_id(-1)));
+
 			if (recover_controller) {
 				// Put the controlled and the controllers into the nodes to
 				// rewind.
@@ -1649,7 +1664,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 					NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[i].var.name + " New value: " + s_vars_ptr[i].var.value);
 
-					rew_vars[rew_var_index].var.value = s_vars_ptr[i].var.value;
+					rew_vars[rew_var_index].var.value = s_vars_ptr[i].var.value.duplicate(true);
 
 					node->emit_signal(
 							scene_synchronizer->get_changed_event_name(
@@ -1678,11 +1693,17 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 						it != nodes_to_recover.end();
 						it += 1) {
 					(*it)->process(p_delta);
+#ifdef DEBUG_ENABLED
+					if ((*it)->functions.size()) {
+						NET_DEBUG_PRINT("Rewind, processed node: " + (*it)->node->get_path());
+					}
+#endif
 				}
 
 				if (recover_controller) {
 					// Step 2 -- Process the controller.
 					has_next = controller->process_instant(i, p_delta);
+					NET_DEBUG_PRINT("Rewind, processed controller: " + controller->get_path());
 				}
 
 				// Step 3 -- Pull node changes and Update snapshots.
@@ -1728,7 +1749,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 					// variable.
 					CRASH_COND(rew_var_index <= -1);
 
-					rew_node_data->vars.write[rew_var_index].var.value = vars[v].value;
+					rew_node_data->vars.write[rew_var_index].var.value = vars[v].value.duplicate(true);
 
 					NET_DEBUG_PRINT(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
 					node->emit_signal(scene_synchronizer->get_changed_event_name(vars[v].name));
@@ -1991,7 +2012,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 			server_snapshot_node_data->write[server_snap_variable_index]
 					.var
-					.value = v;
+					.value = v.duplicate(true);
 
 			// Just reset the variable name so we can continue iterate.
 			variable_name = StringName();
