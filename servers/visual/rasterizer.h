@@ -665,7 +665,7 @@ public:
 			item_mask = 1;
 			scale = 1.0;
 			energy = 1.0;
-			item_shadow_mask = -1;
+			item_shadow_mask = 1;
 			mode = VS::CANVAS_LIGHT_MODE_ADD;
 			texture_cache = NULL;
 			next_ptr = NULL;
