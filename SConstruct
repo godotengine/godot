@@ -86,6 +86,7 @@ env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
 env_base.__class__.CommandNoCache = methods.CommandNoCache
 env_base.__class__.disable_warnings = methods.disable_warnings
+env_base.__class__.module_check_dependencies = methods.module_check_dependencies
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
@@ -607,14 +608,12 @@ if selected_platform in platform_list:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
     editor_module_list = ["regex"]
-    for x in editor_module_list:
-        if not env["module_" + x + "_enabled"]:
-            if env["tools"]:
-                print(
-                    "Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), "
-                    "only with 'tools=no' (export template)."
-                )
-                Exit(255)
+    if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
+        print(
+            "Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), "
+            "only with 'tools=no' (export template)."
+        )
+        Exit(255)
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)
