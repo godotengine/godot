@@ -231,6 +231,30 @@ def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
 
+def module_check_dependencies(self, module, dependencies):
+    """
+    Checks if module dependencies are enabled for a given module,
+    and prints a warning if they aren't.
+    Meant to be used in module `can_build` methods.
+    Returns a boolean (True if dependencies are satisfied).
+    """
+    missing_deps = []
+    for dep in dependencies:
+        opt = "module_{}_enabled".format(dep)
+        if not opt in self or not self[opt]:
+            missing_deps.append(dep)
+
+    if missing_deps != []:
+        print(
+            "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
+                module, ", ".join(missing_deps)
+            )
+        )
+        return False
+    else:
+        return True
+
+
 def use_windows_spawn_fix(self, platform=None):
 
     if os.name != "nt":
