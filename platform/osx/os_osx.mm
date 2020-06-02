@@ -1321,34 +1321,39 @@ void OS_OSX::_update_global_menu() {
 
 	NSMenu *main_menu = [NSApp mainMenu];
 
-	for (int i = 1; i < [main_menu numberOfItems]; i++) {
+	for (int i = [main_menu numberOfItems] - 1; i > 0; i--) {
 		[main_menu removeItemAtIndex:i];
 	}
-	for (Map<String, Vector<GlobalMenuItem> >::Element *E = global_menus.front(); E; E = E->next()) {
-		if (E->key() != "_dock") {
-			NSMenu *menu = [[[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()]] autorelease];
-			for (int i = 0; i < E->get().size(); i++) {
-				if (E->get()[i].label == String()) {
-					[menu addItem:[NSMenuItem separatorItem]];
-				} else {
-					NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:E->get()[i].label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
-					[menu_item setRepresentedObject:[NSValue valueWithPointer:&(E->get()[i])]];
-				}
+	for (List<String>::Element *E = global_menus_order.front(); E; E = E->next()) {
+		Vector<GlobalMenuItem> &items = global_menus[E->get()];
+		NSMenu *menu = [[[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:E->get().utf8().get_data()]] autorelease];
+		for (int i = 0; i < items.size(); i++) {
+			if (items[i].label == String()) {
+				[menu addItem:[NSMenuItem separatorItem]];
+			} else {
+				NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:items[i].label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+				[menu_item setRepresentedObject:[NSValue valueWithPointer:&(items[i])]];
 			}
-			NSMenuItem *menu_item = [main_menu addItemWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()] action:nil keyEquivalent:@""];
-			[main_menu setSubmenu:menu forItem:menu_item];
 		}
+		NSMenuItem *menu_item = [main_menu addItemWithTitle:[NSString stringWithUTF8String:E->get().utf8().get_data()] action:nil keyEquivalent:@""];
+		[main_menu setSubmenu:menu forItem:menu_item];
 	}
 }
 
 void OS_OSX::global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta) {
 
+	if (!global_menus.has(p_menu) && (p_menu != "_dock")) {
+		global_menus_order.push_back(p_menu);
+	}
 	global_menus[p_menu].push_back(GlobalMenuItem(p_label, p_signal, p_meta));
 	_update_global_menu();
 }
 
 void OS_OSX::global_menu_add_separator(const String &p_menu) {
 
+	if (!global_menus.has(p_menu) && (p_menu != "_dock")) {
+		global_menus_order.push_back(p_menu);
+	}
 	global_menus[p_menu].push_back(GlobalMenuItem());
 	_update_global_menu();
 }
@@ -1363,7 +1368,13 @@ void OS_OSX::global_menu_remove_item(const String &p_menu, int p_idx) {
 
 void OS_OSX::global_menu_clear(const String &p_menu) {
 
-	global_menus[p_menu].clear();
+	if (global_menus.has(p_menu)) {
+		global_menus[p_menu].clear();
+		if (p_menu != "_dock") {
+			global_menus.erase(p_menu);
+			global_menus_order.erase(p_menu);
+		}
+	}
 	_update_global_menu();
 }
 

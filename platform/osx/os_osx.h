@@ -170,6 +170,7 @@ public:
 	};
 
 	Map<String, Vector<GlobalMenuItem> > global_menus;
+	List<String> global_menus_order;
 
 	void _update_global_menu();
 
