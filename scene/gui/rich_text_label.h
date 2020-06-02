@@ -32,10 +32,11 @@
 #define RICH_TEXT_LABEL_H
 
 #include "rich_text_effect.h"
+#include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
 
-class RichTextLabel : public Control {
-	GDCLASS(RichTextLabel, Control);
+class RichTextLabel : public Label {
+	GDCLASS(RichTextLabel, Label);
 
 public:
 	enum Align {
@@ -80,6 +81,8 @@ protected:
 	static void _bind_methods();
 
 private:
+	//Do we need all the structs in the implementation here, or can they be completly in the bbcode implementation
+	//We should aim for the latter
 	struct Item;
 
 	struct Line {
@@ -312,23 +315,27 @@ private:
 
 	VScrollBar *vscroll;
 
-	bool scroll_visible;
-	bool scroll_follow;
-	bool scroll_following;
-	bool scroll_active;
-	int scroll_w;
-	bool scroll_updated;
-	bool updating_scroll;
-	int current_idx;
-	int visible_line_count;
+	bool scroll_visible = false;
+	bool scroll_follow = false;
+	bool scroll_following = false;
+	bool scroll_active = true;
+	int scroll_w = 0;
+	bool scroll_updated = false;
+	bool updating_scroll = false;
+	int current_idx = 1;
+	int visible_line_count = 0;
 
-	int tab_size;
-	bool underline_meta;
-	bool override_selected_font_color;
+	//duplicated into bbcode
+	int tab_size = 4;
+	//duplicated into bbcode
+	bool underline_meta = true;
+	//duplicated into bbcode
+	bool override_selected_font_color = false;
 
-	Align default_align;
+	//duplicated into bbcode. Never changed. Make const?
+	Align default_align = ALIGN_LEFT;
 
-	ItemMeta *meta_hovering;
+	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
 
 	Vector<Ref<RichTextEffect>> custom_effects;
@@ -362,24 +369,33 @@ private:
 		bool active; // anything selected? i.e. from, to, etc. valid?
 		bool enabled; // allow selections?
 	};
-
+	//duplicated into bbcode
 	Selection selection;
-
-	int visible_characters;
-	float percent_visible;
+	//duplicated into bbcode
+	int visible_characters = -1;
+	float percent_visible = 1;
 
 	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
+	//used in _process_line, _find_margin, search
+	//duplicated in bbcode, check removal
 	Ref<Font> _find_font(Item *p_item);
+	// used once in _process_line
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
+	// used once in _process_line
 	Align _find_align(Item *p_item);
+	// only used in _procces_line
 	Color _find_color(Item *p_item, const Color &p_default_color);
+	//used once in _process_line
 	bool _find_underline(Item *p_item);
+	//used once in _process_line
 	bool _find_strikethrough(Item *p_item);
+	//used multiple times
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
+	//only used once in _process_line, duplicated into bbcode
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
 	static Color _get_color_from_string(const String &p_color_str, const Color &p_default_color);
@@ -396,12 +412,16 @@ private:
 	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
 	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
-	bool use_bbcode;
+	bool use_bbcode = false;
 	String bbcode;
 
 	void _update_all_lines();
 
-	int fixed_width;
+	int fixed_width = -1;
+
+	//Temporary to make it compile asap
+	//Check later, what belongs in which class and fix dependencies and move stuff around
+	friend class BbCodeParser;
 
 protected:
 	void _notification(int p_what);

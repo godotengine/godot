@@ -2885,19 +2885,6 @@ RichTextLabel::RichTextLabel() {
 	main->lines.write[0].from = main;
 	main->first_invalid_line = 0;
 	current_frame = main;
-	tab_size = 4;
-	default_align = ALIGN_LEFT;
-	underline_meta = true;
-	meta_hovering = nullptr;
-	override_selected_font_color = false;
-
-	scroll_visible = false;
-	scroll_follow = false;
-	scroll_following = false;
-	updating_scroll = false;
-	scroll_active = true;
-	scroll_w = 0;
-	scroll_updated = false;
 
 	vscroll = memnew(VScrollBar);
 	add_child(vscroll);
@@ -2909,18 +2896,11 @@ RichTextLabel::RichTextLabel() {
 	vscroll->connect("value_changed", callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
-	current_idx = 1;
-	use_bbcode = false;
 
 	selection.click = nullptr;
 	selection.active = false;
 	selection.enabled = false;
 
-	visible_characters = -1;
-	percent_visible = 1;
-	visible_line_count = 0;
-
-	fixed_width = -1;
 	set_clip_contents(true);
 }
 
