@@ -42,7 +42,9 @@
 #endif
 #endif
 #include "vk_mem_alloc.h"
+
 #include <vulkan/vulkan.h>
+
 //todo:
 //compute
 //push constants
@@ -202,15 +204,10 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _insert_staging_block();
 
 	struct Buffer {
-		uint32_t size;
-		VkBuffer buffer;
-		VmaAllocation allocation;
+		uint32_t size = 0;
+		VkBuffer buffer = VK_NULL_HANDLE;
+		VmaAllocation allocation = nullptr;
 		VkDescriptorBufferInfo buffer_info; //used for binding
-		Buffer() {
-			size = 0;
-			buffer = VK_NULL_HANDLE;
-			allocation = nullptr;
-		}
 	};
 
 	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mapping);
@@ -570,7 +567,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct DescriptorPoolKey {
 		union {
 			struct {
-				uint16_t uniform_type[UNIFORM_TYPE_MAX]; //using 16 bits because, for sending arrays, each element is a pool set.
+				uint16_t uniform_type[UNIFORM_TYPE_MAX]; // Using 16 bits because, for sending arrays, each element is a pool set.
 			};
 			struct {
 				uint64_t key1;
@@ -712,106 +709,67 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Vector<SplitDrawListAllocator> split_draw_list_allocators;
 
 	struct DrawList {
-		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
+		VkCommandBuffer command_buffer; // If persistent, this is owned, otherwise it's shared with the ringbuffer.
 		Rect2i viewport;
 
 		struct SetState {
-			uint32_t pipeline_expected_format;
-			uint32_t uniform_set_format;
-			VkDescriptorSet descriptor_set;
+			uint32_t pipeline_expected_format = 0;
+			uint32_t uniform_set_format = 0;
+			VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 			RID uniform_set;
-			bool bound;
-			SetState() {
-				bound = false;
-				pipeline_expected_format = 0;
-				uniform_set_format = 0;
-				descriptor_set = VK_NULL_HANDLE;
-			}
+			bool bound = false;
 		};
 
 		struct State {
 			SetState sets[MAX_UNIFORM_SETS];
-			uint32_t set_count;
+			uint32_t set_count = 0;
 			RID pipeline;
 			RID pipeline_shader;
-			VkPipelineLayout pipeline_layout;
+			VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 			RID vertex_array;
 			RID index_array;
-			uint32_t pipeline_push_constant_stages;
-
-			State() {
-				set_count = 0;
-				pipeline_layout = VK_NULL_HANDLE;
-				pipeline_push_constant_stages = 0;
-			}
+			uint32_t pipeline_push_constant_stages = 0;
 		} state;
-#ifdef DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active; //means command buffer was not closes, so you can keep adding things
-			FramebufferFormatID framebuffer_format;
-			//actual render pass values
-			uint32_t dynamic_state;
-			VertexFormatID vertex_format; //INVALID_ID if not set
-			uint32_t vertex_array_size; //0 if not set
-			uint32_t vertex_max_instances_allowed;
-			bool index_buffer_uses_restart_indices;
-			uint32_t index_array_size; //0 if index buffer not set
-			uint32_t index_array_max_index;
+			bool active = true; // Means command buffer was not closed, so you can keep adding things.
+			FramebufferFormatID framebuffer_format = INVALID_ID;
+			// Actual render pass values.
+			uint32_t dynamic_state = 0;
+			VertexFormatID vertex_format = INVALID_ID;
+			uint32_t vertex_array_size = 0;
+			uint32_t vertex_max_instances_allowed = 0xFFFFFFFF;
+			bool index_buffer_uses_restart_indices = false;
+			uint32_t index_array_size = 0;
+			uint32_t index_array_max_index = 0;
 			uint32_t index_array_offset;
 			Vector<uint32_t> set_formats;
 			Vector<bool> set_bound;
 			Vector<RID> set_rids;
-			//last pipeline set values
-			bool pipeline_active;
-			uint32_t pipeline_dynamic_state;
-			VertexFormatID pipeline_vertex_format;
+			// Last pipeline set values.
+			bool pipeline_active = false;
+			uint32_t pipeline_dynamic_state = 0;
+			VertexFormatID pipeline_vertex_format = INVALID_ID;
 			RID pipeline_shader;
-			uint32_t invalid_set_from;
-			bool pipeline_uses_restart_indices;
+			uint32_t invalid_set_from = 0;
+			bool pipeline_uses_restart_indices = false;
 			uint32_t pipeline_primitive_divisor;
 			uint32_t pipeline_primitive_minimum;
 			Vector<uint32_t> pipeline_set_formats;
-			uint32_t pipeline_push_constant_size;
-			bool pipeline_push_constant_suppplied;
-
-			Validation() {
-				active = true;
-				dynamic_state = 0;
-				vertex_format = INVALID_ID;
-				vertex_array_size = 0;
-				vertex_max_instances_allowed = 0xFFFFFFFF;
-				framebuffer_format = INVALID_ID;
-				index_array_size = 0; //not sent
-				index_array_max_index = 0; //not set
-				index_buffer_uses_restart_indices = false;
-				invalid_set_from = 0;
-
-				//pipeline state initalize
-				pipeline_active = false;
-				pipeline_dynamic_state = 0;
-				pipeline_vertex_format = INVALID_ID;
-				pipeline_uses_restart_indices = false;
-				pipeline_push_constant_size = 0;
-				pipeline_push_constant_suppplied = false;
-			}
+			uint32_t pipeline_push_constant_size = 0;
+			bool pipeline_push_constant_supplied = false;
 		} validation;
 #else
 		struct Validation {
-			uint32_t vertex_array_size; //0 if not set
-			uint32_t index_array_size; //0 if index buffer not set
+			uint32_t vertex_array_size = 0;
+			uint32_t index_array_size = 0;
 			uint32_t index_array_offset;
-
-			Validation() {
-				vertex_array_size = 0;
-				index_array_size = 0; //not sent
-			}
 		} validation;
-
 #endif
 	};
 
-	DrawList *draw_list; //one for regular draw lists, multiple for split.
+	DrawList *draw_list; // One for regular draw lists, multiple for split.
 	uint32_t draw_list_count;
 	bool draw_list_split;
 	Vector<RID> draw_list_bound_textures;
@@ -828,62 +786,39 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	/**********************/
 
 	struct ComputeList {
-		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
+		VkCommandBuffer command_buffer; // If persistent, this is owned, otherwise it's shared with the ringbuffer.
 
 		struct SetState {
-			uint32_t pipeline_expected_format;
-			uint32_t uniform_set_format;
-			VkDescriptorSet descriptor_set;
+			uint32_t pipeline_expected_format = 0;
+			uint32_t uniform_set_format = 0;
+			VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 			RID uniform_set;
-			bool bound;
-			SetState() {
-				bound = false;
-				pipeline_expected_format = 0;
-				uniform_set_format = 0;
-				descriptor_set = VK_NULL_HANDLE;
-			}
+			bool bound = false;
 		};
 
 		struct State {
 			Set<Texture *> textures_to_sampled_layout;
-
 			SetState sets[MAX_UNIFORM_SETS];
-			uint32_t set_count;
+			uint32_t set_count = 0;
 			RID pipeline;
 			RID pipeline_shader;
-			VkPipelineLayout pipeline_layout;
-			uint32_t pipeline_push_constant_stages;
-
-			State() {
-				set_count = 0;
-				pipeline_layout = VK_NULL_HANDLE;
-				pipeline_push_constant_stages = 0;
-			}
+			VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
+			uint32_t pipeline_push_constant_stages = 0;
 		} state;
-#ifdef DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active; //means command buffer was not closes, so you can keep adding things
+			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			Vector<uint32_t> set_formats;
 			Vector<bool> set_bound;
 			Vector<RID> set_rids;
-			//last pipeline set values
-			bool pipeline_active;
+			// Last pipeline set values.
+			bool pipeline_active = false;
 			RID pipeline_shader;
-			uint32_t invalid_set_from;
+			uint32_t invalid_set_from = 0;
 			Vector<uint32_t> pipeline_set_formats;
-			uint32_t pipeline_push_constant_size;
-			bool pipeline_push_constant_suppplied;
-
-			Validation() {
-				active = true;
-				invalid_set_from = 0;
-
-				//pipeline state initalize
-				pipeline_active = false;
-				pipeline_push_constant_size = 0;
-				pipeline_push_constant_suppplied = false;
-			}
+			uint32_t pipeline_push_constant_size = 0;
+			bool pipeline_push_constant_supplied = false;
 		} validation;
 #endif
 	};
