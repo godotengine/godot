@@ -1296,10 +1296,16 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			// math types
 			case VECTOR2:
 				return Vector2();
+			case VECTOR2I:
+				return Vector2i();
 			case RECT2:
 				return Rect2();
+			case RECT2I:
+				return Rect2i();
 			case VECTOR3:
 				return Vector3();
+			case VECTOR3I:
+				return Vector3i();
 			case TRANSFORM2D:
 				return Transform2D();
 			case PLANE:
