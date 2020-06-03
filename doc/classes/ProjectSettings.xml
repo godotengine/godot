@@ -1003,6 +1003,14 @@
 		<member name="rendering/batching/parameters/max_join_item_commands" type="int" setter="" getter="" default="16">
 			Sets the number of commands to lookahead to determine whether to batch render items. A value of 1 can join items consisting of single commands, 0 turns off joining. Higher values are in theory more likely to join, however this has diminishing returns and has a runtime cost so a small value is recommended.
 		</member>
+		<member name="rendering/batching/precision/uv_contract" type="bool" setter="" getter="" default="false">
+			On some platforms (especially mobile), precision issues in shaders can lead to reading 1 texel outside of bounds, particularly where rects are scaled. This can particularly lead to border artifacts around tiles in tilemaps.
+			This adjustment corrects for this by making a small contraction to the UV coordinates used. Note that this can result in a slight squashing of border texels.
+		</member>
+		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
+			The amount of UV contraction. This figure is divided by 1000000, and is a proportion of the total texture dimensions, where the width and height are both ranged from 0.0 to 1.0.
+			Use the default unless correcting for a problem on particular hardware.
+		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
 		</member>
@@ -1042,6 +1050,7 @@
 		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
+			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.

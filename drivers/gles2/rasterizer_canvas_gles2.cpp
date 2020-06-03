@@ -75,6 +75,9 @@ RasterizerCanvasGLES2::BatchData::BatchData() {
 	settings_use_single_rect_fallback = false;
 	settings_light_max_join_items = 16;
 
+	settings_uv_contract = false;
+	settings_uv_contract_amount = 0.0f;
+
 	stats_items_sorted = 0;
 	stats_light_items_joined = 0;
 }
@@ -165,10 +168,12 @@ int RasterizerCanvasGLES2::_batch_find_or_create_tex(const RID &p_texture, const
 	if (texture) {
 		new_batch_tex.tex_pixel_size.x = 1.0 / texture->width;
 		new_batch_tex.tex_pixel_size.y = 1.0 / texture->height;
+		new_batch_tex.flags = texture->flags;
 	} else {
 		// maybe doesn't need doing...
 		new_batch_tex.tex_pixel_size.x = 1.0;
 		new_batch_tex.tex_pixel_size.y = 1.0;
+		new_batch_tex.flags = 0;
 	}
 
 	if (p_tile) {
@@ -246,8 +251,9 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 	int command_count = p_item->commands.size();
 	Item::Command *const *commands = p_item->commands.ptr();
 
-	// just a local, might be more efficient in a register (check)
+	// locals, might be more efficient in a register (check)
 	Vector2 texpixel_size = r_fill_state.texpixel_size;
+	const float uv_epsilon = bdata.settings_uv_contract_amount;
 
 	// checking the color for not being white makes it 92/90 times faster in the case where it is white
 	bool multiply_final_modulate = false;
@@ -382,7 +388,12 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 
 				if (change_batch) {
 					// put the tex pixel size  in a local (less verbose and can be a register)
-					bdata.batch_textures[r_fill_state.batch_tex_id].tex_pixel_size.to(texpixel_size);
+					const BatchTex &batchtex = bdata.batch_textures[r_fill_state.batch_tex_id];
+					batchtex.tex_pixel_size.to(texpixel_size);
+
+					if (bdata.settings_uv_contract) {
+						r_fill_state.contract_uvs = (batchtex.flags & VS::TEXTURE_FLAG_FILTER) == 0;
+					}
 
 					// need to preserve texpixel_size between items
 					r_fill_state.texpixel_size = texpixel_size;
@@ -445,15 +456,34 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 				}
 
 				// uvs
-				Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.position * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
+				Vector2 src_min;
+				Vector2 src_max;
+				if (rect->flags & CANVAS_RECT_REGION) {
+					src_min = rect->source.position;
+					src_max = src_min + rect->source.size;
+
+					src_min *= texpixel_size;
+					src_max *= texpixel_size;
+
+					// nudge offset for the maximum to prevent precision error on GPU reading into line outside the source rect
+					// this is very difficult to get right.
+					if (r_fill_state.contract_uvs) {
+						src_min.x += uv_epsilon;
+						src_min.y += uv_epsilon;
+						src_max.x -= uv_epsilon;
+						src_max.y -= uv_epsilon;
+					}
+				} else {
+					src_min = Vector2(0, 0);
+					src_max = Vector2(1, 1);
+				}
 
 				// 10% faster calculating the max first
-				Vector2 pos_max = src_rect.position + src_rect.size;
 				Vector2 uvs[4] = {
-					src_rect.position,
-					Vector2(pos_max.x, src_rect.position.y),
-					pos_max,
-					Vector2(src_rect.position.x, pos_max.y),
+					src_min,
+					Vector2(src_max.x, src_min.y),
+					src_max,
+					Vector2(src_min.x, src_max.y),
 				};
 
 				if (rect->flags & CANVAS_RECT_TRANSPOSE) {
@@ -2810,7 +2840,6 @@ void RasterizerCanvasGLES2::_canvas_render_item(Item *p_ci, RenderItemState &r_r
 						ci->final_modulate.b * p_modulate.b,
 						ci->final_modulate.a * p_modulate.a );
 
-
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,state.final_transform);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::FINAL_MODULATE,state.canvas_item_modulate);
@@ -3220,7 +3249,6 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 						ci->final_modulate.b * p_modulate.b,
 						ci->final_modulate.a * p_modulate.a );
 
-
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,state.final_transform);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::FINAL_MODULATE,state.canvas_item_modulate);
@@ -3345,6 +3373,11 @@ void RasterizerCanvasGLES2::initialize() {
 	bdata.settings_item_reordering_lookahead = GLOBAL_GET("rendering/batching/parameters/item_reordering_lookahead");
 	bdata.settings_light_max_join_items = GLOBAL_GET("rendering/batching/lights/max_join_items");
 	bdata.settings_use_single_rect_fallback = GLOBAL_GET("rendering/batching/options/single_rect_fallback");
+
+	// alternatively only enable uv contract if pixel snap in use,
+	// but with this enable bool, it should not be necessary
+	bdata.settings_uv_contract = GLOBAL_GET("rendering/batching/precision/uv_contract");
+	bdata.settings_uv_contract_amount = (float)GLOBAL_GET("rendering/batching/precision/uv_contract_amount") / 1000000.0f;
 
 	// we can use the threshold to determine whether to turn scissoring off or on
 	bdata.settings_scissor_threshold = GLOBAL_GET("rendering/batching/lights/scissor_area_threshold");
