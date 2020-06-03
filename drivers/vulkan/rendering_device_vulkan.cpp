@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "drivers/vulkan/vulkan_context.h"
+
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 //#define FORCE_FULL_BARRIER
@@ -5905,7 +5906,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 		if (pipeline->push_constant_size) {
 			dl->state.pipeline_push_constant_stages = pipeline->push_constant_stages;
 #ifdef DEBUG_ENABLED
-			dl->validation.pipeline_push_constant_suppplied = false;
+			dl->validation.pipeline_push_constant_supplied = false;
 #endif
 		}
 
@@ -6036,7 +6037,7 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, const
 #endif
 	vkCmdPushConstants(dl->command_buffer, dl->state.pipeline_layout, dl->state.pipeline_push_constant_stages, 0, p_data_size, p_data);
 #ifdef DEBUG_ENABLED
-	dl->validation.pipeline_push_constant_suppplied = true;
+	dl->validation.pipeline_push_constant_supplied = true;
 #endif
 }
 
@@ -6064,7 +6065,7 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 
 	if (dl->validation.pipeline_push_constant_size > 0) {
 		//using push constants, check that they were supplied
-		ERR_FAIL_COND_MSG(!dl->validation.pipeline_push_constant_suppplied,
+		ERR_FAIL_COND_MSG(!dl->validation.pipeline_push_constant_supplied,
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
@@ -6300,7 +6301,7 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 		if (pipeline->push_constant_size) {
 			cl->state.pipeline_push_constant_stages = pipeline->push_constant_stages;
 #ifdef DEBUG_ENABLED
-			cl->validation.pipeline_push_constant_suppplied = false;
+			cl->validation.pipeline_push_constant_supplied = false;
 #endif
 		}
 
@@ -6433,7 +6434,7 @@ void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list,
 #endif
 	vkCmdPushConstants(cl->command_buffer, cl->state.pipeline_layout, cl->state.pipeline_push_constant_stages, 0, p_data_size, p_data);
 #ifdef DEBUG_ENABLED
-	cl->validation.pipeline_push_constant_suppplied = true;
+	cl->validation.pipeline_push_constant_supplied = true;
 #endif
 }
 
@@ -6460,7 +6461,7 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 
 	if (cl->validation.pipeline_push_constant_size > 0) {
 		//using push constants, check that they were supplied
-		ERR_FAIL_COND_MSG(!cl->validation.pipeline_push_constant_suppplied,
+		ERR_FAIL_COND_MSG(!cl->validation.pipeline_push_constant_supplied,
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
