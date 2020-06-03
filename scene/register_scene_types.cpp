@@ -154,6 +154,7 @@
 #include "scene/resources/physics_material.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
+#include "scene/resources/ray_shape_2d.h"
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
