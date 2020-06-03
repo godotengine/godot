@@ -80,29 +80,15 @@ class VulkanContext {
 	} SwapchainImageResources;
 
 	struct Window {
-		bool is_minimzed;
-		VkSurfaceKHR surface;
-		VkSwapchainKHR swapchain;
-		SwapchainImageResources *swapchain_image_resources;
-		VkPresentModeKHR presentMode;
-		uint32_t current_buffer;
-		int width;
-		int height;
+		VkSurfaceKHR surface = VK_NULL_HANDLE;
+		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+		SwapchainImageResources *swapchain_image_resources = VK_NULL_HANDLE;
+		VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		uint32_t current_buffer = 0;
+		int width = 0;
+		int height = 0;
 		VkCommandPool present_cmd_pool; //for separate present queue
-
-		VkRenderPass render_pass;
-
-		Window() {
-			width = 0;
-			height = 0;
-			render_pass = VK_NULL_HANDLE;
-			current_buffer = 0;
-			surface = VK_NULL_HANDLE;
-			swapchain_image_resources = VK_NULL_HANDLE;
-			swapchain = VK_NULL_HANDLE;
-			is_minimzed = false;
-			presentMode = VK_PRESENT_MODE_FIFO_KHR;
-		}
+		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
 
 	struct LocalDevice {
