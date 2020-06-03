@@ -1660,7 +1660,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int64(bool p_with_prefix) const {
+int64_t String::bin_to_int(bool p_with_prefix) const {
 	if (p_with_prefix && length() < 3) {
 		return 0;
 	}
@@ -1725,7 +1725,7 @@ int64_t String::to_int() const {
 	return integer * sign;
 }
 
-int String::to_int(const char *p_str, int p_len) {
+int64_t String::to_int(const char *p_str, int p_len) {
 	int to = 0;
 	if (p_len >= 0) {
 		to = p_len;
@@ -1735,13 +1735,13 @@ int String::to_int(const char *p_str, int p_len) {
 		}
 	}
 
-	int integer = 0;
-	int sign = 1;
+	int64_t integer = 0;
+	int64_t sign = 1;
 
 	for (int i = 0; i < to; i++) {
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as an integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
