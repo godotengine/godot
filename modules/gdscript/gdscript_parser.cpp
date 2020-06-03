@@ -7253,6 +7253,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 
 			DataType original_type = base_type;
 			bool is_initializer = callee_name == "new";
+			bool is_get_script = p_call->arguments[0]->type == Node::TYPE_SELF && callee_name == "get_script";
 			bool is_static = false;
 			bool valid = false;
 
@@ -7269,6 +7270,14 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 				return_type.is_meta_type = false;
 
 				valid = true; // There's always an initializer, we can assume this is true
+			}
+
+			if (is_get_script) {
+				// get_script() can be considered a meta-type.
+				return_type.kind = DataType::CLASS;
+				return_type.class_type = static_cast<ClassNode *>(head);
+				return_type.is_meta_type = true;
+				valid = true;
 			}
 
 			if (!valid) {
