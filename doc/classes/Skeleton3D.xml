@@ -106,6 +106,12 @@
 				Returns the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
 			</description>
 		</method>
+		<method name="get_bone_process_orders">
+			<return type="PackedInt32Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_bone_rest" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -268,6 +274,12 @@
 		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true">
 		</member>
 	</members>
+	<signals>
+		<signal name="pose_updated">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>
