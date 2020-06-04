@@ -52,6 +52,7 @@ class ItemList;
 class EditorProfiler;
 class EditorVisualProfiler;
 class EditorNetworkProfiler;
+class EditorPerformanceProfiler;
 class SceneDebuggerTree;
 
 class ScriptEditorDebugger : public MarginContainer {
@@ -113,15 +114,7 @@ private:
 	// Each debugger should have it's tree in the future I guess.
 	const Tree *editor_remote_tree = nullptr;
 
-	List<Vector<float>> perf_history;
-	Vector<float> perf_max;
-	Vector<TreeItem *> perf_items;
-
 	Map<int, String> profiler_signature;
-
-	Tree *perf_monitors;
-	Control *perf_draw;
-	Label *info_message;
 
 	Tree *vmem_tree;
 	Button *vmem_refresh;
@@ -141,6 +134,7 @@ private:
 	EditorProfiler *profiler;
 	EditorVisualProfiler *visual_profiler;
 	EditorNetworkProfiler *network_profiler;
+	EditorPerformanceProfiler *performance_profiler;
 
 	EditorNode *editor;
 
@@ -152,8 +146,6 @@ private:
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
-	void _performance_draw();
-	void _performance_select();
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);

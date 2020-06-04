@@ -36,6 +36,7 @@
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "editor/debugger/editor_network_profiler.h"
+#include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
 #include "editor/editor_log.h"
@@ -172,14 +173,25 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			file->store_csv_line(line);
 
 			// values
-			List<Vector<float>>::Element *E = perf_history.back();
-			while (E) {
-				Vector<float> &perf_data = E->get();
-				for (int i = 0; i < perf_data.size(); i++) {
-					line.write[i] = String::num_real(perf_data[i]);
+			Vector<List<float>::Element *> iterators;
+			iterators.resize(Performance::MONITOR_MAX);
+			bool continue_iteration = false;
+			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+				iterators.write[i] = performance_profiler->get_monitor_data(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)))->back();
+				continue_iteration = continue_iteration || iterators[i];
+			}
+			while (continue_iteration) {
+				continue_iteration = false;
+				for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+					if (iterators[i]) {
+						line.write[i] = String::num_real(iterators[i]->get());
+						iterators.write[i] = iterators[i]->prev();
+					} else {
+						line.write[i] = "";
+					}
+					continue_iteration = continue_iteration || iterators[i];
 				}
 				file->store_csv_line(line);
-				E = E->prev();
 			}
 			file->store_string("\n");
 
@@ -409,37 +421,12 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
 		}
 	} else if (p_msg == "performance:profile_frame") {
-		Vector<float> p;
-		p.resize(p_data.size());
+		Vector<float> frame_data;
+		frame_data.resize(p_data.size());
 		for (int i = 0; i < p_data.size(); i++) {
-			p.write[i] = p_data[i];
-			if (i < perf_items.size()) {
-				const float value = p[i];
-				String label = rtos(value);
-				String tooltip = label;
-				switch (Performance::MonitorType((int)perf_items[i]->get_metadata(1))) {
-					case Performance::MONITOR_TYPE_MEMORY: {
-						label = String::humanize_size(value);
-						tooltip = label;
-					} break;
-					case Performance::MONITOR_TYPE_TIME: {
-						label = rtos(value * 1000).pad_decimals(2) + " ms";
-						tooltip = label;
-					} break;
-					default: {
-						tooltip += " " + perf_items[i]->get_text(0);
-					} break;
-				}
-
-				perf_items[i]->set_text(1, label);
-				perf_items[i]->set_tooltip(1, tooltip);
-				if (p[i] > perf_max[i]) {
-					perf_max.write[i] = p[i];
-				}
-			}
+			frame_data.write[i] = p_data[i];
 		}
-		perf_history.push_front(p);
-		perf_draw->update();
+		performance_profiler->add_profile_frame(frame_data);
 
 	} else if (p_msg == "visual:profile_frame") {
 		DebuggerMarshalls::VisualProfilerFrame frame;
@@ -704,6 +691,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		emit_signal("stop_requested");
 		_stop_and_notify();
 
+	} else if (p_msg == "performance:profile_names") {
+		Vector<StringName> monitors;
+		monitors.resize(p_data.size());
+		for (int i = 0; i < p_data.size(); i++) {
+			ERR_FAIL_COND(p_data[i].get_type() != Variant::STRING_NAME);
+			monitors.set(i, p_data[i]);
+		}
+		performance_profiler->update_monitors(monitors);
+
 	} else {
 		WARN_PRINT("unknown message " + p_msg);
 	}
@@ -722,141 +718,6 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	}
 	reason->set_text(p_reason);
 	reason->set_tooltip(p_reason.word_wrap(80));
-}
-
-void ScriptEditorDebugger::_performance_select() {
-	perf_draw->update();
-}
-
-void ScriptEditorDebugger::_performance_draw() {
-	Vector<int> which;
-	for (int i = 0; i < perf_items.size(); i++) {
-		if (perf_items[i]->is_checked(0)) {
-			which.push_back(i);
-		}
-	}
-
-	if (which.empty()) {
-		info_message->show();
-		return;
-	}
-
-	info_message->hide();
-
-	const Ref<StyleBox> graph_sb = get_theme_stylebox("normal", "TextEdit");
-	const Ref<Font> graph_font = get_theme_font("font", "TextEdit");
-
-	const int cols = Math::ceil(Math::sqrt((float)which.size()));
-	int rows = Math::ceil((float)which.size() / cols);
-	if (which.size() == 1) {
-		rows = 1;
-	}
-
-	const int margin = 3;
-	const int point_sep = 5;
-	const Size2i s = Size2i(perf_draw->get_size()) / Size2i(cols, rows);
-
-	for (int i = 0; i < which.size(); i++) {
-		Point2i p(i % cols, i / cols);
-		Rect2i r(p * s, s);
-		r.position += Point2(margin, margin);
-		r.size -= Point2(margin, margin) * 2.0;
-		perf_draw->draw_style_box(graph_sb, r);
-		r.position += graph_sb->get_offset();
-		r.size -= graph_sb->get_minimum_size();
-		const int pi = which[i];
-
-		// Draw horizontal lines with labels.
-
-		int nb_lines = 5;
-		// Draw less lines if the monitor isn't tall enough to display 5 labels.
-		if (r.size.height <= 160 * EDSCALE) {
-			nb_lines = 3;
-		} else if (r.size.height <= 240 * EDSCALE) {
-			nb_lines = 4;
-		}
-
-		const float inv_nb_lines = 1.0 / nb_lines;
-
-		for (int line = 0; line < nb_lines; line += 1) {
-			const int from_x = r.position.x;
-			const int to_x = r.position.x + r.size.width;
-			const int y = r.position.y + (r.size.height * inv_nb_lines + line * inv_nb_lines * r.size.height);
-			perf_draw->draw_line(
-					Point2(from_x, y),
-					Point2i(to_x, y),
-					Color(0.5, 0.5, 0.5, 0.25),
-					Math::round(EDSCALE));
-
-			String label;
-			switch (Performance::MonitorType((int)perf_items[pi]->get_metadata(1))) {
-				case Performance::MONITOR_TYPE_MEMORY: {
-					label = String::humanize_size(Math::ceil((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi]));
-				} break;
-				case Performance::MONITOR_TYPE_TIME: {
-					label = rtos((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi] * 1000).pad_decimals(2) + " ms";
-				} break;
-				default: {
-					label = itos(Math::ceil((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi]));
-				} break;
-			}
-
-			perf_draw->draw_string(
-					graph_font,
-					Point2(from_x, y - graph_font->get_ascent() * 0.25),
-					label,
-					Color(0.5, 0.5, 0.5, 1.0));
-		}
-
-		const float h = (float)which[i] / (float)(perf_items.size());
-		// Use a darker color on light backgrounds for better visibility.
-		const float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
-		Color color = get_theme_color("accent_color", "Editor");
-		color.set_hsv(Math::fmod(h + 0.4, 0.9), color.get_s() * 0.9, color.get_v() * value_multiplier);
-
-		// Draw the monitor name in the top-left corner.
-		color.a = 0.6;
-		perf_draw->draw_string(
-				graph_font,
-				r.position + Point2(0, graph_font->get_ascent()),
-				perf_items[pi]->get_text(0),
-				color,
-				r.size.x);
-
-		// Draw the monitor value in the top-left corner, just below the name.
-		color.a = 0.9;
-		perf_draw->draw_string(
-				graph_font,
-				r.position + Point2(0, graph_font->get_ascent() + graph_font->get_height()),
-				perf_items[pi]->get_text(1),
-				color,
-				r.size.y);
-
-		const float spacing = point_sep / float(cols);
-		float from = r.size.width;
-
-		const List<Vector<float>>::Element *E = perf_history.front();
-		float prev = -1;
-		while (from >= 0 && E) {
-			float m = perf_max[pi];
-			if (m == 0) {
-				m = 0.00001;
-			}
-			float h2 = E->get()[pi] / m;
-			h2 = (1.0 - h2) * r.size.y;
-
-			if (E != perf_history.front()) {
-				perf_draw->draw_line(
-						r.position + Point2(from, h2),
-						r.position + Point2(from + spacing, prev),
-						color,
-						Math::round(EDSCALE));
-			}
-			prev = h2;
-			E = E->next();
-			from -= spacing;
-		}
-	}
 }
 
 void ScriptEditorDebugger::_notification(int p_what) {
@@ -976,10 +837,7 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	peer = p_peer;
 	ERR_FAIL_COND(p_peer.is_null());
 
-	perf_history.clear();
-	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-		perf_max.write[i] = 0;
-	}
+	performance_profiler->reset();
 
 	set_process(true);
 	breaked = false;
@@ -1727,63 +1585,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ //monitors
-
-		HSplitContainer *hsp = memnew(HSplitContainer);
-
-		perf_monitors = memnew(Tree);
-		perf_monitors->set_columns(2);
-		perf_monitors->set_column_title(0, TTR("Monitor"));
-		perf_monitors->set_column_title(1, TTR("Value"));
-		perf_monitors->set_column_titles_visible(true);
-		perf_monitors->connect("item_edited", callable_mp(this, &ScriptEditorDebugger::_performance_select));
-		hsp->add_child(perf_monitors);
-
-		perf_draw = memnew(Control);
-		perf_draw->set_clip_contents(true);
-		perf_draw->connect("draw", callable_mp(this, &ScriptEditorDebugger::_performance_draw));
-		hsp->add_child(perf_draw);
-
-		hsp->set_name(TTR("Monitors"));
-		hsp->set_split_offset(340 * EDSCALE);
-		tabs->add_child(hsp);
-		perf_max.resize(Performance::MONITOR_MAX);
-
-		Map<String, TreeItem *> bases;
-		TreeItem *root = perf_monitors->create_item();
-		perf_monitors->set_hide_root(true);
-		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-			String n = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
-			Performance::MonitorType mtype = Performance::get_singleton()->get_monitor_type(Performance::Monitor(i));
-			String base = n.get_slice("/", 0);
-			String name = n.get_slice("/", 1);
-			if (!bases.has(base)) {
-				TreeItem *b = perf_monitors->create_item(root);
-				b->set_text(0, base.capitalize());
-				b->set_editable(0, false);
-				b->set_selectable(0, false);
-				b->set_expand_right(0, true);
-				bases[base] = b;
-			}
-
-			TreeItem *it = perf_monitors->create_item(bases[base]);
-			it->set_metadata(1, mtype);
-			it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-			it->set_editable(0, true);
-			it->set_selectable(0, false);
-			it->set_selectable(1, false);
-			it->set_text(0, name.capitalize());
-			perf_items.push_back(it);
-			perf_max.write[i] = 0;
-		}
-
-		info_message = memnew(Label);
-		info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
-		info_message->set_valign(Label::VALIGN_CENTER);
-		info_message->set_align(Label::ALIGN_CENTER);
-		info_message->set_autowrap(true);
-		info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-		info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
-		perf_draw->add_child(info_message);
+		performance_profiler = memnew(EditorPerformanceProfiler);
+		tabs->add_child(performance_profiler);
 	}
 
 	{ //vmem inspect
