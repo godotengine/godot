@@ -5,12 +5,55 @@
 	</brief_description>
 	<description>
 		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel. By using the [method get_monitor] method of this class, you can access this data from your code.
+		You can add custom monitors using the [method add_custom_monitor] method. Custom monitors are available in [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel together with built-in monitors.
 		[b]Note:[/b] A few of these monitors are only available in debug mode and will always return 0 when used in a release build.
 		[b]Note:[/b] Many of these monitors are not updated in real-time, so there may be a short delay between changes.
+		[b]Note:[/b] Custom monitors do not support negative values. Negative values are clamped to 0.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_custom_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<argument index="1" name="callable" type="Callable">
+			</argument>
+			<argument index="2" name="arguments" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Adds a custom monitor with name same as id. You can specify the category of monitor using '/' in id. If there are more than one '/' then default category is used. Default category is "Custom".
+				[codeblock]
+				Performance.add_custom_monitor("MyCategory/MyMonitor", some_callable) # Adds monitor with name "MyName" to category "MyCategory"
+				Performance.add_custom_monitor("MyMonitor", some_callable) # Adds monitor with name "MyName" to category "Custom"
+				# Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so above code is valid
+				Performance.add_custom_monitor("Custom/MyMonitor", some_callable) # Adds monitor with name "MyName" to category "Custom"
+				# Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so above code is valid
+				Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", some_callable) # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom"
+				[/codeblock]
+				The debugger calls the callable to get the value of custom monitor. The callable must return a number.
+				Callables are called with arguments supplied in argument array.
+				[b]Note:[/b] It throws an error if given id is already present.
+			</description>
+		</method>
+		<method name="get_custom_monitor">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Returns the value of custom monitor with given id. The callable is called to get the value of custom monitor.
+				[b]Note:[/b] It throws an error if the given id is absent.
+			</description>
+		</method>
+		<method name="get_custom_monitor_names">
+			<return type="Array">
+			</return>
+			<description>
+				Returns the names of active custom monitors in an array.
+			</description>
+		</method>
 		<method name="get_monitor" qualifiers="const">
 			<return type="float">
 			</return>
@@ -21,6 +64,32 @@
 				[codeblock]
 				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_monitor_modification_time">
+			<return type="int">
+			</return>
+			<description>
+				Returns the last tick in which custom monitor was added/removed.
+			</description>
+		</method>
+		<method name="has_custom_monitor">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Returns true if custom monitor with the given id is present otherwise returns false.
+			</description>
+		</method>
+		<method name="remove_custom_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Removes the custom monitor with given id.
+				[b]Note:[/b] It throws an error if the given id is already absent.
 			</description>
 		</method>
 	</methods>
