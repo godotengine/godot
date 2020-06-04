@@ -15,6 +15,7 @@
 		print("position" in n) # Prints "True".
 		print("other_property" in n) # Prints "False".
 		[/codeblock]
+		The [code]in[/code] operator will evaluate to [code]true[/code] as long as the key exists, even if the value is [code]null[/code].
 		Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See [method _notification].
 	</description>
 	<tutorials>

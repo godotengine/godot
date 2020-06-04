@@ -80,6 +80,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	Main::start();
 	os->get_main_loop()->init();
 	emscripten_resume_main_loop();
+	// Immediately run the first iteration.
+	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
+	main_loop_callback();
 }
 
 int main(int argc, char *argv[]) {
@@ -91,14 +94,15 @@ int main(int argc, char *argv[]) {
 	// Sync from persistent state into memory and then
 	// run the 'main_after_fs_sync' function.
 	/* clang-format off */
-	EM_ASM(
+	EM_ASM({
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
-			ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
+			requestAnimationFrame(function() {
+				ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""]);
+			});
 		});
-
-	);
+	});
 	/* clang-format on */
 
 	return 0;

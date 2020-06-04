@@ -347,20 +347,22 @@ void CreateDialog::_update_search() {
 		} else {
 			bool found = false;
 			String type2 = type;
+			bool cpp_type2 = cpp_type;
 
 			if (!cpp_type && !search_loaded_scripts.has(type)) {
 				search_loaded_scripts[type] = ed.script_class_load_script(type);
 			}
 
-			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
+			while (type2 != "" && (cpp_type2 ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
 				if (search_box->get_text().is_subsequence_ofi(type2)) {
 					found = true;
 					break;
 				}
 
-				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+				type2 = cpp_type2 ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+				cpp_type2 = cpp_type2 || ClassDB::class_exists(type2); // Built-in class can't inherit from custom type, so we can skip the check if it's already true.
 
-				if (!cpp_type && !search_loaded_scripts.has(type2)) {
+				if (!cpp_type2 && !search_loaded_scripts.has(type2)) {
 					search_loaded_scripts[type2] = ed.script_class_load_script(type2);
 				}
 			}
@@ -511,30 +513,45 @@ String CreateDialog::get_selected_type() {
 Object *CreateDialog::instance_selected() {
 	TreeItem *selected = search_options->get_selected();
 
-	if (selected) {
-		Variant md = selected->get_metadata(0);
+	if (!selected) {
+		return nullptr;
+	}
 
-		String custom;
-		if (md.get_type() != Variant::NIL) {
-			custom = md;
-		}
+	Variant md = selected->get_metadata(0);
+	String custom;
+	if (md.get_type() != Variant::NIL) {
+		custom = md;
+	}
 
-		if (custom != String()) {
-			if (ScriptServer::is_global_class(custom)) {
-				Object *obj = EditorNode::get_editor_data().script_class_instance(custom);
-				Node *n = Object::cast_to<Node>(obj);
-				if (n) {
-					n->set_name(custom);
-				}
-				return obj;
+	Object *obj = nullptr;
+
+	if (!custom.empty()) {
+		if (ScriptServer::is_global_class(custom)) {
+			obj = EditorNode::get_editor_data().script_class_instance(custom);
+			Node *n = Object::cast_to<Node>(obj);
+			if (n) {
+				n->set_name(custom);
 			}
-			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+			obj = n;
 		} else {
-			return ClassDB::instance(selected->get_text(0));
+			obj = EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+		}
+	} else {
+		obj = ClassDB::instance(selected->get_text(0));
+	}
+
+	// Check if any Object-type property should be instantiated.
+	List<PropertyInfo> pinfo;
+	obj->get_property_list(&pinfo);
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		if (E->get().type == Variant::OBJECT && E->get().usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+			Object *prop = ClassDB::instance(E->get().class_name);
+			obj->set(E->get().name, prop);
 		}
 	}
 
-	return nullptr;
+	return obj;
 }
 
 void CreateDialog::_item_selected() {

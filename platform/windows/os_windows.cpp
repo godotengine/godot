@@ -208,6 +208,13 @@ void OS_Windows::initialize() {
 
 	process_map = memnew((Map<ProcessID, ProcessInfo>));
 
+	// Add current Godot PID to the list of known PIDs
+	ProcessInfo current_pi = {};
+	PROCESS_INFORMATION current_pi_pi = {};
+	current_pi.pi = current_pi_pi;
+	current_pi.pi.hProcess = GetCurrentProcess();
+	process_map->insert(GetCurrentProcessId(), current_pi);
+
 	IP_Unix::make_default();
 	main_loop = nullptr;
 }
@@ -343,55 +350,21 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	return ret;
 }
 
-uint64_t OS_Windows::get_unix_time() const {
-	FILETIME ft;
-	SYSTEMTIME st;
-	GetSystemTime(&st);
-	SystemTimeToFileTime(&st, &ft);
-
-	SYSTEMTIME ep;
-	ep.wYear = 1970;
-	ep.wMonth = 1;
-	ep.wDayOfWeek = 4;
-	ep.wDay = 1;
-	ep.wHour = 0;
-	ep.wMinute = 0;
-	ep.wSecond = 0;
-	ep.wMilliseconds = 0;
-	FILETIME fep;
-	SystemTimeToFileTime(&ep, &fep);
-
-	// Type punning through unions (rather than pointer cast) as per:
-	// https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime#remarks
-	ULARGE_INTEGER ft_punning;
-	ft_punning.LowPart = ft.dwLowDateTime;
-	ft_punning.HighPart = ft.dwHighDateTime;
-
-	ULARGE_INTEGER fep_punning;
-	fep_punning.LowPart = fep.dwLowDateTime;
-	fep_punning.HighPart = fep.dwHighDateTime;
-
-	return (ft_punning.QuadPart - fep_punning.QuadPart) / 10000000;
-};
-
-uint64_t OS_Windows::get_system_time_secs() const {
-	return get_system_time_msecs() / 1000;
-}
-
-uint64_t OS_Windows::get_system_time_msecs() const {
-	const uint64_t WINDOWS_TICK = 10000;
-	const uint64_t MSEC_TO_UNIX_EPOCH = 11644473600000LL;
+double OS_Windows::get_unix_time() const {
+	// 1 Windows tick is 100ns
+	const uint64_t WINDOWS_TICKS_PER_SECOND = 10000000;
+	const uint64_t TICKS_TO_UNIX_EPOCH = 116444736000000000LL;
 
 	SYSTEMTIME st;
 	GetSystemTime(&st);
 	FILETIME ft;
 	SystemTimeToFileTime(&st, &ft);
-	uint64_t ret;
-	ret = ft.dwHighDateTime;
-	ret <<= 32;
-	ret |= ft.dwLowDateTime;
+	uint64_t ticks_time;
+	ticks_time = ft.dwHighDateTime;
+	ticks_time <<= 32;
+	ticks_time |= ft.dwLowDateTime;
 
-	return (uint64_t)(ret / WINDOWS_TICK - MSEC_TO_UNIX_EPOCH);
+	return (double)(ticks_time - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
@@ -403,12 +376,29 @@ void OS_Windows::delay_usec(uint32_t p_usec) const {
 
 uint64_t OS_Windows::get_ticks_usec() const {
 	uint64_t ticks;
-	uint64_t time;
+
 	// This is the number of clock ticks since start
 	if (!QueryPerformanceCounter((LARGE_INTEGER *)&ticks))
 		ticks = (UINT64)timeGetTime();
+
 	// Divide by frequency to get the time in seconds
-	time = ticks * 1000000L / ticks_per_second;
+	// original calculation shown below is subject to overflow
+	// with high ticks_per_second and a number of days since the last reboot.
+	// time = ticks * 1000000L / ticks_per_second;
+
+	// we can prevent this by either using 128 bit math
+	// or separating into a calculation for seconds, and the fraction
+	uint64_t seconds = ticks / ticks_per_second;
+
+	// compiler will optimize these two into one divide
+	uint64_t leftover = ticks % ticks_per_second;
+
+	// remainder
+	uint64_t time = (leftover * 1000000L) / ticks_per_second;
+
+	// seconds
+	time += seconds * 1000000L;
+
 	// Subtract the time at game start to get
 	// the time since the game started
 	time -= ticks_start;

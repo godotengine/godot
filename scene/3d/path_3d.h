@@ -49,7 +49,7 @@ public:
 	void set_curve(const Ref<Curve3D> &p_curve);
 	Ref<Curve3D> get_curve() const;
 
-	Path3D();
+	Path3D() {}
 };
 
 class PathFollow3D : public Node3D {

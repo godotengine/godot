@@ -12,6 +12,11 @@ namespace GodotTools.ProjectEditor
         private const string CoreApiProjectName = "GodotSharp";
         private const string EditorApiProjectName = "GodotSharpEditor";
 
+        public const string CSharpProjectTypeGuid = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
+        public const string GodotProjectTypeGuid = "{8F3E2DF0-C35C-4265-82FC-BEA011F4A7ED}";
+
+        public static readonly string GodotDefaultProjectTypeGuids = $"{GodotProjectTypeGuid};{CSharpProjectTypeGuid}";
+
         public static string GenGameProject(string dir, string name, IEnumerable<string> compileItems)
         {
             string path = Path.Combine(dir, name + ".csproj");
@@ -19,6 +24,7 @@ namespace GodotTools.ProjectEditor
             ProjectPropertyGroupElement mainGroup;
             var root = CreateLibraryProject(name, "Debug", out mainGroup);
 
+            mainGroup.SetProperty("ProjectTypeGuids", GodotDefaultProjectTypeGuids);
             mainGroup.SetProperty("OutputPath", Path.Combine(".mono", "temp", "bin", "$(Configuration)"));
             mainGroup.SetProperty("BaseIntermediateOutputPath", Path.Combine(".mono", "temp", "obj"));
             mainGroup.SetProperty("IntermediateOutputPath", Path.Combine("$(BaseIntermediateOutputPath)", "$(Configuration)"));

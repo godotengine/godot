@@ -2038,23 +2038,31 @@ void ObjectDB::cleanup() {
 	if (slot_count > 0) {
 		spin_lock.lock();
 
-		WARN_PRINT("ObjectDB Instances still exist!");
+		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
+			// Ensure calling the native classes because if a leaked instance has a script
+			// that overrides any of those methods, it'd not be OK to call them at this point,
+			// now the scripting languages have already been terminated.
+			MethodBind *node_get_name = ClassDB::get_method("Node", "get_name");
+			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
+			Callable::CallError call_error;
+
 			for (uint32_t i = 0; i < slot_count; i++) {
 				uint32_t slot = object_slots[i].next_free;
 				Object *obj = object_slots[slot].object;
 
-				String node_name;
+				String extra_info;
 				if (obj->is_class("Node")) {
-					node_name = " - Node name: " + String(obj->call("get_name"));
+					extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
 				}
 				if (obj->is_class("Resource")) {
-					node_name = " - Resource name: " + String(obj->call("get_name")) + " Path: " + String(obj->call("get_path"));
+					extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 				}
 
 				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
-				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + node_name);
+				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
 			}
+			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 		spin_lock.unlock();
 	}

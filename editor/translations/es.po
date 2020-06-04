@@ -12,7 +12,7 @@
 # David Couto <davidcouto@gmail.com>, 2017.
 # Dharkael <izhe@hotmail.es>, 2017, 2019.
 # Diego López <diegodario21@gmail.com>, 2017.
-# eon-s <emanuel.segretin@gmail.com>, 2018, 2019.
+# eon-s <emanuel.segretin@gmail.com>, 2018, 2019, 2020.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020.
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
@@ -46,12 +46,15 @@
 # Victor S. <victorstancioiu@gmail.com>, 2020.
 # henry rujano herrera <rujhen@gmail.com>, 2020.
 # Megamega53 <Christopher.Morales21@myhunter.cuny.edu>, 2020.
+# Serk Lintur <serk.lintur@gmail.com>, 2020.
+# Pedro J. Estébanez <pedrojrulez@gmail.com>, 2020.
+# paco <pacosoftfree@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-04 15:11+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"Last-Translator: paco <pacosoftfree@protonmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -886,7 +889,6 @@ msgstr "No se puede conectar la señal"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1500,17 +1502,9 @@ msgstr "Activar"
 msgid "Rearrange Autoloads"
 msgstr "Reordenar Autoloads"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Ruta inválida."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "El archivo no existe."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "No está en la ruta de recursos."
+msgid "Can't add autoload:"
+msgstr "No se puede añadir un autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2028,7 +2022,7 @@ msgstr "Constantes"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Descripción de Propiedades"
+msgstr "Descripciones de Propiedad"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2051,11 +2045,8 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Actualmente no hay una descripción para este método. Por favor, ¡ayúdanos "
-"[color=$color][url=$url]aportando una[/url][/color]!\n"
-"\n"
-"Actualmente no existe descripción para este método. Por favor ¡ayúdanos "
-"[color=$color][url=$url]contribuyendo una[/url][/color]!"
+"Actualmente no existe descripción para este método. Por favor ¡ayúdanos con "
+"[color=$color][url=$url] contribuyendo con una[ /url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2477,12 +2468,17 @@ msgid "Can't reload a scene that was never saved."
 msgstr "No se puede volver a cargar una escena que nunca se guardó."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Revertir"
+msgid "Reload Saved Scene"
+msgstr "Recargar Escena Guardada"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Esta acción no se puede deshacer. ¿Revertir de todos modos?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"La escena actual tiene cambios sin guardar.\n"
+"¿Quieres recargar la escena guardada igualmente? Esta acción no puede "
+"deshacerse."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2775,10 +2771,6 @@ msgstr "Deshacer"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Rehacer"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Revertir Escena"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3110,12 +3102,14 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Una vez hecho ésto puedes aplicar modificaciones y generar tu propio APK "
-"personalizado al exportar (agregar módulos, cambiar el AndroidManifest.xml, "
-"etc.).\n"
-"Ten en cuenta que para generar builds personalizados en vez de usar los APKs "
-"pregenerados, la opción \"Usar Build Personalizado\" debería estar activada "
-"en el preset de exportación de Android."
+"Esto configurará tu proyecto para las compilaciones personalizadas de "
+"Android instalando la plantilla base en \"res://android/build\".\n"
+"Luego podrás aplicar las modificaciones y compilar tu propio APK "
+"personalizado al exportarlo (agregando módulos, cambiando el AndroidManifest."
+"xml, etc.).\n"
+"Ten en cuenta que para realizar compilaciones personalizadas en lugar de "
+"usar APKs predefinidos, la opción \"Use Custom Build\" debería estar "
+"habilitada en la configuración de exportación de Android."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3430,6 +3424,12 @@ msgstr "No se pudo ejecutar el script:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Te olvidaste del método '_run'?"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Mantén pulsado Ctrl para redondear a enteros. Mantén pulsado Shift para "
+"cambios más precisos."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4029,6 +4029,10 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Error ejecutando el script de posimportacion:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr "¿Devolviste un objeto derivado de Node en el método `post_import()`?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6994,12 +6998,12 @@ msgstr ""
 "'%s'."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Línea"
+msgid "[Ignore]"
+msgstr "[Ignorar]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(ignorar)"
+msgid "Line"
+msgstr "Línea"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7471,6 +7475,21 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Diálogo XForm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"Haz clic para alternar entre los estados de visibilidad.\n"
+"\n"
+"Ojo abierto: El gizmo es visible.\n"
+"Ojo cerrado: El gizmo está oculto.\n"
+"Ojo medio abierto: El gizmo también es visible a través de superficies "
+"opacas (\"x-ray\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -9373,7 +9392,7 @@ msgid ""
 msgstr ""
 "Los retornos decrecen en función del producto punto de la superficie normal "
 "y de la dirección de visión de la cámara (pasando las entradas asociadas a "
-"esta)."
+"este)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10568,8 +10587,8 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Escena Hija"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Eliminar Script"
+msgid "Detach Script"
+msgstr "Sustraer Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10735,6 +10754,16 @@ msgid "Open Documentation"
 msgstr "Abrir Documentación"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"No se puede adjuntar el script: no hay ningún lenguaje registrado.\n"
+"Esto es probablemente porque este editor fue construido con todos los "
+"módulos de lenguaje desactivados."
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Añadir Nodo Hijo"
 
@@ -10783,12 +10812,12 @@ msgstr ""
 "existe ningún nodo raíz."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
-msgstr "Añadir un script nuevo o existente al nodo seleccionado."
+msgid "Attach a new or existing script to the selected node."
+msgstr "Añadir un nuevo script o ya existente al nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "Borrar el script del nodo seleccionado."
+msgid "Detach the script from the selected node."
+msgstr "Sustraer script del nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10827,7 +10856,7 @@ msgid ""
 "Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
-"El nodo tiene %s conexión(es) y %(s) grupo(s).\n"
+"El nodo tiene %s conexión(es) y %s grupo(s).\n"
 "Clic para mostrar el panel de señales."
 
 #: editor/scene_tree_editor.cpp
@@ -10920,6 +10949,10 @@ msgid "A directory with the same name exists."
 msgstr "Ya existe un directorio con el mismo nombre."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "El archivo no existe."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Extensión inválida."
 
@@ -10958,6 +10991,10 @@ msgstr "Abrir Script"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "El archivo ya existe, será reutilizado."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Ruta inválida."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -12015,6 +12052,12 @@ msgstr ""
 "Debug keystore no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Release keystore no está configurado correctamente en el preset de "
+"exportación."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "La compilación personalizada requiere una ruta de Android SDK válida en "
@@ -12041,6 +12084,39 @@ msgstr "Clave pública inválida para la expansión de APK."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Nombre de paquete inválido:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+"El módulo \"GodotPaymentV3\" incluido en los ajustes del proyecto \"android/"
+"modules\" es inválido (cambiado en Godot 3.2.2).\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr "\"Use Custom Build\" debe estar activado para usar los plugins."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+"\"Degrees Of Freedom\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile "
+"VR\"."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"Hand Tracking\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR\"."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"Focus Awareness\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR"
+"\"."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12845,6 +12921,21 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Not in resource path."
+#~ msgstr "No está en la ruta de recursos."
+
+#~ msgid "Revert"
+#~ msgstr "Revertir"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Esta acción no se puede deshacer. ¿Revertir de todos modos?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Revertir Escena"
+
+#~ msgid "Clear Script"
+#~ msgstr "Eliminar Script"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Registro de problemas"

@@ -930,6 +930,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+	// Initialize user data dir.
+	OS::get_singleton()->ensure_user_data_dir();
+
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc", PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1")); // No negative and limit to 500 due to crashes
 	GLOBAL_DEF("network/limits/debugger/max_chars_per_second", 32768);
@@ -948,7 +951,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		packed_data->set_disabled(true);
 		globals->set_disable_feature_overrides(true);
 	}
-
 #endif
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
@@ -1266,10 +1268,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
 	}
 
-	/* Initialize user data dir */
-
-	OS::get_singleton()->ensure_user_data_dir();
-
 	/* Initialize Input */
 
 	input = memnew(Input);
@@ -1312,6 +1310,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	rendering_server->init();
+	rendering_server->set_render_loop_enabled(!disable_render_loop);
 
 	OS::get_singleton()->initialize_joypads();
 
@@ -1919,7 +1918,14 @@ bool Main::start() {
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			String appname = ProjectSettings::get_singleton()->get("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
+#ifdef DEBUG_ENABLED
+			// Append a suffix to the window title to denote that the project is running
+			// from a debug build (including the editor). Since this results in lower performance,
+			// this should be clearly presented to the user.
+			DisplayServer::get_singleton()->window_set_title(vformat("%s (DEBUG)", appname));
+#else
 			DisplayServer::get_singleton()->window_set_title(appname);
+#endif
 
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
 			int shadow_atlas_q0_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_0_subdiv");
@@ -2203,7 +2209,7 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (DisplayServer::get_singleton()->can_any_window_draw() && !disable_render_loop) {
+	if (DisplayServer::get_singleton()->can_any_window_draw() && RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
 				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands

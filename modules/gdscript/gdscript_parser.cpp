@@ -2821,6 +2821,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 #ifdef DEBUG_ENABLED
 
+	pending_newline = -1; // reset for the new block
+
 	NewLineNode *nl = alloc_node<NewLineNode>();
 
 	nl->line = tokenizer->get_token_line();
@@ -3178,6 +3180,22 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				IdentifierNode *id = alloc_node<IdentifierNode>();
 				id->name = tokenizer->get_token_identifier();
+#ifdef DEBUG_ENABLED
+				for (int j = 0; j < current_class->variables.size(); j++) {
+					if (current_class->variables[j].identifier == id->name) {
+						_add_warning(GDScriptWarning::SHADOWED_VARIABLE, id->line, id->name, itos(current_class->variables[j].line));
+					}
+				}
+#endif // DEBUG_ENABLED
+
+				BlockNode *check_block = p_block;
+				while (check_block) {
+					if (check_block->variables.has(id->name)) {
+						_set_error("Variable \"" + String(id->name) + "\" already defined in the scope (at line " + itos(check_block->variables[id->name]->line) + ").");
+						return;
+					}
+					check_block = check_block->parent_block;
+				}
 
 				tokenizer->advance();
 
@@ -7336,8 +7354,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 		} else if (!_is_type_compatible(arg_types[i - arg_diff], par_type, true)) {
 			// Supertypes are acceptable for dynamic compliance
 			if (!_is_type_compatible(par_type, arg_types[i - arg_diff])) {
-				_set_error("At \"" + callee_name + "()\" call, argument " + itos(i - arg_diff + 1) + ". Assigned type (" +
-								   par_type.to_string() + ") doesn't match the function argument's type (" +
+				_set_error("At \"" + callee_name + "()\" call, argument " + itos(i - arg_diff + 1) + ". The passed argument's type (" +
+								   par_type.to_string() + ") doesn't match the function's expected argument type (" +
 								   arg_types[i - arg_diff].to_string() + ").",
 						p_call->line);
 				return DataType();
