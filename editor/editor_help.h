@@ -183,7 +183,10 @@ public:
 
 	String get_class();
 
-	void set_focused() { class_desc->grab_focus(); }
+	void set_focused() {
+		notification(Control::NOTIFICATION_THEME_CHANGED);
+		class_desc->grab_focus();
+	}
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
