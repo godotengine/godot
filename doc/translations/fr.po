@@ -35852,7 +35852,7 @@ msgstr ""
 
 #: doc/classes/PhysicsServer2D.xml:888
 msgid ""
-"Sets a damped spring joint parameter. See [enum DampedStringParam] for a "
+"Sets a damped spring joint parameter. See [enum DampedSpringParam] for a "
 "list of available parameters."
 msgstr ""
 

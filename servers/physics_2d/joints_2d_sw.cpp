@@ -390,29 +390,29 @@ void DampedSpringJoint2DSW::solve(real_t p_step) {
 	B->apply_impulse(rB, j);
 }
 
-void DampedSpringJoint2DSW::set_param(PhysicsServer2D::DampedStringParam p_param, real_t p_value) {
+void DampedSpringJoint2DSW::set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer2D::DAMPED_STRING_REST_LENGTH: {
+		case PhysicsServer2D::DAMPED_SPRING_REST_LENGTH: {
 			rest_length = p_value;
 		} break;
-		case PhysicsServer2D::DAMPED_STRING_DAMPING: {
+		case PhysicsServer2D::DAMPED_SPRING_DAMPING: {
 			damping = p_value;
 		} break;
-		case PhysicsServer2D::DAMPED_STRING_STIFFNESS: {
+		case PhysicsServer2D::DAMPED_SPRING_STIFFNESS: {
 			stiffness = p_value;
 		} break;
 	}
 }
 
-real_t DampedSpringJoint2DSW::get_param(PhysicsServer2D::DampedStringParam p_param) const {
+real_t DampedSpringJoint2DSW::get_param(PhysicsServer2D::DampedSpringParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer2D::DAMPED_STRING_REST_LENGTH: {
+		case PhysicsServer2D::DAMPED_SPRING_REST_LENGTH: {
 			return rest_length;
 		} break;
-		case PhysicsServer2D::DAMPED_STRING_DAMPING: {
+		case PhysicsServer2D::DAMPED_SPRING_DAMPING: {
 			return damping;
 		} break;
-		case PhysicsServer2D::DAMPED_STRING_STIFFNESS: {
+		case PhysicsServer2D::DAMPED_SPRING_STIFFNESS: {
 			return stiffness;
 		} break;
 	}

@@ -654,8 +654,8 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("groove_joint_create", "groove1_a", "groove2_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::groove_joint_create, DEFVAL(RID()), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("damped_spring_joint_create", "anchor_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::damped_spring_joint_create, DEFVAL(RID()));
 
-	ClassDB::bind_method(D_METHOD("damped_string_joint_set_param", "joint", "param", "value"), &PhysicsServer2D::damped_string_joint_set_param);
-	ClassDB::bind_method(D_METHOD("damped_string_joint_get_param", "joint", "param"), &PhysicsServer2D::damped_string_joint_get_param);
+	ClassDB::bind_method(D_METHOD("damped_spring_joint_set_param", "joint", "param", "value"), &PhysicsServer2D::damped_spring_joint_set_param);
+	ClassDB::bind_method(D_METHOD("damped_spring_joint_get_param", "joint", "param"), &PhysicsServer2D::damped_spring_joint_get_param);
 
 	ClassDB::bind_method(D_METHOD("joint_get_type", "joint"), &PhysicsServer2D::joint_get_type);
 
@@ -727,9 +727,9 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(JOINT_PARAM_MAX_BIAS);
 	BIND_ENUM_CONSTANT(JOINT_PARAM_MAX_FORCE);
 
-	BIND_ENUM_CONSTANT(DAMPED_STRING_REST_LENGTH);
-	BIND_ENUM_CONSTANT(DAMPED_STRING_STIFFNESS);
-	BIND_ENUM_CONSTANT(DAMPED_STRING_DAMPING);
+	BIND_ENUM_CONSTANT(DAMPED_SPRING_REST_LENGTH);
+	BIND_ENUM_CONSTANT(DAMPED_SPRING_STIFFNESS);
+	BIND_ENUM_CONSTANT(DAMPED_SPRING_DAMPING);
 
 	BIND_ENUM_CONSTANT(CCD_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_RAY);

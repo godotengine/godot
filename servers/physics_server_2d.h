@@ -552,13 +552,13 @@ public:
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) = 0;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const = 0;
 
-	enum DampedStringParam {
-		DAMPED_STRING_REST_LENGTH,
-		DAMPED_STRING_STIFFNESS,
-		DAMPED_STRING_DAMPING
+	enum DampedSpringParam {
+		DAMPED_SPRING_REST_LENGTH,
+		DAMPED_SPRING_STIFFNESS,
+		DAMPED_SPRING_DAMPING
 	};
-	virtual void damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value) = 0;
-	virtual real_t damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const = 0;
+	virtual void damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) = 0;
+	virtual real_t damped_spring_joint_get_param(RID p_joint, DampedSpringParam p_param) const = 0;
 
 	virtual JointType joint_get_type(RID p_joint) const = 0;
 
@@ -678,7 +678,7 @@ VARIANT_ENUM_CAST(PhysicsServer2D::BodyState);
 VARIANT_ENUM_CAST(PhysicsServer2D::CCDMode);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointType);
-VARIANT_ENUM_CAST(PhysicsServer2D::DampedStringParam);
+VARIANT_ENUM_CAST(PhysicsServer2D::DampedSpringParam);
 //VARIANT_ENUM_CAST( PhysicsServer2D::ObjectType );
 VARIANT_ENUM_CAST(PhysicsServer2D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer2D::ProcessInfo);
