@@ -55,7 +55,6 @@ class OS {
 	String _local_clipboard;
 	bool _no_window = false;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
-	bool _is_custom_exit_code = false;
 	int _orientation;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
@@ -270,7 +269,6 @@ public:
 
 	virtual int get_exit_code() const;
 	virtual void set_exit_code(int p_code);
-	virtual bool is_custom_exit_code();
 
 	virtual int get_processor_count() const;
 
