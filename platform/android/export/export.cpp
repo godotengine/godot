@@ -786,6 +786,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		bool screen_support_xlarge = p_preset->get("screen/support_xlarge");
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
 
 		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
@@ -955,6 +956,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							if (xr_mode_index == 1 /* XRMode.OVR */) {
 								string_table.write[attr_value] = "vr_only";
 							}
+						}
+
+						if (tname == "meta-data" && attrname == "value" && value == "oculus_focus_aware_value") {
+							// Update the focus awareness meta-data value
+							string_table.write[attr_value] = xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? "true" : "false";
 						}
 
 						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
@@ -1489,6 +1495,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "xr_features/focus_awareness"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
@@ -1918,6 +1925,31 @@ public:
 			valid = false;
 			err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
 			err += "\n";
+		}
+
+		// Validate the Xr features are properly populated
+		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		int degrees_of_freedom = p_preset->get("xr_features/degrees_of_freedom");
+		int hand_tracking = p_preset->get("xr_features/hand_tracking");
+		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
+		if (xr_mode_index != /* XRMode.OVR*/ 1) {
+			if (degrees_of_freedom > 0) {
+				valid = false;
+				err += TTR("\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
+				err += "\n";
+			}
+
+			if (hand_tracking > 0) {
+				valid = false;
+				err += TTR("\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
+				err += "\n";
+			}
+
+			if (focus_awareness) {
+				valid = false;
+				err += TTR("\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
+				err += "\n";
+			}
 		}
 
 		r_error = err;

@@ -52,6 +52,9 @@
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
 
+            <!-- Focus awareness metadata populated at export time if the user enables it in the 'Xr Features' section. -->
+            <meta-data android:name="com.oculus.vr.focusaware" android:value="oculus_focus_aware_value" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
