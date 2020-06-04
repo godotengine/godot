@@ -1855,6 +1855,13 @@ public:
 			}
 		}
 
+		String rk = p_preset->get("keystore/release");
+
+		if (!rk.empty() && !FileAccess::exists(rk)) {
+			valid = false;
+			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
+		}
+
 		if (bool(p_preset->get("custom_template/use_custom_build"))) {
 			String sdk_path = EditorSettings::get_singleton()->get("export/android/custom_build_sdk_path");
 			if (sdk_path == "") {
