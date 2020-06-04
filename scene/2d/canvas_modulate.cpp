@@ -39,7 +39,8 @@ void CanvasModulate::_notification(int p_what) {
 
 	} else if (p_what == NOTIFICATION_EXIT_CANVAS) {
 		if (is_visible_in_tree()) {
-			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+			// Reset color to default only if no other node has changed canvas's modulation color
+			RS::get_singleton()->canvas_set_modulate_if_equal(get_canvas(), color, Color(1, 1, 1, 1));
 			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
 		}
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {

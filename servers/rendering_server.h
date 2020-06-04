@@ -966,6 +966,7 @@ public:
 	virtual RID canvas_create() = 0;
 	virtual void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) = 0;
 	virtual void canvas_set_modulate(RID p_canvas, const Color &p_color) = 0;
+	virtual void canvas_set_modulate_if_equal(RID p_canvas, const Color &old_color, const Color &p_color) = 0;
 	virtual void canvas_set_parent(RID p_canvas, RID p_parent, float p_scale) = 0;
 
 	virtual void canvas_set_disable_scale(bool p_disable) = 0;

@@ -1788,6 +1788,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_create"), &RenderingServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &RenderingServer::canvas_set_item_mirroring);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &RenderingServer::canvas_set_modulate);
+	ClassDB::bind_method(D_METHOD("canvas_set_modulate_if_equal", "canvas", "old_color", "color"), &RenderingServer::canvas_set_modulate_if_equal);
 #ifndef _MSC_VER
 #warning TODO method bindings need to be fixed
 #endif
