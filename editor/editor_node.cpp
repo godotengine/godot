@@ -6781,6 +6781,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(load_error_dialog);
 
 	execute_outputs = memnew(RichTextLabel);
+	execute_outputs->set_selection_enabled(true);
 	execute_output_dialog = memnew(AcceptDialog);
 	execute_output_dialog->add_child(execute_outputs);
 	execute_output_dialog->set_title("");
