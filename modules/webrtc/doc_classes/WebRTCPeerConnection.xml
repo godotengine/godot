@@ -120,7 +120,7 @@
 			</argument>
 			<description>
 				Sets the SDP description of the local peer. This should be called in response to [signal session_description_created].
-				If [code]type[/code] is [code]answer[/code] the peer will start emitting [signal ice_candidate_created].
+				After calling this function the peer will start emitting [signal ice_candidate_created] (unless an [enum Error] different from [constant OK] is returned).
 			</description>
 		</method>
 		<method name="set_remote_description">
