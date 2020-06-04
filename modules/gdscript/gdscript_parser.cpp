@@ -3187,6 +3187,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					}
 				}
 #endif // DEBUG_ENABLED
+<<<<<<< HEAD
 
 				BlockNode *check_block = p_block;
 				while (check_block) {
@@ -3196,6 +3197,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					}
 					check_block = check_block->parent_block;
 				}
+=======
+>>>>>>> 54835a5302... shodowed var warning for `for` loop counter
 
 				tokenizer->advance();
 
