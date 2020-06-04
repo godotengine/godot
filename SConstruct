@@ -177,12 +177,16 @@ for k in platform_opts.keys():
     for o in opt_list:
         opts.Add(o)
 
+# Update the environment now as the "custom_modules" option may be
+# defined in a file rather than specified via the command line.
+opts.Update(env_base)
+
 # Detect modules.
 modules_detected = OrderedDict()
 module_search_paths = ["modules"]  # Built-in path.
 
-if ARGUMENTS.get("custom_modules"):
-    paths = ARGUMENTS.get("custom_modules").split(",")
+if env_base["custom_modules"]:
+    paths = env_base["custom_modules"].split(",")
     for p in paths:
         try:
             module_search_paths.append(methods.convert_custom_modules_path(p))
@@ -213,8 +217,9 @@ for name, path in modules_detected.items():
 
 methods.write_modules(modules_detected)
 
-opts.Update(env_base)  # update environment
-Help(opts.GenerateHelpText(env_base))  # generate help
+# Update the environment again after all the module options are added.
+opts.Update(env_base)
+Help(opts.GenerateHelpText(env_base))
 
 # add default include paths
 

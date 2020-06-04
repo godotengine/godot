@@ -192,6 +192,7 @@ class TileMapEditor : public VBoxContainer {
 	void _menu_option(int p_option);
 	void _palette_selected(int index);
 	void _palette_multi_selected(int index, bool selected);
+	void _palette_input(const Ref<InputEvent> &p_event);
 
 	Dictionary _create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 autotile_coord);
 	void _start_undo(const String &p_action);

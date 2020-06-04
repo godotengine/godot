@@ -33,10 +33,6 @@
 #include <oleauto.h>
 #include <wbemidl.h>
 
-#ifndef __GNUC__
-#define __builtin_bswap32 _byteswap_ulong
-#endif
-
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
 #define GetProcAddress (void *)GetProcAddress
@@ -67,18 +63,26 @@ JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
 	for (int i = 0; i < JOYPADS_MAX; i++)
 		attached_joypads[i] = false;
 
-	HRESULT result;
-	result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, NULL);
-	if (FAILED(result)) {
-		printf("failed init DINPUT: %ld\n", result);
+	HRESULT result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, nullptr);
+	if (result == DI_OK) {
+		probe_joypads();
+	} else {
+		ERR_PRINT("Couldn't initialize DirectInput. Error: " + itos(result));
+		if (result == DIERR_OUTOFMEMORY) {
+			ERR_PRINT("The Windows DirectInput subsystem could not allocate sufficient memory.");
+			ERR_PRINT("Rebooting your PC may solve this issue.");
+		}
+		// Ensure dinput is still a nullptr.
+		dinput = nullptr;
 	}
-	probe_joypads();
 }
 
 JoypadWindows::~JoypadWindows() {
 
 	close_joypad();
-	dinput->Release();
+	if (dinput) {
+		dinput->Release();
+	}
 	unload_xinput();
 }
 
@@ -142,6 +146,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 
 bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
+	ERR_FAIL_NULL_V_MSG(dinput, false, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	HRESULT hr;
 	int num = input->get_unused_joy_id();
 
@@ -165,10 +170,13 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	const GUID &guid = instance->guidProduct;
 	char uid[128];
-	sprintf_s(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
-			__builtin_bswap32(guid.Data1), guid.Data2, guid.Data3,
-			guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-			guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+
+	ERR_FAIL_COND_V_MSG(memcmp(&guid.Data4[2], "PIDVID", 6), false, "DirectInput device not recognised.");
+	WORD type = BSWAP16(0x03);
+	WORD vendor = BSWAP16(LOWORD(guid.Data1));
+	WORD product = BSWAP16(HIWORD(guid.Data1));
+	WORD version = 0;
+	sprintf_s(uid, "%04x%04x%04x%04x%04x%04x%04x%04x", type, 0, vendor, 0, product, 0, version, 0);
 
 	id_to_change = joypad_count;
 
@@ -280,6 +288,7 @@ void JoypadWindows::close_joypad(int id) {
 
 void JoypadWindows::probe_joypads() {
 
+	ERR_FAIL_NULL_MSG(dinput, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	DWORD dwResult;
 	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
 

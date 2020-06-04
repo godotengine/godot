@@ -945,6 +945,8 @@ public:
 		icon = NULL;
 		icon_needs_reload = true;
 		hover = false;
+
+		set_focus_mode(FocusMode::FOCUS_ALL);
 	}
 
 	void set_is_favorite(bool fav) {
@@ -1726,6 +1728,10 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 		} else {
 			_last_clicked = clicked_project.project_key;
 			select_project(clicked_index);
+		}
+
+		if (_selected_project_keys.has(clicked_project.project_key)) {
+			clicked_project.control->grab_focus();
 		}
 
 		emit_signal(SIGNAL_SELECTION_CHANGED);

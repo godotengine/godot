@@ -205,6 +205,21 @@ void TileMapEditor::_palette_multi_selected(int index, bool selected) {
 	_update_palette();
 }
 
+void TileMapEditor::_palette_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+
+	// Zoom in/out using Ctrl + mouse wheel.
+	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			size_slider->set_value(size_slider->get_value() + 0.2);
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			size_slider->set_value(size_slider->get_value() - 0.2);
+		}
+	}
+}
+
 void TileMapEditor::_canvas_mouse_enter() {
 
 	mouse_over = true;
@@ -1834,6 +1849,7 @@ void TileMapEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_clear_transform"), &TileMapEditor::_clear_transform);
 	ClassDB::bind_method(D_METHOD("_palette_selected"), &TileMapEditor::_palette_selected);
 	ClassDB::bind_method(D_METHOD("_palette_multi_selected"), &TileMapEditor::_palette_multi_selected);
+	ClassDB::bind_method(D_METHOD("_palette_input"), &TileMapEditor::_palette_input);
 
 	ClassDB::bind_method(D_METHOD("_fill_points"), &TileMapEditor::_fill_points);
 	ClassDB::bind_method(D_METHOD("_erase_points"), &TileMapEditor::_erase_points);
@@ -1996,6 +2012,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette->add_constant_override("vseparation", 8 * EDSCALE);
 	palette->connect("item_selected", this, "_palette_selected");
 	palette->connect("multi_selected", this, "_palette_multi_selected");
+	palette->connect("gui_input", this, "_palette_input");
 	palette_container->add_child(palette);
 
 	// Add message for when no texture is selected.
@@ -2034,7 +2051,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar->add_child(paint_button);
 
 	bucket_fill_button = memnew(ToolButton);
-	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_G));
+	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_B));
 	bucket_fill_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_BUCKET));
 	bucket_fill_button->set_toggle_mode(true);
 	toolbar->add_child(bucket_fill_button);

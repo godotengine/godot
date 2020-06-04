@@ -2629,7 +2629,9 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		return true;
 	}
 
+#ifdef TOOLS_ENABLED
 	MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+#endif
 
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;

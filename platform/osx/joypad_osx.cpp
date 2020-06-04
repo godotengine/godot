@@ -314,9 +314,16 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	if (refCF) {
 		CFNumberGetValue((CFNumberRef)refCF, kCFNumberSInt32Type, &product_id);
 	}
+
+	int version = 0;
+	refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDVersionNumberKey));
+	if (refCF) {
+		CFNumberGetValue((CFNumberRef)refCF, kCFNumberSInt32Type, &version);
+	}
+
 	if (vendor && product_id) {
 		char uid[128];
-		sprintf(uid, "%04x%08x%04x%08x", OSSwapHostToBigInt32(vendor), 0, OSSwapHostToBigInt32(product_id), 0);
+		sprintf(uid, "%08x%08x%08x%08x", OSSwapHostToBigInt32(3), OSSwapHostToBigInt32(vendor), OSSwapHostToBigInt32(product_id), OSSwapHostToBigInt32(version));
 		input->joy_connection_changed(id, true, name, uid);
 	} else {
 		//bluetooth device

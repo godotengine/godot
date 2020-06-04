@@ -800,7 +800,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);
 
-	default_language = 0;
+	default_language = -1;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 
 		String lang = ScriptServer::get_language(i)->get_name();
@@ -809,8 +809,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			default_language = i;
 		}
 	}
-
-	language_menu->select(default_language);
+	if (default_language >= 0) {
+		language_menu->select(default_language);
+	}
 	current_language = default_language;
 
 	language_menu->connect("item_selected", this, "_lang_changed");

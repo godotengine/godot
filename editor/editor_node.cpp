@@ -2847,8 +2847,8 @@ void EditorNode::_update_debug_options() {
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisons = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
-	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", false);
-	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", false);
+	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
+	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 
 	if (check_deploy_remote) _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
 	if (check_file_server) _menu_option_confirm(RUN_FILE_SERVER, true);
@@ -4945,7 +4945,7 @@ void EditorNode::set_distraction_free_mode(bool p_enter) {
 	}
 }
 
-bool EditorNode::get_distraction_free_mode() const {
+bool EditorNode::is_distraction_free_mode_enabled() const {
 	return distraction_free->is_pressed();
 }
 
@@ -6229,13 +6229,10 @@ EditorNode::EditorNode() {
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
 	p->add_separator();
-	//those are now on by default, since they are harmless
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Sync Scene Changes")), RUN_LIVE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->set_item_checked(p->get_item_count() - 1, true);
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->set_item_checked(p->get_item_count() - 1, true);
 	p->connect("id_pressed", this, "_menu_option");
 
 	menu_hb->add_spacer();

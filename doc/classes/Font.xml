@@ -54,6 +54,17 @@
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
+		<method name="get_char_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<argument index="1" name="next" type="int" default="0">
+			</argument>
+			<description>
+				Returns the size of a character, optionally taking kerning into account if the next character is provided.
+			</description>
+		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float">
 			</return>

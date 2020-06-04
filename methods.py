@@ -149,7 +149,7 @@ def detect_modules(at_path):
 
 
 def is_module(path):
-    return os.path.isdir(path) and os.path.exists(path + "/config.py")
+    return os.path.isdir(path) and os.path.exists(os.path.join(path, "SCsub"))
 
 
 def write_modules(module_list):

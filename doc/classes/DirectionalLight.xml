@@ -43,19 +43,19 @@
 	</members>
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">
-			Renders the entire scene's shadow map from an orthogonal point of view. May result in blockier shadows on close objects.
+			Renders the entire scene's shadow map from an orthogonal point of view. This is the fastest directional shadow mode. May result in blurrier shadows on close objects.
 		</constant>
 		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1" enum="ShadowMode">
-			Splits the view frustum in 2 areas, each with its own shadow map.
+			Splits the view frustum in 2 areas, each with its own shadow map. This shadow mode is a compromise between [constant SHADOW_ORTHOGONAL] and [constant SHADOW_PARALLEL_4_SPLITS] in terms of performance.
 		</constant>
 		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2" enum="ShadowMode">
-			Splits the view frustum in 4 areas, each with its own shadow map.
+			Splits the view frustum in 4 areas, each with its own shadow map. This is the slowest directional shadow mode.
 		</constant>
 		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0" enum="ShadowDepthRange">
 			Keeps the shadow stable when the camera moves, at the cost of lower effective shadow resolution.
 		</constant>
 		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="ShadowDepthRange">
-			Tries to achieve maximum shadow resolution. May result in saw effect on shadow edges.
+			Tries to achieve maximum shadow resolution. May result in saw effect on shadow edges. This mode typically works best in games where the camera will often move at high speeds, such as most racing games.
 		</constant>
 	</constants>
 </class>

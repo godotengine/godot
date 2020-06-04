@@ -276,6 +276,8 @@ def main():  # type: () -> None
     group.add_argument("--dry-run", action="store_true", help="If passed, no output will be generated and XML files are only checked for errors.")
     args = parser.parse_args()
 
+    print("Checking for errors in the XML class reference...")
+
     file_list = []  # type: List[str]
 
     for path in args.path:
@@ -334,7 +336,10 @@ def main():  # type: () -> None
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
-    if state.errored:
+    if not state.errored:
+        print("No errors found.")
+    else:
+        print("Errors were found in the class reference XML. Please check the messages above.")
         exit(1)
 
 def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, State, bool, str) -> None
@@ -547,71 +552,6 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                     f.write(rstize_text(m.description.strip(), state) + '\n\n')
 
                 index += 1
-
-
-def make_class_list(class_list, columns):  # type: (List[str], int) -> None
-    # This function is no longer used.
-    f = open('class_list.rst', 'w', encoding='utf-8')
-    col_max = len(class_list) // columns + 1
-    print(('col max is ', col_max))
-    fit_columns = []  # type: List[List[str]]
-
-    for _ in range(0, columns):
-        fit_columns.append([])
-
-    indexers = []  # type List[str]
-    last_initial = ''
-
-    for idx, name in enumerate(class_list):
-        col = idx // col_max
-        if col >= columns:
-            col = columns - 1
-        fit_columns[col].append(name)
-        idx += 1
-        if name[:1] != last_initial:
-            indexers.append(name)
-        last_initial = name[:1]
-
-    row_max = 0
-    f.write("\n")
-
-    for n in range(0, columns):
-        if len(fit_columns[n]) > row_max:
-            row_max = len(fit_columns[n])
-
-    f.write("| ")
-    for n in range(0, columns):
-        f.write(" | |")
-
-    f.write("\n")
-    f.write("+")
-    for n in range(0, columns):
-        f.write("--+-------+")
-    f.write("\n")
-
-    for r in range(0, row_max):
-        s = '+ '
-        for c in range(0, columns):
-            if r >= len(fit_columns[c]):
-                continue
-
-            classname = fit_columns[c][r]
-            initial = classname[0]
-            if classname in indexers:
-                s += '**' + initial + '** | '
-            else:
-                s += ' | '
-
-            s += '[' + classname + '](class_' + classname.lower() + ') | '
-
-        s += '\n'
-        f.write(s)
-
-    for n in range(0, columns):
-        f.write("--+-------+")
-    f.write("\n")
-
-    f.close()
 
 
 def escape_rst(text, until_pos=-1):  # type: (str) -> str

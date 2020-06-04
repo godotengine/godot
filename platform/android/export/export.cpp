@@ -257,6 +257,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	Vector<PluginConfig> plugins;
+	String last_plugin_names;
+	uint64_t last_custom_build_time = 0;
 	volatile bool plugins_changed;
 	Mutex *plugins_lock;
 	Vector<Device> devices;
@@ -1786,23 +1788,32 @@ public:
 		// Look for export templates (first official, and if defined custom templates).
 
 		if (!bool(p_preset->get("custom_template/use_custom_build"))) {
-			bool dvalid = exists_export_template("android_debug.apk", &err);
-			bool rvalid = exists_export_template("android_release.apk", &err);
+			String template_err;
+			bool dvalid = false;
+			bool rvalid = false;
 
 			if (p_preset->get("custom_template/debug") != "") {
 				dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 				if (!dvalid) {
-					err += TTR("Custom debug template not found.") + "\n";
+					template_err += TTR("Custom debug template not found.") + "\n";
 				}
+			} else {
+				dvalid = exists_export_template("android_debug.apk", &template_err);
 			}
+
 			if (p_preset->get("custom_template/release") != "") {
 				rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
 				if (!rvalid) {
-					err += TTR("Custom release template not found.") + "\n";
+					template_err += TTR("Custom release template not found.") + "\n";
 				}
+			} else {
+				rvalid = exists_export_template("android_release.apk", &template_err);
 			}
 
 			valid = dvalid || rvalid;
+			if (!valid) {
+				err += template_err;
+			}
 		} else {
 			valid = exists_export_template("android_source.zip", &err);
 		}
@@ -2201,6 +2212,29 @@ public:
 		}
 	}
 
+	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
+		String plugin_names = get_plugins_names(enabled_plugins);
+		bool first_build = last_custom_build_time == 0;
+		bool have_plugins_changed = false;
+
+		if (!first_build) {
+			have_plugins_changed = plugin_names != last_plugin_names;
+			if (!have_plugins_changed) {
+				for (int i = 0; i < enabled_plugins.size(); i++) {
+					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
+						have_plugins_changed = true;
+						break;
+					}
+				}
+			}
+		}
+
+		last_custom_build_time = OS::get_singleton()->get_unix_time();
+		last_plugin_names = plugin_names;
+
+		return have_plugins_changed || first_build;
+	}
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
 
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
@@ -2250,8 +2284,12 @@ public:
 			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
 			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
 			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
+			bool clean_build_required = is_clean_build_required(enabled_plugins);
 
 			List<String> cmdline;
+			if (clean_build_required) {
+				cmdline.push_back("clean");
+			}
 			cmdline.push_back("build");
 			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
 			cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.

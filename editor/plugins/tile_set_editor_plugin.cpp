@@ -265,6 +265,7 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_on_tileset_toolbar_confirm", &TileSetEditor::_on_tileset_toolbar_confirm);
 	ClassDB::bind_method("_on_texture_list_selected", &TileSetEditor::_on_texture_list_selected);
 	ClassDB::bind_method("_on_edit_mode_changed", &TileSetEditor::_on_edit_mode_changed);
+	ClassDB::bind_method("_on_scroll_container_input", &TileSetEditor::_on_scroll_container_input);
 	ClassDB::bind_method("_on_workspace_mode_changed", &TileSetEditor::_on_workspace_mode_changed);
 	ClassDB::bind_method("_on_workspace_overlay_draw", &TileSetEditor::_on_workspace_overlay_draw);
 	ClassDB::bind_method("_on_workspace_process", &TileSetEditor::_on_workspace_process);
@@ -592,6 +593,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	scroll = memnew(ScrollContainer);
 	main_vb->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll->connect("gui_input", this, "_on_scroll_container_input");
 	scroll->set_clip_contents(true);
 
 	empty_message = memnew(Label);
@@ -1216,6 +1218,27 @@ bool TileSetEditor::is_within_grabbing_distance_of_first_point(const Vector2 &p_
 	return distance < p_grab_threshold;
 }
 
+void TileSetEditor::_on_scroll_container_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid()) {
+		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
+		// to allow performing this action anywhere, even if the cursor isn't
+		// hovering the texture in the workspace.
+		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
+			print_line("zooming in");
+			_zoom_in();
+			// Don't scroll up after zooming in.
+			accept_event();
+		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
+			print_line("zooming out");
+			_zoom_out();
+			// Don't scroll down after zooming out.
+			accept_event();
+		}
+	}
+}
+
 void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 	if (tileset.is_null() || !get_current_texture().is_valid())
@@ -1232,8 +1255,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 	}
 	current_tile_region.position += WORKSPACE_MARGIN;
 
-	Ref<InputEventMouseButton> mb = p_ie;
-	Ref<InputEventMouseMotion> mm = p_ie;
+	const Ref<InputEventMouseButton> mb = p_ie;
+	const Ref<InputEventMouseMotion> mm = p_ie;
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && !creating_shape) {
@@ -1256,13 +1279,6 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 				}
 				delete tiles;
 			}
-		}
-
-		// Mouse Wheel Event
-		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
-			_zoom_in();
-		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
-			_zoom_out();
 		}
 	}
 	// Drag Middle Mouse
