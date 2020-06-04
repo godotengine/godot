@@ -43,6 +43,12 @@ Performance *Performance::singleton = nullptr;
 
 void Performance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);
+	ClassDB::bind_method(D_METHOD("add_custom_monitor", "id", "callable", "arguments"), &Performance::add_custom_monitor, DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("remove_custom_monitor", "id"), &Performance::remove_custom_monitor);
+	ClassDB::bind_method(D_METHOD("has_custom_monitor", "id"), &Performance::has_custom_monitor);
+	ClassDB::bind_method(D_METHOD("get_custom_monitor", "id"), &Performance::get_custom_monitor);
+	ClassDB::bind_method(D_METHOD("get_monitor_modification_time"), &Performance::get_monitor_modification_time);
+	ClassDB::bind_method(D_METHOD("get_custom_monitor_names"), &Performance::get_custom_monitor_names);
 
 	BIND_ENUM_CONSTANT(TIME_FPS);
 	BIND_ENUM_CONSTANT(TIME_PROCESS);
@@ -231,8 +237,78 @@ void Performance::set_physics_process_time(float p_pt) {
 	_physics_process_time = p_pt;
 }
 
+void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args) {
+	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
+	_monitor_map.insert(p_id, MonitorCall(p_callable, p_args));
+	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+}
+
+void Performance::remove_custom_monitor(const StringName &p_id) {
+	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	_monitor_map.erase(p_id);
+	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+}
+
+bool Performance::has_custom_monitor(const StringName &p_id) {
+	return _monitor_map.has(p_id);
+}
+
+Variant Performance::get_custom_monitor(const StringName &p_id) {
+	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	bool error;
+	String error_message;
+	Variant return_value = _monitor_map[p_id].call(error, error_message);
+	ERR_FAIL_COND_V_MSG(error, return_value, "Error calling from custom monitor '" + String(p_id) + "' to callable: " + error_message);
+	return return_value;
+}
+
+Array Performance::get_custom_monitor_names() {
+	if (!_monitor_map.size()) {
+		return Array();
+	}
+	Array return_array;
+	return_array.resize(_monitor_map.size());
+	int index = 0;
+	for (OrderedHashMap<StringName, MonitorCall>::Element i = _monitor_map.front(); i; i = i.next()) {
+		return_array.set(index, i.key());
+		index++;
+	}
+	return return_array;
+}
+
+uint64_t Performance::get_monitor_modification_time() {
+	return _monitor_modification_time;
+}
+
 Performance::Performance() {
 	_process_time = 0;
 	_physics_process_time = 0;
+	_monitor_modification_time = 0;
 	singleton = this;
+}
+
+Performance::MonitorCall::MonitorCall(Callable p_callable, Vector<Variant> p_arguments) {
+	_callable = p_callable;
+	_arguments = p_arguments;
+}
+
+Performance::MonitorCall::MonitorCall() {
+}
+
+Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
+	Vector<const Variant *> arguments_mem;
+	arguments_mem.resize(_arguments.size());
+	for (int i = 0; i < _arguments.size(); i++) {
+		arguments_mem.write[i] = &_arguments[i];
+	}
+	const Variant **args = (const Variant **)arguments_mem.ptr();
+	int argc = _arguments.size();
+	Variant return_value;
+	Callable::CallError error;
+	_callable.call(args, argc, return_value, error);
+	r_error = (error.error != Callable::CallError::CALL_OK);
+	if (r_error) {
+		r_error_message = Variant::get_callable_error_text(_callable, args, argc, error);
+	}
+	return return_value;
 }

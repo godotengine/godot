@@ -373,6 +373,7 @@ struct RemoteDebugger::VisualProfiler {
 struct RemoteDebugger::PerformanceProfiler {
 	Object *performance = nullptr;
 	int last_perf_time = 0;
+	uint64_t last_monitor_modification_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {}
 	void add(const Array &p_data) {}
@@ -386,12 +387,31 @@ struct RemoteDebugger::PerformanceProfiler {
 			return;
 		}
 		last_perf_time = pt;
+
+		Array custom_monitor_names = performance->call("get_custom_monitor_names");
+
+		uint64_t monitor_modification_time = performance->call("get_monitor_modification_time");
+		if (monitor_modification_time > last_monitor_modification_time) {
+			last_monitor_modification_time = monitor_modification_time;
+			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
+		}
+
 		int max = performance->get("MONITOR_MAX");
 		Array arr;
-		arr.resize(max);
+		arr.resize(max + custom_monitor_names.size());
 		for (int i = 0; i < max; i++) {
 			arr[i] = performance->call("get_monitor", i);
 		}
+
+		for (int i = 0; i < custom_monitor_names.size(); i++) {
+			Variant monitor_value = performance->call("get_custom_monitor", custom_monitor_names[i]);
+			if (!monitor_value.is_num()) {
+				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
+				arr[i + max] = Variant();
+			}
+			arr[i + max] = monitor_value;
+		}
+
 		EngineDebugger::get_singleton()->send_message("performance:profile_frame", arr);
 	}
 
