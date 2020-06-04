@@ -287,8 +287,8 @@ public:
 	FUNC3(pin_joint_set_param, RID, PinJointParam, real_t);
 	FUNC2RC(real_t, pin_joint_get_param, RID, PinJointParam);
 
-	FUNC3(damped_string_joint_set_param, RID, DampedStringParam, real_t);
-	FUNC2RC(real_t, damped_string_joint_get_param, RID, DampedStringParam);
+	FUNC3(damped_spring_joint_set_param, RID, DampedSpringParam, real_t);
+	FUNC2RC(real_t, damped_spring_joint_get_param, RID, DampedSpringParam);
 
 	FUNC1RC(JointType, joint_get_type, RID);
 

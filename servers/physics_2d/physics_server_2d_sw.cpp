@@ -1113,7 +1113,7 @@ real_t PhysicsServer2DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param
 	return pin_joint->get_param(p_param);
 }
 
-void PhysicsServer2DSW::damped_string_joint_set_param(RID p_joint, DampedStringParam p_param, real_t p_value) {
+void PhysicsServer2DSW::damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) {
 	Joint2DSW *j = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!j);
 	ERR_FAIL_COND(j->get_type() != JOINT_DAMPED_SPRING);
@@ -1122,7 +1122,7 @@ void PhysicsServer2DSW::damped_string_joint_set_param(RID p_joint, DampedStringP
 	dsj->set_param(p_param, p_value);
 }
 
-real_t PhysicsServer2DSW::damped_string_joint_get_param(RID p_joint, DampedStringParam p_param) const {
+real_t PhysicsServer2DSW::damped_spring_joint_get_param(RID p_joint, DampedSpringParam p_param) const {
 	Joint2DSW *j = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!j, 0);
 	ERR_FAIL_COND_V(j->get_type() != JOINT_DAMPED_SPRING, 0);

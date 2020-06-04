@@ -151,8 +151,8 @@ public:
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
 
-	void set_param(PhysicsServer2D::DampedStringParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer2D::DampedStringParam p_param) const;
+	void set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer2D::DampedSpringParam p_param) const;
 
 	DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, Body2DSW *p_body_a, Body2DSW *p_body_b);
 	~DampedSpringJoint2DSW();
