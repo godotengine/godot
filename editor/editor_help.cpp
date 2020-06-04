@@ -171,7 +171,10 @@ void EditorHelp::_class_desc_resized() {
 	real_t char_width = doc_code_font->get_char_size('x').width;
 	const int display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
 
-	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox("normal", "RichTextLabel")->duplicate();
+	Control *theme_base = EditorNode::get_singleton()->get_theme_base();
+	ERR_FAIL_NULL(theme_base);
+
+	Ref<StyleBox> class_desc_stylebox = theme_base->get_theme_stylebox("normal", "RichTextLabel")->duplicate();
 	class_desc_stylebox->set_default_margin(MARGIN_LEFT, display_margin);
 	class_desc_stylebox->set_default_margin(MARGIN_RIGHT, display_margin);
 	class_desc->add_theme_style_override("normal", class_desc_stylebox);
@@ -1458,9 +1461,7 @@ void EditorHelp::_notification(int p_what) {
 			_update_doc();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			if (is_visible_in_tree()) {
-				_class_desc_resized();
-			}
+			_class_desc_resized();
 		} break;
 		default:
 			break;
