@@ -154,7 +154,7 @@ bool Shader::is_text_shader() const {
 
 bool Shader::has_param(const StringName &p_param) const {
 
-	return params_cache.has(p_param);
+	return params_cache.has("shader_param/" + p_param);
 }
 
 void Shader::_update_shader() const {
