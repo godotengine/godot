@@ -621,7 +621,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			for (List<Node *>::Element *E = editable_children.back(); E; E = E->prev()) {
-				_toggle_editable_children(E->get());
+				Node *node = E->get();
+				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+				_toggle_editable_children(node, node, editable);
 			}
 
 		} break;
@@ -871,13 +873,25 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Node *node = e->get();
 				if (node) {
 					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
-
 					if (editable) {
 						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
 						editable_instance_remove_dialog->popup_centered();
 						break;
 					}
-					_toggle_editable_children(node);
+					editable = !editable;
+					_toggle_editable_children(node, node, editable, false);
+				}
+			}
+		} break;
+		case TOOL_SCENE_EDIT_ALL_CHILDREN: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
+					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+					editable = !editable;
+					_toggle_editable_children(node, node, editable, true);
 				}
 			}
 		} break;
@@ -1772,7 +1786,10 @@ void SceneTreeDock::_toggle_editable_children_from_selection() {
 	List<Node *>::Element *e = selection.front();
 
 	if (e) {
-		_toggle_editable_children(e->get());
+		Node *node = e->get();
+		bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+		editable = !editable;
+		_toggle_editable_children(node, node, editable);
 	}
 }
 
@@ -1783,7 +1800,9 @@ void SceneTreeDock::_toggle_placeholder_from_selection() {
 	if (e) {
 		Node *node = e->get();
 		if (node) {
-			_toggle_editable_children(node);
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+			editable = !editable;
+			_toggle_editable_children(node, node, editable, false);
 
 			bool placeholder = node->get_scene_instance_load_placeholder();
 			placeholder = !placeholder;
@@ -1794,17 +1813,24 @@ void SceneTreeDock::_toggle_placeholder_from_selection() {
 	}
 }
 
-void SceneTreeDock::_toggle_editable_children(Node *p_node) {
-	if (p_node) {
-		bool editable = !EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
-		EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(p_node, editable);
-		if (editable) {
-			p_node->set_scene_instance_load_placeholder(false);
-		}
+void SceneTreeDock::_toggle_editable_children(Node *p_node, Node *p_owner, bool p_state, bool p_edit_all) {
+	if (!p_node) {
+		return;
+	}
 
-		Node3DEditor::get_singleton()->update_all_gizmos(p_node);
+	if (p_node != p_owner && !p_edit_all) {
+		p_state = false;
+	}
+	EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(p_node, p_state);
 
-		scene_tree->update_tree();
+	p_node->set_scene_instance_load_placeholder(false);
+
+	Node3DEditor::get_singleton()->update_all_gizmos(p_node);
+
+	scene_tree->update_tree();
+	for (int32_t node_i = 0; node_i < p_node->get_child_count(); node_i++) {
+		Node *node = p_node->get_child(node_i);
+		_toggle_editable_children(node, p_owner, p_state, p_edit_all);
 	}
 }
 
@@ -2535,6 +2561,9 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				bool placeholder = selection[0]->get_scene_instance_load_placeholder();
 				if (profile_allow_editing) {
 					menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+					if (!editable) {
+						menu->add_item(TTR("Edit All Children"), TOOL_SCENE_EDIT_ALL_CHILDREN);
+					}
 					menu->add_check_item(TTR("Load As Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
 					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
 				}

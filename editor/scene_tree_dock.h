@@ -78,6 +78,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_BUTTON_MAX,
 		TOOL_OPEN_DOCUMENTATION,
 		TOOL_SCENE_EDITABLE_CHILDREN,
+		TOOL_SCENE_EDIT_ALL_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
 		TOOL_SCENE_MAKE_LOCAL,
 		TOOL_SCENE_OPEN,
@@ -186,7 +187,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _delete_confirm();
 
 	void _toggle_editable_children_from_selection();
-	void _toggle_editable_children(Node *p_node);
+	void _toggle_editable_children(Node *p_node, Node *p_owner, bool p_state, bool p_edit_all = false);
 
 	void _toggle_placeholder_from_selection();
 
