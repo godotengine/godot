@@ -535,15 +535,7 @@ void SceneTree::finalize() {
 }
 
 void SceneTree::quit(int p_exit_code) {
-	if (p_exit_code >= 0) {
-		// Override the exit code if a positive argument is given (the default is `-1`).
-		// This is a shorthand for calling `set_exit_code()` on the OS singleton then quitting.
-		OS::get_singleton()->set_exit_code(p_exit_code);
-	} else if (!OS::get_singleton()->is_custom_exit_code()) {
-		// Must customize exit code, otherwise it will default to a non-zero value
-		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
-	}
-
+	OS::get_singleton()->set_exit_code(p_exit_code);
 	_quit = true;
 }
 
@@ -1209,7 +1201,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
-	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(EXIT_SUCCESS));
 
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
