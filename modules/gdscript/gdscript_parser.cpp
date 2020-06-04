@@ -3121,6 +3121,15 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				IdentifierNode *id = alloc_node<IdentifierNode>();
 				id->name = tokenizer->get_token_identifier();
 
+				BlockNode *check_block = p_block;
+				while (check_block) {
+					if (check_block->variables.has(id->name)) {
+						_set_error("Variable \"" + String(id->name) + "\" already defined in the scope (at line " + itos(check_block->variables[id->name]->line) + ").");
+						return;
+					}
+					check_block = check_block->parent_block;
+				}
+
 				tokenizer->advance();
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_OP_IN) {
