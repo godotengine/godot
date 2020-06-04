@@ -309,10 +309,10 @@ RID DampedSpringJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *
 
 	RID dsj = PhysicsServer2D::get_singleton()->damped_spring_joint_create(anchor_A, anchor_B, body_a->get_rid(), body_b->get_rid());
 	if (rest_length) {
-		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_REST_LENGTH, rest_length);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(dsj, PhysicsServer2D::DAMPED_SPRING_REST_LENGTH, rest_length);
 	}
-	PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_STIFFNESS, stiffness);
-	PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_DAMPING, damping);
+	PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(dsj, PhysicsServer2D::DAMPED_SPRING_STIFFNESS, stiffness);
+	PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(dsj, PhysicsServer2D::DAMPED_SPRING_DAMPING, damping);
 
 	return dsj;
 }
@@ -330,7 +330,7 @@ void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
 	rest_length = p_rest_length;
 	update();
 	if (get_joint().is_valid()) {
-		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_SPRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
 	}
 }
 
@@ -342,7 +342,7 @@ void DampedSpringJoint2D::set_stiffness(real_t p_stiffness) {
 	stiffness = p_stiffness;
 	update();
 	if (get_joint().is_valid()) {
-		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_STIFFNESS, p_stiffness);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_SPRING_STIFFNESS, p_stiffness);
 	}
 }
 
@@ -354,7 +354,7 @@ void DampedSpringJoint2D::set_damping(real_t p_damping) {
 	damping = p_damping;
 	update();
 	if (get_joint().is_valid()) {
-		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_DAMPING, p_damping);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_SPRING_DAMPING, p_damping);
 	}
 }
 
