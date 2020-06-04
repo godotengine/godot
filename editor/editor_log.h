@@ -63,6 +63,7 @@ class EditorLog : public VBoxContainer {
 	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
 	void _copy_request();
+	void _set_filter_icons();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 protected:
@@ -85,6 +86,41 @@ public:
 	void copy();
 	EditorLog();
 	~EditorLog();
+
+private:
+	// A filter for log messages. If active, then
+	// the filter disallows a certain MessageType
+	// from being displayed.
+	struct LogFilter : public Object {
+		GDCLASS(LogFilter, Object);
+
+	public:
+		bool active;
+		// The button that controls this filter.
+		// If the button is flat, it means the filter
+		// is on, and so no messages of a given type
+		// will get through.
+		Button *button;
+
+		void on_click() {
+			active = !active;
+			button->set_flat(active);
+		}
+
+		LogFilter() :
+				active(false),
+				button(memnew(Button)) {}
+		~LogFilter() {
+		}
+	};
+
+	// The filters for the four message types in the log.
+	// Each filter either blocks or allows messages of their
+	// respective types.
+	LogFilter error_filter;
+	LogFilter warning_filter;
+	LogFilter std_filter;
+	LogFilter editor_filter;
 };
 
 #endif // EDITOR_LOG_H

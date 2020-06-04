@@ -57,11 +57,20 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 	}
 }
 
+void EditorLog::_set_filter_icons() {
+	error_filter.button->set_icon(get_theme_icon("Error", "EditorIcons"));
+	warning_filter.button->set_icon(get_theme_icon("Warning", "EditorIcons"));
+	std_filter.button->set_icon(get_theme_icon("Issue", "EditorIcons"));
+	editor_filter.button->set_icon(get_theme_icon("Mouse", "EditorIcons"));
+}
+
 void EditorLog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		//button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
 		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+
+		_set_filter_icons();
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
@@ -70,6 +79,7 @@ void EditorLog::_notification(int p_what) {
 				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 			}
 		}
+		_set_filter_icons();
 	}
 }
 
@@ -91,6 +101,13 @@ void EditorLog::copy() {
 }
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
+	// Check to see if the filters are allowing this message or not
+	if ((p_type == MSG_TYPE_ERROR && error_filter.active) ||
+			(p_type == MSG_TYPE_WARNING && warning_filter.active) ||
+			(p_type == MSG_TYPE_STD && std_filter.active) ||
+			(p_type == MSG_TYPE_EDITOR && editor_filter.active)) {
+		return;
+	}
 	log->add_newline();
 
 	bool restore = p_type != MSG_TYPE_STD;
@@ -147,6 +164,44 @@ EditorLog::EditorLog() {
 	title->set_text(TTR("Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
+
+	// Add all of the buttons for the log message filters
+	hb->add_child(error_filter.button);
+	hb->add_child(warning_filter.button);
+	hb->add_child(std_filter.button);
+	hb->add_child(editor_filter.button);
+
+	// Set the filter button text
+	error_filter.button->set_text(TTR("  Error "));
+	warning_filter.button->set_text(TTR("  Warning "));
+	std_filter.button->set_text(TTR("  Info "));
+	editor_filter.button->set_text(TTR("  Editor "));
+
+	// Make sure that the filter buttons lose focus
+	error_filter.button->set_enabled_focus_mode(FocusMode::FOCUS_NONE);
+	warning_filter.button->set_enabled_focus_mode(FocusMode::FOCUS_NONE);
+	std_filter.button->set_enabled_focus_mode(FocusMode::FOCUS_NONE);
+	editor_filter.button->set_enabled_focus_mode(FocusMode::FOCUS_NONE);
+
+	// Set up filter button callbacks
+	error_filter.button->connect("pressed", callable_mp(&error_filter, &LogFilter::on_click));
+	warning_filter.button->connect("pressed", callable_mp(&warning_filter, &LogFilter::on_click));
+	std_filter.button->connect("pressed", callable_mp(&std_filter, &LogFilter::on_click));
+	editor_filter.button->connect("pressed", callable_mp(&editor_filter, &LogFilter::on_click));
+
+	// If the filter is active, its respective button should be flat
+	editor_filter.button->set_flat(error_filter.active);
+	warning_filter.button->set_flat(warning_filter.active);
+	std_filter.button->set_flat(std_filter.active);
+	editor_filter.button->set_flat(editor_filter.active);
+
+	// Add a do-nothing button to separate the filter buttons from "clear" and "copy"
+	Button *spacer_button = memnew(Button);
+	hb->add_child(spacer_button);
+	spacer_button->set_text(TTR("|"));
+	spacer_button->set_flat(true);
+	spacer_button->set_enabled_focus_mode(FocusMode::FOCUS_NONE);
+	spacer_button->set_disabled(true);
 
 	copybutton = memnew(Button);
 	hb->add_child(copybutton);
