@@ -1168,19 +1168,20 @@ void ScriptEditorDebugger::_performance_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
-	Ref<Font> graph_font = get_font("font", "TextEdit");
+	const Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
+	const Ref<Font> graph_font = get_font("font", "TextEdit");
 
-	int cols = Math::ceil(Math::sqrt((float)which.size()));
+	const int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = Math::ceil((float)which.size() / cols);
-	if (which.size() == 1)
+	if (which.size() == 1) {
 		rows = 1;
+	}
 
-	int margin = 3;
-	int point_sep = 5;
-	Size2i s = Size2i(perf_draw->get_size()) / Size2i(cols, rows);
+	const int margin = 3;
+	const int point_sep = 5;
+	const Size2i s = Size2i(perf_draw->get_size()) / Size2i(cols, rows);
+
 	for (int i = 0; i < which.size(); i++) {
-
 		Point2i p(i % cols, i / cols);
 		Rect2i r(p * s, s);
 		r.position += Point2(margin, margin);
@@ -1188,33 +1189,94 @@ void ScriptEditorDebugger::_performance_draw() {
 		perf_draw->draw_style_box(graph_sb, r);
 		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
-		int pi = which[i];
-		Color c = get_color("accent_color", "Editor");
-		float h = (float)which[i] / (float)(perf_items.size());
-		// Use a darker color on light backgrounds for better visibility
-		float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
-		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * value_multiplier);
+		const int pi = which[i];
 
-		c.a = 0.6;
-		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
-		c.a = 0.9;
-		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
+		// Draw horizontal lines with labels.
 
-		float spacing = point_sep / float(cols);
+		int nb_lines = 5;
+		// Draw less lines if the monitor isn't tall enough to display 5 labels.
+		if (r.size.height <= 160 * EDSCALE) {
+			nb_lines = 3;
+		} else if (r.size.height <= 240 * EDSCALE) {
+			nb_lines = 4;
+		}
+
+		const float inv_nb_lines = 1.0 / nb_lines;
+
+		for (int line = 0; line < nb_lines; line += 1) {
+			const int from_x = r.position.x;
+			const int to_x = r.position.x + r.size.width;
+			const int y = r.position.y + (r.size.height * inv_nb_lines + line * inv_nb_lines * r.size.height);
+			perf_draw->draw_line(
+					Point2(from_x, y),
+					Point2i(to_x, y),
+					Color(0.5, 0.5, 0.5, 0.25),
+					Math::round(EDSCALE));
+
+			String label;
+			switch (Performance::MonitorType((int)perf_items[pi]->get_metadata(1))) {
+				case Performance::MONITOR_TYPE_MEMORY: {
+					label = String::humanize_size(Math::ceil((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi]));
+				} break;
+				case Performance::MONITOR_TYPE_TIME: {
+					label = rtos((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi] * 1000).pad_decimals(2) + " ms";
+				} break;
+				default: {
+					label = itos(Math::ceil((1 - inv_nb_lines - inv_nb_lines * line) * perf_max[pi]));
+				} break;
+			}
+
+			perf_draw->draw_string(
+					graph_font,
+					Point2(from_x, y - graph_font->get_ascent() * 0.25),
+					label,
+					Color(0.5, 0.5, 0.5, 1.0));
+		}
+
+		const float h = (float)which[i] / (float)(perf_items.size());
+		// Use a darker color on light backgrounds for better visibility.
+		const float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4 : 0.55;
+		Color color = get_color("accent_color", "Editor");
+		color.set_hsv(Math::fmod(h + 0.4, 0.9), color.get_s() * 0.9, color.get_v() * value_multiplier);
+
+		// Draw the monitor name in the top-left corner.
+		color.a = 0.6;
+		perf_draw->draw_string(
+				graph_font,
+				r.position + Point2(0, graph_font->get_ascent()),
+				perf_items[pi]->get_text(0),
+				color,
+				r.size.x);
+
+		// Draw the monitor value in the top-left corner, just below the name.
+		color.a = 0.9;
+		perf_draw->draw_string(
+				graph_font,
+				r.position + Point2(0, graph_font->get_ascent() + graph_font->get_height()),
+				perf_items[pi]->get_text(1),
+				color,
+				r.size.y);
+
+		const float spacing = point_sep / float(cols);
 		float from = r.size.width;
 
-		List<Vector<float> >::Element *E = perf_history.front();
+		const List<Vector<float> >::Element *E = perf_history.front();
 		float prev = -1;
 		while (from >= 0 && E) {
-
 			float m = perf_max[pi];
-			if (m == 0)
+			if (m == 0) {
 				m = 0.00001;
+			}
 			float h2 = E->get()[pi] / m;
 			h2 = (1.0 - h2) * r.size.y;
 
-			if (E != perf_history.front())
-				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE), true);
+			if (E != perf_history.front()) {
+				perf_draw->draw_line(
+						r.position + Point2(from, h2),
+						r.position + Point2(from + spacing, prev),
+						color,
+						Math::round(EDSCALE));
+			}
 			prev = h2;
 			E = E->next();
 			from -= spacing;
