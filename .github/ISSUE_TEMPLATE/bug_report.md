@@ -1,9 +1,9 @@
 ---
-name: Bug report
-about: Report a bug in Godot
-title: ''
-labels: ''
-assignees: ''
+Name: Bug report
+About: Report a bug in Godot
+Title: ''
+Labels: ''
+Assignees: ''
 
 ---
 <!-- Please search existing issues for potential duplicates before filing yours:	
