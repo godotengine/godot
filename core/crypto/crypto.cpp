@@ -44,8 +44,11 @@ CryptoKey *CryptoKey::create() {
 }
 
 void CryptoKey::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("save", "path"), &CryptoKey::save);
-	ClassDB::bind_method(D_METHOD("load", "path"), &CryptoKey::load);
+	ClassDB::bind_method(D_METHOD("save", "path", "public_only"), &CryptoKey::save, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load", "path", "public_only"), &CryptoKey::load, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_public_only"), &CryptoKey::is_public_only);
+	ClassDB::bind_method(D_METHOD("save_to_string", "public_only"), &CryptoKey::save_to_string, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("load_from_string", "string_key", "public_only"), &CryptoKey::load_from_string, DEFVAL(false));
 }
 
 X509Certificate *(*X509Certificate::_create)() = NULL;
@@ -98,7 +101,12 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 	} else if (el == "key") {
 		CryptoKey *key = CryptoKey::create();
 		if (key)
-			key->load(p_path);
+			key->load(p_path, false);
+		return key;
+	} else if (el == "pub") {
+		CryptoKey *key = CryptoKey::create();
+		if (key)
+			key->load(p_path, true);
 		return key;
 	}
 	return NULL;
@@ -108,6 +116,7 @@ void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_exten
 
 	p_extensions->push_back("crt");
 	p_extensions->push_back("key");
+	p_extensions->push_back("pub");
 }
 
 bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {
@@ -120,7 +129,7 @@ String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt")
 		return "X509Certificate";
-	else if (el == "key")
+	else if (el == "key" || el == "pub")
 		return "CryptoKey";
 	return "";
 }
@@ -133,7 +142,8 @@ Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resourc
 	if (cert.is_valid()) {
 		err = cert->save(p_path);
 	} else if (key.is_valid()) {
-		err = key->save(p_path);
+		String el = p_path.get_extension().to_lower();
+		err = key->save(p_path, el == "pub");
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
@@ -149,7 +159,10 @@ void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource,
 		p_extensions->push_back("crt");
 	}
 	if (key) {
-		p_extensions->push_back("key");
+		if (!key->is_public_only()) {
+			p_extensions->push_back("key");
+		}
+		p_extensions->push_back("pub");
 	}
 }
 bool ResourceFormatSaverCrypto::recognize(const RES &p_resource) const {

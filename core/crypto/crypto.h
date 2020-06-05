@@ -46,8 +46,11 @@ protected:
 
 public:
 	static CryptoKey *create();
-	virtual Error load(String p_path) = 0;
-	virtual Error save(String p_path) = 0;
+	virtual Error load(String p_path, bool p_public_only = false) = 0;
+	virtual Error save(String p_path, bool p_public_only = false) = 0;
+	virtual String save_to_string(bool p_public_only = false) = 0;
+	virtual Error load_from_string(String p_string_key, bool p_public_only = false) = 0;
+	virtual bool is_public_only() const = 0;
 };
 
 class X509Certificate : public Resource {
