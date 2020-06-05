@@ -1850,23 +1850,38 @@ DisplayServerX11::LatinKeyboardVariant DisplayServerX11::get_latin_keyboard_vari
 	_THREAD_SAFE_METHOD_
 
 	XkbDescRec *xkbdesc = XkbAllocKeyboard();
+	if (!xkbdesc)
+		WARN_PRINT("XkbAllocKeyboard returned null. Defaulting to QWERTY.");
 	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);
 
 	XkbGetNames(x11_display, XkbSymbolsNameMask, xkbdesc);
+	if (!xkbdesc->names)
+		WARN_PRINT("xkbdesc->names null. Defaulting to QWERTY");
 	ERR_FAIL_COND_V(!xkbdesc->names, LATIN_KEYBOARD_QWERTY);
+	if (!xkbdesc->names->symbols)
+		WARN_PRINT("xkbdesc->names->symbols null. Defaulting to QWERTY.");
 	ERR_FAIL_COND_V(!xkbdesc->names->symbols, LATIN_KEYBOARD_QWERTY);
 
+	// To check the xkb_symbols from a bash: some examples:
+	// $ setxkbmap -print | grep xkb_symbols
+	// xkb_symbols   { include "pc+fr+us:2+inet(evdev)"        };
+	// xkb_symbols   { include "pc+us+ru:2+inet(evdev)+capslock(grouplock)+terminate(ctrl_alt_bksp)"   };
+	// Refs: https://medium.com/@damko/a-simple-humble-but-comprehensive-guide-to-xkb-for-linux-6f1ad5e13450
 	char *layout = XGetAtomName(x11_display, xkbdesc->names->symbols);
+	if (!layout)
+		WARN_PRINT("XGetAtomName returned null. Defaulting to QWERTY.");
 	ERR_FAIL_COND_V(!layout, LATIN_KEYBOARD_QWERTY);
 
 	Vector<String> info = String(layout).split("+");
+	if (info.size() < 2)
+		WARN_PRINT(String("XGetAtomName layout too short: '") + String(layout) + String("' : Defaulting to QWERTY."));
 	ERR_FAIL_INDEX_V(1, info.size(), LATIN_KEYBOARD_QWERTY);
 
 	if (info[1].find("colemak") != -1) {
 		return LATIN_KEYBOARD_COLEMAK;
 	} else if (info[1].find("qwertz") != -1) {
 		return LATIN_KEYBOARD_QWERTZ;
-	} else if (info[1].find("azerty") != -1) {
+	} else if (info[1].find("azerty") != -1 || info[1] == "fr") {
 		return LATIN_KEYBOARD_AZERTY;
 	} else if (info[1].find("qzerty") != -1) {
 		return LATIN_KEYBOARD_QZERTY;
@@ -1876,6 +1891,7 @@ DisplayServerX11::LatinKeyboardVariant DisplayServerX11::get_latin_keyboard_vari
 		return LATIN_KEYBOARD_NEO;
 	}
 
+	WARN_PRINT("Xkb layout '" + String(info[1]) + String("' not supported/recognized. Defaulting to QWERTY."));
 	return LATIN_KEYBOARD_QWERTY;
 }
 

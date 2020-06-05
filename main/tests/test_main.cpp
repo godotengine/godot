@@ -41,6 +41,7 @@
 #include "test_math.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
+#include "test_os.h"
 #include "test_physics_2d.h"
 #include "test_physics_3d.h"
 #include "test_render.h"
@@ -64,6 +65,7 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"ordered_hash_map",
 		"astar",
+		"os",
 		nullptr
 	};
 
@@ -131,6 +133,10 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 	if (p_test == "astar") {
 		return TestAStar::test();
+	}
+
+	if (p_test == "os") {
+		return TestOS::test();
 	}
 
 	print_line("Unknown test: " + p_test);
