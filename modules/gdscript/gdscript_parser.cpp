@@ -2821,6 +2821,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 #ifdef DEBUG_ENABLED
 
+	pending_newline = -1; // reset for the new block
+
 	NewLineNode *nl = alloc_node<NewLineNode>();
 
 	nl->line = tokenizer->get_token_line();
