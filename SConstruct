@@ -339,6 +339,7 @@ if selected_platform in platform_list:
     cc_version_minor = cc_version[1]
 
     if methods.using_gcc(env):
+        print("Detected GCC version " + str(cc_version_major) + "." + str(cc_version_minor))
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
         if cc_version_major == 8 and cc_version_minor < 4:
@@ -349,7 +350,7 @@ if selected_platform in platform_list:
             sys.exit(255)
         elif cc_version_major < 7:
             print("Detected GCC version older than 7, which does not fully support "
-                  "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
+                  "C++17. Supported versions are GCC 7.4, 8.4, 9 and later. Use a newer GCC "
                   "version, or Clang 6 or later by passing \"use_llvm=yes\" to the "
                   "SCons command line.")
             sys.exit(255)
@@ -394,8 +395,10 @@ if selected_platform in platform_list:
         all_plus_warnings = ['-Wwrite-strings']
 
         if methods.using_gcc(env):
-            if cc_version_major >= 7:
+            if cc_version_major > 7:
                 shadow_local_warning = ['-Wshadow-local']
+            else:
+                shadow_local_warning = ['-Wshadow=local']
 
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
