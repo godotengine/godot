@@ -50,7 +50,7 @@ CryptoKey *CryptoKeyMbedTLS::create() {
 	return memnew(CryptoKeyMbedTLS);
 }
 
-Error CryptoKeyMbedTLS::load(String p_path) {
+Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
 
 	PackedByteArray out;
@@ -63,22 +63,33 @@ Error CryptoKeyMbedTLS::load(String p_path) {
 	out.write[flen] = 0; // string terminator
 	memdelete(f);
 
-	int ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), nullptr, 0);
+	int ret = 0;
+	if (p_public_only) {
+		ret = mbedtls_pk_parse_public_key(&pkey, out.ptr(), out.size());
+	} else {
+		ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), nullptr, 0);
+	}
 	// We MUST zeroize the memory for safety!
 	mbedtls_platform_zeroize(out.ptrw(), out.size());
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing private key '" + itos(ret) + "'.");
+	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
 
+	public_only = p_public_only;
 	return OK;
 }
 
-Error CryptoKeyMbedTLS::save(String p_path) {
+Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	unsigned char w[16000];
 	memset(w, 0, sizeof(w));
 
-	int ret = mbedtls_pk_write_key_pem(&pkey, w, sizeof(w));
+	int ret = 0;
+	if (p_public_only) {
+		ret = mbedtls_pk_write_pubkey_pem(&pkey, w, sizeof(w));
+	} else {
+		ret = mbedtls_pk_write_key_pem(&pkey, w, sizeof(w));
+	}
 	if (ret != 0) {
 		memdelete(f);
 		mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize anything we might have written.
@@ -90,6 +101,37 @@ Error CryptoKeyMbedTLS::save(String p_path) {
 	memdelete(f);
 	mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize temporary buffer.
 	return OK;
+}
+
+Error CryptoKeyMbedTLS::load_from_string(String p_string_key, bool p_public_only) {
+	int ret = 0;
+	if (p_public_only) {
+		ret = mbedtls_pk_parse_public_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
+	} else {
+		ret = mbedtls_pk_parse_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size(), nullptr, 0);
+	}
+	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
+
+	public_only = p_public_only;
+	return OK;
+}
+
+String CryptoKeyMbedTLS::save_to_string(bool p_public_only) {
+	unsigned char w[16000];
+	memset(w, 0, sizeof(w));
+
+	int ret = 0;
+	if (p_public_only) {
+		ret = mbedtls_pk_write_pubkey_pem(&pkey, w, sizeof(w));
+	} else {
+		ret = mbedtls_pk_write_key_pem(&pkey, w, sizeof(w));
+	}
+	if (ret != 0) {
+		mbedtls_platform_zeroize(w, sizeof(w));
+		ERR_FAIL_V_MSG("", "Error saving key '" + itos(ret) + "'.");
+	}
+	String s = String::utf8((char *)w);
+	return s;
 }
 
 X509Certificate *X509CertificateMbedTLS::create() {
@@ -221,6 +263,7 @@ Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	int ret = mbedtls_pk_setup(&(out->pkey), mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
 	ERR_FAIL_COND_V(ret != 0, nullptr);
 	ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(out->pkey), mbedtls_ctr_drbg_random, &ctr_drbg, p_bytes, 65537);
+	out->public_only = false;
 	ERR_FAIL_COND_V(ret != 0, nullptr);
 	return out;
 }
