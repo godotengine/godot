@@ -79,6 +79,7 @@ class TileSetEditor : public HSplitContainer {
 		SELECT_PREVIOUS,
 		SELECT_NEXT,
 		TOOL_SELECT,
+		TOOL_ORIGIN,
 		BITMASK_COPY,
 		BITMASK_PASTE,
 		BITMASK_CLEAR,
@@ -242,6 +243,7 @@ private:
 	void close_shape(const Vector2 &shape_anchor);
 	void select_coord(const Vector2 &coord);
 	Vector2 snap_point(const Vector2 &point);
+	Vector2 snap_vector2(const Vector2 &point);
 	void update_workspace_tile_mode();
 	void update_workspace_minsize();
 	void update_edited_region(const Vector2 &end_point);

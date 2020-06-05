@@ -316,6 +316,7 @@ void TileSetEditor::_notification(int p_what) {
 			tool_workspacemode[WORKSPACE_CREATE_ATLAS]->set_icon(get_icon("AddAtlasTile", "EditorIcons"));
 
 			tools[TOOL_SELECT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
+			tools[TOOL_ORIGIN]->set_icon(get_icon("EditPivot", "EditorIcons"));
 			tools[BITMASK_COPY]->set_icon(get_icon("Duplicate", "EditorIcons"));
 			tools[BITMASK_PASTE]->set_icon(get_icon("Override", "EditorIcons"));
 			tools[BITMASK_CLEAR]->set_icon(get_icon("Clear", "EditorIcons"));
@@ -495,6 +496,12 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[TOOL_SELECT]->set_button_group(tg);
 	tools[TOOL_SELECT]->set_pressed(true);
 	tools[TOOL_SELECT]->connect("pressed", this, "_on_tool_clicked", varray(TOOL_SELECT));
+
+	tools[TOOL_ORIGIN] = memnew(ToolButton);
+	toolbar->add_child(tools[TOOL_ORIGIN]);
+	tools[TOOL_ORIGIN]->set_toggle_mode(true);
+	tools[TOOL_ORIGIN]->set_button_group(tg);
+	tools[TOOL_ORIGIN]->connect("pressed", this, "_on_tool_clicked", varray(TOOL_ORIGIN));
 
 	separator_bitmask = memnew(VSeparator);
 	toolbar->add_child(separator_bitmask);
@@ -785,6 +792,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 	switch (edit_mode) {
 		case EDITMODE_REGION: {
 			tools[TOOL_SELECT]->show();
+			tools[TOOL_ORIGIN]->show();
 
 			separator_bitmask->hide();
 			tools[BITMASK_COPY]->hide();
@@ -807,6 +815,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 
 			tools[TOOL_SELECT]->set_pressed(true);
 			tools[TOOL_SELECT]->set_tooltip(TTR("Drag handles to edit Rect.\nClick on another Tile to edit it."));
+			tools[TOOL_ORIGIN]->set_tooltip(TTR("Click to set Origin."));
 			tools[SHAPE_DELETE]->set_tooltip(TTR("Delete selected Rect."));
 			spin_priority->hide();
 			spin_z_index->hide();
@@ -815,6 +824,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 		case EDITMODE_OCCLUSION:
 		case EDITMODE_NAVIGATION: {
 			tools[TOOL_SELECT]->show();
+			tools[TOOL_ORIGIN]->show();
 
 			separator_bitmask->hide();
 			tools[BITMASK_COPY]->hide();
@@ -831,6 +841,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[TOOL_GRID_SNAP]->show();
 
 			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile.\nClick on another Tile to edit it."));
+			tools[TOOL_ORIGIN]->set_tooltip(TTR("Click to set Origin"));
 			tools[SHAPE_DELETE]->set_tooltip(TTR("Delete polygon."));
 			spin_priority->hide();
 			spin_z_index->hide();
@@ -839,6 +850,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 		} break;
 		case EDITMODE_BITMASK: {
 			tools[TOOL_SELECT]->show();
+			tools[TOOL_ORIGIN]->hide();
 
 			separator_bitmask->show();
 			tools[BITMASK_COPY]->show();
@@ -860,6 +872,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 		case EDITMODE_PRIORITY:
 		case EDITMODE_ICON: {
 			tools[TOOL_SELECT]->show();
+			tools[TOOL_ORIGIN]->hide();
 
 			separator_bitmask->hide();
 			tools[BITMASK_COPY]->hide();
@@ -932,6 +945,23 @@ void TileSetEditor::_on_workspace_draw() {
 		Rect2i region = tileset->tile_get_region(get_current_tile());
 
 		switch (edit_mode) {
+			case EDITMODE_REGION: {
+				Vector2 origin = WORKSPACE_MARGIN + region.position - tileset->tile_get_texture_offset(get_current_tile());
+
+				Ref<Texture> origin_icon = get_icon("EditorPosition", "EditorIcons");
+				Vector2 icon_size(4, 4);
+				Rect2 icon_rect = Rect2(origin - (icon_size / 2), icon_size);
+
+				Color c;
+				if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE)
+					c = COLOR_SINGLE;
+				else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE)
+					c = COLOR_AUTOTILE;
+				else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE)
+					c = COLOR_ATLAS;
+
+				workspace->draw_texture_rect(origin_icon, icon_rect, false, c);
+			} break;
 			case EDITMODE_ICON: {
 				Vector2 coord = tileset->autotile_get_icon_coordinate(get_current_tile());
 				draw_highlight_subtile(coord);
@@ -1038,6 +1068,29 @@ void TileSetEditor::_on_workspace_draw() {
 				}
 				draw_polygon_shapes();
 				draw_grid_snap();
+
+				Vector2 origin = WORKSPACE_MARGIN + region.position;
+				if (edit_mode == EDITMODE_COLLISION) {
+					origin -= tileset->tile_get_shape_offset(get_current_tile(), 0);
+				} else if (edit_mode == EDITMODE_OCCLUSION) {
+					origin -= tileset->tile_get_occluder_offset(get_current_tile());
+				} else if (edit_mode == EDITMODE_NAVIGATION) {
+					origin -= tileset->tile_get_navigation_polygon_offset(get_current_tile());
+				}
+
+				Ref<Texture> origin_icon = get_icon("EditorPosition", "EditorIcons");
+				Vector2 icon_size(4, 4);
+				Rect2 icon_rect = Rect2(origin - (icon_size / 2), icon_size);
+
+				Color c;
+				if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE)
+					c = COLOR_SINGLE;
+				else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE)
+					c = COLOR_AUTOTILE;
+				else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE)
+					c = COLOR_ATLAS;
+
+				workspace->draw_texture_rect(origin_icon, icon_rect, false, c);
 			} break;
 			case EDITMODE_PRIORITY: {
 				spin_priority->set_value(tileset->autotile_get_subtile_priority(get_current_tile(), edited_shape_coord));
@@ -1294,12 +1347,32 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 		if (mb.is_valid()) {
 			if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 				if (get_current_tile() >= 0 || workspace_mode != WORKSPACE_EDIT) {
-					dragging = true;
-					region_from = mb->get_position();
-					edited_region = Rect2(region_from, Size2());
-					workspace->update();
-					workspace_overlay->update();
-					return;
+					if (tools[TOOL_SELECT]->is_pressed()) {
+						dragging = true;
+						region_from = mb->get_position();
+						edited_region = Rect2(region_from, Size2());
+						workspace->update();
+						workspace_overlay->update();
+						return;
+					} else if (tools[TOOL_ORIGIN]->is_pressed()) {
+						Vector2 origin = snap_vector2(mb->get_position());
+						origin -= WORKSPACE_MARGIN;
+						Vector2 new_texture_offset = tileset->tile_get_region(get_current_tile()).get_position() - origin;
+						undo_redo->create_action(TTR("Set Tile Origin"));
+						undo_redo->add_do_method(tileset.ptr(), "tile_set_texture_offset", get_current_tile(), new_texture_offset);
+						undo_redo->add_undo_method(tileset.ptr(), "tile_set_texture_offset", get_current_tile(), tileset->tile_get_texture_offset(get_current_tile()));
+
+						undo_redo->add_do_method(workspace, "update");
+						undo_redo->add_undo_method(workspace, "update");
+						undo_redo->add_do_method(workspace_overlay, "update");
+						undo_redo->add_undo_method(workspace_overlay, "update");
+						// undo_redo->add_do_method(helper, "_change_notify", "tile_tex_offset"); // it simply doesn't work
+						// undo_redo->add_undo_method(helper, "_change_notify", "tile_tex_offset"); // it simply doesn't work
+						undo_redo->commit_action();
+
+						helper->_change_notify("tile_tex_offset");
+						return;
+					}
 				}
 			} else if (dragging && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 				dragging = false;
@@ -1766,6 +1839,42 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 								current_shape.set(0, snap_point(pos));
 								current_shape.set(1, snap_point(Vector2(p.x, pos.y)));
 								workspace->update();
+							}
+						}
+					}  else if (tools[TOOL_ORIGIN]->is_pressed()) {
+						if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+							Vector2 origin = snap_vector2(mb->get_position());
+							origin -= WORKSPACE_MARGIN;
+							Vector2 new_tile_offset = tileset->tile_get_region(get_current_tile()).get_position() - origin;
+
+							if (edit_mode == EDITMODE_COLLISION) {
+								undo_redo->create_action(TTR("Set Tile Origin"));
+								undo_redo->add_do_method(tileset.ptr(), "tile_set_shape_offset", get_current_tile(), 0, new_tile_offset);
+								undo_redo->add_undo_method(tileset.ptr(), "tile_set_shape_offset", get_current_tile(), 0, tileset->tile_get_shape_offset(get_current_tile(), 0));
+							} else if (edit_mode == EDITMODE_OCCLUSION) {
+								undo_redo->create_action(TTR("Set Tile Origin"));
+								undo_redo->add_do_method(tileset.ptr(), "tile_set_occluder_offset", get_current_tile(), new_tile_offset);
+								undo_redo->add_undo_method(tileset.ptr(), "tile_set_occluder_offset", get_current_tile(), tileset->tile_get_occluder_offset(get_current_tile()));
+							} else if (edit_mode == EDITMODE_NAVIGATION) {
+								undo_redo->create_action(TTR("Set Tile Origin"));
+								undo_redo->add_do_method(tileset.ptr(), "tile_set_navigation_polygon_offset", get_current_tile(), new_tile_offset);
+								undo_redo->add_undo_method(tileset.ptr(), "tile_set_navigation_polygon_offset", get_current_tile(), tileset->tile_get_navigation_polygon_offset(get_current_tile()));
+							} else {
+								return;
+							}
+
+							undo_redo->add_do_method(workspace, "update");
+							undo_redo->add_undo_method(workspace, "update");
+							undo_redo->add_do_method(workspace_overlay, "update");
+							undo_redo->add_undo_method(workspace_overlay, "update");
+							undo_redo->commit_action();
+
+							if (edit_mode == EDITMODE_COLLISION) {
+								helper->_change_notify("tile_shape_offset");
+							} else if (edit_mode == EDITMODE_OCCLUSION) {
+								helper->_change_notify("tile_occluder_offset");
+							} else if (edit_mode == EDITMODE_NAVIGATION) {
+								helper->_change_notify("tile_navigation_offset");
 							}
 						}
 					}
@@ -3113,6 +3222,15 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 			p.x = region.position.x + region.size.x;
 		if (p.y > region.position.y + region.size.y)
 			p.y = region.position.y + region.size.y;
+	}
+	return p;
+}
+
+Vector2 TileSetEditor::snap_vector2(const Vector2 &point) {
+	Vector2 p = point;
+	if (tools[TOOL_GRID_SNAP]->is_pressed()) {
+		p.x = Math::snap_scalar_separation(snap_offset.x, snap_step.x, p.x, snap_separation.x);
+		p.y = Math::snap_scalar_separation(snap_offset.y, snap_step.y, p.y, snap_separation.y);
 	}
 	return p;
 }
