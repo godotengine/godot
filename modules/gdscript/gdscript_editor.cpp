@@ -3117,6 +3117,14 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 								return OK;
 							}
 						}
+
+						for (int i = 0; i < base_type.class_type->subclasses.size(); i++) {
+							if (base_type.class_type->subclasses[i]->name == p_symbol) {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location = base_type.class_type->subclasses[i]->line;
+								return OK;
+							}
+						}
 					}
 					base_type = base_type.class_type->base_type;
 				}
