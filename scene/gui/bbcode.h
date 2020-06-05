@@ -113,6 +113,7 @@ private:
 	bool _parse_table(ItemTable *table);
 	bool _parse_image(ItemImage *img);
 	bool _parse_detect_click(Item *previous_item);
+	void _common_initalize_process();
 
 private:
 	//Copied functions
@@ -136,7 +137,7 @@ public:
 	void start_process(ItemFrame *_p_frame, const Vector2 &_p_ofs, const int _p_height, const int _p_width, const int _p_line, const Ref<Font> &p_base_font);
 	void process();
 	void process_cache();
-	void process_draw();
+	int process_draw();
 	void process_pointer();
 
 	int get_data();

@@ -84,9 +84,8 @@ bool BbCodeParser::_ensure_width(int m_width) {
 	}
 	if (wofs - backtrack + m_width > p_width) {
 		line_wrapped = true;
-		if (p_mode == ProcessMode::PROCESS_CACHE) {
-			if (spaces > 0)
-				spaces -= 1;
+		if (p_mode == ProcessMode::PROCESS_CACHE && spaces > 0) {
+			spaces -= 1;
 		}
 		const bool x_in_range = (p_click_pos.x > p_ofs.x + wofs) && (!p_frame->cell || p_click_pos.x < p_ofs.x + p_width);
 		if (p_mode == ProcessMode::PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + p_height && p_click_pos.y <= p_ofs.y + p_height + lh && x_in_range) {
@@ -398,7 +397,7 @@ bool BbCodeParser::_parse_text(ItemText *text) {
 		}
 
 		if (_advance(fw)) {
-			return nonblank_line_count;
+			return true;
 		}
 		_check_height(fh); //must be done somewhere
 		c = &c[end];
@@ -577,7 +576,7 @@ bool BbCodeParser::_parse_table(ItemTable *table) {
 		total_height = row_height + vseparation;
 	}
 	if (_advance(table->total_width)) {
-		return nonblank_line_count;
+		return true;
 	}
 	_check_height(total_height);
 	return false;
@@ -615,7 +614,7 @@ bool BbCodeParser::_parse_image(ItemImage *img) {
 	p_char_count++;
 
 	if (_advance(img->size.width)) {
-		return nonblank_line_count;
+		return true;
 	}
 
 	_check_height(img->size.height + font->get_descent());
@@ -634,6 +633,40 @@ bool BbCodeParser::_parse_detect_click(Item *previous_item) {
 		return true;
 	}
 	return false;
+}
+
+void BbCodeParser::_common_initalize_process() {
+	l = p_frame->lines.write[p_line];
+	it = l.from;
+
+	line_ofs = 0;
+	margin = _find_margin(it, p_base_font);
+	align = _find_align(it);
+	line = 0;
+	spaces = 0;
+
+	wofs = margin;
+	spaces_size = 0;
+	align_ofs = 0;
+
+	cfont = _find_font(it);
+	if (cfont.is_null()) {
+		cfont = p_base_font;
+	}
+
+	//line height should be the font height for the first time, this ensures that an empty line will never have zero height and successive newlines are displayed
+	line_height = cfont->get_height();
+	line_ascent = cfont->get_ascent();
+	line_descent = cfont->get_descent();
+
+	backtrack = 0; // for dynamic hidden content.
+	nonblank_line_count = 0; //number of nonblank lines as counted during ProcessMode::PROCESS_DRAW
+
+	rchar = 0;
+	lh = 0;
+	line_is_blank = true;
+	line_wrapped = false;
+	fh = 0;
 }
 
 BbCodeParser::Item *BbCodeParser::_get_next_item(Item *p_item, bool p_free) const {
@@ -968,9 +1001,9 @@ void BbCodeParser::start_process(ItemFrame *_p_frame, const Vector2 &_p_ofs, con
 
 	wofs = margin;
 
-	/*if (p_mode != ProcessMode::PROCESS_CACHE && align != Align::ALIGN_FILL) {
+	if (p_mode != ProcessMode::PROCESS_CACHE && align != Align::ALIGN_FILL) {
 		wofs += line_ofs;
-	}*/
+	}
 
 	begin = wofs;
 
@@ -986,8 +1019,10 @@ void BbCodeParser::start_process(ItemFrame *_p_frame, const Vector2 &_p_ofs, con
 }
 
 void BbCodeParser::process_cache() {
-	ERR_FAIL_INDEX(line, l.offset_caches.size());
-	line_ofs = l.offset_caches[line];
+	ERR_FAIL_INDEX((int)p_mode, 3);
+	p_mode = ProcessMode::PROCESS_CACHE;
+
+	_common_initalize_process();
 
 	l.offset_caches.clear();
 	l.height_caches.clear();
@@ -996,7 +1031,207 @@ void BbCodeParser::process_cache() {
 	l.char_count = 0;
 	l.minimum_width = 0;
 	l.maximum_width = 0;
+
+	begin = wofs;
+
+	while (it) {
+		switch (it->type) {
+			case ItemType::ITEM_ALIGN: {
+				ItemAlign *align_it = static_cast<ItemAlign *>(it);
+				align = align_it->align;
+			} break;
+			case ItemType::ITEM_INDENT: {
+				if (it == l.from) {
+					break;
+				}
+				ItemIndent *indent_it = static_cast<ItemIndent *>(it);
+				int indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
+				margin += indent;
+				begin += indent;
+				wofs += indent;
+			} break;
+			case ItemType::ITEM_TEXT: {
+				if (_parse_text(static_cast<ItemText *>(it))) {
+					return;
+				}
+			} break;
+			case ItemType::ITEM_IMAGE: {
+				if (_parse_image(static_cast<ItemImage *>(it))) {
+					return;
+				}
+			} break;
+			case ItemType::ITEM_TABLE: {
+				if (_parse_table(static_cast<ItemTable *>(it))) {
+					return;
+				}
+
+			} break;
+
+			default: {
+			}
+		}
+
+		it = _get_next_item(it);
+		if (it && (p_line + 1 < p_frame->lines.size()) && p_frame->lines[p_line + 1].from == it) {
+			break;
+		}
+	}
+
+	if (_new_line()) {
+		//Safe is safe. If somebody does something below _new_line we have a bug
+		return;
+	}
 }
 
-void BbCodeParser::process_draw() {
+int BbCodeParser::process_draw() {
+	ERR_FAIL_INDEX_V((int)p_mode, 3, 0);
+	p_mode = ProcessMode::PROCESS_DRAW;
+
+	ci = get_canvas_item();
+
+	_common_initalize_process();
+
+	ERR_FAIL_INDEX_V(line, l.offset_caches.size(), 0);
+	line_ofs = l.offset_caches[line];
+
+	if (align != Align::ALIGN_FILL) {
+		wofs += line_ofs;
+	}
+
+	begin = wofs;
+	selection_fg = get_theme_color("font_color_selected");
+	selection_bg = get_theme_color("selection_color");
+
+	while (it) {
+		switch (it->type) {
+			case ItemType::ITEM_ALIGN: {
+				ItemAlign *align_it = static_cast<ItemAlign *>(it);
+				align = align_it->align;
+			} break;
+			case ItemType::ITEM_INDENT: {
+				if (it == l.from) {
+					break;
+				}
+				ItemIndent *indent_it = static_cast<ItemIndent *>(it);
+				int indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
+				margin += indent;
+				begin += indent;
+				wofs += indent;
+			} break;
+			case ItemType::ITEM_TEXT: {
+				if (_parse_text(static_cast<ItemText *>(it))) {
+					return nonblank_line_count;
+				}
+			} break;
+			case ItemType::ITEM_IMAGE: {
+				if (_parse_image(static_cast<ItemImage *>(it))) {
+					return nonblank_line_count;
+				}
+			} break;
+			case ItemType::ITEM_NEWLINE: {
+				lh = 0;
+				lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
+				line_is_blank = true;
+
+			} break;
+			case ItemType::ITEM_TABLE: {
+				if (_parse_table(static_cast<ItemTable *>(it))) {
+					return nonblank_line_count;
+				}
+
+			} break;
+
+			default: {
+			}
+		}
+
+		it = _get_next_item(it);
+		if (it && (p_line + 1 < p_frame->lines.size()) && p_frame->lines[p_line + 1].from == it) {
+			break;
+		}
+	}
+	if (_new_line()) {
+		//Safe is safe. If somebody does something below _new_line we have a bug
+		return nonblank_line_count;
+	}
+
+	return nonblank_line_count;
+}
+
+void BbCodeParser::process_pointer() {
+	ERR_FAIL_INDEX((int)p_mode, 3);
+	p_mode = ProcessMode::PROCESS_POINTER;
+
+	if (r_outside) {
+		*r_outside = false;
+	}
+
+	_common_initalize_process();
+
+	ERR_FAIL_INDEX(line, l.offset_caches.size());
+	line_ofs = l.offset_caches[line];
+
+	if (align != Align::ALIGN_FILL) {
+		wofs += line_ofs;
+	}
+
+	begin = wofs;
+
+	while (it) {
+		switch (it->type) {
+			case ItemType::ITEM_ALIGN: {
+				ItemAlign *align_it = static_cast<ItemAlign *>(it);
+				align = align_it->align;
+			} break;
+			case ItemType::ITEM_INDENT: {
+				if (it == l.from) {
+					break;
+				}
+				ItemIndent *indent_it = static_cast<ItemIndent *>(it);
+				int indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
+				margin += indent;
+				begin += indent;
+				wofs += indent;
+			} break;
+			case ItemType::ITEM_TEXT: {
+				if (_parse_text(static_cast<ItemText *>(it))) {
+					return;
+				}
+			} break;
+			case ItemType::ITEM_IMAGE: {
+				if (_parse_image(static_cast<ItemImage *>(it))) {
+					return;
+				}
+			} break;
+			case ItemType::ITEM_NEWLINE: {
+				lh = 0;
+				lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
+				line_is_blank = true;
+			} break;
+			case ItemType::ITEM_TABLE: {
+				if (_parse_table(static_cast<ItemTable *>(it))) {
+					return;
+				}
+
+			} break;
+
+			default: {
+			}
+		}
+
+		Item *itp = it;
+		it = _get_next_item(it);
+
+		if (it && (p_line + 1 < p_frame->lines.size()) && p_frame->lines[p_line + 1].from == it) {
+			if (_parse_detect_click(itp)) {
+				return;
+			}
+			break;
+		}
+	}
+
+	if (_new_line()) {
+		//Safe is safe. If somebody does something below _new_line we have a bug
+		return;
+	}
 }
