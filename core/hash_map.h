@@ -524,28 +524,14 @@ public:
 		copy_from(p_table);
 	}
 
-	void get_key_value_ptr_array(const Pair **p_pairs) const {
+	void get_key_list(List<TKey> *r_keys) const {
 		if (unlikely(!hash_table)) {
 			return;
 		}
 		for (int i = 0; i < (1 << hash_table_power); i++) {
 			Element *e = hash_table[i];
 			while (e) {
-				*p_pairs = &e->pair;
-				p_pairs++;
-				e = e->next;
-			}
-		}
-	}
-
-	void get_key_list(List<TKey> *p_keys) const {
-		if (unlikely(!hash_table)) {
-			return;
-		}
-		for (int i = 0; i < (1 << hash_table_power); i++) {
-			Element *e = hash_table[i];
-			while (e) {
-				p_keys->push_back(e->pair.key);
+				r_keys->push_back(e->pair.key);
 				e = e->next;
 			}
 		}
