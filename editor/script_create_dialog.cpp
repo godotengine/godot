@@ -510,6 +510,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 		_path_changed(file_path->get_text());
 	}
 	_update_dialog();
+	minimum_size_changed();
 }
 
 void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
