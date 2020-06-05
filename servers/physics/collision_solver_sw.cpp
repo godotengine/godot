@@ -315,7 +315,7 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 		if (i == 0 || d < closest_d) {
 			closest = supports[i];
 			closest_d = d;
-			if (d <= 0)
+			if (d < 0)
 				collided = true;
 		}
 	}

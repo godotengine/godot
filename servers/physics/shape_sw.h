@@ -487,7 +487,7 @@ struct MotionShapeSW : public ShapeSW {
 		}
 		return support;
 	}
-	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const;
 	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const { return false; }
 	virtual bool intersect_point(const Vector3 &p_point) const { return false; }
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const { return p_point; }
