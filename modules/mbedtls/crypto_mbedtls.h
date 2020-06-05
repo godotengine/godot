@@ -43,15 +43,19 @@ class SSLContextMbedTLS;
 class CryptoKeyMbedTLS : public CryptoKey {
 private:
 	mbedtls_pk_context pkey;
-	int locks;
+	int locks = 0;
+	bool public_only = true;
 
 public:
 	static CryptoKey *create();
 	static void make_default() { CryptoKey::_create = create; }
 	static void finalize() { CryptoKey::_create = nullptr; }
 
-	virtual Error load(String p_path);
-	virtual Error save(String p_path);
+	virtual Error load(String p_path, bool p_public_only);
+	virtual Error save(String p_path, bool p_public_only);
+	virtual String save_to_string(bool p_public_only);
+	virtual Error load_from_string(String p_string_key, bool p_public_only);
+	virtual bool is_public_only() const { return public_only; };
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
