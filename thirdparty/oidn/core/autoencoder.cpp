@@ -90,12 +90,19 @@ namespace oidn {
     if (!dirty)
       return;
 
-    {
+    // -- GODOT start --
+    //device->executeTask([&]()
+    //{
+    // GODOT end --
+
       if (mayiuse(avx512_common))
         net = buildNet<16>();
       else
         net = buildNet<8>();
-    }
+
+    // GODOT start --    
+    //});
+    // GODOT end --
 
     dirty = false;
   }
@@ -107,8 +114,10 @@ namespace oidn {
 
     if (!net)
       return;
-
-    {
+    // -- GODOT start --
+    //device->executeTask([&]()
+    //{
+    // -- GODOT end --
       Progress progress;
       progress.func = progressFunc;
       progress.userPtr = progressUserPtr;
@@ -154,7 +163,9 @@ namespace oidn {
           tileIndex++;
         }
       }
-    }
+    // -- GODOT start --
+    //});
+    // -- GODOT end --
   }
 
   void AutoencoderFilter::computeTileSize()
@@ -462,8 +473,11 @@ namespace oidn {
       return std::make_shared<GammaTransferFunction>();
   }
 
+// -- GODOT start --
 // Godot doesn't need Raytracing filters. Removing them saves space in the weights files.
 #if 0
+// -- GODOT end --
+
   // --------------------------------------------------------------------------
   // RTFilter
   // --------------------------------------------------------------------------
@@ -491,7 +505,9 @@ namespace oidn {
     weightData.hdr_alb     = weights::rt_hdr_alb;
     weightData.hdr_alb_nrm = weights::rt_hdr_alb_nrm;
   }
+// -- GODOT start --
 #endif
+// -- GODOT end --
 
   // --------------------------------------------------------------------------
   // RTLightmapFilter
