@@ -371,9 +371,6 @@ public:
 	BIND2(gi_probe_set_interior, RID, bool)
 	BIND1RC(bool, gi_probe_is_interior, RID)
 
-	BIND2(gi_probe_set_compress, RID, bool)
-	BIND1RC(bool, gi_probe_is_compressed, RID)
-
 	BIND2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
 	BIND1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
 

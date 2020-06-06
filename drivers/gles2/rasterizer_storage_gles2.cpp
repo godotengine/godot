@@ -4278,12 +4278,6 @@ bool RasterizerStorageGLES2::gi_probe_is_interior(RID p_probe) const {
 	return false;
 }
 
-void RasterizerStorageGLES2::gi_probe_set_compress(RID p_probe, bool p_enable) {
-}
-
-bool RasterizerStorageGLES2::gi_probe_is_compressed(RID p_probe) const {
-	return false;
-}
 float RasterizerStorageGLES2::gi_probe_get_energy(RID p_probe) const {
 	return 0;
 }
@@ -4302,10 +4296,6 @@ float RasterizerStorageGLES2::gi_probe_get_propagation(RID p_probe) const {
 
 uint32_t RasterizerStorageGLES2::gi_probe_get_version(RID p_probe) {
 	return 0;
-}
-
-RasterizerStorage::GIProbeCompression RasterizerStorageGLES2::gi_probe_get_dynamic_data_get_preferred_compression() const {
-	return GI_PROBE_UNCOMPRESSED;
 }
 
 RID RasterizerStorageGLES2::gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) {

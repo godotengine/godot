@@ -74,9 +74,6 @@ public:
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
-	void set_compress(bool p_enable);
-	bool is_compressed() const;
-
 	virtual RID get_rid() const;
 
 	GIProbeData();
@@ -113,7 +110,6 @@ private:
 	float normal_bias;
 	float propagation;
 	bool interior;
-	bool compress;
 
 	struct PlotMesh {
 		Ref<Material> override_material;
@@ -159,9 +155,6 @@ public:
 
 	void set_interior(bool p_enable);
 	bool is_interior() const;
-
-	void set_compress(bool p_enable);
-	bool is_compressed() const;
 
 	void bake(Node *p_from_node = NULL, bool p_create_visual_debug = false);
 

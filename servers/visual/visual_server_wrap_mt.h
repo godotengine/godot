@@ -307,9 +307,6 @@ public:
 	FUNC2(gi_probe_set_interior, RID, bool)
 	FUNC1RC(bool, gi_probe_is_interior, RID)
 
-	FUNC2(gi_probe_set_compress, RID, bool)
-	FUNC1RC(bool, gi_probe_is_compressed, RID)
-
 	FUNC2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
 	FUNC1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
 

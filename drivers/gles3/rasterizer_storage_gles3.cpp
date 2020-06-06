@@ -6050,21 +6050,6 @@ bool RasterizerStorageGLES3::gi_probe_is_interior(RID p_probe) const {
 	return gip->interior;
 }
 
-void RasterizerStorageGLES3::gi_probe_set_compress(RID p_probe, bool p_enable) {
-
-	GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND(!gip);
-
-	gip->compress = p_enable;
-}
-
-bool RasterizerStorageGLES3::gi_probe_is_compressed(RID p_probe) const {
-
-	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip, false);
-
-	return gip->compress;
-}
 float RasterizerStorageGLES3::gi_probe_get_energy(RID p_probe) const {
 
 	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
@@ -6103,14 +6088,6 @@ uint32_t RasterizerStorageGLES3::gi_probe_get_version(RID p_probe) {
 	ERR_FAIL_COND_V(!gip, 0);
 
 	return gip->version;
-}
-
-RasterizerStorage::GIProbeCompression RasterizerStorageGLES3::gi_probe_get_dynamic_data_get_preferred_compression() const {
-	if (config.s3tc_supported) {
-		return GI_PROBE_S3TC;
-	} else {
-		return GI_PROBE_UNCOMPRESSED;
-	}
 }
 
 RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) {

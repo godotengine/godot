@@ -1815,8 +1815,6 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gi_probe_get_propagation", "probe"), &VisualServer::gi_probe_get_propagation);
 	ClassDB::bind_method(D_METHOD("gi_probe_set_interior", "probe", "enable"), &VisualServer::gi_probe_set_interior);
 	ClassDB::bind_method(D_METHOD("gi_probe_is_interior", "probe"), &VisualServer::gi_probe_is_interior);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_compress", "probe", "enable"), &VisualServer::gi_probe_set_compress);
-	ClassDB::bind_method(D_METHOD("gi_probe_is_compressed", "probe"), &VisualServer::gi_probe_is_compressed);
 
 	ClassDB::bind_method(D_METHOD("lightmap_capture_create"), &VisualServer::lightmap_capture_create);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_bounds", "capture", "bounds"), &VisualServer::lightmap_capture_set_bounds);

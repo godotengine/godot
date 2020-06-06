@@ -582,12 +582,8 @@ public:
 	void gi_probe_set_interior(RID p_probe, bool p_enable) {}
 	bool gi_probe_is_interior(RID p_probe) const { return false; }
 
-	void gi_probe_set_compress(RID p_probe, bool p_enable) {}
-	bool gi_probe_is_compressed(RID p_probe) const { return false; }
-
 	uint32_t gi_probe_get_version(RID p_probe) { return 0; }
 
-	GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const { return GI_PROBE_UNCOMPRESSED; }
 	RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) { return RID(); }
 	void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {}
 
