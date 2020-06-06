@@ -346,17 +346,6 @@ private:
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
 
-	struct ProcessState {
-		int line_width;
-	};
-
-	enum ProcessMode {
-
-		PROCESS_CACHE,
-		PROCESS_DRAW,
-		PROCESS_POINTER
-	};
-
 	struct Selection {
 		Item *click;
 		int click_char;
@@ -380,22 +369,10 @@ private:
 	//used in _process_line, _find_margin, search
 	//duplicated in bbcode, check removal
 	Ref<Font> _find_font(Item *p_item);
-	// used once in _process_line
-	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
-	// used once in _process_line
-	Align _find_align(Item *p_item);
-	// only used in _procces_line
-	Color _find_color(Item *p_item, const Color &p_default_color);
-	//used once in _process_line
-	bool _find_underline(Item *p_item);
-	//used once in _process_line
-	bool _find_strikethrough(Item *p_item);
 	//used multiple times
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
-	//only used once in _process_line, duplicated into bbcode
-	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
 	static Color _get_color_from_string(const String &p_color_str, const Color &p_default_color);
 
@@ -413,8 +390,6 @@ private:
 
 	bool use_bbcode = false;
 	String bbcode;
-
-	void _update_all_lines();
 
 	int fixed_width = -1;
 

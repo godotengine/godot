@@ -43,7 +43,6 @@ class BbCodeParser {
 	using Line = RichTextLabel::Line;
 	using Item = RichTextLabel::Item;
 	using ItemFrame = RichTextLabel::ItemFrame;
-	using ProcessMode = RichTextLabel::ProcessMode;
 	using Align = RichTextLabel::Align;
 	using ItemType = RichTextLabel::ItemType;
 	using ItemAlign = RichTextLabel::ItemAlign;
@@ -65,6 +64,13 @@ class BbCodeParser {
 
 protected:
 	static void _bind_methods();
+
+private:
+	enum ProcessMode {
+		PROCESS_CACHE,
+		PROCESS_DRAW,
+		PROCESS_POINTER
+	};
 
 private:
 	//localy declared vars in _process_line
@@ -128,24 +134,17 @@ private:
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 
-	//int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
-
 	//TODOS:
 	// split process_modes into different functions
 	// get rid of the Process Modes
 
 public:
-	void start_process(ItemFrame *_p_frame, const Vector2 &_p_ofs, const int _p_height, const int _p_width, const int _p_line, const Ref<Font> &p_base_font);
-	void process();
-
 	//Returns height
 	int process_cache();
 	//Returns nonblank_lines
 	int process_draw(int _p_char_count = 0);
 	//Has to return the clicked item, if it was clicked, clicked char
 	void process_pointer(const Point2i &_p_click_pos, Item **_r_click_item, int *_r_click_char, bool *_r_outside);
-
-	int get_data();
 
 public:
 	//Duplicated vars
@@ -157,7 +156,7 @@ public:
 	int visible_characters = -1;
 
 public:
-	RichTextLabel::ProcessMode p_mode;
+	ProcessMode p_mode;
 	Point2i p_click_pos_default = Point2i();
 
 	//LineParser arguments

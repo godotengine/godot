@@ -654,7 +654,7 @@ bool BbCodeParser::_parse_image(ItemImage *img) {
 	}
 
 	if (_ensure_width(img->size.width)) {
-		return nonblank_line_count;
+		return true;
 	}
 
 	bool visible = visible_characters < 0 || (p_char_count < visible_characters && _y_range_visible(p_height + lh - font->get_descent() - img->size.height, img->size.height));

@@ -602,93 +602,6 @@ Ref<Font> RichTextLabel::_find_font(Item *p_item) {
 	return Ref<Font>();
 }
 
-int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font) {
-	Item *item = p_item;
-
-	int margin = 0;
-
-	while (item) {
-		if (item->type == ITEM_INDENT) {
-			Ref<Font> font = _find_font(item);
-			if (font.is_null()) {
-				font = p_base_font;
-			}
-
-			ItemIndent *indent = static_cast<ItemIndent *>(item);
-
-			margin += indent->level * tab_size * font->get_char_size(' ').width;
-
-		} else if (item->type == ITEM_LIST) {
-			Ref<Font> font = _find_font(item);
-			if (font.is_null()) {
-				font = p_base_font;
-			}
-		}
-
-		item = item->parent;
-	}
-
-	return margin;
-}
-
-RichTextLabel::Align RichTextLabel::_find_align(Item *p_item) {
-	Item *item = p_item;
-
-	while (item) {
-		if (item->type == ITEM_ALIGN) {
-			ItemAlign *align = static_cast<ItemAlign *>(item);
-			return align->align;
-		}
-
-		item = item->parent;
-	}
-
-	return default_align;
-}
-
-Color RichTextLabel::_find_color(Item *p_item, const Color &p_default_color) {
-	Item *item = p_item;
-
-	while (item) {
-		if (item->type == ITEM_COLOR) {
-			ItemColor *color = static_cast<ItemColor *>(item);
-			return color->color;
-		}
-
-		item = item->parent;
-	}
-
-	return p_default_color;
-}
-
-bool RichTextLabel::_find_underline(Item *p_item) {
-	Item *item = p_item;
-
-	while (item) {
-		if (item->type == ITEM_UNDERLINE) {
-			return true;
-		}
-
-		item = item->parent;
-	}
-
-	return false;
-}
-
-bool RichTextLabel::_find_strikethrough(Item *p_item) {
-	Item *item = p_item;
-
-	while (item) {
-		if (item->type == ITEM_STRIKETHROUGH) {
-			return true;
-		}
-
-		item = item->parent;
-	}
-
-	return false;
-}
-
 bool RichTextLabel::_find_by_type(Item *p_item, ItemType p_type) {
 	ERR_FAIL_INDEX_V((int)p_type, 19, false);
 
@@ -701,17 +614,6 @@ bool RichTextLabel::_find_by_type(Item *p_item, ItemType p_type) {
 		item = item->parent;
 	}
 	return false;
-}
-
-void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
-	Item *item = p_item;
-	while (item) {
-		if (item->type == ITEM_CUSTOMFX || item->type == ITEM_SHAKE || item->type == ITEM_WAVE || item->type == ITEM_TORNADO || item->type == ITEM_RAINBOW) {
-			r_stack.push_back(static_cast<ItemFX *>(item));
-		}
-
-		item = item->parent;
-	}
 }
 
 Color RichTextLabel::_get_color_from_string(const String &p_color_str, const Color &p_default_color) {
