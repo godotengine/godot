@@ -320,3 +320,48 @@ PoolByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
 	mbedtls_ctr_drbg_random(&ctr_drbg, out.write().ptr(), p_bytes);
 	return out;
 }
+
+mbedtls_md_type_t CryptoMbedTLS::_md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size) {
+	switch (p_hash_type) {
+		case HashingContext::HASH_MD5:
+			r_size = 16;
+			return MBEDTLS_MD_MD5;
+		case HashingContext::HASH_SHA1:
+			r_size = 20;
+			return MBEDTLS_MD_SHA1;
+		case HashingContext::HASH_SHA256:
+			r_size = 32;
+			return MBEDTLS_MD_SHA256;
+		default:
+			r_size = 0;
+			ERR_FAIL_V_MSG(MBEDTLS_MD_NONE, "Invalid hash type.");
+	}
+}
+
+Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key) {
+	int size;
+	mbedtls_md_type_t type = _md_type_from_hashtype(p_hash_type, size);
+	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, Vector<uint8_t>(), "Invalid hash type.");
+	ERR_FAIL_COND_V_MSG(p_hash.size() != size, Vector<uint8_t>(), "Invalid hash provided. Size must be " + itos(size));
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
+	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot sign with public_only keys.");
+	size_t sig_size = 0;
+	unsigned char buf[MBEDTLS_MPI_MAX_SIZE];
+	Vector<uint8_t> out;
+	int ret = mbedtls_pk_sign(&(key->pkey), type, p_hash.ptr(), size, buf, &sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
+	ERR_FAIL_COND_V_MSG(ret, out, "Error while signing: " + itos(ret));
+	out.resize(sig_size);
+	copymem(out.ptrw(), buf, sig_size);
+	return out;
+}
+
+bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) {
+	int size;
+	mbedtls_md_type_t type = _md_type_from_hashtype(p_hash_type, size);
+	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, false, "Invalid hash type.");
+	ERR_FAIL_COND_V_MSG(p_hash.size() != size, false, "Invalid hash provided. Size must be " + itos(size));
+	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS> >(p_key);
+	ERR_FAIL_COND_V_MSG(!key.is_valid(), false, "Invalid key provided.");
+	return mbedtls_pk_verify(&(key->pkey), type, p_hash.ptr(), size, p_signature.ptr(), p_signature.size()) == 0;
+}
