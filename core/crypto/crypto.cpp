@@ -67,7 +67,7 @@ Crypto *(*Crypto::_create)() = NULL;
 Crypto *Crypto::create() {
 	if (_create)
 		return _create();
-	return memnew(Crypto);
+	ERR_FAIL_V_MSG(NULL, "Crypto is not available when the mbedtls module is disabled.");
 }
 
 void Crypto::load_default_certificates(String p_path) {
@@ -80,18 +80,6 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_random_bytes", "size"), &Crypto::generate_random_bytes);
 	ClassDB::bind_method(D_METHOD("generate_rsa", "size"), &Crypto::generate_rsa);
 	ClassDB::bind_method(D_METHOD("generate_self_signed_certificate", "key", "issuer_name", "not_before", "not_after"), &Crypto::generate_self_signed_certificate, DEFVAL("CN=myserver,O=myorganisation,C=IT"), DEFVAL("20140101000000"), DEFVAL("20340101000000"));
-}
-
-PoolByteArray Crypto::generate_random_bytes(int p_bytes) {
-	ERR_FAIL_V_MSG(PoolByteArray(), "generate_random_bytes is not available when mbedtls module is disabled.");
-}
-
-Ref<CryptoKey> Crypto::generate_rsa(int p_bytes) {
-	ERR_FAIL_V_MSG(NULL, "generate_rsa is not available when mbedtls module is disabled.");
-}
-
-Ref<X509Certificate> Crypto::generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) {
-	ERR_FAIL_V_MSG(NULL, "generate_self_signed_certificate is not available when mbedtls module is disabled.");
 }
 
 Crypto::Crypto() {
