@@ -45,6 +45,7 @@ class RasterizerGLES2 : public Rasterizer {
 	RasterizerSceneGLES2 *scene;
 
 	double time_total;
+	float time_scale;
 
 public:
 	virtual RasterizerStorage *get_storage();
@@ -52,6 +53,7 @@ public:
 	virtual RasterizerScene *get_scene();
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	virtual void set_shader_time_scale(float p_scale);
 
 	virtual void initialize();
 	virtual void begin_frame(double frame_step);

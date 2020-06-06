@@ -270,7 +270,7 @@ void RasterizerGLES2::initialize() {
 }
 
 void RasterizerGLES2::begin_frame(double frame_step) {
-	time_total += frame_step;
+	time_total += frame_step * time_scale;
 
 	if (frame_step == 0) {
 		//to avoid hiccups
@@ -395,6 +395,11 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
+void RasterizerGLES2::set_shader_time_scale(float p_scale) {
+
+	time_scale = p_scale;
+}
+
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
@@ -490,6 +495,7 @@ RasterizerGLES2::RasterizerGLES2() {
 	storage->scene = scene;
 
 	time_total = 0;
+	time_scale = 1;
 }
 
 RasterizerGLES2::~RasterizerGLES2() {
