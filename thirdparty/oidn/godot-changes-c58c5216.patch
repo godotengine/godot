@@ -1,0 +1,307 @@
+diff --git a/common/platform.h b/common/platform.h
+index be14bc7..9373b61 100644
+--- a/common/platform.h
++++ b/common/platform.h
+@@ -19,7 +19,7 @@
+ #if defined(_WIN32)
+   #define WIN32_LEAN_AND_MEAN
+   #define NOMINMAX
+-  #include <Windows.h>
++  #include <windows.h>
+ #elif defined(__APPLE__)
+   #include <sys/sysctl.h>
+ #endif
+@@ -129,4 +129,3 @@ namespace oidn {
+   std::string getBuildName();
+ 
+ } // namespace oidn
+-
+diff --git a/core/autoencoder.cpp b/core/autoencoder.cpp
+index d6915e6..d8da684 100644
+--- a/core/autoencoder.cpp
++++ b/core/autoencoder.cpp
+@@ -90,13 +90,19 @@ namespace oidn {
+     if (!dirty)
+       return;
+ 
+-    device->executeTask([&]()
+-    {
++    // -- GODOT start --
++    //device->executeTask([&]()
++    //{
++    // GODOT end --
++
+       if (mayiuse(avx512_common))
+         net = buildNet<16>();
+       else
+         net = buildNet<8>();
+-    });
++
++    // GODOT start --    
++    //});
++    // GODOT end --
+ 
+     dirty = false;
+   }
+@@ -108,9 +114,10 @@ namespace oidn {
+ 
+     if (!net)
+       return;
+-
+-    device->executeTask([&]()
+-    {
++    // -- GODOT start --
++    //device->executeTask([&]()
++    //{
++    // -- GODOT end --
+       Progress progress;
+       progress.func = progressFunc;
+       progress.userPtr = progressUserPtr;
+@@ -156,7 +163,9 @@ namespace oidn {
+           tileIndex++;
+         }
+       }
+-    });
++    // -- GODOT start --
++    //});
++    // -- GODOT end --
+   }
+ 
+   void AutoencoderFilter::computeTileSize()
+@@ -464,6 +473,11 @@ namespace oidn {
+       return std::make_shared<GammaTransferFunction>();
+   }
+ 
++// -- GODOT start --
++// Godot doesn't need Raytracing filters. Removing them saves space in the weights files.
++#if 0
++// -- GODOT end --
++
+   // --------------------------------------------------------------------------
+   // RTFilter
+   // --------------------------------------------------------------------------
+@@ -491,6 +505,9 @@ namespace oidn {
+     weightData.hdr_alb     = weights::rt_hdr_alb;
+     weightData.hdr_alb_nrm = weights::rt_hdr_alb_nrm;
+   }
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ 
+   // --------------------------------------------------------------------------
+   // RTLightmapFilter
+diff --git a/core/autoencoder.h b/core/autoencoder.h
+index c199052..98b6108 100644
+--- a/core/autoencoder.h
++++ b/core/autoencoder.h
+@@ -93,11 +93,18 @@ namespace oidn {
+   // RTFilter - Generic ray tracing denoiser
+   // --------------------------------------------------------------------------
+ 
++// -- GODOT start --
++// Godot doesn't need Raytracing filters. Removing them saves space in the weights files.
++#if 0
++// -- GODOT end --
+   class RTFilter : public AutoencoderFilter
+   {
+   public:
+     explicit RTFilter(const Ref<Device>& device);
+   };
++// -- GODOT start --
++#endif
++// -- GODOT end --
+ 
+   // --------------------------------------------------------------------------
+   // RTLightmapFilter - Ray traced lightmap denoiser
+diff --git a/core/common.h b/core/common.h
+index a3a7e8a..a35dd90 100644
+--- a/core/common.h
++++ b/core/common.h
+@@ -27,7 +27,9 @@
+ #include "common/ref.h"
+ #include "common/exception.h"
+ #include "common/thread.h"
+-#include "common/tasking.h"
++// -- GODOT start --
++//#include "common/tasking.h"
++// -- GODOT end --
+ #include "math.h"
+ 
+ namespace oidn {
+diff --git a/core/device.cpp b/core/device.cpp
+index c455695..3cd658b 100644
+--- a/core/device.cpp
++++ b/core/device.cpp
+@@ -29,7 +29,9 @@ namespace oidn {
+ 
+   Device::~Device()
+   {
+-    observer.reset();
++    // -- GODOT start --
++    //observer.reset();
++    // -- GODOT end --
+   }
+ 
+   void Device::setError(Device* device, Error code, const std::string& message)
+@@ -141,6 +143,9 @@ namespace oidn {
+     if (isCommitted())
+       throw Exception(Error::InvalidOperation, "device can be committed only once");
+ 
++    // -- GODOT start --
++    #if 0
++    // -- GODOT end --
+     // Get the optimal thread affinities
+     if (setAffinity)
+     {
+@@ -157,7 +162,10 @@ namespace oidn {
+     // Automatically set the thread affinities
+     if (affinity)
+       observer = std::make_shared<PinningObserver>(affinity, *arena);
+-
++    // -- GODOT start --
++    #endif
++    numThreads = 1;
++    // -- GODOT end --
+     dirty = false;
+ 
+     if (isVerbose())
+@@ -191,9 +199,17 @@ namespace oidn {
+ 
+     Ref<Filter> filter;
+ 
++// -- GODOT start --
++// Godot doesn't need Raytracing filters. Removing them saves space in the weights files.
++#if 0
++// -- GODOT end --
+     if (type == "RT")
+       filter = makeRef<RTFilter>(Ref<Device>(this));
+-    else if (type == "RTLightmap")
++// -- GODOT start --
++// Godot doesn't need Raytracing filters. Removing them saves space in the weights files.
++#endif
++    if (type == "RTLightmap")
++// -- GODOT end --
+       filter = makeRef<RTLightmapFilter>(Ref<Device>(this));
+     else
+       throw Exception(Error::InvalidArgument, "unknown filter type");
+@@ -210,11 +226,12 @@ namespace oidn {
+     std::cout << "  Build   : " << getBuildName() << std::endl;
+     std::cout << "  Platform: " << getPlatformName() << std::endl;
+ 
+-    std::cout << "  Tasking :";
+-    std::cout << " TBB" << TBB_VERSION_MAJOR << "." << TBB_VERSION_MINOR;
+-    std::cout << " TBB_header_interface_" << TBB_INTERFACE_VERSION << " TBB_lib_interface_" << tbb::TBB_runtime_interface_version();
+-    std::cout << std::endl;
+-
++// -- GODOT start --
++//    std::cout << "  Tasking :";
++//    std::cout << " TBB" << TBB_VERSION_MAJOR << "." << TBB_VERSION_MINOR;
++//    std::cout << " TBB_header_interface_" << TBB_INTERFACE_VERSION << " TBB_lib_interface_" << tbb::TBB_runtime_interface_version();
++//    std::cout << std::endl;
++// -- GODOT end --
+     std::cout << std::endl;
+   }
+ 
+diff --git a/core/device.h b/core/device.h
+index c2df714..d9cfd85 100644
+--- a/core/device.h
++++ b/core/device.h
+@@ -41,10 +41,12 @@ namespace oidn {
+     ErrorFunction errorFunc = nullptr;
+     void* errorUserPtr = nullptr;
+ 
+-    // Tasking
+-    std::shared_ptr<tbb::task_arena> arena;
+-    std::shared_ptr<PinningObserver> observer;
+-    std::shared_ptr<ThreadAffinity> affinity;
++// -- GODOT start --
++//    // Tasking
++//    std::shared_ptr<tbb::task_arena> arena;
++//    std::shared_ptr<PinningObserver> observer;
++//    std::shared_ptr<ThreadAffinity> affinity;
++// -- GODOT end --
+ 
+     // Parameters
+     int numThreads = 0; // autodetect by default
+@@ -66,17 +68,19 @@ namespace oidn {
+ 
+     void commit();
+ 
+-    template<typename F>
+-    void executeTask(F& f)
+-    {
+-      arena->execute(f);
+-    }
++// -- GODOT start --
++//    template<typename F>
++//    void executeTask(F& f)
++//    {
++//      arena->execute(f);
++//    }
+ 
+-    template<typename F>
+-    void executeTask(const F& f)
+-    {
+-      arena->execute(f);
+-    }
++//    template<typename F>
++//    void executeTask(const F& f)
++//    {
++//      arena->execute(f);
++//    }
++// -- GODOT end --
+ 
+     Ref<Buffer> newBuffer(size_t byteSize);
+     Ref<Buffer> newBuffer(void* ptr, size_t byteSize);
+@@ -86,7 +90,10 @@ namespace oidn {
+     __forceinline std::mutex& getMutex() { return mutex; }
+ 
+   private:
+-    bool isCommitted() const { return bool(arena); }
++// -- GODOT start --
++  //bool isCommitted() const { return bool(arena); }
++  bool isCommitted() const { return false; }
++// -- GODOT end --
+     void checkCommitted();
+ 
+     void print();
+diff --git a/core/network.cpp b/core/network.cpp
+index 8c2de09..ed8328c 100644
+--- a/core/network.cpp
++++ b/core/network.cpp
+@@ -17,6 +17,9 @@
+ #include "upsample.h"
+ #include "weights_reorder.h"
+ #include "network.h"
++// -- GODOT start -- 
++#include <cstring>
++// -- GODOT end --
+ 
+ namespace oidn {
+ 
+diff --git a/core/transfer_function.cpp b/core/transfer_function.cpp
+index 601f814..487f0a9 100644
+--- a/core/transfer_function.cpp
++++ b/core/transfer_function.cpp
+@@ -24,6 +24,10 @@ namespace oidn {
+   float AutoexposureNode::autoexposure(const Image& color)
+   {
+     assert(color.format == Format::Float3);
++// -- GODOT start --
++// We don't want to mess with TTB and we don't use autoexposure, so we disable this code
++#if 0
++// -- GODOT end --
+ 
+     constexpr float key = 0.18f;
+     constexpr float eps = 1e-8f;
+@@ -89,6 +93,10 @@ namespace oidn {
+       );
+ 
+     return (sum.second > 0) ? (key / exp2(sum.first / float(sum.second))) : 1.f;
++// -- GODOT start --
++#endif
++    return 1.0;
++// -- GODOT end --
+   }
+ 
+ } // namespace oidn

@@ -24,9 +24,12 @@ namespace oidn {
   float AutoexposureNode::autoexposure(const Image& color)
   {
     assert(color.format == Format::Float3);
-    return 1.0f;
+// -- GODOT start --
+// We don't want to mess with TTB and we don't use autoexposure, so we disable this code
+#if 0
+// -- GODOT end --
 
-    /*constexpr float key = 0.18f;
+    constexpr float key = 0.18f;
     constexpr float eps = 1e-8f;
     constexpr int K = 16; // downsampling amount
 
@@ -89,7 +92,11 @@ namespace oidn {
         tbb::static_partitioner()
       );
 
-    return (sum.second > 0) ? (key / exp2(sum.first / float(sum.second))) : 1.f;*/
+    return (sum.second > 0) ? (key / exp2(sum.first / float(sum.second))) : 1.f;
+// -- GODOT start --
+#endif
+    return 1.0;
+// -- GODOT end --
   }
 
 } // namespace oidn
