@@ -299,7 +299,7 @@ License: Zlib
 
 Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
-Copyright: 2009-2020, Intel Corporation
+Copyright: 2009-2019, Intel Corporation
 License: Apache-2.0
 
 Files: ./thirdparty/opus/

@@ -131,7 +131,7 @@ struct rnn_weights_reorder_t : public cpu_primitive_t {
             return status::success;
         }
 
-        format_tag_t itag_;
+        format_tag_t itag_ = mkldnn_format_tag_undef;
 
     private:
         void init_scratchpad() {
