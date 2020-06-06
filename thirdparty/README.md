@@ -446,7 +446,7 @@ Files extracted from the upstream source:
 ## oidn
 
 - Upstream: https://github.com/OpenImageDenoise/oidn
-- Version: 1.1.0 (c58c5216db05ceef4cde5a096862f2eeffd14c06)
+- Version: 1.1.0 (c58c5216db05ceef4cde5a096862f2eeffd14c06, 2019)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -461,8 +461,8 @@ weights/rtlightmap_hdr.tza
 scripts/resource_to_cpp.py
 
 Modified files:
-Modifications are marked with `// -- GODOT start --` and `// -- GODOT end --`
-A patch file is provided in `oidn/godot-changes-c58c5216.patch`
+Modifications are marked with `// -- GODOT start --` and `// -- GODOT end --`.
+Patch files are provided in `oidn/patches/`.
 
 core/autoencoder.cpp
 core/autoencoder.h
