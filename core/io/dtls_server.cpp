@@ -37,7 +37,10 @@ DTLSServer *(*DTLSServer::_create)() = nullptr;
 bool DTLSServer::available = false;
 
 DTLSServer *DTLSServer::create() {
-	return _create();
+	if (_create) {
+		return _create();
+	}
+	return nullptr;
 }
 
 bool DTLSServer::is_available() {
