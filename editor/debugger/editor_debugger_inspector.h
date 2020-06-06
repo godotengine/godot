@@ -69,6 +69,7 @@ class EditorDebuggerInspector : public EditorInspector {
 private:
 	ObjectID inspected_object_id;
 	Map<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
+	Set<RES> remote_dependencies;
 	EditorDebuggerRemoteObject *variables;
 
 	void _object_selected(ObjectID p_object);
