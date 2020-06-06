@@ -663,7 +663,7 @@ bool BbCodeParser::_parse_image(ItemImage *img) {
 	}
 
 	if (p_mode == ProcessMode::PROCESS_DRAW && visible) {
-		img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, p_height + lh - font->get_descent() - img->size.height), img->size));
+		img->image->draw_rect(ci, Rect2(p_ofs + Point2(align_ofs + wofs, p_height + lh - font->get_descent() - img->size.height), img->size), false, img->color);
 	}
 	p_char_count++;
 
