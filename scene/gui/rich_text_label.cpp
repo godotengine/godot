@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rich_text_label.h"
+#include "bbcode.h"
 
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
@@ -699,7 +700,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						int ly = 0;
 
 						for (int i = 0; i < frame->lines.size(); i++) {
-							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
+							BbCodeParser(frame, Point2(), ly, available_width, i, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2, *this).process_cache();
+							//_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 							table->columns.write[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 							table->columns.write[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
@@ -775,7 +777,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 						for (int i = 0; i < frame->lines.size(); i++) {
 							int ly = 0;
-							_process_line(frame, Point2(), ly, table->columns[column].width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
+							BbCodeParser(frame, Point2(), ly, available_width, i, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2, *this).process_cache();
+							//_process_line(frame, Point2(), ly, table->columns[column].width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 							frame->lines.write[i].height_cache = ly; //actual height
 							frame->lines.write[i].height_accum_cache = ly; //actual height
 						}
@@ -808,9 +811,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					for (int i = 0; i < frame->lines.size(); i++) {
 						if (visible) {
 							if (p_mode == PROCESS_DRAW) {
-								nonblank_line_count += _process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_DRAW, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2);
+								nonblank_line_count += BbCodeParser(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, *this).process_draw();
+								//nonblank_line_count += _process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_DRAW, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2);
 							} else if (p_mode == PROCESS_POINTER) {
-								_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_POINTER, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_click_pos, r_click_item, r_click_char, r_outside);
+								BbCodeParser(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, *this).process_pointer(p_click_pos, r_click_item, r_click_char, r_outside);
+								//_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_POINTER, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_click_pos, r_click_item, r_click_char, r_outside);
 								if (r_click_item && *r_click_item) {
 									RETURN; // exit early
 								}
@@ -1020,7 +1025,8 @@ void RichTextLabel::_notification(int p_what) {
 
 			visible_line_count = 0;
 			while (y < size.height && from_line < main->lines.size()) {
-				visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, Point2i(), nullptr, nullptr, nullptr, total_chars);
+				visible_line_count += BbCodeParser(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, *this).process_draw(total_chars);
+				//visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, Point2i(), nullptr, nullptr, nullptr, total_chars);
 				total_chars += main->lines[from_line].char_count;
 
 				from_line++;
@@ -1065,7 +1071,8 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	Color base_color = get_theme_color("default_color");
 
 	while (y < text_rect.get_size().height && from_line < p_frame->lines.size()) {
-		_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_POINTER, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, p_click, r_click_item, r_click_char, r_outside);
+		BbCodeParser(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, *this).process_pointer(p_click, r_click_item, r_click_char, r_outside);
+		//_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_POINTER, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, p_click, r_click_item, r_click_char, r_outside);
 		if (r_click_item && *r_click_item) {
 			return;
 		}
@@ -1546,7 +1553,8 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	for (int i = p_frame->first_invalid_line; i < p_frame->lines.size(); i++) {
 		int y = 0;
-		_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, PROCESS_CACHE, base_font, Color(), font_color_shadow, use_outline, shadow_ofs);
+		BbCodeParser(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, base_font, Color(), font_color_shadow, use_outline, shadow_ofs, *this).process_cache();
+		//_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, PROCESS_CACHE, base_font, Color(), font_color_shadow, use_outline, shadow_ofs);
 		p_frame->lines.write[i].height_cache = y;
 		p_frame->lines.write[i].height_accum_cache = y;
 

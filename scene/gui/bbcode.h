@@ -35,8 +35,9 @@
 #include "rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
 
-class BbCodeParser : Label {
-	GDCLASS(BbCodeParser, Label);
+class RichTextLabel;
+
+class BbCodeParser {
 	//We use the classes from RTL here, to have a quick dependency overview
 	//Later, we should move them over here, if we no longer have dependencies in the RTL
 	using Line = RichTextLabel::Line;
@@ -68,9 +69,9 @@ protected:
 private:
 	//localy declared vars in _process_line
 	//Actual line processed by process line (determined using p_frame and p_line)
-	Line &l = Line();
+	Line &l;
 	Item *it = nullptr;
-	RID ci = get_canvas_item();
+	RID ci;
 	int line_ofs = 0;
 	int margin = 0;
 	Align align = Align::ALIGN_LEFT;
@@ -127,7 +128,7 @@ private:
 	bool _find_strikethrough(Item *p_item);
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
+	//int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
 
 	//TODOS:
 	// split process_modes into different functions
@@ -136,9 +137,13 @@ private:
 public:
 	void start_process(ItemFrame *_p_frame, const Vector2 &_p_ofs, const int _p_height, const int _p_width, const int _p_line, const Ref<Font> &p_base_font);
 	void process();
-	void process_cache();
-	int process_draw();
-	void process_pointer();
+
+	//Returns height
+	int process_cache();
+	//Returns nonblank_lines
+	int process_draw(int _p_char_count = 0);
+	//Has to return the clicked item, if it was clicked, clicked char
+	void process_pointer(const Point2i &_p_click_pos, Item **_r_click_item, int *_r_click_char, bool *_r_outside);
 
 	int get_data();
 
@@ -152,25 +157,29 @@ public:
 	int visible_characters = -1;
 
 public:
+	RichTextLabel::ProcessMode p_mode;
+	Point2i p_click_pos_default = Point2i();
+
 	//LineParser arguments
 	ItemFrame *p_frame = nullptr;
-	Vector2 &p_ofs = Vector2();
-	int p_height = 0; //is altered ONLY when a new line is added //was y
+	const Vector2 &p_ofs;
+	const Ref<Font> &p_base_font;
+	const Color &p_base_color;
+	const Color &p_font_color_shadow;
+	const Point2 &shadow_ofs;
+	RichTextLabel &p_ci;
+	int &p_height; //is altered ONLY when a new line is added //was y
 	int p_width = 0;
 	int p_line = 0;
-	RichTextLabel::ProcessMode p_mode = ProcessMode::PROCESS_DRAW;
-	Ref<Font> &p_base_font = Ref<Font>();
-	Color &p_base_color = Color();
-	Color &p_font_color_shadow = Color();
 	bool p_shadow_as_outline = false;
-	Point2 &shadow_ofs = Point2();
-	Point2i &p_click_pos = Point2i();
+
+	Point2i &p_click_pos = p_click_pos_default;
 	RichTextLabel::Item **r_click_item = nullptr;
 	int *r_click_char = nullptr;
 	bool *r_outside = nullptr;
 	int p_char_count = 0;
 
-	BbCodeParser();
+	BbCodeParser(ItemFrame *_p_frame, const Vector2 &_p_ofs, int &_p_height, int p_width, int p_line, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, RichTextLabel &p_ci);
 	~BbCodeParser();
 };
 
