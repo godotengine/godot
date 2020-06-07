@@ -1720,3 +1720,13 @@ HeightMapShape3DSW::HeightMapShape3DSW() {
 	depth = 0;
 	cell_size = 0;
 }
+
+void MotionShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
+	shape->get_supports(p_normal, p_max, r_supports, r_amount, r_type);
+
+	for (int i = 0; i < r_amount; i++) {
+		r_supports[i + r_amount] = r_supports[i] + motion;
+	}
+
+	r_amount *= 2;
+}

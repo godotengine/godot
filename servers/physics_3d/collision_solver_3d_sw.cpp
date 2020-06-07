@@ -461,7 +461,7 @@ bool CollisionSolver3DSW::solve_distance_plane(const Shape3DSW *p_shape_A, const
 		if (i == 0 || d < closest_d) {
 			closest = supports[i];
 			closest_d = d;
-			if (d <= 0) {
+			if (d < 0) {
 				collided = true;
 			}
 		}
