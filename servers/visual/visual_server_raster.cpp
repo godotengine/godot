@@ -174,6 +174,10 @@ void VisualServerRaster::set_default_clear_color(const Color &p_color) {
 	VSG::viewport->set_default_clear_color(p_color);
 }
 
+void VisualServerRaster::set_shader_time_scale(float p_scale) {
+	VSG::rasterizer->set_shader_time_scale(p_scale);
+}
+
 bool VisualServerRaster::has_feature(Features p_feature) const {
 
 	return false;

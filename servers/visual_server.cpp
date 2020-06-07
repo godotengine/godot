@@ -2044,6 +2044,7 @@ void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &VisualServer::set_boot_image, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &VisualServer::set_default_clear_color);
+	ClassDB::bind_method(D_METHOD("set_shader_time_scale", "scale"), &VisualServer::set_shader_time_scale);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &VisualServer::has_feature);
 	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &VisualServer::has_os_feature);

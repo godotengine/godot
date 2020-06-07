@@ -1046,6 +1046,7 @@ public:
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
+	virtual void set_shader_time_scale(float p_scale) = 0;
 
 	enum Features {
 		FEATURE_SHADERS,

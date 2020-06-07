@@ -3453,6 +3453,16 @@
 				Sets the default clear color which is used when a specific clear color has not been selected.
 			</description>
 		</method>
+		<method name="set_shader_time_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+				Sets the scale to apply to the passage of time for the shaders' [code]TIME[/code] builtin.
+				The default value is [code]1.0[/code], which means [code]TIME[/code] will count the real time as it goes by, without narrowing or stretching it.
+			</description>
+		</method>
 		<method name="shader_create">
 			<return type="RID">
 			</return>
