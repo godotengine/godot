@@ -3658,15 +3658,19 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
 	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
-	Transform global_transform;
-	Node3D *parent_spatial = Object::cast_to<Node3D>(parent);
-	if (parent_spatial) {
-		global_transform = parent_spatial->get_global_gizmo_transform();
+	Node3D *node3d = Object::cast_to<Node3D>(instanced_scene);
+	if (node3d) {
+		Transform global_transform;
+		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
+		if (parent_node3d) {
+			global_transform = parent_node3d->get_global_gizmo_transform();
+		}
+
+		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		global_transform.basis *= node3d->get_transform().basis;
+
+		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
 	}
-
-	global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
-
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
 
 	return true;
 }
