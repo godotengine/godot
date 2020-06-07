@@ -873,10 +873,15 @@ Error DocData::_load(Ref<XMLParser> parser) {
 							String name3 = parser->get_node_name();
 
 							if (name3 == "link") {
-
+								TutorialDoc tutorial;
+								if (parser->has_attribute("title")) {
+									tutorial.title = parser->get_attribute_value("title");
+								}
 								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									c.tutorials.push_back(parser->get_node_data().strip_edges());
+								if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+									tutorial.link = parser->get_node_data().strip_edges();
+									c.tutorials.push_back(tutorial);
+								}
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
@@ -1051,7 +1056,9 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
-			_write_string(f, 2, "<link>" + c.tutorials.get(i).xml_escape() + "</link>");
+			TutorialDoc tutorial = c.tutorials.get(i);
+			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
 
