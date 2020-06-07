@@ -3641,14 +3641,19 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 	editor_data->get_undo_redo().add_do_method(sed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
 	editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
-	Transform global_transform;
-	Spatial *parent_spatial = Object::cast_to<Spatial>(parent);
-	if (parent_spatial)
-		global_transform = parent_spatial->get_global_gizmo_transform();
+	Spatial *spatial = Object::cast_to<Spatial>(instanced_scene);
+	if (spatial) {
+		Transform global_transform;
+		Spatial *parent_spatial = Object::cast_to<Spatial>(parent);
+		if (parent_spatial) {
+			global_transform = parent_spatial->get_global_gizmo_transform();
+		}
 
-	global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		global_transform.basis *= spatial->get_transform().basis;
 
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
+		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
+	}
 
 	return true;
 }
