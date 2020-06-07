@@ -59,11 +59,8 @@ Error CryptoKeyMbedTLS::load(String p_path) {
 
 	int flen = f->get_len();
 	out.resize(flen + 1);
-	{
-		uint8_t *w = out.ptrw();
-		f->get_buffer(w, flen);
-		w[flen] = 0; //end f string
-	}
+	f->get_buffer(out.ptrw(), flen);
+	out.write[flen] = 0; // string terminator
 	memdelete(f);
 
 	int ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), nullptr, 0);
@@ -84,14 +81,14 @@ Error CryptoKeyMbedTLS::save(String p_path) {
 	int ret = mbedtls_pk_write_key_pem(&pkey, w, sizeof(w));
 	if (ret != 0) {
 		memdelete(f);
-		memset(w, 0, sizeof(w)); // Zeroize anything we might have written.
+		mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize anything we might have written.
 		ERR_FAIL_V_MSG(FAILED, "Error writing key '" + itos(ret) + "'.");
 	}
 
 	size_t len = strlen((char *)w);
 	f->store_buffer(w, len);
 	memdelete(f);
-	memset(w, 0, sizeof(w)); // Zeroize temporary buffer.
+	mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize temporary buffer.
 	return OK;
 }
 
@@ -108,11 +105,8 @@ Error X509CertificateMbedTLS::load(String p_path) {
 
 	int flen = f->get_len();
 	out.resize(flen + 1);
-	{
-		uint8_t *w = out.ptrw();
-		f->get_buffer(w, flen);
-		w[flen] = 0; //end f string
-	}
+	f->get_buffer(out.ptrw(), flen);
+	out.write[flen] = 0; // string terminator
 	memdelete(f);
 
 	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
@@ -211,9 +205,8 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 		// Use builtin certs only if user did not override it in project settings.
 		PackedByteArray out;
 		out.resize(_certs_uncompressed_size + 1);
-		uint8_t *w = out.ptrw();
-		Compression::decompress(w, _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
-		w[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+		Compression::decompress(out.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+		out.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
 #ifdef DEBUG_ENABLED
 		print_verbose("Loaded builtin certs");
 #endif
