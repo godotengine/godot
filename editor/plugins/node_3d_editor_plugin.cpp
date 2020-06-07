@@ -3419,11 +3419,7 @@ void Node3DEditorViewport::reset() {
 	last_message = "";
 	name = "";
 
-	cursor.x_rot = 0.5;
-	cursor.y_rot = 0.5;
-	cursor.distance = 4;
-	cursor.region_select = false;
-	cursor.pos = Vector3();
+	cursor = Cursor();
 	_update_name();
 }
 
