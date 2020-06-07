@@ -2420,25 +2420,25 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 
-	GLOBAL_DEF("rendering/gles2/batching/use_batching", true);
-	GLOBAL_DEF("rendering/gles2/batching/max_join_item_commands", 16);
-	GLOBAL_DEF("rendering/gles2/batching/colored_vertex_format_threshold", 0.25f);
-	GLOBAL_DEF("rendering/gles2/batching/light_scissor_area_threshold", 1.0f);
-	GLOBAL_DEF("rendering/gles2/batching/light_max_join_items", 32);
-	GLOBAL_DEF("rendering/gles2/batching/batch_buffer_size", 16384);
-	GLOBAL_DEF("rendering/gles2/batching/item_reordering_lookahead", 4);
-	GLOBAL_DEF("rendering/gles2/batching/single_rect_fallback", false);
-	GLOBAL_DEF("rendering/gles2/debug/flash_batching", false);
-	GLOBAL_DEF("rendering/gles2/debug/diagnose_frame", false);
-	GLOBAL_DEF_RST("rendering/gles2/debug/use_batching_in_editor", true);
-	GLOBAL_DEF("rendering/gles2/debug/disable_half_float", false);
+	GLOBAL_DEF("rendering/batching/options/use_batching", true);
+	GLOBAL_DEF_RST("rendering/batching/options/use_batching_in_editor", true);
+	GLOBAL_DEF("rendering/batching/options/single_rect_fallback", false);
+	GLOBAL_DEF("rendering/batching/parameters/max_join_item_commands", 16);
+	GLOBAL_DEF("rendering/batching/parameters/colored_vertex_format_threshold", 0.25f);
+	GLOBAL_DEF("rendering/batching/lights/scissor_area_threshold", 1.0f);
+	GLOBAL_DEF("rendering/batching/lights/max_join_items", 32);
+	GLOBAL_DEF("rendering/batching/parameters/batch_buffer_size", 16384);
+	GLOBAL_DEF("rendering/batching/parameters/item_reordering_lookahead", 4);
+	GLOBAL_DEF("rendering/batching/debug/flash_batching", false);
+	GLOBAL_DEF("rendering/batching/debug/diagnose_frame", false);
+	GLOBAL_DEF("rendering/gles2/compatibility/disable_half_float", false);
 
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/max_join_item_commands", PropertyInfo(Variant::INT, "rendering/gles2/batching/max_join_item_commands", PROPERTY_HINT_RANGE, "0,65535"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/colored_vertex_format_threshold", PropertyInfo(Variant::REAL, "rendering/gles2/batching/colored_vertex_format_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/batch_buffer_size", PropertyInfo(Variant::INT, "rendering/gles2/batching/batch_buffer_size", PROPERTY_HINT_RANGE, "1024,65535,1024"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/light_scissor_area_threshold", PropertyInfo(Variant::REAL, "rendering/gles2/batching/light_scissor_area_threshold", PROPERTY_HINT_RANGE, "0.0,1.0"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/light_max_join_items", PropertyInfo(Variant::INT, "rendering/gles2/batching/light_max_join_items", PROPERTY_HINT_RANGE, "0,512"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/item_reordering_lookahead", PropertyInfo(Variant::INT, "rendering/gles2/batching/item_reordering_lookahead", PROPERTY_HINT_RANGE, "0,256"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/max_join_item_commands", PropertyInfo(Variant::INT, "rendering/batching/parameters/max_join_item_commands", PROPERTY_HINT_RANGE, "0,65535"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/colored_vertex_format_threshold", PropertyInfo(Variant::REAL, "rendering/batching/parameters/colored_vertex_format_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/batch_buffer_size", PropertyInfo(Variant::INT, "rendering/batching/parameters/batch_buffer_size", PROPERTY_HINT_RANGE, "1024,65535,1024"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/lights/scissor_area_threshold", PropertyInfo(Variant::REAL, "rendering/batching/lights/scissor_area_threshold", PROPERTY_HINT_RANGE, "0.0,1.0"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/lights/max_join_items", PropertyInfo(Variant::INT, "rendering/batching/lights/max_join_items", PROPERTY_HINT_RANGE, "0,512"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/item_reordering_lookahead", PropertyInfo(Variant::INT, "rendering/batching/parameters/item_reordering_lookahead", PROPERTY_HINT_RANGE, "0,256"));
 }
 
 VisualServer::~VisualServer() {

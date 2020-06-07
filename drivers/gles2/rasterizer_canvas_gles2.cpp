@@ -3339,30 +3339,35 @@ void RasterizerCanvasGLES2::_calculate_scissor_threshold_area() {
 void RasterizerCanvasGLES2::initialize() {
 	RasterizerCanvasBaseGLES2::initialize();
 
-	bdata.settings_use_batching = GLOBAL_GET("rendering/gles2/batching/use_batching");
-	bdata.settings_max_join_item_commands = GLOBAL_GET("rendering/gles2/batching/max_join_item_commands");
-	bdata.settings_colored_vertex_format_threshold = GLOBAL_GET("rendering/gles2/batching/colored_vertex_format_threshold");
-	bdata.settings_item_reordering_lookahead = GLOBAL_GET("rendering/gles2/batching/item_reordering_lookahead");
-	bdata.settings_light_max_join_items = GLOBAL_GET("rendering/gles2/batching/light_max_join_items");
-	bdata.settings_use_single_rect_fallback = GLOBAL_GET("rendering/gles2/batching/single_rect_fallback");
+	bdata.settings_use_batching = GLOBAL_GET("rendering/batching/options/use_batching");
+	bdata.settings_max_join_item_commands = GLOBAL_GET("rendering/batching/parameters/max_join_item_commands");
+	bdata.settings_colored_vertex_format_threshold = GLOBAL_GET("rendering/batching/parameters/colored_vertex_format_threshold");
+	bdata.settings_item_reordering_lookahead = GLOBAL_GET("rendering/batching/parameters/item_reordering_lookahead");
+	bdata.settings_light_max_join_items = GLOBAL_GET("rendering/batching/lights/max_join_items");
+	bdata.settings_use_single_rect_fallback = GLOBAL_GET("rendering/batching/options/single_rect_fallback");
 
 	// we can use the threshold to determine whether to turn scissoring off or on
-	bdata.settings_scissor_threshold = GLOBAL_GET("rendering/gles2/batching/light_scissor_area_threshold");
+	bdata.settings_scissor_threshold = GLOBAL_GET("rendering/batching/lights/scissor_area_threshold");
 	if (bdata.settings_scissor_threshold > 0.999f) {
 		bdata.settings_scissor_lights = false;
 	} else {
 		bdata.settings_scissor_lights = true;
+
+		// apply power of 4 relationship for the area, as most of the important changes
+		// will be happening at low values of scissor threshold
+		bdata.settings_scissor_threshold *= bdata.settings_scissor_threshold;
+		bdata.settings_scissor_threshold *= bdata.settings_scissor_threshold;
 	}
 
 	// The sweet spot on my desktop for cache is actually smaller than the max, and this
 	// is the default. This saves memory too so we will use it for now, needs testing to see whether this varies according
 	// to device / platform.
-	bdata.settings_batch_buffer_num_verts = GLOBAL_GET("rendering/gles2/batching/batch_buffer_size");
+	bdata.settings_batch_buffer_num_verts = GLOBAL_GET("rendering/batching/parameters/batch_buffer_size");
 
 	// override the use_batching setting in the editor
 	// (note that if the editor can't start, you can't change the use_batching project setting!)
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_in_editor = GLOBAL_GET("rendering/gles2/debug/use_batching_in_editor");
+		bool use_in_editor = GLOBAL_GET("rendering/batching/options/use_batching_in_editor");
 		bdata.settings_use_batching = use_in_editor;
 
 		// fix some settings in the editor, as the performance not worth the risk
@@ -3383,7 +3388,7 @@ void RasterizerCanvasGLES2::initialize() {
 	// This should not be used except during development.
 	// make a note of the original choice in case we are flashing on and off the batching
 	bdata.settings_use_batching_original_choice = bdata.settings_use_batching;
-	bdata.settings_flash_batching = GLOBAL_GET("rendering/gles2/debug/flash_batching");
+	bdata.settings_flash_batching = GLOBAL_GET("rendering/batching/debug/flash_batching");
 	if (!bdata.settings_use_batching) {
 		// no flash when batching turned off
 		bdata.settings_flash_batching = false;
@@ -3392,7 +3397,7 @@ void RasterizerCanvasGLES2::initialize() {
 	// frame diagnosis. print out the batches every nth frame
 	bdata.settings_diagnose_frame = false;
 	if (!Engine::get_singleton()->is_editor_hint() && bdata.settings_use_batching) {
-		bdata.settings_diagnose_frame = GLOBAL_GET("rendering/gles2/debug/diagnose_frame");
+		bdata.settings_diagnose_frame = GLOBAL_GET("rendering/batching/debug/diagnose_frame");
 	}
 
 	// the maximum num quads in a batch is limited by GLES2. We can have only 16 bit indices,
