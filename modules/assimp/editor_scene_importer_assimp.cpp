@@ -147,7 +147,8 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 								 // aiProcess_EmbedTextures |
 								 //aiProcess_SplitByBoneCount |
 								 0;
-	aiScene *scene = (aiScene *)importer.ReadFile(s_path.c_str(), post_process_Steps);
+	String g_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	aiScene *scene = (aiScene *)importer.ReadFile(g_path.utf8().ptr(), post_process_Steps);
 
 	ERR_FAIL_COND_V_MSG(scene == NULL, NULL, String("Open Asset Import failed to open: ") + String(importer.GetErrorString()));
 
