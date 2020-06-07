@@ -9,7 +9,7 @@
 		[b]Kinematic characters:[/b] KinematicBody2D also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
+		<link title="Kinematic character (2D)">https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/using_kinematic_body_2d.html</link>
 	</tutorials>
 	<methods>

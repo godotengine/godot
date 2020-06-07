@@ -82,13 +82,18 @@ public:
 		}
 	};
 
+	struct TutorialDoc {
+		String link;
+		String title;
+	};
+
 	struct ClassDoc {
 		String name;
 		String inherits;
 		String category;
 		String brief_description;
 		String description;
-		Vector<String> tutorials;
+		Vector<TutorialDoc> tutorials;
 		Vector<MethodDoc> methods;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
