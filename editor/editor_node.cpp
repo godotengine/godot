@@ -903,19 +903,19 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 	if (p_error) {
 		switch (p_error) {
 			case ERR_CANT_OPEN: {
-				show_accept(vformat(TTR("Can't open '%s'. The file could have been moved or deleted."), p_file.get_file()), TTR("OK"));
+				show_accept(vformat(TTR("Can't open file '%s'. The file could have been moved or deleted."), p_file.get_file()), TTR("OK"));
 			} break;
 			case ERR_PARSE_ERROR: {
-				show_accept(vformat(TTR("Error while parsing '%s'."), p_file.get_file()), TTR("OK"));
+				show_accept(vformat(TTR("Error while parsing file '%s'."), p_file.get_file()), TTR("OK"));
 			} break;
 			case ERR_FILE_CORRUPT: {
-				show_accept(vformat(TTR("Unexpected end of file '%s'."), p_file.get_file()), TTR("OK"));
+				show_accept(vformat(TTR("Scene file '%s' appears to be invalid/corrupt."), p_file.get_file()), TTR("OK"));
 			} break;
 			case ERR_FILE_NOT_FOUND: {
-				show_accept(vformat(TTR("Missing '%s' or its dependencies."), p_file.get_file()), TTR("OK"));
+				show_accept(vformat(TTR("Missing file '%s' or one its dependencies."), p_file.get_file()), TTR("OK"));
 			} break;
 			default: {
-				show_accept(vformat(TTR("Error while loading '%s'."), p_file.get_file()), TTR("OK"));
+				show_accept(vformat(TTR("Error while loading file '%s'."), p_file.get_file()), TTR("OK"));
 			} break;
 		}
 	}
@@ -3254,13 +3254,13 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	if (!new_scene) {
 		sdata.unref();
-		_dialog_display_load_error(lpath, ERR_FILE_NOT_FOUND);
+		_dialog_display_load_error(lpath, ERR_FILE_CORRUPT);
 		opening_prev = false;
 		if (prev != -1) {
 			set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
-		return ERR_FILE_NOT_FOUND;
+		return ERR_FILE_CORRUPT;
 	}
 
 	if (p_set_inherited) {
