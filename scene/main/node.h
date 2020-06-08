@@ -309,6 +309,7 @@ public:
 	int get_persistent_group_count() const;
 
 	void move_child(Node *p_child, int p_pos, bool p_skip_internal = false);
+	void _move_child(Node *p_child, int p_pos);
 	void raise();
 
 	void set_owner(Node *p_owner);

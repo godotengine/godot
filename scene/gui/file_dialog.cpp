@@ -846,7 +846,7 @@ FileDialog::FileDialog() {
 	mode_overrides_title = true;
 
 	vbox = memnew(VBoxContainer);
-	add_child(vbc, false, true);
+	add_child(vbox, false, true);
 	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;

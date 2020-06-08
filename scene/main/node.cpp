@@ -2632,7 +2632,7 @@ void Node::queue_delete() {
 	}
 }
 
-Array Node::_get_children(bool p_skip_internal) const {
+TypedArray<Node> Node::_get_children(bool p_skip_internal) const {
 	TypedArray<Node> arr;
 	int cc = get_child_count(p_skip_internal);
 	arr.resize(cc);
