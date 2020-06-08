@@ -402,7 +402,9 @@ void FileDialog::update_file_list() {
 
 	TreeItem *root = tree->create_item();
 	Ref<Texture2D> folder = vbox->get_theme_icon("folder", "FileDialog");
+	Ref<Texture2D> file_icon = vbox->get_theme_icon("file", "FileDialog");
 	const Color folder_color = vbox->get_theme_color("folder_icon_modulate", "FileDialog");
+	const Color file_color = vbox->get_theme_color("file_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -491,7 +493,10 @@ void FileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
 				ti->set_icon(0, icon);
+			} else {
+				ti->set_icon(0, file_icon);
 			}
+			ti->set_icon_modulate(0, file_color);
 
 			if (mode == FILE_MODE_OPEN_DIR) {
 				ti->set_custom_color(0, vbox->get_theme_color("files_disabled", "FileDialog"));
