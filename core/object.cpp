@@ -2038,7 +2038,7 @@ void ObjectDB::cleanup() {
 	if (slot_count > 0) {
 		spin_lock.lock();
 
-		WARN_PRINT("ObjectDB Instances still exist!");
+		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			for (uint32_t i = 0; i < slot_count; i++) {
 				uint32_t slot = object_slots[i].next_free;
@@ -2049,12 +2049,13 @@ void ObjectDB::cleanup() {
 					node_name = " - Node name: " + String(obj->call("get_name"));
 				}
 				if (obj->is_class("Resource")) {
-					node_name = " - Resource name: " + String(obj->call("get_name")) + " Path: " + String(obj->call("get_path"));
+					node_name = " - Resource path: " + String(obj->call("get_path"));
 				}
 
 				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
 				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + node_name);
 			}
+			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 		spin_lock.unlock();
 	}
