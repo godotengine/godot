@@ -3426,13 +3426,13 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!new_scene) {
 
 		sdata.unref();
-		_dialog_display_load_error(lpath, ERR_FILE_NOT_FOUND);
+		_dialog_display_load_error(lpath, ERR_FILE_CORRUPT);
 		opening_prev = false;
 		if (prev != -1) {
 			set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
-		return ERR_FILE_NOT_FOUND;
+		return ERR_FILE_CORRUPT;
 	}
 
 	if (p_set_inherited) {
