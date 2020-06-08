@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gdscript_workspace.h"
+
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
 #include "core/project_settings.h"
@@ -41,12 +42,12 @@
 
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
-	ClassDB::bind_method(D_METHOD("parse_script", "p_path", "p_content"), &GDScriptWorkspace::parse_script);
-	ClassDB::bind_method(D_METHOD("parse_local_script", "p_path"), &GDScriptWorkspace::parse_local_script);
-	ClassDB::bind_method(D_METHOD("get_file_path", "p_uri"), &GDScriptWorkspace::get_file_path);
-	ClassDB::bind_method(D_METHOD("get_file_uri", "p_path"), &GDScriptWorkspace::get_file_uri);
-	ClassDB::bind_method(D_METHOD("publish_diagnostics", "p_path"), &GDScriptWorkspace::publish_diagnostics);
-	ClassDB::bind_method(D_METHOD("generate_script_api", "p_path"), &GDScriptWorkspace::generate_script_api);
+	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
+	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
+	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
+	ClassDB::bind_method(D_METHOD("get_file_uri", "path"), &GDScriptWorkspace::get_file_uri);
+	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
+	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
 }
 
 void GDScriptWorkspace::remove_cache_parser(const String &p_path) {

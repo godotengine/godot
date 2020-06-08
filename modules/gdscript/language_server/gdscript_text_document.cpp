@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gdscript_text_document.h"
+
 #include "../gdscript.h"
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
