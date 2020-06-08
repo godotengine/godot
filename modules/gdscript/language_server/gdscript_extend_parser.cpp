@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gdscript_extend_parser.h"
+
 #include "../gdscript.h"
 #include "core/io/json.h"
 #include "gdscript_language_protocol.h"
