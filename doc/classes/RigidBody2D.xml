@@ -214,7 +214,8 @@
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
-				Emitted when [member sleeping] changes.
+				Emitted when the sleeping state of the RigidBody2D is changed in [Physics2DDirectBodyState] and the [member sleeping] property is thus updated by the physics engine.
+				Note that event will not fire in other cases, such as changing [member sleeping] from a script.
 			</description>
 		</signal>
 	</signals>
