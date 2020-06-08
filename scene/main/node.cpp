@@ -2238,46 +2238,53 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 // because re-targeting of connections from some descendant to another is not possible
 // if the emitter node comes later in tree order than the receiver
 void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
-	if (this != p_original && (get_owner() != p_original && get_owner() != p_original->get_owner())) {
+	if ((this != p_original) && !(p_original->is_a_parent_of(this))) {
 		return;
 	}
 
-	List<Connection> conns;
-	get_all_signal_connections(&conns);
+	List<const Node *> process_list;
+	process_list.push_back(this);
+	while (!process_list.empty()) {
+		const Node *n = process_list.front()->get();
+		process_list.pop_front();
 
-	for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
-		if (E->get().flags & CONNECT_PERSIST) {
-			//user connected
-			NodePath p = p_original->get_path_to(this);
-			Node *copy = p_copy->get_node(p);
+		List<Connection> conns;
+		n->get_all_signal_connections(&conns);
 
-			Node *target = Object::cast_to<Node>(E->get().callable.get_object());
-			if (!target) {
-				continue;
-			}
-			NodePath ptarget = p_original->get_path_to(target);
+		for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
+			if (E->get().flags & CONNECT_PERSIST) {
+				//user connected
+				NodePath p = p_original->get_path_to(n);
+				Node *copy = p_copy->get_node(p);
 
-			Node *copytarget = target;
+				Node *target = Object::cast_to<Node>(E->get().callable.get_object());
+				if (!target) {
+					continue;
+				}
+				NodePath ptarget = p_original->get_path_to(target);
 
-			// Attempt to find a path to the duplicate target, if it seems it's not part
-			// of the duplicated and not yet parented hierarchy then at least try to connect
-			// to the same target as the original
+				Node *copytarget = target;
 
-			if (p_copy->has_node(ptarget)) {
-				copytarget = p_copy->get_node(ptarget);
-			}
+				// Attempt to find a path to the duplicate target, if it seems it's not part
+				// of the duplicated and not yet parented hierarchy then at least try to connect
+				// to the same target as the original
 
-			if (copy && copytarget) {
-				const Callable copy_callable = Callable(copytarget, E->get().callable.get_method());
-				if (!copy->is_connected(E->get().signal.get_name(), copy_callable)) {
-					copy->connect(E->get().signal.get_name(), copy_callable, E->get().binds, E->get().flags);
+				if (p_copy->has_node(ptarget)) {
+					copytarget = p_copy->get_node(ptarget);
+				}
+
+				if (copy && copytarget) {
+					const Callable copy_callable = Callable(copytarget, E->get().callable.get_method());
+					if (!copy->is_connected(E->get().signal.get_name(), copy_callable)) {
+						copy->connect(E->get().signal.get_name(), copy_callable, E->get().binds, E->get().flags);
+					}
 				}
 			}
 		}
-	}
 
-	for (int i = 0; i < get_child_count(); i++) {
-		get_child(i)->_duplicate_signals(p_original, p_copy);
+		for (int i = 0; i < n->get_child_count(); i++) {
+			process_list.push_back(n->get_child(i));
+		}
 	}
 }
 
