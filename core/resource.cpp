@@ -33,6 +33,7 @@
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "core/script_language.h"
 #include "scene/main/node.h" //only so casting works
 
@@ -431,7 +432,14 @@ void ResourceCache::setup() {
 
 void ResourceCache::clear() {
 	if (resources.size()) {
-		ERR_PRINT("Resources Still in use at Exit!");
+		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			const String *K = nullptr;
+			while ((K = resources.next(K))) {
+				Resource *r = resources[*K];
+				print_line(vformat("Resource still in use: %s (%s)", *K, r->get_class()));
+			}
+		}
 	}
 
 	resources.clear();
@@ -442,12 +450,6 @@ void ResourceCache::clear() {
 }
 
 void ResourceCache::reload_externals() {
-	/*
-	const String *K=nullptr;
-	while ((K=resources.next(K))) {
-		resources[*K]->reload_external_data();
-	}
-	*/
 }
 
 bool ResourceCache::has(const String &p_path) {
@@ -530,6 +532,5 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 	}
 
 	lock->read_unlock();
-
 #endif
 }
