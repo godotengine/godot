@@ -88,6 +88,9 @@ struct ImportState {
 	// this means we can detect
 	// what bones are for other armatures
 	List<aiBone *> bone_stack;
+
+	// EditorSceneImporter::ImportFlags
+	uint32_t import_flags;
 };
 
 struct AssimpImageData {
