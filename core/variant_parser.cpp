@@ -485,13 +485,6 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 }
 
 Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
-
-	/*	{
-		Error err = get_token(p_stream,token,line,r_err_str);
-		if (err)
-			return err;
-	}*/
-
 	if (token.type == TK_CURLY_BRACKET_OPEN) {
 
 		Dictionary d;
@@ -508,7 +501,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return err;
 		value = a;
 		return OK;
-
 	} else if (token.type == TK_IDENTIFIER) {
 
 		String id = token.value;
@@ -531,10 +523,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 2) {
 				r_err_str = "Expected 2 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Vector2(args[0], args[1]);
-			return OK;
 		} else if (id == "Rect2") {
 
 			Vector<float> args;
@@ -544,10 +536,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 4) {
 				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Rect2(args[0], args[1], args[2], args[3]);
-			return OK;
 		} else if (id == "Vector3") {
 
 			Vector<float> args;
@@ -557,12 +549,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 3) {
 				r_err_str = "Expected 3 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Vector3(args[0], args[1], args[2]);
-			return OK;
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
-
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
 			if (err)
@@ -570,13 +561,14 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 6) {
 				r_err_str = "Expected 6 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
+
 			Transform2D m;
 			m[0] = Vector2(args[0], args[1]);
 			m[1] = Vector2(args[2], args[3]);
 			m[2] = Vector2(args[4], args[5]);
 			value = m;
-			return OK;
 		} else if (id == "Plane") {
 
 			Vector<float> args;
@@ -586,10 +578,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 4) {
 				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Plane(args[0], args[1], args[2], args[3]);
-			return OK;
 		} else if (id == "Quat") {
 
 			Vector<float> args;
@@ -599,11 +591,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 4) {
 				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Quat(args[0], args[1], args[2], args[3]);
-			return OK;
-
 		} else if (id == "AABB" || id == "Rect3") {
 
 			Vector<float> args;
@@ -613,13 +604,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 6) {
 				r_err_str = "Expected 6 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = AABB(Vector3(args[0], args[1], args[2]), Vector3(args[3], args[4], args[5]));
-			return OK;
-
 		} else if (id == "Basis" || id == "Matrix3") { //compatibility
-
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
 			if (err)
@@ -627,10 +616,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 9) {
 				r_err_str = "Expected 9 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
-			return OK;
 		} else if (id == "Transform") {
 
 			Vector<float> args;
@@ -640,11 +629,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 12) {
 				r_err_str = "Expected 12 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Transform(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
-			return OK;
-
 		} else if (id == "Color") {
 
 			Vector<float> args;
@@ -654,11 +642,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			if (args.size() != 4) {
 				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
 			}
 
 			value = Color(args[0], args[1], args[2], args[3]);
-			return OK;
-
 		} else if (id == "NodePath") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -680,7 +667,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
-
 		} else if (id == "RID") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -702,8 +688,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
-
-			return OK;
 		} else if (id == "Object") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -806,7 +790,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					at_key = true;
 				}
 			}
-
 		} else if (id == "Resource" || id == "SubResource" || id == "ExtResource") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -823,8 +806,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return err;
 
 				value = res;
-
-				return OK;
 			} else if (p_res_parser && id == "ExtResource" && p_res_parser->ext_func) {
 
 				RES res;
@@ -833,8 +814,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return err;
 
 				value = res;
-
-				return OK;
 			} else if (p_res_parser && id == "SubResource" && p_res_parser->sub_func) {
 
 				RES res;
@@ -843,8 +822,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return err;
 
 				value = res;
-
-				return OK;
 			} else {
 
 				get_token(p_stream, token, line, r_err_str);
@@ -863,8 +840,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					}
 
 					value = res;
-					return OK;
-
 				} else {
 					r_err_str = "Expected string as argument for Resource().";
 					return ERR_PARSE_ERROR;
@@ -1059,8 +1034,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = ie;
-
-			return OK;
 #endif
 		} else if (id == "PoolByteArray" || id == "ByteArray") {
 
@@ -1081,8 +1054,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 
-			return OK;
-
 		} else if (id == "PoolIntArray" || id == "IntArray") {
 
 			Vector<int> args;
@@ -1101,8 +1072,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
-
-			return OK;
 
 		} else if (id == "PoolRealArray" || id == "FloatArray") {
 
@@ -1123,7 +1092,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 
-			return OK;
 		} else if (id == "PoolStringArray" || id == "StringArray") {
 
 			get_token(p_stream, token, line, r_err_str);
@@ -1173,8 +1141,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 
-			return OK;
-
 		} else if (id == "PoolVector2Array" || id == "Vector2Array") {
 
 			Vector<float> args;
@@ -1193,8 +1159,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
-
-			return OK;
 
 		} else if (id == "PoolVector3Array" || id == "Vector3Array") {
 
@@ -1215,8 +1179,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = arr;
 
-			return OK;
-
 		} else if (id == "PoolColorArray" || id == "ColorArray") {
 
 			Vector<float> args;
@@ -1235,15 +1197,13 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
-
-			return OK;
 		} else {
 			r_err_str = "Unexpected identifier: '" + id + "'.";
 			return ERR_PARSE_ERROR;
 		}
 
+		// All above branches end up here unless they had an early return.
 		return OK;
-
 	} else if (token.type == TK_NUMBER) {
 
 		value = token.value;
