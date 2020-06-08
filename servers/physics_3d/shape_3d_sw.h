@@ -251,6 +251,35 @@ public:
 	CapsuleShape3DSW();
 };
 
+class CylinderShape3DSW : public Shape3DSW {
+	real_t height;
+	real_t radius;
+
+	void _setup(real_t p_height, real_t p_radius);
+
+public:
+	_FORCE_INLINE_ real_t get_height() const { return height; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
+
+	virtual real_t get_area() const { return height * Math_PI * radius * radius; }
+
+	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CYLINDER; }
+
+	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
+	virtual Vector3 get_support(const Vector3 &p_normal) const;
+	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const;
+	virtual bool intersect_point(const Vector3 &p_point) const;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const;
+
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
+
+	virtual void set_data(const Variant &p_data);
+	virtual Variant get_data() const;
+
+	CylinderShape3DSW();
+};
+
 struct ConvexPolygonShape3DSW : public Shape3DSW {
 	Geometry3D::MeshData mesh;
 

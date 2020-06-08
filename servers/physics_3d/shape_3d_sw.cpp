@@ -643,6 +643,131 @@ CapsuleShape3DSW::CapsuleShape3DSW() {
 	height = radius = 0;
 }
 
+/********** CYLINDER *************/
+
+void CylinderShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+	Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
+	real_t h = (n.y > 0) ? height : -height;
+
+	real_t planar_length = Math::sqrt(n.x * n.x + n.z * n.z);
+	real_t planar_factor = planar_length < CMP_EPSILON ? 0.0f : radius / planar_length;
+
+	n.x *= planar_factor;
+	n.z *= planar_factor;
+	n.y = h * 0.5f;
+
+	r_max = p_normal.dot(p_transform.xform(n));
+	r_min = p_normal.dot(p_transform.xform(-n));
+}
+
+Vector3 CylinderShape3DSW::get_support(const Vector3 &p_normal) const {
+	Vector3 n = p_normal;
+	real_t h = (n.y > 0) ? height : -height;
+
+	real_t planar_length = Math::sqrt(n.x * n.x + n.z * n.z);
+	real_t planar_factor = planar_length < CMP_EPSILON ? 0.0f : radius / planar_length;
+
+	n.x *= planar_factor;
+	n.z *= planar_factor;
+	n.y = h * 0.5f;
+
+	return n;
+}
+
+void CylinderShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount) const {
+	Vector3 n = p_normal;
+	real_t half_height = height * 0.5f;
+
+	real_t planar_length = Math::sqrt(n.x * n.x + n.z * n.z);
+	real_t planar_factor = planar_length < CMP_EPSILON ? 0.0f : radius / planar_length;
+
+	n.x *= planar_factor;
+	n.z *= planar_factor;
+
+	// nearly flat
+	if (Math::abs(n.y) < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
+		r_amount = 2;
+		r_supports[0] = Vector3(n.x, +half_height, n.z);
+		r_supports[1] = Vector3(n.x, -half_height, n.z);
+
+	} else {
+		real_t h = (n.y > 0) ? half_height : -half_height;
+		r_amount = 1;
+		r_supports[0] = Vector3(n.x, h, n.z);
+	}
+}
+
+bool CylinderShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+	Vector3 norm = (p_end - p_begin).normalized();
+	real_t min_d = 1e20; // needed? was in Capsule's intersect_segment
+
+	Vector3 auxres, auxn;
+
+	if (Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &auxres, &auxn)) {
+		real_t d = norm.dot(auxres);
+		if (d < min_d) {
+			r_result = auxres;
+			r_normal = auxn;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CylinderShape3DSW::intersect_point(const Vector3 &p_point) const {
+	if (Math::abs(p_point.y) < height * 0.5) {
+		return p_point.x * p_point.x + p_point.z * p_point.z < radius * radius;
+	}
+	return false;
+}
+
+Vector3 CylinderShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
+	Vector3 p = p_point;
+	real_t half_height = height * 0.5f;
+
+	real_t planar_length = Math::sqrt(p_point.x * p_point.x + p_point.z * p_point.z);
+	real_t planar_factor = planar_length < CMP_EPSILON ? 0.0f : MIN(planar_length, radius) / planar_length;
+
+	p.x *= planar_factor;
+	p.z *= planar_factor;
+	p.y = CLAMP(p.y, -half_height, half_height);
+
+	return p;
+}
+
+Vector3 CylinderShape3DSW::get_moment_of_inertia(real_t p_mass) const {
+	real_t radius_sq = radius * radius;
+	real_t height_sq = height * height;
+	real_t lateral = (p_mass / 12.0) * (3.0 * radius_sq + height_sq);
+	real_t vertical = (p_mass / 2.0) * radius_sq;
+	return Vector3(lateral, vertical, lateral);
+}
+
+void CylinderShape3DSW::_setup(real_t p_height, real_t p_radius) {
+	height = p_height;
+	radius = p_radius;
+	configure(AABB(Vector3(-radius, -height * 0.5, -radius), Vector3(radius * 2, height, radius * 2)));
+}
+
+void CylinderShape3DSW::set_data(const Variant &p_data) {
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("radius"));
+	ERR_FAIL_COND(!d.has("height"));
+	_setup(d["height"], d["radius"]);
+}
+
+Variant CylinderShape3DSW::get_data() const {
+	Dictionary d;
+	d["radius"] = radius;
+	d["height"] = height;
+	return d;
+}
+
+CylinderShape3DSW::CylinderShape3DSW() {
+	height = radius = 0;
+}
+
 /********** CONVEX POLYGON *************/
 
 void ConvexPolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {

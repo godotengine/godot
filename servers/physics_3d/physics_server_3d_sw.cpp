@@ -62,7 +62,8 @@ RID PhysicsServer3DSW::shape_create(ShapeType p_shape) {
 			shape = memnew(CapsuleShape3DSW);
 		} break;
 		case SHAPE_CYLINDER: {
-			ERR_FAIL_V_MSG(RID(), "CylinderShape3D is not supported in GodotPhysics3D. Please switch to Bullet in the Project Settings.");
+			WARN_PRINT_ONCE("CylinderShape3D is not (yet) supported in GodotPhysics3D. If you need collisions with this shape, please select the Bullet backend in the Project Settings.");
+			shape = memnew(CylinderShape3DSW);
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
 			shape = memnew(ConvexPolygonShape3DSW);
