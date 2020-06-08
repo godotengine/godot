@@ -987,6 +987,10 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 }
 
 void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_self) {
+	if (!A->test_collision_mask(B)) {
+		return nullptr;
+	}
+
 	CollisionObject3DSW::Type type_A = A->get_type();
 	CollisionObject3DSW::Type type_B = B->get_type();
 	if (type_A > type_B) {
@@ -1019,6 +1023,10 @@ void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, Coll
 }
 
 void Space3DSW::_broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_data, void *p_self) {
+	if (!p_data) {
+		return;
+	}
+
 	Space3DSW *self = (Space3DSW *)p_self;
 	self->collision_pairs--;
 	Constraint3DSW *c = (Constraint3DSW *)p_data;

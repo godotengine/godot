@@ -190,8 +190,10 @@ void BroadPhase3DBasic::update() {
 				void *data = nullptr;
 				if (pair_callback) {
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
+					if (data) {
+						pair_map.insert(key, data);
+					}
 				}
-				pair_map.insert(key, data);
 			}
 		}
 	}
