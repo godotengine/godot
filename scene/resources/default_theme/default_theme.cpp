@@ -759,7 +759,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// FileDialog
 
 	theme->set_icon("folder", "FileDialog", make_icon(icon_folder_png));
+	theme->set_icon("file", "FileDialog", make_icon(icon_file_png));
 	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
+	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
 	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
 
 	// ColorPicker
