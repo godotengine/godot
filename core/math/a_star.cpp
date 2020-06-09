@@ -280,10 +280,16 @@ int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled) co
 			continue; // Disabled points should not be considered.
 		}
 
+		// Keep the closest point's ID, and in case of multiple closest IDs,
+		// the smallest one (makes it deterministic).
 		real_t d = p_point.distance_squared_to((*it.value)->pos);
-		if (closest_id < 0 || d < closest_dist) {
+		int id = *(it.key);
+		if (d <= closest_dist) {
+			if (d == closest_dist && id > closest_id) { // Keep lowest ID.
+				continue;
+			}
 			closest_dist = d;
-			closest_id = *(it.key);
+			closest_id = id;
 		}
 	}
 
@@ -291,7 +297,6 @@ int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled) co
 }
 
 Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
-	bool found = false;
 	real_t closest_dist = 1e20;
 	Vector3 closest_point;
 
@@ -311,10 +316,9 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 
 		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment);
 		real_t d = p_point.distance_squared_to(p);
-		if (!found || d < closest_dist) {
+		if (d < closest_dist) {
 			closest_point = p;
 			closest_dist = d;
-			found = true;
 		}
 	}
 
