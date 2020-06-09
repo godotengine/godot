@@ -4032,14 +4032,12 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 Variant Variant::duplicate(bool deep) const {
 	switch (type) {
 		case OBJECT: {
-			/*  breaks stuff :(
-			if (deep && !_get_obj().ref.is_null()) {
-				Ref<Resource> resource = _get_obj().ref;
-				if (resource.is_valid()) {
-					return resource->duplicate(true);
+			if (deep) {
+				Object *obj = get_validated_object();
+				if (obj) {
+					return obj->object_duplicate();
 				}
 			}
-			*/
 			return *this;
 		} break;
 		case DICTIONARY:

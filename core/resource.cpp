@@ -233,6 +233,13 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	return Ref<Resource>(r);
 }
 
+Object *Resource::object_duplicate() const {
+	// Doesn't work for some reason, not sure why.
+	//Resource *res = duplicate(true).ptr();
+	Resource *res = (Resource *)ClassDB::instance(get_class());
+	return res;
+}
+
 void Resource::_set_path(const String &p_path) {
 	set_path(p_path, false);
 }

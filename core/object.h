@@ -662,6 +662,8 @@ public:
 	void notification(int p_notification, bool p_reversed = false);
 	String to_string();
 
+	virtual Object *object_duplicate() const { return (Object *)this; };
+
 	//used mainly by script, get and set all INCLUDING string
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr);

@@ -2324,6 +2324,10 @@ Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 	return node;
 }
 
+Object *Node::object_duplicate() const {
+	return duplicate(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS);
+}
+
 static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	if (p_node->get_owner() == p_by) {
 		p_owned->push_back(p_node);

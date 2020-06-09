@@ -1386,7 +1386,17 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	if (r_valid != nullptr) {
 		*r_valid = true;
 	}
-	return default_values[p_class][p_property];
+
+	Variant var = default_values[p_class][p_property];
+
+	// Some properties have an object instance as default value (e.g. Path2D::curve).
+	// We don't want the default value to point to the same instance for different
+	// objects, so we have to duplicate it.
+	// And while at it, we might also duplicate any Variant to avoid sharing Dictionary
+	// or Array default values.
+	var = var.duplicate(true);
+
+	return var;
 }
 
 RWLock *ClassDB::lock = nullptr;
