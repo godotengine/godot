@@ -44,6 +44,8 @@
 			<argument index="1" name="neighbor_id" type="int">
 			</argument>
 			<description>
+				Determines when the auto-tiler should consider two different auto-tile IDs to be bound together.
+				[b]Note:[/b] [code]neighbor_id[/code] will be [code]-1[/code] ([constant TileMap.INVALID_CELL]) when checking a tile against an empty neighbor tile.
 			</description>
 		</method>
 		<method name="autotile_clear_bitmask_map">
