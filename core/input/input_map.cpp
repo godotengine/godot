@@ -48,7 +48,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);
 	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
-	ClassDB::bind_method(D_METHOD("get_action_list", "action"), &InputMap::_get_action_list);
+	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
 	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
 }
@@ -152,9 +152,9 @@ void InputMap::action_erase_events(const StringName &p_action) {
 	input_map[p_action].inputs.clear();
 }
 
-Array InputMap::_get_action_list(const StringName &p_action) {
+Array InputMap::_action_get_events(const StringName &p_action) {
 	Array ret;
-	const List<Ref<InputEvent>> *al = get_action_list(p_action);
+	const List<Ref<InputEvent>> *al = action_get_events(p_action);
 	if (al) {
 		for (const List<Ref<InputEvent>>::Element *E = al->front(); E; E = E->next()) {
 			ret.push_back(E->get());
@@ -164,7 +164,7 @@ Array InputMap::_get_action_list(const StringName &p_action) {
 	return ret;
 }
 
-const List<Ref<InputEvent>> *InputMap::get_action_list(const StringName &p_action) {
+const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_action) {
 	const Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E) {
 		return nullptr;
