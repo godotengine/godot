@@ -83,7 +83,10 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 			if (pairing) {
 
 				if (pair_callback) {
-					E->get()->ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, pair_userdata);
+					void *ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, pair_userdata);
+					if (ud) {
+						E->get()->ud = ud;
+					}
 				}
 			} else {
 

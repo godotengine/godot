@@ -202,9 +202,12 @@ void BroadPhaseBasic::update() {
 			if (pair_ok && !E) {
 
 				void *data = NULL;
-				if (pair_callback)
+				if (pair_callback) {
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
-				pair_map.insert(key, data);
+					if (data) {
+						pair_map.insert(key, data);
+					}
+				}
 			}
 		}
 	}
