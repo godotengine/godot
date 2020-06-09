@@ -105,6 +105,9 @@
 			</description>
 		</method>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f515071edc... Renamed InputMap.get_action_list to InputMap.get_action_events
 		<method name="action_get_events">
 			<return type="Array">
 			</return>
