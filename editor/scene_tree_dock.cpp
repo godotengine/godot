@@ -2696,7 +2696,9 @@ void SceneTreeDock::_remote_tree_selected() {
 
 void SceneTreeDock::_local_tree_selected() {
 
-	scene_tree->show();
+	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
+		scene_tree->show();
+	}
 	if (remote_tree)
 		remote_tree->hide();
 	edit_remote->set_pressed(false);
