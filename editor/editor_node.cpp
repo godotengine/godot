@@ -593,7 +593,9 @@ void EditorNode::_fs_changed() {
 			preset.unref();
 		}
 		if (preset.is_null()) {
-			export_error = vformat("Invalid export preset name: %s.", preset_name);
+			export_error = vformat(
+					"Invalid export preset name: %s. Make sure `export_presets.cfg` is present in the current directory.",
+					preset_name);
 		} else {
 			Ref<EditorExportPlatform> platform = preset->get_platform();
 			if (platform.is_null()) {
