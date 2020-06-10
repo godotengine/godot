@@ -137,7 +137,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::CLASS: {
 			// Locate class by constructing the path to it and following that path
-			GDScriptParser::ClassNode *class_type = p_datatype.gdscript_type;
+			GDScriptParser::ClassNode *class_type = p_datatype.class_type;
 			if (class_type) {
 				List<StringName> names;
 				while (class_type->outer) {
@@ -233,6 +233,10 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 }
 
 int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::ExpressionNode *p_expression, int p_stack_level, bool p_root, bool p_initializer, int p_index_addr) {
+	if (p_expression->is_constant) {
+		return codegen.get_constant_pos(p_expression->reduced_value);
+	}
+
 	switch (p_expression->type) {
 		//should parse variable declaration and adjust stack accordingly...
 		case GDScriptParser::Node::IDENTIFIER: {
@@ -2578,14 +2582,14 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
 
-			if (p_class->base_type.kind == GDScriptParser::DataType::CLASS && p_class->base_type.gdscript_type != nullptr) {
+			if (p_class->base_type.kind == GDScriptParser::DataType::CLASS && p_class->base_type.class_type != nullptr) {
 				if (!parsed_classes.has(p_script->_base)) {
 					if (parsing_classes.has(p_script->_base)) {
 						String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
 						_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
 						return ERR_PARSE_ERROR;
 					}
-					Error err = _parse_class_level(p_script->_base, p_class->base_type.gdscript_type, p_keep_state);
+					Error err = _parse_class_level(p_script->_base, p_class->base_type.class_type, p_keep_state);
 					if (err) {
 						return err;
 					}
