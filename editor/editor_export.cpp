@@ -96,6 +96,19 @@ Ref<EditorExportPlatform> EditorExportPreset::get_platform() const {
 	return platform;
 }
 
+void EditorExportPreset::update_files_to_export() {
+	Vector<String> to_remove;
+	for (Set<String>::Element *E = selected_files.front(); E; E = E->next()) {
+		if (!FileAccess::exists(E->get())) {
+			to_remove.push_back(E->get());
+		}
+	}
+	for (int i = 0; i < to_remove.size(); ++i) {
+		selected_files.erase(to_remove[i]);
+	}
+	EditorExport::singleton->save_presets();
+}
+
 Vector<String> EditorExportPreset::get_files_to_export() const {
 
 	Vector<String> files;
@@ -1382,7 +1395,11 @@ void EditorExport::load_config() {
 			Vector<String> files = config->get_value(section, "export_files");
 
 			for (int i = 0; i < files.size(); i++) {
-				preset->add_export_file(files[i]);
+				if (!FileAccess::exists(files[i])) {
+					preset->remove_export_file(files[i]);
+				} else {
+					preset->add_export_file(files[i]);
+				}
 			}
 		}
 

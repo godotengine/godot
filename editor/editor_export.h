@@ -95,6 +95,8 @@ public:
 
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
+	void update_files_to_export();
+
 	Vector<String> get_files_to_export() const;
 
 	void add_export_file(const String &p_path);

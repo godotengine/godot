@@ -161,6 +161,7 @@ void ProjectExportDialog::_update_presets() {
 		String name = preset->get_name();
 		if (preset->is_runnable())
 			name += " (" + TTR("Runnable") + ")";
+		preset->update_files_to_export();
 		presets->add_item(name, preset->get_platform()->get_logo());
 	}
 
