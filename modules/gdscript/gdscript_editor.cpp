@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "core/global_constants.h"
 #include "core/os/file_access.h"
+#include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
@@ -130,6 +131,7 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 
 bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	GDScriptParser parser;
+	GDScriptAnalyzer analyzer(&parser);
 
 	Error err = parser.parse(p_script, p_path, false);
 #ifdef DEBUG_ENABLED
@@ -146,6 +148,9 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 	// 	}
 	// }
 #endif
+	if (err == OK) {
+		err = analyzer.analyze();
+	}
 	if (err) {
 		GDScriptParser::ParserError parse_error = parser.get_errors().front()->get();
 		r_line_error = parse_error.line;
