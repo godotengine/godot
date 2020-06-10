@@ -119,6 +119,22 @@ for an introduction to developing on Godot.
 The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
 also have important information on the PR workflow and the code style we use.
 
+### Document your changes
+
+If your pull request adds methods, properties or signals that are exposed to
+scripting APIs, you **must** update the class reference to document those.
+This is to ensure the documentation coverage doesn't decrease as contributions
+are merged.
+
+[Update the documentation template](https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html#updating-the-documentation-template)
+using your compiled binary, then fill in the descriptions.
+Follow the style guide described in the
+[Docs writing guidelines](https://docs.godotengine.org/en/latest/community/contributing/docs_writing_guidelines.html).
+
+If your pull request modifies parts of the code in a non-obvious way, make sure
+to add comments in the code as well. This helps other people understand the
+change without having to look at `git blame`.
+
 ### Be nice to the Git history
 
 Try to make simple PRs that handle one specific topic. Just like for reporting
