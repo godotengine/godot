@@ -55,6 +55,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary);
 	void _make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
+	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
@@ -66,6 +67,28 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	bool use_codesign() const { return false; }
 	bool use_dmg() const { return false; }
 #endif
+	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
+		String pname = p_package;
+
+		if (pname.length() == 0) {
+			if (r_error) {
+				*r_error = TTR("Identifier is missing.");
+			}
+			return false;
+		}
+
+		for (int i = 0; i < pname.length(); i++) {
+			CharType c = pname[i];
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '.')) {
+				if (r_error) {
+					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
+				}
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
@@ -138,6 +161,11 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "notarization/enable"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_password", PROPERTY_HINT_PLACEHOLDER_TEXT, "Enable two-factor authentication and provide app-specific password"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide team ID if your Apple ID belongs to multiple teams"), ""));
 #endif
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
@@ -363,6 +391,52 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 	- and then wrap it up in a DMG
 **/
 
+Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+#ifdef OSX_ENABLED
+	List<String> args;
+
+	args.push_back("altool");
+	args.push_back("--notarize-app");
+
+	args.push_back("--primary-bundle-id");
+	args.push_back(p_preset->get("application/identifier"));
+
+	args.push_back("--username");
+	args.push_back(p_preset->get("notarization/apple_id_name"));
+
+	args.push_back("--password");
+	args.push_back(p_preset->get("notarization/apple_id_password"));
+
+	args.push_back("--type");
+	args.push_back("osx");
+
+	if (p_preset->get("notarization/apple_team_id")) {
+		args.push_back("--asc-provider");
+		args.push_back(p_preset->get("notarization/apple_team_id"));
+	}
+
+	args.push_back("--file");
+	args.push_back(p_path);
+
+	String str;
+	Error err = OS::get_singleton()->execute("xcrun", args, true, nullptr, &str, nullptr, true);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	print_line("altool (" + p_path + "):\n" + str);
+	if (str.find("RequestUUID") == -1) {
+		EditorNode::add_io_error("altool: " + str);
+		return FAILED;
+	} else {
+		print_line("Note: The notarization process generally takes less than an hour. When the process is completed, you'll receive an email.");
+		print_line("      You can check progress manually by opening a Terminal and running the following command:");
+		print_line("      \"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
+	}
+
+#endif
+
+	return OK;
+}
+
 Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 #ifdef OSX_ENABLED
 	List<String> args;
@@ -399,7 +473,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	Error err = OS::get_singleton()->execute("codesign", args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	print_line("codesign (" + p_path + "): " + str);
+	print_line("codesign (" + p_path + "):\n" + str);
 	if (str.find("no identity found") != -1) {
 		EditorNode::add_io_error("codesign: no identity found");
 		return FAILED;
@@ -714,6 +788,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			}
 		}
 
+		bool noto_enabled = p_preset->get("notarization/enable");
+		if (err == OK && noto_enabled) {
+			if (ep.step("Sending archive for notarization", 4)) {
+				return ERR_SKIP;
+			}
+			err = _notarize(p_preset, p_path);
+		}
+
 		// Clean up temporary .app dir.
 		OS::get_singleton()->move_to_trash(tmp_app_path_name);
 	}
@@ -802,6 +884,41 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	String identifier = p_preset->get("application/identifier");
+	String pn_err;
+	if (!is_package_name_valid(identifier, &pn_err)) {
+		err += TTR("Invalid bundle identifier:") + " " + pn_err + "\n";
+		valid = false;
+	}
+
+	bool sign_enabled = p_preset->get("codesign/enable");
+	if (sign_enabled) {
+		if (p_preset->get("codesign/identity") == "") {
+			err += TTR("Codesign: identity not specified.") + "\n";
+			valid = false;
+		}
+	}
+	bool noto_enabled = p_preset->get("notarization/enable");
+	if (noto_enabled) {
+		if (!sign_enabled) {
+			err += TTR("Notarization: code signing required.") + "\n";
+			valid = false;
+		}
+		bool hr_enabled = p_preset->get("codesign/hardened_runtime");
+		if (!hr_enabled) {
+			err += TTR("Notarization: hardened runtime required.") + "\n";
+			valid = false;
+		}
+		if (p_preset->get("notarization/apple_id_name") == "") {
+			err += TTR("Notarization: Apple ID name not specified.") + "\n";
+			valid = false;
+		}
+		if (p_preset->get("notarization/apple_id_password") == "") {
+			err += TTR("Notarization: Apple ID password not specified.") + "\n";
+			valid = false;
+		}
+	}
 
 	if (!err.empty()) {
 		r_error = err;
