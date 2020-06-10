@@ -326,6 +326,9 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 	menu->set_size(Size2(1, 1) * EDSCALE);
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
+		if (i < MAX_VALUE_EDITORS / 4) {
+			value_hboxes[i]->hide();
+		}
 		value_editor[i]->hide();
 		value_label[i]->hide();
 		if (i < 4) {
@@ -1701,6 +1704,14 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 	set_size(Size2(cell_margin + p_label_w + (cell_width + cell_margin + p_label_w) * p_columns, cell_margin + (cell_height + cell_margin) * rows) * EDSCALE);
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
+		if (i < MAX_VALUE_EDITORS / 4) {
+			if (i <= p_amount / 4) {
+				value_hboxes[i]->show();
+			} else {
+				value_hboxes[i]->hide();
+			}
+		}
+
 		int c = i % p_columns;
 		int r = i / p_columns;
 
@@ -1729,13 +1740,23 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	read_only = false;
 	updating = false;
 
+	value_vbox = memnew(VBoxContainer);
+	add_child(value_vbox);
+
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
-		value_editor[i] = memnew(LineEdit);
-		add_child(value_editor[i]);
+		if (i < MAX_VALUE_EDITORS / 4) {
+			value_hboxes[i] = memnew(HBoxContainer);
+			value_vbox->add_child(value_hboxes[i]);
+			value_hboxes[i]->hide();
+		}
+		int hbox_idx = i / 4;
 		value_label[i] = memnew(Label);
-		add_child(value_label[i]);
-		value_editor[i]->hide();
+		value_hboxes[hbox_idx]->add_child(value_label[i]);
 		value_label[i]->hide();
+		value_editor[i] = memnew(LineEdit);
+		value_hboxes[hbox_idx]->add_child(value_editor[i]);
+		value_editor[i]->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		value_editor[i]->hide();
 		value_editor[i]->connect("text_entered", callable_mp(this, &CustomPropertyEditor::_modified));
 		value_editor[i]->connect("focus_entered", callable_mp(this, &CustomPropertyEditor::_focus_enter));
 		value_editor[i]->connect("focus_exited", callable_mp(this, &CustomPropertyEditor::_focus_exit));
