@@ -113,6 +113,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		RID RID_normal;
 		TileMode tile_mode;
 		BatchVector2 tex_pixel_size;
+		uint32_t flags;
 	};
 
 	// items in a list to be sorted prior to joining
@@ -237,6 +238,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		bool settings_use_single_rect_fallback;
 		int settings_light_max_join_items;
 
+		// uv contraction
+		bool settings_uv_contract;
+		float settings_uv_contract_amount;
+
 		// only done on diagnose frame
 		void reset_stats() {
 			stats_items_sorted = 0;
@@ -278,10 +283,12 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 			curr_batch = 0;
 			batch_tex_id = -1;
 			texpixel_size = Vector2(1, 1);
+			contract_uvs = false;
 		}
 		Batch *curr_batch;
 		int batch_tex_id;
 		bool use_hardware_transform;
+		bool contract_uvs;
 		Vector2 texpixel_size;
 		Color final_modulate;
 		TransformMode transform_mode;
