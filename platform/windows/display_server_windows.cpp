@@ -2565,9 +2565,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_KEYUP:
 		case WM_KEYDOWN: {
 			if (wParam == VK_SHIFT)
-				shift_mem = uMsg == WM_KEYDOWN;
+				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 			if (wParam == VK_CONTROL)
-				control_mem = uMsg == WM_KEYDOWN;
+				control_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 			if (wParam == VK_MENU) {
 				alt_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 				if (lParam & (1 << 24))
