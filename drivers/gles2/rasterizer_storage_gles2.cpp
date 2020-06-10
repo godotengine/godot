@@ -5973,7 +5973,7 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef JAVASCRIPT_ENABLED
 	config.support_half_float_vertices = false;
 #endif
-	bool disable_half_float = GLOBAL_GET("rendering/gles2/debug/disable_half_float");
+	bool disable_half_float = GLOBAL_GET("rendering/gles2/compatibility/disable_half_float");
 	if (disable_half_float) {
 		config.support_half_float_vertices = false;
 	}
