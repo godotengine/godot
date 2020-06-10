@@ -22,7 +22,7 @@
 			The spotlight's light energy attenuation curve.
 		</member>
 		<member name="spot_range" type="float" setter="set_param" getter="get_param" default="5.0">
-			The maximal range that can be reached by the spotlight.
+			The maximal range that can be reached by the spotlight. Note that the effectively lit area may appear to be smaller depending on the [member spot_attenuation] in use. No matter the [member spot_attenuation] in use, the light will never reach anything outside this range.
 		</member>
 	</members>
 	<constants>
