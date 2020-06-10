@@ -127,6 +127,7 @@ public:
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
 		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT; }
+		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 		String to_string() const;
 
 		bool operator==(const DataType &p_other) const {
@@ -591,6 +592,7 @@ public:
 		TypeNode *return_type = nullptr;
 		SuiteNode *body = nullptr;
 		bool is_static = false;
+		bool is_coroutine = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 		bool resolved_signature = false;
@@ -620,7 +622,8 @@ public:
 			LOCAL_VARIABLE,
 			LOCAL_ITERATOR, // `for` loop iterator.
 			LOCAL_BIND, // Pattern bind.
-			// TODO: Add higher sources to help compiling?
+			MEMBER_VARIABLE,
+			MEMBER_CONSTANT,
 		};
 		Source source = UNDEFINED_SOURCE;
 

@@ -146,12 +146,14 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 	if (p_arg_count < m_count) {                                            \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;  \
 		r_error.argument = m_count;                                         \
+		r_error.expected = m_count;                                         \
 		r_ret = Variant();                                                  \
 		return;                                                             \
 	}                                                                       \
 	if (p_arg_count > m_count) {                                            \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS; \
 		r_error.argument = m_count;                                         \
+		r_error.expected = m_count;                                         \
 		r_ret = Variant();                                                  \
 		return;                                                             \
 	}
@@ -897,6 +899,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				case 0: {
 					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 					r_error.argument = 1;
+					r_error.expected = 1;
 					r_ret = Variant();
 
 				} break;
@@ -1001,6 +1004,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				default: {
 					r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 					r_error.argument = 3;
+					r_error.expected = 3;
 					r_ret = Variant();
 
 				} break;
