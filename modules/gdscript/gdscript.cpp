@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "gdscript_analyzer.h"
+#include "gdscript_cache.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
 
@@ -1039,6 +1040,8 @@ GDScript::~GDScript() {
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
 		memdelete(E->get());
 	}
+
+	GDScriptCache::remove_script(get_path());
 
 	_save_orphaned_subclasses();
 
