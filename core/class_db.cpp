@@ -548,6 +548,29 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 	}
 }
 
+#ifdef DEBUG_METHODS_ENABLED
+static MethodInfo info_from_bind(MethodBind *p_method) {
+	MethodInfo minfo;
+	minfo.name = p_method->get_name();
+	minfo.id = p_method->get_method_id();
+
+	for (int i = 0; i < p_method->get_argument_count(); i++) {
+		minfo.arguments.push_back(p_method->get_argument_info(i));
+	}
+
+	minfo.return_val = p_method->get_return_info();
+	minfo.flags = p_method->get_hint_flags();
+
+	for (int i = 0; i < p_method->get_argument_count(); i++) {
+		if (p_method->has_default_argument(i)) {
+			minfo.default_arguments.push_back(p_method->get_default_argument(i));
+		}
+	}
+
+	return minfo;
+}
+#endif
+
 void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
 
@@ -570,29 +593,12 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 		}
 
 		for (List<StringName>::Element *E = type->method_order.front(); E; E = E->next()) {
-			MethodBind *method = type->method_map.get(E->get());
-			MethodInfo minfo;
-			minfo.name = E->get();
-			minfo.id = method->get_method_id();
-
-			if (p_exclude_from_properties && type->methods_in_properties.has(minfo.name)) {
+			if (p_exclude_from_properties && type->methods_in_properties.has(E->get())) {
 				continue;
 			}
 
-			for (int i = 0; i < method->get_argument_count(); i++) {
-				//Variant::Type t=method->get_argument_type(i);
-
-				minfo.arguments.push_back(method->get_argument_info(i));
-			}
-
-			minfo.return_val = method->get_return_info();
-			minfo.flags = method->get_hint_flags();
-
-			for (int i = 0; i < method->get_argument_count(); i++) {
-				if (method->has_default_argument(i)) {
-					minfo.default_arguments.push_back(method->get_default_argument(i));
-				}
-			}
+			MethodBind *method = type->method_map.get(E->get());
+			MethodInfo minfo = info_from_bind(method);
 
 			p_methods->push_back(minfo);
 		}
@@ -616,6 +622,57 @@ void ClassDB::get_method_list(StringName p_class, List<MethodInfo> *p_methods, b
 
 		type = type->inherits_ptr;
 	}
+}
+
+bool ClassDB::get_method_info(StringName p_class, StringName p_method, MethodInfo *r_info, bool p_no_inheritance, bool p_exclude_from_properties) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->disabled) {
+			if (p_no_inheritance) {
+				break;
+			}
+
+			type = type->inherits_ptr;
+			continue;
+		}
+
+#ifdef DEBUG_METHODS_ENABLED
+		MethodBind **method = type->method_map.getptr(p_method);
+		if (method && *method) {
+			if (r_info != nullptr) {
+				MethodInfo minfo = info_from_bind(*method);
+				*r_info = minfo;
+			}
+			return true;
+		} else if (type->virtual_methods_map.has(p_method)) {
+			if (r_info) {
+				*r_info = type->virtual_methods_map[p_method];
+			}
+			return true;
+		}
+#else
+		if (type->method_map.has(p_method)) {
+			if (r_info) {
+				MethodBind *m = type->method_map[p_method];
+				MethodInfo mi;
+				mi.name = m->get_name();
+				*r_info = mi;
+			}
+			return true;
+		}
+#endif
+
+		if (p_no_inheritance) {
+			break;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
 }
 
 MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
@@ -718,6 +775,25 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 	return 0;
 }
 
+bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->constant_map.has(p_name)) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 
@@ -784,6 +860,25 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	}
 }
 
+bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->enum_map.has(p_name)) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
 void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
@@ -825,13 +920,16 @@ void ClassDB::get_signal_list(StringName p_class, List<MethodInfo> *p_signals, b
 	}
 }
 
-bool ClassDB::has_signal(StringName p_class, StringName p_signal) {
+bool ClassDB::has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
 		if (check->signal_map.has(p_signal)) {
 			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
 		}
 		check = check->inherits_ptr;
 	}
@@ -910,6 +1008,7 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	OBJTYPE_WLOCK
 
 	type->property_list.push_back(p_pinfo);
+	type->property_map[p_pinfo.name] = p_pinfo;
 #ifdef DEBUG_METHODS_ENABLED
 	if (mb_get) {
 		type->methods_in_properties.insert(p_getter);
@@ -957,6 +1056,30 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 		}
 		check = check->inherits_ptr;
 	}
+}
+
+bool ClassDB::get_property_info(StringName p_class, StringName p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *check = classes.getptr(p_class);
+	while (check) {
+		if (check->property_map.has(p_property)) {
+			PropertyInfo pinfo = check->property_map[p_property];
+			if (p_validator) {
+				p_validator->_validate_property(pinfo);
+			}
+			if (r_info) {
+				*r_info = pinfo;
+			}
+			return true;
+		}
+		if (p_no_inheritance) {
+			break;
+		}
+		check = check->inherits_ptr;
+	}
+
+	return false;
 }
 
 bool ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid) {
@@ -1239,6 +1362,7 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 		mi.flags |= METHOD_FLAG_VIRTUAL;
 	}
 	classes[p_class].virtual_methods.push_back(mi);
+	classes[p_class].virtual_methods_map[p_method.name] = mi;
 
 #endif
 }
