@@ -400,10 +400,14 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 
 	args.push_back("--primary-bundle-id");
 <<<<<<< HEAD
+<<<<<<< HEAD
 	args.push_back(p_preset->get("application/identifier"));
 =======
 	args.push_back(p_preset->get("application/bundle_identifier"));
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+	args.push_back(p_preset->get("application/identifier"));
+>>>>>>> f5c856ea40... macOS export, add notarization support and id / signing / notarization config check.
 
 	args.push_back("--username");
 	args.push_back(p_preset->get("notarization/apple_id_name"));
@@ -893,10 +897,14 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 	r_missing_templates = !valid;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	String identifier = p_preset->get("application/identifier");
 =======
 	String identifier = p_preset->get("application/bundle_identifier");
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+	String identifier = p_preset->get("application/identifier");
+>>>>>>> f5c856ea40... macOS export, add notarization support and id / signing / notarization config check.
 	String pn_err;
 	if (!is_package_name_valid(identifier, &pn_err)) {
 		err += TTR("Invalid bundle identifier:") + " " + pn_err + "\n";
