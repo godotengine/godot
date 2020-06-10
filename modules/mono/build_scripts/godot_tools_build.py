@@ -8,10 +8,10 @@ from SCons.Script import Dir
 def build_godot_tools(source, target, env):
     # source and target elements are of type SCons.Node.FS.File, hence why we convert them to str
 
-    module_dir = env['module_dir']
+    module_dir = env["module_dir"]
 
-    solution_path = os.path.join(module_dir, 'editor/GodotTools/GodotTools.sln')
-    build_config = 'Debug' if env['target'] == 'debug' else 'Release'
+    solution_path = os.path.join(module_dir, "editor/GodotTools/GodotTools.sln")
+    build_config = "Debug" if env["target"] == "debug" else "Release"
 
     from .solution_builder import build_solution
 
@@ -20,15 +20,15 @@ def build_godot_tools(source, target, env):
 
 
 def build(env_mono, api_sln_cmd):
-    assert env_mono['tools']
+    assert env_mono["tools"]
 
-    output_dir = Dir('#bin').abspath
-    editor_tools_dir = os.path.join(output_dir, 'GodotSharp', 'Tools')
+    output_dir = Dir("#bin").abspath
+    editor_tools_dir = os.path.join(output_dir, "GodotSharp", "Tools")
 
-    target_filenames = ['GodotTools.dll']
+    target_filenames = ["GodotTools.dll"]
 
-    if env_mono['target'] == 'debug':
-        target_filenames += ['GodotTools.pdb']
+    if env_mono["target"] == "debug":
+        target_filenames += ["GodotTools.pdb"]
 
     targets = [os.path.join(editor_tools_dir, filename) for filename in target_filenames]
 

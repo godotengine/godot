@@ -902,7 +902,6 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			Error err;
 			FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 			if (err) {
-				memdelete(file);
 				editor->show_warning(TTR("Error writing TextFile:") + "\n" + p_file, TTR("Error!"));
 				break;
 			}

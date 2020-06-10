@@ -146,6 +146,7 @@
 				# The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
 				print(dict1.hash() == dict2.hash())
 				[/codeblock]
+				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
 		<method name="keys">
