@@ -2364,7 +2364,6 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					if (pos.x < len) {
 						cache.hover_type = Cache::CLICK_TITLE;
 						cache.hover_index = i;
-						update();
 						break;
 					}
 				}
@@ -2383,6 +2382,9 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					mpos.y += v_scroll->get_value();
 				}
 
+				TreeItem *old_it = cache.hover_item;
+				int old_col = cache.hover_cell;
+
 				int col, h, section;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
@@ -2397,18 +2399,21 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (it != cache.hover_item) {
-					cache.hover_item = it;
-					update();
-				}
+				cache.hover_item = it;
+				cache.hover_cell = col;
 
-				if (it && col != cache.hover_cell) {
-					cache.hover_cell = col;
-					update();
+				if (it != old_it || col != old_col) {
+					// Only need to update if mouse enters/exits a button
+					bool was_over_button = old_it && old_it->cells[old_col].custom_button;
+					bool is_over_button = it && it->cells[col].custom_button;
+					if (was_over_button || is_over_button) {
+						update();
+					}
 				}
 			}
 		}
 
+		// Update if mouse enters/exits columns
 		if (cache.hover_type != old_hover || cache.hover_index != old_index) {
 			update();
 		}
