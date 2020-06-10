@@ -2274,6 +2274,86 @@ public:
 		return have_plugins_changed || first_build;
 	}
 
+
+	Error gradle_build(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, String &src_apk, int p_flags = 0){
+
+		{ //test that installed build version is alright
+			FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
+			if (!f) {
+				EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
+				return ERR_UNCONFIGURED;
+			}
+			String version = f->get_line().strip_edges();
+			if (version != VERSION_FULL_CONFIG) {
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
+				return ERR_UNCONFIGURED;
+			}
+		}
+		//build project if custom build is enabled
+		String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
+
+		ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
+
+		_update_custom_build_project();
+
+		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
+
+		String build_command;
+#ifdef WINDOWS_ENABLED
+		build_command = "gradlew.bat";
+#else
+		build_command = "gradlew";
+#endif
+
+		String build_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/build");
+
+		build_command = build_path.plus_file(build_command);
+
+		String package_name = get_package_name(p_preset->get("package/unique_name"));
+
+		Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+		String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
+		String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
+		String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
+		bool clean_build_required = is_clean_build_required(enabled_plugins);
+
+		List<String> cmdline;
+		if (clean_build_required) {
+			cmdline.push_back("clean");
+		}
+		cmdline.push_back("build");
+		cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
+		cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
+		cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
+		cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
+		cmdline.push_back("-p"); // argument to specify the start directory.
+		cmdline.push_back(build_path); // start directory.
+		/*{ used for debug
+            int ec;
+            String pipe;
+            OS::get_singleton()->execute(build_command, cmdline, true, NULL, NULL, &ec);
+            print_line("exit code: " + itos(ec));
+        }
+        */
+		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline);
+		if (result != 0) {
+			EditorNode::get_singleton()->show_warning(TTR("Building of Android project failed, check output for the error.\nAlternatively visit docs.godotengine.org for Android build documentation."));
+			return ERR_CANT_CREATE;
+		}
+		if (p_debug) {
+			src_apk = build_path.plus_file("build/outputs/apk/debug/android_debug.apk");
+		} else {
+			src_apk = build_path.plus_file("build/outputs/apk/release/android_release.apk");
+		}
+
+		if (!FileAccess::exists(src_apk)) {
+			EditorNode::get_singleton()->show_warning(TTR("No build apk generated at: ") + "\n" + src_apk);
+			return ERR_CANT_CREATE;
+		}
+
+		return OK;
+	}
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
 
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
@@ -2283,102 +2363,27 @@ public:
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
 		if (bool(p_preset->get("custom_template/use_custom_build"))) { //custom build
-			//re-generate build.gradle and AndroidManifest.xml
-
-			{ //test that installed build version is alright
-				FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
-				if (!f) {
-					EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
-					return ERR_UNCONFIGURED;
-				}
-				String version = f->get_line().strip_edges();
-				if (version != VERSION_FULL_CONFIG) {
-					EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
-					return ERR_UNCONFIGURED;
-				}
-			}
-			//build project if custom build is enabled
-			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
-
-			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
-
-			_update_custom_build_project();
-
-			OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
-
-			String build_command;
-#ifdef WINDOWS_ENABLED
-			build_command = "gradlew.bat";
-#else
-			build_command = "gradlew";
-#endif
-
-			String build_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/build");
-
-			build_command = build_path.plus_file(build_command);
-
-			String package_name = get_package_name(p_preset->get("package/unique_name"));
-
-			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
-			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
-			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
-			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
-			bool clean_build_required = is_clean_build_required(enabled_plugins);
-
-			List<String> cmdline;
-			if (clean_build_required) {
-				cmdline.push_back("clean");
-			}
-			cmdline.push_back("build");
-			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
-			cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
-			cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
-			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
-			cmdline.push_back("-p"); // argument to specify the start directory.
-			cmdline.push_back(build_path); // start directory.
-			/*{ used for debug
-				int ec;
-				String pipe;
-				OS::get_singleton()->execute(build_command, cmdline, true, NULL, NULL, &ec);
-				print_line("exit code: " + itos(ec));
-			}
-			*/
-			int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline);
-			if (result != 0) {
-				EditorNode::get_singleton()->show_warning(TTR("Building of Android project failed, check output for the error.\nAlternatively visit docs.godotengine.org for Android build documentation."));
-				return ERR_CANT_CREATE;
-			}
-			if (p_debug) {
-				src_apk = build_path.plus_file("build/outputs/apk/debug/android_debug.apk");
-			} else {
-				src_apk = build_path.plus_file("build/outputs/apk/release/android_release.apk");
-			}
-
-			if (!FileAccess::exists(src_apk)) {
-				EditorNode::get_singleton()->show_warning(TTR("No build apk generated at: ") + "\n" + src_apk);
-				return ERR_CANT_CREATE;
-			}
-
-		} else {
-
-			if (p_debug)
-				src_apk = p_preset->get("custom_template/debug");
-			else
-				src_apk = p_preset->get("custom_template/release");
-
-			src_apk = src_apk.strip_edges();
-			if (src_apk == "") {
-				if (p_debug) {
-					src_apk = find_export_template("android_debug.apk");
-				} else {
-					src_apk = find_export_template("android_release.apk");
-				}
-				if (src_apk == "") {
-					EditorNode::add_io_error("Package not found: " + src_apk);
-					return ERR_FILE_NOT_FOUND;
-				}
-			}
+			return gradle_build(p_preset, p_debug, p_path, src_apk, p_flags);
 		}
+
+        if (p_debug)
+            src_apk = p_preset->get("custom_template/debug");
+        else
+            src_apk = p_preset->get("custom_template/release");
+
+        src_apk = src_apk.strip_edges();
+        if (src_apk == "") {
+            if (p_debug) {
+                src_apk = find_export_template("android_debug.apk");
+            } else {
+                src_apk = find_export_template("android_release.apk");
+            }
+            if (src_apk == "") {
+                EditorNode::add_io_error("Package not found: " + src_apk);
+                return ERR_FILE_NOT_FOUND;
+            }
+        }
+
 
 		if (!DirAccess::exists(p_path.get_base_dir())) {
 			return ERR_FILE_BAD_PATH;
