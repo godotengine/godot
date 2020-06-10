@@ -99,7 +99,9 @@ public:
 			NATIVE,
 			SCRIPT,
 			CLASS, // GDScript.
+			VARIANT, // Can be any type.
 			UNRESOLVED,
+			// TODO: Enum, Signal, Callable
 		};
 		Kind kind = UNRESOLVED;
 
@@ -113,14 +115,18 @@ public:
 
 		bool is_constant = false;
 		bool is_meta_type = false;
-		bool infer_type = false;
+		bool is_coroutine = false; // For function calls.
 
 		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
 		Ref<Script> script_type;
-		ClassNode *gdscript_type = nullptr;
+		ClassNode *class_type = nullptr;
 
-		_FORCE_INLINE_ bool is_set() const { return type_source != UNDETECTED; }
+		MethodInfo method_info; // For callable/signals.
+
+		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
+		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
+		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT; }
 		String to_string() const;
 
 		bool operator==(const DataType &p_other) const {
@@ -137,6 +143,8 @@ public:
 			}
 
 			switch (kind) {
+				case VARIANT:
+					return true; // All variants are the same.
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
@@ -144,12 +152,16 @@ public:
 				case SCRIPT:
 					return script_type == p_other.script_type;
 				case CLASS:
-					return gdscript_type == p_other.gdscript_type;
+					return class_type == p_other.class_type;
 				case UNRESOLVED:
 					break;
 			}
 
 			return false;
+		}
+
+		bool operator!=(const DataType &p_other) const {
+			return !(this->operator==(p_other));
 		}
 	};
 
@@ -215,8 +227,10 @@ public:
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
 
-		virtual DataType get_datatype() const { return DataType(); }
-		virtual void set_datatype(const DataType &p_datatype) {}
+		DataType datatype;
+
+		virtual DataType get_datatype() const { return datatype; }
+		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 
 		virtual bool is_expression() const { return false; }
 
@@ -225,6 +239,10 @@ public:
 
 	struct ExpressionNode : public Node {
 		// Base type for all expression kinds.
+		bool reduced = false;
+		bool is_constant = false;
+		Variant reduced_value;
+
 		virtual bool is_expression() const { return true; }
 		virtual ~ExpressionNode() {}
 
@@ -281,6 +299,7 @@ public:
 		};
 
 		Operation operation = OP_NONE;
+		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *assignee = nullptr;
 		ExpressionNode *assigned_value = nullptr;
 
@@ -322,6 +341,7 @@ public:
 		};
 
 		OpType operation;
+		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *left_operand = nullptr;
 		ExpressionNode *right_operand = nullptr;
 
@@ -345,6 +365,7 @@ public:
 	struct CallNode : public ExpressionNode {
 		ExpressionNode *callee = nullptr;
 		Vector<ExpressionNode *> arguments;
+		StringName function_name; // TODO: Set this.
 		bool is_super = false;
 
 		CallNode() {
@@ -422,6 +443,34 @@ public:
 				return "";
 			}
 
+			DataType get_datatype() const {
+				switch (type) {
+					case CLASS:
+						return m_class->get_datatype();
+					case CONSTANT:
+						return constant->get_datatype();
+					case FUNCTION:
+						return function->get_datatype();
+					case VARIABLE:
+						return variable->get_datatype();
+					case ENUM_VALUE: {
+						// Always integer.
+						DataType type;
+						type.type_source = DataType::ANNOTATED_EXPLICIT;
+						type.kind = DataType::BUILTIN;
+						type.builtin_type = Variant::INT;
+						return type;
+					}
+					case ENUM:
+					case SIGNAL:
+						// TODO: Use special datatype kinds for these.
+						return DataType();
+					case UNDEFINED:
+						return DataType();
+				}
+				ERR_FAIL_V_MSG(DataType(), "Reaching unhandled type.");
+			}
+
 			Member() {}
 
 			Member(ClassNode *p_class) {
@@ -464,9 +513,16 @@ public:
 		String extends_path;
 		Vector<StringName> extends; // List for indexing: extends A.B.C
 		DataType base_type;
+		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
+
+		bool resolved_interface = false;
+		bool resolved_body = false;
 
 		Member get_member(const StringName &p_name) const {
 			return members[members_indices[p_name]];
+		}
+		bool has_member(const StringName &p_name) const {
+			return members_indices.has(p_name);
 		}
 		template <class T>
 		void add_member(T *p_member_node) {
@@ -476,12 +532,6 @@ public:
 		void add_member(const EnumNode::Value &p_enum_value) {
 			members_indices[p_enum_value.identifier->name] = members.size();
 			members.push_back(Member(p_enum_value));
-		}
-		virtual DataType get_datatype() const {
-			return base_type;
-		}
-		virtual void set_datatype(const DataType &p_datatype) {
-			base_type = p_datatype;
 		}
 
 		ClassNode() {
@@ -543,6 +593,9 @@ public:
 		bool is_static = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
+		bool resolved_signature = false;
+		bool resolved_body = false;
+
 		FunctionNode() {
 			type = FUNCTION;
 		}
@@ -559,6 +612,24 @@ public:
 
 	struct IdentifierNode : public ExpressionNode {
 		StringName name;
+
+		enum Source {
+			UNDEFINED_SOURCE,
+			FUNCTION_PARAMETER,
+			LOCAL_CONSTANT,
+			LOCAL_VARIABLE,
+			LOCAL_ITERATOR, // `for` loop iterator.
+			LOCAL_BIND, // Pattern bind.
+			// TODO: Add higher sources to help compiling?
+		};
+		Source source = UNDEFINED_SOURCE;
+
+		union {
+			ParameterNode *parameter_source = nullptr;
+			ConstantNode *constant_source;
+			VariableNode *variable_source;
+			IdentifierNode *bind_source;
+		};
 
 		IdentifierNode() {
 			type = IDENTIFIER;
@@ -644,6 +715,11 @@ public:
 		};
 		Vector<Pair> dictionary;
 
+		HashMap<StringName, IdentifierNode *> binds;
+
+		bool has_bind(const StringName &p_name);
+		IdentifierNode *get_bind(const StringName &p_name);
+
 		PatternNode() {
 			type = PATTERN;
 		}
@@ -706,26 +782,56 @@ public:
 				UNDEFINED,
 				CONSTANT,
 				VARIABLE,
+				PARAMETER,
+				FOR_VARIABLE,
+				PATTERN_BIND,
 			};
 			Type type = UNDEFINED;
 			union {
 				ConstantNode *constant = nullptr;
 				VariableNode *variable;
+				ParameterNode *parameter;
+				IdentifierNode *bind;
 			};
+			StringName name;
+
+			int start_line = 0, end_line = 0;
+			int start_column = 0, end_column = 0;
+			int leftmost_column = 0, rightmost_column = 0;
+
+			DataType get_datatype() const;
+			String get_name() const;
 
 			Local() {}
 			Local(ConstantNode *p_constant) {
 				type = CONSTANT;
 				constant = p_constant;
+				name = p_constant->identifier->name;
 			}
 			Local(VariableNode *p_variable) {
 				type = VARIABLE;
 				variable = p_variable;
+				name = p_variable->identifier->name;
+			}
+			Local(ParameterNode *p_parameter) {
+				type = PARAMETER;
+				parameter = p_parameter;
+				name = p_parameter->identifier->name;
+			}
+			Local(IdentifierNode *p_identifier) {
+				type = FOR_VARIABLE;
+				bind = p_identifier;
+				name = p_identifier->name;
 			}
 		};
 		Local empty;
 		Vector<Local> locals;
 		HashMap<StringName, int> locals_indices;
+
+		FunctionNode *parent_function = nullptr;
+		ForNode *parent_for = nullptr;
+		IfNode *parent_if = nullptr;
+		PatternNode *parent_pattern = nullptr;
 
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
@@ -733,6 +839,10 @@ public:
 		void add_local(T *p_local) {
 			locals_indices[p_local->identifier->name] = locals.size();
 			locals.push_back(Local(p_local));
+		}
+		void add_local(const Local &p_local) {
+			locals_indices[p_local.name] = locals.size();
+			locals.push_back(p_local);
 		}
 
 		SuiteNode() {
@@ -752,8 +862,7 @@ public:
 	};
 
 	struct TypeNode : public Node {
-		IdentifierNode *type_base = nullptr;
-		SubscriptNode *type_specifier = nullptr;
+		Vector<IdentifierNode *> type_chain;
 
 		TypeNode() {
 			type = TYPE;
@@ -769,6 +878,7 @@ public:
 		};
 
 		OpType operation;
+		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *operand = nullptr;
 
 		UnaryOpNode() {
@@ -861,6 +971,8 @@ private:
 	HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
 
+	Set<int> unsafe_lines;
+
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
 	enum Precedence {
@@ -924,7 +1036,7 @@ private:
 	EnumNode *parse_enum();
 	ParameterNode *parse_parameter();
 	FunctionNode *parse_function();
-	SuiteNode *parse_suite(const String &p_context);
+	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
 	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, int p_optional_arguments = 0, bool p_is_vararg = false);
@@ -953,7 +1065,7 @@ private:
 	IfNode *parse_if(const String &p_token = "if");
 	MatchNode *parse_match();
 	MatchBranchNode *parse_match_branch();
-	PatternNode *parse_match_pattern();
+	PatternNode *parse_match_pattern(PatternNode *p_root_pattern = nullptr);
 	WhileNode *parse_while();
 	// Expressions.
 	ExpressionNode *parse_expression(bool p_can_assign, bool p_stop_on_assign = false);
