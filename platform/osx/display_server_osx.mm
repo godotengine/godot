@@ -3057,6 +3057,7 @@ int DisplayServerOSX::keyboard_get_layout_count() const {
 	}
 	return kbd_layouts.size();
 }
+<<<<<<< HEAD
 
 void DisplayServerOSX::keyboard_set_current_layout(int p_index) {
 	if (keyboard_layout_dirty) {
@@ -3139,6 +3140,58 @@ String DisplayServerOSX::keyboard_get_layout_language(int p_index) const {
 	return kbd_layouts[p_index].code;
 }
 
+=======
+
+void DisplayServerOSX::keyboard_set_current_layout(int p_index) {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
+
+	NSString *cur_name = [NSString stringWithUTF8String:kbd_layouts[p_index].name.utf8().get_data()];
+
+	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
+	NSArray *list_kbd = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_kbd, false);
+	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
+		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((TISInputSourceRef)[list_kbd objectAtIndex:i]);
+			break;
+		}
+	}
+	[list_kbd release];
+
+	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+	NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
+	for (NSUInteger i = 0; i < [list_ime count]; i++) {
+		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((TISInputSourceRef)[list_ime objectAtIndex:i]);
+			break;
+		}
+	}
+	[list_ime release];
+}
+
+int DisplayServerOSX::keyboard_get_current_layout() const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	return current_layout;
+}
+
+String DisplayServerOSX::keyboard_get_layout_language(int p_index) const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
+	return kbd_layouts[p_index].code;
+}
+
+>>>>>>> 92352b1c23... Add keyboard layout enumeration / set / get functions (macOS, Windows, Linux/X11), remove latin variant function.
 String DisplayServerOSX::keyboard_get_layout_name(int p_index) const {
 	if (keyboard_layout_dirty) {
 		_update_keyboard_layouts();
