@@ -44,6 +44,7 @@
 #include "core/vector.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
+#include "gdscript_warning.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/string_builder.h"
@@ -101,7 +102,7 @@ public:
 			CLASS, // GDScript.
 			VARIANT, // Can be any type.
 			UNRESOLVED,
-			// TODO: Enum, Signal, Callable
+			// TODO: Enum
 		};
 		Kind kind = UNRESOLVED;
 
@@ -366,7 +367,7 @@ public:
 	struct CallNode : public ExpressionNode {
 		ExpressionNode *callee = nullptr;
 		Vector<ExpressionNode *> arguments;
-		StringName function_name; // TODO: Set this.
+		StringName function_name;
 		bool is_super = false;
 
 		CallNode() {
@@ -388,6 +389,9 @@ public:
 			IdentifierNode *identifier = nullptr;
 			LiteralNode *custom_value = nullptr;
 			int value = 0;
+			int line = 0;
+			int leftmost_column = 0;
+			int rightmost_column = 0;
 		};
 		IdentifierNode *identifier = nullptr;
 		Vector<Value> values;
@@ -444,6 +448,28 @@ public:
 				return "";
 			}
 
+			int get_line() const {
+				switch (type) {
+					case CLASS:
+						return m_class->start_line;
+					case CONSTANT:
+						return constant->start_line;
+					case FUNCTION:
+						return function->start_line;
+					case VARIABLE:
+						return variable->start_line;
+					case ENUM_VALUE:
+						return enum_value.line;
+					case ENUM:
+						return m_enum->start_line;
+					case SIGNAL:
+						return signal->start_line;
+					case UNDEFINED:
+						ERR_FAIL_V_MSG(-1, "Reaching undefined member type.");
+				}
+				ERR_FAIL_V_MSG(-1, "Reaching unhandled type.");
+			}
+
 			DataType get_datatype() const {
 				switch (type) {
 					case CLASS:
@@ -462,9 +488,16 @@ public:
 						type.builtin_type = Variant::INT;
 						return type;
 					}
+					case SIGNAL: {
+						DataType type;
+						type.type_source = DataType::ANNOTATED_EXPLICIT;
+						type.kind = DataType::BUILTIN;
+						type.builtin_type = Variant::SIGNAL;
+						// TODO: Add parameter info.
+						return type;
+					}
 					case ENUM:
-					case SIGNAL:
-						// TODO: Use special datatype kinds for these.
+						// TODO: Use special datatype kinds for this.
 						return DataType();
 					case UNDEFINED:
 						return DataType();
@@ -545,6 +578,7 @@ public:
 		ExpressionNode *initializer = nullptr;
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
+		int usages = 0;
 
 		ConstantNode() {
 			type = CONSTANT;
@@ -594,6 +628,7 @@ public:
 		bool is_static = false;
 		bool is_coroutine = false;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+		MethodInfo info;
 
 		bool resolved_signature = false;
 		bool resolved_body = false;
@@ -634,6 +669,8 @@ public:
 			IdentifierNode *bind_source;
 		};
 
+		int usages = 0; // Useful for binds/iterator variable.
+
 		IdentifierNode() {
 			type = IDENTIFIER;
 		}
@@ -669,6 +706,7 @@ public:
 	struct MatchBranchNode : public Node {
 		Vector<PatternNode *> patterns;
 		SuiteNode *block;
+		bool has_wildcard = false;
 
 		MatchBranchNode() {
 			type = MATCH_BRANCH;
@@ -680,6 +718,7 @@ public:
 		ExpressionNode *default_value = nullptr;
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
+		int usages = 0;
 
 		ParameterNode() {
 			type = PARAMETER;
@@ -836,6 +875,10 @@ public:
 		IfNode *parent_if = nullptr;
 		PatternNode *parent_pattern = nullptr;
 
+		bool has_return = false;
+		bool has_continue = false;
+		bool has_unreachable_code = false; // Just so warnings aren't given more than once per block.
+
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
 		template <class T>
@@ -916,6 +959,8 @@ public:
 		bool onready = false;
 		PropertyInfo export_info;
 		MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+		int assignments = 0;
+		int usages = 0;
 
 		VariableNode() {
 			type = VARIABLE;
@@ -940,11 +985,15 @@ private:
 	bool panic_mode = false;
 	bool can_break = false;
 	bool can_continue = false;
+	bool is_ignoring_warnings = false;
 	List<bool> multiline_stack;
 
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
 	List<ParserError> errors;
+	List<GDScriptWarning> warnings;
+	Set<String> ignored_warnings;
+	Set<int> unsafe_lines;
 
 	GDScriptTokenizer tokenizer;
 	GDScriptTokenizer::Token previous;
@@ -973,8 +1022,6 @@ private:
 	};
 	HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
-
-	Set<int> unsafe_lines;
 
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
@@ -1015,6 +1062,8 @@ private:
 	T *alloc_node();
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
+	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
@@ -1104,6 +1153,7 @@ public:
 	static GDScriptFunctions::Function get_builtin_function(const StringName &p_name);
 
 	const List<ParserError> &get_errors() const { return errors; }
+	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const List<String> get_dependencies() const {
 		// TODO: Keep track of deps.
 		return List<String>();

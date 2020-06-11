@@ -294,7 +294,8 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	struct Warning {
-		int line;
+		int start_line = -1, end_line = -1;
+		int leftmost_column = -1, rightmost_column = -1;
 		int code;
 		String string_code;
 		String message;
