@@ -338,7 +338,13 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+				Finds the first occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
+				[codeblock]
+				# Will evaluate to `false`.
+				if "i" in "team":
+				    pass
+				[/codeblock]
 			</description>
 		</method>
 		<method name="find_last">
@@ -347,7 +353,7 @@
 			<argument index="0" name="what" type="String">
 			</argument>
 			<description>
-				Finds the last occurrence of a substring. Returns the starting position of the substring or -1 if not found.
+				Finds the last occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="findn">
@@ -358,7 +364,7 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="format">
@@ -860,7 +866,7 @@
 			<argument index="1" name="len" type="int" default="-1">
 			</argument>
 			<description>
-				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using -1 will return remaining characters from given position.
+				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii">

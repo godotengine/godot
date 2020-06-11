@@ -124,6 +124,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
+				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
+				[codeblock]
+				# Will evaluate to `true`.
+				if "godot" in {"godot": "engine"}:
+				    pass
+				[/codeblock]
+				This method (like the [code]in[/code] operator) will evaluate to [code]true[/code] as long as the key exists, even if the associated value is [code]null[/code].
 			</description>
 		</method>
 		<method name="has_all">
