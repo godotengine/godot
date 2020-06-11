@@ -683,6 +683,22 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return enabled_plugins;
 	}
 
+	static Error store_in_gradle_project(const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED) {
+		//use dir_access.cpp and file_access.cpp to write the file
+		size_t dir_point = p_path.rfind("/");
+		String dir = p_path.substr(0, dir_point); //gets the directory of the file
+		if (!DirAccess::exists(dir)) { //makes an asset directory
+			DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			filesystem_da->make_dir_recursive(dir);
+			memdelete(filesystem_da);
+		}
+		FileAccess *fa = FileAccess::open(p_path, FileAccess::WRITE);
+		fa->store_buffer(p_data.ptr(), p_data.size());
+		ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+		memdelete(fa);
+		return OK;
+	}
+
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED) {
 		zip_fileinfo zipfi = get_zip_fileinfo();
 		zipOpenNewFileInZip(ed->apk,
@@ -699,6 +715,35 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		zipWriteInFileInZip(ed->apk, p_data.ptr(), p_data.size());
 		zipCloseFileInZip(ed->apk);
 
+		return OK;
+	}
+
+	static Error save_gradle_project_so(void *p_userdata, const SharedObject &p_so) {
+		if (!p_so.path.get_file().begins_with("lib")) {
+			String err = "Android .so file names must start with \"lib\", but got: " + p_so.path;
+			ERR_PRINTS(err);
+			return FAILED;
+		}
+		Vector<String> abis = get_abis();
+		bool exported = false;
+		for (int i = 0; i < p_so.tags.size(); ++i) {
+			// shared objects can be fat (compatible with multiple ABIs)
+			int abi_index = abis.find(p_so.tags[i]);
+			if (abi_index != -1) {
+				exported = true;
+				String abi = abis[abi_index];
+				String dst_path = String("lib").plus_file(abi).plus_file(p_so.path.get_file());
+				Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
+				Error store_err = store_in_gradle_project(dst_path, array);
+				ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
+			}
+		}
+		if (!exported) {
+			String abis_string = String(" ").join(abis);
+			String err = "Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + abis_string;
+			ERR_PRINTS(err);
+			return FAILED;
+		}
 		return OK;
 	}
 
@@ -729,6 +774,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			ERR_PRINTS(err);
 			return FAILED;
 		}
+		return OK;
+	}
+
+	static Error save_gradle_project_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+		String dst_path = p_path.replace_first("res://", "res://android/build/assets/");
+		store_in_gradle_project(dst_path, p_data, 0);
 		return OK;
 	}
 
@@ -1339,6 +1390,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			return str;
 		}
 	}
+
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest) {
 
 		const int UTF8_FLAG = 0x00000100;
@@ -1432,6 +1484,28 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		p_manifest = ret;
 		//printf("end\n");
+	}
+
+	Vector<uint8_t> resize_launcher_icon(const Ref<Image> &p_source_image, const LauncherIcon p_icon) {
+		Ref<Image> working_image = p_source_image;
+
+		if (p_source_image->get_width() != p_icon.dimensions || p_source_image->get_height() != p_icon.dimensions) {
+			working_image = p_source_image->duplicate();
+			working_image->resize(p_icon.dimensions, p_icon.dimensions, Image::Interpolation::INTERPOLATE_LANCZOS);
+		}
+
+		PoolVector<uint8_t> png_buffer;
+		Error err = PNGDriverCommon::image_to_png(working_image, png_buffer);
+		if (err == OK) {
+			Vector<uint8_t> ret;
+			ret.resize(png_buffer.size());
+			memcpy(ret.ptrw(), png_buffer.read().ptr(), ret.size());
+			return ret;
+		} else {
+			String err_str = String("Failed to convert resized icon (") + p_icon.export_path + ") to png.";
+			WARN_PRINT(err_str.utf8().get_data());
+			return Vector<uint8_t>();
+		}
 	}
 
 	void _process_launcher_icons(const String &p_processing_file_name, const Ref<Image> &p_source_image, const LauncherIcon p_icon, Vector<uint8_t> &p_data) {
@@ -2274,8 +2348,7 @@ public:
 		return have_plugins_changed || first_build;
 	}
 
-
-	Error gradle_build(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, String &src_apk, int p_flags = 0){
+	Error gradle_build(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, String &src_apk, int p_flags = 0) {
 
 		{ //test that installed build version is alright
 			FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
@@ -2291,14 +2364,76 @@ public:
 		}
 		//build project if custom build is enabled
 		String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
-
 		ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
 
-		_update_custom_build_project();
+		_update_custom_build_project(); //alters the build.gradle, android manifest, etc.
+
+		String project_icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
+
+		// Prepare images to be resized for the icons. If some image ends up being uninitialized, the default image from the export template will be used.
+		Ref<Image> launcher_icon_image;
+		Ref<Image> launcher_adaptive_icon_foreground_image;
+		Ref<Image> launcher_adaptive_icon_background_image;
+
+		launcher_icon_image.instance();
+		launcher_adaptive_icon_foreground_image.instance();
+		launcher_adaptive_icon_background_image.instance();
+
+		// Regular icon: user selection -> project icon -> default.
+		String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+		if (path.empty() || ImageLoader::load_image(path, launcher_icon_image) != OK) {
+			ImageLoader::load_image(project_icon_path, launcher_icon_image);
+		}
+
+		// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
+		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+		if (path.empty() || ImageLoader::load_image(path, launcher_adaptive_icon_foreground_image) != OK) {
+			launcher_adaptive_icon_foreground_image = launcher_icon_image;
+		}
+
+		// Adaptive background: user selection -> default.
+		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+		if (!path.empty()) {
+			ImageLoader::load_image(path, launcher_adaptive_icon_background_image);
+		}
+
+		for (int i = 0; i < icon_densities_count; ++i) {
+			//void _process_launcher_icons(const String &p_processing_file_name, const Ref<Image> &p_source_image, const LauncherIcon p_icon, Vector<uint8_t> &p_data)
+			if (launcher_icon_image.is_valid() && !launcher_icon_image->empty()) {
+				Vector<uint8_t> data = resize_launcher_icon(launcher_icon_image, launcher_icons[i]);
+				String img_path = launcher_icons[i].export_path;
+				img_path = img_path.insert(0, "res://android/build/");
+				store_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
+			}
+			if (launcher_adaptive_icon_foreground_image.is_valid() && !launcher_adaptive_icon_foreground_image->empty()) {
+				Vector<uint8_t> data = resize_launcher_icon(launcher_adaptive_icon_foreground_image, launcher_adaptive_icon_foregrounds[i]);
+				String img_path = launcher_adaptive_icon_foregrounds[i].export_path;
+				img_path = img_path.insert(0, "res://android/build/");
+				store_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
+			}
+			if (launcher_adaptive_icon_background_image.is_valid() && !launcher_adaptive_icon_background_image->empty()) {
+				Vector<uint8_t> data = resize_launcher_icon(launcher_adaptive_icon_background_image, launcher_adaptive_icon_backgrounds[i]);
+				String img_path = launcher_adaptive_icon_backgrounds[i].export_path;
+				img_path = img_path.insert(0, "res://android/build/");
+				store_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
+			}
+		}
+
+        //TODO: replicate the functionality of _fix_manifest
+
+        //        String file = "res://android/build/AndroidManifest.xml";
+        //
+        //        Vector<uint8_t> android_manifest_file_data = FileAccess::get_file_as_array(file);
+        //        _fix_manifest(p_preset, android_manifest_file_data,  p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG));
+
+		APKExportData ed;
+		Error err = export_project_files(p_preset, save_gradle_project_file, &ed, save_gradle_project_so);
 
 		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
 
 		String build_command;
+		String package_name = get_package_name(p_preset->get("package/unique_name"));
+
 #ifdef WINDOWS_ENABLED
 		build_command = "gradlew.bat";
 #else
@@ -2308,8 +2443,6 @@ public:
 		String build_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/build");
 
 		build_command = build_path.plus_file(build_command);
-
-		String package_name = get_package_name(p_preset->get("package/unique_name"));
 
 		Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
 		String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
@@ -2328,13 +2461,8 @@ public:
 		cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 		cmdline.push_back("-p"); // argument to specify the start directory.
 		cmdline.push_back(build_path); // start directory.
-		/*{ used for debug
-            int ec;
-            String pipe;
-            OS::get_singleton()->execute(build_command, cmdline, true, NULL, NULL, &ec);
-            print_line("exit code: " + itos(ec));
-        }
-        */
+
+		//Executes the build command
 		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline);
 		if (result != 0) {
 			EditorNode::get_singleton()->show_warning(TTR("Building of Android project failed, check output for the error.\nAlternatively visit docs.godotengine.org for Android build documentation."));
@@ -2366,24 +2494,23 @@ public:
 			return gradle_build(p_preset, p_debug, p_path, src_apk, p_flags);
 		}
 
-        if (p_debug)
-            src_apk = p_preset->get("custom_template/debug");
-        else
-            src_apk = p_preset->get("custom_template/release");
+		if (p_debug)
+			src_apk = p_preset->get("custom_template/debug");
+		else
+			src_apk = p_preset->get("custom_template/release");
 
-        src_apk = src_apk.strip_edges();
-        if (src_apk == "") {
-            if (p_debug) {
-                src_apk = find_export_template("android_debug.apk");
-            } else {
-                src_apk = find_export_template("android_release.apk");
-            }
-            if (src_apk == "") {
-                EditorNode::add_io_error("Package not found: " + src_apk);
-                return ERR_FILE_NOT_FOUND;
-            }
-        }
-
+		src_apk = src_apk.strip_edges();
+		if (src_apk == "") {
+			if (p_debug) {
+				src_apk = find_export_template("android_debug.apk");
+			} else {
+				src_apk = find_export_template("android_release.apk");
+			}
+			if (src_apk == "") {
+				EditorNode::add_io_error("Package not found: " + src_apk);
+				return ERR_FILE_NOT_FOUND;
+			}
+		}
 
 		if (!DirAccess::exists(p_path.get_base_dir())) {
 			return ERR_FILE_BAD_PATH;
