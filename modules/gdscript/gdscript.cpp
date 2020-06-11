@@ -43,6 +43,7 @@
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
+#include "gdscript_warning.h"
 
 ///////////////////////////
 
@@ -469,10 +470,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 						}
 
 						members_cache.push_back(member.variable->export_info);
-						// FIXME: Get variable's default value in non-literal cases.
 						Variant default_value;
-						if (member.variable->initializer != nullptr && member.variable->initializer->type == GDScriptParser::Node::LITERAL) {
-							default_value = static_cast<const GDScriptParser::LiteralNode *>(member.variable->initializer)->value;
+						if (member.variable->initializer->is_constant) {
+							default_value = member.variable->initializer->reduced_value;
 						}
 						member_default_values_cache[member.variable->identifier->name] = default_value;
 					} break;
@@ -637,14 +637,13 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 	}
 #ifdef DEBUG_ENABLED
-	// FIXME: Add warnings.
-	// for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
-	// 	const GDScriptWarning &warning = E->get();
-	// 	if (EngineDebugger::is_active()) {
-	// 		Vector<ScriptLanguage::StackInfo> si;
-	// 		EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
-	// 	}
-	// }
+	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
+		const GDScriptWarning &warning = E->get();
+		if (EngineDebugger::is_active()) {
+			Vector<ScriptLanguage::StackInfo> si;
+			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
+		}
+	}
 #endif
 
 	valid = true;
@@ -2044,7 +2043,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	GLOBAL_DEF("debug/gdscript/completion/autocomplete_setters_and_getters", false);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-		bool default_enabled = !warning.begins_with("unsafe_") && i != GDScriptWarning::UNUSED_CLASS_VARIABLE;
+		bool default_enabled = !warning.begins_with("unsafe_");
 		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
 	}
 #endif // DEBUG_ENABLED

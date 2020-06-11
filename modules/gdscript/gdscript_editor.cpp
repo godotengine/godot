@@ -134,23 +134,25 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 	GDScriptAnalyzer analyzer(&parser);
 
 	Error err = parser.parse(p_script, p_path, false);
-#ifdef DEBUG_ENABLED
-	// FIXME: Warnings.
-	// if (r_warnings) {
-	// 	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
-	// 		const GDScriptWarning &warn = E->get();
-	// 		ScriptLanguage::Warning w;
-	// 		w.line = warn.line;
-	// 		w.code = (int)warn.code;
-	// 		w.string_code = GDScriptWarning::get_name_from_code(warn.code);
-	// 		w.message = warn.get_message();
-	// 		r_warnings->push_back(w);
-	// 	}
-	// }
-#endif
 	if (err == OK) {
 		err = analyzer.analyze();
 	}
+#ifdef DEBUG_ENABLED
+	if (r_warnings) {
+		for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
+			const GDScriptWarning &warn = E->get();
+			ScriptLanguage::Warning w;
+			w.start_line = warn.start_line;
+			w.end_line = warn.end_line;
+			w.leftmost_column = warn.leftmost_column;
+			w.rightmost_column = warn.rightmost_column;
+			w.code = (int)warn.code;
+			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
+			w.message = warn.get_message();
+			r_warnings->push_back(w);
+		}
+	}
+#endif
 	if (err) {
 		GDScriptParser::ParserError parse_error = parser.get_errors().front()->get();
 		r_line_error = parse_error.line;
