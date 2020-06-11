@@ -3,7 +3,7 @@ import re
 import glob
 import subprocess
 from collections import OrderedDict
-from compat import iteritems, isbasestring, decode_utf8
+from compat import iteritems, isbasestring, decode_utf8, qualname
 
 
 def add_source_files(self, sources, files, warn_duplicates=True):
@@ -724,10 +724,12 @@ def show_progress(env):
     # Progress reporting is not available in non-TTY environments since it
     # messes with the output (for example, when writing to a file)
     show_progress = env["progress"] and sys.stdout.isatty()
-    node_count = 0
-    node_count_max = 0
-    node_count_interval = 1
-    node_count_fname = str(env.Dir("#")) + "/.scons_node_count"
+    node_count_data = {
+        "count": 0,
+        "max": 0,
+        "interval": 1,
+        "fname": str(env.Dir("#")) + "/.scons_node_count",
+    }
 
     import time, math
 
@@ -746,10 +748,11 @@ def show_progress(env):
             self.delete(self.file_list())
 
         def __call__(self, node, *args, **kw):
-            nonlocal node_count, node_count_max, node_count_interval, node_count_fname, show_progress
             if show_progress:
                 # Print the progress percentage
-                node_count += node_count_interval
+                node_count_data["count"] += node_count_data["interval"]
+                node_count = node_count_data["count"]
+                node_count_max = node_count_data["max"]
                 if node_count_max > 0 and node_count <= node_count_max:
                     screen.write("\r[%3d%%] " % (node_count * 100 / node_count_max))
                     screen.flush()
@@ -817,14 +820,13 @@ def show_progress(env):
             return total_size
 
     def progress_finish(target, source, env):
-        nonlocal node_count, progressor
-        with open(node_count_fname, "w") as f:
-            f.write("%d\n" % node_count)
+        with open(node_count_data["fname"], "w") as f:
+            f.write("%d\n" % node_count_data["count"])
         progressor.delete(progressor.file_list())
 
     try:
-        with open(node_count_fname) as f:
-            node_count_max = int(f.readline())
+        with open(node_count_data["fname"]) as f:
+            node_count_data["max"] = int(f.readline())
     except:
         pass
 
@@ -833,7 +835,7 @@ def show_progress(env):
     # cache directory to a size not larger than cache_limit.
     cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
     progressor = cache_progress(cache_directory, cache_limit)
-    Progress(progressor, interval=node_count_interval)
+    Progress(progressor, interval=node_count_data["interval"])
 
     progress_finish_command = Command("progress_finish", [], progress_finish)
     AlwaysBuild(progress_finish_command)
@@ -844,7 +846,7 @@ def dump(env):
     from json import dump
 
     def non_serializable(obj):
-        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
+        return "<<non-serializable: %s>>" % (qualname(type(obj)))
 
     with open(".scons_env.json", "w") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)
