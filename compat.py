@@ -39,6 +39,10 @@ if sys.version_info < (3,):
                 result += c
         return result
 
+    def qualname(obj):
+        # Not properly equivalent to __qualname__ in py3, but it doesn't matter.
+        return obj.__name__
+
 
 else:
 
@@ -88,3 +92,6 @@ else:
             else:
                 result += chr(c)
         return result
+
+    def qualname(obj):
+        return obj.__qualname__
