@@ -19,8 +19,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+=======
+"PO-Revision-Date: 2020-05-22 21:01+0000\n"
+"Last-Translator: Cristian Yepez <cristianyepez@gmail.com>\n"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -1472,7 +1477,11 @@ msgstr "Reordenar Autoloads"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
+<<<<<<< HEAD
 msgstr "No se puede agregar autoload:"
+=======
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2435,17 +2444,26 @@ msgid "Can't reload a scene that was never saved."
 msgstr "No se puede volver a cargar una escena que nunca se guardó."
 
 #: editor/editor_node.cpp
+<<<<<<< HEAD
 msgid "Reload Saved Scene"
 msgstr "Recargar Escena Guardada"
+=======
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Guardar Escena"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+<<<<<<< HEAD
 "La escena actual tiene cambios sin guardar.\n"
 "Querés recargar la escena guardada igualmente? Esta acción no se puede "
 "deshacer."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2953,7 +2971,7 @@ msgstr "Q&A"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
-msgstr "Reportar un Bug"
+msgstr "Reportar algún error"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -3391,10 +3409,18 @@ msgid "Did you forget the '_run' method?"
 msgstr "Te olvidaste del método '_run'?"
 
 #: editor/editor_spin_slider.cpp
+<<<<<<< HEAD
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "Mantené pulsado Ctrl para redondear a enteros. Mantené pulsado Shift para "
 "cambios más precisos."
+=======
+#, fuzzy
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Mantené pulsado Ctrl para depositar un Getter. Mantené pulsado Shift para "
+"depositar una firma genérica."
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3996,7 +4022,11 @@ msgstr "Error ejecutando el script de post-importacion:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
+<<<<<<< HEAD
 msgstr "¿Devolviste un objeto derivado de Node en el método `post_import()`?"
+=======
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6958,8 +6988,14 @@ msgstr ""
 "nodo '%s'."
 
 #: editor/plugins/script_text_editor.cpp
+<<<<<<< HEAD
 msgid "[Ignore]"
 msgstr "[Ignorar]"
+=======
+#, fuzzy
+msgid "[Ignore]"
+msgstr "(ignorar)"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7444,12 +7480,15 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+<<<<<<< HEAD
 "Hacé clic para alternar entre los estados de visibilidad.\n"
 "\n"
 "Ojo abierto: El gizmo es visible.\n"
 "Ojo cerrado: El gizmo está oculto.\n"
 "Ojo medio abierto: El gizmo también es visible a través de superficies "
 "opacas (\"x-ray\")."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10546,8 +10585,14 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Escena Hija"
 
 #: editor/scene_tree_dock.cpp
+<<<<<<< HEAD
 msgid "Detach Script"
 msgstr "Desasignar Script"
+=======
+#, fuzzy
+msgid "Detach Script"
+msgstr "Adjuntar Script"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10719,9 +10764,12 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+<<<<<<< HEAD
 "No se puede asignar el script: no hay ningún lenguaje registrado.\n"
 "Esto es probablemente porque este editor fue compilado con todos los módulos "
 "de lenguaje desactivados."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10772,12 +10820,23 @@ msgstr ""
 "existe ningún nodo raíz."
 
 #: editor/scene_tree_dock.cpp
+<<<<<<< HEAD
 msgid "Attach a new or existing script to the selected node."
 msgstr "Asignar un script nuevo o existente al nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Detach the script from the selected node."
 msgstr "Desasignar el script del nodo seleccionado."
+=======
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
+msgstr "Adjuntar un script nuevo o existente para el nodo seleccionado."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Detach the script from the selected node."
+msgstr "Restablecer un script para el nodo seleccionado."
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -12009,10 +12068,17 @@ msgstr ""
 "Keystore debug no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
+<<<<<<< HEAD
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Release keystore no está configurado correctamente en el preset de "
 "exportación."
+=======
+#, fuzzy
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Keystore debug no configurada en Configuración del Editor ni en el preset."
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12047,33 +12113,49 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+<<<<<<< HEAD
 "El módulo \"GodotPaymentV3\" incluido en el ajuste de proyecto \"android/"
 "modules\" es inválido (cambiado en Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Use Custom Build\" debe estar activado para usar los plugins."
+=======
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+<<<<<<< HEAD
 "\"Degrees Of Freedom\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile "
 "VR\"."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+<<<<<<< HEAD
 "\"Hand Tracking\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR\"."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+<<<<<<< HEAD
 "\"Focus Awareness\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR"
 "\"."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""

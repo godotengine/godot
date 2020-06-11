@@ -24,11 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-<<<<<<< HEAD
-"PO-Revision-Date: 2020-06-06 10:15+0000\n"
-=======
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
->>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 "Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -37,11 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-<<<<<<< HEAD
-"X-Generator: Weblate 4.1-dev\n"
-=======
 "X-Generator: Weblate 4.2-dev\n"
->>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp

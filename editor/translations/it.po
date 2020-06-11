@@ -51,13 +51,17 @@
 # Andrea Terenziani <andrea.terenziani.at@gmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # riccardo boffelli <riccardo.boffelli.96@gmail.com>, 2020.
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
+<<<<<<< HEAD
 <<<<<<< HEAD
 "PO-Revision-Date: 2020-05-07 21:28+0000\n"
 "Last-Translator: Sean Bone <seanbone@zumguy.com>\n"
@@ -65,6 +69,10 @@ msgstr ""
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
 "Last-Translator: riccardo boffelli <riccardo.boffelli.96@gmail.com>\n"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+"PO-Revision-Date: 2020-05-07 21:28+0000\n"
+"Last-Translator: Sean Bone <seanbone@zumguy.com>\n"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -1514,10 +1522,14 @@ msgstr "Riordina gli Autoload"
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr ""
 =======
 msgstr "Non è possibile aggiungere l'autoload:"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2482,6 +2494,7 @@ msgstr "Impossibile ricaricare una scena che non è mai stata salvata."
 
 #: editor/editor_node.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "Reload Saved Scene"
 msgstr "Salva Scena"
@@ -2489,6 +2502,11 @@ msgstr "Salva Scena"
 msgid "Reload Saved Scene"
 msgstr "Ricarica scena salvata"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Salva Scena"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2496,10 +2514,13 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "La scena attuale ha dei cambiamenti non salvati.\n"
 "Ricaricare comunque la scena salvata? Questa azione non può essere annullata."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3447,17 +3468,23 @@ msgstr "Hai dimenticato il metodo '_run'?"
 
 #: editor/editor_spin_slider.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 #, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "Mantieni premuto Control per rilasciare un Getter. Mantieni premuto Shift "
 "per rilasciare una firma generica."
+<<<<<<< HEAD
 =======
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "Tenere premuto il tasto Ctrl per arrotondare ai numeri interi. Tenere "
 "premuto Shift per modifiche più precise."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4058,6 +4085,7 @@ msgstr "Errore di esecuzione dello script di post-import:"
 
 #: editor/import/resource_importer_scene.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
 =======
@@ -4066,6 +4094,10 @@ msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
 "Avete restituito un oggetto derivato da un Nodo nel metodo `post_import()`?"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -7035,6 +7067,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "[Ignore]"
 msgstr "(ignora)"
@@ -7042,6 +7075,11 @@ msgstr "(ignora)"
 msgid "[Ignore]"
 msgstr "[ignora]"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+msgid "[Ignore]"
+msgstr "(ignora)"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7528,6 +7566,7 @@ msgid ""
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "Fare clic per passare da uno stato di visibilità all'altro.\n"
 "\n"
@@ -7536,6 +7575,8 @@ msgstr ""
 "Occhio semiaperto: Gizmo è visibile anche attraverso superfici opache "
 "(\"raggi X\")."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10636,6 +10677,7 @@ msgstr "Istanzia Scena Figlia"
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "Detach Script"
 msgstr "Allega Script"
@@ -10643,6 +10685,11 @@ msgstr "Allega Script"
 msgid "Detach Script"
 msgstr "Rimuovi Script"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+msgid "Detach Script"
+msgstr "Allega Script"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10809,20 +10856,26 @@ msgstr "Apri la documentazione"
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #, fuzzy
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "Non è possibile allegare uno script: non ci sono linguaggi registrati.\n"
 "Questo probabilmente perché questo editor è stato costruito con tutti i "
 "moduli di lingua disabilitati."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10874,6 +10927,9 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 #, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "Allega un nuovo script o uno esistente al nodo selezionato."
@@ -12186,6 +12242,32 @@ msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 "\"Focus Awareness\" è valida solo quando \"Xr Mode\" è \"Oculus Mobile VR\"."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""

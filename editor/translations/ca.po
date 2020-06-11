@@ -2433,14 +2433,20 @@ msgid "Reload Saved Scene"
 msgstr "Desa Escena"
 
 #: editor/editor_node.cpp
+<<<<<<< HEAD
 #, fuzzy
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+<<<<<<< HEAD
 "L'escena actual té canvis sense desar.\n"
 "Voleu torna a carregar l'escena desada de totes maneres? Aquesta acció no es "
 "pot desfer."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."

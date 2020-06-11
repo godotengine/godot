@@ -756,6 +756,7 @@ msgstr "Rindu un kolonnu numuri."
 msgid "Method in target node must be specified."
 msgstr "Metodi mērķa mezglā nepieciešams specificēt."
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 #: editor/connections_dialog.cpp
@@ -763,6 +764,8 @@ msgstr "Metodi mērķa mezglā nepieciešams specificēt."
 msgid "Method name must be a valid identifier."
 msgstr "Metodi mērķa mezglā nepieciešams specificēt."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/connections_dialog.cpp
 msgid ""

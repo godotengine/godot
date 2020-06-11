@@ -74,6 +74,7 @@
 # Климентий Титов <titoffklim@cclc.tech>, 2020.
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # Nikita <Kulacnikita@ya.ru>, 2020.
+<<<<<<< HEAD
 # Alexander <ramzi7208@gmail.com>, 2020.
 # Alex Tern <ternvein@gmail.com>, 2020.
 <<<<<<< HEAD
@@ -81,10 +82,13 @@
 # Varion Drakon Neonovich <variondrakon@gmail.com>, 2020.
 # d2cyb <dmitrydpb@gmail.com>, 2020.
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
+<<<<<<< HEAD
 <<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 12:01+0000\n"
 "Last-Translator: Alex Tern <ternvein@gmail.com>\n"
@@ -92,6 +96,10 @@ msgstr ""
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
 "Last-Translator: Александр <ol-vin@mail.ru>\n"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+"PO-Revision-Date: 2020-05-24 20:13+0000\n"
+"Last-Translator: Nikita <Kulacnikita@ya.ru>\n"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -149,10 +157,14 @@ msgstr "Недопустимые аргументы для построения 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "На вызове '%s':"
 =======
 msgstr "При вызове '%s':"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+msgstr "На вызове '%s':"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: core/ustring.cpp
 msgid "B"
@@ -1546,10 +1558,14 @@ msgstr "Перестановка автозагрузок"
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "Нельзя добваить автозагрузку:"
 =======
 msgstr "Не удаётся добавить автозагрузку:"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2508,20 +2524,29 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Не возможно загрузить сцену, которая не была сохранена."
 
 #: editor/editor_node.cpp
+<<<<<<< HEAD
 msgid "Reload Saved Scene"
 <<<<<<< HEAD
 msgstr "Перезагрузить сохранённую сцену"
 =======
 msgstr "Перезагрузить сохраненную сцену"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Сохранить сцену"
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+<<<<<<< HEAD
 "Текущая сцена имеет несохраненные изменения. \n"
 "Всё равно перезагрузить сцену? Это действие нельзя отменить."
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2806,9 +2831,12 @@ msgstr "Отменить (Undo)"
 msgid "Redo"
 <<<<<<< HEAD
 msgstr "Повторить"
+<<<<<<< HEAD
 =======
 msgstr "Повторить (Redo)"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3459,10 +3487,18 @@ msgid "Did you forget the '_run' method?"
 msgstr "Быть может вы забыли метод _run()?"
 
 #: editor/editor_spin_slider.cpp
+<<<<<<< HEAD
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "Зажмите Ctrl, чтобы округлить до целых. Зажмите Shift для более точных "
 "изменений."
+=======
+#, fuzzy
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Зажмите Ctrl, чтобы добавить Getter. Зажмите Shift, чтобы добавить "
+"универсальную подпись."
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4061,10 +4097,14 @@ msgstr "Ошибка запуска пост-импорт скрипта:"
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr ""
 =======
 msgstr "Вы вернули производный от Node объект в методе `post_import ()`?"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+msgstr ""
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6095,16 +6135,22 @@ msgid ""
 "that property isn't possible."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 "Создаёт статичную обводочную полисетку. Её нормали переворачиваются "
 "автоматически.\n"
 "Она может быть использована в случае, если использовать свойство Grow "
 "материала SpatialMaterial не представляется возможным."
+<<<<<<< HEAD
 =======
 "Создать статичную контурную полисетку. Контурная полисетка будет иметь свои "
 "нормали, перевернутые автоматически.\n"
 "Можно использовать вместо свойства Grow в SpatialMaterial, в случае когда "
 "оно не применимо."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7020,9 +7066,13 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid "[Ignore]"
 msgstr "(игнорировать)"
 
@@ -7511,6 +7561,7 @@ msgid ""
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "Нажмите для переключения между состояниями видимости.\n"
 "\n"
@@ -7519,6 +7570,8 @@ msgstr ""
 "Полуоткрытый глаз: Гизмо также видно сквозь непрозрачные поверхности "
 "(«рентген»)."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10609,9 +10662,13 @@ msgstr "Добавить дочернюю сцену"
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid "Detach Script"
 msgstr "Прикрепить скрипт"
 
@@ -10785,11 +10842,14 @@ msgid ""
 "disabled."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "Невозможно прикрепить скрипт: нет зарегистрированных языков.\n"
 "Вероятно, это связано с тем, что этот редактор был построен с отключенными "
 "всеми языковыми модулями."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10841,17 +10901,25 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid "Attach a new or existing script to the selected node."
 msgstr "Прикрепить новый или существующий скрипт к выбранному узлу."
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid "Detach the script from the selected node."
 msgstr "Убрать скрипт у выбранного узла."
 
@@ -12081,9 +12149,13 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+#, fuzzy
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Отладочная клавиатура не настроена ни в настройках редактора, ни в "
@@ -12122,10 +12194,14 @@ msgid ""
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+<<<<<<< HEAD
 =======
 "Недопустимый модуль «GodotPaymentV3», включенный в настройку проекта "
 "«android/modules» (изменен в Godot 3.2.2).\n"
@@ -12134,6 +12210,8 @@ msgstr ""
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "«Use Custom Build» должен быть включен для использования плагинов."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12141,30 +12219,39 @@ msgid ""
 "\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "«Степени свободы» действительны только тогда, когда «Xr Mode» - это «Oculus "
 "Mobile VR»."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "«Отслеживание рук» действует только тогда, когда «Xr Mode» - это «Oculus "
 "Mobile VR»."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "«Осведомленность о фокусе» действительна только в том случае, если «Режим "
 "Xr» - это «Oculus Mobile VR»."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12398,10 +12485,14 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "Заслоняющий полигон для этого окклюдера пуст. Пожалуйста, нарисуйте полигон."
 =======
 "Заслоняющий полигон для этого окклюдера пуст. Пожалуйста, добавьте полигон."
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+"Заслоняющий полигон для этого окклюдера пуст. Пожалуйста, нарисуйте полигон."
+>>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
