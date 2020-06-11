@@ -71,12 +71,15 @@
 # Super Pracion <superpracion2@gmail.com>, 2020.
 # PizzArt <7o7goo7o7@gmail.com>, 2020.
 # TheGracekale <mrsmailbot.lg@gmail.com>, 2020.
+# Климентий Титов <titoffklim@cclc.tech>, 2020.
+# Richard Urban <redasuio1@gmail.com>, 2020.
+# Nikita <Kulacnikita@ya.ru>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-05 14:01+0000\n"
-"Last-Translator: Super Pracion <superpracion2@gmail.com>\n"
+"PO-Revision-Date: 2020-05-24 20:13+0000\n"
+"Last-Translator: Nikita <Kulacnikita@ya.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -90,7 +93,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Неверный тип аргумента для convert(), используйте TYPE_* константы."
+msgstr "Неверный тип аргумента для convert(), используйте константы TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -129,7 +132,7 @@ msgstr "Недопустимые аргументы для построения 
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "На вызове  '%s':"
+msgstr "На вызове '%s':"
 
 #: core/ustring.cpp
 msgid "B"
@@ -906,7 +909,6 @@ msgstr "Не удается подключить сигнал"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1516,17 +1518,9 @@ msgstr "Включить"
 msgid "Rearrange Autoloads"
 msgstr "Перестановка автозагрузок"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Недопустимый путь."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Файл не существует."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Не в пути ресурсов."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2041,7 +2035,7 @@ msgstr "Константы"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Описание свойств"
+msgstr "Описания свойств"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2057,7 +2051,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr "Описание методов"
+msgstr "Описания методов"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2485,12 +2479,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Не возможно загрузить сцену, которая не была сохранена."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Восстановить"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Сохранить сцену"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Это действие нельзя отменить. Восстановить в любом случае?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2539,7 +2536,7 @@ msgstr "Закрыть сцену"
 
 #: editor/editor_node.cpp
 msgid "Reopen Closed Scene"
-msgstr "Открыть ранее закрытую сцену"
+msgstr "Открыть закрытую сцену"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
@@ -2776,10 +2773,6 @@ msgid "Redo"
 msgstr "Повторить"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Восстановить сцену"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Прочие инструменты."
 
@@ -2861,8 +2854,8 @@ msgstr ""
 "Когда эта опция включена, экспорт или развёртывание будет создавать "
 "минимальный исполняемый файл.\n"
 "Файловая система проекта будет предоставляться редактором через сеть.\n"
-"На Android развёртывание будет быстрее при подключении через USB.\n"
-"Эта опция ускоряет тестирование больших проектов."
+"На Android развёртывание будет быстрее при подключении через USB. Эта опция "
+"ускоряет тестирование игр с большим объемом памяти."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -3161,11 +3154,11 @@ msgstr "Выделение"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "Открыть 2D редактор"
+msgstr "Открыть 2D-редактор"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr "Открыть 3D редактор"
+msgstr "Открыть 3D-редактор"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
@@ -3426,6 +3419,13 @@ msgstr "Невозможно запустить скрипт:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Быть может вы забыли метод _run()?"
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Зажмите Ctrl, чтобы добавить Getter. Зажмите Shift, чтобы добавить "
+"универсальную подпись."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4020,6 +4020,10 @@ msgstr "Повреждённый/сломанный скрипт для пост
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Ошибка запуска пост-импорт скрипта:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6044,17 +6048,16 @@ msgid "Create Outline Mesh..."
 msgstr "Создать полисетку обводки..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Creates a static outline mesh. The outline mesh will have its normals "
 "flipped automatically.\n"
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
-"Создаёт статичную контурную полисетку. Её нормали будут перевёрнуты "
+"Создаёт статичную обводочную полисетку. Её нормали переворачиваются "
 "автоматически.\n"
-"Она может быть заменой свойству Grow ресурса SpatialMaterial, когда это "
-"свойство невозможно использовать."
+"Она может быть использована в случае, если использовать свойство Grow "
+"материала SpatialMaterial не представляется возможным."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -6678,7 +6681,7 @@ msgstr "AnimationTree - не задан путь к AnimationPlayer"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "Path to AnimationPlayer is invalid"
-msgstr "Путь к AnimationPlayer  недействительный"
+msgstr "Путь к AnimationPlayer недействительный"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -6969,12 +6972,13 @@ msgstr ""
 "'%s'."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Строка"
+#, fuzzy
+msgid "[Ignore]"
+msgstr "(игнорировать)"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(игнорировать)"
+msgid "Line"
+msgstr "Строка"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7340,7 +7344,6 @@ msgid "This operation requires a single selected node."
 msgstr "Эта операция требует одного выбранного узла."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
 msgstr "Ортогональный"
 
@@ -7448,6 +7451,15 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm диалоговое окно"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -9113,9 +9125,8 @@ msgid "2D texture uniform lookup."
 msgstr "Равномерный поиск 2D-текстур."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup with triplanar."
-msgstr "Форменный поиск 2d текстуры с трипланаром."
+msgstr "Равномерный поиск 2d текстуры с трипланаром."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
@@ -10152,7 +10163,6 @@ msgid "Settings saved OK."
 msgstr "Настройки сохранены нормально."
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Moved Input Action Event"
 msgstr "Событие ввода действия перемещено"
 
@@ -10471,7 +10481,6 @@ msgid "Regular Expression Error"
 msgstr "Ошибка в регулярном выражении"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
 msgstr "На символе %s"
 
@@ -10540,8 +10549,9 @@ msgid "Instance Child Scene"
 msgstr "Добавить дочернюю сцену"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Убрать скрипт"
+#, fuzzy
+msgid "Detach Script"
+msgstr "Прикрепить скрипт"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10707,6 +10717,13 @@ msgid "Open Documentation"
 msgstr "Открыть документацию"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Добавить дочерний узел"
 
@@ -10755,11 +10772,13 @@ msgstr ""
 "не существует."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
 msgstr "Прикрепить новый или существующий скрипт к выбранному узлу."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr "Убрать скрипт у выбранного узла."
 
 #: editor/scene_tree_dock.cpp
@@ -10891,6 +10910,10 @@ msgid "A directory with the same name exists."
 msgstr "Каталог с таким же именем существует."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Файл не существует."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Недопустимое расширение."
 
@@ -10929,6 +10952,10 @@ msgstr "Открыть скрипт"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "Файл существует, будет использован повторно."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Недопустимый путь."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11979,6 +12006,13 @@ msgstr ""
 "предустановках."
 
 #: platform/android/export/export.cpp
+#, fuzzy
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Отладочная клавиатура не настроена ни в настройках редактора, ни в "
+"предустановках."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "Пользовательская сборка требует наличия правильного пути к Android SDK в "
@@ -12004,6 +12038,32 @@ msgstr "Недействительный публичный ключ для ра
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Недопустимое имя пакета:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12039,7 +12099,6 @@ msgstr ""
 "Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "No build apk generated at: "
 msgstr "Нет сборки apk в: "
 
@@ -12235,10 +12294,9 @@ msgstr ""
 "чтобы работать."
 
 #: scene/2d/light_occluder_2d.cpp
-#, fuzzy
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
-"Заслоняющий полигон для этого окклюдера пуст. Пожалуйста, нарисуйте полигон!"
+"Заслоняющий полигон для этого окклюдера пуст. Пожалуйста, нарисуйте полигон."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -12725,8 +12783,7 @@ msgid ""
 msgstr ""
 "ScrollContainer предназначен для работы с одним дочерним элементом "
 "управления.\n"
-"Используйте дочерний контейнер (VBox, HBox и т.д.), или Control и "
-"установите\n"
+"Используйте дочерний контейнер (VBox, HBox и т.д.), или Control и установите "
 "минимальный размер вручную."
 
 #: scene/gui/tree.cpp
@@ -12785,6 +12842,21 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Не в пути ресурсов."
+
+#~ msgid "Revert"
+#~ msgstr "Восстановить"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Это действие нельзя отменить. Восстановить в любом случае?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Восстановить сцену"
+
+#~ msgid "Clear Script"
+#~ msgstr "Убрать скрипт"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Система отслеживания ошибок"
