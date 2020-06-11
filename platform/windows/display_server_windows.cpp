@@ -1372,70 +1372,99 @@ void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
 	AllowSetForegroundWindow(pid);
 }
 
-DisplayServer::LatinKeyboardVariant DisplayServerWindows::get_latin_keyboard_variant() const {
-	_THREAD_SAFE_METHOD_
+int DisplayServerWindows::keyboard_get_layout_count() const {
+	return GetKeyboardLayoutList(0, NULL);
+}
 
-	unsigned long azerty[] = {
-		0x00020401, // Arabic (102) AZERTY
-		0x0001080c, // Belgian (Comma)
-		0x0000080c, // Belgian French
-		0x0000040c, // French
-		0 // <--- STOP MARK
-	};
-	unsigned long qwertz[] = {
-		0x0000041a, // Croation
-		0x00000405, // Czech
-		0x00000407, // German
-		0x00010407, // German (IBM)
-		0x0000040e, // Hungarian
-		0x0000046e, // Luxembourgish
-		0x00010415, // Polish (214)
-		0x00000418, // Romanian (Legacy)
-		0x0000081a, // Serbian (Latin)
-		0x0000041b, // Slovak
-		0x00000424, // Slovenian
-		0x0001042e, // Sorbian Extended
-		0x0002042e, // Sorbian Standard
-		0x0000042e, // Sorbian Standard (Legacy)
-		0x0000100c, // Swiss French
-		0x00000807, // Swiss German
-		0 // <--- STOP MARK
-	};
-	unsigned long dvorak[] = {
-		0x00010409, // US-Dvorak
-		0x00030409, // US-Dvorak for left hand
-		0x00040409, // US-Dvorak for right hand
-		0 // <--- STOP MARK
-	};
+int DisplayServerWindows::keyboard_get_current_layout() const {
+	HKL cur_layout = GetKeyboardLayout(0);
 
-	char name[KL_NAMELENGTH + 1];
-	name[0] = 0;
-	GetKeyboardLayoutNameA(name);
+	int layout_count = GetKeyboardLayoutList(0, NULL);
+	HKL *layouts = (HKL *)memalloc(layout_count * sizeof(HKL));
+	GetKeyboardLayoutList(layout_count, layouts);
 
-	unsigned long hex = strtoul(name, nullptr, 16);
+	for (int i = 0; i < layout_count; i++) {
+		if (cur_layout == layouts[i]) {
+			memfree(layouts);
+			return i;
+		}
+	}
+	memfree(layouts);
+	return -1;
+}
 
-	int i = 0;
-	while (azerty[i] != 0) {
-		if (azerty[i] == hex)
-			return LATIN_KEYBOARD_AZERTY;
-		i++;
+void DisplayServerWindows::keyboard_set_current_layout(int p_index) {
+	int layout_count = GetKeyboardLayoutList(0, NULL);
+
+	ERR_FAIL_INDEX(p_index, layout_count);
+
+	HKL *layouts = (HKL *)memalloc(layout_count * sizeof(HKL));
+	GetKeyboardLayoutList(layout_count, layouts);
+	ActivateKeyboardLayout(layouts[p_index], KLF_SETFORPROCESS);
+	memfree(layouts);
+}
+
+String DisplayServerWindows::keyboard_get_layout_language(int p_index) const {
+	int layout_count = GetKeyboardLayoutList(0, NULL);
+
+	ERR_FAIL_INDEX_V(p_index, layout_count, "");
+
+	HKL *layouts = (HKL *)memalloc(layout_count * sizeof(HKL));
+	GetKeyboardLayoutList(layout_count, layouts);
+
+	wchar_t buf[LOCALE_NAME_MAX_LENGTH];
+	memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(wchar_t));
+	LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);
+
+	memfree(layouts);
+
+	return String(buf).substr(0, 2);
+}
+
+String _get_full_layout_name_from_registry(HKL p_layout) {
+	String id = "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts\\" + String::num_int64((int64_t)p_layout, 16, false).lpad(8, "0");
+	String ret;
+
+	HKEY hkey;
+	wchar_t layout_text[1024];
+	memset(layout_text, 0, 1024 * sizeof(wchar_t));
+
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)id.c_str(), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		return ret;
 	}
 
-	i = 0;
-	while (qwertz[i] != 0) {
-		if (qwertz[i] == hex)
-			return LATIN_KEYBOARD_QWERTZ;
-		i++;
+	DWORD buffer = 1024;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"Layout Text", NULL, &vtype, (LPBYTE)layout_text, &buffer) == ERROR_SUCCESS) {
+		ret = String(layout_text);
 	}
+	RegCloseKey(hkey);
+	return ret;
+}
 
-	i = 0;
-	while (dvorak[i] != 0) {
-		if (dvorak[i] == hex)
-			return LATIN_KEYBOARD_DVORAK;
-		i++;
+String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
+	int layout_count = GetKeyboardLayoutList(0, NULL);
+
+	ERR_FAIL_INDEX_V(p_index, layout_count, "");
+
+	HKL *layouts = (HKL *)memalloc(layout_count * sizeof(HKL));
+	GetKeyboardLayoutList(layout_count, layouts);
+
+	String ret = _get_full_layout_name_from_registry(layouts[p_index]); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
+	if (ret == String()) {
+		wchar_t buf[LOCALE_NAME_MAX_LENGTH];
+		memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(wchar_t));
+		LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);
+
+		wchar_t name[1024];
+		memset(name, 0, 1024 * sizeof(wchar_t));
+		GetLocaleInfoEx(buf, LOCALE_SLOCALIZEDDISPLAYNAME, (LPWSTR)&name, 1024);
+
+		ret = String(name);
 	}
+	memfree(layouts);
 
-	return LATIN_KEYBOARD_QWERTY;
+	return ret;
 }
 
 void DisplayServerWindows::process_events() {
