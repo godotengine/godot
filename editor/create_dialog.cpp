@@ -350,21 +350,23 @@ void CreateDialog::_update_search() {
 
 			bool found = false;
 			String type2 = type;
+			bool cpp_type2 = cpp_type;
 
 			if (!cpp_type && !search_loaded_scripts.has(type)) {
 				search_loaded_scripts[type] = ed.script_class_load_script(type);
 			}
 
-			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
+			while (type2 != "" && (cpp_type2 ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
 				if (search_box->get_text().is_subsequence_ofi(type2)) {
 
 					found = true;
 					break;
 				}
 
-				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+				type2 = cpp_type2 ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+				cpp_type2 = cpp_type2 || ClassDB::class_exists(type2); // Built-in class can't inherit from custom type, so we can skip the check if it's already true.
 
-				if (!cpp_type && !search_loaded_scripts.has(type2)) {
+				if (!cpp_type2 && !search_loaded_scripts.has(type2)) {
 					search_loaded_scripts[type2] = ed.script_class_load_script(type2);
 				}
 			}
