@@ -12,7 +12,7 @@
 # David Couto <davidcouto@gmail.com>, 2017.
 # Dharkael <izhe@hotmail.es>, 2017, 2019.
 # Diego López <diegodario21@gmail.com>, 2017.
-# eon-s <emanuel.segretin@gmail.com>, 2018, 2019.
+# eon-s <emanuel.segretin@gmail.com>, 2018, 2019, 2020.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020.
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
@@ -46,12 +46,14 @@
 # Victor S. <victorstancioiu@gmail.com>, 2020.
 # henry rujano herrera <rujhen@gmail.com>, 2020.
 # Megamega53 <Christopher.Morales21@myhunter.cuny.edu>, 2020.
+# Serk Lintur <serk.lintur@gmail.com>, 2020.
+# Pedro J. Estébanez <pedrojrulez@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-04 15:11+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2020-06-10 22:54+0000\n"
+"Last-Translator: Pedro J. Estébanez <pedrojrulez@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -886,7 +888,6 @@ msgstr "No se puede conectar la señal"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1500,17 +1501,9 @@ msgstr "Activar"
 msgid "Rearrange Autoloads"
 msgstr "Reordenar Autoloads"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Ruta inválida."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "El archivo no existe."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "No está en la ruta de recursos."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2051,11 +2044,8 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Actualmente no hay una descripción para este método. Por favor, ¡ayúdanos "
-"[color=$color][url=$url]aportando una[/url][/color]!\n"
-"\n"
-"Actualmente no existe descripción para este método. Por favor ¡ayúdanos "
-"[color=$color][url=$url]contribuyendo una[/url][/color]!"
+"Actualmente no existe descripción para este método. Por favor ¡ayúdanos con "
+"[color=$color][url=$url] contribuyendo con una[ /url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2477,12 +2467,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "No se puede volver a cargar una escena que nunca se guardó."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Revertir"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Guardar Escena"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Esta acción no se puede deshacer. ¿Revertir de todos modos?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2775,10 +2768,6 @@ msgstr "Deshacer"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Rehacer"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Revertir Escena"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3110,12 +3099,14 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Una vez hecho ésto puedes aplicar modificaciones y generar tu propio APK "
-"personalizado al exportar (agregar módulos, cambiar el AndroidManifest.xml, "
-"etc.).\n"
-"Ten en cuenta que para generar builds personalizados en vez de usar los APKs "
-"pregenerados, la opción \"Usar Build Personalizado\" debería estar activada "
-"en el preset de exportación de Android."
+"Esto configurará tu proyecto para las compilaciones personalizadas de "
+"Android instalando la plantilla base en \"res://android/build\".\n"
+"Luego podrás aplicar las modificaciones y compilar tu propio APK "
+"personalizado al exportarlo (agregando módulos, cambiando el AndroidManifest."
+"xml, etc.).\n"
+"Ten en cuenta que para realizar compilaciones personalizadas en lugar de "
+"usar APKs predefinidos, la opción \"Use Custom Build\" debería estar "
+"habilitada en la configuración de exportación de Android."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3430,6 +3421,13 @@ msgstr "No se pudo ejecutar el script:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Te olvidaste del método '_run'?"
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Mantén pulsado Ctrl para soltar un «Getter». Mantén pulsado Shift para "
+"soltar una signatura genérica."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4029,6 +4027,10 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Error ejecutando el script de posimportacion:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6994,12 +6996,13 @@ msgstr ""
 "'%s'."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Línea"
+#, fuzzy
+msgid "[Ignore]"
+msgstr "(ignorar)"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(ignorar)"
+msgid "Line"
+msgstr "Línea"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7471,6 +7474,15 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Diálogo XForm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -9373,7 +9385,7 @@ msgid ""
 msgstr ""
 "Los retornos decrecen en función del producto punto de la superficie normal "
 "y de la dirección de visión de la cámara (pasando las entradas asociadas a "
-"esta)."
+"este)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10568,8 +10580,9 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Escena Hija"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Eliminar Script"
+#, fuzzy
+msgid "Detach Script"
+msgstr "Añadir Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10735,6 +10748,13 @@ msgid "Open Documentation"
 msgstr "Abrir Documentación"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Añadir Nodo Hijo"
 
@@ -10783,11 +10803,13 @@ msgstr ""
 "existe ningún nodo raíz."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
 msgstr "Añadir un script nuevo o existente al nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr "Borrar el script del nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
@@ -10827,7 +10849,7 @@ msgid ""
 "Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
-"El nodo tiene %s conexión(es) y %(s) grupo(s).\n"
+"El nodo tiene %s conexión(es) y %s grupo(s).\n"
 "Clic para mostrar el panel de señales."
 
 #: editor/scene_tree_editor.cpp
@@ -10920,6 +10942,10 @@ msgid "A directory with the same name exists."
 msgstr "Ya existe un directorio con el mismo nombre."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "El archivo no existe."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Extensión inválida."
 
@@ -10958,6 +10984,10 @@ msgstr "Abrir Script"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "El archivo ya existe, será reutilizado."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Ruta inválida."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -12015,6 +12045,12 @@ msgstr ""
 "Debug keystore no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
+#, fuzzy
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Debug keystore no configurada en Configuración del Editor ni en el preset."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "La compilación personalizada requiere una ruta de Android SDK válida en "
@@ -12041,6 +12077,32 @@ msgstr "Clave pública inválida para la expansión de APK."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Nombre de paquete inválido:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12845,6 +12907,21 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Not in resource path."
+#~ msgstr "No está en la ruta de recursos."
+
+#~ msgid "Revert"
+#~ msgstr "Revertir"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Esta acción no se puede deshacer. ¿Revertir de todos modos?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Revertir Escena"
+
+#~ msgid "Clear Script"
+#~ msgstr "Eliminar Script"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Registro de problemas"
