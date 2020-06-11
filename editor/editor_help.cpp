@@ -480,8 +480,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.tutorials.size(); i++) {
-			const String link = DTR(cd.tutorials[i]);
-			String linktxt = link;
+			const String link = DTR(cd.tutorials[i].link);
+			String linktxt = (cd.tutorials[i].title.empty()) ? link : DTR(cd.tutorials[i].title);
 			const int seppos = linktxt.find("//");
 			if (seppos != -1) {
 				linktxt = link.right(seppos + 2);
