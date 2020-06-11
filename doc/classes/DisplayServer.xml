@@ -127,12 +127,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_latin_keyboard_variant" qualifiers="const">
-			<return type="int" enum="DisplayServer.LatinKeyboardVariant">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
@@ -387,6 +381,52 @@
 			<return type="bool">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="keyboard_get_current_layout" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns active keyboard layout index.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of keyboard layouts.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the localized name of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_set_current_layout">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Sets active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="mouse_get_absolute_position" qualifiers="const">
@@ -1020,20 +1060,6 @@
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="5" enum="WindowFlags">
-		</constant>
-		<constant name="LATIN_KEYBOARD_QWERTY" value="0" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_QWERTZ" value="1" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_AZERTY" value="2" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_QZERTY" value="3" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_DVORAK" value="4" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_NEO" value="5" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_COLEMAK" value="6" enum="LatinKeyboardVariant">
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 		</constant>

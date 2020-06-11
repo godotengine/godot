@@ -1846,37 +1846,106 @@ void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape 
 	}
 }
 
-DisplayServerX11::LatinKeyboardVariant DisplayServerX11::get_latin_keyboard_variant() const {
-	_THREAD_SAFE_METHOD_
+int DisplayServerX11::keyboard_get_layout_count() const {
+	int _group_count = 0;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
 
-	XkbDescRec *xkbdesc = XkbAllocKeyboard();
-	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);
-
-	XkbGetNames(x11_display, XkbSymbolsNameMask, xkbdesc);
-	ERR_FAIL_COND_V(!xkbdesc->names, LATIN_KEYBOARD_QWERTY);
-	ERR_FAIL_COND_V(!xkbdesc->names->symbols, LATIN_KEYBOARD_QWERTY);
-
-	char *layout = XGetAtomName(x11_display, xkbdesc->names->symbols);
-	ERR_FAIL_COND_V(!layout, LATIN_KEYBOARD_QWERTY);
-
-	Vector<String> info = String(layout).split("+");
-	ERR_FAIL_INDEX_V(1, info.size(), LATIN_KEYBOARD_QWERTY);
-
-	if (info[1].find("colemak") != -1) {
-		return LATIN_KEYBOARD_COLEMAK;
-	} else if (info[1].find("qwertz") != -1) {
-		return LATIN_KEYBOARD_QWERTZ;
-	} else if (info[1].find("azerty") != -1) {
-		return LATIN_KEYBOARD_AZERTY;
-	} else if (info[1].find("qzerty") != -1) {
-		return LATIN_KEYBOARD_QZERTY;
-	} else if (info[1].find("dvorak") != -1) {
-		return LATIN_KEYBOARD_DVORAK;
-	} else if (info[1].find("neo") != -1) {
-		return LATIN_KEYBOARD_NEO;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+		XkbFreeKeyboard(kbd, 0, true);
 	}
+	return _group_count;
+}
 
-	return LATIN_KEYBOARD_QWERTY;
+int DisplayServerX11::keyboard_get_current_layout() const {
+	XkbStateRec state;
+	XkbGetState(x11_display, XkbUseCoreKbd, &state);
+	return state.group;
+}
+
+void DisplayServerX11::keyboard_set_current_layout(int p_index) {
+	ERR_FAIL_INDEX(p_index, keyboard_get_layout_count());
+	XkbLockGroup(x11_display, XkbUseCoreKbd, p_index);
+}
+
+String DisplayServerX11::keyboard_get_layout_language(int p_index) const {
+	String ret;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+		XkbGetNames(x11_display, XkbGroupNamesMask, kbd);
+
+		int _group_count = 0;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+
+		Atom names = kbd->names->symbols;
+		if (names != None) {
+			char *name = XGetAtomName(x11_display, names);
+			Vector<String> info = String(name).split("+");
+			if (p_index >= 0 && p_index < _group_count) {
+				if (p_index + 1 < info.size()) {
+					ret = info[p_index + 1]; // Skip "pc" at the start and "inet"/"group" at the end of symbols.
+				} else {
+					ret = "en"; // No symbol for layout fallback to "en".
+				}
+			} else {
+				ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
+			}
+			XFree(name);
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return ret.substr(0, 2);
+}
+
+String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
+	String ret;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+		XkbGetNames(x11_display, XkbGroupNamesMask, kbd);
+
+		int _group_count = 0;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+
+		if (p_index >= 0 && p_index < _group_count) {
+			char *full_name = XGetAtomName(x11_display, groups[p_index]);
+			ret.parse_utf8(full_name);
+			XFree(full_name);
+		} else {
+			ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return ret;
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
