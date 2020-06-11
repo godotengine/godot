@@ -4212,7 +4212,7 @@ String String::sprintf(const Array &values, bool *error) const {
 
 					double value = values[value_index];
 					bool is_negative = (value < 0);
-					String str = String::num(abs(value), min_decimals);
+					String str = String::num(ABS(value), min_decimals);
 
 					// Pad decimals out.
 					str = str.pad_decimals(min_decimals);
