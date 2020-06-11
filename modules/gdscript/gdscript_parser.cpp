@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
+#include "core/project_settings.h"
 #include "gdscript.h"
 
 #ifdef DEBUG_ENABLED
@@ -178,6 +179,61 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 		errors.push_back({ p_message, current.start_line, current.start_column });
 	} else {
 		errors.push_back({ p_message, p_origin->start_line, p_origin->leftmost_column });
+	}
+}
+
+void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1, const String &p_symbol2, const String &p_symbol3, const String &p_symbol4) {
+	Vector<String> symbols;
+	if (!p_symbol1.empty()) {
+		symbols.push_back(p_symbol1);
+	}
+	if (!p_symbol2.empty()) {
+		symbols.push_back(p_symbol2);
+	}
+	if (!p_symbol3.empty()) {
+		symbols.push_back(p_symbol3);
+	}
+	if (!p_symbol4.empty()) {
+		symbols.push_back(p_symbol4);
+	}
+	push_warning(p_source, p_code, symbols);
+}
+
+void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+	if (is_ignoring_warnings) {
+		return;
+	}
+	if (GLOBAL_GET("debug/gdscript/warnings/exclude_addons").booleanize() && script_path.begins_with("res://addons/")) {
+		return;
+	}
+
+	String warn_name = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)p_code).to_lower();
+	if (ignored_warnings.has(warn_name)) {
+		return;
+	}
+	if (!GLOBAL_GET("debug/gdscript/warnings/" + warn_name)) {
+		return;
+	}
+
+	GDScriptWarning warning;
+	warning.code = p_code;
+	warning.symbols = p_symbols;
+	warning.start_line = p_source->start_line;
+	warning.end_line = p_source->end_line;
+	warning.leftmost_column = p_source->leftmost_column;
+	warning.rightmost_column = p_source->rightmost_column;
+
+	List<GDScriptWarning>::Element *before = nullptr;
+	for (List<GDScriptWarning>::Element *E = warnings.front(); E != nullptr; E = E->next()) {
+		if (E->get().start_line > warning.start_line) {
+			break;
+		}
+		before = E;
+	}
+	if (before) {
+		warnings.insert_after(before, warning);
+	} else {
+		warnings.push_front(warning);
 	}
 }
 
@@ -601,6 +657,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 	if (match(GDScriptTokenizer::Token::EQUAL)) {
 		// Initializer.
 		variable->initializer = parse_expression(false);
+		variable->assignments++;
 	}
 
 	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
@@ -1106,6 +1163,8 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 
 GDScriptParser::Node *GDScriptParser::parse_statement() {
 	Node *result = nullptr;
+	bool unreachable = current_suite->has_return && !current_suite->has_unreachable_code;
+
 	switch (current.type) {
 		case GDScriptTokenizer::Token::PASS:
 			advance();
@@ -1151,6 +1210,9 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 				n_return->return_value = parse_expression(false);
 			}
 			result = n_return;
+
+			current_suite->has_return = true;
+
 			end_statement("return statement");
 			break;
 		}
@@ -1179,8 +1241,25 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			}
 			end_statement("expression");
 			result = expression;
+
+			if (expression != nullptr) {
+				switch (expression->type) {
+					case Node::CALL:
+					case Node::ASSIGNMENT:
+					case Node::AWAIT:
+						// Fine.
+						break;
+					default:
+						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+				}
+			}
 			break;
 		}
+	}
+
+	if (unreachable) {
+		current_suite->has_unreachable_code = true;
+		push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier->name);
 	}
 
 	if (panic_mode) {
@@ -1232,6 +1311,7 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 	if (!can_continue) {
 		push_error(R"(Cannot use "continue" outside of a loop or pattern matching block.)");
 	}
+	current_suite->has_continue = true;
 	end_statement(R"("continue")");
 	return alloc_node<ContinueNode>();
 }
@@ -1281,6 +1361,10 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 
 	n_if->true_block = parse_suite(vformat(R"("%s" block)", p_token));
 
+	if (n_if->true_block->has_continue) {
+		current_suite->has_continue = true;
+	}
+
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		IfNode *elif = parse_if("elif");
 
@@ -1290,6 +1374,13 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	} else if (match(GDScriptTokenizer::Token::ELSE)) {
 		consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "else".)");
 		n_if->false_block = parse_suite(R"("else" block)");
+	}
+
+	if (n_if->false_block != nullptr && n_if->false_block->has_return && n_if->true_block->has_return) {
+		current_suite->has_return = true;
+	}
+	if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
+		current_suite->has_continue = true;
 	}
 
 	return n_if;
@@ -1310,15 +1401,42 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		return match;
 	}
 
+	bool all_have_return = true;
+	bool have_wildcard = false;
+	bool wildcard_has_return = false;
+	bool have_wildcard_without_continue = false;
+	bool have_unreachable_pattern = false;
+
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
 		MatchBranchNode *branch = parse_match_branch();
 		if (branch == nullptr) {
 			continue;
 		}
+
+		if (have_wildcard_without_continue && !have_unreachable_pattern) {
+			push_warning(branch->patterns[0], GDScriptWarning::UNREACHABLE_PATTERN);
+		}
+
+		if (branch->has_wildcard) {
+			have_wildcard = true;
+			if (branch->block->has_return) {
+				wildcard_has_return = true;
+			}
+			if (!branch->block->has_continue) {
+				have_wildcard_without_continue = true;
+			}
+		}
+		if (!branch->block->has_return) {
+			all_have_return = false;
+		}
 		match->branches.push_back(branch);
 	}
 
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
+
+	if (wildcard_has_return || (all_have_return && have_wildcard)) {
+		current_suite->has_return = true;
+	}
 
 	return match;
 }
@@ -1341,6 +1459,8 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		}
 		if (pattern->pattern_type == PatternNode::PT_REST) {
 			push_error(R"(Rest pattern can only be used inside array and dictionary patterns.)");
+		} else if (pattern->pattern_type == PatternNode::PT_BIND || pattern->pattern_type == PatternNode::PT_WILDCARD) {
+			branch->has_wildcard = true;
 		}
 		branch->patterns.push_back(pattern);
 	} while (match(GDScriptTokenizer::Token::COMMA));
@@ -1605,22 +1725,27 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 			case SuiteNode::Local::CONSTANT:
 				identifier->source = IdentifierNode::LOCAL_CONSTANT;
 				identifier->constant_source = declaration.constant;
+				declaration.constant->usages++;
 				break;
 			case SuiteNode::Local::VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_VARIABLE;
 				identifier->variable_source = declaration.variable;
+				declaration.variable->usages++;
 				break;
 			case SuiteNode::Local::PARAMETER:
 				identifier->source = IdentifierNode::FUNCTION_PARAMETER;
 				identifier->parameter_source = declaration.parameter;
+				declaration.parameter->usages++;
 				break;
 			case SuiteNode::Local::FOR_VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_ITERATOR;
 				identifier->bind_source = declaration.bind;
+				declaration.bind->usages++;
 				break;
 			case SuiteNode::Local::PATTERN_BIND:
 				identifier->source = IdentifierNode::LOCAL_BIND;
 				identifier->bind_source = declaration.bind;
+				declaration.bind->usages++;
 				break;
 			case SuiteNode::Local::UNDEFINED:
 				ERR_FAIL_V_MSG(nullptr, "Undefined local found.");
@@ -1836,8 +1961,33 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		return parse_expression(false); // Return the following expression.
 	}
 
+	VariableNode *source_variable = nullptr;
+
 	switch (p_previous_operand->type) {
-		case Node::IDENTIFIER:
+		case Node::IDENTIFIER: {
+			// Get source to store assignment count.
+			// Also remove one usage since assignment isn't usage.
+			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
+			switch (id->source) {
+				case IdentifierNode::LOCAL_VARIABLE:
+					source_variable = id->variable_source;
+					id->variable_source->usages--;
+					break;
+				case IdentifierNode::LOCAL_CONSTANT:
+					id->constant_source->usages--;
+					break;
+				case IdentifierNode::FUNCTION_PARAMETER:
+					id->parameter_source->usages--;
+					break;
+				case IdentifierNode::LOCAL_ITERATOR:
+				case IdentifierNode::LOCAL_BIND:
+					id->bind_source->usages--;
+					break;
+				default:
+					break;
+			}
+			break;
+		}
 		case Node::SUBSCRIPT:
 			// Okay.
 			break;
@@ -1847,9 +1997,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 
 	AssignmentNode *assignment = alloc_node<AssignmentNode>();
+	bool has_operator = true;
 	switch (previous.type) {
 		case GDScriptTokenizer::Token::EQUAL:
 			assignment->operation = AssignmentNode::OP_NONE;
+			has_operator = false;
 			break;
 		case GDScriptTokenizer::Token::PLUS_EQUAL:
 			assignment->operation = AssignmentNode::OP_ADDITION;
@@ -1886,6 +2038,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	}
 	assignment->assignee = p_previous_operand;
 	assignment->assigned_value = parse_expression(false);
+
+	if (has_operator && source_variable != nullptr && source_variable->assignments == 0) {
+		push_warning(assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, source_variable->identifier->name);
+	}
 
 	return assignment;
 }

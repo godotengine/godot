@@ -494,7 +494,7 @@ void ScriptTextEditor::_validate_script() {
 		ScriptLanguage::Warning w = E->get();
 
 		Dictionary ignore_meta;
-		ignore_meta["line"] = w.line;
+		ignore_meta["line"] = w.start_line;
 		ignore_meta["code"] = w.string_code.to_lower();
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
@@ -506,9 +506,9 @@ void ScriptTextEditor::_validate_script() {
 		warnings_panel->pop(); // Cell.
 
 		warnings_panel->push_cell();
-		warnings_panel->push_meta(w.line - 1);
+		warnings_panel->push_meta(w.start_line - 1);
 		warnings_panel->push_color(warnings_panel->get_theme_color("warning_color", "Editor"));
-		warnings_panel->add_text(TTR("Line") + " " + itos(w.line));
+		warnings_panel->add_text(TTR("Line") + " " + itos(w.start_line));
 		warnings_panel->add_text(" (" + w.string_code + "):");
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta goto.

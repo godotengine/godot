@@ -30,6 +30,8 @@
 
 #include "gdscript_warning.h"
 
+#include "core/variant.h"
+
 #ifdef DEBUG_ENABLED
 
 String GDScriptWarning::get_message() const {
@@ -48,21 +50,32 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(1);
 			return "The local variable '" + symbols[0] + "' is declared but never used in the block. If this is intended, prefix it with an underscore: '_" + symbols[0] + "'";
 		} break;
-		case SHADOWED_VARIABLE: {
-			CHECK_SYMBOLS(2);
-			return "The local variable '" + symbols[0] + "' is shadowing an already-defined variable at line " + symbols[1] + ".";
+		case UNUSED_LOCAL_CONSTANT: {
+			CHECK_SYMBOLS(1);
+			return "The local constant '" + symbols[0] + "' is declared but never used in the block. If this is intended, prefix it with an underscore: '_" + symbols[0] + "'";
 		} break;
-		case UNUSED_CLASS_VARIABLE: {
+		case SHADOWED_VARIABLE: {
+			CHECK_SYMBOLS(4);
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s.)", symbols[0], symbols[1], symbols[2], symbols[3]);
+		} break;
+		case SHADOWED_VARIABLE_BASE_CLASS: {
+			CHECK_SYMBOLS(4);
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
+		} break;
+		case UNUSED_PRIVATE_CLASS_VARIABLE: {
 			CHECK_SYMBOLS(1);
 			return "The class variable '" + symbols[0] + "' is declared but never used in the script.";
 		} break;
-		case UNUSED_ARGUMENT: {
+		case UNUSED_PARAMETER: {
 			CHECK_SYMBOLS(2);
-			return "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'. If this is intended, prefix it with an underscore: '_" + symbols[1] + "'";
+			return "The parameter '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'. If this is intended, prefix it with an underscore: '_" + symbols[1] + "'";
 		} break;
 		case UNREACHABLE_CODE: {
 			CHECK_SYMBOLS(1);
 			return "Unreachable code (statement after return) in function '" + symbols[0] + "()'.";
+		} break;
+		case UNREACHABLE_PATTERN: {
+			return "Unreachable pattern (pattern after wildcard or bind).";
 		} break;
 		case STANDALONE_EXPRESSION: {
 			return "Standalone expression (the line has no effect).";
@@ -73,22 +86,6 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case NARROWING_CONVERSION: {
 			return "Narrowing conversion (float is converted to int and loses precision).";
-		} break;
-		case FUNCTION_MAY_YIELD: {
-			CHECK_SYMBOLS(1);
-			return "Assigned variable is typed but the function '" + symbols[0] + "()' may yield and return a GDScriptFunctionState instead.";
-		} break;
-		case VARIABLE_CONFLICTS_FUNCTION: {
-			CHECK_SYMBOLS(1);
-			return "Variable declaration of '" + symbols[0] + "' conflicts with a function of the same name.";
-		} break;
-		case FUNCTION_CONFLICTS_VARIABLE: {
-			CHECK_SYMBOLS(1);
-			return "Function declaration of '" + symbols[0] + "()' conflicts with a variable of the same name.";
-		} break;
-		case FUNCTION_CONFLICTS_CONSTANT: {
-			CHECK_SYMBOLS(1);
-			return "Function declaration of '" + symbols[0] + "()' conflicts with a constant of the same name.";
 		} break;
 		case INCOMPATIBLE_TERNARY: {
 			return "Values of the ternary conditional are not mutually compatible.";
@@ -139,6 +136,15 @@ String GDScriptWarning::get_message() const {
 		case STANDALONE_TERNARY: {
 			return "Standalone ternary conditional operator: the return value is being discarded.";
 		}
+		case ASSERT_ALWAYS_TRUE: {
+			return "Assert statement is redundant because the expression is always true.";
+		}
+		case ASSERT_ALWAYS_FALSE: {
+			return "Assert statement will raise an error because the expression is always false.";
+		}
+		case REDUNDANT_AWAIT: {
+			return R"("await" keyword not needed in this case, because the expression isn't a coroutine nor a signal.)";
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -158,17 +164,16 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNASSIGNED_VARIABLE",
 		"UNASSIGNED_VARIABLE_OP_ASSIGN",
 		"UNUSED_VARIABLE",
+		"UNUSED_LOCAL_CONSTANT",
 		"SHADOWED_VARIABLE",
-		"UNUSED_CLASS_VARIABLE",
-		"UNUSED_ARGUMENT",
+		"SHADOWED_VARIABLE_BASE_CLASS",
+		"UNUSED_PRIVATE_CLASS_VARIABLE",
+		"UNUSED_PARAMETER",
 		"UNREACHABLE_CODE",
+		"UNREACHABLE_PATTERN",
 		"STANDALONE_EXPRESSION",
 		"VOID_ASSIGNMENT",
 		"NARROWING_CONVERSION",
-		"FUNCTION_MAY_YIELD",
-		"VARIABLE_CONFLICTS_FUNCTION",
-		"FUNCTION_CONFLICTS_VARIABLE",
-		"FUNCTION_CONFLICTS_CONSTANT",
 		"INCOMPATIBLE_TERNARY",
 		"UNUSED_SIGNAL",
 		"RETURN_VALUE_DISCARDED",
@@ -182,8 +187,12 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_CALL_ARGUMENT",
 		"DEPRECATED_KEYWORD",
 		"STANDALONE_TERNARY",
-		nullptr
+		"ASSERT_ALWAYS_TRUE",
+		"ASSERT_ALWAYS_FALSE",
+		"REDUNDANT_AWAIT",
 	};
+
+	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
 
 	return names[(int)p_code];
 }
