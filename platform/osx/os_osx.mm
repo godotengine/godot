@@ -1437,8 +1437,18 @@ void OS_OSX::initialize_core() {
 	SemaphoreOSX::make_default();
 }
 
+struct LayoutInfo {
+	String name;
+	String code;
+};
+
+static Vector<LayoutInfo> kbd_layouts;
+static int current_layout = 0;
 static bool keyboard_layout_dirty = true;
+static OS::LatinKeyboardVariant latin_variant = OS::LATIN_KEYBOARD_QWERTY;
 static void keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info) {
+	kbd_layouts.clear();
+	current_layout = 0;
 	keyboard_layout_dirty = true;
 }
 
@@ -2787,38 +2797,146 @@ static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
 	return (NSString *)output;
 }
 
-OS::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
+void _update_keyboard_layouts() {
+	@autoreleasepool {
+		TISInputSourceRef cur_source = TISCopyCurrentKeyboardInputSource();
+		NSString *cur_name = (NSString *)TISGetInputSourceProperty(cur_source, kTISPropertyLocalizedName);
+		CFRelease(cur_source);
 
-	static LatinKeyboardVariant layout = LATIN_KEYBOARD_QWERTY;
+		// Enum IME layouts
+		NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+		NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
+		for (NSUInteger i = 0; i < [list_ime count]; i++) {
+			LayoutInfo ly;
+			NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+			ly.name.parse_utf8([name UTF8String]);
 
-	if (keyboard_layout_dirty) {
+			NSArray *langs = (NSArray *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
+			ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+			kbd_layouts.push_back(ly);
 
-		layout = LATIN_KEYBOARD_QWERTY;
-
-		CGKeyCode keys[] = { kVK_ANSI_Q, kVK_ANSI_W, kVK_ANSI_E, kVK_ANSI_R, kVK_ANSI_T, kVK_ANSI_Y };
-		NSString *test = createStringForKeys(keys, 6);
-
-		if ([test isEqualToString:@"qwertz"]) {
-			layout = LATIN_KEYBOARD_QWERTZ;
-		} else if ([test isEqualToString:@"azerty"]) {
-			layout = LATIN_KEYBOARD_AZERTY;
-		} else if ([test isEqualToString:@"qzerty"]) {
-			layout = LATIN_KEYBOARD_QZERTY;
-		} else if ([test isEqualToString:@"',.pyf"]) {
-			layout = LATIN_KEYBOARD_DVORAK;
-		} else if ([test isEqualToString:@"xvlcwk"]) {
-			layout = LATIN_KEYBOARD_NEO;
-		} else if ([test isEqualToString:@"qwfpgj"]) {
-			layout = LATIN_KEYBOARD_COLEMAK;
+			if ([name isEqualToString:cur_name]) {
+				current_layout = kbd_layouts.size() - 1;
+			}
 		}
+		[list_ime release];
 
-		[test release];
+		// Enum plain keyboard layouts
+		NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
+		NSArray *list_kbd = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_kbd, false);
+		for (NSUInteger i = 0; i < [list_kbd count]; i++) {
+			LayoutInfo ly;
+			NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+			ly.name.parse_utf8([name UTF8String]);
 
-		keyboard_layout_dirty = false;
-		return layout;
+			NSArray *langs = (NSArray *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
+			ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+			kbd_layouts.push_back(ly);
+
+			if ([name isEqualToString:cur_name]) {
+				current_layout = kbd_layouts.size() - 1;
+			}
+		}
+		[list_kbd release];
 	}
 
-	return layout;
+	// Update latin variant
+	latin_variant = OS::LATIN_KEYBOARD_QWERTY;
+
+	CGKeyCode keys[] = { kVK_ANSI_Q, kVK_ANSI_W, kVK_ANSI_E, kVK_ANSI_R, kVK_ANSI_T, kVK_ANSI_Y };
+	NSString *test = createStringForKeys(keys, 6);
+
+	if ([test isEqualToString:@"qwertz"]) {
+		latin_variant = OS::LATIN_KEYBOARD_QWERTZ;
+	} else if ([test isEqualToString:@"azerty"]) {
+		latin_variant = OS::LATIN_KEYBOARD_AZERTY;
+	} else if ([test isEqualToString:@"qzerty"]) {
+		latin_variant = OS::LATIN_KEYBOARD_QZERTY;
+	} else if ([test isEqualToString:@"',.pyf"]) {
+		latin_variant = OS::LATIN_KEYBOARD_DVORAK;
+	} else if ([test isEqualToString:@"xvlcwk"]) {
+		latin_variant = OS::LATIN_KEYBOARD_NEO;
+	} else if ([test isEqualToString:@"qwfpgj"]) {
+		latin_variant = OS::LATIN_KEYBOARD_COLEMAK;
+	}
+
+	[test release];
+
+	keyboard_layout_dirty = false;
+}
+
+OS::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
+
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	return latin_variant;
+}
+
+int OS_OSX::keyboard_get_layout_count() const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+	return kbd_layouts.size();
+}
+
+void OS_OSX::keyboard_set_current_layout(int p_index) {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
+
+	NSString *cur_name = [NSString stringWithUTF8String:kbd_layouts[p_index].name.utf8().get_data()];
+
+	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
+	NSArray *list_kbd = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_kbd, false);
+	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
+		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((TISInputSourceRef)[list_kbd objectAtIndex:i]);
+			break;
+		}
+	}
+	[list_kbd release];
+
+	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+	NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
+	for (NSUInteger i = 0; i < [list_ime count]; i++) {
+		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((TISInputSourceRef)[list_ime objectAtIndex:i]);
+			break;
+		}
+	}
+	[list_ime release];
+}
+
+int OS_OSX::keyboard_get_current_layout() const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	return current_layout;
+}
+
+String OS_OSX::keyboard_get_layout_language(int p_index) const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
+	return kbd_layouts[p_index].code;
+}
+
+String OS_OSX::keyboard_get_layout_name(int p_index) const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
+	return kbd_layouts[p_index].name;
 }
 
 void OS_OSX::process_events() {

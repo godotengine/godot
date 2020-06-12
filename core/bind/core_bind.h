@@ -242,6 +242,11 @@ public:
 
 	String get_locale() const;
 	String get_latin_keyboard_variant() const;
+	int keyboard_get_layout_count() const;
+	int keyboard_get_current_layout() const;
+	void keyboard_set_current_layout(int p_index);
+	String keyboard_get_layout_language(int p_index) const;
+	String keyboard_get_layout_name(int p_index) const;
 
 	String get_model_name() const;
 

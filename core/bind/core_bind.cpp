@@ -569,6 +569,26 @@ String _OS::get_latin_keyboard_variant() const {
 	}
 }
 
+int _OS::keyboard_get_layout_count() const {
+	return OS::get_singleton()->keyboard_get_layout_count();
+}
+
+int _OS::keyboard_get_current_layout() const {
+	return OS::get_singleton()->keyboard_get_current_layout();
+}
+
+void _OS::keyboard_set_current_layout(int p_index) {
+	OS::get_singleton()->keyboard_set_current_layout(p_index);
+}
+
+String _OS::keyboard_get_layout_language(int p_index) const {
+	return OS::get_singleton()->keyboard_get_layout_language(p_index);
+}
+
+String _OS::keyboard_get_layout_name(int p_index) const {
+	return OS::get_singleton()->keyboard_get_layout_name(p_index);
+}
+
 String _OS::get_model_name() const {
 
 	return OS::get_singleton()->get_model_name();
@@ -1322,6 +1342,12 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &_OS::get_latin_keyboard_variant);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
+
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &_OS::keyboard_get_layout_count);
+	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &_OS::keyboard_get_current_layout);
+	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &_OS::keyboard_set_current_layout);
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &_OS::keyboard_get_layout_language);
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &_OS::keyboard_get_layout_name);
 
 	ClassDB::bind_method(D_METHOD("can_draw"), &_OS::can_draw);
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
