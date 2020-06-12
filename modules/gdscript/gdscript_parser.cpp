@@ -149,6 +149,8 @@ T *GDScriptParser::alloc_node() {
 	// TODO: Properly set positions for all nodes.
 	node->start_line = previous.start_line;
 	node->end_line = previous.end_line;
+	node->start_column = previous.start_column;
+	node->end_column = previous.end_column;
 	node->leftmost_column = previous.leftmost_column;
 	node->rightmost_column = previous.rightmost_column;
 

@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// FIXME: Reenable LSP.
-#if 0
-
 #include "gdscript_workspace.h"
 
 #include "../gdscript.h"
@@ -121,7 +118,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 			Map<String, ExtendGDScriptParser *>::Element *S = parse_results.find(path);
 			String err_msg = "Failed parse script " + path;
 			if (S) {
-				err_msg += "\n" + S->get()->get_error();
+				err_msg += "\n" + S->get()->get_errors()[0].message;
 			}
 			ERR_CONTINUE_MSG(err != OK, err_msg);
 		}
@@ -621,5 +618,3 @@ GDScriptWorkspace::~GDScriptWorkspace() {
 		remove_cache_parser(E->get());
 	}
 }
-
-#endif

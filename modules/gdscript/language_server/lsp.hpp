@@ -31,9 +31,6 @@
 #ifndef GODOT_LSP_H
 #define GODOT_LSP_H
 
-// FIXME: Reenable LSP.
-#if 0
-
 #include "core/class_db.h"
 #include "core/list.h"
 #include "editor/doc_data.h"
@@ -1786,7 +1783,5 @@ static String marked_documentation(const String &p_bbcode) {
 }
 
 } // namespace lsp
-
-#endif
 
 #endif

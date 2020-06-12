@@ -31,9 +31,6 @@
 #ifndef GDSCRIPT_LANGUAGE_SERVER_H
 #define GDSCRIPT_LANGUAGE_SERVER_H
 
-// FIXME: Reenable LSP.
-#if 0
-
 #include "../gdscript_parser.h"
 #include "editor/editor_plugin.h"
 #include "gdscript_language_protocol.h"
@@ -62,7 +59,5 @@ public:
 };
 
 void register_lsp_types();
-
-#endif
 
 #endif // GDSCRIPT_LANGUAGE_SERVER_H
