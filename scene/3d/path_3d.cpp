@@ -77,13 +77,9 @@ void Path3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path3D::set_curve);
 	ClassDB::bind_method(D_METHOD("get_curve"), &Path3D::get_curve);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
 
 	ADD_SIGNAL(MethodInfo("curve_changed"));
-}
-
-Path3D::Path3D() {
-	set_curve(Ref<Curve3D>(memnew(Curve3D))); //create one by default
 }
 
 //////////////

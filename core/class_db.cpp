@@ -1386,7 +1386,23 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	if (r_valid != nullptr) {
 		*r_valid = true;
 	}
-	return default_values[p_class][p_property];
+
+	Variant var = default_values[p_class][p_property];
+
+#ifdef DEBUG_ENABLED
+	// Some properties may have an instantiated Object as default value,
+	// (like Path2D's `curve` used to have), but that's not a good practice.
+	// Instead, those properties should use PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT
+	// to be auto-instantiated when created in the editor.
+	if (var.get_type() == Variant::OBJECT) {
+		Object *obj = var.get_validated_object();
+		if (obj) {
+			WARN_PRINT(vformat("Instantiated %s used as default value for %s's \"%s\" property.", obj->get_class(), p_class, p_property));
+		}
+	}
+#endif
+
+	return var;
 }
 
 RWLock *ClassDB::lock = nullptr;
