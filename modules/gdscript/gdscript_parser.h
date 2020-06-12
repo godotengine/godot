@@ -100,6 +100,8 @@ public:
 			NATIVE,
 			SCRIPT,
 			CLASS, // GDScript.
+			ENUM, // Full enumeration.
+			ENUM_VALUE, // Value from enumeration.
 			VARIANT, // Can be any type.
 			UNRESOLVED,
 			// TODO: Enum
@@ -120,10 +122,12 @@ public:
 
 		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
+		StringName enum_type; // Enum name or the value name in an enum.
 		Ref<Script> script_type;
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
+		HashMap<StringName, int> enum_values; // For enums.
 
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
@@ -150,7 +154,10 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
+				case ENUM:
 					return native_type == p_other.native_type;
+				case ENUM_VALUE:
+					return native_type == p_other.native_type && enum_type == p_other.enum_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;
 				case CLASS:
@@ -480,6 +487,8 @@ public:
 						return function->get_datatype();
 					case VARIABLE:
 						return variable->get_datatype();
+					case ENUM:
+						return m_enum->get_datatype();
 					case ENUM_VALUE: {
 						// Always integer.
 						DataType type;
@@ -496,9 +505,6 @@ public:
 						// TODO: Add parameter info.
 						return type;
 					}
-					case ENUM:
-						// TODO: Use special datatype kinds for this.
-						return DataType();
 					case UNDEFINED:
 						return DataType();
 				}
