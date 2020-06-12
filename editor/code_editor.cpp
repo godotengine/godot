@@ -337,7 +337,11 @@ void FindReplaceBar::_update_results_count() {
 		int pos_subsequent = pos + searched.length();
 		if (is_whole_words()) {
 			from_pos = pos + 1; // Making sure we won't hit the same match next time, if we get out via a continue.
+<<<<<<< HEAD
 			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n')) {
+=======
+			if (pos > 0 && !is_symbol(full_text[pos - 1])) {
+>>>>>>> 2433287871... Fix whole word search slowdown in editor
 				continue;
 			}
 			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n')) {
