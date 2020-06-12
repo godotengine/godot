@@ -308,7 +308,7 @@ void FindReplaceBar::_update_results_count() {
 		}
 
 		if (is_whole_words()) {
-			from_pos++; // Making sure we won't hit the same match next time, if we get out via a continue.
+			from_pos = pos + 1; // Making sure we won't hit the same match next time, if we get out via a continue.
 			if (pos > 0 && !is_symbol(full_text[pos - 1])) {
 				continue;
 			}
