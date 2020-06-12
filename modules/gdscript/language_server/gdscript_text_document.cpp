@@ -38,9 +38,6 @@
 #include "gdscript_language_protocol.h"
 #include "servers/display_server.h"
 
-// FIXME: Reenable LSP.
-#if 0
-
 void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
@@ -440,5 +437,3 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 	}
 	return arr;
 }
-
-#endif

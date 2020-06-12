@@ -52,13 +52,10 @@ GDScriptCache *gdscript_cache = nullptr;
 #include "editor/gdscript_highlighter.h"
 #include "editor/gdscript_translation_parser_plugin.h"
 
-// FIXME: Reenable LSP.
-#if 0
 #ifndef GDSCRIPT_NO_LSP
 #include "core/engine.h"
 #include "language_server/gdscript_language_server.h"
 #endif // !GDSCRIPT_NO_LSP
-#endif
 
 Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
 
@@ -97,15 +94,12 @@ static void _editor_init() {
 	ScriptEditor::get_singleton()->register_syntax_highlighter(gdscript_syntax_highlighter);
 #endif
 
-// FIXME: Reenable LSP.
-#if 0
 #ifndef GDSCRIPT_NO_LSP
 	register_lsp_types();
 	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
 	EditorNode::get_singleton()->add_editor_plugin(lsp_plugin);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton()));
 #endif // !GDSCRIPT_NO_LSP
-#endif
 }
 
 #endif // TOOLS_ENABLED
