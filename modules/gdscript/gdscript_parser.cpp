@@ -240,6 +240,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion) {
 	clear();
 	tokenizer.set_source_code(p_source_code);
+	script_path = p_script_path;
 	current = tokenizer.scan();
 	// Avoid error as the first token.
 	while (current.type == GDScriptTokenizer::Token::ERROR) {
@@ -936,7 +937,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			}
 			item.value = current_value++;
 			enum_node->values.push_back(item);
-			if (!found) {
+			if (!named) {
 				// Add as member of current class.
 				current_class->add_member(item);
 			}
@@ -2763,8 +2764,7 @@ String GDScriptParser::DataType::to_string() const {
 			if (class_type->identifier != nullptr) {
 				return class_type->identifier->name.operator String();
 			}
-			// TODO: GDScript FQCN
-			return "<unnamed GDScript class>";
+			return class_type->fqcn;
 		case SCRIPT: {
 			if (is_meta_type) {
 				return script_type->get_class_name().operator String();
@@ -2779,6 +2779,10 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			return native_type.operator String();
 		}
+		case ENUM:
+			return enum_type.operator String() + " (enum)";
+		case ENUM_VALUE:
+			return enum_type.operator String() + " (enum value)";
 		case UNRESOLVED:
 			return "<unresolved type>";
 	}
