@@ -31,9 +31,6 @@
 #ifndef GDSCRIPT_TEXT_DOCUMENT_H
 #define GDSCRIPT_TEXT_DOCUMENT_H
 
-// FIXME: Reenable LSP.
-#if 0
-
 #include "core/os/file_access.h"
 #include "core/reference.h"
 #include "lsp.hpp"
@@ -77,7 +74,5 @@ public:
 	GDScriptTextDocument();
 	virtual ~GDScriptTextDocument();
 };
-
-#endif
 
 #endif

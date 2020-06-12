@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// FIXME: Reenable LSP.
-#if 0
-
 #include "gdscript_language_protocol.h"
 
 #include "core/io/json.h"
@@ -306,5 +303,3 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	set_scope("workspace", workspace.ptr());
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }
-
-#endif

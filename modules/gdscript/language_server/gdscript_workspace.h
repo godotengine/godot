@@ -31,9 +31,6 @@
 #ifndef GDSCRIPT_WORKSPACE_H
 #define GDSCRIPT_WORKSPACE_H
 
-// FIXME: Reenable LSP.
-#if 0
-
 #include "../gdscript_parser.h"
 #include "core/variant.h"
 #include "editor/editor_file_system.h"
@@ -96,7 +93,5 @@ public:
 	GDScriptWorkspace();
 	~GDScriptWorkspace();
 };
-
-#endif
 
 #endif
