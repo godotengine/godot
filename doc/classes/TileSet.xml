@@ -45,7 +45,7 @@
 			</argument>
 			<description>
 				Determines when the auto-tiler should consider two different auto-tile IDs to be bound together.
-				Also, neighbor_id can (and will) be -1 when checking a tile against air.
+				Also, [code]neighbor_id[/code] can (and will) be [code]-1[/code] when checking a tile against air.
 			</description>
 		</method>
 		<method name="autotile_clear_bitmask_map">
