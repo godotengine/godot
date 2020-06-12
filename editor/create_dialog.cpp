@@ -513,30 +513,45 @@ String CreateDialog::get_selected_type() {
 Object *CreateDialog::instance_selected() {
 	TreeItem *selected = search_options->get_selected();
 
-	if (selected) {
-		Variant md = selected->get_metadata(0);
+	if (!selected) {
+		return nullptr;
+	}
 
-		String custom;
-		if (md.get_type() != Variant::NIL) {
-			custom = md;
-		}
+	Variant md = selected->get_metadata(0);
+	String custom;
+	if (md.get_type() != Variant::NIL) {
+		custom = md;
+	}
 
-		if (custom != String()) {
-			if (ScriptServer::is_global_class(custom)) {
-				Object *obj = EditorNode::get_editor_data().script_class_instance(custom);
-				Node *n = Object::cast_to<Node>(obj);
-				if (n) {
-					n->set_name(custom);
-				}
-				return obj;
+	Object *obj = nullptr;
+
+	if (!custom.empty()) {
+		if (ScriptServer::is_global_class(custom)) {
+			obj = EditorNode::get_editor_data().script_class_instance(custom);
+			Node *n = Object::cast_to<Node>(obj);
+			if (n) {
+				n->set_name(custom);
 			}
-			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+			obj = n;
 		} else {
-			return ClassDB::instance(selected->get_text(0));
+			obj = EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
+		}
+	} else {
+		obj = ClassDB::instance(selected->get_text(0));
+	}
+
+	// Check if any Object-type property should be instantiated.
+	List<PropertyInfo> pinfo;
+	obj->get_property_list(&pinfo);
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		if (E->get().type == Variant::OBJECT && E->get().usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+			Object *prop = ClassDB::instance(E->get().class_name);
+			obj->set(E->get().name, prop);
 		}
 	}
 
-	return nullptr;
+	return obj;
 }
 
 void CreateDialog::_item_selected() {
