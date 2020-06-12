@@ -232,6 +232,7 @@ public:
 
 		Type type = NONE;
 		int start_line = 0, end_line = 0;
+		int start_column = 0, end_column = 0;
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
@@ -855,21 +856,49 @@ public:
 				type = CONSTANT;
 				constant = p_constant;
 				name = p_constant->identifier->name;
+
+				start_line = p_constant->start_line;
+				end_line = p_constant->end_line;
+				start_column = p_constant->start_column;
+				end_column = p_constant->end_column;
+				leftmost_column = p_constant->leftmost_column;
+				rightmost_column = p_constant->rightmost_column;
 			}
 			Local(VariableNode *p_variable) {
 				type = VARIABLE;
 				variable = p_variable;
 				name = p_variable->identifier->name;
+
+				start_line = p_variable->start_line;
+				end_line = p_variable->end_line;
+				start_column = p_variable->start_column;
+				end_column = p_variable->end_column;
+				leftmost_column = p_variable->leftmost_column;
+				rightmost_column = p_variable->rightmost_column;
 			}
 			Local(ParameterNode *p_parameter) {
 				type = PARAMETER;
 				parameter = p_parameter;
 				name = p_parameter->identifier->name;
+
+				start_line = p_parameter->start_line;
+				end_line = p_parameter->end_line;
+				start_column = p_parameter->start_column;
+				end_column = p_parameter->end_column;
+				leftmost_column = p_parameter->leftmost_column;
+				rightmost_column = p_parameter->rightmost_column;
 			}
 			Local(IdentifierNode *p_identifier) {
 				type = FOR_VARIABLE;
 				bind = p_identifier;
 				name = p_identifier->name;
+
+				start_line = p_identifier->start_line;
+				end_line = p_identifier->end_line;
+				start_column = p_identifier->start_column;
+				end_column = p_identifier->end_column;
+				leftmost_column = p_identifier->leftmost_column;
+				rightmost_column = p_identifier->rightmost_column;
 			}
 		};
 		Local empty;
