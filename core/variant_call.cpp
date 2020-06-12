@@ -824,6 +824,18 @@ struct _VariantCall {
 	VCALL_PTR1R(Basis, scaled);
 	VCALL_PTR0R(Basis, get_scale);
 	VCALL_PTR0R(Basis, get_euler);
+	VCALL_PTR0R(Basis, get_euler_xyz);
+	VCALL_PTR1(Basis, set_euler_xyz);
+	VCALL_PTR0R(Basis, get_euler_xzy);
+	VCALL_PTR1(Basis, set_euler_xzy);
+	VCALL_PTR0R(Basis, get_euler_yzx);
+	VCALL_PTR1(Basis, set_euler_yzx);
+	VCALL_PTR0R(Basis, get_euler_yxz);
+	VCALL_PTR1(Basis, set_euler_yxz);
+	VCALL_PTR0R(Basis, get_euler_zxy);
+	VCALL_PTR1(Basis, set_euler_zxy);
+	VCALL_PTR0R(Basis, get_euler_zyx);
+	VCALL_PTR1(Basis, set_euler_zyx);
 	VCALL_PTR1R(Basis, tdotx);
 	VCALL_PTR1R(Basis, tdoty);
 	VCALL_PTR1R(Basis, tdotz);
