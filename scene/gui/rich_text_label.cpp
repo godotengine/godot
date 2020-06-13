@@ -1968,6 +1968,9 @@ void RichTextLabel::clear() {
 	selection.click = NULL;
 	selection.active = false;
 	current_idx = 1;
+	if (scroll_follow) {
+		scroll_following = true;
+	}
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {
