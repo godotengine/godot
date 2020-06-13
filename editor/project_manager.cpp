@@ -1730,10 +1730,6 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 			select_project(clicked_index);
 		}
 
-		if (_selected_project_keys.has(clicked_project.project_key)) {
-			clicked_project.control->grab_focus();
-		}
-
 		emit_signal(SIGNAL_SELECTION_CHANGED);
 
 		if (!mb->get_control() && mb->is_doubleclick()) {
