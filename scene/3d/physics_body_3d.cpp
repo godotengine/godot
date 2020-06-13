@@ -992,6 +992,9 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 					//all is a wall
 					on_wall = true;
 				} else {
+					if (!p_up_direction.is_normalized()) {
+						WARN_PRINT("move_and_slide() up_direction should be normalized; wall, floor, and ceiling checks may not work properly.");
+					}
 					if (Math::acos(collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
