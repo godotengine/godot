@@ -395,7 +395,7 @@ private:
 
 	//Temporary to make it compile asap
 	//Check later, what belongs in which class and fix dependencies and move stuff around
-	friend class BbCodeParser;
+	friend class BbCodeProcess;
 
 protected:
 	void _notification(int p_what);

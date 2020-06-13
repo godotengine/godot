@@ -10,7 +10,7 @@
 #include "editor/editor_scale.h"
 #endif
 
-BbCodeParser::BbCodeParser(ItemFrame *_p_frame, const Vector2 &_p_ofs, int &_p_height, int _p_width, int _p_line,
+BbCodeProcess::BbCodeProcess(ItemFrame *_p_frame, const Vector2 &_p_ofs, int &_p_height, int _p_width, int _p_line,
 		const Ref<Font> &_p_base_font, const Color &_p_base_color, const Color &_p_font_color_shadow,
 		bool _p_shadow_as_outline, const Point2 &_shadow_ofs, RichTextLabel &_p_ci) :
 		l{ _p_frame->lines.write[_p_line] },
@@ -64,12 +64,12 @@ BbCodeParser::BbCodeParser(ItemFrame *_p_frame, const Vector2 &_p_ofs, int &_p_h
 	visible_characters = p_ci.visible_characters;
 }
 
-BbCodeParser::~BbCodeParser() {}
+BbCodeProcess::~BbCodeProcess() {}
 
-void BbCodeParser::_bind_methods() {
+void BbCodeProcess::_bind_methods() {
 }
 
-bool BbCodeParser::_new_line() {
+bool BbCodeProcess::_new_line() {
 	if (p_mode != ProcessMode::PROCESS_CACHE) {
 		line++;
 		backtrack = 0;
@@ -127,7 +127,7 @@ bool BbCodeParser::_new_line() {
 	return false;
 }
 
-bool BbCodeParser::_ensure_width(int m_width) {
+bool BbCodeProcess::_ensure_width(int m_width) {
 	if (p_mode == ProcessMode::PROCESS_CACHE) {
 		l.maximum_width = MAX(l.maximum_width, MIN(p_width, wofs + m_width));
 		l.minimum_width = MAX(l.minimum_width, m_width);
@@ -150,7 +150,7 @@ bool BbCodeParser::_ensure_width(int m_width) {
 	return false;
 }
 
-bool BbCodeParser::_advance(int m_width) {
+bool BbCodeProcess::_advance(int m_width) {
 	if (p_mode == ProcessMode::PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + p_height && p_click_pos.y <= p_ofs.y + p_height + lh && p_click_pos.x >= p_ofs.x + wofs && p_click_pos.x < p_ofs.x + wofs + m_width) {
 		if (r_outside)
 			*r_outside = false;
@@ -162,17 +162,17 @@ bool BbCodeParser::_advance(int m_width) {
 	return false;
 }
 
-void BbCodeParser::_check_height(int m_height) {
+void BbCodeProcess::_check_height(int m_height) {
 	if (m_height > line_height) {
 		line_height = m_height;
 	}
 }
 
-bool BbCodeParser::_y_range_visible(int m_top, int m_height) {
+bool BbCodeProcess::_y_range_visible(int m_top, int m_height) {
 	return (m_height > 0 && ((m_top >= 0 && m_top < p_ci.get_size().y) || ((m_top + m_height - 1) >= 0 && (m_top + m_height - 1) < p_ci.get_size().y)));
 }
 
-bool BbCodeParser::_parse_text(ItemText *text) {
+bool BbCodeProcess::_parse_text(ItemText *text) {
 	Ref<Font> font = _find_font(it);
 	if (font.is_null()) {
 		font = p_base_font;
@@ -456,7 +456,7 @@ bool BbCodeParser::_parse_text(ItemText *text) {
 	return false;
 }
 
-bool BbCodeParser::_parse_table(ItemTable *table) {
+bool BbCodeProcess::_parse_table(ItemTable *table) {
 	lh = 0;
 	int hseparation = p_ci.get_theme_constant("table_hseparation");
 	int vseparation = p_ci.get_theme_constant("table_vseparation");
@@ -486,7 +486,7 @@ bool BbCodeParser::_parse_table(ItemTable *table) {
 			int ly = 0;
 
 			for (int i = 0; i < frame->lines.size(); i++) {
-				BbCodeParser(frame, Point2(), ly, available_width, i, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2, p_ci).process_cache();
+				BbCodeProcess(frame, Point2(), ly, available_width, i, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2, p_ci).process_cache();
 				//_process_line(frame, Point2(), ly, available_width, i, ProcessMode::PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 				table->columns.write[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 				table->columns.write[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
@@ -563,7 +563,7 @@ bool BbCodeParser::_parse_table(ItemTable *table) {
 
 			for (int i = 0; i < frame->lines.size(); i++) {
 				int ly = 0;
-				BbCodeParser(frame, Point2(), ly, table->columns[column].width, i, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2, p_ci).process_cache();
+				BbCodeProcess(frame, Point2(), ly, table->columns[column].width, i, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2, p_ci).process_cache();
 				//_process_line(frame, Point2(), ly, table->columns[column].width, i, ProcessMode::PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 				frame->lines.write[i].height_cache = ly; //actual height
 				frame->lines.write[i].height_accum_cache = ly; //actual height
@@ -597,10 +597,10 @@ bool BbCodeParser::_parse_table(ItemTable *table) {
 		for (int i = 0; i < frame->lines.size(); i++) {
 			if (visible) {
 				if (p_mode == ProcessMode::PROCESS_DRAW) {
-					nonblank_line_count += BbCodeParser(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_ci).process_draw();
+					nonblank_line_count += BbCodeProcess(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_ci).process_draw();
 					//nonblank_line_count += _process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, ProcessMode::PROCESS_DRAW, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2);
 				} else if (p_mode == ProcessMode::PROCESS_POINTER) {
-					BbCodeParser(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_ci).process_pointer(p_click_pos, r_click_item, r_click_char, r_outside);
+					BbCodeProcess(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_ci).process_pointer(p_click_pos, r_click_item, r_click_char, r_outside);
 					//_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, ProcessMode::PROCESS_POINTER, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_click_pos, r_click_item, r_click_char, r_outside);
 					if (r_click_item && *r_click_item) {
 						return nonblank_line_count; // exit early
@@ -636,7 +636,7 @@ bool BbCodeParser::_parse_table(ItemTable *table) {
 	return false;
 }
 
-bool BbCodeParser::_parse_image(ItemImage *img) {
+bool BbCodeProcess::_parse_image(ItemImage *img) {
 	lh = 0;
 	if (p_mode != ProcessMode::PROCESS_CACHE) {
 		lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
@@ -676,7 +676,7 @@ bool BbCodeParser::_parse_image(ItemImage *img) {
 	return false;
 }
 
-bool BbCodeParser::_parse_detect_click(Item *previous_item) {
+bool BbCodeProcess::_parse_detect_click(Item *previous_item) {
 	if (p_mode == ProcessMode::PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + p_height && p_click_pos.y <= p_ofs.y + p_height + lh) {
 		//went to next line, but pointer was on the previous one
 		if (r_outside) {
@@ -689,10 +689,10 @@ bool BbCodeParser::_parse_detect_click(Item *previous_item) {
 	return false;
 }
 
-void BbCodeParser::_common_initalize_process() {
+void BbCodeProcess::_common_initalize_process() {
 }
 
-BbCodeParser::Item *BbCodeParser::_get_next_item(Item *p_item, bool p_free) const {
+BbCodeProcess::Item *BbCodeProcess::_get_next_item(Item *p_item, bool p_free) const {
 	if (p_free) {
 		if (p_item->subitems.size()) {
 			return p_item->subitems.front()->get();
@@ -737,7 +737,7 @@ BbCodeParser::Item *BbCodeParser::_get_next_item(Item *p_item, bool p_free) cons
 	return nullptr;
 }
 
-Ref<Font> BbCodeParser::_find_font(Item *p_item) {
+Ref<Font> BbCodeProcess::_find_font(Item *p_item) {
 	Item *fontitem = p_item;
 
 	while (fontitem) {
@@ -752,7 +752,7 @@ Ref<Font> BbCodeParser::_find_font(Item *p_item) {
 	return Ref<Font>();
 }
 
-int BbCodeParser::_find_margin(Item *p_item, const Ref<Font> &p_base_font) {
+int BbCodeProcess::_find_margin(Item *p_item, const Ref<Font> &p_base_font) {
 	Item *item = p_item;
 
 	int margin = 0;
@@ -781,7 +781,7 @@ int BbCodeParser::_find_margin(Item *p_item, const Ref<Font> &p_base_font) {
 	return margin;
 }
 
-BbCodeParser::Align BbCodeParser::_find_align(Item *p_item) {
+BbCodeProcess::Align BbCodeProcess::_find_align(Item *p_item) {
 	Item *item = p_item;
 
 	while (item) {
@@ -796,7 +796,7 @@ BbCodeParser::Align BbCodeParser::_find_align(Item *p_item) {
 	return default_align;
 }
 
-Color BbCodeParser::_find_color(Item *p_item, const Color &p_default_color) {
+Color BbCodeProcess::_find_color(Item *p_item, const Color &p_default_color) {
 	Item *item = p_item;
 
 	while (item) {
@@ -811,7 +811,7 @@ Color BbCodeParser::_find_color(Item *p_item, const Color &p_default_color) {
 	return p_default_color;
 }
 
-bool BbCodeParser::_find_underline(Item *p_item) {
+bool BbCodeProcess::_find_underline(Item *p_item) {
 	Item *item = p_item;
 
 	while (item) {
@@ -825,7 +825,7 @@ bool BbCodeParser::_find_underline(Item *p_item) {
 	return false;
 }
 
-bool BbCodeParser::_find_strikethrough(Item *p_item) {
+bool BbCodeProcess::_find_strikethrough(Item *p_item) {
 	Item *item = p_item;
 
 	while (item) {
@@ -839,7 +839,7 @@ bool BbCodeParser::_find_strikethrough(Item *p_item) {
 	return false;
 }
 
-bool BbCodeParser::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
+bool BbCodeProcess::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 	Item *item = p_item;
 
 	while (item) {
@@ -860,7 +860,7 @@ bool BbCodeParser::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) 
 	return false;
 }
 
-void BbCodeParser::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
+void BbCodeProcess::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
 	Item *item = p_item;
 	while (item) {
 		if (item->type == ItemType::ITEM_CUSTOMFX || item->type == ItemType::ITEM_SHAKE || item->type == ItemType::ITEM_WAVE || item->type == ItemType::ITEM_TORNADO || item->type == ItemType::ITEM_RAINBOW) {
@@ -872,7 +872,7 @@ void BbCodeParser::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack)
 }
 
 /*
-int BbCodeParser::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
+int BbCodeProcess::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
 	ERR_FAIL_INDEX_V((int)p_mode, 3, 0);
 
 	if (r_outside) {
@@ -1011,7 +1011,7 @@ int BbCodeParser::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y
 }
 */
 
-int BbCodeParser::process_cache() {
+int BbCodeProcess::process_cache() {
 	p_mode = ProcessMode::PROCESS_CACHE;
 
 	_common_initalize_process();
@@ -1076,7 +1076,7 @@ int BbCodeParser::process_cache() {
 	return p_height;
 }
 
-int BbCodeParser::process_draw(int _p_char_count) {
+int BbCodeProcess::process_draw(int _p_char_count) {
 	p_mode = ProcessMode::PROCESS_DRAW;
 	p_char_count = _p_char_count;
 
@@ -1149,7 +1149,7 @@ int BbCodeParser::process_draw(int _p_char_count) {
 	return nonblank_line_count;
 }
 
-void BbCodeParser::process_pointer(const Point2i &_p_click_pos, Item **_r_click_item, int *_r_click_char, bool *_r_outside) {
+void BbCodeProcess::process_pointer(const Point2i &_p_click_pos, Item **_r_click_item, int *_r_click_char, bool *_r_outside) {
 	p_mode = ProcessMode::PROCESS_POINTER;
 
 	p_click_pos = _p_click_pos;

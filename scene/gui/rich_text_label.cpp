@@ -284,7 +284,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			visible_line_count = 0;
 			while (y < size.height && from_line < main->lines.size()) {
-				visible_line_count += BbCodeParser(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, *this).process_draw(total_chars);
+				visible_line_count += BbCodeProcess(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, *this).process_draw(total_chars);
 				//visible_line_count += _process_line(main, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_DRAW, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, Point2i(), nullptr, nullptr, nullptr, total_chars);
 				total_chars += main->lines[from_line].char_count;
 
@@ -330,7 +330,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	Color base_color = get_theme_color("default_color");
 
 	while (y < text_rect.get_size().height && from_line < p_frame->lines.size()) {
-		BbCodeParser(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, *this).process_pointer(p_click, r_click_item, r_click_char, r_outside);
+		BbCodeProcess(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, *this).process_pointer(p_click, r_click_item, r_click_char, r_outside);
 		//_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, from_line, PROCESS_POINTER, base_font, base_color, font_color_shadow, use_outline, shadow_ofs, p_click, r_click_item, r_click_char, r_outside);
 		if (r_click_item && *r_click_item) {
 			return;
@@ -714,7 +714,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	for (int i = p_frame->first_invalid_line; i < p_frame->lines.size(); i++) {
 		int y = 0;
-		BbCodeParser(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, base_font, Color(), font_color_shadow, use_outline, shadow_ofs, *this).process_cache();
+		BbCodeProcess(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, base_font, Color(), font_color_shadow, use_outline, shadow_ofs, *this).process_cache();
 		//_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, PROCESS_CACHE, base_font, Color(), font_color_shadow, use_outline, shadow_ofs);
 		p_frame->lines.write[i].height_cache = y;
 		p_frame->lines.write[i].height_accum_cache = y;

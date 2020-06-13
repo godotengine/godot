@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  panel.h                                                              */
+/*  bbcode.h                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -37,7 +37,7 @@
 
 class RichTextLabel;
 
-class BbCodeParser {
+class BbCodeProcess {
 	//We use the classes from RTL here, to have a quick dependency overview
 	//Later, we should move them over here, if we no longer have dependencies in the RTL
 	using Line = RichTextLabel::Line;
@@ -178,8 +178,8 @@ public:
 	bool *r_outside = nullptr;
 	int p_char_count = 0;
 
-	BbCodeParser(ItemFrame *_p_frame, const Vector2 &_p_ofs, int &_p_height, int p_width, int p_line, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, RichTextLabel &p_ci);
-	~BbCodeParser();
+	BbCodeProcess(ItemFrame *_p_frame, const Vector2 &_p_ofs, int &_p_height, int p_width, int p_line, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, RichTextLabel &p_ci);
+	~BbCodeProcess();
 };
 
 #endif // BBCODE_H
