@@ -438,7 +438,30 @@ void TabContainer::_notification(int p_what) {
 
 void TabContainer::_on_theme_changed() {
 	if (get_tab_count() > 0) {
-		set_current_tab(get_current_tab());
+		_repaint();
+		update();
+	}
+}
+
+void TabContainer::_repaint() {
+	Ref<StyleBox> sb = get_stylebox("panel");
+	Vector<Control *> tabs = _get_tabs();
+	for (int i = 0; i < tabs.size(); i++) {
+		Control *c = tabs[i];
+		if (i == current) {
+			c->show();
+			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+			if (tabs_visible) {
+				c->set_margin(MARGIN_TOP, _get_top_margin());
+			}
+			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
+			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
+			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
+			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
+
+		} else {
+			c->hide();
+		}
 	}
 }
 
@@ -554,24 +577,7 @@ void TabContainer::set_current_tab(int p_current) {
 	int pending_previous = current;
 	current = p_current;
 
-	Ref<StyleBox> sb = get_stylebox("panel");
-	Vector<Control *> tabs = _get_tabs();
-	for (int i = 0; i < tabs.size(); i++) {
-
-		Control *c = tabs[i];
-		if (i == current) {
-			c->show();
-			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-			if (tabs_visible)
-				c->set_margin(MARGIN_TOP, _get_top_margin());
-			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));
-			c->set_margin(Margin(MARGIN_LEFT), c->get_margin(Margin(MARGIN_LEFT)) + sb->get_margin(Margin(MARGIN_LEFT)));
-			c->set_margin(Margin(MARGIN_RIGHT), c->get_margin(Margin(MARGIN_RIGHT)) - sb->get_margin(Margin(MARGIN_RIGHT)));
-			c->set_margin(Margin(MARGIN_BOTTOM), c->get_margin(Margin(MARGIN_BOTTOM)) - sb->get_margin(Margin(MARGIN_BOTTOM)));
-
-		} else
-			c->hide();
-	}
+	_repaint();
 
 	_change_notify("current_tab");
 
