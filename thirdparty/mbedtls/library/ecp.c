@@ -2724,6 +2724,7 @@ int mbedtls_ecp_gen_privkey( const mbedtls_ecp_group *grp,
     {
         /* SEC1 3.2.1: Generate d such that 1 <= n < N */
         int count = 0;
+        unsigned cmp = 0;
 
         /*
          * Match the procedure given in RFC 6979 (deterministic ECDSA):
@@ -2748,9 +2749,14 @@ int mbedtls_ecp_gen_privkey( const mbedtls_ecp_group *grp,
              */
             if( ++count > 30 )
                 return( MBEDTLS_ERR_ECP_RANDOM_FAILED );
+
+            ret = mbedtls_mpi_lt_mpi_ct( d, &grp->N, &cmp );
+            if( ret != 0 )
+            {
+                goto cleanup;
+            }
         }
-        while( mbedtls_mpi_cmp_int( d, 1 ) < 0 ||
-               mbedtls_mpi_cmp_mpi( d, &grp->N ) >= 0 );
+        while( mbedtls_mpi_cmp_int( d, 1 ) < 0 || cmp != 1 );
     }
 #endif /* ECP_SHORTWEIERSTRASS */
 

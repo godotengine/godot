@@ -134,12 +134,10 @@
 		this.startGame = function(execName, mainPack) {
 
 			executableName = execName;
-			var mainArgs = [ '--main-pack', mainPack ];
+			var mainArgs = [ '--main-pack', getPathLeaf(mainPack) ];
 
 			return Promise.all([
-				// Load from directory,
-				this.init(getBasePath(mainPack)),
-				// ...but write to root where the engine expects it.
+				this.init(getBasePath(execName)),
 				this.preloadFile(mainPack, getPathLeaf(mainPack))
 			]).then(
 				Function.prototype.apply.bind(synchronousStart, this, mainArgs)
