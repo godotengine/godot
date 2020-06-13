@@ -142,7 +142,7 @@
 			<argument index="4" name="data" type="PoolByteArray">
 			</argument>
 			<description>
-				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then loads mipmaps for this image from [code]data[/code]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
