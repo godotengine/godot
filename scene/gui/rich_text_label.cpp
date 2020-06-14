@@ -1970,6 +1970,9 @@ void RichTextLabel::clear() {
 	selection.click = nullptr;
 	selection.active = false;
 	current_idx = 1;
+	if (scroll_follow) {
+		scroll_following = true;
+	}
 
 	if (fixed_width != -1) {
 		minimum_size_changed();
