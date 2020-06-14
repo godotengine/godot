@@ -42,29 +42,33 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	}
 	OS_JavaScript *os = OS_JavaScript::get_singleton();
 	os->set_idb_available(idbfs_err.empty());
+	Main::setup2();
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->run_async();
+	os->main_loop_iterate();
 }
 
 int main(int argc, char *argv[]) {
 
+	new OS_JavaScript(argc, argv);
+	// TODO: Check error return value.
+	Main::setup(argv[0], argc - 1, &argv[1], false);
+
 	// Sync from persistent state into memory and then
 	// run the 'main_after_fs_sync' function.
 	/* clang-format off */
-	EM_ASM(
+	EM_ASM({
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
-			ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
+			requestAnimationFrame(function() {
+				ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""]);
+			});
 		});
-	);
+	});
 	/* clang-format on */
-
-	new OS_JavaScript(argc, argv);
-	// TODO: Check error return value.
-	Main::setup(argv[0], argc - 1, &argv[1]);
 
 	return 0;
 	// Continued async in main_after_fs_sync() from the syncfs() callback.
