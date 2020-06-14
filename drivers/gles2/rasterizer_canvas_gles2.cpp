@@ -2426,14 +2426,18 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 		if (!light_allow_join) {
 			// can't join
 			join = false;
-			// we also dont want to allow joining this item with the next item, because the next item could have no lights!
-			r_batch_break = true;
 		}
 
 	} else {
-		// can't join the next item if it has any lights as it will be by definition affected by different set of lights
-		r_ris.light_region.light_bitfield = 0;
-		r_ris.light_region.shadow_bitfield = 0;
+		// if the last item had lights, we should not join it to this one (which has no lights)
+		if (r_ris.light_region.light_bitfield || r_ris.light_region.shadow_bitfield) {
+			join = false;
+
+			// setting these to zero ensures that any following item with lights will, by definition,
+			// be affected by a different set of lights, and thus prevent a join
+			r_ris.light_region.light_bitfield = 0;
+			r_ris.light_region.shadow_bitfield = 0;
+		}
 	}
 
 	if (reclip) {
