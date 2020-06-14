@@ -370,6 +370,8 @@ public:
 	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
 #endif
 
+	virtual Object *object_duplicate() const;
+
 	// used by editors, to save what has changed only
 	void set_scene_instance_state(const Ref<SceneState> &p_state);
 	Ref<SceneState> get_scene_instance_state() const;
