@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A [Container] node that holds a [SubViewport], automatically setting its size.
+		[b]Note:[/b] Changing a SubViewportContainer's [member Control.rect_scale] will cause its contents to appear distorted. To change its visual size without causing distortion, adjust the node's margins instead (if it's not already in a container).
 	</description>
 	<tutorials>
 	</tutorials>
