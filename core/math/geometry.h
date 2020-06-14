@@ -187,6 +187,25 @@ public:
 		return dP.length(); // Return the closest distance.
 	}
 
+	static inline Vector3 barycentric_coordinate(const Vector3& point, const Vector3& vertex_a, const Vector3& vertex_b, const Vector3& vertex_c)
+	{
+		Vector3 v0 = vertex_b - vertex_a;
+		Vector3 v1 = vertex_c - vertex_a;
+		Vector3 v2 = point - vertex_a;
+		float d00 = v0.dot(v0);
+		float d01 = v0.dot(v1);
+		float d11 = v1.dot(v1);
+		float d20 = v2.dot(v0);
+		float d21 = v2.dot(v1);
+		float denominator = d00 * d11 - d01 * d01;
+		
+		float x = (d11 * d20 - d01 * d21) / denominator;
+		float y = (d00 * d21 - d01 * d20) / denominator;
+		float z = 1.0f - x - y;
+
+		return Vector3(x,y,z);
+	}
+
 	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = 0) {
 		Vector3 e1 = p_v1 - p_v0;
 		Vector3 e2 = p_v2 - p_v0;
