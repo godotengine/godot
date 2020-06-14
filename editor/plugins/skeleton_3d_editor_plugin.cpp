@@ -665,7 +665,6 @@ void Skeleton3DEditor::create_editors() {
 	options->get_popup()->add_item(TTR("Create physical skeleton"), MENU_OPTION_CREATE_PHYSICAL_SKELETON);
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_option));
-	options->hide();
 
 	const Color section_color = get_theme_color("prop_subsection", "Editor");
 
