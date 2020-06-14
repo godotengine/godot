@@ -1432,6 +1432,12 @@ Vector3 _Geometry::get_closest_point_to_segment_uncapped(const Vector3 &p_point,
 	Vector3 s[2] = { p_a, p_b };
 	return Geometry::get_closest_point_to_segment_uncapped(p_point, s);
 }
+Vector3 _Geometry::barycentric_coordinate(const Vector3 &point, const Vector3 &vertex_a, const Vector3 &vertex_b, const Vector3 &vertex_c) {
+	return Geometry::barycentric_coordinate(point, vertex_a, vertex_b, vertex_c);
+}
+float _Geometry::area_of_triangle(const Vector3 &vertex_a, const Vector3 &vertex_b, const Vector3 &vertex_c) {
+	return Geometry::area_of_triangle(vertex_a, vertex_b, vertex_c);
+}
 Variant _Geometry::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
 
 	Vector3 res;
@@ -1559,6 +1565,8 @@ void _Geometry::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit", "normal"), &_Geometry::get_uv84_normal_bit);
 
+	ClassDB::bind_method(D_METHOD("barycentric_coordinate", "point", "vertex_a", "vertex_b", "vertex_c"), &_Geometry::barycentric_coordinate);
+	ClassDB::bind_method(D_METHOD("area_of_triangle", "vertex_a", "vertex_b", "vertex_c"), &_Geometry::area_of_triangle);
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &_Geometry::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &_Geometry::segment_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_sphere", "from", "to", "sphere_position", "sphere_radius"), &_Geometry::segment_intersects_sphere);
