@@ -93,7 +93,6 @@ public:
 	enum Preset {
 		PRESET_DETECT,
 		PRESET_2D,
-		PRESET_2D_PIXEL,
 		PRESET_3D,
 	};
 
