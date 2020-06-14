@@ -9,6 +9,21 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="barycentric_coordinate">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="vertex_a" type="Vector3">
+			</argument>
+			<argument index="2" name="vertex_b" type="Vector3">
+			</argument>
+			<argument index="3" name="vertex_c" type="Vector3">
+			</argument>
+			<description>
+				Returns the barycentric coordinate for [code]point[/code] within the triangle specified by [code]vertex_a[/code], [code]vertex_b[/code] and [code]vertex_c[/code]. The point is inside the triangle if the barycentric coordinates are all between 0 and 1.
+			</description>
+		</method>
 		<method name="build_box_planes">
 			<return type="Array">
 			</return>
