@@ -191,17 +191,16 @@ def configure(env, env_mono):
                 env.Append(LIBS=["psapi"])
                 env.Append(LIBS=["version"])
         else:
-            mono_lib_name = find_name_in_dir_files(
-                mono_lib_path, mono_lib_names, prefixes=["", "lib"], extensions=lib_suffixes
-            )
+            mono_lib_file = find_file_in_dir(mono_lib_path, mono_lib_names, extensions=lib_suffixes)
 
-            if not mono_lib_name:
+            if not mono_lib_file:
                 raise RuntimeError("Could not find mono library in: " + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_lib_name + ".lib")
+                env.Append(LINKFLAGS=mono_lib_file)
             else:
-                env.Append(LIBS=[mono_lib_name])
+                mono_lib_file_path = os.path.join(mono_lib_path, mono_lib_file)
+                env.Append(LINKFLAGS=mono_lib_file_path)
 
             mono_bin_path = os.path.join(mono_root, "bin")
 
