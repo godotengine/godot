@@ -307,18 +307,19 @@ void FindReplaceBar::_update_results_count() {
 			break;
 		}
 
+		int pos_subsequent = pos + searched.length();
 		if (is_whole_words()) {
 			from_pos = pos + 1; // Making sure we won't hit the same match next time, if we get out via a continue.
-			if (pos > 0 && !is_symbol(full_text[pos - 1])) {
+			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n')) {
 				continue;
 			}
-			if (pos + searched.length() < full_text.length() && !is_symbol(full_text[pos + searched.length()])) {
+			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n')) {
 				continue;
 			}
 		}
 
 		results_count++;
-		from_pos = pos + searched.length();
+		from_pos = pos_subsequent;
 	}
 }
 
