@@ -1021,16 +1021,23 @@ void EditorHelp::_update_doc() {
 			}
 
 			if (cd.properties[i].setter != "") {
+				String setter = cd.properties[i].setter;
+				if (setter.begins_with("_")) {
+					// Some setters are internal methods that aren't exposed, but they have equivalents without _, so doing this should be fine.
+					setter = setter.substr(1);
+				}
+
 				class_desc->push_cell();
 				class_desc->pop(); // cell
 
 				class_desc->push_cell();
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
-				if (method_map[cd.properties[i].setter].arguments.size() > 1) {
+				DocData::MethodDoc setter_method = method_map[setter];
+				if (setter_method.arguments.size() > 1) {
 					// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
-					class_desc->push_meta("@method " + cd.properties[i].setter);
-					class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+					class_desc->push_meta("@method " + setter);
+					class_desc->add_text(vformat("%s(%s, %s)", setter, TTR("(value)"), setter_method.arguments[1].name));
 					class_desc->pop();
 				} else {
 					class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
@@ -1041,23 +1048,30 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); // color
 				class_desc->pop(); // font
 				class_desc->pop(); // cell
-				method_line[cd.properties[i].setter] = property_line[cd.properties[i].name];
+				method_line[setter] = property_line[cd.properties[i].name];
 			}
 
 			if (cd.properties[i].getter != "") {
+				String getter = cd.properties[i].getter;
+				if (getter.begins_with("_")) {
+					// Some getter are internal methods that aren't exposed, but they have equivalents without _, so doing this should be fine.
+					getter = getter.substr(1);
+				}
+
 				class_desc->push_cell();
 				class_desc->pop(); // cell
 
 				class_desc->push_cell();
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
-				if (method_map[cd.properties[i].getter].arguments.size() > 0) {
+				DocData::MethodDoc getter_method = method_map[getter];
+				if (getter_method.arguments.size() > 0) {
 					// Getters with additional arguments are exposed in the method list, so we link them here for quick access.
-					class_desc->push_meta("@method " + cd.properties[i].getter);
-					class_desc->add_text(cd.properties[i].getter + "()");
+					class_desc->push_meta("@method " + getter);
+					class_desc->add_text(vformat("%s(%s)", getter, getter_method.arguments[0].name));
 					class_desc->pop();
 				} else {
-					class_desc->add_text(cd.properties[i].getter + "()");
+					class_desc->add_text(getter + "()");
 				}
 				class_desc->pop(); //color
 				class_desc->push_color(comment_color);
@@ -1065,7 +1079,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); //color
 				class_desc->pop(); //font
 				class_desc->pop(); //cell
-				method_line[cd.properties[i].getter] = property_line[cd.properties[i].name];
+				method_line[getter] = property_line[cd.properties[i].name];
 			}
 
 			class_desc->pop(); // table
