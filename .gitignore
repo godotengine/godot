@@ -54,6 +54,11 @@ gmon.out
 *.cflags
 *.cxxflags
 
+# Code::Blocks files
+*.cbp
+*.layout
+*.depend
+
 # Eclipse CDT files
 .cproject
 .settings/
