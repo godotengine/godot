@@ -181,15 +181,14 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_option, cons
 }
 
 int ResourceImporterTexture::get_preset_count() const {
-	return 4;
+	return 3;
 }
 
 String ResourceImporterTexture::get_preset_name(int p_idx) const {
 	static const char *preset_names[] = {
-		"2D, Detect 3D",
+		"2D/3D (Auto-Detect)",
 		"2D",
-		"2D Pixel",
-		"3D"
+		"3D",
 	};
 
 	return preset_names[p_idx];
