@@ -343,55 +343,21 @@ OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	return ret;
 }
 
-uint64_t OS_Windows::get_unix_time() const {
-	FILETIME ft;
-	SYSTEMTIME st;
-	GetSystemTime(&st);
-	SystemTimeToFileTime(&st, &ft);
-
-	SYSTEMTIME ep;
-	ep.wYear = 1970;
-	ep.wMonth = 1;
-	ep.wDayOfWeek = 4;
-	ep.wDay = 1;
-	ep.wHour = 0;
-	ep.wMinute = 0;
-	ep.wSecond = 0;
-	ep.wMilliseconds = 0;
-	FILETIME fep;
-	SystemTimeToFileTime(&ep, &fep);
-
-	// Type punning through unions (rather than pointer cast) as per:
-	// https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime#remarks
-	ULARGE_INTEGER ft_punning;
-	ft_punning.LowPart = ft.dwLowDateTime;
-	ft_punning.HighPart = ft.dwHighDateTime;
-
-	ULARGE_INTEGER fep_punning;
-	fep_punning.LowPart = fep.dwLowDateTime;
-	fep_punning.HighPart = fep.dwHighDateTime;
-
-	return (ft_punning.QuadPart - fep_punning.QuadPart) / 10000000;
-};
-
-uint64_t OS_Windows::get_system_time_secs() const {
-	return get_system_time_msecs() / 1000;
-}
-
-uint64_t OS_Windows::get_system_time_msecs() const {
-	const uint64_t WINDOWS_TICK = 10000;
-	const uint64_t MSEC_TO_UNIX_EPOCH = 11644473600000LL;
+double OS_Windows::get_unix_time() const {
+	// 1 Windows tick is 100ns
+	const uint64_t WINDOWS_TICKS_PER_SECOND = 10000000;
+	const uint64_t TICKS_TO_UNIX_EPOCH = 116444736000000000LL;
 
 	SYSTEMTIME st;
 	GetSystemTime(&st);
 	FILETIME ft;
 	SystemTimeToFileTime(&st, &ft);
-	uint64_t ret;
-	ret = ft.dwHighDateTime;
-	ret <<= 32;
-	ret |= ft.dwLowDateTime;
+	uint64_t ticks_time;
+	ticks_time = ft.dwHighDateTime;
+	ticks_time <<= 32;
+	ticks_time |= ft.dwLowDateTime;
 
-	return (uint64_t)(ret / WINDOWS_TICK - MSEC_TO_UNIX_EPOCH);
+	return (double)(ticks_time - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
