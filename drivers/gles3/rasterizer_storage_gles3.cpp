@@ -244,24 +244,24 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_RH: {
-			r_gl_internal_format = GL_R32F;
+			r_gl_internal_format = GL_R16F;
 			r_gl_format = GL_RED;
 			r_gl_type = GL_HALF_FLOAT;
 		} break;
 		case Image::FORMAT_RGH: {
-			r_gl_internal_format = GL_RG32F;
+			r_gl_internal_format = GL_RG16F;
 			r_gl_format = GL_RG;
 			r_gl_type = GL_HALF_FLOAT;
 
 		} break;
 		case Image::FORMAT_RGBH: {
-			r_gl_internal_format = GL_RGB32F;
+			r_gl_internal_format = GL_RGB16F;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_HALF_FLOAT;
 
 		} break;
 		case Image::FORMAT_RGBAH: {
-			r_gl_internal_format = GL_RGBA32F;
+			r_gl_internal_format = GL_RGBA16F;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_HALF_FLOAT;
 
