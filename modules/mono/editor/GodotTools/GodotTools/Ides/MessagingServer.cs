@@ -307,6 +307,11 @@ namespace GodotTools.Ides
                         var request = JsonConvert.DeserializeObject<DebugPlayRequest>(content.Body);
                         return await HandleDebugPlay(request);
                     },
+                    [StopPlayRequest.Id] = async (peer, content) =>
+                    {
+                        var request = JsonConvert.DeserializeObject<StopPlayRequest>(content.Body);
+                        return await HandleStopPlay(request);
+                    },
                     [ReloadScriptsRequest.Id] = async (peer, content) =>
                     {
                         _ = JsonConvert.DeserializeObject<ReloadScriptsRequest>(content.Body);
@@ -341,6 +346,12 @@ namespace GodotTools.Ides
                     GodotSharpEditor.Instance.CurrentPlaySettings = null;
                 });
                 return Task.FromResult<Response>(new DebugPlayResponse());
+            }
+
+            private static Task<Response> HandleStopPlay(StopPlayRequest request)
+            {
+                DispatchToMainThread(Internal.EditorRunStop);
+                return Task.FromResult<Response>(new StopPlayResponse());
             }
 
             private static Task<Response> HandleReloadScripts()
