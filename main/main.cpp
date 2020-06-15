@@ -930,6 +930,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+	// Initialize user data dir.
+	OS::get_singleton()->ensure_user_data_dir();
+
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc", PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1")); // No negative and limit to 500 due to crashes
 	GLOBAL_DEF("network/limits/debugger/max_chars_per_second", 32768);
@@ -948,7 +951,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		packed_data->set_disabled(true);
 		globals->set_disable_feature_overrides(true);
 	}
-
 #endif
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
@@ -1265,10 +1267,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
 	}
-
-	/* Initialize user data dir */
-
-	OS::get_singleton()->ensure_user_data_dir();
 
 	/* Initialize Input */
 
