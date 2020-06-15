@@ -189,21 +189,17 @@ public:
 
 	static inline Vector3 barycentric_coordinate(const Vector3& point, const Vector3& vertex_a, const Vector3& vertex_b, const Vector3& vertex_c)
 	{
-		Vector3 v0 = vertex_b - vertex_a;
-		Vector3 v1 = vertex_c - vertex_a;
-		Vector3 v2 = point - vertex_a;
-		float d00 = v0.dot(v0);
-		float d01 = v0.dot(v1);
-		float d11 = v1.dot(v1);
-		float d20 = v2.dot(v0);
-		float d21 = v2.dot(v1);
-		float denominator = d00 * d11 - d01 * d01;
-		
-		float y = (d11 * d20 - d01 * d21) / denominator;
-		float z = (d00 * d21 - d01 * d20) / denominator;
-		float x = 1.0f - x - y;
+		float a0 = triangle_area(a,b,c)
+		float u = triangle_area(p, c, a) / a0
+		float v = triangle_area(p, b, a) / a0
+		float w = triangle_area(p, c, b) / a0
+	
+		return Vector3(w, u, v)
+	}
 
-		return Vector3(x,y,z);
+	static inline float triangle_area(const Vector3& vertex_a, const Vector3& vertex_b, const Vector3& vertex_c)
+	{
+		return (b-a).cross(c-a).length() * 0.5f;
 	}
 
 	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = 0) {
