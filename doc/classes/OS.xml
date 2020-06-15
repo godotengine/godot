@@ -682,6 +682,52 @@
 				[b]Note:[/b] Only implemented on desktop platforms. On other platforms, it will always return [code]true[/code].
 			</description>
 		</method>
+		<method name="keyboard_get_current_layout" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns active keyboard layout index.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of keyboard layouts.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the localized name of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_set_current_layout">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Sets active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="kill">
 			<return type="int" enum="Error">
 			</return>

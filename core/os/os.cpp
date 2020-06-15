@@ -551,6 +551,24 @@ OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
+int OS::keyboard_get_layout_count() const {
+	return 0;
+}
+
+int OS::keyboard_get_current_layout() const {
+	return -1;
+}
+
+void OS::keyboard_set_current_layout(int p_index) {}
+
+String OS::keyboard_get_layout_language(int p_index) const {
+	return "";
+}
+
+String OS::keyboard_get_layout_name(int p_index) const {
+	return "";
+}
+
 bool OS::is_joy_known(int p_device) {
 	return true;
 }

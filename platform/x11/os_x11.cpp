@@ -3474,6 +3474,108 @@ OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
+int OS_X11::keyboard_get_layout_count() const {
+	int _group_count = 0;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return _group_count;
+}
+
+int OS_X11::keyboard_get_current_layout() const {
+	XkbStateRec state;
+	XkbGetState(x11_display, XkbUseCoreKbd, &state);
+	return state.group;
+}
+
+void OS_X11::keyboard_set_current_layout(int p_index) {
+	ERR_FAIL_INDEX(p_index, keyboard_get_layout_count());
+	XkbLockGroup(x11_display, XkbUseCoreKbd, p_index);
+}
+
+String OS_X11::keyboard_get_layout_language(int p_index) const {
+	String ret;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+		XkbGetNames(x11_display, XkbGroupNamesMask, kbd);
+
+		int _group_count = 0;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+
+		Atom names = kbd->names->symbols;
+		if (names != None) {
+			char *name = XGetAtomName(x11_display, names);
+			Vector<String> info = String(name).split("+");
+			if (p_index >= 0 && p_index < _group_count) {
+				if (p_index + 1 < info.size()) {
+					ret = info[p_index + 1]; // Skip "pc" at the start and "inet"/"group" at the end of symbols.
+				} else {
+					ret = "en"; // No symbol for layout fallback to "en".
+				}
+			} else {
+				ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
+			}
+			XFree(name);
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return ret.substr(0, 2);
+}
+
+String OS_X11::keyboard_get_layout_name(int p_index) const {
+	String ret;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+		XkbGetNames(x11_display, XkbGroupNamesMask, kbd);
+
+		int _group_count = 0;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+
+		if (p_index >= 0 && p_index < _group_count) {
+			char *full_name = XGetAtomName(x11_display, groups[p_index]);
+			ret.parse_utf8(full_name);
+			XFree(full_name);
+		} else {
+			ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return ret;
+}
+
 void OS_X11::update_real_mouse_position() {
 	Window root_return, child_return;
 	int root_x, root_y, win_x, win_y;
