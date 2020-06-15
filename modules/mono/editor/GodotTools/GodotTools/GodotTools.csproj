@@ -33,5 +33,7 @@
     <ProjectReference Include="..\GodotTools.IdeMessaging\GodotTools.IdeMessaging.csproj" />
     <ProjectReference Include="..\GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj" />
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+    <!-- Include it if this is an SCons build targeting Windows, or if it's not an SCons build but we're on Windows -->
+    <ProjectReference Include="..\GodotTools.OpenVisualStudio\GodotTools.OpenVisualStudio.csproj" Condition=" '$(GodotPlatform)' == 'windows' Or ( '$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT' ) " />
   </ItemGroup>
 </Project>

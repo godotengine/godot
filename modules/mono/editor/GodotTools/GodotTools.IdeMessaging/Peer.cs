@@ -105,49 +105,45 @@ namespace GodotTools.IdeMessaging
 
                     try
                     {
-                        try
+                        if (msg.Kind == MessageKind.Request)
                         {
-                            if (msg.Kind == MessageKind.Request)
-                            {
-                                var responseContent = await messageHandler.HandleRequest(this, msg.Id, msg.Content, Logger);
-                                await WriteMessage(new Message(MessageKind.Response, msg.Id, responseContent));
-                            }
-                            else if (msg.Kind == MessageKind.Response)
-                            {
-                                ResponseAwaiter responseAwaiter;
+                            var responseContent = await messageHandler.HandleRequest(this, msg.Id, msg.Content, Logger);
+                            await WriteMessage(new Message(MessageKind.Response, msg.Id, responseContent));
+                        }
+                        else if (msg.Kind == MessageKind.Response)
+                        {
+                            ResponseAwaiter responseAwaiter;
 
-                                using (await requestsSem.UseAsync())
+                            using (await requestsSem.UseAsync())
+                            {
+                                if (!requestAwaiterQueues.TryGetValue(msg.Id, out var queue) || queue.Count <= 0)
                                 {
-                                    if (!requestAwaiterQueues.TryGetValue(msg.Id, out var queue) || queue.Count <= 0)
-                                    {
-                                        Logger.LogError($"Received unexpected response: {msg.Id}");
-                                        return;
-                                    }
-
-                                    responseAwaiter = queue.Dequeue();
+                                    Logger.LogError($"Received unexpected response: {msg.Id}");
+                                    return;
                                 }
 
-                                responseAwaiter.SetResult(msg.Content);
+                                responseAwaiter = queue.Dequeue();
                             }
-                            else
-                            {
-                                throw new IndexOutOfRangeException($"Invalid message kind {msg.Kind}");
-                            }
+
+                            responseAwaiter.SetResult(msg.Content);
                         }
-                        catch (Exception e)
+                        else
                         {
-                            Logger.LogError($"Message handler for '{msg}' failed with exception", e);
+                            throw new IndexOutOfRangeException($"Invalid message kind {msg.Kind}");
                         }
                     }
                     catch (Exception e)
                     {
-                        Logger.LogError($"Exception thrown from message handler. Message: {msg}", e);
+                        Logger.LogError($"Message handler for '{msg}' failed with exception", e);
                     }
                 }
             }
             catch (Exception e)
             {
-                Logger.LogError("Unhandled exception in the peer loop", e);
+                if (!IsDisposed || !(e is SocketException || e.InnerException is SocketException))
+                {
+                    Logger.LogError("Unhandled exception in the peer loop", e);
+                }
             }
         }
 
