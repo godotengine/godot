@@ -56,7 +56,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-08 09:41+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -1505,7 +1505,7 @@ msgstr "Autoloads neu anordnen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Autoload konnte nicht hinzugefügt werden:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2469,15 +2469,17 @@ msgstr ""
 "Szene kann nicht neu geladen werden, wenn sie vorher nicht gespeichert wurde."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Szene speichern"
+msgstr "Gespeicherte Szene neu laden"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Die aktuelle Szene enthält ungesicherte Änderungen.\n"
+"Soll die Szene trotzdem neu geladen werden? Diese Aktion kann nicht "
+"rückgängig gemacht werden."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3424,11 +3426,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Hast du die '_run' Methode vergessen?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Strg-Taste halten um einen Getter zu setzen. Umschalt-Taste halten um eine "
-"allgemeine Signatur zu setzen."
+"Strg-Taste halten um auf Ganzzahlen zu runden. Umschalt-Taste halten für "
+"präzisere Änderungen."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4031,6 +4032,8 @@ msgstr "Fehler beim ausführen des Post-Import Skripts:"
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
+"Wurde ein von Node abstammendes Objekt in der ‚post_import()‘-Methode "
+"zurückgegeben?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6994,9 +6997,8 @@ msgstr ""
 "Fehlende verbundene Methode ‚%s‘ für Signal ‚%s‘ von Node ‚%s‘ zu Node ‚%s‘."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(ignorieren)"
+msgstr "[Ignorieren]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7485,6 +7487,12 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Klicken um zwischen Sichtbarkeitsmodi umzuschalten.\n"
+"\n"
+"Offenes Auge: Griffe sind sichtbar.\n"
+"Geschlossenes Auge: Griffe sind unsichtbar.\n"
+"Halb offenes Auge: Griffe sind auch durch deckende Oberflächen sichtbar "
+"(\"Röntgenblick\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10591,9 +10599,8 @@ msgid "Instance Child Scene"
 msgstr "Szene hier instantiieren"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Skript hinzufügen"
+msgstr "Skript loslösen"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10764,6 +10771,8 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Skript konnte nicht angehängt werden: Keine Sprachen registriert.\n"
+"Vermutliche Ursache ist dass der Editor ohne Sprachmodulen gebaut wurde."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10814,14 +10823,12 @@ msgstr ""
 "kein Root-Node existiert."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "Ein neues oder existierendes Skript zum ausgewählten Node hinzufügen."
+msgstr "Ein neues oder existierendes Skript dem ausgewählten Node anhängen."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Entferne Skript von ausgewähltem Node."
+msgstr "Skript vom ausgewählten Node loslösen."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -12054,11 +12061,9 @@ msgstr ""
 "konfiguriert."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Debug-Keystore wurde weder in den Editoreinstellungen noch in der Vorlage "
-"konfiguriert."
+"Release-Keystore wurde nicht korrekt konfiguriert in den Exporteinstellungen."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12091,26 +12096,35 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"Ungültiges „GodotPaymentV3“-Modul eingebunden in den „android/modules“-"
+"Projekteinstellungen (wurde in Godot 3.2.2 geändert).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"„Use Custom Build“ muss aktiviert werden um die Plugins nutzen zu können."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"„Degrees Of Freedom“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VR“ "
+"gesetzt wurde."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"„Hand Tracking“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VR“ "
+"gesetzt wurde."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"„Focus Awareness“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VR“ "
+"gesetzt wurde."
 
 #: platform/android/export/export.cpp
 msgid ""
