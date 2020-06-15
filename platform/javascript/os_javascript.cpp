@@ -96,6 +96,16 @@ static Point2 compute_position_in_canvas(int x, int y) {
 
 static bool cursor_inside_canvas = true;
 
+extern "C" EMSCRIPTEN_KEEPALIVE void _canvas_resize_callback() {
+	OS_JavaScript *os = OS_JavaScript::get_singleton();
+	int canvas_width;
+	int canvas_height;
+	// Update the framebuffer size.
+	emscripten_get_canvas_element_size(os->canvas_id.utf8().get_data(), &canvas_width, &canvas_height);
+	emscripten_set_canvas_element_size(os->canvas_id.utf8().get_data(), canvas_width, canvas_height);
+	Main::force_redraw();
+}
+
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 
 	OS_JavaScript *os = get_singleton();
@@ -1052,6 +1062,12 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
 		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
 		canvas.addEventListener('drop', Module.listeners['drop'], false);
+		// Resize
+		const resize_callback = cwrap('_canvas_resize_callback', null, []);
+		Module.resize_observer = new window['ResizeObserver'](function(elements) {
+			resize_callback();
+		});
+		Module.resize_observer.observe(canvas);
 		// Quit request
 		Module['request_quit'] = function() {
 			send_notification(notifications[notifications.length - 1]);
@@ -1142,14 +1158,17 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize_async() {
 	EM_ASM({
+		const canvas = Module['canvas'];
 		Object.entries(Module.listeners).forEach(function(kv) {
 			if (kv[0] == 'paste') {
 				window.removeEventListener(kv[0], kv[1], true);
 			} else {
-				Module['canvas'].removeEventListener(kv[0], kv[1]);
+				canvas.removeEventListener(kv[0], kv[1]);
 			}
 		});
 		Module.listeners = {};
+		Module.resize_observer.unobserve(canvas);
+		delete Module.resize_observer;
 	});
 	audio_driver_javascript.finish_async();
 }
