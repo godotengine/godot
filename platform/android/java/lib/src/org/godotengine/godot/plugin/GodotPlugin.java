@@ -98,7 +98,7 @@ public abstract class GodotPlugin {
 	 */
 	@Nullable
 	protected Activity getActivity() {
-		return godot;
+		return godot.getActivity();
 	}
 
 	/**

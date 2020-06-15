@@ -42,6 +42,7 @@ import org.godotengine.godot.xr.regular.RegularContextFactory;
 import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.view.GestureDetector;
@@ -68,19 +69,20 @@ import android.view.SurfaceView;
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
 public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
-	private final Godot activity;
+	private final Godot godot;
 	private final GodotInputHandler inputHandler;
 	private final GestureDetector detector;
 	private final GodotRenderer godotRenderer;
 
-	public GodotGLRenderView(Godot activity, XRMode xrMode, boolean p_use_32_bits, boolean p_use_debug_opengl) {
-		super(activity);
+	public GodotGLRenderView(Context context, Godot godot, XRMode xrMode, boolean p_use_32_bits,
+			boolean p_use_debug_opengl) {
+		super(context);
 		GLUtils.use_32 = p_use_32_bits;
 		GLUtils.use_debug_opengl = p_use_debug_opengl;
 
-		this.activity = activity;
+		this.godot = godot;
 		this.inputHandler = new GodotInputHandler(this);
-		this.detector = new GestureDetector(activity, new GodotGestureHandler(this));
+		this.detector = new GestureDetector(context, new GodotGestureHandler(this));
 		this.godotRenderer = new GodotRenderer();
 		init(xrMode, false, 16, 0);
 	}
@@ -112,7 +114,7 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 
 	@Override
 	public void onBackPressed() {
-		activity.onBackPressed();
+		godot.onBackPressed();
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
@@ -120,7 +122,7 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		this.detector.onTouchEvent(event);
-		return activity.gotTouchEvent(event);
+		return godot.gotTouchEvent(event);
 	}
 
 	@Override
