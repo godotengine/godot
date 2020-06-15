@@ -67,7 +67,7 @@ public class GodotPayment extends GodotPlugin implements PurchasesUpdatedListene
 		super(godot);
 
 		billingClient = BillingClient
-								.newBuilder(getGodot())
+								.newBuilder(getActivity())
 								.enablePendingPurchases()
 								.setListener(this)
 								.build();
@@ -182,7 +182,7 @@ public class GodotPayment extends GodotPlugin implements PurchasesUpdatedListene
 												   .setSkuDetails(skuDetails)
 												   .build();
 
-		BillingResult result = billingClient.launchBillingFlow(getGodot(), purchaseParams);
+		BillingResult result = billingClient.launchBillingFlow(getActivity(), purchaseParams);
 
 		Dictionary returnValue = new Dictionary();
 		if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
