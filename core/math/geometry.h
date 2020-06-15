@@ -199,9 +199,9 @@ public:
 		float d21 = v2.dot(v1);
 		float denominator = d00 * d11 - d01 * d01;
 		
-		float x = (d11 * d20 - d01 * d21) / denominator;
-		float y = (d00 * d21 - d01 * d20) / denominator;
-		float z = 1.0f - x - y;
+		float y = (d11 * d20 - d01 * d21) / denominator;
+		float z = (d00 * d21 - d01 * d20) / denominator;
+		float x = 1.0f - x - y;
 
 		return Vector3(x,y,z);
 	}
