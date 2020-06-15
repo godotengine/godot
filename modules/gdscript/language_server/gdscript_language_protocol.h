@@ -70,7 +70,7 @@ private:
 
 	HashMap<int, Ref<LSPeer> > clients;
 	Ref<TCP_Server> server;
-	int latest_client_id = -1;
+	int latest_client_id = 0;
 	int next_client_id = 0;
 
 	Ref<GDScriptTextDocument> text_document;
