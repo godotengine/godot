@@ -32,6 +32,7 @@ package org.godotengine.godot.plugin;
 
 import org.godotengine.godot.Godot;
 
+import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -122,9 +123,11 @@ public final class GodotPluginRegistry {
 
 	private void loadPlugins(Godot godot) {
 		try {
-			ApplicationInfo appInfo = godot
+			final Activity activity = godot.getActivity();
+			ApplicationInfo appInfo = activity
 											  .getPackageManager()
-											  .getApplicationInfo(godot.getPackageName(), PackageManager.GET_META_DATA);
+											  .getApplicationInfo(activity.getPackageName(),
+													  PackageManager.GET_META_DATA);
 			Bundle metaData = appInfo.metaData;
 			if (metaData == null || metaData.isEmpty()) {
 				return;
