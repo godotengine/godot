@@ -190,9 +190,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		params["path"] = workspace->root;
 		Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
 
-		ERR_FAIL_COND_V_MSG(latest_client_id == -1, ret.to_json(),
-				"GDScriptLanguageProtocol: Can't initialize as no client is connected.");
-		ERR_FAIL_INDEX_V_MSG((uint64_t)latest_client_id, clients.size(), ret.to_json(),
+		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
 		if (peer != nullptr) {
@@ -278,10 +276,14 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 		p_client_id = latest_client_id;
 	}
 <<<<<<< HEAD
+<<<<<<< HEAD
 	ERR_FAIL_COND(!clients.has(p_client_id));
 =======
 	ERR_FAIL_INDEX((uint64_t)p_client_id, clients.size());
 >>>>>>> e34f33711b... GDScript LSP: Fix crash in notify_client
+=======
+	ERR_FAIL_COND(!clients.has(p_client_id));
+>>>>>>> 786f4ada35... GDScript LSP: Fix wrong error checks added in #39385
 	Ref<LSPeer> peer = clients.get(p_client_id);
 	ERR_FAIL_COND(peer == nullptr);
 
