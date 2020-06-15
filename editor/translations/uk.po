@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-22 21:01+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -1461,7 +1461,7 @@ msgstr "Видалити автозавантаження"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
-msgstr "Активувати"
+msgstr "Увімкнути"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
@@ -1469,7 +1469,7 @@ msgstr "Змінити порядок автозавантажень"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Не вдалося додати автозавантаження:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2427,15 +2427,17 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Неможливо перезавантажити сцену, яку ніколи не зберігали."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Зберегти сцену"
+msgstr "Перезавантаження збереженої сцени"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Зміни до поточної сцени не збережено.\n"
+"Перезавантажити збережену сцену попри це? Наслідки перезавантаження не можна "
+"буде скасувати."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3374,11 +3376,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Ви забули метод '_run'?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Утримуйте натиснутою Ctrl, щоб скинути отримувач. Утримуйте натиснутою "
-"Shift, щоб скинути підпис дженеріка."
+"Утримуйте натиснутою Ctrl, щоб заокруглити до цілих. Утримуйте натиснутою "
+"Shift, щоб зміни були точнішими."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3977,7 +3978,7 @@ msgstr "Помилка запуску після імпорту скрипту:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "Повернули об'єкт, що походить від Node, у методі «post_import()»?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6936,9 +6937,8 @@ msgstr ""
 "«%s»."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(ігнорувати)"
+msgstr "[Ігнорувати]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7425,6 +7425,11 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Клацніть для перемикання між станами видимості.\n"
+"\n"
+"Відкрите око: Gizmo є видимим.\n"
+"Закрите око: Gizmo приховано.\n"
+"Напівзакрите око: Gizmo є також видимим крізь непрозорі поверхні («рентген»)."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10522,9 +10527,8 @@ msgid "Instance Child Scene"
 msgstr "Створити екземпляр дочірньої сцени"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Долучити скрипт"
+msgstr "Від'єднати скрипт"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10694,6 +10698,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Не вдалося долучити скрипт: не зареєстровано жодної мови.\n"
+"Ймовірно, причиною є те, що цей редактор було зібрано із вимкненими модулями "
+"усіх мов."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10744,14 +10751,12 @@ msgstr ""
 "кореневого вузла не існує."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "Долучити новий або наявний скрипт до позначеного вузла."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Вилучити скрипт для позначеного вузла."
+msgstr "Від'єднати скрипт від позначеного вузла."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11980,11 +11985,9 @@ msgstr ""
 "ключів."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Ні у параметрах редактора, ні у шаблоні не налаштовано діагностичне сховище "
-"ключів."
+"У шаблоні експортування неправильно налаштовано сховище ключів випуску."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12019,26 +12022,36 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"Некоректний модуль «GodotPaymentV3» включено до параметрів проєкту «android/"
+"modules» (змінено у Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"Щоб можна було користуватися додатками, слід позначити пункт "
+"«Використовувати нетипову збірку»."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"«.Степені свободи» працюють, лише якщо «Режим Xr» має значення «Oculus "
+"Mobile VR»."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
+"«Oculus Mobile VR»."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"«Врахуванням фокуса» можна скористатися, лише якщо «Режим Xr» дорівнює "
+"«Oculus Mobile VR»."
 
 #: platform/android/export/export.cpp
 msgid ""

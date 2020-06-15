@@ -48,12 +48,13 @@
 # Megamega53 <Christopher.Morales21@myhunter.cuny.edu>, 2020.
 # Serk Lintur <serk.lintur@gmail.com>, 2020.
 # Pedro J. Estébanez <pedrojrulez@gmail.com>, 2020.
+# paco <pacosoftfree@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-10 22:54+0000\n"
-"Last-Translator: Pedro J. Estébanez <pedrojrulez@gmail.com>\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"Last-Translator: paco <pacosoftfree@protonmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -1503,7 +1504,7 @@ msgstr "Reordenar Autoloads"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "No se puede añadir un autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2021,7 +2022,7 @@ msgstr "Constantes"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Descripción de Propiedades"
+msgstr "Descripciones de Propiedad"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2467,15 +2468,17 @@ msgid "Can't reload a scene that was never saved."
 msgstr "No se puede volver a cargar una escena que nunca se guardó."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Guardar Escena"
+msgstr "Recargar Escena Guardada"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"La escena actual tiene cambios sin guardar.\n"
+"¿Quieres recargar la escena guardada igualmente? Esta acción no puede "
+"deshacerse."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3423,11 +3426,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Te olvidaste del método '_run'?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Mantén pulsado Ctrl para soltar un «Getter». Mantén pulsado Shift para "
-"soltar una signatura genérica."
+"Mantén pulsado Ctrl para redondear a enteros. Mantén pulsado Shift para "
+"cambios más precisos."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4030,7 +4032,7 @@ msgstr "Error ejecutando el script de posimportacion:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "¿Devolviste un objeto derivado de Node en el método `post_import()`?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6996,9 +6998,8 @@ msgstr ""
 "'%s'."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(ignorar)"
+msgstr "[Ignorar]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7483,6 +7484,12 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Haz clic para alternar entre los estados de visibilidad.\n"
+"\n"
+"Ojo abierto: El gizmo es visible.\n"
+"Ojo cerrado: El gizmo está oculto.\n"
+"Ojo medio abierto: El gizmo también es visible a través de superficies "
+"opacas (\"x-ray\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10580,9 +10587,8 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Escena Hija"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Añadir Script"
+msgstr "Sustraer Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10753,6 +10759,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"No se puede adjuntar el script: no hay ningún lenguaje registrado.\n"
+"Esto es probablemente porque este editor fue construido con todos los "
+"módulos de lenguaje desactivados."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10803,14 +10812,12 @@ msgstr ""
 "existe ningún nodo raíz."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "Añadir un script nuevo o existente al nodo seleccionado."
+msgstr "Añadir un nuevo script o ya existente al nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Borrar el script del nodo seleccionado."
+msgstr "Sustraer script del nodo seleccionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -12045,10 +12052,10 @@ msgstr ""
 "Debug keystore no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Debug keystore no configurada en Configuración del Editor ni en el preset."
+"Release keystore no está configurado correctamente en el preset de "
+"exportación."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12083,26 +12090,33 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"El módulo \"GodotPaymentV3\" incluido en los ajustes del proyecto \"android/"
+"modules\" es inválido (cambiado en Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
+msgstr "\"Use Custom Build\" debe estar activado para usar los plugins."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"\"Degrees Of Freedom\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile "
+"VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Hand Tracking\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Focus Awareness\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile VR"
+"\"."
 
 #: platform/android/export/export.cpp
 msgid ""

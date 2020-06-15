@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-06-09 13:36+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: Osoitz <oelkoro@gmail.com>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
@@ -2604,12 +2604,12 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr ""
+msgstr "Desegin"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "Berregin"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2618,27 +2618,27 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Project"
-msgstr ""
+msgstr "Proiektua"
 
 #: editor/editor_node.cpp
 msgid "Project Settings..."
-msgstr ""
+msgstr "Proiektuaren ezarpenak..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
-msgstr ""
+msgstr "Bertsio kontrola"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Ezarri bertsio kontrola"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Desgaitu bertsio kontrola"
 
 #: editor/editor_node.cpp
 msgid "Export..."
-msgstr ""
+msgstr "Esportatu..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
@@ -2646,24 +2646,24 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
-msgstr ""
+msgstr "Ireki proiektuaren datu karpeta"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr ""
+msgstr "Tresnak"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
-msgstr ""
+msgstr "Baliabide umezurtzen arakatzailea..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Irten proiektuen zerrendara"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Araztu"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2691,7 +2691,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "Talka formak ikusgai"
 
 #: editor/editor_node.cpp
 msgid ""

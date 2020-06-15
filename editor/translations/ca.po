@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-06 18:33+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -2428,10 +2428,14 @@ msgid "Reload Saved Scene"
 msgstr "Desa Escena"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"L'escena actual té canvis sense desar.\n"
+"Voleu torna a carregar l'escena desada de totes maneres? Aquesta acció no es "
+"pot desfer."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."

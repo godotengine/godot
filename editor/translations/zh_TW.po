@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-08 09:41+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -1454,7 +1454,7 @@ msgstr "重新排列 Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "無法新增 Autoload："
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2391,15 +2391,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "無法重新載入從未保存過的場景。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "保存場景"
+msgstr "重新載入已保存的場景"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"目前的場景有未保存的改動。\n"
+"仍然要重新載入場景嗎？這個操作將無法復原。"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3305,10 +3306,8 @@ msgid "Did you forget the '_run' method?"
 msgstr "是否遺漏了「_run」方法？"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
-msgstr ""
-"按住 Ctrl 以拖移 Getter 節點。按住 Shift 以拖移一個通用的簽名 (Signature)。"
+msgstr "按住 Ctrl 以取整數。按住 Shift 以使用更精確的改動。"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3899,7 +3898,7 @@ msgstr "執行匯入後腳本時發生錯誤："
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "是否有在 `post_import()` 方法內回傳 Node 衍生之物件？"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6811,9 +6810,8 @@ msgid ""
 msgstr "找不到方法「%s」（自訊號「%s」），節點「%s」至「%s」的連接已中斷。"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "（忽略）"
+msgstr "[忽略]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7297,6 +7295,11 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"點擊以切換視覺狀態。\n"
+"\n"
+"眼鏡圖示：Gizmo 可見。\n"
+"眼鏡圖示：Gizmo 隱藏。\n"
+"半開眼鏡：Gizmo 也可以通過 Opaque Surface（「X-Ray - X光」）可見。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10320,9 +10323,8 @@ msgid "Instance Child Scene"
 msgstr "實體化子場景"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "附加腳本"
+msgstr "取消附加腳本"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10485,6 +10487,8 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"無法附加腳本：未註冊任何語言。\n"
+"有可能是由於編輯器在建構時未啟用任何語言模組。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10533,14 +10537,12 @@ msgid ""
 msgstr "將場景檔案實體化為節點。若無根節點則建立一個繼承場景。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "自所選節點中附加一個新的或現有的腳本。"
+msgstr "附加新的或已存在之腳本至所選節點。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "清除所選節點的腳本。"
+msgstr "自所選節點取消附加腳本。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11747,9 +11749,8 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "尚未於編輯器設定或 Preset 中設定除錯鑰匙圈 (Keystore)。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
-msgstr "尚未於編輯器設定或 Preset 中設定除錯鑰匙圈 (Keystore)。"
+msgstr "釋出 Keystore 中不正確之組態設定至匯出 Preset。"
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11778,26 +11779,34 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"「andoird/modules」專案設定中包含了無效的「GodotPaymentV3」模組（更改於 "
+"Godot 3.2.2）。\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
+msgstr "「使用自定建構」必須啟用以使用本外掛。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"「Degrees Of Freedom」（自由角度）僅可在「Xr Mode」（XR 模式）設為「Oculus "
+"Mobile VR」時可用。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"「Hand Tracking」（手部追蹤）僅可在「Xr Mode」（XR 模式）設為「Oculus Mobile "
+"VR」時可用。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"「Focus Awareness」（提高關注度）僅可在「Xr Mode」（XR 模式）設為「Oculus "
+"Mobile VR」時可用。"
 
 #: platform/android/export/export.cpp
 msgid ""
