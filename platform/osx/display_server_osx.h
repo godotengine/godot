@@ -281,7 +281,11 @@ public:
 
 	virtual bool get_swap_ok_cancel();
 
-	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+	virtual int keyboard_get_layout_count() const;
+	virtual int keyboard_get_current_layout() const;
+	virtual void keyboard_set_current_layout(int p_index);
+	virtual String keyboard_get_layout_language(int p_index) const;
+	virtual String keyboard_get_layout_name(int p_index) const;
 
 	virtual void process_events();
 	virtual void force_process_and_drop_events();
