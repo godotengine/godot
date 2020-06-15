@@ -75,6 +75,7 @@
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # Nikita <Kulacnikita@ya.ru>, 2020.
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Alexander <ramzi7208@gmail.com>, 2020.
 # Alex Tern <ternvein@gmail.com>, 2020.
 <<<<<<< HEAD
@@ -84,10 +85,15 @@
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+# Alexander <ramzi7208@gmail.com>, 2020.
+# Alex Tern <ternvein@gmail.com>, 2020.
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 12:01+0000\n"
@@ -100,6 +106,10 @@ msgstr ""
 "PO-Revision-Date: 2020-05-24 20:13+0000\n"
 "Last-Translator: Nikita <Kulacnikita@ya.ru>\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-15 12:01+0000\n"
+"Last-Translator: Alex Tern <ternvein@gmail.com>\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -109,10 +119,14 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "X-Generator: Weblate 4.1\n"
 =======
 "X-Generator: Weblate 4.2-dev\n"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+"X-Generator: Weblate 4.1\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1559,6 +1573,7 @@ msgstr "Перестановка автозагрузок"
 msgid "Can't add autoload:"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "Нельзя добваить автозагрузку:"
 =======
 msgstr "Не удаётся добавить автозагрузку:"
@@ -1566,6 +1581,9 @@ msgstr "Не удаётся добавить автозагрузку:"
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "Нельзя добваить автозагрузку:"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2525,6 +2543,7 @@ msgstr "Не возможно загрузить сцену, которая не
 
 #: editor/editor_node.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Reload Saved Scene"
 <<<<<<< HEAD
 msgstr "Перезагрузить сохранённую сцену"
@@ -2536,6 +2555,10 @@ msgstr "Перезагрузить сохраненную сцену"
 msgid "Reload Saved Scene"
 msgstr "Сохранить сцену"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Reload Saved Scene"
+msgstr "Перезагрузить сохранённую сцену"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2543,10 +2566,15 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "Текущая сцена имеет несохраненные изменения. \n"
 "Всё равно перезагрузить сцену? Это действие нельзя отменить."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"Текущая сцена имеет несохраненные изменения. \n"
+"Всё равно перезагрузить сцену? Это действие нельзя отменить."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3488,6 +3516,7 @@ msgstr "Быть может вы забыли метод _run()?"
 
 #: editor/editor_spin_slider.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "Зажмите Ctrl, чтобы округлить до целых. Зажмите Shift для более точных "
@@ -3499,6 +3528,12 @@ msgstr ""
 "Зажмите Ctrl, чтобы добавить Getter. Зажмите Shift, чтобы добавить "
 "универсальную подпись."
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Зажмите Ctrl, чтобы округлить до целых. Зажмите Shift для более точных "
+"изменений."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"

@@ -8,10 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 =======
 "PO-Revision-Date: 2020-06-09 13:36+0000\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "Last-Translator: Osoitz <oelkoro@gmail.com>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
@@ -2618,10 +2622,14 @@ msgstr "Desegin"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "Berregin"
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "Berregin"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."

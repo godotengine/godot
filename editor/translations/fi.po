@@ -16,10 +16,14 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 =======
 "PO-Revision-Date: 2020-05-23 22:45+0000\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -1464,10 +1468,14 @@ msgstr "Järjestele uudelleen automaattiset lataukset"
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "Ei voida lisätä automaattisesti ladattavaa:"
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "Ei voida lisätä automaattisesti ladattavaa:"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2426,6 +2434,7 @@ msgstr "Ei voida ladata uudelleen skeneä, jota ei ole koskaan tallennettu."
 
 #: editor/editor_node.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Reload Saved Scene"
 msgstr "Avaa uudelleen tallennettu skene"
 =======
@@ -2433,6 +2442,10 @@ msgstr "Avaa uudelleen tallennettu skene"
 msgid "Reload Saved Scene"
 msgstr "Tallenna skene"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Reload Saved Scene"
+msgstr "Avaa uudelleen tallennettu skene"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2440,11 +2453,17 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "Nykyisessä skenessä on tallentamattomia muutoksia.\n"
 "Avataanko tallennettu skene uudelleen siitä huolimatta? Tätä toimintoa ei "
 "voi perua."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"Nykyisessä skenessä on tallentamattomia muutoksia.\n"
+"Avataanko tallennettu skene uudelleen siitä huolimatta? Tätä toimintoa ei "
+"voi perua."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3373,6 +3392,7 @@ msgstr "Unohditko '_run' metodin?"
 
 #: editor/editor_spin_slider.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "Pidä Ctrl pohjassa pyöristääksesi kokonaislukuun. Pidä Shift pohjassa "
@@ -3384,6 +3404,12 @@ msgstr ""
 "Pidä Ctrl pohjassa pudottaaksesi Getterin. Pidä Shift pohjassa pudottaaksesi "
 "yleisen tunnisteen."
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Pidä Ctrl pohjassa pyöristääksesi kokonaislukuun. Pidä Shift pohjassa "
+"tarkempia muutoksia varten."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3984,9 +4010,13 @@ msgstr "Virhe ajettaessa tuonnin jälkeistä skriptiä:"
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "Palautitko Node-solmusta periytyvän objektin `post_import()` metodissa?"
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"Palautitko Node-solmusta periytyvän objektin `post_import()` metodissa?"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6942,6 +6972,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "[Ignore]"
 msgstr "[Sivuuta]"
 =======
@@ -6949,6 +6980,10 @@ msgstr "[Sivuuta]"
 msgid "[Ignore]"
 msgstr "(sivuuta)"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "[Ignore]"
+msgstr "[Sivuuta]"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7434,14 +7469,20 @@ msgid ""
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "Napsauta vaihtaaksesi näkyvyystilojen välillä.\n"
 "\n"
 "Avoin silmä: muokkain on näkyvissä.\n"
 "Suljettu silmä: muokkain on piilotettu.\n"
 "Puoliavoin silmä: muokkain on näkyvissä myös läpikuultamattomien pintojen "
 "läpi (\"röntgen\")."
+<<<<<<< HEAD
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10529,6 +10570,7 @@ msgstr "Luo aliskenen ilmentymä"
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Detach Script"
 msgstr "Irrota skripti"
 =======
@@ -10536,6 +10578,10 @@ msgstr "Irrota skripti"
 msgid "Detach Script"
 msgstr "Liitä skripti"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Detach Script"
+msgstr "Irrota skripti"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10709,11 +10755,17 @@ msgid ""
 "disabled."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "Ei voida liittää skriptiä: yhtään kieltä ei ole rekisteröity.\n"
 "Tämä johtuu luultavasti siitä, että editori on käännetty ilman yhtäkään "
 "kielimoduulia."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"Ei voida liittää skriptiä: yhtään kieltä ei ole rekisteröity.\n"
+"Tämä johtuu luultavasti siitä, että editori on käännetty ilman yhtäkään "
+"kielimoduulia."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10765,13 +10817,17 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #, fuzzy
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 msgid "Attach a new or existing script to the selected node."
 msgstr "Liitä uusi tai olemassa oleva skripti valitulle solmulle."
 
 #: editor/scene_tree_dock.cpp
+<<<<<<< HEAD
 <<<<<<< HEAD
 msgid "Detach the script from the selected node."
 msgstr "Irrota skripti valitusta solmusta."
@@ -10780,6 +10836,10 @@ msgstr "Irrota skripti valitusta solmusta."
 msgid "Detach the script from the selected node."
 msgstr "Poista skripti valitulta solmulta."
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Detach the script from the selected node."
+msgstr "Irrota skripti valitusta solmusta."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -12008,6 +12068,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
 =======
@@ -12016,6 +12077,10 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12051,19 +12116,29 @@ msgid ""
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "\"android/modules\" projektiasetukseen on liitetty virheellinen "
 "\"GodotPaymentV3\" moduuli (muuttunut Godotin versiossa 3.2.2).\n"
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"\"android/modules\" projektiasetukseen on liitetty virheellinen "
+"\"GodotPaymentV3\" moduuli (muuttunut Godotin versiossa 3.2.2).\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "\"Use Custom Build\" asetuksen täytyy olla päällä, jotta liittännäisiä voi "
 "käyttää."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"\"Use Custom Build\" asetuksen täytyy olla päällä, jotta liittännäisiä voi "
+"käyttää."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12071,30 +12146,45 @@ msgid ""
 "\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "\"Degrees Of Freedom\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus "
 "on \"Oculus Mobile VR\"."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"\"Degrees Of Freedom\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus "
+"on \"Oculus Mobile VR\"."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
 "\"Oculus Mobile VR\"."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
+"\"Oculus Mobile VR\"."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "\"Focus Awareness\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
 "\"Oculus Mobile VR\"."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"\"Focus Awareness\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
+"\"Oculus Mobile VR\"."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""

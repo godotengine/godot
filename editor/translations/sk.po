@@ -15,10 +15,14 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 =======
 "PO-Revision-Date: 2020-05-22 21:01+0000\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
@@ -1458,10 +1462,14 @@ msgstr "Rearandžovať AutoLoad-y"
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "Nepodarilo sa pridať autoload:"
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "Nepodarilo sa pridať autoload:"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2420,6 +2428,7 @@ msgstr "Nemožno načítať scénu, ktorá nikdy nebola uložená."
 
 #: editor/editor_node.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Reload Saved Scene"
 msgstr "Reloadnuť Uloženú Scénu"
 =======
@@ -2427,6 +2436,10 @@ msgstr "Reloadnuť Uloženú Scénu"
 msgid "Reload Saved Scene"
 msgstr "Uložiť Scénu"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Reload Saved Scene"
+msgstr "Reloadnuť Uloženú Scénu"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2434,10 +2447,15 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "Táto scéna má neuložené zmeny.\n"
 "Aj tak chcete scény reloadnuť? Táto akcia nomôže byť nedokončená."
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"Táto scéna má neuložené zmeny.\n"
+"Aj tak chcete scény reloadnuť? Táto akcia nomôže byť nedokončená."
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3724,7 +3742,6 @@ msgstr "Expandovať Všetky"
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Collapse All"
 msgstr "Collapse All"
 
@@ -3965,14 +3982,17 @@ msgstr "Neplatný/rozbitý script pre post-import (prezrite konzolu):"
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Chyba pri spustení post-import scriptu:"
+<<<<<<< HEAD
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr "Vrátili ste Node-derived objekt v `post_import()` metóde?"
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "Vrátili ste Node-derived objekt v `post_import()` metóde?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."

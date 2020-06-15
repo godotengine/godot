@@ -30,6 +30,7 @@ msgstr ""
 "POT-Creation-Date: \n"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 =======
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
@@ -37,6 +38,9 @@ msgstr ""
 =======
 "PO-Revision-Date: 2020-06-08 09:41+0000\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -1482,10 +1486,14 @@ msgstr "重新排列 Autoload"
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "無法新增 Autoload："
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "無法新增 Autoload："
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2423,6 +2431,7 @@ msgstr "無法重新載入從未保存過的場景。"
 
 #: editor/editor_node.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Reload Saved Scene"
 msgstr "重新載入已保存的場景"
 =======
@@ -2430,6 +2439,10 @@ msgstr "重新載入已保存的場景"
 msgid "Reload Saved Scene"
 msgstr "保存場景"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Reload Saved Scene"
+msgstr "重新載入已保存的場景"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2437,10 +2450,15 @@ msgid ""
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "目前的場景有未保存的改動。\n"
 "仍然要重新載入場景嗎？這個操作將無法復原。"
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"目前的場景有未保存的改動。\n"
+"仍然要重新載入場景嗎？這個操作將無法復原。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3347,6 +3365,7 @@ msgstr "是否遺漏了「_run」方法？"
 
 #: editor/editor_spin_slider.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr "按住 Ctrl 以取整數。按住 Shift 以使用更精確的改動。"
 =======
@@ -3355,6 +3374,10 @@ msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 "按住 Ctrl 以拖移 Getter 節點。按住 Shift 以拖移一個通用的簽名 (Signature)。"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr "按住 Ctrl 以取整數。按住 Shift 以使用更精確的改動。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3946,10 +3969,14 @@ msgstr "執行匯入後腳本時發生錯誤："
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "是否有在 `post_import()` 方法內回傳 Node 衍生之物件？"
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "是否有在 `post_import()` 方法內回傳 Node 衍生之物件？"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6862,6 +6889,7 @@ msgstr "找不到方法「%s」（自訊號「%s」），節點「%s」至「%s�
 
 #: editor/plugins/script_text_editor.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "[Ignore]"
 msgstr "[忽略]"
 =======
@@ -6869,6 +6897,10 @@ msgstr "[忽略]"
 msgid "[Ignore]"
 msgstr "（忽略）"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "[Ignore]"
+msgstr "[忽略]"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7353,13 +7385,19 @@ msgid ""
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 "點擊以切換視覺狀態。\n"
 "\n"
 "眼鏡圖示：Gizmo 可見。\n"
 "眼鏡圖示：Gizmo 隱藏。\n"
 "半開眼鏡：Gizmo 也可以通過 Opaque Surface（「X-Ray - X光」）可見。"
+<<<<<<< HEAD
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10392,6 +10430,7 @@ msgstr "實體化子場景"
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Detach Script"
 msgstr "取消附加腳本"
 =======
@@ -10399,6 +10438,10 @@ msgstr "取消附加腳本"
 msgid "Detach Script"
 msgstr "附加腳本"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Detach Script"
+msgstr "取消附加腳本"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10619,6 +10662,7 @@ msgstr "將場景檔案實體化為節點。若無根節點則建立一個繼承
 
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Attach a new or existing script to the selected node."
 msgstr "附加新的或已存在之腳本至所選節點。"
 
@@ -10627,14 +10671,19 @@ msgid "Detach the script from the selected node."
 msgstr "自所選節點取消附加腳本。"
 =======
 #, fuzzy
+=======
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 msgid "Attach a new or existing script to the selected node."
-msgstr "自所選節點中附加一個新的或現有的腳本。"
+msgstr "附加新的或已存在之腳本至所選節點。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
+<<<<<<< HEAD
 msgstr "清除所選節點的腳本。"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "自所選節點取消附加腳本。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11842,6 +11891,7 @@ msgstr "尚未於編輯器設定或 Preset 中設定除錯鑰匙圈 (Keystore)�
 
 #: platform/android/export/export.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "釋出 Keystore 中不正確之組態設定至匯出 Preset。"
 =======
@@ -11849,6 +11899,10 @@ msgstr "釋出 Keystore 中不正確之組態設定至匯出 Preset。"
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "尚未於編輯器設定或 Preset 中設定除錯鑰匙圈 (Keystore)。"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "釋出 Keystore 中不正確之組態設定至匯出 Preset。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11878,6 +11932,7 @@ msgid ""
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "「andoird/modules」專案設定中包含了無效的「GodotPaymentV3」模組（更改於 "
 "Godot 3.2.2）。\n"
 
@@ -11890,6 +11945,14 @@ msgstr "「使用自定建構」必須啟用以使用本外掛。"
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"「andoird/modules」專案設定中包含了無效的「GodotPaymentV3」模組（更改於 "
+"Godot 3.2.2）。\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr "「使用自定建構」必須啟用以使用本外掛。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11897,30 +11960,45 @@ msgid ""
 "\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "「Degrees Of Freedom」（自由角度）僅可在「Xr Mode」（XR 模式）設為「Oculus "
 "Mobile VR」時可用。"
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"「Degrees Of Freedom」（自由角度）僅可在「Xr Mode」（XR 模式）設為「Oculus "
+"Mobile VR」時可用。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "「Hand Tracking」（手部追蹤）僅可在「Xr Mode」（XR 模式）設為「Oculus Mobile "
 "VR」時可用。"
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"「Hand Tracking」（手部追蹤）僅可在「Xr Mode」（XR 模式）設為「Oculus Mobile "
+"VR」時可用。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 "「Focus Awareness」（提高關注度）僅可在「Xr Mode」（XR 模式）設為「Oculus "
 "Mobile VR」時可用。"
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"「Focus Awareness」（提高關注度）僅可在「Xr Mode」（XR 模式）設為「Oculus "
+"Mobile VR」時可用。"
+>>>>>>> 77990b87c2... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
