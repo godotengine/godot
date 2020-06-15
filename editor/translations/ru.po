@@ -74,12 +74,14 @@
 # Климентий Титов <titoffklim@cclc.tech>, 2020.
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # Nikita <Kulacnikita@ya.ru>, 2020.
+# Alexander <ramzi7208@gmail.com>, 2020.
+# Alex Tern <ternvein@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-24 20:13+0000\n"
-"Last-Translator: Nikita <Kulacnikita@ya.ru>\n"
+"PO-Revision-Date: 2020-06-15 12:01+0000\n"
+"Last-Translator: Alex Tern <ternvein@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -88,7 +90,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -343,7 +345,7 @@ msgstr "Время (сек.): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Переключатель дорожки включен"
+msgstr "Включить/выключить дорожку"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -1520,7 +1522,7 @@ msgstr "Перестановка автозагрузок"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Нельзя добваить автозагрузку:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2479,15 +2481,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Не возможно загрузить сцену, которая не была сохранена."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Сохранить сцену"
+msgstr "Перезагрузить сохранённую сцену"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Текущая сцена имеет несохраненные изменения. \n"
+"Всё равно перезагрузить сцену? Это действие нельзя отменить."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3421,11 +3424,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Быть может вы забыли метод _run()?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Зажмите Ctrl, чтобы добавить Getter. Зажмите Shift, чтобы добавить "
-"универсальную подпись."
+"Зажмите Ctrl, чтобы округлить до целых. Зажмите Shift для более точных "
+"изменений."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"

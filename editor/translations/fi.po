@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-23 22:45+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -1454,7 +1454,7 @@ msgstr "Järjestele uudelleen automaattiset lataukset"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Ei voida lisätä automaattisesti ladattavaa:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2412,15 +2412,17 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Ei voida ladata uudelleen skeneä, jota ei ole koskaan tallennettu."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Tallenna skene"
+msgstr "Avaa uudelleen tallennettu skene"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Nykyisessä skenessä on tallentamattomia muutoksia.\n"
+"Avataanko tallennettu skene uudelleen siitä huolimatta? Tätä toimintoa ei "
+"voi perua."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3348,11 +3350,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Unohditko '_run' metodin?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Pidä Ctrl pohjassa pudottaaksesi Getterin. Pidä Shift pohjassa pudottaaksesi "
-"yleisen tunnisteen."
+"Pidä Ctrl pohjassa pyöristääksesi kokonaislukuun. Pidä Shift pohjassa "
+"tarkempia muutoksia varten."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3952,6 +3953,7 @@ msgstr "Virhe ajettaessa tuonnin jälkeistä skriptiä:"
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
+"Palautitko Node-solmusta periytyvän objektin `post_import()` metodissa?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6906,9 +6908,8 @@ msgstr ""
 "Yhdistetty metodi '%s' signaalille '%s' puuttuu solmusta '%s' solmuun '%s'."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(sivuuta)"
+msgstr "[Sivuuta]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7393,6 +7394,12 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Napsauta vaihtaaksesi näkyvyystilojen välillä.\n"
+"\n"
+"Avoin silmä: muokkain on näkyvissä.\n"
+"Suljettu silmä: muokkain on piilotettu.\n"
+"Puoliavoin silmä: muokkain on näkyvissä myös läpikuultamattomien pintojen "
+"läpi (\"röntgen\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10479,9 +10486,8 @@ msgid "Instance Child Scene"
 msgstr "Luo aliskenen ilmentymä"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Liitä skripti"
+msgstr "Irrota skripti"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10654,6 +10660,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Ei voida liittää skriptiä: yhtään kieltä ei ole rekisteröity.\n"
+"Tämä johtuu luultavasti siitä, että editori on käännetty ilman yhtäkään "
+"kielimoduulia."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10704,14 +10713,12 @@ msgstr ""
 "juurisolmua ei ole olemassa."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "Liitä uusi tai olemassa oleva skripti valitulle solmulle."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Poista skripti valitulta solmulta."
+msgstr "Irrota skripti valitusta solmusta."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11939,10 +11946,8 @@ msgstr ""
 "Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
-msgstr ""
-"Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
+msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11977,26 +11982,36 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"\"android/modules\" projektiasetukseen on liitetty virheellinen "
+"\"GodotPaymentV3\" moduuli (muuttunut Godotin versiossa 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"\"Use Custom Build\" asetuksen täytyy olla päällä, jotta liittännäisiä voi "
+"käyttää."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"\"Degrees Of Freedom\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus "
+"on \"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
+"\"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Focus Awareness\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
+"\"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""

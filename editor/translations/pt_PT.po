@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-18 00:29+0000\n"
+"PO-Revision-Date: 2020-06-15 12:01+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1464,7 +1464,7 @@ msgstr "Reorganizar Carregamentos Automáticos"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Não consigo adicionar carregamento automático:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2422,15 +2422,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Não consigo recarregar uma cena que nunca foi guardada."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Guardar Cena"
+msgstr "Recarregar Cena Guardada"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"A cena atual tem alterações não guardadas.\n"
+"Recarregar a cena guardada? Esta ação não pode ser revertida."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3365,11 +3366,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Esqueceu-se do médodo '_run'?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Pressione Ctrl para largar um Getter. Pressione Shift para largar uma "
-"Assinatura genérica."
+"Pressione Ctrl para arredondar para inteiro. Pressione Shift para mudanças "
+"mais precisas."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3969,7 +3969,7 @@ msgstr "Erro na execução do Script de pós-importação:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "Devolveu um objeto derivado de Nó no método `post_import()`?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -4603,7 +4603,7 @@ msgstr "Forçar modulação branca"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr "Incluir ferramentas (3D)"
+msgstr "Incluir Bugigangas (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
@@ -6913,9 +6913,8 @@ msgid ""
 msgstr "Falta método conectado '%s' para sinal '%s' do nó '%s' para nó '%s'."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(ignorar)"
+msgstr "[Ignorar]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7313,7 +7312,7 @@ msgstr "Ver ambiente"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "Ver ferramentas"
+msgstr "Ver Bugigangas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -7399,6 +7398,12 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Clique para alternar entre estados de visibilidade.\n"
+"\n"
+"Olho aberto: Bugiganga é visível.\n"
+"Olho fechado: Bugiganga está escondida.\n"
+"Olho meio-aberto: Bugiganga também é visível através de superfícies opacas "
+"(\"raios X\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10483,9 +10488,8 @@ msgid "Instance Child Scene"
 msgstr "Instanciar Cena Filha"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Anexar Script"
+msgstr "Separar Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10654,6 +10658,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Não consigo anexar um script: não há linguagens registadas.\n"
+"Isto provavelmente acontece porque o editor foi compilado com todos os "
+"módulos de linguagem desativados."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10704,14 +10711,12 @@ msgstr ""
 "existir nó raiz."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "Anexar script novo ou existente ao nó selecionado."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Limpar script do nó selecionado."
+msgstr "Separar o script do nó selecionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11935,15 +11940,13 @@ msgstr "O jarsigner do OpenJDK não está configurado nas Definições do Editor
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
-"Depuração de keystore não configurado nas Configurações do Editor e nem na "
+"Depuração de keystore não configurada nas Configurações do Editor e nem na "
 "predefinição."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Depuração de keystore não configurado nas Configurações do Editor e nem na "
-"predefinição."
+"Lançamento de keystore configurado incorretamente na predefinição exportada."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11978,26 +11981,34 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"Módulo inválido \"GodotPaymentV3\" incluído na configuração do projeto "
+"\"android/modules\" (alterado em Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"\"Usar Compilação Personalizada\" têm de estar ativa para usar os plugins."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"\"Graus de Liberdade\" só é válido quando \"Modo Xr\" é \"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Rastreamento de Mão\" só é válido quando \"Modo Xr\" é \"Oculus Mobile VR"
+"\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Consciência do Foco\" só é válido quando \"Modo Xr\" é \"Oculus Mobile VR"
+"\"."
 
 #: platform/android/export/export.cpp
 msgid ""

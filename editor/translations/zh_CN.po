@@ -63,12 +63,13 @@
 # nieyuanhong <15625988003@163.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
 # BinotaLIU <binota@protonmail.ch>, 2020.
+# Tim Bao <honiebao@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-06-01 10:53+0000\n"
-"Last-Translator: BinotaLIU <binota@protonmail.ch>\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"Last-Translator: Tim Bao <honiebao@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -85,7 +86,7 @@ msgstr "convert()的参数类型无效，请使用TYPE_*常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "预期长度为1的字符串（一个字符）。"
+msgstr "仅需要长度为1的字符串（1字符）。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -95,11 +96,11 @@ msgstr "没有足够的字节来解码，或格式无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "表达式中无效的输入 %i （未传递）"
+msgstr "表达式中包含得%i无效（未传递）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self 无法使用，因为实例为null（未传递）"
+msgstr "实例为null（未传递）,无法传递自身self"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -1493,7 +1494,7 @@ msgstr "重排序Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "无法加载autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2429,9 +2430,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr "无法重新加载未保存的场景。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "保存场景"
+msgstr "重载已保存场景"
 
 #: editor/editor_node.cpp
 msgid ""
