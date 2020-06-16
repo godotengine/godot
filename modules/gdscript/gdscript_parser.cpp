@@ -7053,7 +7053,11 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 	}
 
 	r_default_arg_count = method->get_default_argument_count();
-	r_return_type = _type_from_property(method->get_return_info(), false);
+	if (method->get_name() == "get_script") {
+		r_return_type = DataType(); // Variant for now and let runtime decide.
+	} else {
+		r_return_type = _type_from_property(method->get_return_info(), false);
+	}
 	r_vararg = method->is_vararg();
 
 	for (int i = 0; i < method->get_argument_count(); i++) {
