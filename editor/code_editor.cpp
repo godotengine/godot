@@ -166,20 +166,47 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 }
 
 void FindReplaceBar::_replace() {
-	if (result_line != -1 && result_col != -1) {
-		text_edit->begin_complex_operation();
-
-		text_edit->unfold_line(result_line);
-		text_edit->select(result_line, result_col, result_line, result_col + get_search_text().length());
-		text_edit->insert_text_at_cursor(get_replace_text());
-
-		text_edit->end_complex_operation();
-
-		results_count = -1;
+	bool selection_enabled = text_edit->is_selection_active();
+	Point2i selection_begin, selection_end;
+	if (selection_enabled) {
+		selection_begin = Point2i(text_edit->get_selection_from_line(), text_edit->get_selection_from_column());
+		selection_end = Point2i(text_edit->get_selection_to_line(), text_edit->get_selection_to_column());
 	}
 
-	if (!search_current()) {
-		search_next();
+	String replace_text = get_replace_text();
+	int search_text_len = get_search_text().length();
+
+	text_edit->begin_complex_operation();
+	if (selection_enabled && is_selection_only()) { // To restrict search_current() to selected region
+		text_edit->cursor_set_line(selection_begin.width);
+		text_edit->cursor_set_column(selection_begin.height);
+	}
+
+	if (search_current()) {
+		text_edit->unfold_line(result_line);
+		text_edit->select(result_line, result_col, result_line, result_col + search_text_len);
+
+		if (selection_enabled && is_selection_only()) {
+			Point2i match_from(result_line, result_col);
+			Point2i match_to(result_line, result_col + search_text_len);
+			if (!(match_from < selection_begin || match_to > selection_end)) {
+				text_edit->insert_text_at_cursor(replace_text);
+				if (match_to.x == selection_end.x) { // Adjust selection bounds if necessary
+					selection_end.y += replace_text.length() - search_text_len;
+				}
+			}
+		} else {
+			text_edit->insert_text_at_cursor(replace_text);
+		}
+	}
+	text_edit->end_complex_operation();
+	results_count = -1;
+
+	if (selection_enabled && is_selection_only()) {
+		// Reselect in order to keep 'Replace' restricted to selection
+		text_edit->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
+	} else {
+		text_edit->deselect();
 	}
 }
 
