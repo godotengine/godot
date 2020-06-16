@@ -55,7 +55,7 @@
 			If [code]true[/code], audio plays when added to scene tree.
 		</member>
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
-			Bus on which this audio is playing.
+			Bus on which this audio is playing. If [code]bus[/code] is not defined in [AudioServer], [code]get_bus[/code] will default to "Master".
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
 			If the audio configuration has more than two speakers, this sets the target channels. See [enum MixTarget] constants.

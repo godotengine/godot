@@ -278,6 +278,20 @@ void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
+
+#ifdef DEBUG_ENABLED
+	bool found = false;
+	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		WARN_PRINT("There is no bus \"" + p_bus + "\" defined.");
+	}
+#endif
 }
 
 StringName AudioStreamPlayer::get_bus() const {
@@ -286,6 +300,9 @@ StringName AudioStreamPlayer::get_bus() const {
 			return bus;
 		}
 	}
+
+	WARN_PRINT("There is no bus \"" + bus + "\" defined. Defaulting to 'Master'");
+
 	return "Master";
 }
 
