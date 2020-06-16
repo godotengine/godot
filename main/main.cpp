@@ -1917,7 +1917,14 @@ bool Main::start() {
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			String appname = ProjectSettings::get_singleton()->get("application/config/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
+#ifdef DEBUG_ENABLED
+			// Append a suffix to the window title to denote that the project is running
+			// from a debug build (including the editor). Since this results in lower performance,
+			// this should be clearly presented to the user.
+			DisplayServer::get_singleton()->window_set_title(vformat("%s (DEBUG)", appname));
+#else
 			DisplayServer::get_singleton()->window_set_title(appname);
+#endif
 
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
 			int shadow_atlas_q0_subdiv = GLOBAL_GET("rendering/quality/shadow_atlas/quadrant_0_subdiv");
