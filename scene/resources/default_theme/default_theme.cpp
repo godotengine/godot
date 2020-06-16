@@ -30,15 +30,12 @@
 
 #include "default_theme.h"
 
-#include "scene/resources/theme.h"
-
 #include "core/os/os.h"
-#include "theme_data.h"
-
-#include "font_hidpi.inc"
-#include "font_lodpi.inc"
-
+#include "default_font.gen.h"
+#include "scene/resources/font.h"
+#include "scene/resources/theme.h"
 #include "servers/text_server.h"
+#include "theme_data.h"
 
 typedef Map<const void *, Ref<ImageTexture>> TexCacheMap;
 
@@ -126,38 +123,6 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 
 	texture->create_from_image(img);
 	return texture;
-}
-
-static Ref<FontData> make_font(int p_height, int p_ascent, int p_charcount, const int *p_char_rects, int p_kerning_count, const int *p_kernings, int p_w, int p_h, const unsigned char *p_img) {
-	Ref<FontData> font(memnew(FontData));
-	font->new_bitmap(p_height, p_ascent, p_height);
-
-	Ref<Image> image = memnew(Image(p_img));
-	Ref<ImageTexture> tex = memnew(ImageTexture);
-	tex->create_from_image(image);
-
-	font->bitmap_add_texture(tex);
-
-	for (int i = 0; i < p_charcount; i++) {
-		const int *c = &p_char_rects[i * 8];
-
-		int chr = c[0];
-		Rect2 frect;
-		frect.position.x = c[1];
-		frect.position.y = c[2];
-		frect.size.x = c[3];
-		frect.size.y = c[4];
-		Point2 align(c[6], c[5]);
-		int advance = c[7];
-
-		font->bitmap_add_char(chr, 0, frect, align, advance);
-	}
-
-	for (int i = 0; i < p_kerning_count; i++) {
-		font->bitmap_add_kerning_pair(p_kernings[i * 3 + 0], p_kernings[i * 3 + 1], p_kernings[i * 3 + 2]);
-	}
-
-	return font;
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -1024,18 +989,25 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	Ref<StyleBox> default_style;
 	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
-	int default_font_size = 14;
+	int default_font_size = 16;
 	if (p_font.is_valid()) {
+		// Use the custom font defined in the Project Settings.
 		default_font = p_font;
-	} else if (p_hidpi) {
-		Ref<FontData> font_data = make_font(_hidpi_font_height, _hidpi_font_ascent, _hidpi_font_charcount, &_hidpi_font_charrects[0][0], _hidpi_font_kerning_pair_count, &_hidpi_font_kerning_pairs[0][0], _hidpi_font_img_width, _hidpi_font_img_height, _hidpi_font_img_data);
-		default_font.instance();
-		default_font->add_data(font_data);
 	} else {
-		Ref<FontData> font_data = make_font(_lodpi_font_height, _lodpi_font_ascent, _lodpi_font_charcount, &_lodpi_font_charrects[0][0], _lodpi_font_kerning_pair_count, &_lodpi_font_kerning_pairs[0][0], _lodpi_font_img_width, _lodpi_font_img_height, _lodpi_font_img_data);
-		default_font.instance();
-		default_font->add_data(font_data);
+		// Use the default DynamicFont (separate from the editor font).
+		// The default DynamicFont is chosen to have a small file size since it's
+		// embedded in both editor and export template binaries.
+		Ref<Font> dynamic_font;
+		dynamic_font.instance();
+
+		Ref<FontData> dynamic_font_data;
+		dynamic_font_data.instance();
+		dynamic_font_data->load_memory(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size, "ttf", default_font_size);
+		dynamic_font->add_data(dynamic_font_data);
+
+		default_font = dynamic_font;
 	}
+
 	Ref<Font> large_font = default_font;
 	fill_default_theme(t, default_font, large_font, default_icon, default_style, p_hidpi ? 2.0 : 1.0);
 

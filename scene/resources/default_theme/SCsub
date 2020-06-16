@@ -2,4 +2,16 @@
 
 Import("env")
 
+import os
+import os.path
+from platform_methods import run_in_subprocess
+import default_theme_builders
+
 env.add_source_files(env.scene_sources, "*.cpp")
+
+env.Depends("#scene/resources/default_theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.ttf")
+env.CommandNoCache(
+    "#scene/resources/default_theme/default_font.gen.h",
+    "#thirdparty/fonts/OpenSans_SemiBold.ttf",
+    run_in_subprocess(default_theme_builders.make_fonts_header),
+)
