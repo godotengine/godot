@@ -208,6 +208,13 @@ void OS_Windows::initialize() {
 
 	process_map = memnew((Map<ProcessID, ProcessInfo>));
 
+	// Add current Godot PID to the list of known PIDs
+	ProcessInfo current_pi = {};
+	PROCESS_INFORMATION current_pi_pi = {};
+	current_pi.pi = current_pi_pi;
+	current_pi.pi.hProcess = GetCurrentProcess();
+	process_map->insert(GetCurrentProcessId(), current_pi);
+
 	IP_Unix::make_default();
 	main_loop = nullptr;
 }
