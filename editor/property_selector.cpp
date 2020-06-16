@@ -338,46 +338,24 @@ void PropertySelector::_item_selected() {
 	}
 	String name = item->get_metadata(0);
 
-	String class_type;
-	if (type != Variant::NIL) {
-		class_type = Variant::get_type_name(type);
-
-	} else {
-		class_type = base_type;
-	}
-
 	DocData *dd = EditorHelp::get_doc_data();
 	String text;
 
 	if (properties) {
-		String at_class = class_type;
-
-		while (at_class != String()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
-			if (E) {
-				for (int i = 0; i < E->get().properties.size(); i++) {
-					if (E->get().properties[i].name == name) {
-						text = DTR(E->get().properties[i].description);
-					}
+		for (Map<String, DocData::ClassDoc>::Element *E = dd->class_list.front(); E; E = E->next()) {
+			for (int i = 0; i < E->get().properties.size(); i++) {
+				if (E->get().properties[i].name == name) {
+					text = E->get().properties[i].description;
 				}
 			}
-
-			at_class = ClassDB::get_parent_class(at_class);
 		}
 	} else {
-		String at_class = class_type;
-
-		while (at_class != String()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
-			if (E) {
-				for (int i = 0; i < E->get().methods.size(); i++) {
-					if (E->get().methods[i].name == name) {
-						text = DTR(E->get().methods[i].description);
-					}
+		for (Map<String, DocData::ClassDoc>::Element *E = dd->class_list.front(); E; E = E->next()) {
+			for (int i = 0; i < E->get().methods.size(); i++) {
+				if (E->get().methods[i].name == name) {
+					text = E->get().methods[i].description;
 				}
 			}
-
-			at_class = ClassDB::get_parent_class(at_class);
 		}
 	}
 
