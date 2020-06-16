@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_margin_shape_3d.h                                              */
+/*  infinite_plane_shape_3d.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_MARGIN_SHAPE_3D_H
-#define WORLD_MARGIN_SHAPE_3D_H
+#ifndef infinite_plane_shape_3d_H
+#define infinite_plane_shape_3d_H
 
 #include "scene/resources/shape_3d.h"
 
-class WorldMarginShape3D : public Shape3D {
-	GDCLASS(WorldMarginShape3D, Shape3D);
+class InfinitePlaneShape3D : public Shape3D {
+	GDCLASS(InfinitePlaneShape3D, Shape3D);
 	Plane plane;
 
 protected:
@@ -51,6 +51,6 @@ public:
 		return 0;
 	}
 
-	WorldMarginShape3D();
+	InfinitePlaneShape3D();
 };
-#endif // WORLD_MARGIN_SHAPE_H
+#endif // INFINITE_PLANE_SHAPE_H

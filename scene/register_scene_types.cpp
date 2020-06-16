@@ -171,7 +171,6 @@
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
 #include "scene/scene_string_names.h"
 
 // Needed by animation code, so keep when 3D disabled.
@@ -220,6 +219,7 @@
 #include "scene/3d/xr_nodes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/infinite_plane_shape_3d.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -661,7 +661,7 @@ void register_scene_types() {
 	ClassDB::register_class<CapsuleShape3D>();
 	ClassDB::register_class<CylinderShape3D>();
 	ClassDB::register_class<HeightMapShape3D>();
-	ClassDB::register_class<WorldMarginShape3D>();
+	ClassDB::register_class<InfinitePlaneShape3D>();
 	ClassDB::register_class<ConvexPolygonShape3D>();
 	ClassDB::register_class<ConcavePolygonShape3D>();
 
@@ -844,7 +844,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("PhysicsShapeQueryParameters", "PhysicsShapeQueryParameters3D");
 	ClassDB::add_compatibility_class("PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D");
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
-	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape3D");
+	ClassDB::add_compatibility_class("PlaneShape", "InfinitePlaneShape3D");
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");

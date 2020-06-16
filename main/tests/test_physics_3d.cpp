@@ -105,13 +105,13 @@ protected:
 	RID create_static_plane(const Plane &p_plane) {
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
-		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
-		ps->shape_set_data(world_margin_shape, p_plane);
+		RID infinite_plane_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
+		ps->shape_set_data(infinite_plane_shape, p_plane);
 
 		RID b = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
 		ps->body_set_space(b, space);
 		//todo set space
-		ps->body_add_shape(b, world_margin_shape);
+		ps->body_add_shape(b, infinite_plane_shape);
 		return b;
 	}
 

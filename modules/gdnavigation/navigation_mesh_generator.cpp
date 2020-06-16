@@ -45,7 +45,7 @@
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/infinite_plane_shape_3d.h"
 
 #include "modules/modules_enabled.gen.h"
 #ifdef TOOLS_ENABLED

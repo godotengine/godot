@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_margin_shape_3d.cpp                                            */
+/*  infinite_plane_shape_3d.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "world_margin_shape_3d.h"
+#include "infinite_plane_shape_3d.h"
 
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
+Vector<Vector3> InfinitePlaneShape3D::get_debug_mesh_lines() {
 	Plane p = get_plane();
 	Vector<Vector3> points;
 
@@ -60,30 +60,30 @@ Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
 	return points;
 }
 
-void WorldMarginShape3D::_update_shape() {
+void InfinitePlaneShape3D::_update_shape() {
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), plane);
 	Shape3D::_update_shape();
 }
 
-void WorldMarginShape3D::set_plane(Plane p_plane) {
+void InfinitePlaneShape3D::set_plane(Plane p_plane) {
 	plane = p_plane;
 	_update_shape();
 	notify_change_to_owners();
 	_change_notify("plane");
 }
 
-Plane WorldMarginShape3D::get_plane() const {
+Plane InfinitePlaneShape3D::get_plane() const {
 	return plane;
 }
 
-void WorldMarginShape3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldMarginShape3D::set_plane);
-	ClassDB::bind_method(D_METHOD("get_plane"), &WorldMarginShape3D::get_plane);
+void InfinitePlaneShape3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &InfinitePlaneShape3D::set_plane);
+	ClassDB::bind_method(D_METHOD("get_plane"), &InfinitePlaneShape3D::get_plane);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
 }
 
-WorldMarginShape3D::WorldMarginShape3D() :
+InfinitePlaneShape3D::InfinitePlaneShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_PLANE)) {
 	set_plane(Plane(0, 1, 0, 0));
 }

@@ -65,7 +65,7 @@
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/infinite_plane_shape_3d.h"
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -3768,8 +3768,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
-	if (Object::cast_to<WorldMarginShape3D>(*s)) {
-		Ref<WorldMarginShape3D> ps = s;
+	if (Object::cast_to<InfinitePlaneShape3D>(*s)) {
+		Ref<InfinitePlaneShape3D> ps = s;
 		Plane p = ps->get_plane();
 		Vector<Vector3> points;
 

@@ -44,7 +44,7 @@
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/infinite_plane_shape_3d.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
 	if (get_script_instance()) {
@@ -435,9 +435,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				colshape->set_name("RayShape3D");
 				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
-				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
-				colshape->set_shape(world_margin_shape);
-				colshape->set_name("WorldMarginShape3D");
+				InfinitePlaneShape3D *infinite_plane_shape = memnew(InfinitePlaneShape3D);
+				colshape->set_shape(infinite_plane_shape);
+				colshape->set_name("InfinitePlaneShape3D");
 			} else {
 				SphereShape3D *sphereShape = memnew(SphereShape3D);
 				sphereShape->set_radius(1);

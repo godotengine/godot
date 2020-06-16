@@ -36765,7 +36765,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PhysicsServer3D.xml:1470
-msgid "The [Shape3D] is a [WorldMarginShape3D]."
+msgid "The [Shape3D] is a [InfinitePlaneShape3D]."
 msgstr ""
 
 #: doc/classes/PhysicsServer3D.xml:1473
@@ -57626,20 +57626,20 @@ msgid ""
 "default properties."
 msgstr ""
 
-#: doc/classes/WorldMarginShape3D.xml:4
+#: doc/classes/InfinitePlaneShape3D.xml:4
 msgid "Infinite plane shape for 3D collisions."
 msgstr ""
 
-#: doc/classes/WorldMarginShape3D.xml:7
+#: doc/classes/InfinitePlaneShape3D.xml:7
 msgid ""
 "An infinite plane shape for 3D collisions. Note that the [Plane]'s normal "
 "matters; anything \"below\" the plane will collide with it. If the "
-"[WorldMarginShape3D] is used in a [PhysicsBody3D], it will cause colliding "
+"[InfinitePlaneShape3D] is used in a [PhysicsBody3D], it will cause colliding "
 "objects placed \"below\" it to teleport \"above\" the plane."
 msgstr ""
 
-#: doc/classes/WorldMarginShape3D.xml:15
-msgid "The [Plane] used by the [WorldMarginShape3D] for collision."
+#: doc/classes/InfinitePlaneShape3D.xml:15
+msgid "The [Plane] used by the [InfinitePlaneShape3D] for collision."
 msgstr ""
 
 #: doc/classes/X509Certificate.xml:4

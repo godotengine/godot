@@ -39,7 +39,7 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
+#include "scene/resources/infinite_plane_shape_3d.h"
 #include "servers/rendering_server.h"
 
 //TODO: Implement CylinderShape and HeightMapShape?
