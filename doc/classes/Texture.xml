@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Texture" inherits="Resource" version="4.0">
 	<brief_description>
+		The global C# namespace (Mono-enabled builds only).
 	</brief_description>
 	<description>
+		This class represents the global C# namespace. It is the C# equivalent of [@GDScript] and is only available in Mono-enabled builds.
+		See also [CSharpScript] and [GodotSharp].
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/index.html</link>
 	</tutorials>
 	<methods>
 	</methods>
