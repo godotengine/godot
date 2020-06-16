@@ -191,8 +191,7 @@ private:
 		int line_number;
 		int begin;
 		int end;
-		float draw_begin;
-		float draw_width;
+		int begin_trimmed;
 	};
 
 	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);
