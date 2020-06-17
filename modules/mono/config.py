@@ -57,7 +57,6 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "@C#",
         "CSharpScript",
         "GodotSharp",
     ]

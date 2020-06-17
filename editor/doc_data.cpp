@@ -662,18 +662,19 @@ void DocData::generate(bool p_basic_types) {
 		}
 	}
 
-	//built in script reference
+	// Built-in script reference.
+	// We only add a doc entry for languages which actually define any built-in
+	// methods or constants.
 
 	{
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			String cname = "@" + lang->get_name();
-			class_list[cname] = ClassDoc();
-			ClassDoc &c = class_list[cname];
+			ClassDoc c;
 			c.name = cname;
 
+			// Get functions.
 			List<MethodInfo> minfo;
-
 			lang->get_public_functions(&minfo);
 
 			for (List<MethodInfo>::Element *E = minfo.front(); E; E = E->next()) {
@@ -706,6 +707,7 @@ void DocData::generate(bool p_basic_types) {
 				c.methods.push_back(md);
 			}
 
+			// Get constants.
 			List<Pair<String, Variant>> cinfo;
 			lang->get_public_constants(&cinfo);
 
@@ -715,6 +717,13 @@ void DocData::generate(bool p_basic_types) {
 				cd.value = E->get().second;
 				c.constants.push_back(cd);
 			}
+
+			// Skip adding the lang if it doesn't expose anything (e.g. C#).
+			if (c.methods.empty() && c.constants.empty()) {
+				continue;
+			}
+
+			class_list[cname] = c;
 		}
 	}
 }
