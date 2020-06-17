@@ -47,6 +47,12 @@ public:
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
 
+	struct AutoloadInfo {
+		StringName name;
+		String path;
+		bool is_singleton = false;
+	};
+
 protected:
 	struct VariantContainer {
 		int order = 0;
@@ -78,6 +84,8 @@ protected:
 
 	Set<String> custom_features;
 	Map<StringName, StringName> feature_overrides;
+
+	Map<StringName, AutoloadInfo> autoloads;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -147,6 +155,12 @@ public:
 	void set_registering_order(bool p_enable);
 
 	bool has_custom_feature(const String &p_feature) const;
+
+	Map<StringName, AutoloadInfo> get_autoload_list() const;
+	void add_autoload(const AutoloadInfo &p_autoload);
+	void remove_autoload(const StringName &p_autoload);
+	bool has_autoload(const StringName &p_autoload) const;
+	AutoloadInfo get_autoload(const StringName &p_name) const;
 
 	ProjectSettings();
 	~ProjectSettings();

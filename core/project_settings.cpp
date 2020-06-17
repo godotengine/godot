@@ -144,6 +144,12 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
+		if (p_name.operator String().begins_with("autoload/")) {
+			String node_name = p_name.operator String().split("/")[1];
+			if (autoloads.has(node_name)) {
+				remove_autoload(node_name);
+			}
+		}
 	} else {
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
@@ -180,6 +186,19 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
+		}
+		if (p_name.operator String().begins_with("autoload/")) {
+			String node_name = p_name.operator String().split("/")[1];
+			AutoloadInfo autoload;
+			autoload.name = node_name;
+			String path = p_value;
+			if (path.begins_with("*")) {
+				autoload.is_singleton = true;
+				autoload.path = path.substr(1);
+			} else {
+				autoload.path = path;
+			}
+			add_autoload(autoload);
 		}
 	}
 
@@ -943,6 +962,29 @@ Variant ProjectSettings::get_setting(const String &p_setting) const {
 
 bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
+}
+
+Map<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
+	return autoloads;
+}
+
+void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
+	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
+	autoloads[p_autoload.name] = p_autoload;
+}
+
+void ProjectSettings::remove_autoload(const StringName &p_autoload) {
+	ERR_FAIL_COND_MSG(!autoloads.has(p_autoload), "Trying to remove non-existent autoload.");
+	autoloads.erase(p_autoload);
+}
+
+bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
+	return autoloads.has(p_autoload);
+}
+
+ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
+	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
+	return autoloads[p_name];
 }
 
 void ProjectSettings::_bind_methods() {
