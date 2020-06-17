@@ -1796,7 +1796,6 @@ void EditorInspector::update_tree() {
 				if (ep) {
 					//set all this before the control gets the ENTER_TREE notification
 					ep->object = object;
-
 					if (F->get().properties.size()) {
 						if (F->get().properties.size() == 1) {
 							//since it's one, associate:

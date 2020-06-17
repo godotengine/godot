@@ -520,26 +520,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, true);
 
-		String first_char;
 		for (int i = 0; i < cd.properties.size(); i++) {
-			const String new_char = cd.properties[i].name.substr(0, 1);
-			bool is_new_group = false;
-
-			if (i < cd.properties.size() - 1 && new_char == cd.properties[i + 1].name.substr(0, 1) && new_char != first_char) {
-				is_new_group = i > 0;
-				first_char = new_char;
-			} else if (first_char != "" && new_char != first_char) {
-				is_new_group = true;
-				first_char = "";
-			}
-
-			if (is_new_group) {
-				class_desc->push_cell();
-				class_desc->pop(); //cell
-				class_desc->push_cell();
-				class_desc->pop(); //cell
-			}
-
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 
 			class_desc->push_cell();
@@ -662,10 +643,10 @@ void EditorHelp::_update_doc() {
 
 			String group_prefix;
 			for (int i = 0; i < m.size(); i++) {
-				const String new_prefix = m[i].name.substr(0, 1);
+				const String new_prefix = m[i].name.substr(0, 3);
 				bool is_new_group = false;
 
-				if (i < m.size() - 1 && new_prefix == m[i + 1].name.substr(0, 1) && new_prefix != group_prefix) {
+				if (i < m.size() - 1 && new_prefix == m[i + 1].name.substr(0, 3) && new_prefix != group_prefix) {
 					is_new_group = i > 0;
 					group_prefix = new_prefix;
 				} else if (group_prefix != "" && new_prefix != group_prefix) {

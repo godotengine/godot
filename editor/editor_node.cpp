@@ -173,7 +173,11 @@
 #include "editor/run_settings_dialog.h"
 #include "editor/settings_config_dialog.h"
 #include "scene/main/window.h"
+#include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/multimesh_instance_2d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "servers/display_server.h"
+#include "modules/csg/csg_shape.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -235,6 +239,7 @@ void EditorNode::_update_scene_tabs() {
 		}
 		scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
 	}
+	_edit_current();
 }
 
 void EditorNode::_version_control_menu_option(int p_idx) {
