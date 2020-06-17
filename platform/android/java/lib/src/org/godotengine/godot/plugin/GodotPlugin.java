@@ -35,6 +35,7 @@ import org.godotengine.godot.Godot;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
@@ -93,6 +94,14 @@ public abstract class GodotPlugin {
 	}
 
 	/**
+	 * Provides access to the underlying {@link Activity}.
+	 */
+	@Nullable
+	protected Activity getActivity() {
+		return godot;
+	}
+
+	/**
 	 * Register the plugin with Godot native code.
 	 *
 	 * This method is invoked on the render thread.
@@ -145,13 +154,14 @@ public abstract class GodotPlugin {
 	 * Invoked once during the Godot Android initialization process after creation of the
 	 * {@link org.godotengine.godot.GodotView} view.
 	 * <p>
-	 * This method should be overridden by descendants of this class that would like to add
-	 * their view/layout to the Godot view hierarchy.
+	 * The plugin can return a non-null {@link View} layout in order to add it to the Godot view
+	 * hierarchy.
 	 *
-	 * @return the view to be included; null if no views should be included.
+	 * @see Activity#onCreate(Bundle)
+	 * @return the plugin's view to be included; null if no views should be included.
 	 */
 	@Nullable
-	public View onMainCreateView(Activity activity) {
+	public View onMainCreate(Activity activity) {
 		return null;
 	}
 

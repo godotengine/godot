@@ -371,7 +371,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 		// Include the returned non-null views in the Godot view hierarchy.
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
-			View pluginView = plugin.onMainCreateView(this);
+			View pluginView = plugin.onMainCreate(this);
 			if (pluginView != null) {
 				layout.addView(pluginView);
 			}
