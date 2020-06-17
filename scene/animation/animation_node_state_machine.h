@@ -51,6 +51,7 @@ private:
 	float xfade;
 	bool disabled;
 	int priority;
+	bool actived;
 
 protected:
 	static void _bind_methods();
@@ -75,6 +76,9 @@ public:
 
 	void set_priority(int p_priority);
 	int get_priority() const;
+
+	void set_actived(bool p_actived);
+	bool is_actived() const;
 
 	AnimationNodeStateMachineTransition();
 };
@@ -149,19 +153,31 @@ private:
 	struct Transition {
 		StringName from;
 		StringName to;
+		StringName local_from() const {
+			StringName first = String(from).get_slicec('/', 0);
+			return first == ".." ? "Start" : first;
+		};
+		StringName local_to() const {
+			StringName first = String(to).get_slicec('/', 0);
+			return first == ".." ? "End" : first;
+		};
 		Ref<AnimationNodeStateMachineTransition> transition;
 	};
 
 	Vector<Transition> transitions;
 
 	StringName playback;
-
-	StringName start_node;
-	StringName end_node;
+	StringName state_machine_name;
+	Ref<AnimationNodeStateMachine> prev_state_machine;
+	bool updating_transitions;
 
 	Vector2 graph_offset;
 
 	void _tree_changed();
+	void _remove_transition(Ref<AnimationNodeStateMachineTransition> p_transition);
+	void _rename_transition(const StringName &p_name, const StringName &p_new_name);
+	bool _can_connect(const StringName &p_name, Vector<Ref<AnimationNodeStateMachine>> p_parents = Vector<Ref<AnimationNodeStateMachine>>()) const;
+	StringName _get_shortest_path(const StringName &p_path) const;
 
 protected:
 	void _notification(int p_what);
@@ -172,6 +188,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	StringName start_node;
+	StringName end_node;
+
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
@@ -190,6 +209,7 @@ public:
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
 	bool has_transition(const StringName &p_from, const StringName &p_to) const;
+	bool has_local_transition(const StringName &p_from, const StringName &p_to) const;
 	int find_transition(const StringName &p_from, const StringName &p_to) const;
 	void add_transition(const StringName &p_from, const StringName &p_to, const Ref<AnimationNodeStateMachineTransition> &p_transition);
 	Ref<AnimationNodeStateMachineTransition> get_transition(int p_transition) const;
@@ -199,11 +219,9 @@ public:
 	void remove_transition_by_index(int p_transition);
 	void remove_transition(const StringName &p_from, const StringName &p_to);
 
-	void set_start_node(const StringName &p_node);
-	String get_start_node() const;
+	bool can_edit_node(const StringName &p_name) const;
 
-	void set_end_node(const StringName &p_node);
-	String get_end_node() const;
+	Ref<AnimationNodeStateMachine> get_prev_state_machine() const;
 
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
@@ -214,6 +232,28 @@ public:
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
 
 	AnimationNodeStateMachine();
+};
+
+class MultiAnimationNodeStateMachineTransition : public Reference {
+	GDCLASS(MultiAnimationNodeStateMachineTransition, Reference);
+
+	struct Transition {
+		StringName from;
+		StringName to;
+		Ref<AnimationNodeStateMachineTransition> transition;
+	};
+
+	Vector<Transition> transitions;
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_property);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	void add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition);
+
+	MultiAnimationNodeStateMachineTransition(){};
 };
 
 #endif // ANIMATION_NODE_STATE_MACHINE_H

@@ -449,6 +449,12 @@ AnimationNode::AnimationNode() {
 
 ////////////////////
 
+float AnimationNodeEnd::process(float p_time, bool p_seek) {
+	return p_seek ? 1 : 0;
+}
+
+////////////////////
+
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 	if (root.is_valid()) {
 		root->disconnect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));

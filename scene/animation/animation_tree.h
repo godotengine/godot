@@ -37,6 +37,8 @@
 #include "scene/resources/animation.h"
 
 class AnimationNodeBlendTree;
+class AnimationNodeEnd;
+class AnimationNodeStart;
 class AnimationPlayer;
 class AnimationTree;
 
@@ -157,6 +159,18 @@ class AnimationRootNode : public AnimationNode {
 
 public:
 	AnimationRootNode() {}
+};
+
+class AnimationNodeStart : public AnimationRootNode {
+	GDCLASS(AnimationNodeStart, AnimationRootNode);
+};
+
+class AnimationNodeEnd : public AnimationRootNode {
+	GDCLASS(AnimationNodeEnd, AnimationRootNode);
+
+public:
+	virtual float process(float p_time, bool p_seek);
+	AnimationNodeEnd() {}
 };
 
 class AnimationTree : public Node {
