@@ -8,7 +8,6 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "@VisualScript",
         "VisualScriptBasicTypeConstant",
         "VisualScriptBuiltinFunc",
         "VisualScriptClassConstant",
