@@ -106,6 +106,7 @@
 		</method>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> f515071edc... Renamed InputMap.get_action_list to InputMap.get_action_events
 		<method name="action_get_events">
@@ -119,6 +120,8 @@
 		</method>
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+>>>>>>> ba0db95909... DocData: Skip language-specific ClassDoc without methods/constants
 		<method name="get_actions">
 			<return type="Array">
 			</return>
