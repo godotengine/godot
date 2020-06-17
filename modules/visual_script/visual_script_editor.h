@@ -60,6 +60,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_CUT_NODES,
 		EDIT_PASTE_NODES,
 		EDIT_CREATE_FUNCTION,
+		EXIT_SUBMODULE,
 		REFRESH_GRAPH
 	};
 
@@ -85,7 +86,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Ref<VisualScript> script;
 
+	HBoxContainer *base_type_select_hbc;
 	Button *base_type_select;
+
+	Button *save_module_btn;
 
 	LineEdit *func_name_box;
 	ScrollContainer *func_input_scroll;
@@ -160,6 +164,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	static Clipboard *clipboard;
 
+	Button *func_btn;
+	HBoxContainer *top_bar;
+
 	PopupMenu *member_popup;
 	MemberType member_type;
 	String member_name;
@@ -175,6 +182,42 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Vector2 mouse_up_position;
 
+	enum {
+		LOAD_MODULE = 0,
+		SAVE_MODULE = 1
+	} module_action;
+
+	Ref<VisualScriptModule> curr_module;
+	bool inside_module;
+
+	StringName selected_module;
+	bool updating_modules_panel;
+	Tree *modules_panel;
+	LineEdit *modules_panel_search_box;
+
+	AcceptDialog *module_name_edit;
+	LineEdit *module_name_edit_box;
+
+	void _update_module_panel();
+	void _modules_popup_option(int p_option);
+	void _search_module_list(const String &p_text);
+	void _modules_panel_button(Object *p_item, int p_column, int p_button);
+	void _modules_panel_edited();
+	void _modules_panel_selected();
+	void _module_name_edit_box_input(const Ref<InputEvent> &p_event);
+	void _modules_panel_gui_input(const Ref<InputEvent> &p_event);
+
+	LineEdit *module_name_box;
+	EditorFileDialog *module_resource_dialog;
+
+	void _load_module(int p_select, int p_id);
+	void _load_module_from_path();
+	void _new_module();
+	void _save_module();
+	void _edit_module();
+	void _module_name_save(const String &p_text, Ref<VisualScriptModule> p_module);
+	void _module_action(String p_file);
+
 	void _port_action_menu(int p_option);
 
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
@@ -189,6 +232,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	int error_line;
 
 	void _node_selected(Node *p_node);
+	void _node_double_clicked(Node *p_node);
 	void _center_on_node(int p_id);
 
 	void _node_filter_changed(const String &p_text);
@@ -230,7 +274,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	bool node_has_sequence_connections(int p_id);
 
-	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false);
+	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false, bool p_from_nil = false);
 
 	void _input(const Ref<InputEvent> &p_event);
 	void _graph_gui_input(const Ref<InputEvent> &p_event);

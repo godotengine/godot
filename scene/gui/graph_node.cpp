@@ -870,6 +870,12 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid()) {
 		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphNode must be the child of a GraphEdit node.");
 
+		if (mb->is_double_click() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			emit_signal("double_clicked");
+			accept_event();
+			return;
+		}
+
 		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
 			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
@@ -1012,6 +1018,7 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
+	ADD_SIGNAL(MethodInfo("double_clicked"));
 	ADD_SIGNAL(MethodInfo("close_request"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
