@@ -70,6 +70,13 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
+struct _SortMethodInfoByName {
+	StringName::AlphCompare compare;
+	bool operator()(const MethodInfo &p_a, const MethodInfo &p_b) const {
+		return compare(p_a.name, p_b.name);
+	}
+};
+
 void PropertySelector::_update_search() {
 	if (properties) {
 		set_title(TTR("Select Property"));
@@ -203,13 +210,25 @@ void PropertySelector::_update_search() {
 			Object *obj = ObjectDB::get_instance(script);
 			if (Object::cast_to<Script>(obj)) {
 				methods.push_back(MethodInfo("*Script Methods"));
-				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+
+				List<MethodInfo> obj_methods;
+				Object::cast_to<Script>(obj)->get_script_method_list(&obj_methods);
+				obj_methods.sort_custom<_SortMethodInfoByName>();
+				for (List<MethodInfo>::Element *E = obj_methods.front(); E; E = E->next()) {
+					methods.push_back(E->get());
+				}
 			}
 
 			StringName base = base_type;
 			while (base) {
 				methods.push_back(MethodInfo("*" + String(base)));
-				ClassDB::get_method_list(base, &methods, true, true);
+				List<MethodInfo> base_methods;
+				ClassDB::get_method_list(base, &base_methods, true, true);
+				base_methods.sort_custom<_SortMethodInfoByName>();
+				for (List<MethodInfo>::Element *E = base_methods.front(); E; E = E->next()) {
+					methods.push_back(E->get());
+				}
+
 				base = ClassDB::get_parent_class(base);
 			}
 		}
