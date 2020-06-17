@@ -123,16 +123,11 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		case CompletionKind::NODE_PATHS: {
 			{
 				// AutoLoads
-				List<PropertyInfo> props;
-				ProjectSettings::get_singleton()->get_property_list(&props);
+				Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-					String s = E->get().name;
-					if (!s.begins_with("autoload/")) {
-						continue;
-					}
-					String name = s.get_slice("/", 1);
-					suggestions.push_back(quoted("/root/" + name));
+				for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
+					const ProjectSettings::AutoloadInfo &info = E->value();
+					suggestions.push_back(quoted("/root/" + String(info.name)));
 				}
 			}
 

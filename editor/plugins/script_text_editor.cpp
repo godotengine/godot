@@ -343,16 +343,11 @@ void ScriptTextEditor::_set_theme_for_script() {
 	}
 
 	//colorize singleton autoloads (as types, just as engine singletons are)
-	List<PropertyInfo> props;
-	ProjectSettings::get_singleton()->get_property_list(&props);
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-		String s = E->get().name;
-		if (!s.begins_with("autoload/")) {
-			continue;
-		}
-		String path = ProjectSettings::get_singleton()->get(s);
-		if (path.begins_with("*")) {
-			text_edit->add_keyword_color(s.get_slice("/", 1), colors_cache.usertype_color);
+	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
+		const ProjectSettings::AutoloadInfo &info = E->value();
+		if (info.is_singleton) {
+			text_edit->add_keyword_color(info.name, colors_cache.usertype_color);
 		}
 	}
 
@@ -942,12 +937,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
 			} break;
 		}
-	} else if (ProjectSettings::get_singleton()->has_setting("autoload/" + p_symbol)) {
-		//check for Autoload scenes
-		String path = ProjectSettings::get_singleton()->get("autoload/" + p_symbol);
-		if (path.begins_with("*")) {
-			path = path.substr(1, path.length());
-			EditorNode::get_singleton()->load_scene(path);
+	} else if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
+		// Check for Autoload scenes.
+		const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(p_symbol);
+		if (info.is_singleton) {
+			EditorNode::get_singleton()->load_scene(info.path);
 		}
 	} else if (p_symbol.is_rel_path()) {
 		// Every symbol other than absolute path is relative path so keep this condition at last.
@@ -974,7 +968,7 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK || ProjectSettings::get_singleton()->has_setting("autoload/" + p_symbol)) {
+	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
 		text_edit->set_highlighted_word(p_symbol);
 	} else if (p_symbol.is_rel_path()) {
 		String path = _get_absolute_path(p_symbol);
