@@ -38,6 +38,7 @@
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"
+#include "visual_script_module_nodes.h"
 #include "visual_script_nodes.h"
 #include "visual_script_yield_nodes.h"
 
@@ -72,7 +73,13 @@ void register_visual_script_types() {
 	GDREGISTER_CLASS(VisualScriptSceneTree);
 	GDREGISTER_CLASS(VisualScriptResourcePath);
 	GDREGISTER_CLASS(VisualScriptSelf);
+	GDREGISTER_CLASS(VisualScriptModule);
 	GDREGISTER_CLASS(VisualScriptCustomNode);
+
+	GDREGISTER_CLASS(VisualScriptModuleNode);
+	GDREGISTER_CLASS(VisualScriptModuleEntryNode);
+	GDREGISTER_CLASS(VisualScriptModuleExitNode);
+
 	GDREGISTER_CLASS(VisualScriptSubCall);
 	GDREGISTER_CLASS(VisualScriptComment);
 	GDREGISTER_CLASS(VisualScriptConstructor);
@@ -111,6 +118,7 @@ void register_visual_script_types() {
 	register_visual_script_flow_control_nodes();
 	register_visual_script_yield_nodes();
 	register_visual_script_expression_node();
+	register_visual_script_module_nodes();
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
