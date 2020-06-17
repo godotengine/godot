@@ -516,12 +516,14 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SHAPE_NEW_RECTANGLE]->set_toggle_mode(true);
 	tools[SHAPE_NEW_RECTANGLE]->set_button_group(tg);
 	tools[SHAPE_NEW_RECTANGLE]->set_tooltip(TTR("Create a new rectangle."));
+	tools[SHAPE_NEW_RECTANGLE]->connect("pressed", this, "_on_tool_clicked", varray(SHAPE_NEW_RECTANGLE));
 
 	tools[SHAPE_NEW_POLYGON] = memnew(ToolButton);
 	toolbar->add_child(tools[SHAPE_NEW_POLYGON]);
 	tools[SHAPE_NEW_POLYGON]->set_toggle_mode(true);
 	tools[SHAPE_NEW_POLYGON]->set_button_group(tg);
 	tools[SHAPE_NEW_POLYGON]->set_tooltip(TTR("Create a new polygon."));
+	tools[SHAPE_NEW_POLYGON]->connect("pressed", this, "_on_tool_clicked", varray(SHAPE_NEW_POLYGON));
 
 	separator_shape_toggle = memnew(VSeparator);
 	toolbar->add_child(separator_shape_toggle);
@@ -1933,7 +1935,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				}
 			}
 		}
-	} else if (p_tool == TOOL_SELECT) {
+	} else if (p_tool == TOOL_SELECT || p_tool == SHAPE_NEW_POLYGON || p_tool == SHAPE_NEW_RECTANGLE) {
 		if (creating_shape) {
 			// Cancel Creation
 			creating_shape = false;
