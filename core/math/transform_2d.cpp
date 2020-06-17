@@ -83,12 +83,7 @@ void Transform2D::set_skew(float p_angle) {
 }
 
 real_t Transform2D::get_rotation() const {
-	real_t det = basis_determinant();
-	Transform2D m = orthonormalized();
-	if (det < 0) {
-		m.scale_basis(Size2(1, -1)); // convention to separate rotation and reflection for 2D is to absorb a flip along y into scaling.
-	}
-	return Math::atan2(m[0].y, m[0].x);
+	return Math::atan2(elements[0].y, elements[0].x);
 }
 
 void Transform2D::set_rotation(real_t p_rot) {
