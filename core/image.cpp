@@ -619,34 +619,35 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	enum {
 		FRAC_BITS = 8,
 		FRAC_LEN = (1 << FRAC_BITS),
+		FRAC_HALF = (FRAC_LEN >> 1),
 		FRAC_MASK = FRAC_LEN - 1
-
 	};
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
-
-		uint32_t src_yofs_up_fp = (i * p_src_height * FRAC_LEN / p_dst_height);
-		uint32_t src_yofs_frac = src_yofs_up_fp & FRAC_MASK;
-		uint32_t src_yofs_up = src_yofs_up_fp >> FRAC_BITS;
-
-		uint32_t src_yofs_down = (i + 1) * p_src_height / p_dst_height;
-		if (src_yofs_down >= p_src_height)
+		// Add 0.5 in order to interpolate based on pixel center
+		uint32_t src_yofs_up_fp = (i + 0.5) * p_src_height * FRAC_LEN / p_dst_height;
+		// Calculate nearest src pixel center above current, and truncate to get y index
+		uint32_t src_yofs_up = src_yofs_up_fp >= FRAC_HALF ? (src_yofs_up_fp - FRAC_HALF) >> FRAC_BITS : 0;
+		uint32_t src_yofs_down = (src_yofs_up_fp + FRAC_HALF) >> FRAC_BITS;
+		if (src_yofs_down >= p_src_height) {
 			src_yofs_down = p_src_height - 1;
-
-		//src_yofs_up*=CC;
-		//src_yofs_down*=CC;
+		}
+		// Calculate distance to pixel center of src_yofs_up
+		uint32_t src_yofs_frac = src_yofs_up_fp & FRAC_MASK;
+		src_yofs_frac = src_yofs_frac >= FRAC_HALF ? src_yofs_frac - FRAC_HALF : src_yofs_frac + FRAC_HALF;
 
 		uint32_t y_ofs_up = src_yofs_up * p_src_width * CC;
 		uint32_t y_ofs_down = src_yofs_down * p_src_width * CC;
 
 		for (uint32_t j = 0; j < p_dst_width; j++) {
-
-			uint32_t src_xofs_left_fp = (j * p_src_width * FRAC_LEN / p_dst_width);
-			uint32_t src_xofs_frac = src_xofs_left_fp & FRAC_MASK;
-			uint32_t src_xofs_left = src_xofs_left_fp >> FRAC_BITS;
-			uint32_t src_xofs_right = (j + 1) * p_src_width / p_dst_width;
-			if (src_xofs_right >= p_src_width)
+			uint32_t src_xofs_left_fp = (j + 0.5) * p_src_width * FRAC_LEN / p_dst_width;
+			uint32_t src_xofs_left = src_xofs_left_fp >= FRAC_HALF ? (src_xofs_left_fp - FRAC_HALF) >> FRAC_BITS : 0;
+			uint32_t src_xofs_right = (src_xofs_left_fp + FRAC_HALF) >> FRAC_BITS;
+			if (src_xofs_right >= p_src_width) {
 				src_xofs_right = p_src_width - 1;
+			}
+			uint32_t src_xofs_frac = src_xofs_left_fp & FRAC_MASK;
+			src_xofs_frac = src_xofs_frac >= FRAC_HALF ? src_xofs_frac - FRAC_HALF : src_xofs_frac + FRAC_HALF;
 
 			src_xofs_left *= CC;
 			src_xofs_right *= CC;
