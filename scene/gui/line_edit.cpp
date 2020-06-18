@@ -285,6 +285,22 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					set_cursor_position(text.length());
 					shift_selection_check_post(k->get_shift());
 				} break;
+				case (KEY_BACKSPACE): {
+					if (!editable)
+						break;
+
+					// If selected, delete the selection
+					if (selection.enabled) {
+						selection_delete();
+						break;
+					}
+
+					// Otherwise delete from cursor to beginning of text edit
+					int current_pos = get_cursor_position();
+					if (current_pos != 0) {
+						delete_text(0, current_pos);
+					}
+				} break;
 #endif
 				default: {
 					handled = false;
