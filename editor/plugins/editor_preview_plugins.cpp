@@ -127,7 +127,8 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 	if (new_size.y > p_size.y) {
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
-	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
+	Vector2i new_size_i(MAX(1, (int)new_size.x), MAX(1, (int)new_size.y));
+	img->resize(new_size_i.x, new_size_i.y, Image::INTERPOLATE_CUBIC);
 
 	post_process_preview(img);
 
