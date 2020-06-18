@@ -46,6 +46,7 @@ class VisualServer : public Object {
 	static VisualServer *singleton;
 
 	int mm_policy;
+	bool render_loop_enabled = true;
 
 	void _camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	void _canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate = Color(1, 1, 1));
@@ -1062,6 +1063,9 @@ public:
 	virtual void call_set_use_vsync(bool p_enable) = 0;
 
 	virtual bool is_low_end() const = 0;
+
+	bool is_render_loop_enabled() const;
+	void set_render_loop_enabled(bool p_enabled);
 
 	VisualServer();
 	virtual ~VisualServer();
