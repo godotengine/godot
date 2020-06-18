@@ -113,17 +113,26 @@ public:
  */
 void ConnectDialog::ok_pressed() {
 
-	if (dst_method->get_text() == "") {
+	String method_name = dst_method->get_text();
+
+	if (method_name == "") {
 		error->set_text(TTR("Method in target node must be specified."));
 		error->popup_centered_minsize();
 		return;
 	}
+
+	if (!method_name.strip_edges().is_valid_identifier()) {
+		error->set_text(TTR("Method name must be a valid identifier."));
+		error->popup_centered();
+		return;
+	}
+
 	Node *target = tree->get_selected();
 	if (!target) {
 		return; // Nothing selected in the tree, not an error.
 	}
 	if (target->get_script().is_null()) {
-		if (!target->has_method(dst_method->get_text())) {
+		if (!target->has_method(method_name)) {
 			error->set_text(TTR("Target method not found. Specify a valid method or attach a script to the target node."));
 			error->popup_centered_minsize();
 			return;
