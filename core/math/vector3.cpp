@@ -42,6 +42,21 @@ Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
 	return r;
 }
 
+Vector2 Vector3::swizzle2(int p_x, int p_y) const {
+	return Vector2(
+        p_x == Component::COMPONENT_ZERO ? 0 : get_axis(p_x),
+        p_y == Component::COMPONENT_ZERO ? 0 : get_axis(p_y)
+    );
+}
+
+Vector3 Vector3::swizzle3(int p_x, int p_y, int p_z) const {
+	return Vector3(
+        p_x == Component::COMPONENT_ZERO ? 0 : get_axis(p_x),
+        p_y == Component::COMPONENT_ZERO ? 0 : get_axis(p_y),
+        p_z == Component::COMPONENT_ZERO ? 0 : get_axis(p_z)
+    );
+}
+
 void Vector3::set_axis(int p_axis, real_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;

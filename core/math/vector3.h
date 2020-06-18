@@ -33,6 +33,7 @@
 
 #include "core/math/math_funcs.h"
 #include "core/math/vector3i.h"
+#include "core/math/vector2.h"
 #include "core/ustring.h"
 
 class Basis;
@@ -42,6 +43,13 @@ struct Vector3 {
 		AXIS_X,
 		AXIS_Y,
 		AXIS_Z,
+	};
+
+	enum Component {
+		COMPONENT_X,
+		COMPONENT_Y,
+		COMPONENT_Z,
+		COMPONENT_ZERO,
 	};
 
 	union {
@@ -83,6 +91,9 @@ struct Vector3 {
 
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	Vector3 rotated(const Vector3 &p_axis, real_t p_phi) const;
+
+	Vector2 swizzle2(int p_x, int p_y) const;
+	Vector3 swizzle3(int p_x, int p_y, int p_z) const;
 
 	/* Static Methods between 2 vector3s */
 

@@ -428,6 +428,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
+	VCALL_LOCALMEM2R(Vector3, swizzle2);
+	VCALL_LOCALMEM3R(Vector3, swizzle3);
 	VCALL_LOCALMEM2R(Vector3, lerp);
 	VCALL_LOCALMEM2R(Vector3, slerp);
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
@@ -1938,6 +1940,8 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", FLOAT, "phi", varray());
+	ADDFUNC2R(VECTOR3, VECTOR2, Vector3, swizzle2, INT, "ax", INT, "ay", varray());
+	ADDFUNC3R(VECTOR3, VECTOR3, Vector3, swizzle3, INT, "ax", INT, "ay", INT, "az", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, lerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", FLOAT, "t", varray());
@@ -2305,6 +2309,11 @@ void register_variant_methods() {
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_X", Vector3::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Y", Vector3::AXIS_Y);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Z", Vector3::AXIS_Z);
+
+	_VariantCall::add_constant(Variant::VECTOR3, "COMPONENT_X", Vector3::COMPONENT_X);
+	_VariantCall::add_constant(Variant::VECTOR3, "COMPONENT_Y", Vector3::COMPONENT_Y);
+	_VariantCall::add_constant(Variant::VECTOR3, "COMPONENT_Z", Vector3::COMPONENT_Z);
+	_VariantCall::add_constant(Variant::VECTOR3, "COMPONENT_ZERO", Vector3::COMPONENT_ZERO);
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));

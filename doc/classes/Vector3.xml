@@ -312,6 +312,40 @@
 				Returns the vector snapped to a grid with the given size.
 			</description>
 		</method>
+		<method name="swizzle2">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="ax" type="int">
+			</argument>
+			<argument index="1" name="ay" type="int">
+			</argument>
+			<description>
+				Construct a new vector by rearranging or zeroing components of this vector.
+				[b]Example:[/b]
+				[codeblock]
+				Vector3(1, 2, 3).swizzle2(Vector3.COMPONENT_Z, Vector3.COMPONENT_Y) # (3, 2)
+				Vector3(1, 2, 3).swizzle2(Vector3.COMPONENT_X, Vector3.COMPONENT_ZERO) # (1, 0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="swizzle3">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="ax" type="int">
+			</argument>
+			<argument index="1" name="ay" type="int">
+			</argument>
+			<argument index="2" name="az" type="int">
+			</argument>
+			<description>
+				Construct a new vector by rearranging or zeroing components of this vector.
+				[b]Example:[/b]
+				[codeblock]
+				Vector3(1, 2, 3).swizzle3(Vector3.COMPONENT_Z, Vector3.COMPONENT_Y, Vector3.COMPONENT_X) # (3, 2, 1)
+				Vector3(1, 2, 3).swizzle3(Vector3.COMPONENT_X, Vector3.COMPONENT_ZERO, Vector3.COMPONENT_Z) # (1, 0, 3)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="to_diagonal_matrix">
 			<return type="Basis">
 			</return>
@@ -340,6 +374,18 @@
 		</constant>
 		<constant name="AXIS_Z" value="2">
 			Enumerated value for the Z axis. Returned by [method max_axis] and [method min_axis].
+		</constant>
+		<constant name="COMPONENT_X" value="0">
+			Used by [method swizzle2] and [method swizzle3] to select the X component.
+		</constant>
+		<constant name="COMPONENT_Y" value="1">
+			Used by [method swizzle2] and [method swizzle3] to select the Y component.
+		</constant>
+		<constant name="COMPONENT_Z" value="2">
+			Used by [method swizzle2] and [method swizzle3] to select the Z component.
+		</constant>
+		<constant name="COMPONENT_ZERO" value="3">
+			Used by [method swizzle2] and [method swizzle3] to set a resulting component to 0.
 		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
 			Zero vector.

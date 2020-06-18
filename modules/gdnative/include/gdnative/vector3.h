@@ -62,6 +62,7 @@ typedef struct {
 
 #include <gdnative/basis.h>
 #include <gdnative/gdnative.h>
+#include "gdnative/vector2.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,6 +73,13 @@ typedef enum {
 	GODOT_VECTOR3_AXIS_Y,
 	GODOT_VECTOR3_AXIS_Z,
 } godot_vector3_axis;
+
+typedef enum {
+	GODOT_VECTOR3_COMPONENT_X,
+	GODOT_VECTOR3_COMPONENT_Y,
+	GODOT_VECTOR3_COMPONENT_Z,
+	GODOT_VECTOR3_COMPONENT_ZERO,
+} godot_vector3_component;
 
 // Vector3
 
@@ -98,6 +106,10 @@ godot_vector3 GDAPI godot_vector3_inverse(const godot_vector3 *p_self);
 godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const godot_vector3 *p_by);
 
 godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const godot_vector3 *p_axis, const godot_real p_phi);
+
+godot_vector2 GDAPI godot_vector3_swizzle2(const godot_vector3 *p_self, godot_vector3_component p_x, godot_vector3_component p_y);
+
+godot_vector3 GDAPI godot_vector3_swizzle3(const godot_vector3 *p_self, godot_vector3_component p_x, godot_vector3_component p_y, godot_vector3_component p_z);
 
 godot_vector3 GDAPI godot_vector3_lerp(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t);
 

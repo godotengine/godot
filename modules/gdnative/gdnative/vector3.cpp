@@ -117,6 +117,20 @@ godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const god
 	return dest;
 }
 
+godot_vector2 GDAPI godot_vector3_swizzle2(const godot_vector3 *p_self, godot_vector3_component p_x, godot_vector3_component p_y) {
+	godot_vector2 dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	*((Vector2 *)&dest) = self->swizzle2(p_x, p_y);
+	return dest;
+}
+
+godot_vector3 GDAPI godot_vector3_swizzle3(const godot_vector3 *p_self, godot_vector3_component p_x, godot_vector3_component p_y, godot_vector3_component p_z) {
+	godot_vector3 dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	*((Vector3 *)&dest) = self->swizzle3(p_x, p_y, p_z);
+	return dest;
+}
+
 godot_vector3 GDAPI godot_vector3_lerp(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;
