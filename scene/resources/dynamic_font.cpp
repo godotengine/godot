@@ -217,7 +217,7 @@ Error DynamicFontAtSize::_load() {
 	return OK;
 }
 
-float DynamicFontAtSize::font_oversampling = 1.0;
+int DynamicFontAtSize::font_oversampling = 1;
 
 float DynamicFontAtSize::get_height() const {
 	return ascent + descent;
