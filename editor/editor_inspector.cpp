@@ -1102,7 +1102,44 @@ void EditorInspectorSection::_test_unfold() {
 	}
 }
 
+void EditorInspectorSection::toggle_drag_hover(bool p_enable) {
+	attempting_drag_unfold = p_enable;
+	drag_unfold_countdown = drag_unfold_delay;
+	set_process(p_enable);
+	update();
+}
+
+bool EditorInspectorSection::can_unfold_by_dragging() const {
+	return foldable && get_viewport()->gui_is_dragging() && !object->editor_is_section_unfolded(section);
+}
+
 void EditorInspectorSection::_notification(int p_what) {
+	if (p_what == NOTIFICATION_MOUSE_ENTER) {
+		if (can_unfold_by_dragging()) {
+			toggle_drag_hover(true);
+		}
+	}
+
+	if (p_what == NOTIFICATION_MOUSE_EXIT) {
+		if (can_unfold_by_dragging()) {
+			toggle_drag_hover(false);
+		}
+	}
+
+	if (p_what == NOTIFICATION_PROCESS) {
+		if (can_unfold_by_dragging()) {
+			if (drag_unfold_countdown > 0) {
+				drag_unfold_countdown -= get_process_delta_time();
+				if (drag_unfold_countdown <= 0) {
+					unfold();
+					attempting_drag_unfold = false;
+					drag_unfold_countdown = drag_unfold_delay;
+					set_process(false);
+				}
+			}
+		}
+	}
+
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 		Ref<Font> font = get_theme_font("font", "Tree");
 		Ref<Texture2D> arrow;
@@ -1166,6 +1203,10 @@ void EditorInspectorSection::_notification(int p_what) {
 		h += get_theme_constant("vseparation", "Tree");
 
 		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
+		if (attempting_drag_unfold) {
+			Ref<StyleBox> sb = get_theme_stylebox("selected", "Tree");
+			draw_style_box(sb, Rect2(Vector2(), Vector2(get_size().width, h)));
+		}
 
 		const int arrow_margin = 3;
 		Color color = get_theme_color("font_color", "Tree");
@@ -1291,6 +1332,9 @@ EditorInspectorSection::EditorInspectorSection() {
 	foldable = false;
 	vbox = memnew(VBoxContainer);
 	vbox_added = false;
+	drag_unfold_countdown = 0;
+	drag_unfold_delay = 1.0f;
+	attempting_drag_unfold = false;
 }
 
 EditorInspectorSection::~EditorInspectorSection() {

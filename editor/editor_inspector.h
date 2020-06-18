@@ -231,6 +231,10 @@ class EditorInspectorSection : public Container {
 	Color bg_color;
 	bool foldable;
 
+	float drag_unfold_countdown;
+	float drag_unfold_delay;
+	bool attempting_drag_unfold;
+
 	void _test_unfold();
 
 protected:
@@ -245,6 +249,9 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
+
+	void toggle_drag_hover(bool p_enable);
+	bool can_unfold_by_dragging() const;
 
 	Object *get_edited_object();
 
@@ -271,8 +278,6 @@ class EditorInspector : public ScrollContainer {
 
 	void _clear();
 	Object *object;
-
-	//
 
 	LineEdit *search_box;
 	bool show_categories;
