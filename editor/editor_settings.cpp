@@ -598,7 +598,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/constrain_editor_view", true);
 	_initial_set("editors/2d/warped_mouse_panning", true);
 	_initial_set("editors/2d/simple_panning", false);
-	_initial_set("editors/2d/scroll_to_pan", false);
+	_initial_set("editors/2d/scroll_to_pan", true);
 	_initial_set("editors/2d/pan_speed", 20);
 
 	// Polygon editor
