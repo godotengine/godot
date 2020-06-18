@@ -2910,6 +2910,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 			int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_TRANSFORM);
 			animation->track_set_path(track_idx, node_path);
+			animation->track_set_imported(track_idx, true);
 			//first determine animation length
 
 			const float increment = 1.0 / float(bake_fps);

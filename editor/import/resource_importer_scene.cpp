@@ -974,9 +974,9 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 				if (!p_animations.has(anim)) {
 
-					//mark what comes from the file first, this helps eventually keep user data
+					// We are making external files so they are modifiable
 					for (int i = 0; i < anim->get_track_count(); i++) {
-						anim->track_set_imported(i, true);
+						anim->track_set_imported(i, false);
 					}
 
 					String ext_name;
