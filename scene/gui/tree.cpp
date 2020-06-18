@@ -433,6 +433,8 @@ void TreeItem::remove_child(TreeItem *p_item) {
 			*c = (*c)->next;
 
 			aux->parent = nullptr;
+
+			tree->update();
 			return;
 		}
 
@@ -2987,6 +2989,8 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 			ti = create_item(root, p_idx);
 		}
 	}
+
+	update();
 
 	return ti;
 }
