@@ -812,10 +812,6 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
-	if (wd.minimized) {
-		return Size2(wd.width, wd.height);
-	}
-
 	RECT r;
 	if (GetClientRect(wd.hWnd, &r)) { // Only area inside of window border
 		return Size2(r.right - r.left, r.bottom - r.top);
