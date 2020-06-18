@@ -88,6 +88,8 @@ class TileMapEditor : public VBoxContainer {
 	MenuButton *options;
 
 	Button *paint_button;
+	Button *line_button;
+	Button *rectangle_button;
 	Button *bucket_fill_button;
 	Button *picker_button;
 	Button *select_button;
@@ -106,6 +108,7 @@ class TileMapEditor : public VBoxContainer {
 
 	bool selection_active;
 	bool mouse_over;
+	bool mouse_down;
 
 	bool flip_h;
 	bool flip_v;
