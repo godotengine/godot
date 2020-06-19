@@ -45,7 +45,7 @@ private:
 	int cache_size = DEFAULT_CACHE_SIZE;
 
 	int cache_data_left() const;
-	mutable Error last_error;
+	mutable Error last_error = OK;
 
 protected:
 	Error set_error(Error p_error) const;

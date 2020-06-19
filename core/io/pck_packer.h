@@ -39,15 +39,15 @@ class PCKPacker : public Reference {
 	GDCLASS(PCKPacker, Reference);
 
 	FileAccess *file = nullptr;
-	int alignment;
+	int alignment = 0;
 
 	static void _bind_methods();
 
 	struct File {
 		String path;
 		String src_path;
-		int size;
-		uint64_t offset_offset;
+		int size = 0;
+		uint64_t offset_offset = 0;
 	};
 	Vector<File> files;
 
