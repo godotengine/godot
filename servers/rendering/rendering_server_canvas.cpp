@@ -515,7 +515,7 @@ void RenderingServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_fro
 	Item::CommandPrimitive *line = canvas_item->alloc_command<Item::CommandPrimitive>();
 	ERR_FAIL_COND(!line);
 	if (p_width > 1.001) {
-		Vector2 t = (p_from - p_to).tangent().normalized();
+		Vector2 t = (p_from - p_to).perpendicular().normalized();
 		line->points[0] = p_from + t * p_width;
 		line->points[1] = p_from - t * p_width;
 		line->points[2] = p_to - t * p_width;
@@ -586,7 +586,7 @@ void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Po
 			if (i == p_points.size() - 1) {
 				t = prev_t;
 			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+				t = (p_points[i + 1] - p_points[i]).normalized().perpendicular();
 				if (i == 0) {
 					prev_t = t;
 				}

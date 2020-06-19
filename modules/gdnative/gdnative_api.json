@@ -6259,7 +6259,7 @@
         ]
       },
       {
-        "name": "godot_vector2_tangent",
+        "name": "godot_vector2_perpendicular",
         "return_type": "godot_vector2",
         "arguments": [
           ["const godot_vector2 *", "p_self"]

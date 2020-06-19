@@ -390,6 +390,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="perpendicular">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns a perpendicular vector rotated 90 degrees counter-clockwise compared to the original, with the same length.
+			</description>
+		</method>
 		<method name="posmod">
 			<return type="Vector2">
 			</return>
@@ -477,13 +484,6 @@
 			</argument>
 			<description>
 				Returns this vector with each component snapped to the nearest multiple of [code]step[/code]. This can also be used to round to an arbitrary number of decimals.
-			</description>
-		</method>
-		<method name="tangent">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns a perpendicular vector rotated 90 degrees counter-clockwise compared to the original, with the same length.
 			</description>
 		</method>
 	</methods>

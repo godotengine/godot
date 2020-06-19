@@ -379,6 +379,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a perpendicular vector rotated 90 degrees counter-clockwise
+        /// compared to the original, with the same length.
+        /// </summary>
+        /// <returns>The perpendicular vector.</returns>
+        public Vector2 Perpendicular()
+        {
+            return new Vector2(y, -x);
+        }
+
+        /// <summary>
         /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components and `mod`.
         /// </summary>
         /// <param name="mod">A value representing the divisor of the operation.</param>
@@ -511,16 +521,6 @@ namespace Godot
         public Vector2 Snapped(Vector2 step)
         {
             return new Vector2(Mathf.Stepify(x, step.x), Mathf.Stepify(y, step.y));
-        }
-
-        /// <summary>
-        /// Returns a perpendicular vector rotated 90 degrees counter-clockwise
-        /// compared to the original, with the same length.
-        /// </summary>
-        /// <returns>The perpendicular vector.</returns>
-        public Vector2 Perpendicular()
-        {
-            return new Vector2(y, -x);
         }
 
         // Constants

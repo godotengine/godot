@@ -88,7 +88,7 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 #endif
 
 	Vector2 n = p_collector->normal;
-	Vector2 t = n.tangent();
+	Vector2 t = n.perpendicular();
 	real_t dA = n.dot(p_points_A[0]);
 	real_t dB = n.dot(p_points_B[0]);
 
@@ -209,7 +209,7 @@ public:
 			if (!test_axis(na)) {
 				return false;
 			}
-			if (!test_axis(na.tangent())) {
+			if (!test_axis(na.perpendicular())) {
 				return false;
 			}
 		}
@@ -219,7 +219,7 @@ public:
 			if (!test_axis(nb)) {
 				return false;
 			}
-			if (!test_axis(nb.tangent())) {
+			if (!test_axis(nb.perpendicular())) {
 				return false;
 			}
 		}
@@ -450,7 +450,7 @@ static void _collision_segment_circle(const Shape2DSW *p_a, const Transform2D &p
 
 	//segment normal
 	if (!separator.test_axis(
-				(p_transform_a.xform(segment_A->get_b()) - p_transform_a.xform(segment_A->get_a())).normalized().tangent())) {
+				(p_transform_a.xform(segment_A->get_b()) - p_transform_a.xform(segment_A->get_a())).normalized().perpendicular())) {
 		return;
 	}
 
