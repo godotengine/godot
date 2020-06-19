@@ -53,6 +53,7 @@
     <Compile Include="Core\Extensions\NodeExtensions.cs" />
     <Compile Include="Core\Extensions\ObjectExtensions.cs" />
     <Compile Include="Core\Extensions\ResourceLoaderExtensions.cs" />
+    <Compile Include="Core\Extensions\SceneTreeExtensions.cs" />
     <Compile Include="Core\GD.cs" />
     <Compile Include="Core\GodotSynchronizationContext.cs" />
     <Compile Include="Core\GodotTaskScheduler.cs" />
