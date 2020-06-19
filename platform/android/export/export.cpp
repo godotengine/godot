@@ -795,6 +795,29 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return OK;
 	}
 
+	Vector<String> _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet) {
+		Vector<String> perms;
+		const char **aperms = android_perms;
+		while (*aperms) {
+			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
+			if (enabled)
+				perms.push_back("android.permission." + String(*aperms));
+			aperms++;
+		}
+		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
+		for (int i = 0; i < user_perms.size(); i++) {
+			String user_perm = user_perms[i].strip_edges();
+			if (!user_perm.empty()) {
+				perms.push_back(user_perm);
+			}
+		}
+		if (p_give_internet) {
+			if (perms.find("android.permission.INTERNET") == -1)
+				perms.push_back("android.permission.INTERNET");
+		}
+		return perms;
+	}
+
 	Error _fix_manifest_plaintext(const Ref<EditorExportPreset> &p_preset, String &manifest_path, bool p_give_internet) {
 		//TODO: replicate the functionality of _fix_manifest by editing the plaintext AndroidManifest.xml file
 		return OK;
@@ -846,30 +869,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
-		Vector<String> perms;
-
-		const char **aperms = android_perms;
-		while (*aperms) {
-
-			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
-			if (enabled)
-				perms.push_back("android.permission." + String(*aperms));
-			aperms++;
-		}
-
-		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
-
-		for (int i = 0; i < user_perms.size(); i++) {
-			String user_perm = user_perms[i].strip_edges();
-			if (!user_perm.empty()) {
-				perms.push_back(user_perm);
-			}
-		}
-
-		if (p_give_internet) {
-			if (perms.find("android.permission.INTERNET") == -1)
-				perms.push_back("android.permission.INTERNET");
-		}
+		Vector<String> perms = _get_permissions(p_preset, p_give_internet);
 
 		while (ofs < (uint32_t)p_manifest.size()) {
 
