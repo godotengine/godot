@@ -234,7 +234,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
+		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script") || pi.name.begins_with("autoload")) {
 			continue;
 		}
 
