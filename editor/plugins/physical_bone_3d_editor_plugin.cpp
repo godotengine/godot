@@ -55,7 +55,8 @@ PhysicalBone3DEditor::PhysicalBone3DEditor(EditorNode *p_editor) :
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
-	button_transform_joint = memnew(ToolButton);
+	button_transform_joint = memnew(Button);
+	button_transform_joint->set_flat(true);
 	spatial_editor_hb->add_child(button_transform_joint);
 
 	button_transform_joint->set_text(TTR("Move Joint"));

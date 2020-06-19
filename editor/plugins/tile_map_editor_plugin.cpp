@@ -91,7 +91,7 @@ void TileMapEditor::_notification(int p_what) {
 }
 
 void TileMapEditor::_update_button_tool() {
-	ToolButton *tb[4] = { paint_button, bucket_fill_button, picker_button, select_button };
+	Button *tb[4] = { paint_button, bucket_fill_button, picker_button, select_button };
 	// Unpress all buttons
 	for (int i = 0; i < 4; i++) {
 		tb[i]->set_pressed(false);
@@ -1959,26 +1959,30 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar->add_child(memnew(VSeparator));
 
 	// Tools.
-	paint_button = memnew(ToolButton);
+	paint_button = memnew(Button);
+	paint_button->set_flat(true);
 	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
 	paint_button->set_tooltip(TTR("Shift+LMB: Line Draw\nShift+Ctrl+LMB: Rectangle Paint"));
 	paint_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_NONE));
 	paint_button->set_toggle_mode(true);
 	toolbar->add_child(paint_button);
 
-	bucket_fill_button = memnew(ToolButton);
+	bucket_fill_button = memnew(Button);
+	bucket_fill_button->set_flat(true);
 	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_B));
 	bucket_fill_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_BUCKET));
 	bucket_fill_button->set_toggle_mode(true);
 	toolbar->add_child(bucket_fill_button);
 
-	picker_button = memnew(ToolButton);
+	picker_button = memnew(Button);
+	picker_button->set_flat(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pick_tile", TTR("Pick Tile"), KEY_I));
 	picker_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_PICKING));
 	picker_button->set_toggle_mode(true);
 	toolbar->add_child(picker_button);
 
-	select_button = memnew(ToolButton);
+	select_button = memnew(Button);
+	select_button->set_flat(true);
 	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_M));
 	select_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_SELECTING));
 	select_button->set_toggle_mode(true);
@@ -2017,35 +2021,40 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_item(TTR("Fix Invalid Tiles"), OPTION_FIX_INVALID);
 	p->connect("id_pressed", callable_mp(this, &TileMapEditor::_menu_option));
 
-	rotate_left_button = memnew(ToolButton);
+	rotate_left_button = memnew(Button);
+	rotate_left_button->set_flat(true);
 	rotate_left_button->set_tooltip(TTR("Rotate Left"));
 	rotate_left_button->set_focus_mode(FOCUS_NONE);
 	rotate_left_button->connect("pressed", callable_mp(this, &TileMapEditor::_rotate), varray(-1));
 	rotate_left_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rotate_left", TTR("Rotate Left"), KEY_A));
 	tool_hb->add_child(rotate_left_button);
 
-	rotate_right_button = memnew(ToolButton);
+	rotate_right_button = memnew(Button);
+	rotate_right_button->set_flat(true);
 	rotate_right_button->set_tooltip(TTR("Rotate Right"));
 	rotate_right_button->set_focus_mode(FOCUS_NONE);
 	rotate_right_button->connect("pressed", callable_mp(this, &TileMapEditor::_rotate), varray(1));
 	rotate_right_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rotate_right", TTR("Rotate Right"), KEY_S));
 	tool_hb->add_child(rotate_right_button);
 
-	flip_horizontal_button = memnew(ToolButton);
+	flip_horizontal_button = memnew(Button);
+	flip_horizontal_button->set_flat(true);
 	flip_horizontal_button->set_tooltip(TTR("Flip Horizontally"));
 	flip_horizontal_button->set_focus_mode(FOCUS_NONE);
 	flip_horizontal_button->connect("pressed", callable_mp(this, &TileMapEditor::_flip_horizontal));
 	flip_horizontal_button->set_shortcut(ED_SHORTCUT("tile_map_editor/flip_horizontal", TTR("Flip Horizontally"), KEY_X));
 	tool_hb->add_child(flip_horizontal_button);
 
-	flip_vertical_button = memnew(ToolButton);
+	flip_vertical_button = memnew(Button);
+	flip_vertical_button->set_flat(true);
 	flip_vertical_button->set_tooltip(TTR("Flip Vertically"));
 	flip_vertical_button->set_focus_mode(FOCUS_NONE);
 	flip_vertical_button->connect("pressed", callable_mp(this, &TileMapEditor::_flip_vertical));
 	flip_vertical_button->set_shortcut(ED_SHORTCUT("tile_map_editor/flip_vertical", TTR("Flip Vertically"), KEY_Z));
 	tool_hb->add_child(flip_vertical_button);
 
-	clear_transform_button = memnew(ToolButton);
+	clear_transform_button = memnew(Button);
+	clear_transform_button->set_flat(true);
 	clear_transform_button->set_tooltip(TTR("Clear Transform"));
 	clear_transform_button->set_focus_mode(FOCUS_NONE);
 	clear_transform_button->connect("pressed", callable_mp(this, &TileMapEditor::_clear_transform));

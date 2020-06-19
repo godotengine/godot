@@ -30,7 +30,7 @@ namespace GodotTools
         private AcceptDialog aboutDialog;
         private CheckBox aboutDialogCheckBox;
 
-        private ToolButton bottomPanelBtn;
+        private Button bottomPanelBtn;
 
         public GodotIdeManager GodotIdeManager { get; private set; }
 
@@ -513,7 +513,7 @@ namespace GodotTools
 
             menuPopup.IdPressed += _MenuOptionPressed;
 
-            var buildButton = new ToolButton
+            var buildButton = new Button
             {
                 Text = "Build",
                 HintTooltip = "Build solution",

@@ -1241,14 +1241,16 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
 
-	mode_thumbnail = memnew(ToolButton);
+	mode_thumbnail = memnew(Button);
+	mode_thumbnail->set_flat(true);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon("FileThumbnail", "EditorIcons"));
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
-	mode_list = memnew(ToolButton);
+	mode_list = memnew(Button);
+	mode_list->set_flat(true);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon("FileList", "EditorIcons"));

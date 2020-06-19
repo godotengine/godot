@@ -198,7 +198,7 @@ class ItemListEditor : public HBoxContainer {
 
 	Node *item_list;
 
-	ToolButton *toolbar_button;
+	Button *toolbar_button;
 
 	AcceptDialog *dialog;
 	EditorInspector *property_editor;

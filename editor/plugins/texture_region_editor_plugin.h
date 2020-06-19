@@ -56,9 +56,9 @@ class TextureRegionEditor : public VBoxContainer {
 
 	friend class TextureRegionEditorPlugin;
 	OptionButton *snap_mode_button;
-	ToolButton *zoom_in;
-	ToolButton *zoom_reset;
-	ToolButton *zoom_out;
+	Button *zoom_in;
+	Button *zoom_reset;
+	Button *zoom_out;
 	HBoxContainer *hb_grid; //For showing/hiding the grid controls when changing the SnapMode
 	SpinBox *sb_step_y;
 	SpinBox *sb_step_x;

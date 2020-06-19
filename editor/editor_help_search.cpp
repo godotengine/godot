@@ -201,14 +201,16 @@ EditorHelpSearch::EditorHelpSearch() {
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
 
-	case_sensitive_button = memnew(ToolButton);
+	case_sensitive_button = memnew(Button);
+	case_sensitive_button->set_flat(true);
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
 	case_sensitive_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
-	hierarchy_button = memnew(ToolButton);
+	hierarchy_button = memnew(Button);
+	hierarchy_button->set_flat(true);
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
 	hierarchy_button->connect("pressed", callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);

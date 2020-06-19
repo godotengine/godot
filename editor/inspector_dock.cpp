@@ -493,14 +493,16 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	add_child(general_options_hb);
 
-	resource_new_button = memnew(ToolButton);
+	resource_new_button = memnew(Button);
+	resource_new_button->set_flat(true);
 	resource_new_button->set_tooltip(TTR("Create a new resource in memory and edit it."));
 	resource_new_button->set_icon(get_theme_icon("New", "EditorIcons"));
 	general_options_hb->add_child(resource_new_button);
 	resource_new_button->connect("pressed", callable_mp(this, &InspectorDock::_new_resource));
 	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
 
-	resource_load_button = memnew(ToolButton);
+	resource_load_button = memnew(Button);
+	resource_load_button->set_flat(true);
 	resource_load_button->set_tooltip(TTR("Load an existing resource from disk and edit it."));
 	resource_load_button->set_icon(get_theme_icon("Load", "EditorIcons"));
 	general_options_hb->add_child(resource_load_button);
@@ -519,7 +521,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	general_options_hb->add_spacer();
 
-	backward_button = memnew(ToolButton);
+	backward_button = memnew(Button);
+	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
 	backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
 	backward_button->set_flat(true);
@@ -527,7 +530,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	backward_button->set_disabled(true);
 	backward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_back));
 
-	forward_button = memnew(ToolButton);
+	forward_button = memnew(Button);
+	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
 	forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
 	forward_button->set_flat(true);

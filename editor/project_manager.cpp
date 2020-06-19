@@ -50,7 +50,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 #include "scene/main/window.h"
 #include "servers/display_server.h"
 

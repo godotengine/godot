@@ -40,7 +40,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 
 class DependencyRemoveDialog;
 
@@ -95,9 +94,9 @@ private:
 	bool can_create_dir;
 	LineEdit *dir;
 
-	ToolButton *dir_prev;
-	ToolButton *dir_next;
-	ToolButton *dir_up;
+	Button *dir_prev;
+	Button *dir_next;
+	Button *dir_up;
 
 	HBoxContainer *drives_container;
 	HBoxContainer *shortcuts_container;
@@ -116,15 +115,15 @@ private:
 	ConfirmationDialog *confirm_save;
 	DependencyRemoveDialog *remove_dialog;
 
-	ToolButton *mode_thumbnails;
-	ToolButton *mode_list;
+	Button *mode_thumbnails;
+	Button *mode_list;
 
-	ToolButton *refresh;
-	ToolButton *favorite;
-	ToolButton *show_hidden;
+	Button *refresh;
+	Button *favorite;
+	Button *show_hidden;
 
-	ToolButton *fav_up;
-	ToolButton *fav_down;
+	Button *fav_up;
+	Button *fav_down;
 
 	ItemList *favorites;
 	ItemList *recent;

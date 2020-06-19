@@ -35,7 +35,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class ProjectDialog;

@@ -20,8 +20,8 @@ namespace GodotTools
         private ItemList buildTabsList;
         private TabContainer buildTabs;
 
-        private ToolButton warningsBtn;
-        private ToolButton errorsBtn;
+        private Button warningsBtn;
+        private Button errorsBtn;
         private Button viewLogBtn;
 
         private void _UpdateBuildTabsList()
@@ -285,7 +285,7 @@ namespace GodotTools
 
                 toolBarHBox.AddSpacer(begin: false);
 
-                warningsBtn = new ToolButton
+                warningsBtn = new Button
                 {
                     Text = "Warnings".TTR(),
                     ToggleMode = true,
@@ -296,7 +296,7 @@ namespace GodotTools
                 warningsBtn.Toggled += _WarningsToggled;
                 toolBarHBox.AddChild(warningsBtn);
 
-                errorsBtn = new ToolButton
+                errorsBtn = new Button
                 {
                     Text = "Errors".TTR(),
                     ToggleMode = true,

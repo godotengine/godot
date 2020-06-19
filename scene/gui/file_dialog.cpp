@@ -45,9 +45,9 @@ VBoxContainer *FileDialog::get_vbox() {
 }
 
 void FileDialog::_theme_changed() {
-	Color font_color = vbox->get_theme_color("font_color", "ToolButton");
-	Color font_color_hover = vbox->get_theme_color("font_color_hover", "ToolButton");
-	Color font_color_pressed = vbox->get_theme_color("font_color_pressed", "ToolButton");
+	Color font_color = vbox->get_theme_color("font_color", "Button");
+	Color font_color_hover = vbox->get_theme_color("font_color_hover", "Button");
+	Color font_color_pressed = vbox->get_theme_color("font_color_pressed", "Button");
 
 	dir_up->add_theme_color_override("icon_color_normal", font_color);
 	dir_up->add_theme_color_override("icon_color_hover", font_color_hover);
@@ -859,7 +859,8 @@ FileDialog::FileDialog() {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
-	dir_up = memnew(ToolButton);
+	dir_up = memnew(Button);
+	dir_up->set_flat(true);
 	dir_up->set_tooltip(RTR("Go to parent folder."));
 	hbc->add_child(dir_up);
 	dir_up->connect("pressed", callable_mp(this, &FileDialog::_go_up));
@@ -877,12 +878,14 @@ FileDialog::FileDialog() {
 	hbc->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	refresh = memnew(ToolButton);
+	refresh = memnew(Button);
+	refresh->set_flat(true);
 	refresh->set_tooltip(RTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
-	show_hidden = memnew(ToolButton);
+	show_hidden = memnew(Button);
+	show_hidden->set_flat(true);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));

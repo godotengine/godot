@@ -124,7 +124,7 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 }
 
-void EditorLog::set_tool_button(ToolButton *p_tool_button) {
+void EditorLog::set_tool_button(Button *p_tool_button) {
 	tool_button = p_tool_button;
 }
 

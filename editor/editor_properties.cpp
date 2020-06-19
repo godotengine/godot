@@ -164,7 +164,8 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	add_focusable(text);
 	hb->add_child(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
-	open_big_text = memnew(ToolButton);
+	open_big_text = memnew(Button);
+	open_big_text->set_flat(true);
 	open_big_text->connect("pressed", callable_mp(this, &EditorPropertyMultilineText::_open_big_text));
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;

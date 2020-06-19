@@ -300,7 +300,7 @@ void VersionControlEditorPlugin::register_editor() {
 		TabContainer *dock_vbc = (TabContainer *)version_commit_dock->get_parent_control();
 		dock_vbc->set_tab_title(version_commit_dock->get_index(), TTR("Commit"));
 
-		ToolButton *vc = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Version Control"), version_control_dock);
+		Button *vc = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Version Control"), version_control_dock);
 		set_version_control_tool_button(vc);
 	}
 }
