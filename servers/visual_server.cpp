@@ -2050,6 +2050,10 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &VisualServer::has_os_feature);
 	ClassDB::bind_method(D_METHOD("set_debug_generate_wireframes", "generate"), &VisualServer::set_debug_generate_wireframes);
 
+	ClassDB::bind_method(D_METHOD("is_render_loop_enabled"), &VisualServer::is_render_loop_enabled);
+	ClassDB::bind_method(D_METHOD("set_render_loop_enabled", "enabled"), &VisualServer::set_render_loop_enabled);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_loop_enabled"), "set_render_loop_enabled", "is_render_loop_enabled");
+
 	BIND_CONSTANT(NO_INDEX_ARRAY);
 	BIND_CONSTANT(ARRAY_WEIGHTS_SIZE);
 	BIND_CONSTANT(CANVAS_ITEM_Z_MIN);
@@ -2366,6 +2370,14 @@ RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 	instance_set_base(instance, p_base);
 	instance_set_scenario(instance, p_scenario);
 	return instance;
+}
+
+bool VisualServer::is_render_loop_enabled() const {
+	return render_loop_enabled;
+}
+
+void VisualServer::set_render_loop_enabled(bool p_enabled) {
+	render_loop_enabled = p_enabled;
 }
 
 VisualServer::VisualServer() {

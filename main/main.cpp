@@ -1271,6 +1271,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// also init our arvr_server from here
 	arvr_server = memnew(ARVRServer);
 
+	// and finally setup this property under visual_server
+	VisualServer::get_singleton()->set_render_loop_enabled(!disable_render_loop);
+
 	register_core_singletons();
 
 	MAIN_PRINT("Main: Setup Logo");
@@ -2101,7 +2104,7 @@ bool Main::iteration() {
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (OS::get_singleton()->can_draw() && !disable_render_loop) {
+	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {

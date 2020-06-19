@@ -4231,6 +4231,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="render_loop_enabled" type="bool" setter="set_render_loop_enabled" getter="is_render_loop_enabled">
+			If [code]false[/code], disables rendering completely, but the engine logic is still being processed. You can call [method force_draw] to draw a frame even with rendering disabled.
+		</member>
+	</members>
 	<signals>
 		<signal name="frame_post_draw">
 			<description>
