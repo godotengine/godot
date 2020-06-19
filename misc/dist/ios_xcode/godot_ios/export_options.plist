@@ -10,7 +10,7 @@
 
     <key>provisioningProfiles</key>
     <dict>
-        <key>$identifier</key>
+        <key>$bundle_identifier</key>
         <string>$provisioning_profile_uuid</string>
     </dict>
 
