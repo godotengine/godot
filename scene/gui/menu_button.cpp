@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
-void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
+void MenuButton::_unhandled_input(Ref<InputEvent> p_event) {
 	if (disable_shortcuts) {
 		return;
 	}
