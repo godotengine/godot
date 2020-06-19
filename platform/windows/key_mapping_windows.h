@@ -42,7 +42,10 @@ class KeyMappingWindows {
 
 public:
 	static unsigned int get_keysym(unsigned int p_code);
+<<<<<<< HEAD
 	static unsigned int get_scansym(unsigned int p_code, bool p_extended);
+=======
+>>>>>>> master
 	static bool is_extended_key(unsigned int p_code);
 };
 

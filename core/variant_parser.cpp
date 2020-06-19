@@ -48,6 +48,7 @@ bool VariantParser::StreamFile::is_eof() const {
 }
 
 CharType VariantParser::StreamString::get_char() {
+<<<<<<< HEAD
 	if (pos > s.length()) {
 		return 0;
 	} else if (pos == s.length()) {
@@ -55,6 +56,16 @@ CharType VariantParser::StreamString::get_char() {
 		// so this works the same as files (like StreamFile does)
 		pos++;
 		return 0;
+=======
+
+	if (pos > s.length()) {
+		return 0;
+	} else if (pos == s.length()) {
+		// You need to try to read again when you have reached the end for EOF to be reported,
+		// so this works the same as files (like StreamFile does)
+		pos++;
+		return 0;
+>>>>>>> master
 	} else {
 		return s[pos++];
 	}
@@ -503,11 +514,20 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = false;
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
+<<<<<<< HEAD
 		} else if (id == "inf") {
 			value = Math_INF;
 		} else if (id == "nan") {
 			value = Math_NAN;
 		} else if (id == "Vector2") {
+=======
+		else if (id == "inf")
+			value = Math_INF;
+		else if (id == "nan")
+			value = Math_NAN;
+		else if (id == "Vector2") {
+
+>>>>>>> master
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -520,12 +540,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Vector2(args[0], args[1]);
+<<<<<<< HEAD
 		} else if (id == "Vector2i") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
+=======
+		} else if (id == "Rect2") {
+>>>>>>> master
 
 			if (args.size() != 2) {
 				r_err_str = "Expected 2 arguments for constructor";
@@ -546,12 +570,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Rect2(args[0], args[1], args[2], args[3]);
+<<<<<<< HEAD
 		} else if (id == "Rect2i") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
 			if (err) {
 				return err;
 			}
+=======
+		} else if (id == "Vector3") {
+>>>>>>> master
 
 			if (args.size() != 4) {
 				r_err_str = "Expected 4 arguments for constructor";
@@ -572,6 +600,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Vector3(args[0], args[1], args[2]);
+<<<<<<< HEAD
 		} else if (id == "Vector3i") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
@@ -585,6 +614,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Vector3i(args[0], args[1], args[2]);
+=======
+>>>>>>> master
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -872,7 +903,202 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
+<<<<<<< HEAD
 		} else if (id == "PackedByteArray" || id == "PoolByteArray" || id == "ByteArray") {
+=======
+#ifndef DISABLE_DEPRECATED
+		} else if (id == "InputEvent") {
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			get_token(p_stream, token, line, r_err_str);
+
+			if (token.type != TK_IDENTIFIER) {
+				r_err_str = "Expected identifier";
+				return ERR_PARSE_ERROR;
+			}
+
+			String id2 = token.value;
+
+			Ref<InputEvent> ie;
+
+			if (id2 == "NONE") {
+
+				get_token(p_stream, token, line, r_err_str);
+
+				if (token.type != TK_PARENTHESIS_CLOSE) {
+					r_err_str = "Expected ')'";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else if (id2 == "KEY") {
+
+				Ref<InputEventKey> key;
+				key.instance();
+				ie = key;
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ','";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type == TK_IDENTIFIER) {
+					String name = token.value;
+					key->set_scancode(find_keycode(name));
+				} else if (token.type == TK_NUMBER) {
+
+					key->set_scancode(token.value);
+				} else {
+
+					r_err_str = "Expected string or integer for keycode";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream, token, line, r_err_str);
+
+				if (token.type == TK_COMMA) {
+
+					get_token(p_stream, token, line, r_err_str);
+
+					if (token.type != TK_IDENTIFIER) {
+						r_err_str = "Expected identifier with modifier flas";
+						return ERR_PARSE_ERROR;
+					}
+
+					String mods = token.value;
+
+					if (mods.findn("C") != -1)
+						key->set_control(true);
+					if (mods.findn("A") != -1)
+						key->set_alt(true);
+					if (mods.findn("S") != -1)
+						key->set_shift(true);
+					if (mods.findn("M") != -1)
+						key->set_metakey(true);
+
+					get_token(p_stream, token, line, r_err_str);
+					if (token.type != TK_PARENTHESIS_CLOSE) {
+						r_err_str = "Expected ')'";
+						return ERR_PARSE_ERROR;
+					}
+
+				} else if (token.type != TK_PARENTHESIS_CLOSE) {
+
+					r_err_str = "Expected ')' or modifier flags.";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else if (id2 == "MBUTTON") {
+
+				Ref<InputEventMouseButton> mb;
+				mb.instance();
+				ie = mb;
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ','";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_NUMBER) {
+					r_err_str = "Expected button index";
+					return ERR_PARSE_ERROR;
+				}
+
+				mb->set_button_index(token.value);
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_PARENTHESIS_CLOSE) {
+					r_err_str = "Expected ')'";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else if (id2 == "JBUTTON") {
+
+				Ref<InputEventJoypadButton> jb;
+				jb.instance();
+				ie = jb;
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ','";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_NUMBER) {
+					r_err_str = "Expected button index";
+					return ERR_PARSE_ERROR;
+				}
+
+				jb->set_button_index(token.value);
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_PARENTHESIS_CLOSE) {
+					r_err_str = "Expected ')'";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else if (id2 == "JAXIS") {
+
+				Ref<InputEventJoypadMotion> jm;
+				jm.instance();
+				ie = jm;
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ','";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_NUMBER) {
+					r_err_str = "Expected axis index";
+					return ERR_PARSE_ERROR;
+				}
+
+				jm->set_axis(token.value);
+
+				get_token(p_stream, token, line, r_err_str);
+
+				if (token.type != TK_COMMA) {
+					r_err_str = "Expected ',' after axis index";
+					return ERR_PARSE_ERROR;
+				}
+
+				get_token(p_stream, token, line, r_err_str);
+				if (token.type != TK_NUMBER) {
+					r_err_str = "Expected axis sign";
+					return ERR_PARSE_ERROR;
+				}
+
+				jm->set_axis_value(token.value);
+
+				get_token(p_stream, token, line, r_err_str);
+
+				if (token.type != TK_PARENTHESIS_CLOSE) {
+					r_err_str = "Expected ')' for jaxis";
+					return ERR_PARSE_ERROR;
+				}
+
+			} else {
+
+				r_err_str = "Invalid input event type.";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = ie;
+#endif
+		} else if (id == "PoolByteArray" || id == "ByteArray") {
+
+>>>>>>> master
 			Vector<uint8_t> args;
 			Error err = _parse_construct<uint8_t>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -890,10 +1116,19 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+<<<<<<< HEAD
 		} else if (id == "PackedInt32Array" || id == "PackedIntArray" || id == "PoolIntArray" || id == "IntArray") {
 			Vector<int32_t> args;
 			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
 			if (err) {
+=======
+
+		} else if (id == "PoolIntArray" || id == "IntArray") {
+
+			Vector<int> args;
+			Error err = _parse_construct<int>(p_stream, args, line, r_err_str);
+			if (err)
+>>>>>>> master
 				return err;
 			}
 
@@ -915,6 +1150,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
+<<<<<<< HEAD
 			Vector<int64_t> arr;
 			{
 				int64_t len = args.size();
@@ -924,6 +1160,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					w[i] = int64_t(args[i]);
 				}
 			}
+=======
+		} else if (id == "PoolRealArray" || id == "FloatArray") {
+>>>>>>> master
 
 			value = arr;
 		} else if (id == "PackedFloat32Array" || id == "PackedRealArray" || id == "PoolRealArray" || id == "FloatArray") {
@@ -951,6 +1190,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return err;
 			}
 
+<<<<<<< HEAD
 			Vector<double> arr;
 			{
 				int len = args.size();
@@ -960,6 +1200,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					w[i] = args[i];
 				}
 			}
+=======
+		} else if (id == "PoolStringArray" || id == "StringArray") {
+>>>>>>> master
 
 			value = arr;
 		} else if (id == "PackedStringArray" || id == "PoolStringArray" || id == "StringArray") {
@@ -1008,7 +1251,13 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+<<<<<<< HEAD
 		} else if (id == "PackedVector2Array" || id == "PoolVector2Array" || id == "Vector2Array") {
+=======
+
+		} else if (id == "PoolVector2Array" || id == "Vector2Array") {
+
+>>>>>>> master
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -1026,7 +1275,13 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+<<<<<<< HEAD
 		} else if (id == "PackedVector3Array" || id == "PoolVector3Array" || id == "Vector3Array") {
+=======
+
+		} else if (id == "PoolVector3Array" || id == "Vector3Array") {
+
+>>>>>>> master
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -1044,7 +1299,13 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+<<<<<<< HEAD
 		} else if (id == "PackedColorArray" || id == "PoolColorArray" || id == "ColorArray") {
+=======
+
+		} else if (id == "PoolColorArray" || id == "ColorArray") {
+
+>>>>>>> master
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
 			if (err) {
@@ -1410,9 +1671,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::FLOAT: {
 			String s = rtosfix(p_variant.operator real_t());
 			if (s != "inf" && s != "nan") {
+<<<<<<< HEAD
 				if (s.find(".") == -1 && s.find("e") == -1) {
 					s += ".0";
 				}
+=======
+				if (s.find(".") == -1 && s.find("e") == -1)
+					s += ".0";
+>>>>>>> master
 			}
 			p_store_string_func(p_store_string_ud, s);
 		} break;

@@ -290,7 +290,11 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	lbl_preview = memnew(Label);
 	lbl_preview->set_text("");
+<<<<<<< HEAD
 	lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+=======
+	lbl_preview->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+>>>>>>> master
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
@@ -305,7 +309,11 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	// ---- Connections
 
+<<<<<<< HEAD
 	cbut_collapse_features->connect("toggled", callable_mp(this, &RenameDialog::_features_toggled));
+=======
+	cbut_collapse_features->connect("toggled", this, "_features_toggled");
+>>>>>>> master
 
 	// Substitite Buttons
 
@@ -396,11 +404,19 @@ void RenameDialog::_update_preview(String new_text) {
 
 		if (new_name == preview_node->get_name()) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
+<<<<<<< HEAD
 			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("accent_color", "Editor");
 			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("default_color", "RichTextLabel");
 			lbl_preview->add_theme_color_override("font_color", accent_color.lerp(text_color, 0.5));
 		} else {
 			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
+=======
+			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor");
+			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_color("default_color", "RichTextLabel");
+			lbl_preview->add_color_override("font_color", accent_color.linear_interpolate(text_color, 0.5));
+		} else {
+			lbl_preview->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor"));
+>>>>>>> master
 		}
 	}
 
@@ -483,7 +499,11 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 
 	self->has_errors = true;
 	self->lbl_preview_title->set_text(TTR("Regular Expression Error"));
+<<<<<<< HEAD
 	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+=======
+	self->lbl_preview->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+>>>>>>> master
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
 

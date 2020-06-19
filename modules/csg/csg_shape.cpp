@@ -343,11 +343,21 @@ void CSGShape3D::_update_shape() {
 
 	// Update collision faces.
 	if (root_collision_shape.is_valid()) {
+<<<<<<< HEAD
 		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();
 
 		for (int i = 0; i < n->faces.size(); i++) {
+=======
+
+		PoolVector<Vector3> physics_faces;
+		physics_faces.resize(n->faces.size() * 3);
+		PoolVector<Vector3>::Write physicsw = physics_faces.write();
+
+		for (int i = 0; i < n->faces.size(); i++) {
+
+>>>>>>> master
 			int order[3] = { 0, 1, 2 };
 
 			if (n->faces[i].invert) {
@@ -361,6 +371,13 @@ void CSGShape3D::_update_shape() {
 
 		root_collision_shape->set_faces(physics_faces);
 	}
+<<<<<<< HEAD
+=======
+
+	//fill arrays
+	{
+		for (int i = 0; i < n->faces.size(); i++) {
+>>>>>>> master
 
 	//fill arrays
 	{

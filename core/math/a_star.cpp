@@ -280,6 +280,11 @@ int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled) co
 			continue; // Disabled points should not be considered.
 		}
 
+<<<<<<< HEAD
+=======
+		if (!p_include_disabled && !(*it.value)->enabled) continue; // Disabled points should not be considered.
+
+>>>>>>> master
 		// Keep the closest point's ID, and in case of multiple closest IDs,
 		// the smallest one (makes it deterministic).
 		real_t d = p_point.distance_squared_to((*it.value)->pos);
@@ -297,6 +302,10 @@ int AStar::get_closest_point(const Vector3 &p_point, bool p_include_disabled) co
 }
 
 Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	real_t closest_dist = 1e20;
 	Vector3 closest_point;
 
@@ -317,6 +326,10 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment);
 		real_t d = p_point.distance_squared_to(p);
 		if (d < closest_dist) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 			closest_point = p;
 			closest_dist = d;
 		}
@@ -388,7 +401,12 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 }
 
 real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
+<<<<<<< HEAD
 	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
+=======
+
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost))
+>>>>>>> master
 		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
 	}
 
@@ -404,7 +422,12 @@ real_t AStar::_estimate_cost(int p_from_id, int p_to_id) {
 }
 
 real_t AStar::_compute_cost(int p_from_id, int p_to_id) {
+<<<<<<< HEAD
 	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
+=======
+
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost))
+>>>>>>> master
 		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
 	}
 
@@ -660,9 +683,15 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 }
 
 real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
+<<<<<<< HEAD
 	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost)) {
 		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
 	}
+=======
+
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+>>>>>>> master
 
 	AStar::Point *from_point;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
@@ -676,9 +705,15 @@ real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
 }
 
 real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
+<<<<<<< HEAD
 	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost)) {
 		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
 	}
+=======
+
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+>>>>>>> master
 
 	AStar::Point *from_point;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
@@ -691,6 +726,7 @@ real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
+<<<<<<< HEAD
 Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 	AStar::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
@@ -726,6 +762,42 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 
 	{
 		Vector2 *w = path.ptrw();
+=======
+PoolVector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
+
+	AStar::Point *a;
+	bool from_exists = astar.points.lookup(p_from_id, a);
+	ERR_FAIL_COND_V(!from_exists, PoolVector<Vector2>());
+
+	AStar::Point *b;
+	bool to_exists = astar.points.lookup(p_to_id, b);
+	ERR_FAIL_COND_V(!to_exists, PoolVector<Vector2>());
+
+	if (a == b) {
+		PoolVector<Vector2> ret;
+		ret.push_back(Vector2(a->pos.x, a->pos.y));
+		return ret;
+	}
+
+	AStar::Point *begin_point = a;
+	AStar::Point *end_point = b;
+
+	bool found_route = _solve(begin_point, end_point);
+	if (!found_route) return PoolVector<Vector2>();
+
+	AStar::Point *p = end_point;
+	int pc = 1; // Begin point
+	while (p != begin_point) {
+		pc++;
+		p = p->prev_point;
+	}
+
+	PoolVector<Vector2> path;
+	path.resize(pc);
+
+	{
+		PoolVector<Vector2>::Write w = path.write();
+>>>>>>> master
 
 		AStar::Point *p2 = end_point;
 		int idx = pc - 1;
@@ -740,6 +812,7 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 	return path;
 }
 
+<<<<<<< HEAD
 Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 	AStar::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
@@ -751,6 +824,20 @@ Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 
 	if (a == b) {
 		Vector<int> ret;
+=======
+PoolVector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
+
+	AStar::Point *a;
+	bool from_exists = astar.points.lookup(p_from_id, a);
+	ERR_FAIL_COND_V(!from_exists, PoolVector<int>());
+
+	AStar::Point *b;
+	bool to_exists = astar.points.lookup(p_to_id, b);
+	ERR_FAIL_COND_V(!to_exists, PoolVector<int>());
+
+	if (a == b) {
+		PoolVector<int> ret;
+>>>>>>> master
 		ret.push_back(a->id);
 		return ret;
 	}
@@ -759,9 +846,13 @@ Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 	AStar::Point *end_point = b;
 
 	bool found_route = _solve(begin_point, end_point);
+<<<<<<< HEAD
 	if (!found_route) {
 		return Vector<int>();
 	}
+=======
+	if (!found_route) return PoolVector<int>();
+>>>>>>> master
 
 	AStar::Point *p = end_point;
 	int pc = 1; // Begin point
@@ -770,11 +861,19 @@ Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 		p = p->prev_point;
 	}
 
+<<<<<<< HEAD
 	Vector<int> path;
 	path.resize(pc);
 
 	{
 		int *w = path.ptrw();
+=======
+	PoolVector<int> path;
+	path.resize(pc);
+
+	{
+		PoolVector<int>::Write w = path.write();
+>>>>>>> master
 
 		p = end_point;
 		int idx = pc - 1;
@@ -787,6 +886,72 @@ Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 	}
 
 	return path;
+<<<<<<< HEAD
+=======
+}
+
+bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
+
+	astar.pass++;
+
+	if (!end_point->enabled) return false;
+
+	bool found_route = false;
+
+	Vector<AStar::Point *> open_list;
+	SortArray<AStar::Point *, AStar::SortPoints> sorter;
+
+	begin_point->g_score = 0;
+	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
+	open_list.push_back(begin_point);
+
+	while (!open_list.empty()) {
+
+		AStar::Point *p = open_list[0]; // The currently processed point
+
+		if (p == end_point) {
+			found_route = true;
+			break;
+		}
+
+		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
+		open_list.remove(open_list.size() - 1);
+		p->closed_pass = astar.pass; // Mark the point as closed
+
+		for (OAHashMap<int, AStar::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+
+			AStar::Point *e = *(it.value); // The neighbour point
+
+			if (!e->enabled || e->closed_pass == astar.pass) {
+				continue;
+			}
+
+			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
+
+			bool new_point = false;
+
+			if (e->open_pass != astar.pass) { // The point wasn't inside the open list.
+				e->open_pass = astar.pass;
+				open_list.push_back(e);
+				new_point = true;
+			} else if (tentative_g_score >= e->g_score) { // The new path is worse than the previous.
+				continue;
+			}
+
+			e->prev_point = p;
+			e->g_score = tentative_g_score;
+			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+
+			if (new_point) { // The position of the new points is already known.
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
+			} else {
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
+			}
+		}
+	}
+
+	return found_route;
+>>>>>>> master
 }
 
 bool AStar2D::_solve(AStar::Point *begin_point, AStar::Point *end_point) {
@@ -880,6 +1045,16 @@ void AStar2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar2D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar2D::get_id_path);
+<<<<<<< HEAD
+=======
+
+	BIND_VMETHOD(MethodInfo(Variant::REAL, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+	BIND_VMETHOD(MethodInfo(Variant::REAL, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+}
+
+AStar2D::AStar2D() {
+}
+>>>>>>> master
 
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));

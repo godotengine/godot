@@ -52,7 +52,11 @@ class ScrollBar : public Range {
 	HighlightStatus highlight = HIGHLIGHT_NONE;
 
 	struct Drag {
+<<<<<<< HEAD
 		bool active = false;
+=======
+		bool active;
+>>>>>>> master
 		float pos_at_click;
 		float value_at_click;
 	} drag;
@@ -68,7 +72,11 @@ class ScrollBar : public Range {
 
 	Node *drag_node = nullptr;
 	NodePath drag_node_path;
+<<<<<<< HEAD
 	bool drag_node_enabled = true;
+=======
+	bool drag_node_enabled;
+>>>>>>> master
 
 	Vector2 drag_node_speed = Vector2();
 	Vector2 drag_node_accum;

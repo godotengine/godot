@@ -707,7 +707,12 @@ public:
 			return;
 		}
 
+<<<<<<< HEAD
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
+=======
+		for (Map<int, List<float> >::Element *E = key_ofs_map.front(); E; E = E->next()) {
+
+>>>>>>> master
 			int key = 0;
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
 				float key_ofs = F->get();
@@ -1309,6 +1314,10 @@ void AnimationTimelineEdit::_zoom_changed(double) {
 }
 
 float AnimationTimelineEdit::get_zoom_scale() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	float zv = zoom->get_max() - zoom->get_value();
 	if (zv < 1) {
 		zv = 1.0 - zv;
@@ -2369,6 +2378,9 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 	if (root == nullptr) {
 		return false;
 	}
+
+	if (root == nullptr)
+		return false;
 
 	RES res;
 	Vector<StringName> leftover_path;

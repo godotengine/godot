@@ -1966,6 +1966,10 @@ PropertyInfo VisualScriptBasicTypeConstant::get_input_value_port_info(int p_idx)
 }
 
 PropertyInfo VisualScriptBasicTypeConstant::get_output_value_port_info(int p_idx) const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	return PropertyInfo(type, "value");
 }
 

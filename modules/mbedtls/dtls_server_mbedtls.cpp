@@ -54,16 +54,28 @@ Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_
 }
 
 DTLSServer *DTLSServerMbedTLS::_create_func() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	return memnew(DTLSServerMbedTLS);
 }
 
 void DTLSServerMbedTLS::initialize() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	_create = _create_func;
 	available = true;
 }
 
 void DTLSServerMbedTLS::finalize() {
+<<<<<<< HEAD
 	_create = nullptr;
+=======
+	_create = NULL;
+>>>>>>> master
 	available = false;
 }
 

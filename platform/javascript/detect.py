@@ -21,8 +21,11 @@ def get_opts():
     return [
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
+<<<<<<< HEAD
         BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
+=======
+>>>>>>> master
     ]
 
 
@@ -42,7 +45,11 @@ def configure(env):
 
     ## Build type
 
+<<<<<<< HEAD
     if env["target"] == "release":
+=======
+    if env["target"] != "debug":
+>>>>>>> master
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
@@ -51,6 +58,7 @@ def configure(env):
         # run-time performance.
         env.Append(CCFLAGS=["-Os"])
         env.Append(LINKFLAGS=["-Os"])
+<<<<<<< HEAD
     elif env["target"] == "release_debug":
         env.Append(CCFLAGS=["-Os"])
         env.Append(LINKFLAGS=["-Os"])
@@ -58,11 +66,19 @@ def configure(env):
         # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=["--profiling-funcs"])
     else:  # "debug"
+=======
+        if env["target"] == "release_debug":
+            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+            # Retain function names for backtraces at the cost of file size.
+            env.Append(LINKFLAGS=["--profiling-funcs"])
+    else:
+>>>>>>> master
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
+<<<<<<< HEAD
     if env["tools"]:
         if not env["threads_enabled"]:
             raise RuntimeError(
@@ -96,10 +112,60 @@ def configure(env):
 
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")
+=======
+    ## Compiler configuration
+
+    env["ENV"] = os.environ
+
+    em_config_file = os.getenv("EM_CONFIG") or os.path.expanduser("~/.emscripten")
+    if not os.path.exists(em_config_file):
+        raise RuntimeError("Emscripten configuration file '%s' does not exist" % em_config_file)
+    with open(em_config_file) as f:
+        em_config = {}
+        try:
+            # Emscripten configuration file is a Python file with simple assignments.
+            exec(f.read(), em_config)
+        except StandardError as e:
+            raise RuntimeError("Emscripten configuration file '%s' is invalid:\n%s" % (em_config_file, e))
+    if "BINARYEN_ROOT" in em_config and os.path.isdir(os.path.join(em_config.get("BINARYEN_ROOT"), "emscripten")):
+        # New style, emscripten path as a subfolder of BINARYEN_ROOT
+        env.PrependENVPath("PATH", os.path.join(em_config.get("BINARYEN_ROOT"), "emscripten"))
+    elif "EMSCRIPTEN_ROOT" in em_config:
+        # Old style (but can be there as a result from previous activation, so do last)
+        env.PrependENVPath("PATH", em_config.get("EMSCRIPTEN_ROOT"))
+    else:
+        raise RuntimeError(
+            "'BINARYEN_ROOT' or 'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file
+        )
+
+    env["CC"] = "emcc"
+    env["CXX"] = "em++"
+    env["LINK"] = "emcc"
+
+    env["AR"] = "emar"
+    env["RANLIB"] = "emranlib"
+
+    # Use TempFileMunge since some AR invocations are too long for cmd.exe.
+    # Use POSIX-style paths, required with TempFileMunge.
+    env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
+    env["ARCOM"] = "${TEMPFILE(ARCOM_POSIX)}"
+
+    # All intermediate files are just LLVM bitcode.
+    env["OBJPREFIX"] = ""
+    env["OBJSUFFIX"] = ".bc"
+    env["PROGPREFIX"] = ""
+    # Program() output consists of multiple files, so specify suffixes manually at builder.
+    env["PROGSUFFIX"] = ""
+    env["LIBPREFIX"] = "lib"
+    env["LIBSUFFIX"] = ".bc"
+    env["LIBPREFIXES"] = ["$LIBPREFIX"]
+    env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
+>>>>>>> master
 
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
     env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"
 
+<<<<<<< HEAD
     em_config = parse_config()
     env.PrependENVPath("PATH", em_config["EMCC_ROOT"])
 
@@ -114,6 +180,24 @@ def configure(env):
     # Use POSIX-style paths, required with TempFileMunge.
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
     env["ARCOM"] = "${TEMPFILE(ARCOM_POSIX)}"
+=======
+    env.Prepend(CPPPATH=["#platform/javascript"])
+    env.Append(CPPDEFINES=["JAVASCRIPT_ENABLED", "UNIX_ENABLED"])
+
+    # No multi-threading (SharedArrayBuffer) available yet,
+    # once feasible also consider memory buffer size issues.
+    env.Append(CPPDEFINES=["NO_THREADS"])
+
+    # Disable exceptions and rtti on non-tools (template) builds
+    if not env["tools"]:
+        # These flags help keep the file size down.
+        env.Append(CCFLAGS=["-fno-exceptions", "-fno-rtti"])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPDEFINES=["NO_SAFE_CAST"])
+
+    if env["javascript_eval"]:
+        env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
+>>>>>>> master
 
     # All intermediate files are just LLVM bitcode.
     env["OBJPREFIX"] = ""
@@ -148,9 +232,26 @@ def configure(env):
     # We use IDBFS in javascript_main.cpp. Since Emscripten 1.39.1 it needs to
     # be linked explicitly.
     env.Append(LIBS=["idbfs.js"])
+<<<<<<< HEAD
 
     env.Append(LINKFLAGS=["-s", "BINARYEN=1"])
     env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", "EXPORT_NAME='Godot'"])
+=======
+
+    env.Append(LINKFLAGS=["-s", "BINARYEN=1"])
+
+    # Only include the JavaScript support code for the web environment
+    # (i.e. exclude Node.js and other unused environments).
+    # This makes the JavaScript support code about 4 KB smaller.
+    env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web"])
+
+    # This needs to be defined for Emscripten using 'fastcomp' (default pre-1.39.0)
+    # and undefined if using 'upstream'. And to make things simple, earlier
+    # Emscripten versions didn't include 'fastcomp' in their path, so we check
+    # against the presence of 'upstream' to conditionally add the flag.
+    if not "upstream" in em_config["EMSCRIPTEN_ROOT"]:
+        env.Append(LINKFLAGS=["-s", "BINARYEN_TRAP_MODE='clamp'"])
+>>>>>>> master
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
@@ -162,6 +263,7 @@ def configure(env):
 
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
 
+<<<<<<< HEAD
     # Allow use to take control of swapping WebGL buffers.
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
@@ -169,3 +271,10 @@ def configure(env):
     env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain', 'FS', 'PATH']"])
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+=======
+    # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.
+    env.Append(LINKFLAGS=["-s", "NO_EXIT_RUNTIME=1"])
+
+    # adding flag due to issue with emscripten 1.38.41 callMain method https://github.com/emscripten-core/emscripten/blob/incoming/ChangeLog.md#v13841-08072019
+    env.Append(LINKFLAGS=["-s", 'EXTRA_EXPORTED_RUNTIME_METHODS=["callMain"]'])
+>>>>>>> master

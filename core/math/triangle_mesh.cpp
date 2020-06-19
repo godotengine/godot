@@ -498,6 +498,10 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 				bool valid = b.aabb.intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count);
 				if (!valid) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
@@ -612,10 +616,16 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
+<<<<<<< HEAD
 				bool intersects = scale.xform(b.aabb).intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count);
 				if (!intersects) {
 					return false;
 				}
+=======
+
+				bool intersects = scale.xform(b.aabb).intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count);
+				if (!intersects) return false;
+>>>>>>> master
 
 				bool inside = scale.xform(b.aabb).inside_convex_shape(p_planes, p_plane_count);
 				if (inside) {

@@ -53,7 +53,11 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	if (f) {
 		TreeItem *root = recent->create_item();
 
+<<<<<<< HEAD
 		String icon_fallback = search_options->has_theme_icon(base_type, "EditorIcons") ? base_type : "Object";
+=======
+		String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+>>>>>>> master
 
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
@@ -250,7 +254,11 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	item->set_tooltip(0, description);
 
+<<<<<<< HEAD
 	String icon_fallback = search_options->has_theme_icon(base_type, "EditorIcons") ? base_type : "Object";
+=======
+	String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+>>>>>>> master
 	item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 
 	p_types[p_type] = item;
@@ -308,8 +316,13 @@ void CreateDialog::_update_search() {
 	EditorData &ed = EditorNode::get_editor_data();
 
 	root->set_text(0, base_type);
+<<<<<<< HEAD
 	String base_icon = search_options->has_theme_icon(base_type, "EditorIcons") ? base_type : "Object";
 	root->set_icon(0, search_options->get_theme_icon(base_icon, "EditorIcons"));
+=======
+	String base_icon = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+	root->set_icon(0, get_icon(base_icon, "EditorIcons"));
+>>>>>>> master
 
 	TreeItem *to_select = search_box->get_text() == base_type ? root : nullptr;
 
@@ -397,7 +410,11 @@ void CreateDialog::_update_search() {
 				TreeItem *item = search_options->create_item(ti);
 				item->set_metadata(0, type);
 				item->set_text(0, ct[i].name);
+<<<<<<< HEAD
 				item->set_icon(0, ct[i].icon.is_valid() ? ct[i].icon : search_options->get_theme_icon(base_icon, "EditorIcons"));
+=======
+				item->set_icon(0, ct[i].icon.is_valid() ? ct[i].icon : get_icon(base_icon, "EditorIcons"));
+>>>>>>> master
 
 				if (!to_select || ct[i].name == search_box->get_text()) {
 					to_select = item;
@@ -618,14 +635,21 @@ void CreateDialog::_update_favorite_list() {
 
 	TreeItem *root = favorites->create_item();
 
+<<<<<<< HEAD
 	String icon_fallback = search_options->has_theme_icon(base_type, "EditorIcons") ? base_type : "Object";
+=======
+	String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+>>>>>>> master
 
 	for (int i = 0; i < favorite_list.size(); i++) {
 		String l = favorite_list[i];
 		String name = l.split(" ")[0];
 		if (!((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name))) {
 			continue;
+<<<<<<< HEAD
 		}
+=======
+>>>>>>> master
 
 		TreeItem *ti = favorites->create_item(root);
 		ti->set_text(0, l);

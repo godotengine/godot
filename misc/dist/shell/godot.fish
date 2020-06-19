@@ -25,7 +25,11 @@
 
 function godot_video_driver_args
     # Use a function instead of a fixed string to customize the argument descriptions.
+<<<<<<< HEAD
     echo -e "Vulkan\tVulkan renderer"
+=======
+    echo -e "GLES3\tOpenGL ES 2.0 renderer"
+>>>>>>> master
     echo -e "GLES2\tOpenGL ES 2.0 renderer"
 end
 

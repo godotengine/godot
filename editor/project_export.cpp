@@ -138,6 +138,11 @@ void ProjectExportDialog::_force_update_current_preset_parameters() {
 	parameters->edit(nullptr);
 	_update_current_preset();
 }
+<<<<<<< HEAD
+=======
+
+void ProjectExportDialog::_update_current_preset() {
+>>>>>>> master
 
 void ProjectExportDialog::_update_current_preset() {
 	_edit_preset(presets->get_current());
@@ -162,7 +167,10 @@ void ProjectExportDialog::_update_presets() {
 		String name = preset->get_name();
 		if (preset->is_runnable()) {
 			name += " (" + TTR("Runnable") + ")";
+<<<<<<< HEAD
 		}
+=======
+>>>>>>> master
 		preset->update_files_to_export();
 		presets->add_item(name, preset->get_platform()->get_logo());
 	}
@@ -1025,6 +1033,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
 	ClassDB::bind_method("get_current_preset", &ProjectExportDialog::get_current_preset);
+	ClassDB::bind_method("_force_update_current_preset_parameters", &ProjectExportDialog::_force_update_current_preset_parameters);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "export_path"), "set_export_path", "get_export_path");
 }
@@ -1106,9 +1115,15 @@ ProjectExportDialog::ProjectExportDialog() {
 	parameters = memnew(EditorInspector);
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
+<<<<<<< HEAD
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
+=======
+	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
+	parameters->connect("property_edited", this, "_update_parameters");
+	EditorExport::get_singleton()->connect("export_presets_updated", this, "_force_update_current_preset_parameters");
+>>>>>>> master
 
 	// Resources export parameters.
 

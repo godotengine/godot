@@ -110,7 +110,11 @@ void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 
 void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 	if (_on_godot_main_loop_started) {
+<<<<<<< HEAD
 		if (p_env == nullptr) {
+=======
+		if (p_env == NULL) {
+>>>>>>> master
 			p_env = ThreadAndroid::get_env();
 		}
 	}

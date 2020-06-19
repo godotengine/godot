@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 supported_platforms = ["windows", "osx", "linuxbsd", "server", "android", "haiku", "javascript", "iphone"]
+=======
+supported_platforms = ["windows", "osx", "x11", "server", "android", "haiku", "javascript", "iphone"]
+>>>>>>> master
 
 
 def can_build(env, platform):

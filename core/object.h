@@ -41,6 +41,10 @@
 #include "core/variant.h"
 #include "core/vmap.h"
 
+#ifdef DEBUG_ENABLED
+#include <atomic> // For ObjectRC*
+#endif
+
 #define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant()
 #define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5
 #define VARIANT_ARG_DECLARE const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5
@@ -401,6 +405,10 @@ public:                                                        \
 private:
 
 class ScriptInstance;
+<<<<<<< HEAD
+=======
+class ObjectRC;
+>>>>>>> master
 
 class Object {
 public:
@@ -457,6 +465,9 @@ private:
 	int _predelete_ok = 0;
 	Set<Object *> change_receptors;
 	ObjectID _instance_id;
+#ifdef DEBUG_ENABLED
+	std::atomic<ObjectRC *> _rc;
+#endif
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate = true;
@@ -573,6 +584,10 @@ public:
 		static int ptr;
 		return &ptr;
 	}
+
+#ifdef DEBUG_ENABLED
+	ObjectRC *_use_rc();
+#endif
 
 	bool _is_gpl_reversed() const { return false; }
 

@@ -441,7 +441,11 @@ void TabContainer::_on_theme_changed() {
 }
 
 void TabContainer::_repaint() {
+<<<<<<< HEAD
 	Ref<StyleBox> sb = get_theme_stylebox("panel");
+=======
+	Ref<StyleBox> sb = get_stylebox("panel");
+>>>>>>> master
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
@@ -789,7 +793,12 @@ TabContainer::TabAlign TabContainer::get_tab_align() const {
 }
 
 void TabContainer::set_tabs_visible(bool p_visible) {
+<<<<<<< HEAD
 	if (p_visible == tabs_visible) {
+=======
+
+	if (p_visible == tabs_visible)
+>>>>>>> master
 		return;
 	}
 
@@ -798,7 +807,11 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
+<<<<<<< HEAD
 		if (p_visible) {
+=======
+		if (p_visible)
+>>>>>>> master
 			c->set_margin(MARGIN_TOP, _get_top_margin());
 		} else {
 			c->set_margin(MARGIN_TOP, 0);

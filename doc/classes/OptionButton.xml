@@ -231,7 +231,11 @@
 	<constants>
 	</constants>
 	<theme_items>
+<<<<<<< HEAD
 		<theme_item name="arrow" type="Texture2D">
+=======
+		<theme_item name="arrow" type="Texture">
+>>>>>>> master
 			The arrow icon to be drawn on the right end of the button.
 		</theme_item>
 		<theme_item name="arrow_margin" type="int" default="2">

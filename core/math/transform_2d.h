@@ -183,11 +183,20 @@ void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
 }
 
 void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	elements[0][0] = Math::cos(p_rot) * p_scale.x;
 	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
 	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
 	elements[0][1] = Math::sin(p_rot) * p_scale.x;
 }
+<<<<<<< HEAD
+=======
+
+Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
+>>>>>>> master
 
 Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
 	Vector2 ends[4] = {

@@ -376,9 +376,56 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 }
 
 void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners) {
+<<<<<<< HEAD
 	if (!efsd) {
 		return;
 	}
+=======
+	if (!efsd)
+		return;
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_get_owners(efsd->get_subdir(i), p_path, owners);
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+
+		Vector<String> deps = efsd->get_file_deps(i);
+		bool found = false;
+		for (int j = 0; j < deps.size(); j++) {
+			if (deps[j] == p_path) {
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			continue;
+
+		owners.push_back(efsd->get_file_path(i));
+	}
+}
+
+Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
+	Node *owner_scene_node = NULL;
+	List<String> owners;
+
+	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
+
+	for (int i = 0; i < owners.size(); i++) {
+		NodePath owner_path = owners[i];
+		RES owner_res = ResourceLoader::load(owner_path);
+		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
+			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
+			owner_scene_node = owner_packed_scene->instance();
+			break;
+		}
+	}
+
+	return owner_scene_node;
+}
+
+void GDScriptWorkspace::completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options) {
+>>>>>>> master
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_get_owners(efsd->get_subdir(i), p_path, owners);

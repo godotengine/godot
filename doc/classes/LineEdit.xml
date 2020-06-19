@@ -50,7 +50,11 @@
 			<return type="void">
 			</return>
 			<description>
+<<<<<<< HEAD
 				Deletes one character at the cursor's current position (equivalent to pressing [kbd]Delete[/kbd]).
+=======
+				Deletes one character at the cursor's current position (equivalent to pressing the [code]Delete[/code] key).
+>>>>>>> master
 			</description>
 		</method>
 		<method name="delete_text">

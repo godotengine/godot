@@ -4,7 +4,11 @@
 		Dialog for selecting files or directories in the filesystem.
 	</brief_description>
 	<description>
+<<<<<<< HEAD
 		FileDialog is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. The FileDialog automatically sets its window title according to the [member file_mode]. If you want to use a custom title, disable this by setting [member mode_overrides_title] to [code]false[/code].
+=======
+		FileDialog is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. The FileDialog automatically sets its window title according to the [member mode]. If you want to use a custom title, disable this by setting [member mode_overrides_title] to [code]false[/code].
+>>>>>>> master
 	</description>
 	<tutorials>
 	</tutorials>
@@ -132,7 +136,11 @@
 		</constant>
 	</constants>
 	<theme_items>
+<<<<<<< HEAD
 		<theme_item name="file" type="Texture2D">
+=======
+		<theme_item name="file" type="Texture">
+>>>>>>> master
 			Custom icon for files.
 		</theme_item>
 		<theme_item name="file_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
@@ -141,12 +149,17 @@
 		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
 			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="folder" type="Texture2D">
+=======
+		<theme_item name="folder" type="Texture">
+>>>>>>> master
 			Custom icon for folders.
 		</theme_item>
 		<theme_item name="folder_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			The color modulation applied to the folder icon.
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="parent_folder" type="Texture2D">
 			Custom icon for the parent folder arrow.
 		</theme_item>
@@ -154,6 +167,15 @@
 			Custom icon for the reload button.
 		</theme_item>
 		<theme_item name="toggle_hidden" type="Texture2D">
+=======
+		<theme_item name="parent_folder" type="Texture">
+			Custom icon for the parent folder arrow.
+		</theme_item>
+		<theme_item name="reload" type="Texture">
+			Custom icon for the reload button.
+		</theme_item>
+		<theme_item name="toggle_hidden" type="Texture">
+>>>>>>> master
 			Custom icon for the toggle hidden button.
 		</theme_item>
 	</theme_items>

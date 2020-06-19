@@ -7,9 +7,13 @@ env_cvtt = env_modules.Clone()
 
 # Thirdparty source files
 thirdparty_dir = "#thirdparty/cvtt/"
+<<<<<<< HEAD
 thirdparty_sources = [
     "ConvectionKernels.cpp",
 ]
+=======
+thirdparty_sources = ["ConvectionKernels.cpp"]
+>>>>>>> master
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

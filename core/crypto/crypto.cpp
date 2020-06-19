@@ -69,8 +69,12 @@ Crypto *(*Crypto::_create)() = nullptr;
 Crypto *Crypto::create() {
 	if (_create) {
 		return _create();
+<<<<<<< HEAD
 	}
 	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
+=======
+	ERR_FAIL_V_MSG(NULL, "Crypto is not available when the mbedtls module is disabled.");
+>>>>>>> master
 }
 
 void Crypto::load_default_certificates(String p_path) {
@@ -85,6 +89,12 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_self_signed_certificate", "key", "issuer_name", "not_before", "not_after"), &Crypto::generate_self_signed_certificate, DEFVAL("CN=myserver,O=myorganisation,C=IT"), DEFVAL("20140101000000"), DEFVAL("20340101000000"));
 }
 
+<<<<<<< HEAD
+=======
+Crypto::Crypto() {
+}
+
+>>>>>>> master
 /// Resource loader/saver
 
 RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {

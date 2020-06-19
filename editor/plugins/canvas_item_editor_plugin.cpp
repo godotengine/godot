@@ -2161,7 +2161,11 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 	// Move the canvas items with the arrow keys
 	if (k.is_valid() && k->is_pressed() && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
+<<<<<<< HEAD
 			(k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_LEFT || k->get_keycode() == KEY_RIGHT)) {
+=======
+			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
+>>>>>>> master
 		if (!k->is_echo()) {
 			// Start moving the canvas items with the keyboard
 			drag_selection = _get_edited_canvas_items();
@@ -2251,7 +2255,11 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	}
 
 	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
+<<<<<<< HEAD
 			(k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_LEFT || k->get_keycode() == KEY_RIGHT)) {
+=======
+			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
+>>>>>>> master
 		// Confirm canvas items move by arrow keys
 		if ((!Input::get_singleton()->is_key_pressed(KEY_UP)) &&
 				(!Input::get_singleton()->is_key_pressed(KEY_DOWN)) &&
@@ -4373,7 +4381,11 @@ float CanvasItemEditor::_get_next_zoom_value(int p_increment_count) const {
 void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
 
+<<<<<<< HEAD
 	if (p_zoom == zoom) {
+=======
+	if (p_zoom == zoom)
+>>>>>>> master
 		return;
 	}
 
@@ -5648,7 +5660,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	pan_button = memnew(ToolButton);
 	hb->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
+<<<<<<< HEAD
 	pan_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_PAN));
+=======
+	pan_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PAN));
+>>>>>>> master
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), KEY_G));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 

@@ -153,7 +153,11 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::PACKED_VECTOR3_ARRAY;
 
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
+<<<<<<< HEAD
 				return Variant::PACKED_COLOR_ARRAY;
+=======
+				return Variant::POOL_COLOR_ARRAY;
+>>>>>>> master
 
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
@@ -198,12 +202,15 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 					p_type.type_class == CACHED_CLASS(System_Collections_IEnumerable)) {
 				return Variant::ARRAY;
 			}
+<<<<<<< HEAD
 		} break;
 
 		case MONO_TYPE_OBJECT: {
 			if (r_nil_is_variant)
 				*r_nil_is_variant = true;
 			return Variant::NIL;
+=======
+>>>>>>> master
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
@@ -581,7 +588,11 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
 				return (MonoObject *)Array_to_mono_array(p_var->operator Array(), array_type_class);
 
+<<<<<<< HEAD
 			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to a managed array of unmarshallable element type.");
+=======
+			ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed array of unmarshallable element type.");
+>>>>>>> master
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -915,6 +926,10 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
 				return mono_array_to_Array((MonoArray *)p_obj);
 
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+				return mono_array_to_Array((MonoArray *)p_obj);
+
 			if (p_fail_with_err) {
 				ERR_FAIL_V_MSG(Variant(), "Attempted to convert a managed array of unmarshallable element type to Variant.");
 			} else {
@@ -952,6 +967,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 
 			// Godot.Collections.Dictionary
 			if (CACHED_CLASS(Dictionary) == type_class) {
+<<<<<<< HEAD
 				MonoException *exc = nullptr;
 				Dictionary *ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr).invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
@@ -965,6 +981,21 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
+=======
+				MonoException *exc = NULL;
+				Dictionary *ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr).invoke(p_obj, &exc);
+				UNHANDLED_EXCEPTION(exc);
+				return ptr ? Variant(*ptr) : Variant();
+			}
+
+			// Godot.Collections.Array
+			if (CACHED_CLASS(Array) == type_class) {
+				MonoException *exc = NULL;
+				Array *ptr = CACHED_METHOD_THUNK(Array, GetPtr).invoke(p_obj, &exc);
+				UNHANDLED_EXCEPTION(exc);
+				return ptr ? Variant(*ptr) : Variant();
+			}
+>>>>>>> master
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
@@ -1132,6 +1163,18 @@ Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, [[ma
 MonoArray *Array_to_mono_array(const Array &p_array) {
 	int length = p_array.size();
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), length);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *boxed = variant_to_mono_object(p_array[i]);
+		mono_array_setref(ret, i, boxed);
+	}
+
+	return ret;
+}
+
+MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class) {
+	int length = p_array.size();
+	MonoArray *ret = mono_array_new(mono_domain_get(), p_array_type_class->get_mono_ptr(), length);
 
 	for (int i = 0; i < length; i++) {
 		MonoObject *boxed = variant_to_mono_object(p_array[i]);

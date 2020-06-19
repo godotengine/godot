@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -1430,7 +1431,11 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 		bool can_move = _check_existing();
 		if (!can_move) {
 			// Ask to do something.
+<<<<<<< HEAD
 			overwrite_dialog->popup_centered();
+=======
+			overwrite_dialog->popup_centered_minsize();
+>>>>>>> master
 			return;
 		}
 	}
@@ -2094,7 +2099,11 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 							new_path = to_dir.plus_file(to_move[i].path.get_file());
 							new_path_base = new_path.get_basename() + " (%d)." + new_path.get_extension();
 						} else {
+<<<<<<< HEAD
 							PackedStringArray path_split = to_move[i].path.split("/");
+=======
+							Vector<String> path_split = to_move[i].path.split("/");
+>>>>>>> master
 							new_path = to_dir.plus_file(path_split[path_split.size() - 2]);
 							new_path_base = new_path + " (%d)";
 						}
@@ -2503,6 +2512,24 @@ void FileSystemDock::_feature_profile_changed() {
 
 void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method(D_METHOD("_rescan"), &FileSystemDock::_rescan);
+
+	ClassDB::bind_method(D_METHOD("_toggle_split_mode"), &FileSystemDock::_toggle_split_mode);
+
+	ClassDB::bind_method(D_METHOD("_tree_rmb_option", "option"), &FileSystemDock::_tree_rmb_option);
+	ClassDB::bind_method(D_METHOD("_tree_rmb_select"), &FileSystemDock::_tree_rmb_select);
+	ClassDB::bind_method(D_METHOD("_tree_empty_selected"), &FileSystemDock::_tree_empty_selected);
+
+	ClassDB::bind_method(D_METHOD("_file_list_rmb_option", "option"), &FileSystemDock::_file_list_rmb_option);
+	ClassDB::bind_method(D_METHOD("_file_list_rmb_select"), &FileSystemDock::_file_list_rmb_select);
+	ClassDB::bind_method(D_METHOD("_file_list_rmb_pressed"), &FileSystemDock::_file_list_rmb_pressed);
+	ClassDB::bind_method(D_METHOD("_tree_rmb_empty"), &FileSystemDock::_tree_rmb_empty);
+
+	ClassDB::bind_method(D_METHOD("_file_removed"), &FileSystemDock::_file_removed);
+	ClassDB::bind_method(D_METHOD("_folder_removed"), &FileSystemDock::_folder_removed);
+>>>>>>> master
 
 	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
@@ -2661,8 +2688,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(owners_editor);
 
 	remove_dialog = memnew(DependencyRemoveDialog);
+<<<<<<< HEAD
 	remove_dialog->connect("file_removed", callable_mp(this, &FileSystemDock::_file_removed));
 	remove_dialog->connect("folder_removed", callable_mp(this, &FileSystemDock::_folder_removed));
+=======
+	remove_dialog->connect("file_removed", this, "_file_removed");
+	remove_dialog->connect("folder_removed", this, "_folder_removed");
+>>>>>>> master
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);

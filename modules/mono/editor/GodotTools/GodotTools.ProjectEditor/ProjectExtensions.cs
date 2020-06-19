@@ -2,6 +2,10 @@ using GodotTools.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
+<<<<<<< HEAD
+=======
+using DotNet.Globbing;
+>>>>>>> master
 using Microsoft.Build.Construction;
 using Microsoft.Build.Globbing;
 
@@ -11,6 +15,11 @@ namespace GodotTools.ProjectEditor
     {
         public static ProjectItemElement FindItemOrNull(this ProjectRootElement root, string itemType, string include, bool noCondition = false)
         {
+<<<<<<< HEAD
+=======
+            GlobOptions globOptions = new GlobOptions {Evaluation = {CaseInsensitive = false}};
+
+>>>>>>> master
             string normalizedInclude = include.NormalizePath();
 
             foreach (var itemGroup in root.ItemGroups)
@@ -35,6 +44,11 @@ namespace GodotTools.ProjectEditor
         }
         public static ProjectItemElement FindItemOrNullAbs(this ProjectRootElement root, string itemType, string include, bool noCondition = false)
         {
+<<<<<<< HEAD
+=======
+            GlobOptions globOptions = new GlobOptions {Evaluation = {CaseInsensitive = false}};
+
+>>>>>>> master
             string normalizedInclude = Path.GetFullPath(include).NormalizePath();
 
             foreach (var itemGroup in root.ItemGroups)
@@ -47,7 +61,11 @@ namespace GodotTools.ProjectEditor
                     if (item.ItemType != itemType)
                         continue;
 
+<<<<<<< HEAD
                     var glob = MSBuildGlob.Parse(Path.GetFullPath(item.Include).NormalizePath());
+=======
+                    var glob = Glob.Parse(Path.GetFullPath(item.Include).NormalizePath(), globOptions);
+>>>>>>> master
 
                     if (glob.IsMatch(normalizedInclude))
                         return item;

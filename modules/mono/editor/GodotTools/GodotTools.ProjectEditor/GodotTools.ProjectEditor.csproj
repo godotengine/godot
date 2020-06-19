@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}</ProjectGuid>
+<<<<<<< HEAD
     <TargetFramework>net472</TargetFramework>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
@@ -19,5 +20,18 @@
     searching for MSBuild.exe before the fallback to not using it. A stub is fine as it should never be executed.
     -->
     <None Include="MSBuild.exe" CopyToOutputDirectory="Always" />
+=======
+    <OutputType>Library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build" />
+    <PackageReference Include="DotNet.Glob" Version="2.1.1" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+>>>>>>> master
   </ItemGroup>
 </Project>

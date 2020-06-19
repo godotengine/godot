@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<<<<<<< HEAD
 <class name="FileSystemDock" inherits="VBoxContainer" version="4.0">
+=======
+<class name="FileSystemDock" inherits="VBoxContainer" version="3.2">
+>>>>>>> master
 	<brief_description>
 	</brief_description>
 	<description>
@@ -90,7 +94,11 @@
 			</description>
 		</signal>
 		<signal name="instance">
+<<<<<<< HEAD
 			<argument index="0" name="files" type="PackedStringArray">
+=======
+			<argument index="0" name="files" type="PoolStringArray">
+>>>>>>> master
 			</argument>
 			<description>
 			</description>

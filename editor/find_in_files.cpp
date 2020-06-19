@@ -234,12 +234,19 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 		}
 
 		// Ignore special dirs (such as .git and .import)
+<<<<<<< HEAD
 		if (file == "." || file == ".." || file.begins_with(".")) {
 			continue;
 		}
 		if (dir->current_is_hidden()) {
 			continue;
 		}
+=======
+		if (file == "." || file == ".." || file.begins_with("."))
+			continue;
+		if (dir->current_is_hidden())
+			continue;
+>>>>>>> master
 
 		if (dir->current_is_dir()) {
 			out_folders.push_back(file);
@@ -584,7 +591,11 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_refresh_button = memnew(Button);
 		_refresh_button->set_text(TTR("Refresh"));
+<<<<<<< HEAD
 		_refresh_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
+=======
+		_refresh_button->connect("pressed", this, "_on_refresh_button_clicked");
+>>>>>>> master
 		_refresh_button->hide();
 		hbc->add_child(_refresh_button);
 
@@ -754,7 +765,11 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	}
 	Result r = E->value();
 	String item_text = item->get_text(_with_replace ? 1 : 0);
+<<<<<<< HEAD
 	Ref<Font> font = _results_display->get_theme_font("font");
+=======
+	Ref<Font> font = _results_display->get_font("font");
+>>>>>>> master
 
 	Rect2 match_rect = rect;
 	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed)).x;
@@ -957,6 +972,14 @@ void FindInFilesPanel::set_progress_visible(bool visible) {
 void FindInFilesPanel::_bind_methods() {
 	ClassDB::bind_method("_on_result_found", &FindInFilesPanel::_on_result_found);
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method("_on_refresh_button_clicked", &FindInFilesPanel::_on_refresh_button_clicked);
+	ClassDB::bind_method("_on_cancel_button_clicked", &FindInFilesPanel::_on_cancel_button_clicked);
+	ClassDB::bind_method("_on_result_selected", &FindInFilesPanel::_on_result_selected);
+	ClassDB::bind_method("_on_replace_text_changed", &FindInFilesPanel::_on_replace_text_changed);
+	ClassDB::bind_method("_on_replace_all_clicked", &FindInFilesPanel::_on_replace_all_clicked);
+>>>>>>> master
 	ClassDB::bind_method("_draw_result_text", &FindInFilesPanel::draw_result_text);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,

@@ -35,6 +35,10 @@
 #include "ssl_context_mbedtls.h"
 
 class DTLSServerMbedTLS : public DTLSServer {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 private:
 	static DTLSServer *_create_func();
 	Ref<CryptoKey> _key;

@@ -149,7 +149,12 @@ void BroadPhase2DBasic::update() {
 			}
 
 			if (pair_ok && !E) {
+<<<<<<< HEAD
 				void *data = nullptr;
+=======
+
+				void *data = NULL;
+>>>>>>> master
 				if (pair_callback) {
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
 					if (data) {

@@ -11,6 +11,11 @@ buildscript {
     dependencies {
         classpath libraries.androidGradlePlugin
         classpath libraries.kotlinGradlePlugin
+<<<<<<< HEAD
+=======
+//CHUNK_BUILDSCRIPT_DEPENDENCIES_BEGIN
+//CHUNK_BUILDSCRIPT_DEPENDENCIES_END
+>>>>>>> master
     }
 }
 
@@ -21,6 +26,11 @@ allprojects {
         mavenCentral()
         google()
         jcenter()
+<<<<<<< HEAD
+=======
+//CHUNK_ALLPROJECTS_REPOSITORIES_BEGIN
+//CHUNK_ALLPROJECTS_REPOSITORIES_END
+>>>>>>> master
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -63,6 +73,12 @@ dependencies {
     if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation files(pluginsBinaries)
     }
+<<<<<<< HEAD
+=======
+
+//CHUNK_DEPENDENCIES_BEGIN
+//CHUNK_DEPENDENCIES_END
+>>>>>>> master
 }
 
 android {
@@ -108,6 +124,7 @@ android {
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
+<<<<<<< HEAD
             java.srcDirs = ['src']
             res.srcDirs = ['res']
             aidl.srcDirs = ['aidl']
@@ -115,6 +132,39 @@ android {
         }
         debug.jniLibs.srcDirs = ['libs/debug']
         release.jniLibs.srcDirs = ['libs/release']
+=======
+            java.srcDirs = [
+                'src'
+//DIR_SRC_BEGIN
+//DIR_SRC_END
+            ]
+            res.srcDirs = [
+                'res'
+//DIR_RES_BEGIN
+//DIR_RES_END
+            ]
+            aidl.srcDirs = [
+                'aidl'
+//DIR_AIDL_BEGIN
+//DIR_AIDL_END
+            ]
+            assets.srcDirs = [
+                'assets'
+//DIR_ASSETS_BEGIN
+//DIR_ASSETS_END
+            ]
+        }
+        debug.jniLibs.srcDirs = [
+            'libs/debug'
+//DIR_JNI_DEBUG_BEGIN
+//DIR_JNI_DEBUG_END
+        ]
+        release.jniLibs.srcDirs = [
+            'libs/release'
+//DIR_JNI_RELEASE_BEGIN
+//DIR_JNI_RELEASE_END
+        ]
+>>>>>>> master
     }
 
     applicationVariants.all { variant ->

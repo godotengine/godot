@@ -357,8 +357,13 @@ void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 
 MonoArray *godot_icall_Internal_CodeCompletionRequest(int32_t p_kind, MonoString *p_script_file) {
 	String script_file = GDMonoMarshal::mono_string_to_godot(p_script_file);
+<<<<<<< HEAD
 	PackedStringArray suggestions = gdmono::get_code_completion((gdmono::CompletionKind)p_kind, script_file);
 	return GDMonoMarshal::PackedStringArray_to_mono_array(suggestions);
+=======
+	PoolStringArray suggestions = gdmono::get_code_completion((gdmono::CompletionKind)p_kind, script_file);
+	return GDMonoMarshal::PoolStringArray_to_mono_array(suggestions);
+>>>>>>> master
 }
 
 float godot_icall_Globals_EditorScale() {

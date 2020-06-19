@@ -3231,9 +3231,14 @@ void VisualScriptEditor::_move_nodes_with_rescan(const StringName &p_func_from, 
 				continue;
 			}
 
+<<<<<<< HEAD
 			if (!connections.has(to)) {
 				connections.set(to, Map<int, Pair<int, int>>());
 			}
+=======
+			if (!connections.has(to))
+				connections.set(to, Map<int, Pair<int, int> >());
+>>>>>>> master
 			connections[to].insert(in_p, Pair<int, int>(from, out_p));
 		}
 

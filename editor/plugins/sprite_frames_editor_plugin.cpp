@@ -153,9 +153,14 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	Rect2 region_rect = Rect2();
 
+<<<<<<< HEAD
 	if (atlas_source && atlas_source->get_atlas().is_valid()) {
 		region_rect = atlas_source->get_region();
 	}
+=======
+	if (atlas_source && atlas_source->get_atlas().is_valid())
+		region_rect = atlas_source->get_region();
+>>>>>>> master
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();

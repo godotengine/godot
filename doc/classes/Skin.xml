@@ -38,7 +38,11 @@
 			</description>
 		</method>
 		<method name="get_bind_name" qualifiers="const">
+<<<<<<< HEAD
 			<return type="StringName">
+=======
+			<return type="String">
+>>>>>>> master
 			</return>
 			<argument index="0" name="bind_index" type="int">
 			</argument>
@@ -76,7 +80,11 @@
 			</return>
 			<argument index="0" name="bind_index" type="int">
 			</argument>
+<<<<<<< HEAD
 			<argument index="1" name="name" type="StringName">
+=======
+			<argument index="1" name="name" type="String">
+>>>>>>> master
 			</argument>
 			<description>
 			</description>

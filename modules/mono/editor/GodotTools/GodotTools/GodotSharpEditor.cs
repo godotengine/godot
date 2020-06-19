@@ -75,7 +75,11 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
+<<<<<<< HEAD
                         Configs = new List<string> {"Debug", "ExportDebug", "ExportRelease"}
+=======
+                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
+>>>>>>> master
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -161,6 +165,34 @@ namespace GodotTools
             Instance.BottomPanel.BuildProjectPressed();
         }
 
+        private void _FileSystemDockFileMoved(string file, string newFile)
+        {
+            if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+            {
+                ProjectUtils.RenameItemInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                    ProjectSettings.GlobalizePath(file), ProjectSettings.GlobalizePath(newFile));
+            }
+        }
+
+        private void _FileSystemDockFileRemoved(string file)
+        {
+            if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+                ProjectUtils.RemoveItemFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                    ProjectSettings.GlobalizePath(file));
+        }
+
+        private void _FileSystemDockFolderMoved(string oldFolder, string newFolder)
+        {
+            ProjectUtils.RenameItemsToNewFolderInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                ProjectSettings.GlobalizePath(oldFolder), ProjectSettings.GlobalizePath(newFolder));
+        }
+
+        private void _FileSystemDockFolderRemoved(string oldFolder)
+        {
+            ProjectUtils.RemoveItemsInFolderFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                ProjectSettings.GlobalizePath(oldFolder));
+        }
+
         public override void _Notification(int what)
         {
             base._Notification(what);
@@ -178,6 +210,7 @@ namespace GodotTools
 
                 var fileSystemDock = GetEditorInterface().GetFileSystemDock();
 
+<<<<<<< HEAD
                 fileSystemDock.FilesMoved += (file, newFile) =>
                 {
                     if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
@@ -205,6 +238,12 @@ namespace GodotTools
                     ProjectUtils.RemoveItemsInFolderFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
                         ProjectSettings.GlobalizePath(oldFolder));
                 };
+=======
+                fileSystemDock.Connect("files_moved", this, nameof(_FileSystemDockFileMoved));
+                fileSystemDock.Connect("file_removed", this, nameof(_FileSystemDockFileRemoved));
+                fileSystemDock.Connect("folder_moved", this, nameof(_FileSystemDockFolderMoved));
+                fileSystemDock.Connect("folder_removed", this, nameof(_FileSystemDockFolderRemoved));
+>>>>>>> master
             }
         }
 
@@ -457,12 +496,16 @@ namespace GodotTools
 
                 // CheckBox in main container
                 aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
+<<<<<<< HEAD
                 aboutDialogCheckBox.Toggled += enabled =>
                 {
                     bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
                     if (showOnStart != enabled)
                         editorSettings.SetSetting("mono/editor/show_info_on_start", enabled);
                 };
+=======
+                aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
+>>>>>>> master
                 aboutVBox.AddChild(aboutDialogCheckBox);
             }
 
@@ -483,9 +526,12 @@ namespace GodotTools
 
                     // Apply the other fixes only after configurations have been migrated
 
+<<<<<<< HEAD
                     // Make sure the existing project has the ProjectTypeGuids property (for VisualStudio)
                     ProjectUtils.EnsureHasProjectTypeGuids(msbuildProject);
 
+=======
+>>>>>>> master
                     // Make sure the existing project has Api assembly references configured correctly
                     ProjectUtils.FixApiHintPath(msbuildProject);
 

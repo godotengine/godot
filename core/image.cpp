@@ -85,7 +85,13 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 SavePNGFunc Image::save_png_func = nullptr;
 SaveEXRFunc Image::save_exr_func = nullptr;
 
+<<<<<<< HEAD
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
+=======
+SavePNGBufferFunc Image::save_png_buffer_func = NULL;
+
+void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
+>>>>>>> master
 
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
@@ -1564,7 +1570,11 @@ void Image::normalize() {
 Error Image::generate_mipmaps(bool p_renormalize) {
 	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
 
+<<<<<<< HEAD
 	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444, ERR_UNAVAILABLE, "Cannot generate mipmaps from RGBA4444 format.");
+=======
+	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444 || format == FORMAT_RGBA5551, ERR_UNAVAILABLE, "Cannot generate mipmaps in custom image formats.");
+>>>>>>> master
 
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
@@ -2213,10 +2223,22 @@ Error Image::save_png(const String &p_path) const {
 	return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
+<<<<<<< HEAD
 Vector<uint8_t> Image::save_png_to_buffer() const {
 	if (save_png_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
+=======
+PoolVector<uint8_t> Image::save_png_to_buffer() const {
+	if (save_png_buffer_func == NULL) {
+		return PoolVector<uint8_t>();
+	}
+
+	return save_png_buffer_func(Ref<Image>((Image *)this));
+}
+
+Error Image::save_exr(const String &p_path, bool p_grayscale) const {
+>>>>>>> master
 
 	return save_png_buffer_func(Ref<Image>((Image *)this));
 }

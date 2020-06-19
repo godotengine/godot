@@ -54,6 +54,11 @@ def make_editor_icons_action(target, source, env):
         # Trim the `.svg` extension from the string.
         icon_name = os.path.basename(fname)[:-4]
         # some special cases
+<<<<<<< HEAD
+=======
+        if icon_name in ["Int", "Bool", "Float"]:
+            icon_name = icon_name.lower()
+>>>>>>> master
         if icon_name.endswith("MediumThumb"):  # don't know a better way to handle this
             thumb_medium_indices.append(str(index))
         if icon_name.endswith("BigThumb"):  # don't know a better way to handle this

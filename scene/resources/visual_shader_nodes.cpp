@@ -1004,6 +1004,7 @@ String VisualShaderNodeFloatOp::get_output_port_name(int p_port) const {
 String VisualShaderNodeFloatOp::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code = "\t" + p_output_vars[0] + " = ";
 	switch (op) {
+<<<<<<< HEAD
 		case OP_ADD:
 			code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n";
 			break;
@@ -1034,6 +1035,19 @@ String VisualShaderNodeFloatOp::generate_code(Shader::Mode p_mode, VisualShader:
 		case OP_STEP:
 			code += "step(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
+=======
+
+		case OP_ADD: code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n"; break;
+		case OP_SUB: code += p_input_vars[0] + " - " + p_input_vars[1] + ";\n"; break;
+		case OP_MUL: code += p_input_vars[0] + " * " + p_input_vars[1] + ";\n"; break;
+		case OP_DIV: code += p_input_vars[0] + " / " + p_input_vars[1] + ";\n"; break;
+		case OP_MOD: code += "mod(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_POW: code += "pow(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_MAX: code += "max(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_MIN: code += "min(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_ATAN2: code += "atan(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_STEP: code += "step(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+>>>>>>> master
 	}
 
 	return code;
@@ -1206,6 +1220,7 @@ String VisualShaderNodeVectorOp::get_output_port_name(int p_port) const {
 String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code = "\t" + p_output_vars[0] + " = ";
 	switch (op) {
+<<<<<<< HEAD
 		case OP_ADD:
 			code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n";
 			break;
@@ -1242,6 +1257,21 @@ String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader
 		case OP_STEP:
 			code += "step(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
+=======
+
+		case OP_ADD: code += p_input_vars[0] + " + " + p_input_vars[1] + ";\n"; break;
+		case OP_SUB: code += p_input_vars[0] + " - " + p_input_vars[1] + ";\n"; break;
+		case OP_MUL: code += p_input_vars[0] + " * " + p_input_vars[1] + ";\n"; break;
+		case OP_DIV: code += p_input_vars[0] + " / " + p_input_vars[1] + ";\n"; break;
+		case OP_MOD: code += "mod(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_POW: code += "pow(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_MAX: code += "max(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_MIN: code += "min(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_CROSS: code += "cross(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_ATAN2: code += "atan(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_REFLECT: code += "reflect(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+		case OP_STEP: code += "step(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n"; break;
+>>>>>>> master
 	}
 
 	return code;
@@ -1323,6 +1353,7 @@ String VisualShaderNodeColorOp::generate_code(Shader::Mode p_mode, VisualShader:
 	static const char *axisn[3] = { "x", "y", "z" };
 	switch (op) {
 		case OP_SCREEN: {
+<<<<<<< HEAD
 			code += "\t" + p_output_vars[0] + " = vec3(1.0) - (vec3(1.0) - " + p_input_vars[0] + ") * (vec3(1.0) - " + p_input_vars[1] + ");\n";
 		} break;
 		case OP_DIFFERENCE: {
@@ -1332,6 +1363,21 @@ String VisualShaderNodeColorOp::generate_code(Shader::Mode p_mode, VisualShader:
 			code += "\t" + p_output_vars[0] + " = min(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 		} break;
 		case OP_LIGHTEN: {
+=======
+
+			code += "\t" + p_output_vars[0] + " = vec3(1.0) - (vec3(1.0) - " + p_input_vars[0] + ") * (vec3(1.0) - " + p_input_vars[1] + ");\n";
+		} break;
+		case OP_DIFFERENCE: {
+
+			code += "\t" + p_output_vars[0] + " = abs(" + p_input_vars[0] + " - " + p_input_vars[1] + ");\n";
+		} break;
+		case OP_DARKEN: {
+
+			code += "\t" + p_output_vars[0] + " = min(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
+		} break;
+		case OP_LIGHTEN: {
+
+>>>>>>> master
 			code += "\t" + p_output_vars[0] + " = max(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 
 		} break;
@@ -1350,10 +1396,18 @@ String VisualShaderNodeColorOp::generate_code(Shader::Mode p_mode, VisualShader:
 
 		} break;
 		case OP_DODGE: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 			code += "\t" + p_output_vars[0] + " = (" + p_input_vars[0] + ") / (vec3(1.0) - " + p_input_vars[1] + ");\n";
 
 		} break;
 		case OP_BURN: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 			code += "\t" + p_output_vars[0] + " = vec3(1.0) - (vec3(1.0) - " + p_input_vars[0] + ") / (" + p_input_vars[1] + ");\n";
 		} break;
 		case OP_SOFT_LIGHT: {
@@ -4410,7 +4464,11 @@ String VisualShaderNodeCompare::generate_code(Shader::Mode p_mode, VisualShader:
 			} else if (func == FUNC_NOT_EQUAL) {
 				code += "\t" + p_output_vars[0] + " = !(abs(" + p_input_vars[0] + " - " + p_input_vars[1] + ") < " + p_input_vars[2] + ");";
 			} else {
+<<<<<<< HEAD
 				code += "\t" + p_output_vars[0] + " = " + (p_input_vars[0] + " $ " + p_input_vars[1]).replace("$", ops[func]) + ";\n";
+=======
+				code += "\t" + p_output_vars[0] + " = " + (p_input_vars[0] + "$" + p_input_vars[1]).replace("$", ops[func]) + ";\n";
+>>>>>>> master
 			}
 			break;
 
@@ -4426,16 +4484,26 @@ String VisualShaderNodeCompare::generate_code(Shader::Mode p_mode, VisualShader:
 			break;
 
 		case CTYPE_BOOLEAN:
+<<<<<<< HEAD
 			if (func > FUNC_NOT_EQUAL) {
 				return "\t" + p_output_vars[0] + " = false;\n";
 			}
+=======
+			if (func > FUNC_NOT_EQUAL)
+				return "\t" + p_output_vars[0] + " = false;\n";
+>>>>>>> master
 			code += "\t" + p_output_vars[0] + " = " + (p_input_vars[0] + " $ " + p_input_vars[1]).replace("$", ops[func]) + ";\n";
 			break;
 
 		case CTYPE_TRANSFORM:
+<<<<<<< HEAD
 			if (func > FUNC_NOT_EQUAL) {
 				return "\t" + p_output_vars[0] + " = false;\n";
 			}
+=======
+			if (func > FUNC_NOT_EQUAL)
+				return "\t" + p_output_vars[0] + " = false;\n";
+>>>>>>> master
 			code += "\t" + p_output_vars[0] + " = " + (p_input_vars[0] + " $ " + p_input_vars[1]).replace("$", ops[func]) + ";\n";
 			break;
 
@@ -4453,11 +4521,14 @@ void VisualShaderNodeCompare::set_comparison_type(ComparisonType p_type) {
 			set_input_port_default_value(0, 0.0);
 			set_input_port_default_value(1, 0.0);
 			simple_decl = true;
+<<<<<<< HEAD
 			break;
 		case CTYPE_SCALAR_INT:
 			set_input_port_default_value(0, 0);
 			set_input_port_default_value(1, 0);
 			simple_decl = true;
+=======
+>>>>>>> master
 			break;
 		case CTYPE_VECTOR:
 			set_input_port_default_value(0, Vector3(0.0, 0.0, 0.0));

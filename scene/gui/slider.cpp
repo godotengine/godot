@@ -157,11 +157,19 @@ void Slider::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
+<<<<<<< HEAD
 			Ref<StyleBox> style = get_theme_stylebox("slider");
 			bool highlighted = mouse_inside || has_focus();
 			Ref<StyleBox> grabber_area = get_theme_stylebox(highlighted ? "grabber_area_highlight" : "grabber_area");
 			Ref<Texture2D> grabber = get_theme_icon(editable ? (highlighted ? "grabber_highlight" : "grabber") : "grabber_disabled");
 			Ref<Texture2D> tick = get_theme_icon("tick");
+=======
+			Ref<StyleBox> style = get_stylebox("slider");
+			bool highlighted = mouse_inside || has_focus();
+			Ref<StyleBox> grabber_area = get_stylebox(highlighted ? "grabber_area_highlight" : "grabber_area");
+			Ref<Texture> grabber = get_icon(editable ? (highlighted ? "grabber_highlight" : "grabber") : "grabber_disabled");
+			Ref<Texture> tick = get_icon("tick");
+>>>>>>> master
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 
 			if (orientation == VERTICAL) {

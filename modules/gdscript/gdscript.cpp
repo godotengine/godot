@@ -357,6 +357,7 @@ void GDScript::_update_exports_values(Map<StringName, Variant> &values, List<Pro
 #endif
 
 bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
+<<<<<<< HEAD
 #ifdef TOOLS_ENABLED
 
 	static Vector<GDScript *> base_caches;
@@ -364,6 +365,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 		base_caches.clear();
 	}
 	base_caches.append(this);
+=======
+
+#ifdef TOOLS_ENABLED
+
+	static Vector<GDScript *> base_caches;
+	if (!p_recursive_call)
+		base_caches.clear();
+	base_caches.push_back(this);
+>>>>>>> master
 
 	bool changed = false;
 
@@ -459,9 +469,14 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 	if (base_cache.is_valid() && base_cache->is_valid()) {
 		for (int i = 0; i < base_caches.size(); i++) {
 			if (base_caches[i] == base_cache.ptr()) {
+<<<<<<< HEAD
 				if (r_err) {
 					*r_err = true;
 				}
+=======
+				if (r_err)
+					*r_err = true;
+>>>>>>> master
 				valid = false; // to show error in the editor
 				base_cache->valid = false;
 				base_cache->inheriters_cache.clear(); // to prevent future stackoverflows
@@ -472,9 +487,14 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 			}
 		}
 		if (base_cache->_update_exports(r_err, true)) {
+<<<<<<< HEAD
 			if (r_err && *r_err) {
 				return false;
 			}
+=======
+			if (r_err && *r_err)
+				return false;
+>>>>>>> master
 			changed = true;
 		}
 	}
@@ -503,9 +523,14 @@ void GDScript::update_exports() {
 
 	bool cyclic_error = false;
 	_update_exports(&cyclic_error);
+<<<<<<< HEAD
 	if (cyclic_error) {
 		return;
 	}
+=======
+	if (cyclic_error)
+		return;
+>>>>>>> master
 
 	Set<ObjectID> copy = inheriters_cache; //might get modified
 
@@ -1042,6 +1067,7 @@ void GDScript::_init_rpc_methods_properties() {
 }
 
 GDScript::~GDScript() {
+<<<<<<< HEAD
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
@@ -1049,6 +1075,18 @@ GDScript::~GDScript() {
 			E->self()->_clear_stack();
 			pending_func_states.remove(E);
 		}
+=======
+
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->lock();
+	}
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		E->self()->_clear_stack();
+		pending_func_states.remove(E);
+	}
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->unlock();
+>>>>>>> master
 	}
 
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
@@ -1452,6 +1490,7 @@ GDScriptInstance::GDScriptInstance() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
+<<<<<<< HEAD
 	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
@@ -1462,6 +1501,24 @@ GDScriptInstance::~GDScriptInstance() {
 	if (script.is_valid() && owner) {
 		script->instances.erase(owner);
 	}
+=======
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		E->self()->_clear_stack();
+		pending_func_states.remove(E);
+	}
+
+	if (script.is_valid() && owner) {
+		script->instances.erase(owner);
+	}
+
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+>>>>>>> master
 }
 
 /************* SCRIPT LANGUAGE **************/

@@ -1216,6 +1216,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
 				gdfs->state.script = _script;
+<<<<<<< HEAD
 				{
 					MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 					_script->pending_func_states.add(&gdfs->scripts_list);
@@ -1226,10 +1227,30 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						gdfs->state.instance = nullptr;
 					}
 				}
+=======
+#ifndef NO_THREADS
+				GDScriptLanguage::singleton->lock->lock();
+#endif
+
+				_script->pending_func_states.add(&gdfs->scripts_list);
+				if (p_instance) {
+					gdfs->state.instance = p_instance;
+					p_instance->pending_func_states.add(&gdfs->instances_list);
+				} else {
+					gdfs->state.instance = NULL;
+				}
+#ifndef NO_THREADS
+				GDScriptLanguage::singleton->lock->unlock();
+#endif
+>>>>>>> master
 #ifdef DEBUG_ENABLED
 				gdfs->state.function_name = name;
 				gdfs->state.script_path = _script->get_path();
 #endif
+<<<<<<< HEAD
+=======
+				//gdfs->state.result_pos=ip+ipofs-1;
+>>>>>>> master
 				gdfs->state.defarg = defarg;
 				gdfs->function = this;
 
@@ -1764,6 +1785,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 	}
 
 	if (p_extended_check) {
+<<<<<<< HEAD
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
 		// Script gone?
@@ -1774,6 +1796,19 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 		if (state.instance && !instances_list.in_list()) {
 			return false;
 		}
+=======
+#ifndef NO_THREADS
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+#endif
+		// Script gone?
+		if (!scripts_list.in_list()) {
+			return false;
+		}
+		// Class instance gone? (if not static function)
+		if (state.instance && !instances_list.in_list()) {
+			return false;
+		}
+>>>>>>> master
 	}
 
 	return true;
@@ -1782,13 +1817,20 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	{
+<<<<<<< HEAD
 		MutexLock lock(GDScriptLanguage::singleton->lock);
 
+=======
+#ifndef NO_THREADS
+		MutexLock lock(GDScriptLanguage::singleton->lock);
+#endif
+>>>>>>> master
 		if (!scripts_list.in_list()) {
 #ifdef DEBUG_ENABLED
 			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
 			return Variant();
+<<<<<<< HEAD
 #endif
 		}
 		if (state.instance && !instances_list.in_list()) {
@@ -1798,6 +1840,17 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 			return Variant();
 #endif
 		}
+=======
+#endif
+		}
+		if (state.instance && !instances_list.in_list()) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
+#else
+			return Variant();
+#endif
+		}
+>>>>>>> master
 		// Do these now to avoid locking again after the call
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
@@ -1832,7 +1885,10 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
+<<<<<<< HEAD
 		}
+=======
+>>>>>>> master
 #endif
 	}
 
@@ -1840,6 +1896,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 }
 
 void GDScriptFunctionState::_clear_stack() {
+<<<<<<< HEAD
 	if (state.stack_size) {
 		Variant *stack = (Variant *)state.stack.ptr();
 		for (int i = 0; i < state.stack_size; i++) {
@@ -1848,6 +1905,18 @@ void GDScriptFunctionState::_clear_stack() {
 		state.stack_size = 0;
 	}
 }
+=======
+
+	if (state.stack_size) {
+		Variant *stack = (Variant *)state.stack.ptr();
+		for (int i = 0; i < state.stack_size; i++)
+			stack[i].~Variant();
+		state.stack_size = 0;
+	}
+}
+
+void GDScriptFunctionState::_bind_methods() {
+>>>>>>> master
 
 void GDScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
@@ -1860,15 +1929,32 @@ void GDScriptFunctionState::_bind_methods() {
 GDScriptFunctionState::GDScriptFunctionState() :
 		scripts_list(this),
 		instances_list(this) {
+<<<<<<< HEAD
 	function = nullptr;
+=======
+
+	function = NULL;
+>>>>>>> master
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 	_clear_stack();
 
+<<<<<<< HEAD
 	{
 		MutexLock lock(GDScriptLanguage::singleton->lock);
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
 	}
+=======
+	_clear_stack();
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	scripts_list.remove_from_list();
+	instances_list.remove_from_list();
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+>>>>>>> master
 }

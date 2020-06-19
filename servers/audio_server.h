@@ -228,6 +228,17 @@ private:
 
 	static AudioServer *singleton;
 
+<<<<<<< HEAD
+=======
+	// TODO create an audiodata pool to optimize memory
+
+	Map<void *, uint32_t> audio_data;
+	size_t audio_data_total_mem;
+	size_t audio_data_max_mem;
+
+	Mutex *audio_data_lock;
+
+>>>>>>> master
 	void init_channels_and_buffers();
 
 	void _mix_step();

@@ -47,10 +47,16 @@
 #include "core/math/vector3i.h"
 #include "core/node_path.h"
 #include "core/object_id.h"
+<<<<<<< HEAD
+=======
+#include "core/pool_vector.h"
+#include "core/ref_ptr.h"
+>>>>>>> master
 #include "core/rid.h"
 #include "core/ustring.h"
 
 class Object;
+class ObjectRC;
 class Node; // helper
 class Control; // helper
 
@@ -66,6 +72,13 @@ typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
+
+#ifdef DEBUG_ENABLED
+// Ideally, an inline member of ObjectRC, but would cause circular includes
+#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
+#else
+#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().obj)
+#endif
 
 class Variant {
 public:
@@ -126,8 +139,22 @@ private:
 	Type type = NIL;
 
 	struct ObjData {
+<<<<<<< HEAD
 		ObjectID id;
 		Object *obj;
+=======
+
+#ifdef DEBUG_ENABLED
+		// Will be null for every type deriving from Reference as they have their
+		// own reference count mechanism
+		ObjectRC *rc;
+#else
+		Object *obj;
+#endif
+		// Always initialized, but will be null if the Ref<> assigned was null
+		// or this Variant is not even holding a Reference-derived object
+		RefPtr ref;
+>>>>>>> master
 	};
 
 	/* array helpers */

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<<<<<<< HEAD
 <class name="Marshalls" inherits="Object" version="4.0">
+=======
+<class name="Marshalls" inherits="Object" version="3.2">
+>>>>>>> master
 	<brief_description>
 		Data transformation (marshalling) and encoding helpers.
 	</brief_description>

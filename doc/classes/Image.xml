@@ -4,7 +4,11 @@
 		Image datatype.
 	</brief_description>
 	<description>
+<<<<<<< HEAD
 		Native image datatype. Contains image data, which can be converted to a [Texture2D], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+=======
+		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+>>>>>>> master
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
 	</description>
 	<tutorials>
@@ -437,7 +441,11 @@
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
+<<<<<<< HEAD
 			<return type="PackedByteArray">
+=======
+			<return type="PoolByteArray">
+>>>>>>> master
 			</return>
 			<description>
 			</description>

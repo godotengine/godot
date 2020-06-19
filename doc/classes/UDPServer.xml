@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<<<<<<< HEAD
 <class name="UDPServer" inherits="Reference" version="4.0">
+=======
+<class name="UDPServer" inherits="Reference" version="3.2">
+>>>>>>> master
 	<brief_description>
 		Helper class to implement a UDP server.
 	</brief_description>

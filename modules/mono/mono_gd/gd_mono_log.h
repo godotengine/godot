@@ -45,6 +45,10 @@
 #endif
 
 class GDMonoLog {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 #ifdef GD_MONO_LOG_ENABLED
 	int log_level_id;
 

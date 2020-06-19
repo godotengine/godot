@@ -48,8 +48,11 @@
  *
  * Only used keys and values are constructed. For free positions there's space
  * in the arrays for each, but that memory is kept uninitialized.
+<<<<<<< HEAD
  * 
  * The assignment operator copy the pairs from one map to the other.
+=======
+>>>>>>> master
  */
 template <class TKey, class TValue,
 		class Hasher = HashMapHasherDefault,
@@ -361,6 +364,7 @@ public:
 
 		_resize_and_rehash(p_other.capacity);
 
+<<<<<<< HEAD
 		for (Iterator it = p_other.iter(); it.valid; it = p_other.next_iter(it)) {
 			set(*it.key, *it.value);
 		}
@@ -370,6 +374,11 @@ public:
 	OAHashMap(uint32_t p_initial_capacity = 64) {
 		// Capacity can't be 0.
 		capacity = MAX(1, p_initial_capacity);
+=======
+		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
+		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
+		hashes = static_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
+>>>>>>> master
 
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
@@ -390,6 +399,19 @@ public:
 			keys[i].~TKey();
 		}
 
+<<<<<<< HEAD
+=======
+		for (uint32_t i = 0; i < capacity; i++) {
+
+			if (hashes[i] == EMPTY_HASH) {
+				continue;
+			}
+
+			values[i].~TValue();
+			keys[i].~TKey();
+		}
+
+>>>>>>> master
 		Memory::free_static(keys);
 		Memory::free_static(values);
 		Memory::free_static(hashes);

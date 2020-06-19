@@ -17,11 +17,16 @@
 	<constants>
 	</constants>
 	<theme_items>
+<<<<<<< HEAD
 		<theme_item name="grabber" type="Texture2D">
+=======
+		<theme_item name="grabber" type="Texture">
+>>>>>>> master
 			The texture for the grabber (the draggable element).
 		</theme_item>
 		<theme_item name="grabber_area" type="StyleBox">
 			The background of the area below the grabber.
+<<<<<<< HEAD
 		</theme_item>
 		<theme_item name="grabber_area_highlight" type="StyleBox">
 		</theme_item>
@@ -29,12 +34,25 @@
 			The texture for the grabber when it's disabled.
 		</theme_item>
 		<theme_item name="grabber_highlight" type="Texture2D">
+=======
+		</theme_item>
+		<theme_item name="grabber_area_highlight" type="StyleBox">
+		</theme_item>
+		<theme_item name="grabber_disabled" type="Texture">
+			The texture for the grabber when it's disabled.
+		</theme_item>
+		<theme_item name="grabber_highlight" type="Texture">
+>>>>>>> master
 			The texture for the grabber when it's focused.
 		</theme_item>
 		<theme_item name="slider" type="StyleBox">
 			The background for the whole slider. Determines the width of the [code]grabber_area[/code].
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="tick" type="Texture2D">
+=======
+		<theme_item name="tick" type="Texture">
+>>>>>>> master
 			The texture for the ticks, visible when [member Slider.tick_count] is greater than 0.
 		</theme_item>
 	</theme_items>

@@ -57,6 +57,7 @@ void ScriptCreateDialog::_theme_changed() {
 				current_language = i;
 				break;
 			}
+<<<<<<< HEAD
 		}
 	} else {
 		language_menu->select(default_language);
@@ -72,6 +73,26 @@ void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_theme_changed();
+=======
+
+			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
+			if (!last_lang.empty()) {
+				for (int i = 0; i < language_menu->get_item_count(); i++) {
+					if (language_menu->get_item_text(i) == last_lang) {
+						language_menu->select(i);
+						current_language = i;
+						break;
+					}
+				}
+			} else {
+				language_menu->select(default_language);
+			}
+
+			path_button->set_icon(get_icon("Folder", "EditorIcons"));
+			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
+			parent_search_button->set_icon(get_icon("ClassList", "EditorIcons"));
+			status_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
+>>>>>>> master
 		} break;
 	}
 }
@@ -514,6 +535,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 		_path_changed(file_path->get_text());
 	}
 	_update_dialog();
+	minimum_size_changed();
 }
 
 void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
@@ -571,6 +593,10 @@ void ScriptCreateDialog::_browse_class_in_tree() {
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
+	if (is_built_in) {
+		return;
+	}
+
 	if (is_built_in) {
 		return;
 	}

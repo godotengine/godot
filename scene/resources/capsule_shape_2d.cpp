@@ -68,9 +68,14 @@ real_t CapsuleShape2D::get_radius() const {
 
 void CapsuleShape2D::set_height(real_t p_height) {
 	height = p_height;
+<<<<<<< HEAD
 	if (height < 0) {
 		height = 0;
 	}
+=======
+	if (height < 0)
+		height = 0;
+>>>>>>> master
 
 	_update_shape();
 }

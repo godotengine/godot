@@ -127,6 +127,11 @@ Vector<String> FileDialog::get_selected_files() const {
 void FileDialog::update_dir() {
 	dir->set_text(dir_access->get_current_dir(false));
 
+<<<<<<< HEAD
+=======
+	dir->set_text(dir_access->get_current_dir_without_drive());
+
+>>>>>>> master
 	if (drives->is_visible()) {
 		drives->select(dir_access->get_current_drive());
 	}
@@ -401,10 +406,17 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
+<<<<<<< HEAD
 	Ref<Texture2D> folder = vbox->get_theme_icon("folder", "FileDialog");
 	Ref<Texture2D> file_icon = vbox->get_theme_icon("file", "FileDialog");
 	const Color folder_color = vbox->get_theme_color("folder_icon_modulate", "FileDialog");
 	const Color file_color = vbox->get_theme_color("file_icon_modulate", "FileDialog");
+=======
+	Ref<Texture> folder = get_icon("folder");
+	Ref<Texture> file_icon = get_icon("file");
+	const Color folder_color = get_color("folder_icon_modulate");
+	const Color file_color = get_color("file_icon_modulate");
+>>>>>>> master
 	List<String> files;
 	List<String> dirs;
 
@@ -869,8 +881,17 @@ FileDialog::FileDialog() {
 	drives_container = memnew(HBoxContainer);
 	hbc->add_child(drives_container);
 
+	hbc->add_child(memnew(Label(RTR("Path:"))));
+
+	drives_container = memnew(HBoxContainer);
+	hbc->add_child(drives_container);
+
 	drives = memnew(OptionButton);
+<<<<<<< HEAD
 	drives->connect("item_selected", callable_mp(this, &FileDialog::_select_drive));
+=======
+	drives->connect("item_selected", this, "_select_drive");
+>>>>>>> master
 	hbc->add_child(drives);
 
 	dir = memnew(LineEdit);

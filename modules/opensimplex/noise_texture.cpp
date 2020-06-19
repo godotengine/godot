@@ -136,6 +136,12 @@ Ref<Image> NoiseTexture::_generate_texture() {
 	// Prevent memdelete due to unref() on other thread.
 	Ref<OpenSimplexNoise> ref_noise = noise;
 
+<<<<<<< HEAD
+=======
+	// Prevent memdelete due to unref() on other thread.
+	Ref<OpenSimplexNoise> ref_noise = noise;
+
+>>>>>>> master
 	if (ref_noise.is_null()) {
 		return Ref<Image>();
 	}

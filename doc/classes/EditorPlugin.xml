@@ -267,10 +267,17 @@
 			</description>
 		</method>
 		<method name="get_plugin_icon" qualifiers="virtual">
+<<<<<<< HEAD
 			<return type="Texture2D">
 			</return>
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
+=======
+			<return type="Texture">
+			</return>
+			<description>
+				Override this method in your plugin to return a [Texture] in order to give it an icon.
+>>>>>>> master
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
 				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
 				[codeblock]

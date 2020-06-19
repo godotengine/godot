@@ -60,6 +60,10 @@ import java.util.List;
 import java.util.Set;
 
 public class GodotPayment extends GodotPlugin implements PurchasesUpdatedListener, BillingClientStateListener {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	private final BillingClient billingClient;
 	private final HashMap<String, SkuDetails> skuDetailsCache = new HashMap<>(); // sku → SkuDetails
 

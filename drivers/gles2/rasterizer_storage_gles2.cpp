@@ -69,6 +69,8 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+#define _GL_TEXTURE_EXTERNAL_OES 0x8D65
+
 #ifdef GLES_OVER_GL
 #define _GL_HALF_FLOAT_OES 0x140B
 #else
@@ -525,7 +527,19 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 			texture->target = GL_TEXTURE_2D;
 			texture->images.resize(1);
 		} break;
+<<<<<<< HEAD
 		case RS::TEXTURE_TYPE_CUBEMAP: {
+=======
+		case VS::TEXTURE_TYPE_EXTERNAL: {
+#ifdef ANDROID_ENABLED
+			texture->target = _GL_TEXTURE_EXTERNAL_OES;
+#else
+			texture->target = GL_TEXTURE_2D;
+#endif
+			texture->images.resize(0);
+		} break;
+		case VS::TEXTURE_TYPE_CUBEMAP: {
+>>>>>>> master
 			texture->target = GL_TEXTURE_CUBE_MAP;
 			texture->images.resize(6);
 		} break;
@@ -553,15 +567,17 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 		}
 	}
 
-	texture->alloc_width = texture->width;
-	texture->alloc_height = texture->height;
-	texture->resize_to_po2 = false;
-	if (!config.support_npot_repeat_mipmap) {
-		int po2_width = next_power_of_2(p_width);
-		int po2_height = next_power_of_2(p_height);
+	if (p_type != VS::TEXTURE_TYPE_EXTERNAL) {
+		texture->alloc_width = texture->width;
+		texture->alloc_height = texture->height;
+		texture->resize_to_po2 = false;
+		if (!config.support_npot_repeat_mipmap) {
+			int po2_width = next_power_of_2(p_width);
+			int po2_height = next_power_of_2(p_height);
 
-		bool is_po2 = p_width == po2_width && p_height == po2_height;
+			bool is_po2 = p_width == po2_width && p_height == po2_height;
 
+<<<<<<< HEAD
 		if (!is_po2 && (p_flags & RS::TEXTURE_FLAG_REPEAT || p_flags & RS::TEXTURE_FLAG_MIPMAPS)) {
 			if (p_flags & RS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 				//not supported
@@ -571,24 +587,46 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 				texture->alloc_height = po2_height;
 				texture->alloc_width = po2_width;
 				texture->resize_to_po2 = true;
+=======
+			if (!is_po2 && (p_flags & VS::TEXTURE_FLAG_REPEAT || p_flags & VS::TEXTURE_FLAG_MIPMAPS)) {
+
+				if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+					//not supported
+					ERR_PRINT("Streaming texture for non power of 2 or has mipmaps on this hardware: " + texture->path + "'. Mipmaps and repeat disabled.");
+					texture->flags &= ~(VS::TEXTURE_FLAG_REPEAT | VS::TEXTURE_FLAG_MIPMAPS);
+				} else {
+					texture->alloc_height = po2_height;
+					texture->alloc_width = po2_width;
+					texture->resize_to_po2 = true;
+				}
+>>>>>>> master
 			}
 		}
+
+		Image::Format real_format;
+		_get_gl_image_and_format(Ref<Image>(),
+				texture->format,
+				texture->flags,
+				real_format,
+				format,
+				internal_format,
+				type,
+				compressed,
+				texture->resize_to_po2);
+
+		texture->gl_format_cache = format;
+		texture->gl_type_cache = type;
+		texture->gl_internal_format_cache = internal_format;
+		texture->data_size = 0;
+		texture->mipmaps = 1;
+
+		texture->compressed = compressed;
 	}
-
-	Image::Format real_format;
-	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, format, internal_format, type, compressed, texture->resize_to_po2);
-
-	texture->gl_format_cache = format;
-	texture->gl_type_cache = type;
-	texture->gl_internal_format_cache = internal_format;
-	texture->data_size = 0;
-	texture->mipmaps = 1;
-
-	texture->compressed = compressed;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
+<<<<<<< HEAD
 #if defined(GLES_OVER_GL) || defined(ANDROID_ENABLED)
 	if ((p_type == RS::TEXTURE_TYPE_3D && config.texture_3d_supported) || (p_type == RS::TEXTURE_TYPE_2D_ARRAY && config.texture_array_supported)) {
 		int width = p_width;
@@ -624,6 +662,14 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	} else
 #endif
 			if (p_flags & RS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+=======
+	if (p_type == VS::TEXTURE_TYPE_EXTERNAL) {
+		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+>>>>>>> master
 		//prealloc if video
 		glTexImage2D(texture->target, 0, internal_format, texture->alloc_width, texture->alloc_height, 0, format, type, nullptr);
 	}
@@ -642,6 +688,7 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 	ERR_FAIL_COND(texture->render_target);
 	ERR_FAIL_COND(texture->format != p_image->get_format());
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->type == VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
@@ -1314,6 +1361,9 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	//reset flags on Sky Texture that may have changed
+	texture_set_flags(sky->panorama, texture->flags);
+
 	// Framebuffer did its job. thank mr framebuffer
 	glActiveTexture(GL_TEXTURE0); //back to panorama
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
@@ -1410,6 +1460,10 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_screen_texture = false;
 			p_shader->canvas_item.uses_screen_uv = false;
 			p_shader->canvas_item.uses_time = false;
+			p_shader->canvas_item.uses_modulate = false;
+			p_shader->canvas_item.uses_color = false;
+			p_shader->canvas_item.uses_vertex = false;
+			p_shader->canvas_item.batch_flags = 0;
 
 			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
 			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
@@ -1424,6 +1478,9 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_PIXEL_SIZE"] = &p_shader->canvas_item.uses_screen_uv;
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_TEXTURE"] = &p_shader->canvas_item.uses_screen_texture;
 			shaders.actions_canvas.usage_flag_pointers["TIME"] = &p_shader->canvas_item.uses_time;
+			shaders.actions_canvas.usage_flag_pointers["MODULATE"] = &p_shader->canvas_item.uses_modulate;
+			shaders.actions_canvas.usage_flag_pointers["COLOR"] = &p_shader->canvas_item.uses_color;
+			shaders.actions_canvas.usage_flag_pointers["VERTEX"] = &p_shader->canvas_item.uses_vertex;
 
 			actions = &shaders.actions_canvas;
 			actions->uniforms = &p_shader->uniforms;
@@ -1511,6 +1568,16 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
+
+	// some logic for batching
+	if (p_shader->mode == VS::SHADER_CANVAS_ITEM) {
+		if (p_shader->canvas_item.uses_modulate | p_shader->canvas_item.uses_color) {
+			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_COLOR_BAKING;
+		}
+		if (p_shader->canvas_item.uses_vertex) {
+			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_VERTEX_BAKING;
+		}
+	}
 
 	p_shader->shader->set_custom_shader(p_shader->custom_code_id);
 	p_shader->shader->bind();
@@ -1640,6 +1707,7 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 			} break;
 
 			case ShaderLanguage::TYPE_SAMPLER2D:
+			case ShaderLanguage::TYPE_SAMPLEREXT:
 			case ShaderLanguage::TYPE_ISAMPLER2D:
 			case ShaderLanguage::TYPE_USAMPLER2D: {
 				pi.type = Variant::OBJECT;
@@ -1699,6 +1767,34 @@ RID RasterizerStorageGLES2::shader_get_default_texture_param(RID p_shader, const
 	}
 
 	return E->get();
+}
+
+void RasterizerStorageGLES2::shader_add_custom_define(RID p_shader, const String &p_define) {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->add_custom_define(p_define);
+
+	_shader_make_dirty(shader);
+}
+
+void RasterizerStorageGLES2::shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->get_custom_defines(p_defines);
+}
+
+void RasterizerStorageGLES2::shader_clear_custom_defines(RID p_shader) {
+
+	Shader *shader = shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->shader->clear_custom_defines();
+
+	_shader_make_dirty(shader);
 }
 
 /* COMMON MATERIAL API */
@@ -5586,6 +5682,8 @@ void RasterizerStorageGLES2::render_info_end_capture() {
 	info.snap.surface_switch_count = info.render.surface_switch_count - info.snap.surface_switch_count;
 	info.snap.shader_rebind_count = info.render.shader_rebind_count - info.snap.shader_rebind_count;
 	info.snap.vertices_count = info.render.vertices_count - info.snap.vertices_count;
+	info.snap._2d_item_count = info.render._2d_item_count - info.snap._2d_item_count;
+	info.snap._2d_draw_call_count = info.render._2d_draw_call_count - info.snap._2d_draw_call_count;
 }
 
 int RasterizerStorageGLES2::get_captured_render_info(RS::RenderInfo p_info) {
@@ -5608,6 +5706,12 @@ int RasterizerStorageGLES2::get_captured_render_info(RS::RenderInfo p_info) {
 		case RS::INFO_DRAW_CALLS_IN_FRAME: {
 			return info.snap.draw_call_count;
 		} break;
+		case VS::INFO_2D_ITEMS_IN_FRAME: {
+			return info.snap._2d_item_count;
+		} break;
+		case VS::INFO_2D_DRAW_CALLS_IN_FRAME: {
+			return info.snap._2d_draw_call_count;
+		} break;
 		default: {
 			return get_render_info(p_info);
 		}
@@ -5628,7 +5732,15 @@ int RasterizerStorageGLES2::get_render_info(RS::RenderInfo p_info) {
 			return info.render_final.surface_switch_count;
 		case RS::INFO_DRAW_CALLS_IN_FRAME:
 			return info.render_final.draw_call_count;
+<<<<<<< HEAD
 		case RS::INFO_USAGE_VIDEO_MEM_TOTAL:
+=======
+		case VS::INFO_2D_ITEMS_IN_FRAME:
+			return info.render_final._2d_item_count;
+		case VS::INFO_2D_DRAW_CALLS_IN_FRAME:
+			return info.render_final._2d_draw_call_count;
+		case VS::INFO_USAGE_VIDEO_MEM_TOTAL:
+>>>>>>> master
 			return 0; //no idea
 		case RS::INFO_VIDEO_MEM_USED:
 			return info.vertex_mem + info.texture_mem;
@@ -5760,12 +5872,15 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_write_depth = config.extensions.has("GL_EXT_frag_depth");
 #endif
 
+	config.support_half_float_vertices = true;
+//every platform should support this except web, iOS has issues with their support, so add option to disable
 #ifdef JAVASCRIPT_ENABLED
 	config.support_half_float_vertices = false;
-#else
-	//every other platform, be it mobile or desktop, supports this (even if not in the GLES2 spec).
-	config.support_half_float_vertices = true;
 #endif
+	bool disable_half_float = GLOBAL_GET("rendering/gles2/compatibility/disable_half_float");
+	if (disable_half_float) {
+		config.support_half_float_vertices = false;
+	}
 
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc") || config.extensions.has("EXT_texture_compression_bptc");

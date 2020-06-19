@@ -242,6 +242,12 @@ public:
 
 		BlockNode() {
 			type = TYPE_BLOCK;
+<<<<<<< HEAD
+=======
+			end_line = -1;
+			parent_block = NULL;
+			parent_class = NULL;
+>>>>>>> master
 		}
 	};
 

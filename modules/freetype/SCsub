@@ -2,6 +2,11 @@
 
 Import("env")
 Import("env_modules")
+<<<<<<< HEAD
+=======
+
+from compat import isbasestring
+>>>>>>> master
 
 env_freetype = env_modules.Clone()
 
@@ -91,7 +96,11 @@ if env["builtin_freetype"]:
     # and then plain strings for system library. We insert between the two.
     inserted = False
     for idx, linklib in enumerate(env["LIBS"]):
+<<<<<<< HEAD
         if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
+=======
+        if isbasestring(linklib):  # first system lib such as "X11", otherwise SCons lib object
+>>>>>>> master
             env["LIBS"].insert(idx, lib)
             inserted = True
             break
@@ -100,3 +109,8 @@ if env["builtin_freetype"]:
 
 # Godot source files
 env_freetype.add_source_files(env.modules_sources, "*.cpp")
+<<<<<<< HEAD
+=======
+# Used in scene/, needs to be in main env
+env.Append(CPPDEFINES=["FREETYPE_ENABLED"])
+>>>>>>> master

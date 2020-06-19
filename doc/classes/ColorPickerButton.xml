@@ -55,7 +55,11 @@
 	<constants>
 	</constants>
 	<theme_items>
+<<<<<<< HEAD
 		<theme_item name="bg" type="Texture2D">
+=======
+		<theme_item name="bg" type="Texture">
+>>>>>>> master
 			The background of the color preview rect on the button.
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">

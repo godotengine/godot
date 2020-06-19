@@ -219,6 +219,10 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(
         CPPDEFINES=[
             "WINDOWS_ENABLED",
+<<<<<<< HEAD
+=======
+            "OPENGL_ENABLED",
+>>>>>>> master
             "WASAPI_ENABLED",
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
@@ -236,6 +240,10 @@ def configure_msvc(env, manual_msvc_config):
 
     LIBS = [
         "winmm",
+<<<<<<< HEAD
+=======
+        "opengl32",
+>>>>>>> master
         "dsound",
         "kernel32",
         "ole32",
@@ -255,6 +263,7 @@ def configure_msvc(env, manual_msvc_config):
         "Avrt",
         "dwmapi",
     ]
+<<<<<<< HEAD
 
     env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:
@@ -265,6 +274,8 @@ def configure_msvc(env, manual_msvc_config):
     # env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
     LIBS += ["opengl32"]
 
+=======
+>>>>>>> master
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:
@@ -337,7 +348,16 @@ def configure_mingw(env):
 
     ## Compiler configuration
 
+<<<<<<< HEAD
     if os.name != "nt":
+=======
+    if os.name == "nt":
+        # Force splitting libmodules.a in multiple chunks to work around
+        # issues reaching the linker command line size limit, which also
+        # seem to induce huge slowdown for 'ar' (GH-30892).
+        env["split_libmodules"] = True
+    else:
+>>>>>>> master
         env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
 
     if env["bits"] == "default":
@@ -390,12 +410,20 @@ def configure_mingw(env):
     ## Compile flags
 
     env.Append(CCFLAGS=["-mwindows"])
+<<<<<<< HEAD
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
+=======
+    env.Append(CPPDEFINES=["WINDOWS_ENABLED", "OPENGL_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
+>>>>>>> master
     env.Append(CPPDEFINES=[("WINVER", env["target_win_version"]), ("_WIN32_WINNT", env["target_win_version"])])
     env.Append(
         LIBS=[
             "mingw32",
+<<<<<<< HEAD
+=======
+            "opengl32",
+>>>>>>> master
             "dsound",
             "ole32",
             "d3d9",
@@ -418,6 +446,7 @@ def configure_mingw(env):
         ]
     )
 
+<<<<<<< HEAD
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:
         env.Append(LIBS=["vulkan"])
@@ -428,6 +457,8 @@ def configure_mingw(env):
     # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
     env.Append(LIBS=["opengl32"])
 
+=======
+>>>>>>> master
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
     # resrc

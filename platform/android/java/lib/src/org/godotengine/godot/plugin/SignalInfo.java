@@ -5,8 +5,13 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
+<<<<<<< HEAD
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+=======
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+>>>>>>> master
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +45,10 @@ import java.util.Arrays;
  * Store information about a {@link GodotPlugin}'s signal.
  */
 public final class SignalInfo {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	private final String name;
 	private final Class<?>[] paramTypes;
 	private final String[] paramTypesNames;

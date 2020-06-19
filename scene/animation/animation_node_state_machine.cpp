@@ -558,6 +558,10 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 }
 
 void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<AnimationNode> p_node) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND(states.has(p_name) == false);
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(String(p_name).find("/") != -1);
@@ -565,7 +569,11 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 	{
 		Ref<AnimationNode> node = states[p_name].node;
 		if (node.is_valid()) {
+<<<<<<< HEAD
 			node->disconnect_compat("tree_changed", this, "_tree_changed");
+=======
+			node->disconnect("tree_changed", this, "_tree_changed");
+>>>>>>> master
 		}
 	}
 
@@ -573,6 +581,14 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 
 	emit_changed();
 	emit_signal("tree_changed");
+<<<<<<< HEAD
+=======
+
+	p_node->connect("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
+}
+
+Ref<AnimationNode> AnimationNodeStateMachine::get_node(const StringName &p_name) const {
+>>>>>>> master
 
 	p_node->connect_compat("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
 }

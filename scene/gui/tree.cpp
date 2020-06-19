@@ -2385,6 +2385,9 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				TreeItem *old_it = cache.hover_item;
 				int old_col = cache.hover_cell;
 
+				TreeItem *old_it = cache.hover_item;
+				int old_col = cache.hover_cell;
+
 				int col, h, section;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
@@ -3464,8 +3467,15 @@ TreeItem *Tree::get_item_with_text(const String &p_find) const {
 			}
 		}
 	}
+<<<<<<< HEAD
 	return nullptr;
 }
+=======
+	return NULL;
+}
+
+void Tree::_do_incr_search(const String &p_add) {
+>>>>>>> master
 
 void Tree::_do_incr_search(const String &p_add) {
 	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec

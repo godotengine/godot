@@ -178,8 +178,11 @@ SConscript("os/SCsub")
 SConscript("math/SCsub")
 SConscript("crypto/SCsub")
 SConscript("io/SCsub")
+<<<<<<< HEAD
 SConscript("debugger/SCsub")
 SConscript("input/SCsub")
+=======
+>>>>>>> master
 SConscript("bind/SCsub")
 
 

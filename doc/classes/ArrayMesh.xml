@@ -21,8 +21,13 @@
 		var m = MeshInstance3D.new()
 		m.mesh = arr_mesh
 		[/codeblock]
+<<<<<<< HEAD
 		The [MeshInstance3D] is ready to be added to the [SceneTree] to be shown.
 		See also [ImmediateGeometry3D], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
+=======
+		The [MeshInstance] is ready to be added to the [SceneTree] to be shown.
+		See also [ImmediateGeometry], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
+>>>>>>> master
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>

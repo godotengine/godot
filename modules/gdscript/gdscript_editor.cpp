@@ -3475,6 +3475,10 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			}
 		} break;
 		case GDScriptParser::COMPLETION_TYPE_HINT: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 			GDScriptParser::DataType base_type = context._class->base_type;
 			base_type.has_type = true;
 			base_type.kind = GDScriptParser::DataType::CLASS;

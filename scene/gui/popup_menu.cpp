@@ -378,6 +378,10 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
 		uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
@@ -1015,8 +1019,16 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 }
 
 int PopupMenu::get_current_index() const {
+<<<<<<< HEAD
 	return mouse_over;
 }
+=======
+
+	return mouse_over;
+}
+
+int PopupMenu::get_item_count() const {
+>>>>>>> master
 
 int PopupMenu::get_item_count() const {
 	return items.size();

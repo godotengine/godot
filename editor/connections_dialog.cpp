@@ -262,6 +262,12 @@ void ConnectDialog::_notification(int p_what) {
 
 void ConnectDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
+	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
+	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
+>>>>>>> master
 	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
 
 	ADD_SIGNAL(MethodInfo("connected"));
@@ -401,8 +407,13 @@ ConnectDialog::ConnectDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
+<<<<<<< HEAD
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
+=======
+	tree->get_scene_tree()->connect("item_activated", this, "_ok");
+	tree->connect("node_selected", this, "_tree_node_selected");
+>>>>>>> master
 	tree->set_connect_to_script_mode(true);
 
 	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), tree, true);

@@ -257,10 +257,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
 	volatile bool plugins_changed;
+<<<<<<< HEAD
 	Mutex plugins_lock;
 	Vector<Device> devices;
 	volatile bool devices_changed;
 	Mutex device_lock;
+=======
+	Mutex *plugins_lock;
+	Vector<Device> devices;
+	volatile bool devices_changed;
+	Mutex *device_lock;
+>>>>>>> master
 	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 
@@ -273,6 +280,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				// Nothing to do if we already know the plugins have changed.
 				if (!ea->plugins_changed) {
 					Vector<PluginConfig> loaded_plugins = get_plugins();
+<<<<<<< HEAD
 
 					MutexLock lock(ea->plugins_lock);
 
@@ -290,6 +298,27 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					if (ea->plugins_changed) {
 						ea->plugins = loaded_plugins;
 					}
+=======
+
+					ea->plugins_lock->lock();
+
+					if (ea->plugins.size() != loaded_plugins.size()) {
+						ea->plugins_changed = true;
+					} else {
+						for (int i = 0; i < ea->plugins.size(); i++) {
+							if (ea->plugins[i].name != loaded_plugins[i].name) {
+								ea->plugins_changed = true;
+								break;
+							}
+						}
+					}
+
+					if (ea->plugins_changed) {
+						ea->plugins = loaded_plugins;
+					}
+
+					ea->plugins_lock->unlock();
+>>>>>>> master
 				}
 			}
 
@@ -1262,11 +1291,18 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		if (p_utf8) {
 			uint8_t byte = p_bytes[offset];
+<<<<<<< HEAD
 			if (byte & 0x80) {
 				offset += 2;
 			} else {
 				offset += 1;
 			}
+=======
+			if (byte & 0x80)
+				offset += 2;
+			else
+				offset += 1;
+>>>>>>> master
 			byte = p_bytes[offset];
 			offset++;
 			if (byte & 0x80) {
@@ -1530,6 +1566,11 @@ public:
 		}
 		return export_options_changed;
 	}
+<<<<<<< HEAD
+=======
+
+	virtual bool poll_export() {
+>>>>>>> master
 
 	virtual bool poll_export() {
 		bool dc = devices_changed;
@@ -1586,6 +1627,10 @@ public:
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
+<<<<<<< HEAD
+=======
+			device_lock->unlock();
+>>>>>>> master
 			return ERR_SKIP;
 		}
 
@@ -1846,6 +1891,23 @@ public:
 			err += etc_error;
 		}
 
+<<<<<<< HEAD
+=======
+		// The GodotPaymentV3 module was converted to the GodotPayment plugin in Godot 3.2.2,
+		// this check helps users to notice the change to ensure that they change their settings.
+		String modules = ProjectSettings::get_singleton()->get("android/modules");
+		if (modules.find("org/godotengine/godot/GodotPaymentV3") != -1) {
+			bool godot_payment_enabled = p_preset->get("plugins/" + GODOT_PAYMENT.name);
+			if (!godot_payment_enabled) {
+				valid = false;
+				err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\n"
+						   "Replace it by the \"GodotPayment\" plugin, which should be enabled in the \"Plugins\" preset section.\n"
+						   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotPayment\".");
+				err += "\n";
+			}
+		}
+
+>>>>>>> master
 		// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 		String enabled_plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 		bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
@@ -1888,6 +1950,301 @@ public:
 		List<String> list;
 		list.push_back("apk");
 		return list;
+	}
+
+<<<<<<< HEAD
+	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
+		String plugin_names = get_plugins_names(enabled_plugins);
+		bool first_build = last_custom_build_time == 0;
+		bool have_plugins_changed = false;
+
+		if (!first_build) {
+			have_plugins_changed = plugin_names != last_plugin_names;
+			if (!have_plugins_changed) {
+				for (int i = 0; i < enabled_plugins.size(); i++) {
+					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
+						have_plugins_changed = true;
+						break;
+=======
+	void _update_custom_build_project() {
+
+		DirAccessRef da = DirAccess::open("res://android");
+
+		ERR_FAIL_COND_MSG(!da, "Cannot open directory 'res://android'.");
+		Map<String, List<String> > directory_paths;
+		Map<String, List<String> > manifest_sections;
+		Map<String, List<String> > gradle_sections;
+		da->list_dir_begin();
+		String d = da->get_next();
+		while (d != String()) {
+
+			if (!d.begins_with(".") && d != "build" && da->current_is_dir()) { //a dir and not the build dir
+				//add directories found
+				DirAccessRef ds = DirAccess::open(String("res://android").plus_file(d));
+				if (ds) {
+					ds->list_dir_begin();
+					String sd = ds->get_next();
+					while (sd != String()) {
+
+						if (!sd.begins_with(".") && ds->current_is_dir()) {
+							String key = sd.to_upper();
+							if (!directory_paths.has(key)) {
+								directory_paths[key] = List<String>();
+							}
+							String path = ProjectSettings::get_singleton()->get_resource_path().plus_file("android").plus_file(d).plus_file(sd);
+							directory_paths[key].push_back(path);
+							print_line("Add: " + sd + ":" + path);
+						}
+
+						sd = ds->get_next();
+					}
+					ds->list_dir_end();
+				}
+				//parse manifest
+				{
+					FileAccessRef f = FileAccess::open(String("res://android").plus_file(d).plus_file("AndroidManifest.conf"), FileAccess::READ);
+					if (f) {
+
+						String section;
+						while (!f->eof_reached()) {
+							String l = f->get_line();
+							String k = l.strip_edges();
+							if (k.begins_with("[")) {
+								section = k.substr(1, k.length() - 2).strip_edges().to_upper();
+								print_line("Section: " + section);
+							} else if (k != String()) {
+								if (!manifest_sections.has(section)) {
+									manifest_sections[section] = List<String>();
+								}
+								manifest_sections[section].push_back(l);
+							}
+						}
+
+						f->close();
+					}
+				}
+				//parse gradle
+				{
+					FileAccessRef f = FileAccess::open(String("res://android").plus_file(d).plus_file("gradle.conf"), FileAccess::READ);
+					if (f) {
+
+						String section;
+						while (!f->eof_reached()) {
+							String l = f->get_line().strip_edges();
+							String k = l.strip_edges();
+							if (k.begins_with("[")) {
+								section = k.substr(1, k.length() - 2).strip_edges().to_upper();
+								print_line("Section: " + section);
+							} else if (k != String()) {
+								if (!gradle_sections.has(section)) {
+									gradle_sections[section] = List<String>();
+								}
+								gradle_sections[section].push_back(l);
+							}
+						}
+					}
+				}
+			}
+			d = da->get_next();
+		}
+		da->list_dir_end();
+
+		{ //fix gradle build
+
+			String new_file;
+			{
+				FileAccessRef f = FileAccess::open("res://android/build/build.gradle", FileAccess::READ);
+				if (f) {
+
+					while (!f->eof_reached()) {
+						String l = f->get_line();
+
+						bool append_line = false;
+						if (l.begins_with("//CHUNK_")) {
+							String text = l.replace_first("//CHUNK_", "");
+							int begin_pos = text.find("_BEGIN");
+							if (begin_pos != -1) {
+								text = text.substr(0, begin_pos);
+								text = text.to_upper(); //just in case
+
+								String end_marker = "//CHUNK_" + text + "_END";
+								size_t pos = f->get_position();
+								bool found = false;
+								while (!f->eof_reached()) {
+									l = f->get_line();
+									if (l.begins_with(end_marker)) {
+										found = true;
+										break;
+									}
+								}
+
+								new_file += "//CHUNK_" + text + "_BEGIN\n";
+
+								if (!found) {
+									ERR_PRINTS("No end marker found in build.gradle for chunk: " + text);
+									f->seek(pos);
+								} else {
+
+									//add chunk lines
+									if (gradle_sections.has(text)) {
+										for (List<String>::Element *E = gradle_sections[text].front(); E; E = E->next()) {
+											new_file += E->get() + "\n";
+										}
+									}
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
+								}
+							} else {
+								append_line = true;
+							}
+						} else if (l.begins_with("//DIR_")) {
+							String text = l.replace_first("//DIR_", "");
+							int begin_pos = text.find("_BEGIN");
+							if (begin_pos != -1) {
+								text = text.substr(0, begin_pos);
+								text = text.to_upper(); //just in case
+
+								String end_marker = "//DIR_" + text + "_END";
+								size_t pos = f->get_position();
+								bool found = false;
+								while (!f->eof_reached()) {
+									l = f->get_line();
+									if (l.begins_with(end_marker)) {
+										found = true;
+										break;
+									}
+								}
+
+								new_file += "//DIR_" + text + "_BEGIN\n";
+
+								if (!found) {
+									ERR_PRINTS("No end marker found in build.gradle for dir: " + text);
+									f->seek(pos);
+								} else {
+									//add chunk lines
+									if (directory_paths.has(text)) {
+										for (List<String>::Element *E = directory_paths[text].front(); E; E = E->next()) {
+											new_file += ",'" + E->get().replace("'", "\'") + "'";
+											new_file += "\n";
+										}
+									}
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
+								}
+							} else {
+								append_line = true;
+							}
+						} else {
+							append_line = true;
+						}
+
+						if (append_line) {
+							if (f->eof_reached()) {
+								new_file += l;
+							} else {
+								new_file += l + "\n";
+							}
+						}
+>>>>>>> master
+					}
+				}
+			}
+		}
+
+<<<<<<< HEAD
+		last_custom_build_time = OS::get_singleton()->get_unix_time();
+		last_plugin_names = plugin_names;
+=======
+		{ //fix manifest
+
+			String new_file;
+			{
+				FileAccessRef f = FileAccess::open("res://android/build/AndroidManifest.xml", FileAccess::READ);
+				if (f) {
+
+					while (!f->eof_reached()) {
+						String l = f->get_line();
+
+						bool append_line = false;
+						if (l.begins_with("<!--CHUNK_")) {
+							String text = l.replace_first("<!--CHUNK_", "");
+							int begin_pos = text.find("_BEGIN-->");
+							if (begin_pos != -1) {
+								text = text.substr(0, begin_pos);
+								text = text.to_upper(); //just in case
+
+								String end_marker = "<!--CHUNK_" + text + "_END-->";
+								size_t pos = f->get_position();
+								bool found = false;
+								while (!f->eof_reached()) {
+									l = f->get_line();
+									if (l.begins_with(end_marker)) {
+										found = true;
+										break;
+									}
+								}
+
+								new_file += "<!--CHUNK_" + text + "_BEGIN-->\n";
+
+								if (!found) {
+									ERR_PRINTS("No end marker found in AndroidManifest.xml for chunk: " + text);
+									f->seek(pos);
+								} else {
+									//add chunk lines
+									if (manifest_sections.has(text)) {
+										for (List<String>::Element *E = manifest_sections[text].front(); E; E = E->next()) {
+											new_file += E->get() + "\n";
+										}
+									}
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
+								}
+							} else {
+								append_line = true;
+							}
+
+						} else if (l.strip_edges().begins_with("<application")) {
+							String last_tag = "android:icon=\"@mipmap/icon\"";
+							int last_tag_pos = l.find(last_tag);
+							if (last_tag_pos == -1) {
+								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
+								append_line = true;
+							} else {
+								String base = l.substr(0, last_tag_pos + last_tag.length());
+								if (manifest_sections.has("application_attribs")) {
+									for (List<String>::Element *E = manifest_sections["application_attribs"].front(); E; E = E->next()) {
+										String to_add = E->get().strip_edges();
+										base += " " + to_add + " ";
+									}
+								}
+								base += ">\n";
+								new_file += base;
+							}
+						} else {
+							append_line = true;
+						}
+
+						if (append_line) {
+							new_file += l;
+							if (!f->eof_reached()) {
+								new_file += "\n";
+							}
+						}
+					}
+				}
+			}
+>>>>>>> master
+
+		return have_plugins_changed || first_build;
 	}
 
 	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
@@ -2486,6 +2843,11 @@ public:
 		run_icon->create_from_image(img);
 
 		devices_changed = true;
+<<<<<<< HEAD
+=======
+
+		plugins_lock = Mutex::create();
+>>>>>>> master
 		plugins_changed = true;
 		quit_request = false;
 		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
@@ -2494,6 +2856,11 @@ public:
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
 		Thread::wait_to_finish(check_for_changes_thread);
+<<<<<<< HEAD
+=======
+		memdelete(plugins_lock);
+		memdelete(device_lock);
+>>>>>>> master
 		memdelete(check_for_changes_thread);
 	}
 };

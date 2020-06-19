@@ -23,6 +23,7 @@ Files extracted from upstream source:
 - `rm -f code/Common/ZipArchiveIOSystem.cpp include/assimp/ZipArchiveIOSystem.h
    include/assimp/irrXMLWrapper.h`
 
+<<<<<<< HEAD
 
 ## basis_universal
 
@@ -36,6 +37,8 @@ Files extracted from upstream source:
 - `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
 - `LICENSE`
 
+=======
+>>>>>>> master
 
 ## bullet
 
@@ -304,7 +307,11 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
+<<<<<<< HEAD
 - Version: 2.16.6 (2020)
+=======
+- Version: 2.16.6
+>>>>>>> master
 - License: Apache 2.0
 
 File extracted from upstream release tarball (`-apache.tgz` variant):
@@ -324,7 +331,11 @@ File extracted from upstream release tarball (`-apache.tgz` variant):
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp/tree/master/miniupnpc
+<<<<<<< HEAD
 - Version: git (44366328661826603982d1e0d7ebb4062c5f2bfc, 2020)
+=======
+- Version: git (4436632, 2020)
+>>>>>>> master
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -494,7 +505,11 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org
+<<<<<<< HEAD
 - Version: 10.34 (2019)
+=======
+- Version: 10.34
+>>>>>>> master
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

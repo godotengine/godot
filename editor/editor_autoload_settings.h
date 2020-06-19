@@ -75,9 +75,12 @@ class EditorAutoloadSettings : public VBoxContainer {
 	Tree *tree;
 	LineEdit *autoload_add_name;
 	Button *add_autoload;
+<<<<<<< HEAD
 	LineEdit *autoload_add_path;
 	Button *browse_button;
 	EditorFileDialog *file_dialog;
+=======
+>>>>>>> master
 
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
 

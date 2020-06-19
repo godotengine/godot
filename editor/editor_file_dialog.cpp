@@ -194,10 +194,18 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 };
 
 void EditorFileDialog::update_dir() {
+<<<<<<< HEAD
 	if (drives->is_visible()) {
 		drives->select(dir_access->get_current_drive());
 	}
 	dir->set_text(dir_access->get_current_dir(false));
+=======
+
+	if (drives->is_visible()) {
+		drives->select(dir_access->get_current_drive());
+	}
+	dir->set_text(dir_access->get_current_dir_without_drive());
+>>>>>>> master
 
 	// Disable "Open" button only when selecting file(s) mode.
 	get_ok()->set_disabled(_is_open_should_be_disabled());
@@ -912,6 +920,10 @@ void EditorFileDialog::add_filter(const String &p_filter) {
 }
 
 String EditorFileDialog::get_current_dir() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	return dir_access->get_current_dir();
 }
 
@@ -919,7 +931,10 @@ String EditorFileDialog::get_current_file() const {
 	return file->get_text();
 }
 
+<<<<<<< HEAD
 String EditorFileDialog::get_current_path() const {
+=======
+>>>>>>> master
 	return dir_access->get_current_dir().plus_file(file->get_text());
 }
 
@@ -1475,6 +1490,13 @@ EditorFileDialog::EditorFileDialog() {
 	drives_container = memnew(HBoxContainer);
 	pathhb->add_child(drives_container);
 
+<<<<<<< HEAD
+=======
+	drives = memnew(OptionButton);
+	drives->connect("item_selected", this, "_select_drive");
+	pathhb->add_child(drives);
+
+>>>>>>> master
 	dir = memnew(LineEdit);
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1520,10 +1542,13 @@ EditorFileDialog::EditorFileDialog() {
 
 	shortcuts_container = memnew(HBoxContainer);
 	pathhb->add_child(shortcuts_container);
+<<<<<<< HEAD
 
 	drives = memnew(OptionButton);
 	drives->connect("item_selected", callable_mp(this, &EditorFileDialog::_select_drive));
 	pathhb->add_child(drives);
+=======
+>>>>>>> master
 
 	makedir = memnew(Button);
 	makedir->set_text(TTR("Create Folder"));

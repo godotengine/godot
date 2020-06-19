@@ -355,6 +355,8 @@ class EditorExport : public Node {
 
 	StringName _export_presets_updated;
 
+	StringName _export_presets_updated;
+
 	Timer *save_timer;
 	bool block_save;
 

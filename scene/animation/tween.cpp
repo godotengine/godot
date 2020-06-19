@@ -67,7 +67,11 @@ void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const 
 	}
 
 	// Add the specified arguments to the command
+<<<<<<< HEAD
 	if (count > 0) {
+=======
+	if (count > 0)
+>>>>>>> master
 		cmd.arg[0] = p_arg1;
 	}
 	if (count > 1) {
@@ -1252,7 +1256,11 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 			static Variant::Type supported_types[] = {
 				Variant::BOOL,
 				Variant::INT,
+<<<<<<< HEAD
 				Variant::FLOAT,
+=======
+				Variant::REAL,
+>>>>>>> master
 				Variant::VECTOR2,
 				Variant::RECT2,
 				Variant::VECTOR3,

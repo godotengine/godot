@@ -320,6 +320,10 @@ void ParticlesMaterial::_update_shader() {
 	code += "		float spread_rad = spread * degree_to_rad;\n";
 
 	if (flags[FLAG_DISABLE_Z]) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
 		code += "		vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";

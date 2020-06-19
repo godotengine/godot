@@ -130,6 +130,10 @@ void gd_mono_profiler_init() {
 }
 
 void gd_mono_debug_init() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
 
 	if (da_args.length()) {
@@ -340,7 +344,11 @@ void GDMono::initialize() {
 #ifdef ANDROID_ENABLED
 	mono_config_parse_memory(get_godot_android_mono_config().utf8().get_data());
 #else
+<<<<<<< HEAD
 	mono_config_parse(nullptr);
+=======
+	mono_config_parse(NULL);
+>>>>>>> master
 #endif
 
 #if defined(ANDROID_ENABLED)
@@ -355,7 +363,11 @@ void GDMono::initialize() {
 	gd_mono_profiler_init();
 #endif
 
+<<<<<<< HEAD
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, nullptr);
+=======
+	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
+>>>>>>> master
 
 #ifndef TOOLS_ENABLED
 	// Exported games that don't use C# must still work. They likely don't ship with mscorlib.
@@ -517,13 +529,23 @@ void GDMono::add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly) {
 }
 
 GDMonoAssembly *GDMono::get_loaded_assembly(const String &p_name) {
+<<<<<<< HEAD
 	if (p_name == "mscorlib" && corlib_assembly)
 		return corlib_assembly;
+=======
+
+	if (p_name == "mscorlib")
+		return get_corlib_assembly();
+>>>>>>> master
 
 	MonoDomain *domain = mono_domain_get();
 	uint32_t domain_id = domain ? mono_domain_get_id(domain) : 0;
 	GDMonoAssembly **result = assemblies[domain_id].getptr(p_name);
+<<<<<<< HEAD
 	return result ? *result : nullptr;
+=======
+	return result ? *result : NULL;
+>>>>>>> master
 }
 
 bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
@@ -1053,7 +1075,13 @@ Error GDMono::_unload_scripts_domain() {
 
 	print_verbose("Mono: Unloading scripts domain...");
 
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	print_verbose("Mono: Unloading scripts domain...");
+
+	MonoException *exc = NULL;
+>>>>>>> master
 	mono_domain_try_unload(domain, (MonoObject **)&exc);
 
 	if (exc) {
@@ -1163,6 +1191,10 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 	if (klass)
 		return klass;
 
+	GDMonoClass *klass = corlib_assembly->get_class(p_namespace, p_name);
+	if (klass)
+		return klass;
+
 	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
@@ -1252,6 +1284,27 @@ GDMono::~GDMono() {
 		if (!mono_domain_finalize(root_domain, 2000)) {
 			ERR_PRINT("Mono: Domain finalization timeout.");
 		}
+<<<<<<< HEAD
+=======
+
+		finalizing_scripts_domain = false;
+
+		mono_gc_collect(mono_gc_max_generation());
+
+		GDMonoCache::clear_godot_api_cache();
+
+		_domain_assemblies_cleanup(mono_domain_get_id(root_domain));
+
+		core_api_assembly.assembly = NULL;
+
+		project_assembly = NULL;
+
+		root_domain = NULL;
+		scripts_domain = NULL;
+
+		// Leave the rest to 'mono_jit_cleanup'
+#endif
+>>>>>>> master
 
 		finalizing_scripts_domain = false;
 

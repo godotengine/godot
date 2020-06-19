@@ -95,7 +95,20 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
 	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
 
+<<<<<<< HEAD
 	icon->create_from_image(img); // in this case filter really helps
+=======
+	// Upsample icon generation only if the editor scale isn't an integer multiplier.
+	// Generating upsampled icons is slower, and the benefit is hardly visible
+	// with integer editor scales.
+	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
+	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
+
+	if ((p_scale - (float)((int)p_scale)) > 0.0 || is_gizmo || p_force_filter)
+		icon->create_from_image(img); // in this case filter really helps
+	else
+		icon->create_from_image(img, 0);
+>>>>>>> master
 
 	return icon;
 }
@@ -105,7 +118,12 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 #endif
 
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false) {
+<<<<<<< HEAD
 #ifdef MODULE_SVG_ENABLED
+=======
+
+#ifdef SVG_ENABLED
+>>>>>>> master
 	// The default icon theme is designed to be used for a dark theme.
 	// This dictionary stores color codes to convert to other colors
 	// for better readability on a light theme.
@@ -185,7 +203,12 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("EditorHandle");
 		exceptions.insert("Editor3DHandle");
 		exceptions.insert("Godot");
+<<<<<<< HEAD
 		exceptions.insert("Sky");
+=======
+		exceptions.insert("PanoramaSky");
+		exceptions.insert("ProceduralSky");
+>>>>>>> master
 		exceptions.insert("EditorControlAnchor");
 		exceptions.insert("DefaultProjectIcon");
 		exceptions.insert("GuiCloseCustomizable");

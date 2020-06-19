@@ -26,11 +26,14 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
+<<<<<<< HEAD
         BoolVariable(
             "use_static_mvk",
             "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables validation layers)",
             False,
         ),
+=======
+>>>>>>> master
         EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -153,7 +156,20 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=["#platform/osx"])
+<<<<<<< HEAD
     env.Append(CPPDEFINES=["OSX_ENABLED", "UNIX_ENABLED", "APPLE_STYLE_KEYS", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"])
+=======
+    env.Append(
+        CPPDEFINES=[
+            "OSX_ENABLED",
+            "UNIX_ENABLED",
+            "GLES_ENABLED",
+            "APPLE_STYLE_KEYS",
+            "COREAUDIO_ENABLED",
+            "COREMIDI_ENABLED",
+        ]
+    )
+>>>>>>> master
     env.Append(
         LINKFLAGS=[
             "-framework",
@@ -161,16 +177,28 @@ def configure(env):
             "-framework",
             "Carbon",
             "-framework",
+<<<<<<< HEAD
+=======
+            "OpenGL",
+            "-framework",
+            "AGL",
+            "-framework",
+>>>>>>> master
             "AudioUnit",
             "-framework",
             "CoreAudio",
             "-framework",
             "CoreMIDI",
+<<<<<<< HEAD
+=======
+            "-lz",
+>>>>>>> master
             "-framework",
             "IOKit",
             "-framework",
             "ForceFeedback",
             "-framework",
+<<<<<<< HEAD
             "CoreVideo",
             "-framework",
             "AVFoundation",
@@ -192,3 +220,16 @@ def configure(env):
 
     env.Append(CCFLAGS=["-mmacosx-version-min=10.12"])
     env.Append(LINKFLAGS=["-mmacosx-version-min=10.12"])
+=======
+            "AVFoundation",
+            "-framework",
+            "CoreMedia",
+            "-framework",
+            "CoreVideo",
+        ]
+    )
+    env.Append(LIBS=["pthread"])
+
+    env.Append(CCFLAGS=["-mmacosx-version-min=10.9"])
+    env.Append(LINKFLAGS=["-mmacosx-version-min=10.9"])
+>>>>>>> master

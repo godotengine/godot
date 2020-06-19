@@ -72,10 +72,18 @@ public:
 
 	jobject get_class_loader();
 
+<<<<<<< HEAD
 	void on_video_init(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);
 	void force_quit(JNIEnv *p_env = nullptr);
+=======
+	void gfx_init(bool gl2);
+	void on_video_init(JNIEnv *p_env = NULL);
+	void on_godot_main_loop_started(JNIEnv *p_env = NULL);
+	void restart(JNIEnv *p_env = NULL);
+	void force_quit(JNIEnv *p_env = NULL);
+>>>>>>> master
 	void set_keep_screen_on(bool p_enabled);
 	void alert(const String &p_message, const String &p_title);
 	int get_gles_version_code();

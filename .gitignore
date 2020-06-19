@@ -18,10 +18,16 @@ local.properties
 .idea
 .gradletasknamecache
 project.properties
+<<<<<<< HEAD
 platform/android/java/lib/.cxx/
 platform/android/java/libs/*
 platform/android/java/app/libs/*
 platform/android/java/lib/.cxx/*
+=======
+platform/android/java/app/libs/*
+platform/android/java/libs/*
+platform/android/java/lib/.cxx/
+>>>>>>> master
 
 # General c++ generated files
 *.lib

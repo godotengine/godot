@@ -89,8 +89,17 @@ void AcceptDialog::_notification(int p_what) {
 				_update_child_rects();
 			}
 		} break;
+<<<<<<< HEAD
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
+=======
+
+		case NOTIFICATION_POPUP_HIDE: {
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton() && !was_editor_dimmed) {
+				EditorNode::get_singleton()->dim_editor(false);
+				set_pass_on_modal_close_click(false);
+			}
+>>>>>>> master
 		} break;
 	}
 }

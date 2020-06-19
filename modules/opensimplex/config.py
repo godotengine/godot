@@ -7,10 +7,15 @@ def configure(env):
 
 
 def get_doc_classes():
+<<<<<<< HEAD
     return [
         "NoiseTexture",
         "OpenSimplexNoise",
     ]
+=======
+    return ["NoiseTexture", "OpenSimplexNoise"]
+
+>>>>>>> master
 
 
 def get_doc_path():

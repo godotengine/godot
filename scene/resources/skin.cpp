@@ -46,6 +46,10 @@ void Skin::add_bind(int p_bone, const Transform &p_pose) {
 }
 
 void Skin::add_named_bind(const String &p_name, const Transform &p_pose) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	uint32_t index = bind_count;
 	set_bind_count(bind_count + 1);
 	set_bind_name(index, p_name);
@@ -128,7 +132,11 @@ bool Skin::_get(const StringName &p_name, Variant &r_ret) const {
 void Skin::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "bind_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"));
 	for (int i = 0; i < get_bind_count(); i++) {
+<<<<<<< HEAD
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bind/" + itos(i) + "/name"));
+=======
+		p_list->push_back(PropertyInfo(Variant::STRING, "bind/" + itos(i) + "/name"));
+>>>>>>> master
 		p_list->push_back(PropertyInfo(Variant::INT, "bind/" + itos(i) + "/bone", PROPERTY_HINT_RANGE, "0,16384,1,or_greater", get_bind_name(i) != StringName() ? PROPERTY_USAGE_NOEDITOR : PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, "bind/" + itos(i) + "/pose"));
 	}

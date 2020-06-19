@@ -78,7 +78,12 @@ public:
 	virtual bool drives_are_shortcuts();
 
 	virtual Error change_dir(String p_dir) = 0; ///< can be relative or absolute, return false on success
+<<<<<<< HEAD
 	virtual String get_current_dir(bool p_include_drive = true) = 0; ///< return current dir location
+=======
+	virtual String get_current_dir() = 0; ///< return current dir location
+	virtual String get_current_dir_without_drive();
+>>>>>>> master
 	virtual Error make_dir(String p_dir) = 0;
 	virtual Error make_dir_recursive(String p_dir);
 	virtual Error erase_contents_recursive(); //super dangerous, use with care!
