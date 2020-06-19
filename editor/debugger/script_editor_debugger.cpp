@@ -1517,27 +1517,31 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		hbc->add_child(memnew(VSeparator));
 
-		skip_breakpoints = memnew(ToolButton);
+		skip_breakpoints = memnew(Button);
+		skip_breakpoints->set_flat(true);
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip(TTR("Skip Breakpoints"));
 		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		hbc->add_child(memnew(VSeparator));
 
-		copy = memnew(ToolButton);
+		copy = memnew(Button);
+		copy->set_flat(true);
 		hbc->add_child(copy);
 		copy->set_tooltip(TTR("Copy Error"));
 		copy->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
 
-		step = memnew(ToolButton);
+		step = memnew(Button);
+		step->set_flat(true);
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_step));
 
-		next = memnew(ToolButton);
+		next = memnew(Button);
+		next->set_flat(true);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
@@ -1545,13 +1549,15 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		hbc->add_child(memnew(VSeparator));
 
-		dobreak = memnew(ToolButton);
+		dobreak = memnew(Button);
+		dobreak->set_flat(true);
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_break));
 
-		docontinue = memnew(ToolButton);
+		docontinue = memnew(Button);
+		docontinue->set_flat(true);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
@@ -1730,9 +1736,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_total->set_editable(false);
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
-		vmem_refresh = memnew(ToolButton);
+		vmem_refresh = memnew(Button);
+		vmem_refresh->set_flat(true);
 		vmem_hb->add_child(vmem_refresh);
-		vmem_export = memnew(ToolButton);
+		vmem_export = memnew(Button);
+		vmem_export->set_flat(true);
 		vmem_export->set_tooltip(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);

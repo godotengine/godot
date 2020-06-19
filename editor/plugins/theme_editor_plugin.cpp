@@ -672,8 +672,9 @@ ThemeEditor::ThemeEditor() {
 	bt->set_text(TTR("Disabled Button"));
 	bt->set_disabled(true);
 	first_vb->add_child(bt);
-	ToolButton *tb = memnew(ToolButton);
-	tb->set_text("ToolButton");
+	Button *tb = memnew(Button);
+	tb->set_flat(true);
+	tb->set_text("Button");
 	first_vb->add_child(tb);
 
 	CheckButton *cb = memnew(CheckButton);

@@ -6048,7 +6048,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	button_binds.resize(1);
 	String sct;
 
-	tool_button[TOOL_MODE_SELECT] = memnew(ToolButton);
+	tool_button[TOOL_MODE_SELECT] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_MODE_SELECT]);
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SELECT]->set_flat(true);
@@ -6060,7 +6060,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	hbc_menu->add_child(memnew(VSeparator));
 
-	tool_button[TOOL_MODE_MOVE] = memnew(ToolButton);
+	tool_button[TOOL_MODE_MOVE] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_MODE_MOVE]);
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
@@ -6068,7 +6068,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_MOVE]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), KEY_W));
 
-	tool_button[TOOL_MODE_ROTATE] = memnew(ToolButton);
+	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_MODE_ROTATE]);
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
@@ -6076,7 +6076,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_ROTATE]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), KEY_E));
 
-	tool_button[TOOL_MODE_SCALE] = memnew(ToolButton);
+	tool_button[TOOL_MODE_SCALE] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_MODE_SCALE]);
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
@@ -6086,7 +6086,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	hbc_menu->add_child(memnew(VSeparator));
 
-	tool_button[TOOL_MODE_LIST_SELECT] = memnew(ToolButton);
+	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
@@ -6094,25 +6094,25 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
-	tool_button[TOOL_LOCK_SELECTED] = memnew(ToolButton);
+	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	button_binds.write[0] = MENU_LOCK_SELECTED;
 	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 
-	tool_button[TOOL_UNLOCK_SELECTED] = memnew(ToolButton);
+	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
 	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 
-	tool_button[TOOL_GROUP_SELECTED] = memnew(ToolButton);
+	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	button_binds.write[0] = MENU_GROUP_SELECTED;
 	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 
-	tool_button[TOOL_UNGROUP_SELECTED] = memnew(ToolButton);
+	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	button_binds.write[0] = MENU_UNGROUP_SELECTED;
 	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
@@ -6120,7 +6120,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	hbc_menu->add_child(memnew(VSeparator));
 
-	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(ToolButton);
+	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
 	hbc_menu->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
@@ -6128,7 +6128,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), KEY_T));
 
-	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(ToolButton);
+	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
 	hbc_menu->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_flat(true);
@@ -6138,7 +6138,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	hbc_menu->add_child(memnew(VSeparator));
 
-	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA] = memnew(ToolButton);
+	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA] = memnew(Button);
 	hbc_menu->add_child(tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_flat(true);

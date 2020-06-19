@@ -43,7 +43,7 @@ class GIProbeEditorPlugin : public EditorPlugin {
 
 	HBoxContainer *bake_hb;
 	Label *bake_info;
-	ToolButton *bake;
+	Button *bake;
 	EditorNode *editor;
 
 	EditorFileDialog *probe_file;

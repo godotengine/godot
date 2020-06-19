@@ -1455,11 +1455,14 @@ EditorFileDialog::EditorFileDialog() {
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 
-	dir_prev = memnew(ToolButton);
+	dir_prev = memnew(Button);
+	dir_prev->set_flat(true);
 	dir_prev->set_tooltip(TTR("Go to previous folder."));
-	dir_next = memnew(ToolButton);
+	dir_next = memnew(Button);
+	dir_next->set_flat(true);
 	dir_next->set_tooltip(TTR("Go to next folder."));
-	dir_up = memnew(ToolButton);
+	dir_up = memnew(Button);
+	dir_up->set_flat(true);
 	dir_up->set_tooltip(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
@@ -1479,18 +1482,21 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	refresh = memnew(ToolButton);
+	refresh = memnew(Button);
+	refresh->set_flat(true);
 	refresh->set_tooltip(TTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
-	favorite = memnew(ToolButton);
+	favorite = memnew(Button);
+	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip(TTR("(Un)favorite current folder."));
 	favorite->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_pressed));
 	pathhb->add_child(favorite);
 
-	show_hidden = memnew(ToolButton);
+	show_hidden = memnew(Button);
+	show_hidden->set_flat(true);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
@@ -1502,7 +1508,8 @@ EditorFileDialog::EditorFileDialog() {
 	Ref<ButtonGroup> view_mode_group;
 	view_mode_group.instance();
 
-	mode_thumbnails = memnew(ToolButton);
+	mode_thumbnails = memnew(Button);
+	mode_thumbnails->set_flat(true);
 	mode_thumbnails->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode), varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
@@ -1510,7 +1517,8 @@ EditorFileDialog::EditorFileDialog() {
 	mode_thumbnails->set_tooltip(TTR("View items as a grid of thumbnails."));
 	pathhb->add_child(mode_thumbnails);
 
-	mode_list = memnew(ToolButton);
+	mode_list = memnew(Button);
+	mode_list->set_flat(true);
 	mode_list->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode), varray(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
@@ -1547,10 +1555,12 @@ EditorFileDialog::EditorFileDialog() {
 	fav_vb->add_child(fav_hb);
 	fav_hb->add_child(memnew(Label(TTR("Favorites:"))));
 	fav_hb->add_spacer();
-	fav_up = memnew(ToolButton);
+	fav_up = memnew(Button);
+	fav_up->set_flat(true);
 	fav_hb->add_child(fav_up);
 	fav_up->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_up));
-	fav_down = memnew(ToolButton);
+	fav_down = memnew(Button);
+	fav_down->set_flat(true);
 	fav_hb->add_child(fav_down);
 	fav_down->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_down));
 

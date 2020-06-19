@@ -477,7 +477,8 @@ GroupDialog::GroupDialog() {
 	vbc_buttons->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	vbc_buttons->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 
-	add_button = memnew(ToolButton);
+	add_button = memnew(Button);
+	add_button->set_flat(true);
 	add_button->set_text(TTR("Add"));
 	add_button->connect("pressed", callable_mp(this, &GroupDialog::_add_pressed));
 
@@ -486,7 +487,8 @@ GroupDialog::GroupDialog() {
 	vbc_buttons->add_spacer();
 	vbc_buttons->add_spacer();
 
-	remove_button = memnew(ToolButton);
+	remove_button = memnew(Button);
+	remove_button->set_flat(true);
 	remove_button->set_text(TTR("Remove"));
 	remove_button->connect("pressed", callable_mp(this, &GroupDialog::_removed_pressed));
 

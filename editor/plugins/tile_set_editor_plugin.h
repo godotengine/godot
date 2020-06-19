@@ -46,7 +46,7 @@ class TileSetEditor : public HSplitContainer {
 
 	GDCLASS(TileSetEditor, HSplitContainer);
 
-	enum TextureToolButtons {
+	enum TextureButtons {
 		TOOL_TILESET_ADD_TEXTURE,
 		TOOL_TILESET_REMOVE_TEXTURE,
 		TOOL_TILESET_CREATE_SCENE,
@@ -111,7 +111,7 @@ class TileSetEditor : public HSplitContainer {
 
 	ItemList *texture_list;
 	int option;
-	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
+	Button *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
 	Map<RID, Ref<Texture2D>> texture_map;
 
@@ -146,7 +146,7 @@ class TileSetEditor : public HSplitContainer {
 	Button *tool_editmode[EDITMODE_MAX];
 	HSeparator *separator_editmode;
 	HBoxContainer *toolbar;
-	ToolButton *tools[TOOL_MAX];
+	Button *tools[TOOL_MAX];
 	VSeparator *separator_shape_toggle;
 	VSeparator *separator_bitmask;
 	VSeparator *separator_delete;

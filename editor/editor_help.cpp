@@ -1664,12 +1664,14 @@ FindBar::FindBar() {
 	add_child(matches_label);
 	matches_label->hide();
 
-	find_prev = memnew(ToolButton);
+	find_prev = memnew(Button);
+	find_prev->set_flat(true);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect("pressed", callable_mp(this, &FindBar::search_prev));
 
-	find_next = memnew(ToolButton);
+	find_next = memnew(Button);
+	find_next->set_flat(true);
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", callable_mp(this, &FindBar::search_next));

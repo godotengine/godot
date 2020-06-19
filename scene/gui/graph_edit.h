@@ -32,12 +32,12 @@
 #define GRAPH_EDIT_H
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 
 class GraphEdit;
 
@@ -65,11 +65,11 @@ public:
 	};
 
 private:
-	ToolButton *zoom_minus;
-	ToolButton *zoom_reset;
-	ToolButton *zoom_plus;
+	Button *zoom_minus;
+	Button *zoom_reset;
+	Button *zoom_plus;
 
-	ToolButton *snap_button;
+	Button *snap_button;
 	SpinBox *snap_amount;
 
 	void _zoom_minus();

@@ -219,21 +219,21 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
 
-	// ToolButton
+	// Button
 
-	theme->set_stylebox("normal", "ToolButton", make_empty_stylebox(6, 4, 6, 4));
-	theme->set_stylebox("pressed", "ToolButton", make_stylebox(button_pressed_png, 4, 4, 4, 4, 6, 4, 6, 4));
-	theme->set_stylebox("hover", "ToolButton", make_stylebox(button_normal_png, 4, 4, 4, 4, 6, 4, 6, 4));
-	theme->set_stylebox("disabled", "ToolButton", make_empty_stylebox(6, 4, 6, 4));
-	theme->set_stylebox("focus", "ToolButton", focus);
-	theme->set_font("font", "ToolButton", default_font);
+	theme->set_stylebox("normal", "Button", make_empty_stylebox(6, 4, 6, 4));
+	theme->set_stylebox("pressed", "Button", make_stylebox(button_pressed_png, 4, 4, 4, 4, 6, 4, 6, 4));
+	theme->set_stylebox("hover", "Button", make_stylebox(button_normal_png, 4, 4, 4, 4, 6, 4, 6, 4));
+	theme->set_stylebox("disabled", "Button", make_empty_stylebox(6, 4, 6, 4));
+	theme->set_stylebox("focus", "Button", focus);
+	theme->set_font("font", "Button", default_font);
 
-	theme->set_color("font_color", "ToolButton", control_font_color);
-	theme->set_color("font_color_pressed", "ToolButton", control_font_color_pressed);
-	theme->set_color("font_color_hover", "ToolButton", control_font_color_hover);
-	theme->set_color("font_color_disabled", "ToolButton", Color(0.9, 0.95, 1, 0.3));
+	theme->set_color("font_color", "Button", control_font_color);
+	theme->set_color("font_color_pressed", "Button", control_font_color_pressed);
+	theme->set_color("font_color_hover", "Button", control_font_color_hover);
+	theme->set_color("font_color_disabled", "Button", Color(0.9, 0.95, 1, 0.3));
 
-	theme->set_constant("hseparation", "ToolButton", 3);
+	theme->set_constant("hseparation", "Button", 3);
 
 	// OptionButton
 

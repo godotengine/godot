@@ -117,7 +117,6 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
 #include "scene/main/canvas_item.h"
@@ -306,7 +305,6 @@ void register_scene_types() {
 	ClassDB::register_class<MenuButton>();
 	ClassDB::register_class<CheckBox>();
 	ClassDB::register_class<CheckButton>();
-	ClassDB::register_class<ToolButton>();
 	ClassDB::register_class<LinkButton>();
 	ClassDB::register_class<Panel>();
 	ClassDB::register_virtual_class<Range>();
@@ -767,6 +765,7 @@ void register_scene_types() {
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("ToolButton", "Button");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.

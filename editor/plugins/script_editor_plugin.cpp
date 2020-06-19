@@ -2988,7 +2988,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 	buttons_hbox->add_child(filename);
 
-	members_overview_alphabeta_sort_button = memnew(ToolButton);
+	members_overview_alphabeta_sort_button = memnew(Button);
+	members_overview_alphabeta_sort_button->set_flat(true);
 	members_overview_alphabeta_sort_button->set_tooltip(TTR("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EditorSettings::get_singleton()->get("text_editor/tools/sort_members_outline_alphabetically"));
@@ -3115,13 +3116,15 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	menu_hb->add_spacer();
 
-	site_search = memnew(ToolButton);
+	site_search = memnew(Button);
+	site_search->set_flat(true);
 	site_search->set_text(TTR("Online Docs"));
 	site_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation."));
 
-	help_search = memnew(ToolButton);
+	help_search = memnew(Button);
+	help_search->set_flat(true);
 	help_search->set_text(TTR("Search Help"));
 	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_HELP));
 	menu_hb->add_child(help_search);
@@ -3129,13 +3132,15 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	menu_hb->add_child(memnew(VSeparator));
 
-	script_back = memnew(ToolButton);
+	script_back = memnew(Button);
+	script_back->set_flat(true);
 	script_back->connect("pressed", callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
 	script_back->set_tooltip(TTR("Go to previous edited document."));
 
-	script_forward = memnew(ToolButton);
+	script_forward = memnew(Button);
+	script_forward->set_flat(true);
 	script_forward->connect("pressed", callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);

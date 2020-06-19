@@ -341,12 +341,12 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	HBoxContainer *tileset_toolbar_container = memnew(HBoxContainer);
 	left_container->add_child(tileset_toolbar_container);
 
-	tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE] = memnew(ToolButton);
+	tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE] = memnew(Button);
 	tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tileset_toolbar_button_pressed), varray(TOOL_TILESET_ADD_TEXTURE));
 	tileset_toolbar_container->add_child(tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]);
 	tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]->set_tooltip(TTR("Add Texture(s) to TileSet."));
 
-	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE] = memnew(ToolButton);
+	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE] = memnew(Button);
 	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tileset_toolbar_button_pressed), varray(TOOL_TILESET_REMOVE_TEXTURE));
 	tileset_toolbar_container->add_child(tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]);
 	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->set_tooltip(TTR("Remove selected Texture from TileSet."));
@@ -402,13 +402,13 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_hb->add_child(spacer);
 	tool_hb->move_child(spacer, WORKSPACE_CREATE_SINGLE);
 
-	tools[SELECT_NEXT] = memnew(ToolButton);
+	tools[SELECT_NEXT] = memnew(Button);
 	tool_hb->add_child(tools[SELECT_NEXT]);
 	tool_hb->move_child(tools[SELECT_NEXT], WORKSPACE_CREATE_SINGLE);
 	tools[SELECT_NEXT]->set_shortcut(ED_SHORTCUT("tileset_editor/next_shape", TTR("Next Coordinate"), KEY_PAGEDOWN));
 	tools[SELECT_NEXT]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SELECT_NEXT));
 	tools[SELECT_NEXT]->set_tooltip(TTR("Select the next shape, subtile, or Tile."));
-	tools[SELECT_PREVIOUS] = memnew(ToolButton);
+	tools[SELECT_PREVIOUS] = memnew(Button);
 	tool_hb->add_child(tools[SELECT_PREVIOUS]);
 	tool_hb->move_child(tools[SELECT_PREVIOUS], WORKSPACE_CREATE_SINGLE);
 	tools[SELECT_PREVIOUS]->set_shortcut(ED_SHORTCUT("tileset_editor/previous_shape", TTR("Previous Coordinate"), KEY_PAGEUP));
@@ -465,7 +465,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	toolbar = memnew(HBoxContainer);
 	Ref<ButtonGroup> tg(memnew(ButtonGroup));
 
-	tools[TOOL_SELECT] = memnew(ToolButton);
+	tools[TOOL_SELECT] = memnew(Button);
 	toolbar->add_child(tools[TOOL_SELECT]);
 	tools[TOOL_SELECT]->set_toggle_mode(true);
 	tools[TOOL_SELECT]->set_button_group(tg);
@@ -474,27 +474,27 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	separator_bitmask = memnew(VSeparator);
 	toolbar->add_child(separator_bitmask);
-	tools[BITMASK_COPY] = memnew(ToolButton);
+	tools[BITMASK_COPY] = memnew(Button);
 	tools[BITMASK_COPY]->set_tooltip(TTR("Copy bitmask."));
 	tools[BITMASK_COPY]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(BITMASK_COPY));
 	toolbar->add_child(tools[BITMASK_COPY]);
-	tools[BITMASK_PASTE] = memnew(ToolButton);
+	tools[BITMASK_PASTE] = memnew(Button);
 	tools[BITMASK_PASTE]->set_tooltip(TTR("Paste bitmask."));
 	tools[BITMASK_PASTE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(BITMASK_PASTE));
 	toolbar->add_child(tools[BITMASK_PASTE]);
-	tools[BITMASK_CLEAR] = memnew(ToolButton);
+	tools[BITMASK_CLEAR] = memnew(Button);
 	tools[BITMASK_CLEAR]->set_tooltip(TTR("Erase bitmask."));
 	tools[BITMASK_CLEAR]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(BITMASK_CLEAR));
 	toolbar->add_child(tools[BITMASK_CLEAR]);
 
-	tools[SHAPE_NEW_RECTANGLE] = memnew(ToolButton);
+	tools[SHAPE_NEW_RECTANGLE] = memnew(Button);
 	toolbar->add_child(tools[SHAPE_NEW_RECTANGLE]);
 	tools[SHAPE_NEW_RECTANGLE]->set_toggle_mode(true);
 	tools[SHAPE_NEW_RECTANGLE]->set_button_group(tg);
 	tools[SHAPE_NEW_RECTANGLE]->set_tooltip(TTR("Create a new rectangle."));
 	tools[SHAPE_NEW_RECTANGLE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SHAPE_NEW_RECTANGLE));
 
-	tools[SHAPE_NEW_POLYGON] = memnew(ToolButton);
+	tools[SHAPE_NEW_POLYGON] = memnew(Button);
 	toolbar->add_child(tools[SHAPE_NEW_POLYGON]);
 	tools[SHAPE_NEW_POLYGON]->set_toggle_mode(true);
 	tools[SHAPE_NEW_POLYGON]->set_button_group(tg);
@@ -503,13 +503,13 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	separator_shape_toggle = memnew(VSeparator);
 	toolbar->add_child(separator_shape_toggle);
-	tools[SHAPE_TOGGLE_TYPE] = memnew(ToolButton);
+	tools[SHAPE_TOGGLE_TYPE] = memnew(Button);
 	tools[SHAPE_TOGGLE_TYPE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SHAPE_TOGGLE_TYPE));
 	toolbar->add_child(tools[SHAPE_TOGGLE_TYPE]);
 
 	separator_delete = memnew(VSeparator);
 	toolbar->add_child(separator_delete);
-	tools[SHAPE_DELETE] = memnew(ToolButton);
+	tools[SHAPE_DELETE] = memnew(Button);
 	tools[SHAPE_DELETE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SHAPE_DELETE));
 	toolbar->add_child(tools[SHAPE_DELETE]);
 
@@ -533,12 +533,12 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	separator_grid = memnew(VSeparator);
 	toolbar->add_child(separator_grid);
-	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
+	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(Button);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_pressed(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_tooltip(TTR("Keep polygon inside region Rect."));
 	toolbar->add_child(tools[SHAPE_KEEP_INSIDE_TILE]);
-	tools[TOOL_GRID_SNAP] = memnew(ToolButton);
+	tools[TOOL_GRID_SNAP] = memnew(Button);
 	tools[TOOL_GRID_SNAP]->set_toggle_mode(true);
 	tools[TOOL_GRID_SNAP]->set_tooltip(TTR("Enable snap and show grid (configurable via the Inspector)."));
 	tools[TOOL_GRID_SNAP]->connect("toggled", callable_mp(this, &TileSetEditor::_on_grid_snap_toggled));
@@ -548,20 +548,20 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	separator->set_h_size_flags(SIZE_EXPAND_FILL);
 	toolbar->add_child(separator);
 
-	tools[ZOOM_OUT] = memnew(ToolButton);
+	tools[ZOOM_OUT] = memnew(Button);
 	tools[ZOOM_OUT]->connect("pressed", callable_mp(this, &TileSetEditor::_zoom_out));
 	toolbar->add_child(tools[ZOOM_OUT]);
 	tools[ZOOM_OUT]->set_tooltip(TTR("Zoom Out"));
-	tools[ZOOM_1] = memnew(ToolButton);
+	tools[ZOOM_1] = memnew(Button);
 	tools[ZOOM_1]->connect("pressed", callable_mp(this, &TileSetEditor::_zoom_reset));
 	toolbar->add_child(tools[ZOOM_1]);
 	tools[ZOOM_1]->set_tooltip(TTR("Zoom Reset"));
-	tools[ZOOM_IN] = memnew(ToolButton);
+	tools[ZOOM_IN] = memnew(Button);
 	tools[ZOOM_IN]->connect("pressed", callable_mp(this, &TileSetEditor::_zoom_in));
 	toolbar->add_child(tools[ZOOM_IN]);
 	tools[ZOOM_IN]->set_tooltip(TTR("Zoom In"));
 
-	tools[VISIBLE_INFO] = memnew(ToolButton);
+	tools[VISIBLE_INFO] = memnew(Button);
 	tools[VISIBLE_INFO]->set_toggle_mode(true);
 	tools[VISIBLE_INFO]->set_tooltip(TTR("Display Tile Names (Hold Alt Key)"));
 	toolbar->add_child(tools[VISIBLE_INFO]);

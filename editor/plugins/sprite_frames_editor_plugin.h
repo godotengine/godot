@@ -43,22 +43,22 @@
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
-	ToolButton *load;
-	ToolButton *load_sheet;
-	ToolButton *_delete;
-	ToolButton *copy;
-	ToolButton *paste;
-	ToolButton *empty;
-	ToolButton *empty2;
-	ToolButton *move_up;
-	ToolButton *move_down;
+	Button *load;
+	Button *load_sheet;
+	Button *_delete;
+	Button *copy;
+	Button *paste;
+	Button *empty;
+	Button *empty2;
+	Button *move_up;
+	Button *move_down;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
 	HSplitContainer *split;
-	ToolButton *new_anim;
-	ToolButton *remove_anim;
+	Button *new_anim;
+	Button *remove_anim;
 
 	Tree *animations;
 	SpinBox *anim_speed;

@@ -873,12 +873,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *hbc_animlist = memnew(HBoxContainer);
 	sub_vb->add_child(hbc_animlist);
 
-	new_anim = memnew(ToolButton);
+	new_anim = memnew(Button);
+	new_anim->set_flat(true);
 	new_anim->set_tooltip(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
 	new_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
 
-	remove_anim = memnew(ToolButton);
+	remove_anim = memnew(Button);
+	remove_anim->set_flat(true);
 	remove_anim->set_tooltip(TTR("Remove Animation"));
 	hbc_animlist->add_child(remove_anim);
 	remove_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
@@ -913,45 +915,54 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	sub_vb->add_child(hbc);
 
-	load = memnew(ToolButton);
+	load = memnew(Button);
+	load->set_flat(true);
 	load->set_tooltip(TTR("Add a Texture from File"));
 	hbc->add_child(load);
 
-	load_sheet = memnew(ToolButton);
+	load_sheet = memnew(Button);
+	load_sheet->set_flat(true);
 	load_sheet->set_tooltip(TTR("Add Frames from a Sprite Sheet"));
 	hbc->add_child(load_sheet);
 
 	hbc->add_child(memnew(VSeparator));
 
-	copy = memnew(ToolButton);
+	copy = memnew(Button);
+	copy->set_flat(true);
 	copy->set_tooltip(TTR("Copy"));
 	hbc->add_child(copy);
 
-	paste = memnew(ToolButton);
+	paste = memnew(Button);
+	paste->set_flat(true);
 	paste->set_tooltip(TTR("Paste"));
 	hbc->add_child(paste);
 
 	hbc->add_child(memnew(VSeparator));
 
-	empty = memnew(ToolButton);
+	empty = memnew(Button);
+	empty->set_flat(true);
 	empty->set_tooltip(TTR("Insert Empty (Before)"));
 	hbc->add_child(empty);
 
-	empty2 = memnew(ToolButton);
+	empty2 = memnew(Button);
+	empty2->set_flat(true);
 	empty2->set_tooltip(TTR("Insert Empty (After)"));
 	hbc->add_child(empty2);
 
 	hbc->add_child(memnew(VSeparator));
 
-	move_up = memnew(ToolButton);
+	move_up = memnew(Button);
+	move_up->set_flat(true);
 	move_up->set_tooltip(TTR("Move (Before)"));
 	hbc->add_child(move_up);
 
-	move_down = memnew(ToolButton);
+	move_down = memnew(Button);
+	move_down->set_flat(true);
 	move_down->set_tooltip(TTR("Move (After)"));
 	hbc->add_child(move_down);
 
-	_delete = memnew(ToolButton);
+	_delete = memnew(Button);
+	_delete->set_flat(true);
 	_delete->set_tooltip(TTR("Delete"));
 	hbc->add_child(_delete);
 
