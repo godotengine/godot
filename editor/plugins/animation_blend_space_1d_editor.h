@@ -47,15 +47,15 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNodeBlendSpace1D> blend_space;
 
 	HBoxContainer *goto_parent_hb;
-	ToolButton *goto_parent;
+	Button *goto_parent;
 
 	PanelContainer *panel;
-	ToolButton *tool_blend;
-	ToolButton *tool_select;
-	ToolButton *tool_create;
+	Button *tool_blend;
+	Button *tool_select;
+	Button *tool_create;
 	VSeparator *tool_erase_sep;
-	ToolButton *tool_erase;
-	ToolButton *snap;
+	Button *tool_erase;
+	Button *snap;
 	SpinBox *snap_value;
 
 	LineEdit *label_value;

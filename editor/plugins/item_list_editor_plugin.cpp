@@ -325,7 +325,8 @@ ItemListEditor::ItemListEditor() {
 	selected_idx = -1;
 	item_list = nullptr;
 
-	toolbar_button = memnew(ToolButton);
+	toolbar_button = memnew(Button);
+	toolbar_button->set_flat(true);
 	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
 	toolbar_button->connect("pressed", callable_mp(this, &ItemListEditor::_edit_items));

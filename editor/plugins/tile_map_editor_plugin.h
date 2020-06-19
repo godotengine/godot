@@ -38,7 +38,6 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/tool_button.h"
 
 class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
@@ -88,16 +87,16 @@ class TileMapEditor : public VBoxContainer {
 	Label *tile_info;
 	MenuButton *options;
 
-	ToolButton *paint_button;
-	ToolButton *bucket_fill_button;
-	ToolButton *picker_button;
-	ToolButton *select_button;
+	Button *paint_button;
+	Button *bucket_fill_button;
+	Button *picker_button;
+	Button *select_button;
 
-	ToolButton *flip_horizontal_button;
-	ToolButton *flip_vertical_button;
-	ToolButton *rotate_left_button;
-	ToolButton *rotate_right_button;
-	ToolButton *clear_transform_button;
+	Button *flip_horizontal_button;
+	Button *flip_vertical_button;
+	Button *rotate_left_button;
+	Button *rotate_right_button;
+	Button *clear_transform_button;
 
 	CheckBox *manual_button;
 	CheckBox *priority_button;

@@ -1783,7 +1783,8 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_tooltip(TTR("Animation length (seconds)"));
 	length->connect("value_changed", callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
 	len_hb->add_child(length);
-	loop = memnew(ToolButton);
+	loop = memnew(Button);
+	loop->set_flat(true);
 	loop->set_tooltip(TTR("Animation Looping"));
 	loop->connect("pressed", callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
 	loop->set_toggle_mode(true);
@@ -2786,7 +2787,8 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 	drag_data["group"] = base_path;
 	drag_data["index"] = track;
 
-	ToolButton *tb = memnew(ToolButton);
+	Button *tb = memnew(Button);
+	tb->set_flat(true);
 	tb->set_text(path_cache);
 	tb->set_icon(icon_cache);
 	set_drag_preview(tb);
@@ -5640,14 +5642,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	bottom_hb->add_spacer();
 
-	selected_filter = memnew(ToolButton);
+	selected_filter = memnew(Button);
+	selected_filter->set_flat(true);
 	selected_filter->connect("pressed", callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); //same function works the same
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip(TTR("Only show tracks from nodes selected in tree."));
 
 	bottom_hb->add_child(selected_filter);
 
-	view_group = memnew(ToolButton);
+	view_group = memnew(Button);
+	view_group->set_flat(true);
 	view_group->connect("pressed", callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip(TTR("Group tracks by node or display them as plain list."));
@@ -5655,7 +5659,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hb->add_child(view_group);
 	bottom_hb->add_child(memnew(VSeparator));
 
-	snap = memnew(ToolButton);
+	snap = memnew(Button);
+	snap->set_flat(true);
 	snap->set_text(TTR("Snap:") + " ");
 	bottom_hb->add_child(snap);
 	snap->set_disabled(true);

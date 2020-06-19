@@ -45,7 +45,6 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;

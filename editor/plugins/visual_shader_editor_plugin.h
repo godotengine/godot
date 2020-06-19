@@ -60,8 +60,8 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShader> visual_shader;
 	HSplitContainer *main_box;
 	GraphEdit *graph;
-	ToolButton *add_node;
-	ToolButton *preview_shader;
+	Button *add_node;
+	Button *preview_shader;
 
 	OptionButton *edit_type;
 

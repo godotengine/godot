@@ -819,7 +819,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	Ref<ButtonGroup> bg;
 	bg.instance();
 
-	tool_blend = memnew(ToolButton);
+	tool_blend = memnew(Button);
+	tool_blend->set_flat(true);
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
 	top_hb->add_child(tool_blend);
@@ -827,21 +828,24 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_blend->set_tooltip(TTR("Set the blending position within the space"));
 	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch), varray(3));
 
-	tool_select = memnew(ToolButton);
+	tool_select = memnew(Button);
+	tool_select->set_flat(true);
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
 	tool_select->set_tooltip(TTR("Select and move points, create points with RMB."));
 	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch), varray(0));
 
-	tool_create = memnew(ToolButton);
+	tool_create = memnew(Button);
+	tool_create->set_flat(true);
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip(TTR("Create points."));
 	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch), varray(1));
 
-	tool_triangle = memnew(ToolButton);
+	tool_triangle = memnew(Button);
+	tool_triangle->set_flat(true);
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
@@ -850,7 +854,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
-	tool_erase = memnew(ToolButton);
+	tool_erase = memnew(Button);
+	tool_erase->set_flat(true);
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip(TTR("Erase points and triangles."));
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
@@ -858,7 +863,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	top_hb->add_child(memnew(VSeparator));
 
-	auto_triangles = memnew(ToolButton);
+	auto_triangles = memnew(Button);
+	auto_triangles->set_flat(true);
 	top_hb->add_child(auto_triangles);
 	auto_triangles->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
@@ -866,7 +872,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	top_hb->add_child(memnew(VSeparator));
 
-	snap = memnew(ToolButton);
+	snap = memnew(Button);
+	snap->set_flat(true);
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);

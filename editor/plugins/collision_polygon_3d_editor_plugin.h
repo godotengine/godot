@@ -36,7 +36,6 @@
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/tool_button.h"
 
 class CanvasItemEditor;
 
@@ -53,8 +52,8 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 
 	Mode mode;
 
-	ToolButton *button_create;
-	ToolButton *button_edit;
+	Button *button_create;
+	Button *button_edit;
 
 	Ref<StandardMaterial3D> line_material;
 	Ref<StandardMaterial3D> handle_material;

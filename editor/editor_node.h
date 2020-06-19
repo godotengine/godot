@@ -83,7 +83,7 @@ class ScriptCreateDialog;
 class TabContainer;
 class Tabs;
 class TextureProgress;
-class ToolButton;
+class Button;
 class VSplitContainer;
 class Window;
 class SubViewport;
@@ -265,15 +265,15 @@ private:
 	MenuButton *settings_menu;
 	MenuButton *help_menu;
 	PopupMenu *tool_menu;
-	ToolButton *export_button;
-	ToolButton *prev_scene;
-	ToolButton *play_button;
-	ToolButton *pause_button;
-	ToolButton *stop_button;
-	ToolButton *run_settings_button;
-	ToolButton *play_scene_button;
-	ToolButton *play_custom_scene_button;
-	ToolButton *search_button;
+	Button *export_button;
+	Button *prev_scene;
+	Button *play_button;
+	Button *pause_button;
+	Button *stop_button;
+	Button *run_settings_button;
+	Button *play_scene_button;
+	Button *play_custom_scene_button;
+	Button *search_button;
 	TextureProgress *audio_vu;
 
 	Timer *screenshot_timer;
@@ -336,7 +336,7 @@ private:
 	EditorQuickOpen *quick_run;
 
 	HBoxContainer *main_editor_button_vb;
-	Vector<ToolButton *> main_editor_buttons;
+	Vector<Button *> main_editor_buttons;
 	Vector<EditorPlugin *> editor_table;
 
 	AudioStreamPreviewGenerator *preview_gen;
@@ -358,15 +358,15 @@ private:
 	PopupPanel *dock_select_popup;
 	Control *dock_select;
 	Button *dock_float;
-	ToolButton *dock_tab_move_left;
-	ToolButton *dock_tab_move_right;
+	Button *dock_tab_move_left;
+	Button *dock_tab_move_right;
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
 	bool docks_visible;
 
 	HBoxContainer *tabbar_container;
-	ToolButton *distraction_free;
-	ToolButton *scene_tab_add;
+	Button *distraction_free;
+	Button *scene_tab_add;
 
 	bool scene_distraction;
 	bool script_distraction;
@@ -412,7 +412,7 @@ private:
 	struct BottomPanelItem {
 		String name;
 		Control *control;
-		ToolButton *button;
+		Button *button;
 	};
 
 	Vector<BottomPanelItem> bottom_panel_items;
@@ -422,7 +422,7 @@ private:
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
 	Label *version_label;
-	ToolButton *bottom_panel_raise;
+	Button *bottom_panel_raise;
 
 	void _bottom_panel_raise_toggled(bool);
 
@@ -821,9 +821,9 @@ public:
 
 	bool is_exiting() const { return exiting; }
 
-	ToolButton *get_pause_button() { return pause_button; }
+	Button *get_pause_button() { return pause_button; }
 
-	ToolButton *add_bottom_panel_item(String p_text, Control *p_item);
+	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	bool are_bottom_panels_hidden() const;
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);

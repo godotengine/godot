@@ -41,7 +41,7 @@ class BakedLightmapEditorPlugin : public EditorPlugin {
 
 	BakedLightmap *lightmap;
 
-	ToolButton *bake;
+	Button *bake;
 	EditorNode *editor;
 
 	EditorFileDialog *file_dialog;
