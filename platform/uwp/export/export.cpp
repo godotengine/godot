@@ -970,7 +970,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 public:
 	virtual String get_name() const {
-		return "Windows Universal";
+		return "UWP";
 	}
 	virtual String get_os_name() const {
 		return "UWP";
@@ -1180,7 +1180,7 @@ public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
 		String src_appx;
 
-		EditorProgress ep("export", "Exporting for Windows Universal", 7, true);
+		EditorProgress ep("export", "Exporting for UWP", 7, true);
 
 		if (p_debug) {
 			src_appx = p_preset->get("custom_template/debug");
