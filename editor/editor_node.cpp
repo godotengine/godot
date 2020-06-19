@@ -58,7 +58,6 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/texture_progress.h"
-#include "scene/gui/tool_button.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
@@ -485,7 +484,7 @@ void EditorNode::_notification(int p_what) {
 
 			// update_icons
 			for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
-				ToolButton *tb = singleton->main_editor_buttons[i];
+				Button *tb = singleton->main_editor_buttons[i];
 				EditorPlugin *p_editor = singleton->editor_table[i];
 				Ref<Texture2D> icon = p_editor->get_icon();
 
@@ -2776,7 +2775,8 @@ void EditorNode::select_editor_by_name(const String &p_name) {
 
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
-		ToolButton *tb = memnew(ToolButton);
+		Button *tb = memnew(Button);
+		tb->set_flat(true);
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", callable_mp(singleton, &EditorNode::_editor_select), varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
@@ -4621,8 +4621,9 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	editor_data.get_undo_redo().commit_action();
 }
 
-ToolButton *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
-	ToolButton *tb = memnew(ToolButton);
+Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
+	Button *tb = memnew(Button);
+	tb->set_flat(true);
 	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch), varray(bottom_panel_items.size()));
 	tb->set_text(p_text);
 	tb->set_toggle_mode(true);
@@ -5698,7 +5699,8 @@ EditorNode::EditorNode() {
 	dock_select_popup->add_child(dock_vb);
 
 	HBoxContainer *dock_hb = memnew(HBoxContainer);
-	dock_tab_move_left = memnew(ToolButton);
+	dock_tab_move_left = memnew(Button);
+	dock_tab_move_left->set_flat(true);
 	dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
@@ -5710,7 +5712,8 @@ EditorNode::EditorNode() {
 	dock_label->set_align(Label::ALIGN_CENTER);
 	dock_hb->add_child(dock_label);
 
-	dock_tab_move_right = memnew(ToolButton);
+	dock_tab_move_right = memnew(Button);
+	dock_tab_move_right->set_flat(true);
 	dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
@@ -5804,7 +5807,8 @@ EditorNode::EditorNode() {
 
 	srt->add_child(tabbar_container);
 	tabbar_container->add_child(scene_tabs);
-	distraction_free = memnew(ToolButton);
+	distraction_free = memnew(Button);
+	distraction_free->set_flat(true);
 #ifdef OSX_ENABLED
 	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_CMD | KEY_MASK_CTRL | KEY_D));
 #else
@@ -5815,7 +5819,8 @@ EditorNode::EditorNode() {
 	distraction_free->set_icon(gui_base->get_theme_icon("DistractionFree", "EditorIcons"));
 	distraction_free->set_toggle_mode(true);
 
-	scene_tab_add = memnew(ToolButton);
+	scene_tab_add = memnew(Button);
+	scene_tab_add->set_flat(true);
 	tabbar_container->add_child(scene_tab_add);
 	tabbar_container->add_child(distraction_free);
 	scene_tab_add->set_tooltip(TTR("Add a new scene."));
@@ -5852,7 +5857,8 @@ EditorNode::EditorNode() {
 	file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(file_menu);
 
-	prev_scene = memnew(ToolButton);
+	prev_scene = memnew(Button);
+	prev_scene->set_flat(true);
 	prev_scene->set_icon(gui_base->get_theme_icon("PrevScene", "EditorIcons"));
 	prev_scene->set_tooltip(TTR("Go to previously opened scene."));
 	prev_scene->set_disabled(true);
@@ -6081,7 +6087,8 @@ EditorNode::EditorNode() {
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);
 
-	play_button = memnew(ToolButton);
+	play_button = memnew(Button);
+	play_button->set_flat(true);
 	play_hb->add_child(play_button);
 	play_button->set_toggle_mode(true);
 	play_button->set_icon(gui_base->get_theme_icon("MainPlay", "EditorIcons"));
@@ -6094,7 +6101,8 @@ EditorNode::EditorNode() {
 	play_button->set_shortcut(ED_SHORTCUT("editor/play", TTR("Play"), KEY_F5));
 #endif
 
-	pause_button = memnew(ToolButton);
+	pause_button = memnew(Button);
+	pause_button->set_flat(true);
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_theme_icon("Pause", "EditorIcons"));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
@@ -6107,7 +6115,8 @@ EditorNode::EditorNode() {
 	pause_button->set_shortcut(ED_SHORTCUT("editor/pause_scene", TTR("Pause Scene"), KEY_F7));
 #endif
 
-	stop_button = memnew(ToolButton);
+	stop_button = memnew(Button);
+	stop_button->set_flat(true);
 	play_hb->add_child(stop_button);
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_theme_icon("Stop", "EditorIcons"));
@@ -6124,7 +6133,8 @@ EditorNode::EditorNode() {
 	play_hb->add_child(run_native);
 	run_native->connect("native_run", callable_mp(this, &EditorNode::_run_native));
 
-	play_scene_button = memnew(ToolButton);
+	play_scene_button = memnew(Button);
+	play_scene_button->set_flat(true);
 	play_hb->add_child(play_scene_button);
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
@@ -6137,7 +6147,8 @@ EditorNode::EditorNode() {
 	play_scene_button->set_shortcut(ED_SHORTCUT("editor/play_scene", TTR("Play Scene"), KEY_F6));
 #endif
 
-	play_custom_scene_button = memnew(ToolButton);
+	play_custom_scene_button = memnew(Button);
+	play_custom_scene_button->set_flat(true);
 	play_hb->add_child(play_custom_scene_button);
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
@@ -6298,7 +6309,8 @@ EditorNode::EditorNode() {
 	version_label->set_self_modulate(Color(1, 1, 1, 0.6));
 	bottom_panel_hb->add_child(version_label);
 
-	bottom_panel_raise = memnew(ToolButton);
+	bottom_panel_raise = memnew(Button);
+	bottom_panel_raise->set_flat(true);
 	bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDock", "EditorIcons"));
 
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KEY_MASK_SHIFT | KEY_F12));
@@ -6309,7 +6321,7 @@ EditorNode::EditorNode() {
 	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
 
 	log = memnew(EditorLog);
-	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), log);
+	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
 	log->set_tool_button(output_button);
 
 	old_split_ofs = 0;

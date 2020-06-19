@@ -38,7 +38,7 @@ class PhysicalBone3DEditor : public Object {
 
 	EditorNode *editor;
 	HBoxContainer *spatial_editor_hb;
-	ToolButton *button_transform_joint;
+	Button *button_transform_joint;
 
 	PhysicalBone3D *selected = nullptr;
 

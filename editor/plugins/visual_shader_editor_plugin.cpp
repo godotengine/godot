@@ -2341,13 +2341,15 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->add_child(edit_type);
 	graph->get_zoom_hbox()->move_child(edit_type, 0);
 
-	add_node = memnew(ToolButton);
+	add_node = memnew(Button);
+	add_node->set_flat(true);
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false));
 
-	preview_shader = memnew(ToolButton);
+	preview_shader = memnew(Button);
+	preview_shader->set_flat(true);
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip(TTR("Show resulted shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);

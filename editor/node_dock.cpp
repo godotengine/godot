@@ -92,7 +92,8 @@ NodeDock::NodeDock() {
 	add_child(mode_hb);
 	mode_hb->hide();
 
-	connections_button = memnew(ToolButton);
+	connections_button = memnew(Button);
+	connections_button->set_flat(true);
 	connections_button->set_text(TTR("Signals"));
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
@@ -101,7 +102,8 @@ NodeDock::NodeDock() {
 	mode_hb->add_child(connections_button);
 	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
 
-	groups_button = memnew(ToolButton);
+	groups_button = memnew(Button);
+	groups_button->set_flat(true);
 	groups_button->set_text(TTR("Groups"));
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);
