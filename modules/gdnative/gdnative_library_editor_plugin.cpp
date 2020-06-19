@@ -306,7 +306,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platforms["Haiku"] = platform_haiku;
 
 		NativePlatformConfig platform_uwp;
-		platform_uwp.name = "Windows Universal";
+		platform_uwp.name = "UWP";
 		platform_uwp.entries.push_back("arm");
 		platform_uwp.entries.push_back("32");
 		platform_uwp.entries.push_back("64");
