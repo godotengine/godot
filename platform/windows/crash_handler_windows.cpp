@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "main/main.h"
-
+#include <string>
 #ifdef CRASH_HANDLER_EXCEPTION
 
 // Backtrace code code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
