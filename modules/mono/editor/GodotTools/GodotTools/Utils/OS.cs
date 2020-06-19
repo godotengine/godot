@@ -100,7 +100,23 @@ namespace GodotTools.Utils
         public static bool IsAndroid => _isAndroid.Value;
         public static bool IsiOS => _isiOS.Value;
         public static bool IsHTML5 => _isHTML5.Value;
+<<<<<<< HEAD
         public static bool IsUnixLike => _isUnixLike.Value;
+=======
+
+        private static bool? _isUnixCache;
+        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS };
+
+        public static bool IsUnixLike()
+        {
+            if (_isUnixCache.HasValue)
+                return _isUnixCache.Value;
+
+            string osName = GetPlatformName();
+            _isUnixCache = UnixLikePlatforms.Any(p => p.Equals(osName, StringComparison.OrdinalIgnoreCase));
+            return _isUnixCache.Value;
+        }
+>>>>>>> master
 
         public static char PathSep => IsWindows ? ';' : ':';
 
@@ -196,7 +212,11 @@ namespace GodotTools.Utils
 
             startInfo.UseShellExecute = false;
 
+<<<<<<< HEAD
             using (var process = new Process {StartInfo = startInfo})
+=======
+            using (var process = new Process { StartInfo = startInfo })
+>>>>>>> master
             {
                 process.Start();
                 process.WaitForExit();

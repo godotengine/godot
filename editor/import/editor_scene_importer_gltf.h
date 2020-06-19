@@ -32,9 +32,15 @@
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
 #include "editor/import/resource_importer_scene.h"
+<<<<<<< HEAD
 #include "scene/3d/light_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+=======
+#include "scene/3d/light.h"
+#include "scene/3d/skeleton.h"
+#include "scene/3d/spatial.h"
+>>>>>>> master
 
 class AnimationPlayer;
 class BoneAttachment3D;
@@ -113,11 +119,30 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Vector<int> children;
 
+<<<<<<< HEAD
 		GLTFNodeIndex fake_joint_parent = -1;
 
 		GLTFLightIndex light = -1;
 
 		GLTFNode() {}
+=======
+		GLTFNodeIndex fake_joint_parent;
+
+		GLTFLightIndex light;
+
+		GLTFNode() :
+				parent(-1),
+				height(-1),
+				mesh(-1),
+				camera(-1),
+				skin(-1),
+				skeleton(-1),
+				joint(false),
+				translation(0, 0, 0),
+				scale(Vector3(1, 1, 1)),
+				fake_joint_parent(-1),
+				light(-1) {}
+>>>>>>> master
 	};
 
 	struct GLTFBufferView {
@@ -231,6 +256,23 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		float outer_cone_angle = Math_PI / 4.0;
 
 		GLTFLight() {}
+	};
+
+	struct GLTFLight {
+		Color color;
+		float intensity;
+		String type;
+		float range;
+		float inner_cone_angle;
+		float outer_cone_angle;
+		GLTFLight() {
+			color = Color(1.0f, 1.0f, 1.0f);
+			intensity = 1.0f;
+			type = "";
+			range = Math_INF;
+			inner_cone_angle = 0.0f;
+			outer_cone_angle = Math_PI / 4.0;
+		}
 	};
 
 	struct GLTFAnimation {
@@ -368,11 +410,19 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
 
+<<<<<<< HEAD
 	BoneAttachment3D *_generate_bone_attachment(GLTFState &state, Skeleton3D *skeleton, const GLTFNodeIndex node_index);
 	MeshInstance3D *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera3D *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Light3D *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Node3D *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+=======
+	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
+	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Camera *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Light *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Spatial *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+>>>>>>> master
 
 	void _generate_scene_node(GLTFState &state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
 	Node3D *_generate_scene(GLTFState &state, const int p_bake_fps);

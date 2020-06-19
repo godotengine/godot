@@ -263,8 +263,16 @@ String DirAccessUnix::get_drive(int p_drive) {
 }
 
 bool DirAccessUnix::drives_are_shortcuts() {
+<<<<<<< HEAD
 	return true;
 }
+=======
+
+	return true;
+}
+
+Error DirAccessUnix::make_dir(String p_dir) {
+>>>>>>> master
 
 Error DirAccessUnix::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION

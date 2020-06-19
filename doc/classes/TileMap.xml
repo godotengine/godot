@@ -86,7 +86,11 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+<<<<<<< HEAD
 				Returns an array of all cells with the given tile [code]index[/code].
+=======
+				Returns an array of all cells with the given tile index specified in [code]id[/code].
+>>>>>>> master
 			</description>
 		</method>
 		<method name="get_used_rect">

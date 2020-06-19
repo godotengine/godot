@@ -35,12 +35,21 @@
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 
+<<<<<<< HEAD
 	if (has_theme_icon("arrow")) {
 		const Size2 padding = get_theme_stylebox("normal")->get_minimum_size();
 		const Size2 arrow_size = Control::get_theme_icon("arrow")->get_size();
 
 		Size2 content_size = minsize - padding;
 		content_size.width += arrow_size.width + get_theme_constant("hseparation");
+=======
+	if (has_icon("arrow")) {
+		const Size2 padding = get_stylebox("normal")->get_minimum_size();
+		const Size2 arrow_size = Control::get_icon("arrow")->get_size();
+
+		Size2 content_size = minsize - padding;
+		content_size.width += arrow_size.width + get_constant("hseparation");
+>>>>>>> master
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;

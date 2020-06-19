@@ -186,11 +186,19 @@
 		<method name="replace_node">
 			<return type="void">
 			</return>
+<<<<<<< HEAD
 			<argument index="0" name="name" type="StringName">
+=======
+			<argument index="0" name="name" type="String">
+>>>>>>> master
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
 			<description>
+<<<<<<< HEAD
+=======
+				Replaces the node and keeps its transitions unchanged.
+>>>>>>> master
 			</description>
 		</method>
 		<method name="set_end_node">

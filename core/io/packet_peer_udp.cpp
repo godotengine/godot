@@ -210,6 +210,42 @@ Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
 
 	Error err;
+<<<<<<< HEAD
+=======
+
+	if (!_sock->is_open()) {
+		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
+		_sock->set_blocking_enabled(false);
+	}
+
+	err = _sock->connect_to_host(p_host, p_port);
+
+	// I see no reason why we should get ERR_BUSY (wouldblock/eagain) here.
+	// This is UDP, so connect is only used to tell the OS to which socket
+	// it shuold deliver packets when multiple are bound on the same address/port.
+	if (err != OK) {
+		close();
+		ERR_FAIL_V_MSG(FAILED, "Unable to connect");
+	}
+
+	connected = true;
+
+	peer_addr = p_host;
+	peer_port = p_port;
+
+	// Flush any packet we might still have in queue.
+	rb.clear();
+	return OK;
+}
+
+bool PacketPeerUDP::is_connected_to_host() const {
+	return connected;
+}
+
+void PacketPeerUDP::close() {
+>>>>>>> master
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
@@ -315,6 +351,10 @@ int PacketPeerUDP::get_packet_port() const {
 }
 
 void PacketPeerUDP::set_dest_address(const IP_Address &p_address, int p_port) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(connected, "Destination address cannot be set for connected sockets");
 	peer_addr = p_address;
 	peer_port = p_port;
@@ -336,6 +376,15 @@ void PacketPeerUDP::_bind_methods() {
 }
 
 PacketPeerUDP::PacketPeerUDP() :
+<<<<<<< HEAD
+=======
+		packet_port(0),
+		queue_count(0),
+		peer_port(0),
+		connected(false),
+		blocking(true),
+		broadcast(false),
+>>>>>>> master
 		_sock(Ref<NetSocket>(NetSocket::create())) {
 	rb.resize(16);
 }

@@ -108,6 +108,10 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 float EditorQuickOpen::_path_cmp(String search, String path) const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	// Exact match.
 	if (search == path) {
 		return 1.2f;

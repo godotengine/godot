@@ -37,9 +37,16 @@
 #include <jni.h>
 
 struct jvalret {
+<<<<<<< HEAD
 	jobject obj;
 	jvalue val;
 	jvalret() { obj = nullptr; }
+=======
+
+	jobject obj;
+	jvalue val;
+	jvalret() { obj = NULL; }
+>>>>>>> master
 };
 
 jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false);

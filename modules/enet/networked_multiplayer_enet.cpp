@@ -46,6 +46,10 @@ void NetworkedMultiplayerENet::set_target_peer(int p_peer) {
 }
 
 int NetworkedMultiplayerENet::get_packet_peer() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(!active, 1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
 
@@ -53,6 +57,10 @@ int NetworkedMultiplayerENet::get_packet_peer() const {
 }
 
 int NetworkedMultiplayerENet::get_packet_channel() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, -1);
 
@@ -60,6 +68,10 @@ int NetworkedMultiplayerENet::get_packet_channel() const {
 }
 
 int NetworkedMultiplayerENet::get_last_packet_channel() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V(!current_packet.packet, -1);
 
@@ -67,6 +79,10 @@ int NetworkedMultiplayerENet::get_last_packet_channel() const {
 }
 
 Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The port number must be set between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER, "The number of clients must be set between 1 and 4095 (inclusive).");
@@ -115,7 +131,10 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	return OK;
 }
 
+<<<<<<< HEAD
 Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_client_port) {
+=======
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The server port number must be set between 0 and 65535 (inclusive).");
 	ERR_FAIL_COND_V_MSG(p_client_port < 0 || p_client_port > 65535, ERR_INVALID_PARAMETER, "The client port number must be set between 0 and 65535 (inclusive).");
@@ -207,6 +226,10 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 }
 
 void NetworkedMultiplayerENet::poll() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -437,6 +460,10 @@ bool NetworkedMultiplayerENet::is_server() const {
 }
 
 void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -468,6 +495,10 @@ void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 }
 
 void NetworkedMultiplayerENet::disconnect_peer(int p_peer, bool now) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_MSG(!is_server(), "Can't disconnect a peer when not acting as a server.");
 	ERR_FAIL_COND_MSG(!peer_map.has(p_peer), vformat("Peer ID %d not found in the list of peers.", p_peer));
@@ -507,6 +538,10 @@ int NetworkedMultiplayerENet::get_available_packet_count() const {
 }
 
 Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(incoming_packets.size() == 0, ERR_UNAVAILABLE, "No incoming packets available.");
 
 	_pop_current_packet();
@@ -521,6 +556,10 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 }
 
 Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(!active, ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(connection_status != CONNECTION_CONNECTED, ERR_UNCONFIGURED, "The multiplayer instance isn't currently connected to any server or client.");
 
@@ -634,6 +673,10 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 }
 
 int NetworkedMultiplayerENet::get_unique_id() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_V_MSG(!active, 0, "The multiplayer instance isn't currently active.");
 	return unique_id;
 }
@@ -752,9 +795,16 @@ void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 }
 
 IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
+<<<<<<< HEAD
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+=======
+
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+>>>>>>> master
 
 	IP_Address out;
 #ifdef GODOT_ENET
@@ -767,9 +817,16 @@ IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 }
 
 int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
+<<<<<<< HEAD
 	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+=======
+
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+>>>>>>> master
 #ifdef GODOT_ENET
 	return peer_map[p_peer_id]->address.port;
 #else
@@ -778,6 +835,10 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 }
 
 void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(p_channel < -1 || p_channel >= channel_count, vformat("The transfer channel must be set between 0 and %d, inclusive (got %d).", channel_count - 1, p_channel));
 	ERR_FAIL_COND_MSG(p_channel == SYSCH_CONFIG, vformat("The channel %d is reserved.", SYSCH_CONFIG));
 	transfer_channel = p_channel;
@@ -788,6 +849,10 @@ int NetworkedMultiplayerENet::get_transfer_channel() const {
 }
 
 void NetworkedMultiplayerENet::set_channel_count(int p_channel) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(active, "The channel count can't be set while the multiplayer instance is active.");
 	ERR_FAIL_COND_MSG(p_channel < SYSCH_MAX, vformat("The channel count must be greater than or equal to %d to account for reserved channels (got %d).", SYSCH_MAX, p_channel));
 	channel_count = p_channel;

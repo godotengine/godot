@@ -288,6 +288,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.write(
         """\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform& p_transform) {  _FU
 
+<<<<<<< HEAD
         const Transform &tr = p_transform;
 
         GLfloat matrix[16]={ /* build a 16x16 matrix */
@@ -308,6 +309,62 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             tr.origin.z,
             1
         };
+=======
+		const Transform &tr = p_transform;
+
+		GLfloat matrix[16]={ /* build a 16x16 matrix */
+			tr.basis.elements[0][0],
+			tr.basis.elements[1][0],
+			tr.basis.elements[2][0],
+			0,
+			tr.basis.elements[0][1],
+			tr.basis.elements[1][1],
+			tr.basis.elements[2][1],
+			0,
+			tr.basis.elements[0][2],
+			tr.basis.elements[1][2],
+			tr.basis.elements[2][2],
+			0,
+			tr.origin.x,
+			tr.origin.y,
+			tr.origin.z,
+			1
+		};
+
+
+                glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+
+
+	}
+
+	"""
+    )
+
+    fd.write(
+        """_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform2D& p_transform) {  _FU
+
+		const Transform2D &tr = p_transform;
+
+		GLfloat matrix[16]={ /* build a 16x16 matrix */
+			tr.elements[0][0],
+			tr.elements[0][1],
+			0,
+			0,
+			tr.elements[1][0],
+			tr.elements[1][1],
+			0,
+			0,
+			0,
+			0,
+			1,
+			0,
+			tr.elements[2][0],
+			tr.elements[2][1],
+			0,
+			1
+		};
+
+>>>>>>> master
 
         glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
     }
@@ -345,10 +402,18 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     """
     )
 
+<<<<<<< HEAD
     fd.write(
         """_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
 
         GLfloat matrix[16];
+=======
+	"""
+    )
+
+    fd.write(
+        """_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix) {  _FU
+>>>>>>> master
 
         for (int i=0;i<4;i++) {
             for (int j=0;j<4;j++) {
@@ -360,7 +425,12 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
         glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
     }
 
+<<<<<<< HEAD
     """
+=======
+		glUniformMatrix4fv(get_uniform(p_uniform),1,false,matrix);
+}"""
+>>>>>>> master
     )
 
     fd.write("\n\n#undef _FU\n\n\n")
@@ -801,7 +871,13 @@ def build_rd_headers(target, source, env):
 
 def build_raw_headers(target, source, env):
     for x in source:
+<<<<<<< HEAD
         build_raw_header(str(x))
+=======
+        build_legacygl_header(
+            str(x), include="drivers/gles2/shader_gles2.h", class_suffix="GLES2", output_attribs=True, gles2=True
+        )
+>>>>>>> master
 
 
 if __name__ == "__main__":

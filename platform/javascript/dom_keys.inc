@@ -31,6 +31,7 @@
 #include "core/os/keyboard.h"
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
+<<<<<<< HEAD
 int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
 #define DOM2GODOT(p_str, p_godot_code)                                         \
 	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
@@ -98,6 +99,73 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 #undef _U_2BYTES_MASK
 #undef _U_2BYTES
 	}
+=======
+int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32]) {
+#define DOM2GODOT(p_str, p_godot_code)                                         \
+	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
+		return KEY_##p_godot_code;                                             \
+	}
+
+	// Numpad section.
+	DOM2GODOT("NumLock", NUMLOCK);
+	DOM2GODOT("Numpad0", KP_0);
+	DOM2GODOT("Numpad1", KP_1);
+	DOM2GODOT("Numpad2", KP_2);
+	DOM2GODOT("Numpad3", KP_3);
+	DOM2GODOT("Numpad4", KP_4);
+	DOM2GODOT("Numpad5", KP_5);
+	DOM2GODOT("Numpad6", KP_6);
+	DOM2GODOT("Numpad7", KP_7);
+	DOM2GODOT("Numpad8", KP_8);
+	DOM2GODOT("Numpad9", KP_9);
+	DOM2GODOT("NumpadAdd", KP_ADD);
+	DOM2GODOT("NumpadBackspace", BACKSPACE);
+	DOM2GODOT("NumpadClear", CLEAR);
+	DOM2GODOT("NumpadClearEntry", CLEAR);
+	//DOM2GODOT("NumpadComma", UNKNOWN);
+	DOM2GODOT("NumpadDecimal", KP_PERIOD);
+	DOM2GODOT("NumpadDivide", KP_DIVIDE);
+	DOM2GODOT("NumpadEnter", KP_ENTER);
+	DOM2GODOT("NumpadEqual", EQUAL);
+	//DOM2GODOT("NumpadHash", UNKNOWN);
+	//DOM2GODOT("NumpadMemoryAdd", UNKNOWN);
+	//DOM2GODOT("NumpadMemoryClear", UNKNOWN);
+	//DOM2GODOT("NumpadMemoryRecall", UNKNOWN);
+	//DOM2GODOT("NumpadMemoryStore", UNKNOWN);
+	//DOM2GODOT("NumpadMemorySubtract", UNKNOWN);
+	DOM2GODOT("NumpadMultiply", KP_MULTIPLY);
+	DOM2GODOT("NumpadParenLeft", PARENLEFT);
+	DOM2GODOT("NumpadParenRight", PARENRIGHT);
+	DOM2GODOT("NumpadStar", KP_MULTIPLY); // or ASTERISK ?
+	DOM2GODOT("NumpadSubtract", KP_SUBTRACT);
+
+	// Printable ASCII.
+	uint8_t b0 = (uint8_t)p_key[0];
+	uint8_t b1 = (uint8_t)p_key[1];
+	uint8_t b2 = (uint8_t)p_key[2];
+	if (b1 == 0 && b0 > 0x1F && b0 < 0x7F) { // ASCII.
+		if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
+			b0 -= 32;
+		}
+		return b0;
+	}
+
+#define _U_2BYTES_MASK 0xE0
+#define _U_2BYTES 0xC0
+	// Latin-1 codes.
+	if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
+		uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
+		if (key >= 0xA0 && key <= 0xDF) {
+			return key;
+		}
+		if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
+			key -= 0x20;
+			return key;
+		}
+	}
+#undef _U_2BYTES_MASK
+#undef _U_2BYTES
+>>>>>>> master
 
 	// Alphanumeric section.
 	DOM2GODOT("Backquote", QUOTELEFT);

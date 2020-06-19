@@ -39,7 +39,31 @@
 #include <emscripten/html5.h>
 
 class OS_JavaScript : public OS_Unix {
+<<<<<<< HEAD
 	MainLoop *main_loop = nullptr;
+=======
+
+	VideoMode video_mode;
+	Vector2 windowed_size;
+	bool window_maximized;
+	bool entering_fullscreen;
+	bool just_exited_fullscreen;
+	bool transparency_enabled;
+
+	InputDefault *input;
+	Ref<InputEventKey> deferred_key_event;
+	CursorShape cursor_shape;
+	String cursors[CURSOR_MAX];
+	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Point2 touches[32];
+
+	Point2i last_click_pos;
+	double last_click_ms;
+	int last_click_button_index;
+
+	MainLoop *main_loop;
+	int video_driver_index;
+>>>>>>> master
 	AudioDriverJavaScript audio_driver_javascript;
 
 	bool finalizing = false;
@@ -66,6 +90,9 @@ public:
 	static OS_JavaScript *get_singleton();
 
 	virtual void initialize_joypads();
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
 
 	virtual bool has_touchscreen_ui_hint() const;
 

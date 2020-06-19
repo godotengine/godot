@@ -340,7 +340,12 @@ bool MessageQueue::is_flushing() const {
 }
 
 MessageQueue::MessageQueue() {
+<<<<<<< HEAD
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
+=======
+
+	ERR_FAIL_COND_MSG(singleton != NULL, "A MessageQueue singleton already exists.");
+>>>>>>> master
 	singleton = this;
 
 	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);

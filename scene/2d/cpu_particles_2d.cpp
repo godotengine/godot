@@ -29,10 +29,16 @@
 /*************************************************************************/
 
 #include "cpu_particles_2d.h"
+<<<<<<< HEAD
 
 #include "core/core_string_names.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/main/canvas_item.h"
+=======
+#include "core/core_string_names.h"
+#include "scene/2d/canvas_item.h"
+#include "scene/2d/particles_2d.h"
+>>>>>>> master
 #include "scene/resources/particles_material.h"
 #include "servers/rendering_server.h"
 
@@ -54,9 +60,11 @@ void CPUParticles2D::set_amount(int p_amount) {
 	{
 		Particle *w = particles.ptrw();
 
-		for (int i = 0; i < p_amount; i++) {
-			w[i].active = false;
-		}
+		// each particle must be set to false
+		// zeroing the data also prevents uninitialized memory being sent to GPU
+		zeromem(static_cast<void *>(&w[0]), p_amount * sizeof(Particle));
+		// cast to prevent compiler warning .. note this relies on Particle not containing any complex types.
+		// an alternative is to use some zero method per item but the generated code will be far less efficient.
 	}
 
 	particle_data.resize((8 + 4 + 4) * p_amount);
@@ -159,7 +167,11 @@ void CPUParticles2D::_update_mesh_texture() {
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, 0));
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
 	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
+<<<<<<< HEAD
 	Vector<Vector2> uvs;
+=======
+	PoolVector<Vector2> uvs;
+>>>>>>> master
 	AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);
 	if (atlas_texure && atlas_texure->get_atlas().is_valid()) {
 		Rect2 region_rect = atlas_texure->get_region();
@@ -174,7 +186,11 @@ void CPUParticles2D::_update_mesh_texture() {
 		uvs.push_back(Vector2(1, 1));
 		uvs.push_back(Vector2(0, 1));
 	}
+<<<<<<< HEAD
 	Vector<Color> colors;
+=======
+	PoolVector<Color> colors;
+>>>>>>> master
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
@@ -198,6 +214,7 @@ void CPUParticles2D::_update_mesh_texture() {
 	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr);
 }
 
+<<<<<<< HEAD
 void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	if (p_texture == texture) {
 		return;
@@ -212,17 +229,39 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	if (texture.is_valid()) {
 		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
 	}
+=======
+void CPUParticles2D::set_texture(const Ref<Texture> &p_texture) {
+	if (p_texture == texture)
+		return;
+
+	if (texture.is_valid())
+		texture->disconnect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+
+	texture = p_texture;
+
+	if (texture.is_valid())
+		texture->connect(CoreStringNames::get_singleton()->changed, this, "_texture_changed");
+>>>>>>> master
 
 	update();
 	_update_mesh_texture();
 }
 
 void CPUParticles2D::_texture_changed() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (texture.is_valid()) {
 		update();
 		_update_mesh_texture();
 	}
 }
+<<<<<<< HEAD
+=======
+
+Ref<Texture> CPUParticles2D::get_texture() const {
+>>>>>>> master
 
 Ref<Texture2D> CPUParticles2D::get_texture() const {
 	return texture;
@@ -983,6 +1022,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 			zeromem(ptr, sizeof(float) * 8);
 		}
 
+<<<<<<< HEAD
 		Color c = r[idx].color;
 
 		ptr[8] = c.r;
@@ -994,6 +1034,23 @@ void CPUParticles2D::_update_particle_data_buffer() {
 		ptr[13] = r[idx].custom[1];
 		ptr[14] = r[idx].custom[2];
 		ptr[15] = r[idx].custom[3];
+=======
+				Color c = r[idx].color;
+				uint8_t *data8 = (uint8_t *)&ptr[8];
+				data8[0] = CLAMP(c.r * 255.0, 0, 255);
+				data8[1] = CLAMP(c.g * 255.0, 0, 255);
+				data8[2] = CLAMP(c.b * 255.0, 0, 255);
+				data8[3] = CLAMP(c.a * 255.0, 0, 255);
+
+				ptr[9] = r[idx].custom[0];
+				ptr[10] = r[idx].custom[1];
+				ptr[11] = r[idx].custom[2];
+				ptr[12] = r[idx].custom[3];
+
+			} else {
+				zeromem(ptr, sizeof(float) * 13);
+			}
+>>>>>>> master
 
 		ptr += 16;
 	}
@@ -1286,6 +1343,12 @@ void CPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
 
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method(D_METHOD("_update_render_thread"), &CPUParticles2D::_update_render_thread);
+	ClassDB::bind_method(D_METHOD("_texture_changed"), &CPUParticles2D::_texture_changed);
+
+>>>>>>> master
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");

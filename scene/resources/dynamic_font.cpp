@@ -566,8 +566,12 @@ DynamicFontAtSize::Character DynamicFontAtSize::_make_outline_char(CharType p_ch
 	}
 	if (FT_Glyph_Stroke(&glyph, stroker, 1) != 0) {
 		goto cleanup_glyph;
+<<<<<<< HEAD
 	}
 	if (FT_Glyph_To_Bitmap(&glyph, font->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1) != 0) {
+=======
+	if (FT_Glyph_To_Bitmap(&glyph, font->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1) != 0)
+>>>>>>> master
 		goto cleanup_glyph;
 	}
 

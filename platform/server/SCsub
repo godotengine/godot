@@ -10,7 +10,15 @@ common_server = [
 
 if sys.platform == "darwin":
     common_server.append("#platform/osx/crash_handler_osx.mm")
+<<<<<<< HEAD
 else:
     common_server.append("#platform/x11/crash_handler_x11.cpp")
+=======
+    common_server.append("#platform/osx/power_osx.cpp")
+    common_server.append("#platform/osx/semaphore_osx.cpp")
+else:
+    common_server.append("#platform/x11/crash_handler_x11.cpp")
+    common_server.append("#platform/x11/power_x11.cpp")
+>>>>>>> master
 
 prog = env.add_program("#bin/godot_server", ["godot_server.cpp"] + common_server)

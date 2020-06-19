@@ -34,7 +34,11 @@
 #include "core/list.h"
 #include "core/map.h"
 #include "core/math/aabb.h"
+<<<<<<< HEAD
 #include "core/math/geometry_3d.h"
+=======
+#include "core/math/geometry.h"
+>>>>>>> master
 #include "core/math/vector3.h"
 #include "core/print_string.h"
 #include "core/variant.h"
@@ -979,6 +983,10 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 			e->last_pass = pass;
 
 			if (e->aabb.intersects_convex_shape(p_cull->planes, p_cull->plane_count, p_cull->points, p_cull->point_count)) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 				if (*p_cull->result_idx < p_cull->result_max) {
 					p_cull->result_array[*p_cull->result_idx] = e->userdata;
 					(*p_cull->result_idx)++;
@@ -990,6 +998,10 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 	}
 
 	for (int i = 0; i < 8; i++) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_convex_shape(p_cull->planes, p_cull->plane_count, p_cull->points, p_cull->point_count)) {
 			_cull_convex(p_octant->children[i], p_cull);
 		}
@@ -1201,8 +1213,16 @@ int Octree<T, use_pairs, AL>::cull_convex(const Vector<Plane> &p_convex, T **p_r
 		return 0;
 	}
 
+<<<<<<< HEAD
 	Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
 	if (convex_points.size() == 0) {
+=======
+	if (!root || p_convex.size() == 0)
+		return 0;
+
+	Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(&p_convex[0], p_convex.size());
+	if (convex_points.size() == 0)
+>>>>>>> master
 		return 0;
 	}
 

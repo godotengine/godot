@@ -39,6 +39,10 @@
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/oa_hash_map.h"
+<<<<<<< HEAD
+=======
+#include "core/pool_vector.h"
+>>>>>>> master
 #include "core/reference.h"
 #include "core/vector.h"
 #include "scene/resources/material.h"
@@ -59,7 +63,11 @@ struct CSGBrush {
 	inline void _regen_face_aabbs();
 
 	// Create a brush from faces.
+<<<<<<< HEAD
 	void build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces);
+=======
+	void build_from_faces(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials, const PoolVector<bool> &p_invert_faces);
+>>>>>>> master
 	void copy_from(const CSGBrush &p_brush, const Transform &p_xform);
 };
 
@@ -83,6 +91,19 @@ struct CSGBrushOperation {
 			int material_idx;
 		};
 
+<<<<<<< HEAD
+=======
+		struct Face {
+			bool from_b;
+			bool inside;
+			int points[3];
+			Vector2 uvs[3];
+			bool smooth;
+			bool invert;
+			int material_idx;
+		};
+
+>>>>>>> master
 		struct FaceBVH {
 			int face;
 			int left;
@@ -143,6 +164,7 @@ struct CSGBrushOperation {
 		Map<Vector3, int> vertex_map;
 		OAHashMap<VertexKey, int, VertexKeyHash> snap_cache;
 		float vertex_snap;
+<<<<<<< HEAD
 
 		inline void _add_distance(List<real_t> &r_intersectionsA, List<real_t> &r_intersectionsB, bool p_from_B, real_t p_distance) const;
 		inline bool _bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const;
@@ -153,6 +175,19 @@ struct CSGBrushOperation {
 	};
 
 	struct Build2DFaces {
+=======
+
+		inline void _add_distance(List<real_t> &r_intersectionsA, List<real_t> &r_intersectionsB, bool p_from_B, real_t p_distance) const;
+		inline bool _bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const;
+		inline int _create_bvh(FaceBVH *facebvhptr, FaceBVH **facebvhptrptr, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc);
+
+		void add_face(const Vector3 p_points[3], const Vector2 p_uvs[3], bool p_smooth, bool p_invert, const Ref<Material> &p_material, bool p_from_b);
+		void mark_inside_faces();
+	};
+
+	struct Build2DFaces {
+
+>>>>>>> master
 		struct Vertex2D {
 			Vector2 point;
 			Vector2 uv;

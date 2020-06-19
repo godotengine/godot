@@ -2,7 +2,10 @@
 
 Import("env")
 
+<<<<<<< HEAD
 import modules_builders
+=======
+>>>>>>> master
 import os
 
 env_modules = env.Clone()
@@ -17,6 +20,7 @@ vs_sources = []
 for name, path in env.module_list.items():
     env.modules_sources = []
 
+<<<<<<< HEAD
     if not os.path.isabs(path):
         SConscript(name + "/SCsub")  # Built-in.
     else:
@@ -26,6 +30,22 @@ for name, path in env.module_list.items():
     # on iOS, so we handle those specially.
     if env["platform"] == "iphone" and name in ["arkit", "camera"]:
         continue
+=======
+for name, path in env.module_list.items():
+    if name in env.disabled_modules:
+        continue
+
+    env_modules.Append(CPPDEFINES=["MODULE_" + name.upper() + "_ENABLED"])
+    if not os.path.isabs(path):
+        SConscript(name + "/SCsub")  # Built-in.
+    else:
+        SConscript(path + "/SCsub")  # Custom.
+
+if env["split_libmodules"]:
+    env.split_lib("modules", env_lib=env_modules)
+else:
+    lib = env_modules.add_library("modules", env.modules_sources)
+>>>>>>> master
 
     lib = env_modules.add_library("module_%s" % name, env.modules_sources)
     env.Prepend(LIBS=[lib])

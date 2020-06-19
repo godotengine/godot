@@ -43,6 +43,10 @@ void register_mbedtls_types() {
 }
 
 void unregister_mbedtls_types() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();
 	StreamPeerMbedTLS::finalize_ssl();

@@ -117,7 +117,11 @@ public class GodotEditText extends EditText {
 
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
+<<<<<<< HEAD
 					final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+=======
+					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+>>>>>>> master
 					imm.showSoftInput(edit, 0);
 				}
 			} break;

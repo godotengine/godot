@@ -185,8 +185,14 @@ Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
 	return item_map[p_item].navmesh_transform;
 }
 
+<<<<<<< HEAD
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+=======
+Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
+
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+>>>>>>> master
 	return item_map[p_item].preview;
 }
 

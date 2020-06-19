@@ -48,6 +48,7 @@ struct Rect2 {
 
 	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
 		if (p_include_borders) {
+<<<<<<< HEAD
 			if (position.x > (p_rect.position.x + p_rect.size.width)) {
 				return false;
 			}
@@ -73,6 +74,25 @@ struct Rect2 {
 			if ((position.y + size.height) <= p_rect.position.y) {
 				return false;
 			}
+=======
+			if (position.x > (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) < p_rect.position.x)
+				return false;
+			if (position.y > (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) < p_rect.position.y)
+				return false;
+		} else {
+			if (position.x >= (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) <= p_rect.position.x)
+				return false;
+			if (position.y >= (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) <= p_rect.position.y)
+				return false;
+>>>>>>> master
 		}
 
 		return true;

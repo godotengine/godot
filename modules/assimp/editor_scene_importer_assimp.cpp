@@ -295,7 +295,11 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 	state.path = p_path;
 	state.assimp_scene = scene;
 	state.max_bone_weights = p_max_bone_weights;
+<<<<<<< HEAD
 	state.animation_player = nullptr;
+=======
+	state.animation_player = NULL;
+>>>>>>> master
 	state.import_flags = p_flags;
 
 	// populate light map
@@ -1267,7 +1271,11 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 			morphs[j] = array_copy;
 		}
+<<<<<<< HEAD
 		mesh->add_surface_from_arrays(primitive, array_mesh, morphs, Dictionary(), mesh_flags);
+=======
+		mesh->add_surface_from_arrays(primitive, array_mesh, morphs, mesh_flags);
+>>>>>>> master
 		mesh->surface_set_material(i, mat);
 		mesh->surface_set_name(i, AssimpUtils::get_assimp_string(ai_mesh->mName));
 	}

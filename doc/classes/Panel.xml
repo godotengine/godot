@@ -23,8 +23,11 @@
 	<theme_items>
 		<theme_item name="panel" type="StyleBox">
 			The style of this [Panel].
+<<<<<<< HEAD
 		</theme_item>
 		<theme_item name="panel_fg" type="StyleBox">
+=======
+>>>>>>> master
 		</theme_item>
 	</theme_items>
 </class>

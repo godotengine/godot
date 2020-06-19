@@ -307,11 +307,14 @@ namespace GodotTools.Ides
                         var request = JsonConvert.DeserializeObject<DebugPlayRequest>(content.Body);
                         return await HandleDebugPlay(request);
                     },
+<<<<<<< HEAD
                     [StopPlayRequest.Id] = async (peer, content) =>
                     {
                         var request = JsonConvert.DeserializeObject<StopPlayRequest>(content.Body);
                         return await HandleStopPlay(request);
                     },
+=======
+>>>>>>> master
                     [ReloadScriptsRequest.Id] = async (peer, content) =>
                     {
                         _ = JsonConvert.DeserializeObject<ReloadScriptsRequest>(content.Body);
@@ -341,19 +344,26 @@ namespace GodotTools.Ides
                 DispatchToMainThread(() =>
                 {
                     GodotSharpEditor.Instance.CurrentPlaySettings =
+<<<<<<< HEAD
                         new PlaySettings(request.DebuggerHost, request.DebuggerPort, request.BuildBeforePlaying ?? true);
+=======
+                        new PlaySettings(request.DebuggerHost, request.DebuggerPort, buildBeforePlaying: true);
+>>>>>>> master
                     Internal.EditorRunPlay();
                     GodotSharpEditor.Instance.CurrentPlaySettings = null;
                 });
                 return Task.FromResult<Response>(new DebugPlayResponse());
             }
 
+<<<<<<< HEAD
             private static Task<Response> HandleStopPlay(StopPlayRequest request)
             {
                 DispatchToMainThread(Internal.EditorRunStop);
                 return Task.FromResult<Response>(new StopPlayResponse());
             }
 
+=======
+>>>>>>> master
             private static Task<Response> HandleReloadScripts()
             {
                 DispatchToMainThread(Internal.ScriptEditorDebugger_ReloadScripts);

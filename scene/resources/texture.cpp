@@ -1688,7 +1688,10 @@ void AnimatedTexture::set_current_frame(int p_frame) {
 
 	current_frame = p_frame;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 int AnimatedTexture::get_current_frame() const {
 	return current_frame;
 }
@@ -1697,7 +1700,10 @@ void AnimatedTexture::set_pause(bool p_pause) {
 	RWLockWrite r(rw_lock);
 	pause = p_pause;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 bool AnimatedTexture::get_pause() const {
 	return pause;
 }
@@ -1706,10 +1712,18 @@ void AnimatedTexture::set_oneshot(bool p_oneshot) {
 	RWLockWrite r(rw_lock);
 	oneshot = p_oneshot;
 }
+<<<<<<< HEAD
 
 bool AnimatedTexture::get_oneshot() const {
 	return oneshot;
 }
+=======
+bool AnimatedTexture::get_oneshot() const {
+	return oneshot;
+}
+
+void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture> &p_texture) {
+>>>>>>> master
 
 void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND(p_texture == this);
@@ -1843,7 +1857,11 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", 0), "set_current_frame", "get_current_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "get_pause");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oneshot"), "set_oneshot", "get_oneshot");
+<<<<<<< HEAD
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
+=======
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
+>>>>>>> master
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
@@ -1866,7 +1884,11 @@ AnimatedTexture::AnimatedTexture() {
 	current_frame = 0;
 	pause = false;
 	oneshot = false;
+<<<<<<< HEAD
 	RenderingServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
+=======
+	VisualServer::get_singleton()->connect("frame_pre_draw", this, "_update_proxy");
+>>>>>>> master
 
 #ifndef NO_THREADS
 	rw_lock = RWLock::create();
@@ -2373,4 +2395,65 @@ CameraTexture::CameraTexture() {
 
 CameraTexture::~CameraTexture() {
 	// nothing to do here yet
+}
+
+void ExternalTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &ExternalTexture::set_size);
+	ClassDB::bind_method(D_METHOD("get_external_texture_id"), &ExternalTexture::get_external_texture_id);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+}
+
+uint32_t ExternalTexture::get_external_texture_id() {
+	return VisualServer::get_singleton()->texture_get_texid(texture);
+}
+
+void ExternalTexture::set_size(const Size2 &p_size) {
+
+	if (p_size.width > 0 && p_size.height > 0) {
+		size = p_size;
+		VisualServer::get_singleton()->texture_set_size_override(texture, size.width, size.height, 0);
+	}
+}
+
+int ExternalTexture::get_width() const {
+	return size.width;
+}
+
+int ExternalTexture::get_height() const {
+	return size.height;
+}
+
+Size2 ExternalTexture::get_size() const {
+	return size;
+}
+
+RID ExternalTexture::get_rid() const {
+	return texture;
+}
+
+bool ExternalTexture::has_alpha() const {
+	return true;
+}
+
+void ExternalTexture::set_flags(uint32_t p_flags) {
+	// not supported
+}
+
+uint32_t ExternalTexture::get_flags() const {
+	// not supported
+	return 0;
+}
+
+ExternalTexture::ExternalTexture() {
+	size = Size2(1.0, 1.0);
+	texture = VisualServer::get_singleton()->texture_create();
+
+	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, 0);
+	_change_notify();
+	emit_changed();
+}
+
+ExternalTexture::~ExternalTexture() {
+	VisualServer::get_singleton()->free(texture);
 }

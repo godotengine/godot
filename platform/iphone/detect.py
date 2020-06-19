@@ -29,11 +29,14 @@ def get_opts():
             "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
         ),
         ("IPHONESDK", "Path to the iPhone SDK", ""),
+<<<<<<< HEAD
         BoolVariable(
             "use_static_mvk",
             "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables validation layers)",
             False,
         ),
+=======
+>>>>>>> master
         BoolVariable("game_center", "Support for game center", True),
         BoolVariable("store_kit", "Support for in-app store", True),
         BoolVariable("icloud", "Support for iCloud", True),
@@ -191,7 +194,11 @@ def configure(env):
             "-framework",
             "MediaPlayer",
             "-framework",
+<<<<<<< HEAD
             "Metal",
+=======
+            "OpenGLES",
+>>>>>>> master
             "-framework",
             "QuartzCore",
             "-framework",
@@ -209,6 +216,7 @@ def configure(env):
     if env["game_center"]:
         env.Append(CPPDEFINES=["GAME_CENTER_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "GameKit"])
+<<<<<<< HEAD
 
     if env["store_kit"]:
         env.Append(CPPDEFINES=["STOREKIT_ENABLED"])
@@ -233,3 +241,25 @@ def configure(env):
         env["builtin_vulkan"] = False
     elif not env["builtin_vulkan"]:
         env.Append(LIBS=["vulkan"])
+=======
+
+    if env["store_kit"]:
+        env.Append(CPPDEFINES=["STOREKIT_ENABLED"])
+        env.Append(LINKFLAGS=["-framework", "StoreKit"])
+
+    if env["icloud"]:
+        env.Append(CPPDEFINES=["ICLOUD_ENABLED"])
+
+    env.Prepend(
+        CPPPATH=[
+            "$IPHONESDK/usr/include",
+            "$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers",
+            "$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers",
+        ]
+    )
+
+    env["ENV"]["CODESIGN_ALLOCATE"] = "/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate"
+
+    env.Prepend(CPPPATH=["#platform/iphone"])
+    env.Append(CPPDEFINES=["IPHONE_ENABLED", "UNIX_ENABLED", "GLES_ENABLED", "COREAUDIO_ENABLED"])
+>>>>>>> master

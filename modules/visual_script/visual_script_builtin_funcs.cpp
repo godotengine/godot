@@ -515,7 +515,11 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::INT;
 		} break;
 		case MATH_ROUND: {
+<<<<<<< HEAD
 			t = Variant::FLOAT;
+=======
+			t = Variant::REAL;
+>>>>>>> master
 		} break;
 		case MATH_ABS: {
 			t = Variant::NIL;

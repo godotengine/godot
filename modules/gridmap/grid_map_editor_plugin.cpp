@@ -795,7 +795,14 @@ void GridMapEditor::_text_changed(const String &p_text) {
 void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	const Ref<InputEventKey> k = p_ie;
 
+<<<<<<< HEAD
 	if (k.is_valid() && (k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_PAGEUP || k->get_keycode() == KEY_PAGEDOWN)) {
+=======
+	const Ref<InputEventKey> k = p_ie;
+
+	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_PAGEUP || k->get_scancode() == KEY_PAGEDOWN)) {
+
+>>>>>>> master
 		// Forward the key input to the ItemList so it can be scrolled
 		mesh_library_palette->call("_gui_input", k);
 		search_box->accept_event();
@@ -803,10 +810,18 @@ void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	const Ref<InputEventMouseButton> mb = p_ie;
 
 	// Zoom in/out using Ctrl + mouse wheel
 	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
@@ -1139,6 +1154,15 @@ void GridMapEditor::_floor_mouse_exited() {
 }
 
 void GridMapEditor::_bind_methods() {
+<<<<<<< HEAD
+=======
+
+	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
+	ClassDB::bind_method("_sbox_input", &GridMapEditor::_sbox_input);
+	ClassDB::bind_method("_mesh_library_palette_input", &GridMapEditor::_mesh_library_palette_input);
+	ClassDB::bind_method("_icon_size_changed", &GridMapEditor::_icon_size_changed);
+	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
+>>>>>>> master
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
 }
@@ -1271,7 +1295,11 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+<<<<<<< HEAD
 	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
+=======
+	mesh_library_palette->connect("gui_input", this, "_mesh_library_palette_input");
+>>>>>>> master
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));

@@ -163,7 +163,11 @@ void CSharpLanguage::finish() {
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
+<<<<<<< HEAD
 			ERR_PRINT("Leaked unsafe reference to object: " + obj->to_string());
+=======
+			ERR_PRINTS("Leaked unsafe reference to object: " + obj->to_string());
+>>>>>>> master
 		} else {
 			ERR_PRINT("Leaked unsafe reference to deleted object: " + itos(id));
 		}
@@ -2345,13 +2349,21 @@ bool CSharpScript::_update_exports() {
 	if (is_editor)
 		placeholder_fallback_enabled = true; // until proven otherwise
 #endif
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (!valid)
 		return false;
 
 	bool changed = false;
 
 #ifdef TOOLS_ENABLED
+<<<<<<< HEAD
 	if (exports_invalidated)
+=======
+	if (!is_editor || exports_invalidated)
+>>>>>>> master
 #endif
 	{
 		GD_MONO_SCOPE_THREAD_ATTACH;
@@ -2364,6 +2376,7 @@ bool CSharpScript::_update_exports() {
 		MonoObject *tmp_object = nullptr;
 		Object *tmp_native = nullptr;
 		uint32_t tmp_pinned_gchandle = 0;
+<<<<<<< HEAD
 
 		if (is_editor) {
 			exports_invalidated = false;
@@ -2371,6 +2384,15 @@ bool CSharpScript::_update_exports() {
 			exported_members_cache.clear();
 			exported_members_defval_cache.clear();
 
+=======
+
+		if (is_editor) {
+			exports_invalidated = false;
+
+			exported_members_cache.clear();
+			exported_members_defval_cache.clear();
+
+>>>>>>> master
 			// Here we create a temporary managed instance of the class to get the initial values
 			tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
 
@@ -2379,6 +2401,7 @@ bool CSharpScript::_update_exports() {
 				return false;
 			}
 
+<<<<<<< HEAD
 			tmp_pinned_gchandle = GDMonoUtils::new_strong_gchandle_pinned(tmp_object); // pin it (not sure if needed)
 
 			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
@@ -2388,14 +2411,30 @@ bool CSharpScript::_update_exports() {
 
 			MonoException *ctor_exc = nullptr;
 			ctor->invoke(tmp_object, nullptr, &ctor_exc);
+=======
+			tmp_pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(tmp_object); // pin it (not sure if needed)
+
+			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
+
+			ERR_FAIL_NULL_V_MSG(ctor, NULL,
+					"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
+
+			MonoException *ctor_exc = NULL;
+			ctor->invoke(tmp_object, NULL, &ctor_exc);
+>>>>>>> master
 
 			tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
 
 			if (ctor_exc) {
 				// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
 
+<<<<<<< HEAD
 				GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
 				tmp_object = nullptr;
+=======
+				MonoGCHandle::free_handle(tmp_pinned_gchandle);
+				tmp_object = NULL;
+>>>>>>> master
 
 				ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
 				GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
@@ -2478,11 +2517,19 @@ bool CSharpScript::_update_exports() {
 #ifdef TOOLS_ENABLED
 		if (is_editor) {
 			// Need to check this here, before disposal
+<<<<<<< HEAD
 			bool base_ref = Object::cast_to<Reference>(tmp_native) != nullptr;
 
 			// Dispose the temporary managed instance
 
 			MonoException *exc = nullptr;
+=======
+			bool base_ref = Object::cast_to<Reference>(tmp_native) != NULL;
+
+			// Dispose the temporary managed instance
+
+			MonoException *exc = NULL;
+>>>>>>> master
 			GDMonoUtils::dispose(tmp_object, &exc);
 
 			if (exc) {
@@ -2490,13 +2537,22 @@ bool CSharpScript::_update_exports() {
 				GDMonoUtils::debug_print_unhandled_exception(exc);
 			}
 
+<<<<<<< HEAD
 			GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
 			tmp_object = nullptr;
+=======
+			MonoGCHandle::free_handle(tmp_pinned_gchandle);
+			tmp_object = NULL;
+>>>>>>> master
 
 			if (tmp_native && !base_ref) {
 				Node *node = Object::cast_to<Node>(tmp_native);
 				if (node && node->is_inside_tree()) {
+<<<<<<< HEAD
 					ERR_PRINT("Temporary instance was added to the scene tree.");
+=======
+					ERR_PRINTS("Temporary instance was added to the scene tree.");
+>>>>>>> master
 				} else {
 					memdelete(tmp_native);
 				}
@@ -2641,7 +2697,11 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	if (p_member->is_static()) {
 #ifdef TOOLS_ENABLED
 		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
+<<<<<<< HEAD
 			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+=======
+			ERR_PRINTS("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> master
 #endif
 		return false;
 	}
@@ -2666,14 +2726,22 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		if (!property->has_getter()) {
 #ifdef TOOLS_ENABLED
 			if (exported)
+<<<<<<< HEAD
 				ERR_PRINT("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+=======
+				ERR_PRINTS("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> master
 #endif
 			return false;
 		}
 		if (!property->has_setter()) {
 #ifdef TOOLS_ENABLED
 			if (exported)
+<<<<<<< HEAD
 				ERR_PRINT("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+=======
+				ERR_PRINTS("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> master
 #endif
 			return false;
 		}
@@ -2695,9 +2763,15 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 
+<<<<<<< HEAD
 	if (variant_type == Variant::NIL && !nil_is_variant) {
 #ifdef TOOLS_ENABLED
 		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+=======
+	if (variant_type == Variant::NIL) {
+#ifdef TOOLS_ENABLED
+		ERR_PRINTS("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> master
 #endif
 		return false;
 	}
@@ -2982,6 +3056,10 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 }
 
 bool CSharpScript::can_instance() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 #ifdef TOOLS_ENABLED
 	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
 #else
@@ -3616,6 +3694,11 @@ void CSharpScript::get_members(Set<StringName> *p_members) {
 	}
 #endif
 }
+<<<<<<< HEAD
+=======
+
+/*************** RESOURCE ***************/
+>>>>>>> master
 
 /*************** RESOURCE ***************/
 

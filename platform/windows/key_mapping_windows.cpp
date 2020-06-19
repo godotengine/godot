@@ -347,6 +347,7 @@ unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
 	return KEY_UNKNOWN;
 }
 
+<<<<<<< HEAD
 unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended) {
 	unsigned int keycode = KEY_UNKNOWN;
 	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
@@ -412,6 +413,8 @@ unsigned int KeyMappingWindows::get_scansym(unsigned int p_code, bool p_extended
 	return keycode;
 }
 
+=======
+>>>>>>> master
 bool KeyMappingWindows::is_extended_key(unsigned int p_code) {
 	return p_code == VK_INSERT ||
 		   p_code == VK_DELETE ||

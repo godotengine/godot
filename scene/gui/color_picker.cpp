@@ -65,9 +65,15 @@ void ColorPicker::_notification(int p_what) {
 #endif
 		} break;
 		case NOTIFICATION_PARENTED: {
+<<<<<<< HEAD
 			for (int i = 0; i < 4; i++) {
 				set_margin((Margin)i, get_margin((Margin)i) + get_theme_constant("margin"));
 			}
+=======
+
+			for (int i = 0; i < 4; i++)
+				set_margin((Margin)i, get_margin((Margin)i) + get_constant("margin"));
+>>>>>>> master
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			Popup *p = Object::cast_to<Popup>(get_parent());
@@ -643,17 +649,27 @@ void ColorPicker::_focus_enter() {
 
 void ColorPicker::_focus_exit() {
 	for (int i = 0; i < 4; i++) {
+<<<<<<< HEAD
 		if (!values[i]->get_line_edit()->get_menu()->is_visible()) {
 			values[i]->get_line_edit()->select(0, 0);
 		}
+=======
+		if (!values[i]->get_line_edit()->get_menu()->is_visible())
+			values[i]->get_line_edit()->select(0, 0);
+>>>>>>> master
 	}
 	c_text->select(0, 0);
 }
 
 void ColorPicker::_html_focus_exit() {
+<<<<<<< HEAD
 	if (c_text->get_menu()->is_visible()) {
 		return;
 	}
+=======
+	if (c_text->get_menu()->is_visible())
+		return;
+>>>>>>> master
 	_html_entered(c_text->get_text());
 	_focus_exit();
 }

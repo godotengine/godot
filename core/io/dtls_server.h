@@ -51,7 +51,11 @@ public:
 	virtual void stop() = 0;
 	virtual Ref<PacketPeerDTLS> take_connection(Ref<PacketPeerUDP> p_peer) = 0;
 
+<<<<<<< HEAD
 	DTLSServer() {}
+=======
+	DTLSServer();
+>>>>>>> master
 };
 
 #endif // DTLS_SERVER_H

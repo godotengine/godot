@@ -179,6 +179,13 @@
 		</method>
 	</methods>
 	<members>
+<<<<<<< HEAD
+=======
+		<member name="android/modules" type="String" setter="" getter="" default="&quot;&quot;">
+			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]"org/godotengine/godot/MyCustomSingleton,com/example/foo/FrenchFriesFactory"[/code].
+			[b]Note:[/b] Since Godot 3.2.2, the [code]org/godotengine/godot/GodotPaymentV3[/code] module was deprecated and replaced by the [code]GodotPayment[/code] plugin which should be enabled in the Android export preset under [code]Plugins[/code] section. The singleton to access in code was also renamed to [code]GodotPayment[/code].
+		</member>
+>>>>>>> master
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
 			Background color for the boot splash.
 		</member>
@@ -852,7 +859,11 @@
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
 		</member>
+<<<<<<< HEAD
 		<member name="network/ssl/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
+=======
+		<member name="network/ssl/certificates" type="String" setter="" getter="" default="&quot;&quot;">
+>>>>>>> master
 			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
@@ -949,6 +960,50 @@
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
+<<<<<<< HEAD
+=======
+		</member>
+		<member name="rendering/batching/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
+			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
+		</member>
+		<member name="rendering/batching/debug/flash_batching" type="bool" setter="" getter="" default="false">
+			[b]Experimental[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
+		</member>
+		<member name="rendering/batching/lights/max_join_items" type="int" setter="" getter="" default="32">
+			Lights have the potential to prevent joining items, and break many of the performance benefits of batching. This setting enables some complex logic to allow joining items if their lighting is similar, and overlap tests pass. This can significantly improve performance in some games. Set to 0 to switch off. With large values the cost of overlap tests may lead to diminishing returns.
+		</member>
+		<member name="rendering/batching/lights/scissor_area_threshold" type="float" setter="" getter="" default="1.0">
+			Sets the proportion of the total screen area (in pixels) that must be saved by a scissor operation in order to activate light scissoring. This can prevent parts of items being rendered outside the light area. Lower values scissor more aggressively. A value of 1 scissors none of the items, a value of 0 scissors every item. The power of 4 of the value is used, in order to emphasize the lower range, and multiplied by the total screen area in pixels to give the threshold. This can reduce fill rate requirements in scenes with a lot of lighting.
+		</member>
+		<member name="rendering/batching/options/single_rect_fallback" type="bool" setter="" getter="" default="false">
+			Enabling this setting uses the legacy method to draw batches containing only one rect. The legacy method is faster (approx twice as fast), but can cause flicker on some systems. In order to directly compare performance with the non-batching renderer you can set this to true, but it is recommended to turn this off unless you can guarantee your target hardware will work with this method.
+		</member>
+		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="true">
+			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
+		</member>
+		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="true">
+			Switches on batching within the editor.
+		</member>
+		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
+			Size of buffer reserved for batched vertices. Larger size enables larger batches, but there are diminishing returns for the memory used. This should only have a minor effect on performance.
+		</member>
+		<member name="rendering/batching/parameters/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
+			Including color in the vertex format has a cost, however, not including color prevents batching across color changes. This threshold determines the ratio of [code]number of vertex color changes / total number of vertices[/code] above which vertices will be translated to colored format. A value of 0 will always use colored vertices, 1 will never use colored vertices.
+		</member>
+		<member name="rendering/batching/parameters/item_reordering_lookahead" type="int" setter="" getter="" default="4">
+			In certain circumstances, the batcher can reorder items in order to better join them. This may result in better performance. An overlap test is needed however for each item lookahead, so there is a trade off, with diminishing returns. If you are getting no benefit, setting this to 0 will switch it off.
+		</member>
+		<member name="rendering/batching/parameters/max_join_item_commands" type="int" setter="" getter="" default="16">
+			Sets the number of commands to lookahead to determine whether to batch render items. A value of 1 can join items consisting of single commands, 0 turns off joining. Higher values are in theory more likely to join, however this has diminishing returns and has a runtime cost so a small value is recommended.
+		</member>
+		<member name="rendering/batching/precision/uv_contract" type="bool" setter="" getter="" default="false">
+			On some platforms (especially mobile), precision issues in shaders can lead to reading 1 texel outside of bounds, particularly where rects are scaled. This can particularly lead to border artifacts around tiles in tilemaps.
+			This adjustment corrects for this by making a small contraction to the UV coordinates used. Note that this can result in a slight squashing of border texels.
+		</member>
+		<member name="rendering/batching/precision/uv_contract_amount" type="int" setter="" getter="" default="100">
+			The amount of UV contraction. This figure is divided by 1000000, and is a proportion of the total texture dimensions, where the width and height are both ranged from 0.0 to 1.0.
+			Use the default unless correcting for a problem on particular hardware.
+>>>>>>> master
 		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
@@ -956,7 +1011,15 @@
 		<member name="rendering/environment/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
 		</member>
+<<<<<<< HEAD
 		<member name="rendering/gpu_lightmapper/performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
+=======
+		<member name="rendering/gles2/compatibility/disable_half_float" type="bool" setter="" getter="" default="false">
+			The use of half-float vertex compression may be producing rendering errors on some platforms (especially iOS). These have been seen particularly in particles. Disabling half-float may resolve these problems.
+		</member>
+		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
+			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
+>>>>>>> master
 		</member>
 		<member name="rendering/gpu_lightmapper/performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
 		</member>
@@ -987,12 +1050,17 @@
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 		</member>
-		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
+		<member name="rendering/quality/2d/use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
+<<<<<<< HEAD
 			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option only impacts the GLES2 rendering backend, and only desktop platforms. It is not necessary when using the Vulkan backend.
+=======
+			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option affects GLES2 and GLES3 rendering, but only on desktop platforms.
+>>>>>>> master
 		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
+			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
 		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
@@ -1170,6 +1238,7 @@
 		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 		</member>
+<<<<<<< HEAD
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="rendering/vulkan/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
@@ -1178,6 +1247,8 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
+=======
+>>>>>>> master
 		<member name="world/2d/cell_size" type="int" setter="" getter="" default="100">
 			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses.
 		</member>

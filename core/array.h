@@ -44,10 +44,13 @@ class Array {
 	void _unref() const;
 
 	inline int _clamp_slice_index(int p_index) const;
+<<<<<<< HEAD
 
 protected:
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	void _assign(const Array &p_array);
+=======
+>>>>>>> master
 
 public:
 	Variant &operator[](int p_idx);

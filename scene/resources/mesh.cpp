@@ -251,6 +251,10 @@ Ref<Shape3D> Mesh::create_trimesh_shape() const {
 	face_points.resize(faces.size() * 3);
 
 	for (int i = 0; i < face_points.size(); i += 3) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		Face3 f = faces.get(i / 3);
 		face_points.set(i, f.vertex[0]);
 		face_points.set(i + 1, f.vertex[1]);

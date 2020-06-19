@@ -41,10 +41,20 @@
 #include "scene/resources/segment_shape_2d.h"
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
+<<<<<<< HEAD
 	if (p_node == node) {
 		node = nullptr;
 	}
 }
+=======
+
+	if (p_node == node) {
+		node = NULL;
+	}
+}
+
+Variant CollisionShape2DEditor::get_handle_value(int idx) const {
+>>>>>>> master
 
 Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 	switch (shape_type) {
@@ -517,6 +527,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 }
 
 void CollisionShape2DEditor::_notification(int p_what) {
+<<<<<<< HEAD
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			get_tree()->connect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
@@ -527,6 +538,22 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		} break;
 	}
 }
+=======
+
+	switch (p_what) {
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", this, "_node_removed");
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", this, "_node_removed");
+		} break;
+	}
+}
+
+void CollisionShape2DEditor::edit(Node *p_node) {
+>>>>>>> master
 
 void CollisionShape2DEditor::edit(Node *p_node) {
 	if (!canvas_item_editor) {
@@ -550,6 +577,7 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 
 void CollisionShape2DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_current_shape_type", &CollisionShape2DEditor::_get_current_shape_type);
+	ClassDB::bind_method(D_METHOD("_node_removed"), &CollisionShape2DEditor::_node_removed);
 }
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {

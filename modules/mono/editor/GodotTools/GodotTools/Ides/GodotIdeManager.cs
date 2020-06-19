@@ -157,7 +157,11 @@ namespace GodotTools.Ides
             }
         }
 
+<<<<<<< HEAD
         public readonly struct EditorPick
+=======
+        public struct EditorPick
+>>>>>>> master
         {
             private readonly string identity;
 

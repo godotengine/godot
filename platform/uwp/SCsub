@@ -7,6 +7,10 @@ files = [
     "#platform/windows/key_mapping_windows.cpp",
     "#platform/windows/windows_terminal_logger.cpp",
     "joypad_uwp.cpp",
+<<<<<<< HEAD
+=======
+    "power_uwp.cpp",
+>>>>>>> master
     "context_egl_uwp.cpp",
     "app.cpp",
     "os_uwp.cpp",

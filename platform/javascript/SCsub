@@ -4,13 +4,17 @@ Import("env")
 
 javascript_files = [
     "audio_driver_javascript.cpp",
+<<<<<<< HEAD
     "display_server_javascript.cpp",
+=======
+>>>>>>> master
     "http_client_javascript.cpp",
     "javascript_eval.cpp",
     "javascript_main.cpp",
     "os_javascript.cpp",
 ]
 
+<<<<<<< HEAD
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
 if env["threads_enabled"]:
     build_targets.append("#bin/godot${PROGSUFFIX}.worker.js")
@@ -19,11 +23,19 @@ build = env.add_program(build_targets, javascript_files)
 
 js_libraries = [
     "native/http_request.js",
+=======
+build = env.add_program(["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"], javascript_files)
+js, wasm = build
+
+js_libraries = [
+    "http_request.js",
+>>>>>>> master
 ]
 for lib in js_libraries:
     env.Append(LINKFLAGS=["--js-library", env.File(lib).path])
 env.Depends(build, js_libraries)
 
+<<<<<<< HEAD
 js_pre = [
     "native/id_handler.js",
     "native/utils.js",
@@ -61,6 +73,24 @@ if env["threads_enabled"]:
     out_files.append(zip_dir.File(binary_name + ".worker.js"))
 
 zip_files = env.InstallAs(out_files, in_files)
+=======
+js_modules = [
+    "id_handler.js",
+]
+for module in js_modules:
+    env.Append(LINKFLAGS=["--pre-js", env.File(module).path])
+env.Depends(build, js_modules)
+
+wrapper_start = env.File("pre.js")
+wrapper_end = env.File("engine.js")
+js_wrapped = env.Textfile("#bin/godot", [wrapper_start, js, wrapper_end], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+
+zip_dir = env.Dir("#bin/.javascript_zip")
+zip_files = env.InstallAs(
+    [zip_dir.File("godot.js"), zip_dir.File("godot.wasm"), zip_dir.File("godot.html")],
+    [js_wrapped, wasm, "#misc/dist/html/full-size.html"],
+)
+>>>>>>> master
 env.Zip(
     "#bin/godot",
     zip_files,

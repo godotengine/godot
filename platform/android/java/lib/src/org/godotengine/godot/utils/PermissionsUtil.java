@@ -51,6 +51,8 @@ import java.util.List;
 public final class PermissionsUtil {
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
+	private static final String TAG = PermissionsUtil.class.getSimpleName();
+
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;

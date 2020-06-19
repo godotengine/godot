@@ -67,7 +67,11 @@ Error AudioDriverJavaScript::init() {
 	int mix_rate = GLOBAL_GET("audio/mix_rate");
 	int latency = GLOBAL_GET("audio/output_latency");
 
+	int mix_rate = GLOBAL_GET("audio/mix_rate");
+	int latency = GLOBAL_GET("audio/output_latency");
+
 	/* clang-format off */
+<<<<<<< HEAD
 	_driver_id = EM_ASM_INT({
 		const MIX_RATE = $0;
 		const LATENCY = $1 / 1000;
@@ -77,6 +81,15 @@ Error AudioDriverJavaScript::init() {
 			'stream': null,
 			'script': null
 		});
+=======
+	EM_ASM({
+		const MIX_RATE = $0;
+		const LATENCY = $1 / 1000;
+		_audioDriver_audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: MIX_RATE, latencyHint: LATENCY});
+		_audioDriver_audioInput = null;
+		_audioDriver_inputStream = null;
+		_audioDriver_scriptNode = null;
+>>>>>>> master
 	}, mix_rate, latency);
 	/* clang-format on */
 
@@ -84,6 +97,7 @@ Error AudioDriverJavaScript::init() {
 	buffer_length = closest_power_of_2((latency * mix_rate / 1000) * channel_count);
 	/* clang-format off */
 	buffer_length = EM_ASM_INT({
+<<<<<<< HEAD
 		var ref = Module.IDHandler.get($0);
 		const ctx = ref['context'];
 		const BUFFER_LENGTH = $1;
@@ -94,6 +108,16 @@ Error AudioDriverJavaScript::init() {
 		ref['script'] = script;
 		return script.bufferSize;
 	}, _driver_id, buffer_length, channel_count);
+=======
+		const BUFFER_LENGTH = $0;
+		const CHANNEL_COUNT = $1;
+
+		_audioDriver_scriptNode = _audioDriver_audioContext.createScriptProcessor(BUFFER_LENGTH, 2, CHANNEL_COUNT);
+		_audioDriver_scriptNode.connect(_audioDriver_audioContext.destination);
+
+		return _audioDriver_scriptNode.bufferSize;
+	}, buffer_length, channel_count);
+>>>>>>> master
 	/* clang-format on */
 	if (!buffer_length) {
 		return FAILED;
@@ -159,6 +183,7 @@ void AudioDriverJavaScript::resume() {
 float AudioDriverJavaScript::get_latency() {
 	/* clang-format off */
 	return EM_ASM_DOUBLE({
+<<<<<<< HEAD
 		const ref = Module.IDHandler.get($0);
 		var latency = 0;
 		if (ref && ref['context']) {
@@ -174,6 +199,23 @@ float AudioDriverJavaScript::get_latency() {
 	}, _driver_id);
 	/* clang-format on */
 }
+=======
+		var latency = 0;
+		if (_audioDriver_audioContext) {
+			if (_audioDriver_audioContext.baseLatency) {
+				latency += _audioDriver_audioContext.baseLatency;
+			}
+			if (_audioDriver_audioContext.outputLatency) {
+				latency += _audioDriver_audioContext.outputLatency;
+			}
+		}
+		return latency;
+	});
+	/* clang-format on */
+}
+
+int AudioDriverJavaScript::get_mix_rate() const {
+>>>>>>> master
 
 int AudioDriverJavaScript::get_mix_rate() const {
 	/* clang-format off */

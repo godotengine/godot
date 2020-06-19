@@ -615,7 +615,11 @@ void ScriptTextEditor::_validate_script() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(ignore_meta);
 		warnings_panel->push_color(
+<<<<<<< HEAD
 				warnings_panel->get_theme_color("accent_color", "Editor").lerp(warnings_panel->get_theme_color("mono_color", "Editor"), 0.5));
+=======
+				warnings_panel->get_color("accent_color", "Editor").linear_interpolate(warnings_panel->get_color("mono_color", "Editor"), 0.5));
+>>>>>>> master
 		warnings_panel->add_text(TTR("[Ignore]"));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta ignore.
@@ -969,6 +973,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 }
 
+<<<<<<< HEAD
 void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	TextEdit *text_edit = code_editor->get_text_edit();
 
@@ -993,6 +998,8 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 }
 
+=======
+>>>>>>> master
 String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	String base_path = script->get_path().get_base_dir();
 	String path = base_path.plus_file(rel_path);
@@ -1750,8 +1757,13 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	warnings_panel = memnew(RichTextLabel);
 	editor_box->add_child(warnings_panel);
+<<<<<<< HEAD
 	warnings_panel->add_theme_font_override(
 			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+=======
+	warnings_panel->add_font_override(
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
+>>>>>>> master
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);

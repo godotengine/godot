@@ -49,7 +49,11 @@ enum class CompletionKind {
 	THEME_STYLES
 };
 
+<<<<<<< HEAD
 PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
+=======
+PoolStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
+>>>>>>> master
 
 } // namespace gdmono
 

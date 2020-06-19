@@ -895,7 +895,11 @@ Error Expression::_get_token(Token &r_token) {
 				r_token.type = TK_OP_BIT_INVERT;
 
 				return OK;
+<<<<<<< HEAD
 			}
+=======
+			};
+>>>>>>> master
 			case '\'':
 			case '"': {
 				String str;
@@ -1063,9 +1067,14 @@ Error Expression::_get_token(Token &r_token) {
 
 					if (is_float) {
 						r_token.value = num.to_double();
+<<<<<<< HEAD
 					} else {
 						r_token.value = num.to_int64();
 					}
+=======
+					else
+						r_token.value = num.to_int64();
+>>>>>>> master
 					return OK;
 
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {

@@ -1314,8 +1314,13 @@ void ScriptEditor::_notification(int p_what) {
 			help_search->set_icon(get_theme_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_theme_icon("Instance", "EditorIcons"));
 
+<<<<<<< HEAD
 			script_forward->set_icon(get_theme_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_theme_icon("Back", "EditorIcons"));
+=======
+			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
+			site_search->set_icon(get_icon("Instance", "EditorIcons"));
+>>>>>>> master
 
 			members_overview_alphabeta_sort_button->set_icon(get_theme_icon("Sort", "EditorIcons"));
 

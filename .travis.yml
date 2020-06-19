@@ -77,6 +77,7 @@ matrix:
             - scons
           update: true
 
+<<<<<<< HEAD
 # TODO: iOS MoltenVK support
 
 #    - name: iOS export template (debug, Clang)
@@ -91,6 +92,20 @@ matrix:
 #            - scons
 
     - name: Linux export template (release_debug, GCC 7, without 3D support)
+=======
+    - name: iOS export template (debug, Clang)
+      stage: build
+      env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
+      os: osx
+      compiler: clang
+      addons:
+        homebrew:
+          packages:
+            - scons
+          update: true
+
+    - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
+>>>>>>> master
       stage: build
       env: PLATFORM=linuxbsd TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-7 EXTRA_ARGS="disable_3d=yes"
       os: linux
@@ -115,7 +130,11 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+<<<<<<< HEAD
       pyenv global 3.8 system;
+=======
+      pyenv global 3.7.1 system;
+>>>>>>> master
       pip3 install --user scons;
     fi
   - scons --version
@@ -125,11 +144,14 @@ install:
       java -version;
       misc/travis/android-tools-linux.sh;
     fi
+<<<<<<< HEAD
   - if [ "$PLATFORM" = "javascript" ]; then
       git clone --depth 1 "https://github.com/emscripten-core/emsdk.git";
       ./emsdk/emsdk install latest;
       ./emsdk/emsdk activate --no-embedded latest;
     fi
+=======
+>>>>>>> master
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       unset SCONS_CACHE;
       pip3 install --user black pygments;

@@ -804,11 +804,18 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			r.size *= zoom;
 			bool in_box = r.intersects(box_selecting_rect);
 
+<<<<<<< HEAD
 			if (in_box) {
 				gn->set_selected(box_selection_mode_additive);
 			} else {
 				gn->set_selected(previus_selected.find(gn) != nullptr);
 			}
+=======
+			if (in_box)
+				gn->set_selected(box_selection_mode_additive);
+			else
+				gn->set_selected(previus_selected.find(gn) != NULL);
+>>>>>>> master
 		}
 
 		top_layer->update();
@@ -966,7 +973,10 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2) {
 							continue;
+<<<<<<< HEAD
 						}
+=======
+>>>>>>> master
 						if (gn2->is_selected()) {
 							emit_signal("node_unselected", gn2);
 						}
@@ -1252,8 +1262,13 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_unselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+<<<<<<< HEAD
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
+=======
+	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
+>>>>>>> master
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));

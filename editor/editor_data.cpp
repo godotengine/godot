@@ -410,6 +410,10 @@ void EditorData::restore_editor_global_states() {
 }
 
 void EditorData::paste_object_params(Object *p_object) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_NULL(p_object);
 	undo_redo.create_action(TTR("Paste Params"));
 	for (List<PropertyData>::Element *E = clipboard.front(); E; E = E->next()) {

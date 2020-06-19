@@ -138,6 +138,10 @@ void Node2D::_update_xform_values() {
 }
 
 void Node2D::_update_transform() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	_mat.set_rotation_scale_and_skew(angle, _scale, skew);
 	_mat.elements[2] = pos;
 
@@ -170,22 +174,41 @@ void Node2D::set_rotation(float p_radians) {
 }
 
 void Node2D::set_skew(float p_radians) {
+<<<<<<< HEAD
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
+=======
+
+	if (_xform_dirty)
+		((Node2D *)this)->_update_xform_values();
+>>>>>>> master
 	skew = p_radians;
 	_update_transform();
 	_change_notify("skew");
 	_change_notify("skew_degrees");
 }
+<<<<<<< HEAD
+=======
+
+void Node2D::set_rotation_degrees(float p_degrees) {
+>>>>>>> master
 
 void Node2D::set_rotation_degrees(float p_degrees) {
 	set_rotation(Math::deg2rad(p_degrees));
 }
 
 void Node2D::set_skew_degrees(float p_degrees) {
+<<<<<<< HEAD
 	set_skew(Math::deg2rad(p_degrees));
 }
+=======
+
+	set_skew(Math::deg2rad(p_degrees));
+}
+
+void Node2D::set_scale(const Size2 &p_scale) {
+>>>>>>> master
 
 void Node2D::set_scale(const Size2 &p_scale) {
 	if (_xform_dirty) {
@@ -219,9 +242,19 @@ float Node2D::get_rotation() const {
 }
 
 float Node2D::get_skew() const {
+<<<<<<< HEAD
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
+=======
+	if (_xform_dirty)
+		((Node2D *)this)->_update_xform_values();
+
+	return skew;
+}
+
+float Node2D::get_rotation_degrees() const {
+>>>>>>> master
 
 	return skew;
 }
@@ -231,9 +264,15 @@ float Node2D::get_rotation_degrees() const {
 }
 
 float Node2D::get_skew_degrees() const {
+<<<<<<< HEAD
 	return Math::rad2deg(get_skew());
 }
 
+=======
+
+	return Math::rad2deg(get_skew());
+}
+>>>>>>> master
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
@@ -461,8 +500,13 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
+<<<<<<< HEAD
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skew", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_skew", "get_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skew_degrees", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1", PROPERTY_USAGE_EDITOR), "set_skew_degrees", "get_skew_degrees");
+=======
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "skew", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_skew", "get_skew");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "skew_degrees", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1", PROPERTY_USAGE_EDITOR), "set_skew_degrees", "get_skew_degrees");
+>>>>>>> master
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", 0), "set_transform", "get_transform");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", 0), "set_global_position", "get_global_position");

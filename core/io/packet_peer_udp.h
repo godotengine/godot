@@ -51,10 +51,17 @@ protected:
 	int queue_count = 0;
 
 	IP_Address peer_addr;
+<<<<<<< HEAD
 	int peer_port = 0;
 	bool connected = false;
 	bool blocking = true;
 	bool broadcast = false;
+=======
+	int peer_port;
+	bool connected;
+	bool blocking;
+	bool broadcast;
+>>>>>>> master
 	Ref<NetSocket> _sock;
 
 	static void _bind_methods();

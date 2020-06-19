@@ -1,5 +1,9 @@
 /*************************************************************************/
+<<<<<<< HEAD
 /*  object_id.h                                                          */
+=======
+/*  object_rc.h                                                          */
+>>>>>>> master
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,6 +32,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+<<<<<<< HEAD
 #ifndef OBJECT_ID_H
 #define OBJECT_ID_H
 
@@ -61,3 +66,13 @@ public:
 };
 
 #endif // OBJECT_ID_H
+=======
+#ifndef OBJECTID_H
+#define OBJECTID_H
+
+#include "core/int_types.h"
+
+typedef uint64_t ObjectID;
+
+#endif
+>>>>>>> master

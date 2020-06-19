@@ -77,7 +77,10 @@ void InspectorDock::_menu_option(int p_option) {
 			editor_data->apply_changes_in_editors();
 			if (current) {
 				editor_data->paste_object_params(current);
+<<<<<<< HEAD
 			}
+=======
+>>>>>>> master
 		} break;
 
 		case OBJECT_UNIQUE_RESOURCES: {
@@ -570,8 +573,12 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	warning = memnew(Button);
 	add_child(warning);
 	warning->set_text(TTR("Changes may be lost!"));
+<<<<<<< HEAD
 	warning->set_icon(get_theme_icon("NodeWarning", "EditorIcons"));
 	warning->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
+=======
+	warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+>>>>>>> master
 	warning->set_clip_text(true);
 	warning->hide();
 	warning->connect("pressed", callable_mp(this, &InspectorDock::_warning_pressed));

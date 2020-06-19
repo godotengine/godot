@@ -75,7 +75,11 @@ public:
 	static Crypto *create();
 	static void load_default_certificates(String p_path);
 
+<<<<<<< HEAD
 	virtual PackedByteArray generate_random_bytes(int p_bytes) = 0;
+=======
+	virtual PoolByteArray generate_random_bytes(int p_bytes) = 0;
+>>>>>>> master
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes) = 0;
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) = 0;
 

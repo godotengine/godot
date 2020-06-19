@@ -41,7 +41,12 @@ static HashMap<String, JNISingleton *> jni_singletons;
 
 extern "C" {
 
+<<<<<<< HEAD
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jobject obj, jstring name) {
+=======
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
+
+>>>>>>> master
 	String singname = jstring_to_string(name, env);
 	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
@@ -51,7 +56,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	ProjectSettings::get_singleton()->set(singname, s);
 }
 
+<<<<<<< HEAD
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args) {
+=======
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args) {
+
+>>>>>>> master
 	String singname = jstring_to_string(sname, env);
 
 	ERR_FAIL_COND(!jni_singletons.has(singname));
@@ -66,6 +76,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	int stringCount = env->GetArrayLength(args);
 
 	for (int i = 0; i < stringCount; i++) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		jstring string = (jstring)env->GetObjectArrayElement(args, i);
 		const String rawString = jstring_to_string(string, env);
 		types.push_back(get_jni_type(rawString));
@@ -77,6 +91,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	jclass cls = env->GetObjectClass(s->get_instance());
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		print_line("Failed getting method ID " + mname);
 	}
 
@@ -96,6 +114,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	int stringCount = env->GetArrayLength(j_signal_param_types);
 
 	for (int i = 0; i < stringCount; i++) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		jstring j_signal_param_type = (jstring)env->GetObjectArrayElement(j_signal_param_types, i);
 		const String signal_param_type = jstring_to_string(j_signal_param_type, env);
 		types.push_back(get_jni_type(signal_param_type));

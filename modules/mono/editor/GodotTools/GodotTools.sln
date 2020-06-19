@@ -9,10 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools.Core", "GodotToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools.BuildLogger", "GodotTools.BuildLogger\GodotTools.BuildLogger.csproj", "{6CE9A984-37B1-4F8A-8FE9-609F05F071B3}"
 EndProject
+<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools.IdeMessaging", "GodotTools.IdeMessaging\GodotTools.IdeMessaging.csproj", "{92600954-25F0-4291-8E11-1FEE9FC4BE20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotTools.OpenVisualStudio", "GodotTools.OpenVisualStudio\GodotTools.OpenVisualStudio.csproj", "{EAFFF236-FA96-4A4D-BD23-0E51EF988277}"
 EndProject
+=======
+>>>>>>> master
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +38,7 @@ Global
 		{6CE9A984-37B1-4F8A-8FE9-609F05F071B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CE9A984-37B1-4F8A-8FE9-609F05F071B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CE9A984-37B1-4F8A-8FE9-609F05F071B3}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< HEAD
 		{92600954-25F0-4291-8E11-1FEE9FC4BE20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{92600954-25F0-4291-8E11-1FEE9FC4BE20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92600954-25F0-4291-8E11-1FEE9FC4BE20}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -43,5 +47,7 @@ Global
 		{EAFFF236-FA96-4A4D-BD23-0E51EF988277}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAFFF236-FA96-4A4D-BD23-0E51EF988277}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAFFF236-FA96-4A4D-BD23-0E51EF988277}.Release|Any CPU.Build.0 = Release|Any CPU
+=======
+>>>>>>> master
 	EndGlobalSection
 EndGlobal

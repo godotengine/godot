@@ -82,7 +82,11 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+<<<<<<< HEAD
 				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [code]color[/code]. The exact drawing method is specific for each shape and cannot be configured.
+=======
+				Draws a solid shape onto a [CanvasItem] with the [VisualServer] API filled with the specified [code]color[/code]. The exact drawing method is specific for each shape and cannot be configured.
+>>>>>>> master
 			</description>
 		</method>
 	</methods>

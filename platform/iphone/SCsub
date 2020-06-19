@@ -14,7 +14,10 @@ iphone_lib = [
     "in_app_store.mm",
     "icloud.mm",
     "ios.mm",
+<<<<<<< HEAD
     "vulkan_context_iphone.mm",
+=======
+>>>>>>> master
 ]
 
 env_ios = env.Clone()

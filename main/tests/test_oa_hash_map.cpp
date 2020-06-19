@@ -38,12 +38,48 @@ namespace TestOAHashMap {
 struct CountedItem {
 	static int count;
 
+<<<<<<< HEAD
 	int id = -1;
 	bool destroyed = false;
 
 	CountedItem() {
 		count++;
 	}
+=======
+	int id;
+	bool destroyed;
+
+	CountedItem() :
+			id(-1),
+			destroyed(false) {
+		count++;
+	}
+
+	CountedItem(int p_id) :
+			id(p_id),
+			destroyed(false) {
+		count++;
+	}
+
+	CountedItem(const CountedItem &p_other) :
+			id(p_other.id),
+			destroyed(false) {
+		count++;
+	}
+
+	CountedItem &operator=(const CountedItem &p_other) = default;
+
+	~CountedItem() {
+		CRASH_COND(destroyed);
+		count--;
+		destroyed = true;
+	}
+};
+
+int CountedItem::count;
+
+MainLoop *test() {
+>>>>>>> master
 
 	CountedItem(int p_id) :
 			id(p_id) {
@@ -210,6 +246,7 @@ MainLoop *test() {
 		}
 	}
 
+<<<<<<< HEAD
 	// Test map with 0 capacity.
 	{
 		OAHashMap<int, String> original_map(0);
@@ -294,6 +331,9 @@ MainLoop *test() {
 	}
 
 	return nullptr;
+=======
+	return NULL;
+>>>>>>> master
 }
 
 } // namespace TestOAHashMap

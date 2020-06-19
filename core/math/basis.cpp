@@ -72,6 +72,10 @@ void Basis::invert() {
 }
 
 void Basis::orthonormalize() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	// Gram-Schmidt Process
 
 	Vector3 x = get_axis(0);
@@ -717,6 +721,26 @@ Vector3 Basis::get_euler_zyx() const {
 
 void Basis::set_euler_zyx(const Vector3 &p_euler) {
 	real_t c, s;
+<<<<<<< HEAD
+=======
+
+	c = Math::cos(p_euler.x);
+	s = Math::sin(p_euler.x);
+	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+
+	c = Math::cos(p_euler.y);
+	s = Math::sin(p_euler.y);
+	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
+
+	c = Math::cos(p_euler.z);
+	s = Math::sin(p_euler.z);
+	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+
+	*this = zmat * ymat * xmat;
+}
+
+bool Basis::is_equal_approx(const Basis &p_basis) const {
+>>>>>>> master
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);

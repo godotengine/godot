@@ -114,6 +114,7 @@ def make_authors_header(target, source, env):
 
 
 def make_donors_header(target, source, env):
+<<<<<<< HEAD
     sections = [
         "Platinum sponsors",
         "Gold sponsors",
@@ -122,6 +123,9 @@ def make_donors_header(target, source, env):
         "Silver donors",
         "Bronze donors",
     ]
+=======
+    sections = ["Platinum sponsors", "Gold sponsors", "Mini sponsors", "Gold donors", "Silver donors", "Bronze donors"]
+>>>>>>> master
     sections_id = [
         "DONORS_SPONSOR_PLAT",
         "DONORS_SPONSOR_GOLD",
@@ -295,7 +299,11 @@ def make_license_header(target, source, env):
         f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
 
         f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
+<<<<<<< HEAD
         for project_name, project in iter(projects.items()):
+=======
+        for project_name, project in iteritems(projects):
+>>>>>>> master
             f.write(
                 '\t{ "'
                 + escape_string(project_name)

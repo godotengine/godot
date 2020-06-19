@@ -20,7 +20,11 @@ def _make_doc_data_class_path(to_path):
     g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
     for c in sorted(env.doc_class_path):
         g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
+<<<<<<< HEAD
     g.write("\t{nullptr, nullptr}\n")
+=======
+    g.write("\t{NULL, NULL}\n")
+>>>>>>> master
     g.write("};\n")
 
     g.close()
@@ -57,7 +61,11 @@ if env["tools"]:
         else:
             docs += Glob(d + "/*.xml")  # Custom.
 
+<<<<<<< HEAD
     _make_doc_data_class_path(os.path.join(env.Dir("#").abspath, "editor"))
+=======
+    _make_doc_data_class_path(os.path.join(env.Dir("#").abspath, "editor/doc"))
+>>>>>>> master
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
@@ -65,6 +73,7 @@ if env["tools"]:
 
     path = env.Dir(".").abspath
 
+<<<<<<< HEAD
     # Editor translations
     tlist = glob.glob(path + "/translations/*.po")
     env.Depends("#editor/editor_translations.gen.h", tlist)
@@ -78,6 +87,12 @@ if env["tools"]:
     env.CommandNoCache(
         "#editor/doc_translations.gen.h", tlist, run_in_subprocess(editor_builders.make_doc_translations_header)
     )
+=======
+    # Translations
+    tlist = glob.glob(path + "/translations/*.po")
+    env.Depends("#editor/translations.gen.h", tlist)
+    env.CommandNoCache("#editor/translations.gen.h", tlist, run_in_subprocess(editor_builders.make_translations_header))
+>>>>>>> master
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
@@ -88,7 +103,12 @@ if env["tools"]:
 
     env.add_source_files(env.editor_sources, "*.cpp")
 
+<<<<<<< HEAD
     SConscript("debugger/SCsub")
+=======
+    SConscript("collada/SCsub")
+    SConscript("doc/SCsub")
+>>>>>>> master
     SConscript("fileserver/SCsub")
     SConscript("icons/SCsub")
     SConscript("import/SCsub")

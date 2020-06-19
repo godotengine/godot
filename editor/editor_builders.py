@@ -112,10 +112,15 @@ def make_translations_header(target, source, env, category):
     g.write("};\n\n")
     g.write("static {}TranslationList _{}_translations[] = {{\n".format(category.capitalize(), category))
     for x in xl_names:
+<<<<<<< HEAD
         g.write(
             '\t{{ "{}", {}, {}, _{}_translation_{}_compressed }},\n'.format(x[0], str(x[1]), str(x[2]), category, x[0])
         )
     g.write("\t{nullptr, 0, 0, nullptr}\n")
+=======
+        g.write('\t{ "' + x[0] + '", ' + str(x[1]) + ", " + str(x[2]) + ", _translation_" + x[0] + "_compressed},\n")
+    g.write("\t{NULL, 0, 0, NULL}\n")
+>>>>>>> master
     g.write("};\n")
 
     g.write("#endif")
@@ -123,6 +128,7 @@ def make_translations_header(target, source, env, category):
     g.close()
 
 
+<<<<<<< HEAD
 def make_editor_translations_header(target, source, env):
     make_translations_header(target, source, env, "editor")
 
@@ -131,5 +137,7 @@ def make_doc_translations_header(target, source, env):
     make_translations_header(target, source, env, "doc")
 
 
+=======
+>>>>>>> master
 if __name__ == "__main__":
     subprocess_main(globals())

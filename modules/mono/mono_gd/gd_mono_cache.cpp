@@ -67,6 +67,7 @@ CachedData cached_data;
 void CachedData::clear_corlib_cache() {
 	corlib_cache_updated = false;
 
+<<<<<<< HEAD
 	class_MonoObject = nullptr;
 	class_bool = nullptr;
 	class_int8_t = nullptr;
@@ -85,6 +86,26 @@ void CachedData::clear_corlib_cache() {
 	class_System_Collections_IEnumerable = nullptr;
 	class_System_Collections_ICollection = nullptr;
 	class_System_Collections_IDictionary = nullptr;
+=======
+	class_MonoObject = NULL;
+	class_bool = NULL;
+	class_int8_t = NULL;
+	class_int16_t = NULL;
+	class_int32_t = NULL;
+	class_int64_t = NULL;
+	class_uint8_t = NULL;
+	class_uint16_t = NULL;
+	class_uint32_t = NULL;
+	class_uint64_t = NULL;
+	class_float = NULL;
+	class_double = NULL;
+	class_String = NULL;
+	class_IntPtr = NULL;
+
+	class_System_Collections_IEnumerable = NULL;
+	class_System_Collections_ICollection = NULL;
+	class_System_Collections_IDictionary = NULL;
+>>>>>>> master
 
 #ifdef DEBUG_ENABLED
 	class_System_Diagnostics_StackTrace = nullptr;

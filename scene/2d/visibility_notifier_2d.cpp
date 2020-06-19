@@ -192,14 +192,22 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 	}
 
 	{
+<<<<<<< HEAD
 		AnimatedSprite2D *as = Object::cast_to<AnimatedSprite2D>(p_node);
+=======
+		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
+>>>>>>> master
 		if (as) {
 			add = true;
 		}
 	}
 
 	{
+<<<<<<< HEAD
 		GPUParticles2D *ps = Object::cast_to<GPUParticles2D>(p_node);
+=======
+		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
+>>>>>>> master
 		if (ps) {
 			add = true;
 		}
@@ -242,11 +250,19 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent()) {
 			get_parent()->connect(SceneStringNames::get_singleton()->ready,
+<<<<<<< HEAD
 					callable_mp(get_parent(), &Node::set_physics_process), varray(false), CONNECT_ONESHOT);
 		}
 		if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
 			get_parent()->connect(SceneStringNames::get_singleton()->ready,
 					callable_mp(get_parent(), &Node::set_process), varray(false), CONNECT_ONESHOT);
+=======
+					get_parent(), "set_physics_process", varray(false), CONNECT_ONESHOT);
+		}
+		if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
+			get_parent()->connect(SceneStringNames::get_singleton()->ready,
+					get_parent(), "set_process", varray(false), CONNECT_ONESHOT);
+>>>>>>> master
 		}
 	}
 
@@ -283,6 +299,12 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 			ap->set_active(p_enabled);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
+		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
+>>>>>>> master
 
 	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
 		AnimatedSprite2D *as = Object::cast_to<AnimatedSprite2D>(p_node);
@@ -297,7 +319,11 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 	}
 
 	if (enabler[ENABLER_PAUSE_PARTICLES]) {
+<<<<<<< HEAD
 		GPUParticles2D *ps = Object::cast_to<GPUParticles2D>(p_node);
+=======
+		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
+>>>>>>> master
 
 		if (ps) {
 			ps->set_emitting(p_enabled);

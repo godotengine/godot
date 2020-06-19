@@ -193,6 +193,10 @@ Ref<WebSocketPeer> EMWSClient::get_peer(int p_peer_id) const {
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (_peer->is_connected_to_host()) {
 		if (_is_connecting)
 			return CONNECTION_CONNECTING;

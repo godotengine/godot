@@ -4,6 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+<<<<<<< HEAD
+=======
+using DotNet.Globbing;
+>>>>>>> master
 using Microsoft.Build.Construction;
 using Microsoft.Build.Globbing;
 
@@ -165,6 +169,7 @@ namespace GodotTools.ProjectEditor
             return result.ToArray();
         }
 
+<<<<<<< HEAD
         public static void EnsureHasProjectTypeGuids(MSBuildProject project)
         {
             var root = project.Root;
@@ -184,6 +189,12 @@ namespace GodotTools.ProjectEditor
         public static void FixApiHintPath(MSBuildProject project)
         {
             var root = project.Root;
+=======
+        ///  Simple function to make sure the Api assembly references are configured correctly
+        public static void FixApiHintPath(MSBuildProject project)
+        {
+            var root = project.Root;
+>>>>>>> master
 
             void AddPropertyIfNotPresent(string name, string condition, string value)
             {

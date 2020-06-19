@@ -219,6 +219,10 @@ String _OS::get_executable_path() const {
 }
 
 Error _OS::shell_open(String p_uri) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	} else if (p_uri.begins_with("user://")) {
@@ -281,6 +285,42 @@ String _OS::get_locale() const {
 	return OS::get_singleton()->get_locale();
 }
 
+<<<<<<< HEAD
+=======
+String _OS::get_latin_keyboard_variant() const {
+	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
+		case OS::LATIN_KEYBOARD_QWERTY: return "QWERTY";
+		case OS::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
+		case OS::LATIN_KEYBOARD_AZERTY: return "AZERTY";
+		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
+		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
+		case OS::LATIN_KEYBOARD_NEO: return "NEO";
+		case OS::LATIN_KEYBOARD_COLEMAK: return "COLEMAK";
+		default: return "ERROR";
+	}
+}
+
+int _OS::keyboard_get_layout_count() const {
+	return OS::get_singleton()->keyboard_get_layout_count();
+}
+
+int _OS::keyboard_get_current_layout() const {
+	return OS::get_singleton()->keyboard_get_current_layout();
+}
+
+void _OS::keyboard_set_current_layout(int p_index) {
+	OS::get_singleton()->keyboard_set_current_layout(p_index);
+}
+
+String _OS::keyboard_get_layout_language(int p_index) const {
+	return OS::get_singleton()->keyboard_get_layout_language(p_index);
+}
+
+String _OS::keyboard_get_layout_name(int p_index) const {
+	return OS::get_singleton()->keyboard_get_layout_name(p_index);
+}
+
+>>>>>>> master
 String _OS::get_model_name() const {
 	return OS::get_singleton()->get_model_name();
 }
@@ -667,9 +707,31 @@ Vector<String> _OS::get_granted_permissions() const {
 	return OS::get_singleton()->get_granted_permissions();
 }
 
+<<<<<<< HEAD
 String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
+=======
+int _OS::get_tablet_driver_count() const {
+	return OS::get_singleton()->get_tablet_driver_count();
+}
+
+String _OS::get_tablet_driver_name(int p_driver) const {
+	return OS::get_singleton()->get_tablet_driver_name(p_driver);
+}
+
+String _OS::get_current_tablet_driver() const {
+	return OS::get_singleton()->get_current_tablet_driver();
+}
+
+void _OS::set_current_tablet_driver(const String &p_driver) {
+	OS::get_singleton()->set_current_tablet_driver(p_driver);
+}
+
+_OS *_OS::singleton = NULL;
+
+void _OS::_bind_methods() {
+>>>>>>> master
 
 int _OS::get_tablet_driver_count() const {
 	return OS::get_singleton()->get_tablet_driver_count();
@@ -733,6 +795,16 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
 
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &_OS::keyboard_get_layout_count);
+	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &_OS::keyboard_get_current_layout);
+	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &_OS::keyboard_set_current_layout);
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &_OS::keyboard_get_layout_language);
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &_OS::keyboard_get_layout_name);
+
+	ClassDB::bind_method(D_METHOD("can_draw"), &_OS::can_draw);
+>>>>>>> master
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &_OS::is_stdout_verbose);
 
@@ -774,6 +846,13 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_tablet_driver"), &_OS::get_current_tablet_driver);
 	ClassDB::bind_method(D_METHOD("set_current_tablet_driver", "name"), &_OS::set_current_tablet_driver);
 
+<<<<<<< HEAD
+=======
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tablet_driver"), "set_current_tablet_driver", "get_current_tablet_driver");
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "clipboard"), "set_clipboard", "get_clipboard");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
+>>>>>>> master
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");

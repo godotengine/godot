@@ -18,7 +18,11 @@
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="grabber" type="Texture2D">
+=======
+		<theme_item name="grabber" type="Texture">
+>>>>>>> master
 			The icon used for the grabber drawn in the middle area.
 		</theme_item>
 		<theme_item name="separation" type="int" default="12">

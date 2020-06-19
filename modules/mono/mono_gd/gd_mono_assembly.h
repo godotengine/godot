@@ -72,6 +72,7 @@ class GDMonoAssembly {
 	MonoAssembly *assembly;
 
 #ifdef GD_MONO_HOT_RELOAD
+<<<<<<< HEAD
 	uint64_t modified_time = 0;
 #endif
 
@@ -81,6 +82,17 @@ class GDMonoAssembly {
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
 	Map<MonoClass *, GDMonoClass *> cached_raw;
 
+=======
+	uint64_t modified_time;
+#endif
+
+	bool gdobject_class_cache_updated;
+	Map<StringName, GDMonoClass *> gdobject_class_cache;
+
+	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
+	Map<MonoClass *, GDMonoClass *> cached_raw;
+
+>>>>>>> master
 	static Vector<String> search_dirs;
 
 	static void assembly_load_hook(MonoAssembly *assembly, void *user_data);
@@ -92,8 +104,13 @@ class GDMonoAssembly {
 	static MonoAssembly *_search_hook(MonoAssemblyName *aname, void *user_data, bool refonly);
 	static MonoAssembly *_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data, bool refonly);
 
+<<<<<<< HEAD
 	static MonoAssembly *_real_load_assembly_from(const String &p_path, bool p_refonly, MonoAssemblyName *p_aname = nullptr);
 	static MonoAssembly *_load_assembly_search(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
+=======
+	static MonoAssembly *_real_load_assembly_from(const String &p_path, bool p_refonly);
+	static MonoAssembly *_load_assembly_search(const String &p_name, const Vector<String> &p_search_dirs, bool p_refonly);
+>>>>>>> master
 
 	friend class GDMono;
 	static void initialize();
@@ -124,11 +141,15 @@ public:
 	static GDMonoAssembly *load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);
 
+<<<<<<< HEAD
 	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly) :
 			name(p_name),
 			image(p_image),
 			assembly(p_assembly) {
 	}
+=======
+	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly);
+>>>>>>> master
 	~GDMonoAssembly();
 };
 

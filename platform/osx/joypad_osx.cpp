@@ -264,6 +264,10 @@ void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 }
 
 void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	int device = get_joy_ref(p_device);
 	ERR_FAIL_COND(device == -1);
 
@@ -526,6 +530,13 @@ int JoypadOSX::get_joy_ref(IOHIDDeviceRef p_device) const {
 	return -1;
 }
 
+int JoypadOSX::get_joy_ref(IOHIDDeviceRef p_device) const {
+	for (int i = 0; i < device_list.size(); i++) {
+		if (device_list[i].device_ref == p_device) return i;
+	}
+	return -1;
+}
+
 bool JoypadOSX::have_device(IOHIDDeviceRef p_device) const {
 	for (int i = 0; i < device_list.size(); i++) {
 		if (device_list[i].device_ref == p_device) {
@@ -566,8 +577,13 @@ void JoypadOSX::config_hid_manager(CFArrayRef p_matching_array) const {
 	ERR_FAIL_COND(ret != kIOReturnSuccess);
 
 	IOHIDManagerSetDeviceMatchingMultiple(hid_manager, p_matching_array);
+<<<<<<< HEAD
 	IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, joypad_added_callback, nullptr);
 	IOHIDManagerRegisterDeviceRemovalCallback(hid_manager, joypad_removed_callback, nullptr);
+=======
+	IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, joypad_added_callback, NULL);
+	IOHIDManagerRegisterDeviceRemovalCallback(hid_manager, joypad_removed_callback, NULL);
+>>>>>>> master
 	IOHIDManagerScheduleWithRunLoop(hid_manager, runloop, GODOT_JOY_LOOP_RUN_MODE);
 
 	while (CFRunLoopRunInMode(GODOT_JOY_LOOP_RUN_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {

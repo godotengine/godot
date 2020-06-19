@@ -67,6 +67,7 @@ namespace GodotTools.IdeMessaging.Requests
     {
     }
 
+<<<<<<< HEAD
     public sealed class StopPlayRequest : Request
     {
         public new const string Id = "StopPlay";
@@ -80,6 +81,8 @@ namespace GodotTools.IdeMessaging.Requests
     {
     }
 
+=======
+>>>>>>> master
     public sealed class DebugPlayRequest : Request
     {
         public string DebuggerHost { get; set; }

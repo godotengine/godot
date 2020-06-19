@@ -84,7 +84,11 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+<<<<<<< HEAD
 				When running in the editor, returns a generated item preview (a 3D rendering in isometric perspective). When used in a running project, returns the manually-defined item preview which can be set using [method set_item_preview]. Returns an empty [Texture2D] if no preview was manually set in a running project.
+=======
+				When running in the editor, returns a generated item preview (a 3D rendering in isometric perspective). When used in a running project, returns the manually-defined item preview which can be set using [method set_item_preview]. Returns an empty [Texture] if no preview was manually set in a running project.
+>>>>>>> master
 			</description>
 		</method>
 		<method name="get_item_shapes" qualifiers="const">

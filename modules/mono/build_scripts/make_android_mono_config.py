@@ -15,7 +15,11 @@ def generate_compressed_config(config_src, output_dir):
             for i, buf_idx in enumerate(range(compr_size)):
                 if i > 0:
                     bytes_seq_str += ", "
+<<<<<<< HEAD
                 bytes_seq_str += str(buf[buf_idx])
+=======
+                bytes_seq_str += byte_to_str(buf[buf_idx])
+>>>>>>> master
 
             cpp.write(
                 """/* THIS FILE IS GENERATED DO NOT EDIT */

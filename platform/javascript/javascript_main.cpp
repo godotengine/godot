@@ -73,6 +73,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 		print_line("IndexedDB not available: " + idbfs_err);
 	}
 	os->set_idb_available(idbfs_err.empty());
+<<<<<<< HEAD
 	// TODO: Check error return value.
 	Main::setup2(); // Manual second phase.
 	// Ease up compatibility.
@@ -83,6 +84,14 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
+=======
+	Main::setup2();
+	// Ease up compatibility.
+	ResourceLoader::set_abort_on_missing_resources(false);
+	Main::start();
+	os->run_async();
+	os->main_loop_iterate();
+>>>>>>> master
 }
 
 int main(int argc, char *argv[]) {
@@ -90,6 +99,10 @@ int main(int argc, char *argv[]) {
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	emscripten_pause_main_loop(); // Will need to wait for FS sync.
+
+	new OS_JavaScript(argc, argv);
+	// TODO: Check error return value.
+	Main::setup(argv[0], argc - 1, &argv[1], false);
 
 	// Sync from persistent state into memory and then
 	// run the 'main_after_fs_sync' function.

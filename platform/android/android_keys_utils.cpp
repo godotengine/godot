@@ -32,7 +32,13 @@
 
 unsigned int android_get_keysym(unsigned int p_code) {
 	for (int i = 0; _ak_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+<<<<<<< HEAD
 		if (_ak_to_keycode[i].keycode == p_code) {
+=======
+
+		if (_ak_to_keycode[i].keycode == p_code) {
+
+>>>>>>> master
 			return _ak_to_keycode[i].keysym;
 		}
 	}

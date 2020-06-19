@@ -268,6 +268,10 @@ Array Array::duplicate(bool p_deep) const {
 }
 
 int Array::_clamp_slice_index(int p_index) const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	int arr_size = size();
 	int fixed_index = CLAMP(p_index, -arr_size, arr_size - 1);
 	if (fixed_index < 0) {
@@ -282,6 +286,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
 
+<<<<<<< HEAD
 	if (empty()) { // Don't try to slice empty arrays.
 		return new_arr;
 	}
@@ -293,6 +298,16 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 		if (p_begin < -size() || p_end >= size()) {
 			return new_arr;
 		}
+=======
+	if (empty()) // Don't try to slice empty arrays.
+		return new_arr;
+	if (p_step > 0) {
+		if (p_begin >= size() || p_end < -size())
+			return new_arr;
+	} else { // p_step < 0
+		if (p_begin < -size() || p_end >= size())
+			return new_arr;
+>>>>>>> master
 	}
 
 	int begin = _clamp_slice_index(p_begin);

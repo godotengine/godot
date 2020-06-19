@@ -31,7 +31,11 @@
 package org.godotengine.godot.input;
 
 import org.godotengine.godot.GodotLib;
+<<<<<<< HEAD
 import org.godotengine.godot.GodotRenderView;
+=======
+import org.godotengine.godot.GodotView;
+>>>>>>> master
 
 import android.util.Log;
 import android.view.GestureDetector;

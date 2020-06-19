@@ -1,9 +1,21 @@
 import os
 import platform
 
+<<<<<<< HEAD
 if os.name == "nt":
     import sys
     import winreg
+=======
+from compat import decode_utf8
+
+if os.name == "nt":
+    import sys
+
+    if sys.version_info < (3,):
+        import _winreg as winreg
+    else:
+        import winreg
+>>>>>>> master
 
 
 def _reg_open_key(key, subkey):
@@ -76,7 +88,11 @@ def find_msbuild_tools_path_reg():
         lines = subprocess.check_output([vswhere] + vswhere_args).splitlines()
 
         for line in lines:
+<<<<<<< HEAD
             parts = line.decode("utf-8").split(":", 1)
+=======
+            parts = decode_utf8(line).split(":", 1)
+>>>>>>> master
 
             if len(parts) < 2 or parts[0] != "installationPath":
                 continue

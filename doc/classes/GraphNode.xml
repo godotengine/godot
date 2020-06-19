@@ -255,7 +255,11 @@
 		<theme_item name="breakpoint" type="StyleBox">
 			The background used when [member overlay] is set to [constant OVERLAY_BREAKPOINT].
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="close" type="Texture2D">
+=======
+		<theme_item name="close" type="Texture">
+>>>>>>> master
 			The icon for the close button, visible when [member show_close] is enabled.
 		</theme_item>
 		<theme_item name="close_color" type="Color" default="Color( 0, 0, 0, 1 )">
@@ -277,7 +281,11 @@
 		<theme_item name="frame" type="StyleBox">
 			The default background for [GraphNode].
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="port" type="Texture2D">
+=======
+		<theme_item name="port" type="Texture">
+>>>>>>> master
 			The icon used for representing ports.
 		</theme_item>
 		<theme_item name="port_offset" type="int" default="3">
@@ -286,7 +294,11 @@
 		<theme_item name="position" type="StyleBox">
 			The background used when [member overlay] is set to [constant OVERLAY_POSITION].
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="resizer" type="Texture2D">
+=======
+		<theme_item name="resizer" type="Texture">
+>>>>>>> master
 			The icon used for resizer, visible when [member resizable] is enabled.
 		</theme_item>
 		<theme_item name="resizer_color" type="Color" default="Color( 0, 0, 0, 1 )">

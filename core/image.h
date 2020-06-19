@@ -46,7 +46,11 @@
 class Image;
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+<<<<<<< HEAD
 typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+=======
+typedef PoolVector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+>>>>>>> master
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
@@ -279,7 +283,11 @@ public:
 
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
+<<<<<<< HEAD
 	Vector<uint8_t> save_png_to_buffer() const;
+=======
+	PoolVector<uint8_t> save_png_to_buffer() const;
+>>>>>>> master
 	Error save_exr(const String &p_path, bool p_grayscale) const;
 
 	/**

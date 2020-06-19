@@ -2,7 +2,11 @@
 
 Import("env")
 
+<<<<<<< HEAD
 if env["platform"] in ["haiku", "osx", "windows", "linuxbsd"]:
+=======
+if env["platform"] in ["haiku", "osx", "windows", "x11"]:
+>>>>>>> master
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [

@@ -72,6 +72,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildgrp;
 	};
 	struct ExportArchitecture {
+
 		String name;
 		bool is_default = false;
 
@@ -924,9 +925,14 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
+<<<<<<< HEAD
 		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
 		}
+=======
+		for (int j = 0; j < project_static_libs.size(); j++)
+			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
+>>>>>>> master
 		err = _export_additional_assets(p_out_dir, project_static_libs, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
@@ -1211,7 +1217,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	// Copy project static libs to the project
+<<<<<<< HEAD
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+=======
+	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+>>>>>>> master
 	for (int i = 0; i < export_plugins.size(); i++) {
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
 		for (int j = 0; j < project_static_libs.size(); j++) {
@@ -1219,7 +1229,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			String dest_lib_file_path = dest_dir + static_lib_path.get_file();
 			Error lib_copy_err = tmp_app_path->copy(static_lib_path, dest_lib_file_path);
 			if (lib_copy_err != OK) {
+<<<<<<< HEAD
 				ERR_PRINT("Can't copy '" + static_lib_path + "'.");
+=======
+				ERR_PRINTS("Can't copy '" + static_lib_path + "'.");
+>>>>>>> master
 				memdelete(tmp_app_path);
 				return lib_copy_err;
 			}

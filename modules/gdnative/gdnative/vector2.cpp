@@ -38,9 +38,14 @@ extern "C" {
 #endif
 
 static_assert(sizeof(godot_vector2) == sizeof(Vector2), "Vector2 size mismatch");
+<<<<<<< HEAD
 static_assert(sizeof(godot_vector2i) == sizeof(Vector2i), "Vector2i size mismatch");
 
 // Vector2
+=======
+
+void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y) {
+>>>>>>> master
 
 void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y) {
 	Vector2 *dest = (Vector2 *)r_dest;

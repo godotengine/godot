@@ -33,7 +33,11 @@ package org.godotengine.godot.input;
 import static org.godotengine.godot.utils.GLUtils.DEBUG;
 
 import org.godotengine.godot.GodotLib;
+<<<<<<< HEAD
 import org.godotengine.godot.GodotRenderView;
+=======
+import org.godotengine.godot.GodotView;
+>>>>>>> master
 import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
 import android.util.Log;

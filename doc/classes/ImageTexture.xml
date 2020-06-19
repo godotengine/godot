@@ -4,7 +4,11 @@
 		A [Texture2D] based on an [Image].
 	</brief_description>
 	<description>
+<<<<<<< HEAD
 		A [Texture2D] based on an [Image]. Can be created from an [Image] with [method create_from_image].
+=======
+		A [Texture] based on an [Image]. Can be created from an [Image] with [method create_from_image].
+>>>>>>> master
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
 	</description>
 	<tutorials>

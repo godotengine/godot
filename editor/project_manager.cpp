@@ -187,6 +187,10 @@ private:
 
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
 						memdelete(d);
 						get_ok()->set_disabled(true);
@@ -250,6 +254,10 @@ private:
 				}
 
 			} else if (valid_path.ends_with("zip")) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
 				get_ok()->set_disabled(true);
@@ -746,7 +754,14 @@ public:
 			_test_path();
 		}
 
+<<<<<<< HEAD
 		popup_centered(Size2i(500, 0) * EDSCALE);
+=======
+		// Reset the dialog to its initial size. Otherwise, the dialog window would be too large
+		// when opening a small dialog after closing a large dialog.
+		set_size(get_minimum_size());
+		popup_centered_minsize(Size2(500, 0) * EDSCALE);
+>>>>>>> master
 	}
 
 	ProjectDialog() {
@@ -1330,7 +1345,11 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureRect *tf = memnew(TextureRect);
 	// The project icon may not be loaded by the time the control is displayed,
 	// so use a loading placeholder.
+<<<<<<< HEAD
 	tf->set_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+=======
+	tf->set_texture(get_icon("ProjectIconLoading", "EditorIcons"));
+>>>>>>> master
 	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
 	if (item.missing) {
 		tf->set_modulate(Color(1, 1, 1, 0.5));
@@ -2708,8 +2727,13 @@ void ProjectListFilter::add_search_box() {
 	search_box->set_placeholder(TTR("Search"));
 	search_box->set_tooltip(
 			TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+<<<<<<< HEAD
 	search_box->connect("text_changed", callable_mp(this, &ProjectListFilter::_search_text_changed));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+=======
+	search_box->connect("text_changed", this, "_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+>>>>>>> master
 	add_child(search_box);
 
 	has_search_box = true;

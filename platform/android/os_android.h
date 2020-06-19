@@ -100,8 +100,20 @@ public:
 	void main_loop_focusout();
 	void main_loop_focusin();
 
+<<<<<<< HEAD
 	void set_display_size(const Size2i &p_size);
 	Size2i get_display_size() const;
+=======
+	virtual bool has_touchscreen_ui_hint() const;
+
+	virtual bool has_virtual_keyboard() const;
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	virtual void hide_virtual_keyboard();
+	virtual int get_virtual_keyboard_height() const;
+
+	void set_opengl_extensions(const char *p_gl_extensions);
+	void set_display_size(Size2 p_size);
+>>>>>>> master
 
 	void set_context_is_16_bits(bool p_is_16);
 	void set_opengl_extensions(const char *p_gl_extensions);

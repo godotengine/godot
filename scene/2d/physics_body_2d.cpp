@@ -1086,6 +1086,10 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 }
 
 Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_up_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	Vector2 up_direction = p_up_direction.normalized();
 	bool was_on_floor = on_floor;
 

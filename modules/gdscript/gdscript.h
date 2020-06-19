@@ -117,7 +117,11 @@ class GDScript : public Script {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+<<<<<<< HEAD
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
+=======
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
+>>>>>>> master
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 
@@ -348,6 +352,8 @@ struct GDScriptWarning {
 #endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
+	friend class GDScriptFunctionState;
+
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;

@@ -293,6 +293,10 @@ private:
 
 public:
 	struct CallState {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 		GDScript *script;
 		GDScriptInstance *instance;
 #ifdef DEBUG_ENABLED

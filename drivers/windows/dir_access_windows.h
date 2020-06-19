@@ -68,7 +68,12 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
+<<<<<<< HEAD
 	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
+=======
+	virtual String get_current_dir(); ///< return current dir location
+	virtual String get_current_dir_without_drive();
+>>>>>>> master
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);

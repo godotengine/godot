@@ -27,6 +27,17 @@ namespace GodotTools.Build
                 switch (buildTool)
                 {
                     case BuildTool.DotnetCli:
+<<<<<<< HEAD
+=======
+                    {
+                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        if (!string.IsNullOrEmpty(dotnetCliPath))
+                            return (dotnetCliPath, BuildTool.DotnetCli);
+                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Visual Studio.");
+                        goto case BuildTool.MsBuildVs;
+                    }
+                    case BuildTool.MsBuildVs:
+>>>>>>> master
                     {
                         string dotnetCliPath = OS.PathWhich("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
@@ -41,8 +52,15 @@ namespace GodotTools.Build
                             // Try to search it again if it wasn't found last time or if it was removed from its location
                             _msbuildToolsPath = FindMsBuildToolsPathOnWindows();
 
+<<<<<<< HEAD
                             if (string.IsNullOrEmpty(_msbuildToolsPath))
                                 throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildVs}'.");
+=======
+                            if (_msbuildToolsPath.Empty())
+                            {
+                                throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildVs}'.");
+                            }
+>>>>>>> master
                         }
 
                         if (!_msbuildToolsPath.EndsWith("\\"))
@@ -55,6 +73,7 @@ namespace GodotTools.Build
                         string msbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "msbuild.bat");
 
                         if (!File.Exists(msbuildPath))
+<<<<<<< HEAD
                             throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildMono}'. Tried with path: {msbuildPath}");
 
                         return (msbuildPath, BuildTool.MsBuildMono);
@@ -73,6 +92,27 @@ namespace GodotTools.Build
                         if (!File.Exists(msbuildPath))
                             throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildJetBrains}'. Tried with path: {msbuildPath}");
 
+=======
+                        {
+                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildMono}'. Tried with path: {msbuildPath}");
+                        }
+
+                        return (msbuildPath, BuildTool.MsBuildMono);
+                    }
+                    case BuildTool.JetBrainsMsBuild:
+                    {
+                        var editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
+                        if (!File.Exists(editorPath))
+                            throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
+
+                        var riderDir = new FileInfo(editorPath).Directory?.Parent;
+
+                        string msbuildPath = Path.Combine(riderDir.FullName, @"tools\MSBuild\Current\Bin\MSBuild.exe");
+
+                        if (!File.Exists(msbuildPath))
+                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildJetBrains}'. Tried with path: {msbuildPath}");
+
+>>>>>>> master
                         return (msbuildPath, BuildTool.JetBrainsMsBuild);
                     }
                     default:

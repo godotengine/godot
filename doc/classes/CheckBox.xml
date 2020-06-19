@@ -4,7 +4,11 @@
 		Binary choice user interface widget. See also [CheckButton].
 	</brief_description>
 	<description>
+<<<<<<< HEAD
 		A checkbox allows the user to make a binary choice (choosing only one of two possible options). It's similar to [CheckButton] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use CheckBox when toggling it has [b]no[/b] immediate effect on something. For instance, it should be used when toggling it will only do something once a confirmation button is pressed.
+=======
+		A checkbox allows the user to make a binary choice (choosing only one of two possible options). It's similar to [CheckButton] in functionality, but it has a different apperance. To follow established UX patterns, it's recommended to use CheckBox when toggling it has [b]no[/b] immediate effect on something. For instance, it should be used when toggling it will only do something once a confirmation button is pressed.
+>>>>>>> master
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,7 +24,11 @@
 		<theme_item name="check_vadjust" type="int" default="0">
 			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="checked" type="Texture2D">
+=======
+		<theme_item name="checked" type="Texture">
+>>>>>>> master
 			The check icon to display when the [CheckBox] is checked.
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
@@ -62,6 +70,7 @@
 		<theme_item name="pressed" type="StyleBox">
 			The [StyleBox] to display as a background when the [CheckBox] is pressed.
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="radio_checked" type="Texture2D">
 			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is checked.
 		</theme_item>
@@ -69,6 +78,15 @@
 			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is unchecked.
 		</theme_item>
 		<theme_item name="unchecked" type="Texture2D">
+=======
+		<theme_item name="radio_checked" type="Texture">
+			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is checked.
+		</theme_item>
+		<theme_item name="radio_unchecked" type="Texture">
+			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is unchecked.
+		</theme_item>
+		<theme_item name="unchecked" type="Texture">
+>>>>>>> master
 			The check icon to display when the [CheckBox] is unchecked.
 		</theme_item>
 	</theme_items>

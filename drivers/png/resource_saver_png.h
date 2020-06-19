@@ -37,7 +37,11 @@
 class ResourceSaverPNG : public ResourceFormatSaver {
 public:
 	static Error save_image(const String &p_path, const Ref<Image> &p_img);
+<<<<<<< HEAD
 	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img);
+=======
+	static PoolVector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img);
+>>>>>>> master
 
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 	virtual bool recognize(const RES &p_resource) const;

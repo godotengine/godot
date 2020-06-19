@@ -139,6 +139,10 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 }
 
 bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_NULL_V_MSG(dinput, false, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	HRESULT hr;
 	int num = input->get_unused_joy_id();
@@ -274,6 +278,10 @@ void JoypadWindows::close_joypad(int id) {
 }
 
 void JoypadWindows::probe_joypads() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_NULL_MSG(dinput, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	DWORD dwResult;
 	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {

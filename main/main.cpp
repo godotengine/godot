@@ -311,7 +311,10 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
+<<<<<<< HEAD
 	OS::get_singleton()->print("  --single-window                  Use a single window (no separate subwindows).\n");
+=======
+>>>>>>> master
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
 		if (i != 0)
@@ -680,6 +683,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get() == "--tablet-driver") {
+			if (I->next()) {
+				tablet_driver = I->next()->get();
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+					if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown tablet driver '%s', aborting.\n", tablet_driver.utf8().get_data());
+					goto error;
+				}
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--enable-vsync-via-compositor") {
 			window_vsync_via_compositor = true;
 			saw_vsync_via_compositor_override = true;
@@ -1017,8 +1040,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		display_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
 
+<<<<<<< HEAD
 	// Assigning here even though it's GLES2-specific, to be sure that it appears in docs
 	GLOBAL_DEF("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround", false);
+=======
+	GLOBAL_DEF("rendering/quality/driver/fallback_to_gles2", false);
+
+	// Assigning here, to be sure that it appears in docs
+	GLOBAL_DEF("rendering/quality/2d/use_nvidia_rect_flicker_workaround", false);
+>>>>>>> master
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width", PropertyInfo(Variant::INT, "display/window/size/width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
@@ -1093,11 +1123,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	if (tablet_driver == "") { // specified in project.godot
+		tablet_driver = GLOBAL_DEF_RST("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
+	}
+
+	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+		if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+			OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(i));
+			break;
+		}
+	}
+
+>>>>>>> master
 	if (tablet_driver == "") {
 		OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(0));
 	}
 
+<<<<<<< HEAD
 	/* todo restore
+=======
+>>>>>>> master
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
 */
@@ -1729,13 +1776,20 @@ bool Main::start() {
 		}
 
 		if (script_res->can_instance()) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
 				if (obj) {
 					memdelete(obj);
+<<<<<<< HEAD
 				}
+=======
+>>>>>>> master
 				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
@@ -1924,9 +1978,15 @@ bool Main::start() {
 			// Append a suffix to the window title to denote that the project is running
 			// from a debug build (including the editor). Since this results in lower performance,
 			// this should be clearly presented to the user.
+<<<<<<< HEAD
 			DisplayServer::get_singleton()->window_set_title(vformat("%s (DEBUG)", appname));
 #else
 			DisplayServer::get_singleton()->window_set_title(appname);
+=======
+			OS::get_singleton()->set_window_title(vformat("%s (DEBUG)", appname));
+#else
+			OS::get_singleton()->set_window_title(appname);
+>>>>>>> master
 #endif
 
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");

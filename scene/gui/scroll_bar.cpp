@@ -618,6 +618,19 @@ void ScrollBar::_bind_methods() {
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
 	orientation = p_orientation;
+<<<<<<< HEAD
+=======
+	highlight = HIGHLIGHT_NONE;
+	custom_step = -1;
+	drag_node = NULL;
+
+	drag.active = false;
+
+	drag_node_enabled = true;
+	drag_node_speed = Vector2();
+	drag_node_touching = false;
+	drag_node_touching_deaccel = false;
+>>>>>>> master
 
 	if (focus_by_default) {
 		set_focus_mode(FOCUS_ALL);

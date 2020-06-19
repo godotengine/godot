@@ -13,16 +13,19 @@ environment:
   - GD_PLATFORM: windows
     TARGET: release_debug
     TOOLS: yes
+<<<<<<< HEAD
 # Disabled for performance reasons until master is more stable.
 #  - GD_PLATFORM: windows
 #    TARGET: release
 #    TOOLS: no
+=======
+>>>>>>> master
 
 matrix:
   fast_finish: true
 
 init:
-  - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "master") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
+  - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "3.2") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
 
 cache:
   - "%SCONS_CACHE_ROOT%"
@@ -48,8 +51,16 @@ after_build:
   - cd bin
   - mv godot.windows.opt.tools.64.exe godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.exe
   - 7z a -mx9 godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.zip *.exe
+<<<<<<< HEAD
   
 artifacts:
   - path: bin/godot_${APPVEYOR_REPO_BRANCH}-${VERSION_HASH}_win64.zip
     name: Win64 release_debug editor build
     type: zip
+=======
+
+artifacts:
+  - path: bin/godot_${APPVEYOR_REPO_BRANCH}-${VERSION_HASH}_win64.zip
+    name: Win64 release_debug editor build
+    type: zip
+>>>>>>> master

@@ -34,22 +34,31 @@
 #include "java_godot_wrapper.h"
 
 #include "android/asset_manager_jni.h"
+#include "android_keys_utils.h"
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
 #include "audio_driver_jandroid.h"
 #include "core/engine.h"
+<<<<<<< HEAD
 #include "core/input/input.h"
+=======
+>>>>>>> master
 #include "core/project_settings.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
 #include "jni_utils.h"
+<<<<<<< HEAD
+=======
+#include "main/input_default.h"
+>>>>>>> master
 #include "main/main.h"
 #include "net_socket_android.h"
 #include "os_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
+<<<<<<< HEAD
 
 #include <unistd.h>
 
@@ -59,6 +68,14 @@ static JavaClassWrapper *java_class_wrapper = nullptr;
 static OS_Android *os_android = nullptr;
 static GodotJavaWrapper *godot_java = nullptr;
 static GodotIOJavaWrapper *godot_io_java = nullptr;
+=======
+#include <unistd.h>
+
+static JavaClassWrapper *java_class_wrapper = NULL;
+static OS_Android *os_android = NULL;
+static GodotJavaWrapper *godot_java = NULL;
+static GodotIOJavaWrapper *godot_io_java = NULL;
+>>>>>>> master
 
 static bool initialized = false;
 static int step = 0;
@@ -68,6 +85,56 @@ static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
+<<<<<<< HEAD
+=======
+
+static void _initialize_java_modules() {
+
+	if (!ProjectSettings::get_singleton()->has_setting("android/modules")) {
+		return;
+	}
+
+	String modules = ProjectSettings::get_singleton()->get("android/modules");
+	modules = modules.strip_edges();
+	if (modules == String()) {
+		return;
+	}
+	Vector<String> mods = modules.split(",", false);
+
+	if (mods.size()) {
+		jobject cls = godot_java->get_class_loader();
+
+		// TODO create wrapper for class loader
+
+		JNIEnv *env = ThreadAndroid::get_env();
+		jclass classLoader = env->FindClass("java/lang/ClassLoader");
+		jmethodID findClass = env->GetMethodID(classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+
+		for (int i = 0; i < mods.size(); i++) {
+
+			String m = mods[i];
+
+			// Deprecated in Godot 3.2.2, it's now a plugin to enable in export preset.
+			if (m == "org/godotengine/godot/GodotPaymentV3") {
+				WARN_PRINT("GodotPaymentV3 is deprecated and is replaced by the 'GodotPayment' plugin, which should be enabled in the Android export preset.");
+				print_line("Skipping Android module: " + m);
+				continue;
+			}
+
+			print_line("Loading Android module: " + m);
+			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
+			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
+			ERR_CONTINUE_MSG(!singletonClass, "Couldn't find singleton for class: " + m + ".");
+
+			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
+			ERR_CONTINUE_MSG(!initialize, "Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m + ".");
+
+			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, godot_java->get_activity());
+			env->NewGlobalRef(obj);
+		}
+	}
+}
+>>>>>>> master
 
 extern "C" {
 
@@ -78,6 +145,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject activity, jobject p_asset_manager, jboolean p_use_apk_expansion) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	initialized = true;
 
 	JavaVM *jvm;
@@ -162,11 +233,18 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
 	ClassDB::register_class<JNISingleton>();
+<<<<<<< HEAD
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jobject p_surface, jint p_width, jint p_height) {
 	if (os_android) {
 		os_android->set_display_size(Size2i(p_width, p_height));
+=======
+	_initialize_java_modules();
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jint width, jint height) {
+>>>>>>> master
 
 		// No need to reset the surface during startup
 		if (step > 0) {
@@ -174,11 +252,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
 				os_android->set_native_window(native_window);
 
+<<<<<<< HEAD
 				DisplayServerAndroid::get_singleton()->reset_window();
 			}
 		}
 	}
 }
+=======
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jboolean p_32_bits) {
+>>>>>>> master
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jobject p_surface, jboolean p_32_bits) {
 	if (os_android) {
@@ -238,6 +320,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint count, jintArray positions) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (step == 0)
 		return;
 
@@ -338,7 +424,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 	}
 }
 
+<<<<<<< HEAD
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_keycode, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
+=======
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
+>>>>>>> master
 	if (step == 0)
 		return;
 
@@ -362,6 +452,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jclass clazz) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (step == 0)
 		return;
 
@@ -369,6 +463,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, 
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env, jclass clazz) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	if (step == 0)
 		return;
 
@@ -376,18 +474,30 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jclass clazz) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ThreadAndroid::setup_thread();
 	AudioDriverAndroid::thread_func(env);
 }
 
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *env, jclass clazz, jstring path) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	String js = jstring_to_string(path, env);
 
 	return env->NewStringUTF(ProjectSettings::get_singleton()->get(js).operator String().utf8().get_data());
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
+<<<<<<< HEAD
 	Object *obj = ObjectDB::get_instance(ObjectID(ID));
+=======
+	Object *obj = ObjectDB::get_instance(ID);
+>>>>>>> master
 	ERR_FAIL_COND(!obj);
 
 	int res = env->PushLocalFrame(16);
@@ -417,7 +527,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
+<<<<<<< HEAD
 	Object *obj = ObjectDB::get_instance(ObjectID(ID));
+=======
+	Object *obj = ObjectDB::get_instance(ID);
+>>>>>>> master
 	ERR_FAIL_COND(!obj);
 
 	int res = env->PushLocalFrame(16);

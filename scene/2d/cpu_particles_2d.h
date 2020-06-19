@@ -81,6 +81,8 @@ public:
 private:
 	bool emitting;
 
+	// warning - beware of adding non-trivial types
+	// to this structure as it is zeroed to initialize in set_amount()
 	struct Particle {
 		Transform2D transform;
 		Color color;

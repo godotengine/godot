@@ -1153,7 +1153,11 @@ public:
 			err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 		}
 
+<<<<<<< HEAD
 		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+=======
+		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+>>>>>>> master
 			valid = false;
 			err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 		}

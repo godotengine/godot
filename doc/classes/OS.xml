@@ -272,6 +272,24 @@
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
+		<method name="get_tablet_driver_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of available tablet drivers.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
+		<method name="get_tablet_driver_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the tablet driver name for the given index.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
 		<method name="get_ticks_msec" qualifiers="const">
 			<return type="int">
 			</return>
@@ -390,6 +408,70 @@
 				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
 			</description>
 		</method>
+<<<<<<< HEAD
+=======
+		<method name="is_window_always_on_top" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the window should always be on top of other windows.
+			</description>
+		</method>
+		<method name="is_window_focused" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the window is currently focused.
+				[b]Note:[/b] Only implemented on desktop platforms. On other platforms, it will always return [code]true[/code].
+			</description>
+		</method>
+		<method name="keyboard_get_current_layout" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns active keyboard layout index.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of keyboard layouts.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the localized name of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_set_current_layout">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Sets active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+>>>>>>> master
 		<method name="kill">
 			<return type="int" enum="Error">
 			</return>
@@ -504,8 +586,58 @@
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
 		</member>
+<<<<<<< HEAD
 		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
 			The current tablet drvier in use.
+=======
+		<member name="max_window_size" type="Vector2" setter="set_max_window_size" getter="get_max_window_size" default="Vector2( 0, 0 )">
+			The maximum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
+		</member>
+		<member name="min_window_size" type="Vector2" setter="set_min_window_size" getter="get_min_window_size" default="Vector2( 0, 0 )">
+			The minimum size of the window (without counting window manager decorations). Does not affect fullscreen mode. Set to [code](0, 0)[/code] to reset to the system default value.
+		</member>
+		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation" default="0">
+			The current screen orientation.
+		</member>
+		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
+			The current tablet drvier in use.
+		</member>
+		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled" default="true">
+			If [code]true[/code], vertical synchronization (Vsync) is enabled.
+		</member>
+		<member name="vsync_via_compositor" type="bool" setter="set_vsync_via_compositor" getter="is_vsync_via_compositor_enabled" default="false">
+			If [code]true[/code] and [code]vsync_enabled[/code] is true, the operating system's window compositor will be used for vsync when the compositor is enabled and the game is in windowed mode.
+			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
+			[b]Note:[/b] This property is only implemented on Windows.
+		</member>
+		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window" default="false">
+			If [code]true[/code], removes the window frame.
+			[b]Note:[/b] Setting [code]window_borderless[/code] to [code]false[/code] disables per-pixel transparency.
+		</member>
+		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen" default="false">
+			If [code]true[/code], the window is fullscreen.
+		</member>
+		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized" default="false">
+			If [code]true[/code], the window is maximized.
+		</member>
+		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized" default="false">
+			If [code]true[/code], the window is minimized.
+		</member>
+		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled" default="false">
+			If [code]true[/code], the window background is transparent and window frame is removed.
+			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
+			[b]Note:[/b] This property has no effect if [b]Project &gt; Project Settings &gt; Display &gt; Window &gt; Per-pixel transparency &gt; Allowed[/b] setting is disabled.
+			[b]Note:[/b] This property is implemented on HTML5, Linux, macOS and Windows.
+		</member>
+		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position" default="Vector2( 0, 0 )">
+			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.
+		</member>
+		<member name="window_resizable" type="bool" setter="set_window_resizable" getter="is_window_resizable" default="true">
+			If [code]true[/code], the window is resizable by the user.
+		</member>
+		<member name="window_size" type="Vector2" setter="set_window_size" getter="get_window_size" default="Vector2( 0, 0 )">
+			The size of the window (without counting window manager decorations).
+>>>>>>> master
 		</member>
 	</members>
 	<constants>

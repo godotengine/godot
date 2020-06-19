@@ -292,7 +292,11 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_edit->set_v_scroll(vsval);
+<<<<<<< HEAD
 	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+=======
+	matches_label->add_color_override("font_color", rc > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
+>>>>>>> master
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	text_edit->call_deferred("connect", "text_changed", Callable(this, "_editor_text_changed"));
@@ -337,10 +341,16 @@ void FindReplaceBar::_update_results_count() {
 		int pos_subsequent = pos + searched.length();
 		if (is_whole_words()) {
 			from_pos = pos + 1; // Making sure we won't hit the same match next time, if we get out via a continue.
+<<<<<<< HEAD
 			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n')) {
 				continue;
 			}
 			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n')) {
+=======
+			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n'))
+				continue;
+			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n'))
+>>>>>>> master
 				continue;
 			}
 		}

@@ -9,12 +9,16 @@ if os.name == "nt":
     from . import mono_reg_utils as monoreg
 
 
+<<<<<<< HEAD
 android_arch_dirs = {
     "armv7": "armeabi-v7a",
     "arm64v8": "arm64-v8a",
     "x86": "x86",
     "x86_64": "x86_64",
 }
+=======
+android_arch_dirs = {"armv7": "armeabi-v7a", "arm64v8": "arm64-v8a", "x86": "x86", "x86_64": "x86_64"}
+>>>>>>> master
 
 
 def get_android_out_dir(env):
@@ -64,11 +68,19 @@ def copy_file(src_dir, dst_dir, src_name, dst_name=""):
 
 
 def is_desktop(platform):
+<<<<<<< HEAD
     return platform in ["windows", "osx", "linuxbsd", "server", "uwp", "haiku"]
 
 
 def is_unix_like(platform):
     return platform in ["osx", "linuxbsd", "server", "android", "haiku", "iphone"]
+=======
+    return platform in ["windows", "osx", "x11", "server", "uwp", "haiku"]
+
+
+def is_unix_like(platform):
+    return platform in ["osx", "x11", "server", "android", "haiku", "iphone"]
+>>>>>>> master
 
 
 def module_supports_tools_on(platform):
@@ -191,6 +203,7 @@ def configure(env, env_mono):
                 env.Append(LIBS=["psapi"])
                 env.Append(LIBS=["version"])
         else:
+<<<<<<< HEAD
             mono_lib_file = find_file_in_dir(mono_lib_path, mono_lib_names, extensions=lib_suffixes)
 
             if not mono_lib_file:
@@ -198,6 +211,17 @@ def configure(env, env_mono):
 
             if env.msvc:
                 env.Append(LINKFLAGS=mono_lib_file)
+=======
+            mono_lib_name = find_name_in_dir_files(
+                mono_lib_path, mono_lib_names, prefixes=["", "lib"], extensions=lib_suffixes
+            )
+
+            if not mono_lib_name:
+                raise RuntimeError("Could not find mono library in: " + mono_lib_path)
+
+            if env.msvc:
+                env.Append(LINKFLAGS=mono_lib_name + ".lib")
+>>>>>>> master
             else:
                 mono_lib_file_path = os.path.join(mono_lib_path, mono_lib_file)
                 env.Append(LINKFLAGS=mono_lib_file_path)

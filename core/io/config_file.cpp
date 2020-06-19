@@ -107,7 +107,10 @@ void ConfigFile::get_sections(List<String> *r_sections) const {
 	}
 }
 
+<<<<<<< HEAD
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
+=======
+>>>>>>> master
 	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
 
 	for (OrderedHashMap<String, Variant>::ConstElement E = values[p_section].front(); E; E = E.next()) {
@@ -116,11 +119,19 @@ void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys)
 }
 
 void ConfigFile::erase_section(const String &p_section) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot erase nonexistent section \"%s\".", p_section));
 	values.erase(p_section);
 }
 
 void ConfigFile::erase_section_key(const String &p_section, const String &p_key) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot erase key \"%s\" from nonexistent section \"%s\".", p_key, p_section));
 	ERR_FAIL_COND_MSG(!values[p_section].has(p_key), vformat("Cannot erase nonexistent key \"%s\" from section \"%s\".", p_key, p_section));
 
@@ -257,12 +268,20 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 }
 
 Error ConfigFile::parse(const String &p_data) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	VariantParser::StreamString stream;
 	stream.s = p_data;
 	return _parse("<string>", &stream);
 }
 
 Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
@@ -277,7 +296,11 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 		next_tag.fields.clear();
 		next_tag.name = String();
 
+<<<<<<< HEAD
 		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true);
+=======
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, NULL, true);
+>>>>>>> master
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {

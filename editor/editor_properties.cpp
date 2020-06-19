@@ -637,7 +637,11 @@ public:
 				const int h = bsize * 2 + 1;
 				const int vofs = (rect.size.height - h) / 2;
 
+<<<<<<< HEAD
 				Color color = get_theme_color("highlight_color", "Editor");
+=======
+				Color color = get_color("highlight_color", "Editor");
+>>>>>>> master
 				for (int i = 0; i < 2; i++) {
 					Point2 ofs(4, vofs);
 					if (i == 1)
@@ -778,7 +782,11 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	button = memnew(Button);
 	button->set_toggle_mode(true);
 	button->set_text("...");
+<<<<<<< HEAD
 	button->connect("pressed", callable_mp(this, &EditorPropertyLayers::_button_pressed));
+=======
+	button->connect("pressed", this, "_button_pressed");
+>>>>>>> master
 	hb->add_child(button);
 	set_bottom_editor(hb);
 	layers = memnew(PopupMenu);

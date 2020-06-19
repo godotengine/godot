@@ -21,6 +21,11 @@ if env_mono["mono_glue"]:
 
     if not os.path.isfile("glue/mono_glue.gen.cpp"):
         raise RuntimeError("Mono glue sources not found. Did you forget to run '--generate-mono-glue'?")
+<<<<<<< HEAD
+=======
+
+# Configure Thread Local Storage
+>>>>>>> master
 
 if env_mono["tools"] or env_mono["target"] != "release":
     env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])

@@ -43,6 +43,29 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/ssl.h>
 #include <mbedtls/ssl_cookie.h>
+<<<<<<< HEAD
+=======
+
+class SSLContextMbedTLS;
+
+class CookieContextMbedTLS : public Reference {
+
+	friend class SSLContextMbedTLS;
+
+protected:
+	bool inited;
+	mbedtls_entropy_context entropy;
+	mbedtls_ctr_drbg_context ctr_drbg;
+	mbedtls_ssl_cookie_ctx cookie_ctx;
+
+public:
+	Error setup();
+	void clear();
+
+	CookieContextMbedTLS();
+	~CookieContextMbedTLS();
+};
+>>>>>>> master
 
 class SSLContextMbedTLS;
 

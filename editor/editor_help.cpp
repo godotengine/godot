@@ -43,10 +43,18 @@
 DocData *EditorHelp::doc = nullptr;
 
 void EditorHelp::_init_colors() {
+<<<<<<< HEAD
 	title_color = get_theme_color("accent_color", "Editor");
 	text_color = get_theme_color("default_color", "RichTextLabel");
 	headline_color = get_theme_color("headline_color", "EditorHelp");
 	base_type_color = title_color.lerp(text_color, 0.5);
+=======
+
+	title_color = get_color("accent_color", "Editor");
+	text_color = get_color("default_color", "RichTextLabel");
+	headline_color = get_color("headline_color", "EditorHelp");
+	base_type_color = title_color.linear_interpolate(text_color, 0.5);
+>>>>>>> master
 	comment_color = text_color * Color(1, 1, 1, 0.6);
 	symbol_color = comment_color;
 	value_color = text_color * Color(1, 1, 1, 0.6);
@@ -483,8 +491,13 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.tutorials.size(); i++) {
+<<<<<<< HEAD
 			const String link = DTR(cd.tutorials[i].link);
 			String linktxt = (cd.tutorials[i].title.empty()) ? link : DTR(cd.tutorials[i].title);
+=======
+			const String link = cd.tutorials[i].link;
+			String linktxt = (cd.tutorials[i].title.empty()) ? link : cd.tutorials[i].title;
+>>>>>>> master
 			const int seppos = linktxt.find("//");
 			if (seppos != -1) {
 				linktxt = link.right(seppos + 2);
@@ -1037,6 +1050,11 @@ void EditorHelp::_update_doc() {
 			for (int j = 0; j < methods.size(); j++) {
 				method_map[methods[j].name] = methods[j];
 			}
+<<<<<<< HEAD
+=======
+
+			if (cd.properties[i].setter != "") {
+>>>>>>> master
 
 			if (cd.properties[i].setter != "") {
 				class_desc->push_cell();

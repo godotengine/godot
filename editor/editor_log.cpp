@@ -60,14 +60,25 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 void EditorLog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		//button->set_icon(get_icon("Console","EditorIcons"));
+<<<<<<< HEAD
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
 		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+=======
+		log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+		log->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+>>>>>>> master
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
+<<<<<<< HEAD
 			if (log != nullptr) {
 				log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
 				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+=======
+			if (log != NULL) {
+				log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+				log->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+>>>>>>> master
 			}
 		}
 	}
