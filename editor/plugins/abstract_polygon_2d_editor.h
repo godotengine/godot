@@ -34,16 +34,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
-#include "scene/gui/tool_button.h"
 
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-	ToolButton *button_create;
-	ToolButton *button_edit;
-	ToolButton *button_delete;
+	Button *button_create;
+	Button *button_edit;
+	Button *button_delete;
 
 	struct Vertex {
 		Vertex() {}

@@ -1208,7 +1208,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	Ref<ButtonGroup> bg;
 	bg.instance();
 
-	tool_select = memnew(ToolButton);
+	tool_select = memnew(Button);
+	tool_select->set_flat(true);
 	top_hb->add_child(tool_select);
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
@@ -1216,14 +1217,16 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_tooltip(TTR("Select and move nodes.\nRMB to add new nodes.\nShift+LMB to create connections."));
 	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
 
-	tool_create = memnew(ToolButton);
+	tool_create = memnew(Button);
+	tool_create->set_flat(true);
 	top_hb->add_child(tool_create);
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip(TTR("Create new nodes."));
 	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
 
-	tool_connect = memnew(ToolButton);
+	tool_connect = memnew(Button);
+	tool_connect->set_flat(true);
 	top_hb->add_child(tool_connect);
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
@@ -1233,7 +1236,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_erase_hb = memnew(HBoxContainer);
 	top_hb->add_child(tool_erase_hb);
 	tool_erase_hb->add_child(memnew(VSeparator));
-	tool_erase = memnew(ToolButton);
+	tool_erase = memnew(Button);
+	tool_erase->set_flat(true);
 	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
 	tool_erase_hb->add_child(tool_erase);
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected));
@@ -1241,13 +1245,15 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	tool_erase_hb->add_child(memnew(VSeparator));
 
-	tool_autoplay = memnew(ToolButton);
+	tool_autoplay = memnew(Button);
+	tool_autoplay->set_flat(true);
 	tool_autoplay->set_tooltip(TTR("Toggle autoplay this animation on start, restart or seek to zero."));
 	tool_erase_hb->add_child(tool_autoplay);
 	tool_autoplay->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_autoplay_selected));
 	tool_autoplay->set_disabled(true);
 
-	tool_end = memnew(ToolButton);
+	tool_end = memnew(Button);
+	tool_end->set_flat(true);
 	tool_end->set_tooltip(TTR("Set the end animation. This is useful for sub-transitions."));
 	tool_erase_hb->add_child(tool_end);
 	tool_end->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_end_selected));

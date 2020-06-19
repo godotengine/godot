@@ -628,12 +628,14 @@ FindReplaceBar::FindReplaceBar() {
 	hbc_button_search->add_child(matches_label);
 	matches_label->hide();
 
-	find_prev = memnew(ToolButton);
+	find_prev = memnew(Button);
+	find_prev->set_flat(true);
 	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect("pressed", callable_mp(this, &FindReplaceBar::search_prev));
 
-	find_next = memnew(ToolButton);
+	find_next = memnew(Button);
+	find_next->set_flat(true);
 	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", callable_mp(this, &FindReplaceBar::search_next));
@@ -1706,7 +1708,8 @@ CodeTextEditor::CodeTextEditor() {
 	error_line = 0;
 	error_column = 0;
 
-	toggle_scripts_button = memnew(ToolButton);
+	toggle_scripts_button = memnew(Button);
+	toggle_scripts_button->set_flat(true);
 	toggle_scripts_button->connect("pressed", callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 	toggle_scripts_button->hide();
@@ -1726,7 +1729,8 @@ CodeTextEditor::CodeTextEditor() {
 	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
 
 	// Warnings
-	warning_button = memnew(ToolButton);
+	warning_button = memnew(Button);
+	warning_button->set_flat(true);
 	status_bar->add_child(warning_button);
 	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);

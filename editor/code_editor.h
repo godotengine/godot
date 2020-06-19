@@ -37,7 +37,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/tool_button.h"
 #include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
@@ -63,8 +62,8 @@ class FindReplaceBar : public HBoxContainer {
 
 	LineEdit *search_text;
 	Label *matches_label;
-	ToolButton *find_prev;
-	ToolButton *find_next;
+	Button *find_prev;
+	Button *find_next;
 	CheckBox *case_sensitive;
 	CheckBox *whole_words;
 	TextureButton *hide_button;
@@ -142,8 +141,8 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
 
-	ToolButton *toggle_scripts_button;
-	ToolButton *warning_button;
+	Button *toggle_scripts_button;
+	Button *warning_button;
 	Label *warning_count_label;
 
 	Label *line_and_col_txt;

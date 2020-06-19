@@ -54,8 +54,8 @@ class EditorHelpSearch : public ConfirmationDialog {
 	};
 
 	LineEdit *search_box;
-	ToolButton *case_sensitive_button;
-	ToolButton *hierarchy_button;
+	Button *case_sensitive_button;
+	Button *hierarchy_button;
 	OptionButton *filter_combo;
 	Tree *results_tree;
 	bool old_search;

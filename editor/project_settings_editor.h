@@ -174,7 +174,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Label *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
-	ToolButton *restart_close_button;
+	Button *restart_close_button;
 
 	void _editor_restart_request();
 	void _editor_restart();
