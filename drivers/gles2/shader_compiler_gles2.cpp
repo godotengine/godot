@@ -486,10 +486,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				*p_actions.write_flag_pointers[var_node->name] = true;
 			}
 
-			if (!p_assigning && p_actions.read_flag_pointers.has(var_node->name)) {
-				*p_actions.read_flag_pointers[var_node->name] = true;
-			}
-
 			if (p_default_actions.usage_defines.has(var_node->name) && !used_name_defines.has(var_node->name)) {
 				String define = p_default_actions.usage_defines[var_node->name];
 				String node_name = define.substr(1, define.length());

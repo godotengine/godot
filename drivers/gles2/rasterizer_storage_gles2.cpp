@@ -1426,7 +1426,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_time = false;
 			p_shader->canvas_item.uses_modulate = false;
 			p_shader->canvas_item.uses_color = false;
-			p_shader->canvas_item.reads_vertex = false;
+			p_shader->canvas_item.uses_vertex = false;
 			p_shader->canvas_item.batch_flags = 0;
 
 			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
@@ -1444,8 +1444,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.usage_flag_pointers["TIME"] = &p_shader->canvas_item.uses_time;
 			shaders.actions_canvas.usage_flag_pointers["MODULATE"] = &p_shader->canvas_item.uses_modulate;
 			shaders.actions_canvas.usage_flag_pointers["COLOR"] = &p_shader->canvas_item.uses_color;
-
-			shaders.actions_canvas.read_flag_pointers["VERTEX"] = &p_shader->canvas_item.reads_vertex;
+			shaders.actions_canvas.usage_flag_pointers["VERTEX"] = &p_shader->canvas_item.uses_vertex;
 
 			actions = &shaders.actions_canvas;
 			actions->uniforms = &p_shader->uniforms;
@@ -1538,7 +1537,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 		if (p_shader->canvas_item.uses_modulate | p_shader->canvas_item.uses_color) {
 			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_COLOR_BAKING;
 		}
-		if (p_shader->canvas_item.reads_vertex) {
+		if (p_shader->canvas_item.uses_vertex) {
 			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_VERTEX_BAKING;
 		}
 	}
