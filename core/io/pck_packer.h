@@ -48,8 +48,8 @@ class PCKPacker : public Reference {
 
 		String path;
 		String src_path;
-		int size;
-		uint64_t offset_offset;
+		int size = 0;
+		uint64_t offset_offset = 0;
 	};
 	Vector<File> files;
 
