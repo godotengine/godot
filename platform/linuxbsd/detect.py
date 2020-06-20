@@ -349,12 +349,12 @@ def configure(env):
         else:
             print("PulseAudio development libraries not found, disabling driver")
 
-    if env['jack']:
-        if (os.system("pkg-config --exists jack") == 0): # 0 means found
+    if env["jack"]:
+        if os.system("pkg-config --exists jack") == 0:  # 0 means found
             print("Enabling JACK")
             env.Append(CPPDEFINES=["JACK_ENABLED"])
             # Do not link the library at build time
-            env.ParseConfig('pkg-config --cflags jack')
+            env.ParseConfig("pkg-config --cflags jack")
         else:
             print("JACK development libraries not found, disabling driver")
 
