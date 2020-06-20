@@ -2106,12 +2106,7 @@ void Node3DEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, cons
 		cursor.x_rot += p_relative.y * radians_per_pixel;
 	}
 	cursor.y_rot += p_relative.x * radians_per_pixel;
-	if (cursor.x_rot > Math_PI / 2.0) {
-		cursor.x_rot = Math_PI / 2.0;
-	}
-	if (cursor.x_rot < -Math_PI / 2.0) {
-		cursor.x_rot = -Math_PI / 2.0;
-	}
+	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
 	name = "";
 	_update_name();
 }
@@ -2139,12 +2134,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 		cursor.x_rot += p_relative.y * radians_per_pixel;
 	}
 	cursor.y_rot += p_relative.x * radians_per_pixel;
-	if (cursor.x_rot > Math_PI / 2.0) {
-		cursor.x_rot = Math_PI / 2.0;
-	}
-	if (cursor.x_rot < -Math_PI / 2.0) {
-		cursor.x_rot = -Math_PI / 2.0;
-	}
+	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
 
 	// Look is like the opposite of Orbit: the focus point rotates around the camera
 	Transform camera_transform = to_camera_transform(cursor);
