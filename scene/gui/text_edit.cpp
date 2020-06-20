@@ -379,29 +379,9 @@ void TextEdit::_update_scrollbars() {
 		total_width += cache.minimap_width;
 	}
 
-	bool use_hscroll = true;
-	bool use_vscroll = true;
-
-	// Thanks yessopie for this clever bit of logic.
-	if (total_rows <= visible_rows && total_width <= visible_width) {
-
-		use_hscroll = false;
-		use_vscroll = false;
-	} else {
-
-		if (total_rows > visible_rows && total_width <= visible_width) {
-			use_hscroll = false;
-		}
-
-		if (total_rows <= visible_rows && total_width > visible_width) {
-			use_vscroll = false;
-		}
-	}
-
 	updating_scrolls = true;
 
-	if (use_vscroll) {
-
+	if (total_rows > visible_rows) {
 		v_scroll->show();
 		v_scroll->set_max(total_rows + get_visible_rows_offset());
 		v_scroll->set_page(visible_rows + get_visible_rows_offset());
@@ -420,8 +400,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->hide();
 	}
 
-	if (use_hscroll && !is_wrap_enabled()) {
-
+	if (total_width > visible_width && !is_wrap_enabled()) {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
@@ -2285,14 +2264,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == BUTTON_WHEEL_UP && !mb->get_command()) {
 				if (mb->get_shift()) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
-				} else {
+				} else if (v_scroll->is_visible()) {
 					_scroll_up(3 * mb->get_factor());
 				}
 			}
 			if (mb->get_button_index() == BUTTON_WHEEL_DOWN && !mb->get_command()) {
 				if (mb->get_shift()) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
-				} else {
+				} else if (v_scroll->is_visible()) {
 					_scroll_down(3 * mb->get_factor());
 				}
 			}
