@@ -6037,12 +6037,10 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 			} else {
 				if (scene.is_valid()) {
 					Node *instance = scene->instance();
+#ifndef _MSC_VER
+#warning TODO find a better method for pausing preview
+#endif
 					if (instance) {
-						// TODO: Find a better method
-						// This fix works if the timer on the scene is an immediate child 
-						// (it breaks on nested timers).
-						// I tried to use something like "instance->get_tree()->set_pause(true)"
-						// to pause updates on the whole scene tree, but Godot crashes, so I need to investigate.
 						for (int j = 0; j < instance->get_child_count(); j++) {
 							Node *curr_child = instance->get_child(j);
 							if (curr_child->get_class() == "Timer") {
