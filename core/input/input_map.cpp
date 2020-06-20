@@ -335,7 +335,11 @@ void InputMap::load_default() {
 	key->set_keycode(KEY_END);
 	action_add_event("ui_end", key);
 
-	//set("display/window/handheld/orientation", "landscape");
+	add_action("ui_toggle_fullscreen");
+	key.instance();
+	key->set_keycode(KEY_ENTER);
+	key->set_alt(true);
+	action_add_event("ui_toggle_fullscreen", key);
 }
 
 InputMap::InputMap() {

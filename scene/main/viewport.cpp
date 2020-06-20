@@ -1804,13 +1804,6 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	//?
-	/*
-	if (!is_visible()) {
-		return; //simple and plain
-	}
-	*/
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
@@ -1831,13 +1824,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					set_input_as_handled();
 					return;
 				}
-
-				//Matrix32 parent_xform;
-
-				/*
-				if (data.parent_canvas_item)
-					parent_xform=data.parent_canvas_item->get_global_transform();
-				*/
 
 				gui.mouse_focus = _gui_find_control(pos);
 				gui.last_mouse_focus = gui.mouse_focus;
@@ -2355,6 +2341,20 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	}
 
 	if (mm.is_null() && mb.is_null() && p_event->is_action_type()) {
+		const bool resize_allowed = !DisplayServer::get_singleton()->window_get_flag(DisplayServer::WINDOW_FLAG_RESIZE_DISABLED);
+
+		if (p_event->is_pressed() && p_event->is_action_pressed("ui_toggle_fullscreen") && resize_allowed) {
+			if (DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_FULLSCREEN) {
+				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_WINDOWED);
+			} else {
+				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_FULLSCREEN);
+			}
+
+			// Don't trigger events for focused buttons when toggling fullscreen.
+			set_input_as_handled();
+			return;
+		}
+
 		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
 			gui.key_focus->release_focus();
 		}
@@ -2376,8 +2376,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Control *from = gui.key_focus ? gui.key_focus : nullptr; //hmm
 
-		//keyboard focus
-		//if (from && p_event->is_pressed() && !p_event->get_alt() && !p_event->get_metakey() && !p_event->key->get_command()) {
 		Ref<InputEventKey> k = p_event;
 		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/righ/etc> is handled here when it shouldn't be.
 		bool mods = k.is_valid() && (k->get_control() || k->get_alt() || k->get_shift() || k->get_metakey());
