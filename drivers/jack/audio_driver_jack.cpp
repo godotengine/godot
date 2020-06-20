@@ -43,7 +43,6 @@
 #define PORT_NAME_BUFFER_SIZE 32
 
 const AudioDriverJACK::DeviceJACK AudioDriverJACK::devices[] = {
-
 	// default device outputs to sound card in stereo
 	{ "Sound card playback", SPEAKER_MODE_STEREO },
 
@@ -58,7 +57,6 @@ const unsigned AudioDriverJACK::num_devices =
 		sizeof(devices) / sizeof(devices[0]);
 
 const AudioDriverJACK::DeviceJACK AudioDriverJACK::capture_devices[] = {
-
 	// default device inputs from sound card in stereo
 	{ "Sound card capture", SPEAKER_MODE_STEREO },
 
@@ -70,7 +68,6 @@ const unsigned AudioDriverJACK::num_capture_devices =
 		sizeof(capture_devices) / sizeof(capture_devices[0]);
 
 int AudioDriverJACK::DeviceJACK::channels() const {
-
 	switch (speaker_mode) {
 		default:
 		case SPEAKER_MODE_STEREO: return 2;
@@ -81,7 +78,6 @@ int AudioDriverJACK::DeviceJACK::channels() const {
 }
 
 Error AudioDriverJACK::init_device() {
-
 	String client_name = GLOBAL_GET("application/config/name");
 
 	if (client_name.length() == 0)
@@ -153,14 +149,12 @@ Error AudioDriverJACK::init_device() {
 }
 
 Error AudioDriverJACK::init() {
-
 	Error err = init_device();
 
 	return err;
 }
 
 void AudioDriverJACK::start() {
-
 	active = true;
 
 	if (!client)
@@ -178,7 +172,6 @@ void AudioDriverJACK::start() {
 }
 
 int AudioDriverJACK::get_mix_rate() const {
-
 	if (!client)
 		return 0;
 
@@ -186,13 +179,11 @@ int AudioDriverJACK::get_mix_rate() const {
 }
 
 AudioDriver::SpeakerMode AudioDriverJACK::get_speaker_mode() const {
-
 	const DeviceJACK &jdev = devices[device_index];
 	return jdev.speaker_mode;
 }
 
 Array AudioDriverJACK::get_device_list() {
-
 	Array names;
 
 	for (unsigned i = 0; i < num_devices; ++i) {
@@ -204,13 +195,11 @@ Array AudioDriverJACK::get_device_list() {
 }
 
 String AudioDriverJACK::get_device() {
-
 	const DeviceJACK &jdev = devices[device_index];
 	return jdev.name;
 }
 
 void AudioDriverJACK::set_device(String device) {
-
 	int new_index = -1;
 
 	for (unsigned i = 0; i < num_devices && new_index == -1; ++i) {
@@ -236,17 +225,14 @@ void AudioDriverJACK::set_device(String device) {
 }
 
 void AudioDriverJACK::lock() {
-
 	mutex.lock();
 }
 
 void AudioDriverJACK::unlock() {
-
 	mutex.unlock();
 }
 
 void AudioDriverJACK::finish_device() {
-
 	if (client) {
 		jack_client_close(client);
 		client = NULL;
@@ -257,7 +243,6 @@ void AudioDriverJACK::finish_device() {
 }
 
 void AudioDriverJACK::finish() {
-
 	finish_device();
 }
 
@@ -268,7 +253,6 @@ static inline int32_t saturate16bit(int32_t sample) {
 }
 
 int AudioDriverJACK::process_func(jack_nframes_t total_frames, void *p_udata) {
-
 	AudioDriverJACK *jd = (AudioDriverJACK *)p_udata;
 
 	jack_port_t *const *ports = jd->ports.ptr();
@@ -343,7 +327,6 @@ int AudioDriverJACK::process_func(jack_nframes_t total_frames, void *p_udata) {
 }
 
 void AudioDriverJACK::connect_physical_ports() {
-
 	const DeviceJACK &jdev = devices[device_index];
 	unsigned channels = jdev.channels();
 
@@ -399,7 +382,6 @@ void AudioDriverJACK::connect_physical_ports() {
 }
 
 void AudioDriverJACK::connect_physical_capture_ports() {
-
 	const DeviceJACK &cdev = capture_devices[capture_device_index];
 	unsigned capture_channels = cdev.channels();
 
@@ -455,19 +437,16 @@ void AudioDriverJACK::connect_physical_capture_ports() {
 }
 
 Error AudioDriverJACK::capture_start() {
-
 	capture_active = true;
 	return OK;
 }
 
 Error AudioDriverJACK::capture_stop() {
-
 	capture_active = false;
 	return OK;
 }
 
 void AudioDriverJACK::capture_set_device(const String &device) {
-
 	int new_index = -1;
 
 	for (unsigned i = 0; i < num_capture_devices && new_index == -1; ++i) {
@@ -493,13 +472,11 @@ void AudioDriverJACK::capture_set_device(const String &device) {
 }
 
 String AudioDriverJACK::capture_get_device() {
-
 	const DeviceJACK &cdev = capture_devices[device_index];
 	return cdev.name;
 }
 
 Array AudioDriverJACK::capture_get_device_list() {
-
 	Array names;
 
 	for (unsigned i = 0; i < num_capture_devices; ++i) {

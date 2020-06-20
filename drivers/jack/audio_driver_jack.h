@@ -39,7 +39,6 @@
 #include <jack/jack.h>
 
 class AudioDriverJACK : public AudioDriver {
-
 	Mutex mutex;
 
 	jack_client_t *client;
