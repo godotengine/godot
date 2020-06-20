@@ -70,10 +70,14 @@ const unsigned AudioDriverJACK::num_capture_devices =
 int AudioDriverJACK::DeviceJACK::channels() const {
 	switch (speaker_mode) {
 		default:
-		case SPEAKER_MODE_STEREO: return 2;
-		case SPEAKER_SURROUND_31: return 4;
-		case SPEAKER_SURROUND_51: return 6;
-		case SPEAKER_SURROUND_71: return 8;
+		case SPEAKER_MODE_STEREO:
+			return 2;
+		case SPEAKER_SURROUND_31:
+			return 4;
+		case SPEAKER_SURROUND_51:
+			return 6;
+		case SPEAKER_SURROUND_71:
+			return 8;
 	}
 }
 
