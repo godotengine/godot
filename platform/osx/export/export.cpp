@@ -753,7 +753,10 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 			zipfi.tmz_date.tm_sec = time.sec;
 			zipfi.tmz_date.tm_year = date.year;
 			zipfi.dosDate = 0;
-			zipfi.external_fa = (is_executable ? 0755 : 0644) << 16L;
+			// 0100000: regular file type
+			// 0000755: permissions rwxr-xr-x
+			// 0000644: permissions rw-r--r--
+			zipfi.external_fa = (is_executable ? 0100755 : 0100644) << 16L;
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,
