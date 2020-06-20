@@ -40,7 +40,7 @@
 
 class AudioDriverJACK : public AudioDriver {
 
-	Mutex *mutex;
+	Mutex mutex;
 
 	jack_client_t *client;
 	Vector<jack_port_t *> ports;

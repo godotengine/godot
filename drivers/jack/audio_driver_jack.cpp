@@ -89,8 +89,9 @@ Error AudioDriverJACK::init_device() {
 
 	client = jack_client_open(client_name.utf8(), JackNoStartServer, NULL);
 
-	if (!client)
+	if (!client) {
 		ERR_FAIL_COND_V(!client, ERR_CANT_OPEN);
+	}
 
 	jack_set_process_callback(client, &process_func, this);
 
@@ -154,8 +155,6 @@ Error AudioDriverJACK::init_device() {
 Error AudioDriverJACK::init() {
 
 	Error err = init_device();
-	if (err == OK)
-		mutex = Mutex::create();
 
 	return err;
 }
@@ -238,16 +237,12 @@ void AudioDriverJACK::set_device(String device) {
 
 void AudioDriverJACK::lock() {
 
-	if (!mutex)
-		return;
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverJACK::unlock() {
 
-	if (!mutex)
-		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverJACK::finish_device() {
@@ -264,11 +259,6 @@ void AudioDriverJACK::finish_device() {
 void AudioDriverJACK::finish() {
 
 	finish_device();
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 }
 
 static inline int32_t saturate16bit(int32_t sample) {
@@ -289,11 +279,11 @@ int AudioDriverJACK::process_func(jack_nframes_t total_frames, void *p_udata) {
 
 	bool capture_active = jd->capture_active;
 
-	Mutex *mutex = jd->mutex;
+	Mutex &mutex = jd->mutex;
 
 	// invoke try-lock; if it's a failure, fill channels with zero
 	// never xrun the JACK server!
-	if (mutex && mutex->try_lock() != OK) {
+	if (mutex.try_lock() != OK) {
 		for (unsigned ch = 0; ch < channels; ++ch) {
 			float *ch_out = (float *)jack_port_get_buffer(ports[ch], total_frames);
 			memset(ch_out, 0, total_frames * sizeof(float));
@@ -347,8 +337,7 @@ int AudioDriverJACK::process_func(jack_nframes_t total_frames, void *p_udata) {
 		frame_index += current_frames;
 	}
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 
 	return 0;
 }
@@ -522,7 +511,6 @@ Array AudioDriverJACK::capture_get_device_list() {
 }
 
 AudioDriverJACK::AudioDriverJACK() :
-		mutex(NULL),
 		client(NULL),
 		device_index(0),
 		capture_device_index(0),
