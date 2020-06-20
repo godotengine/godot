@@ -118,6 +118,7 @@ private:
 	Input *input;
 
 	int id_to_change;
+	int slider_count;
 	int joypad_count;
 	bool attached_joypads[JOYPADS_MAX];
 	dinput_gamepad d_joypads[JOYPADS_MAX];
