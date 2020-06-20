@@ -41,6 +41,9 @@
 class AudioDriverJACK : public AudioDriver {
 	Mutex mutex;
 
+	struct LibJACK;
+	LibJACK *library;
+
 	jack_client_t *client;
 	Vector<jack_port_t *> ports;
 	Vector<jack_port_t *> capture_ports;
@@ -94,6 +97,9 @@ public:
 	void capture_set_device(const String &device);
 	String capture_get_device();
 	Array capture_get_device_list();
+
+	static Error load_jack_library(LibJACK *&library);
+	static void unload_jack_library(LibJACK *&library);
 
 	AudioDriverJACK();
 	~AudioDriverJACK();
