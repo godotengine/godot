@@ -277,7 +277,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"Haiku"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_power_percent_left">
