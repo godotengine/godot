@@ -905,8 +905,10 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 				vertices[p_segment_indices[closest_idx]].point
 			};
 			if (are_segements_parallel(edge1, edge2, vertex_snap2)) {
-				degenerate_points.push_back(outer_edge_idx[0]);
-				degenerate_points.push_back(outer_edge_idx[1]);
+				if (!degenerate_points.find(outer_edge_idx[0]))
+					degenerate_points.push_back(outer_edge_idx[0]);
+				if (!degenerate_points.find(outer_edge_idx[1]))
+					degenerate_points.push_back(outer_edge_idx[1]);
 				continue;
 			}
 
