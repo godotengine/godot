@@ -405,11 +405,11 @@ public:
 
 	virtual int get_process_info(ProcessInfo p_info);
 
-	CollisionObjectBullet *get_collisin_object(RID p_object) const;
-	RigidCollisionObjectBullet *get_rigid_collisin_object(RID p_object) const;
-
-	/// Internal APIs
-public:
+	SpaceBullet *get_space(RID p_rid) const;
+	ShapeBullet *get_shape(RID p_rid) const;
+	CollisionObjectBullet *get_collision_object(RID p_object) const;
+	RigidCollisionObjectBullet *get_rigid_collision_object(RID p_object) const;
+	JointBullet *get_joint(RID p_rid) const;
 };
 
 #endif
