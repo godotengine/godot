@@ -124,9 +124,12 @@ public:
 	real_t get_delta_time() { return delta_time; }
 	void step(real_t p_delta_time);
 
-	_FORCE_INLINE_ btBroadphaseInterface *get_broadphase() { return broadphase; }
-	_FORCE_INLINE_ btCollisionDispatcher *get_dispatcher() { return dispatcher; }
-	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() { return soft_body_world_info; }
+	_FORCE_INLINE_ btBroadphaseInterface *get_broadphase() const { return broadphase; }
+	_FORCE_INLINE_ btDefaultCollisionConfiguration *get_collision_configuration() const { return collisionConfiguration; }
+	_FORCE_INLINE_ btCollisionDispatcher *get_dispatcher() const { return dispatcher; }
+	_FORCE_INLINE_ btConstraintSolver *get_solver() const { return solver; }
+	_FORCE_INLINE_ btDiscreteDynamicsWorld *get_dynamic_world() const { return dynamicsWorld; }
+	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() const { return soft_body_world_info; }
 	_FORCE_INLINE_ bool is_using_soft_world() { return soft_body_world_info; }
 
 	/// Used to set some parameters to Bullet world
