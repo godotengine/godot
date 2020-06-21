@@ -236,7 +236,7 @@ public:
 	_FORCE_INLINE_ btRigidBody *get_bt_rigid_body() { return btBody; }
 
 	virtual void main_shape_changed();
-	virtual void reload_body();
+	virtual void do_reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
@@ -315,7 +315,7 @@ public:
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;
 
-	virtual void reload_shapes();
+	virtual void do_reload_shapes();
 
 	virtual void on_enter_area(AreaBullet *p_area);
 	virtual void on_exit_area(AreaBullet *p_area);

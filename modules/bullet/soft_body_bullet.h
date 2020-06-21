@@ -87,7 +87,7 @@ public:
 	SoftBodyBullet();
 	~SoftBodyBullet();
 
-	virtual void reload_body();
+	virtual void do_reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks() {}
