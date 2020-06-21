@@ -356,7 +356,10 @@
 			</return>
 			<description>
 				Returns the current UNIX epoch timestamp.
-				[b]Important:[/b] This is the system clock that the user can manully set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
+				This correspond to the number of second elapsed since January 1, 1970, 00:00:00 (UTC), ignoring the leap seconds.
+				The time is returned as a floating number with sub-second precision depending of the platform.
+				[b]Note:[/b] This method doesn't guarantee monotonic time (i.e. a call may return a greater value than a subsequent one, for instance if the system clock is modified between the two calls).
+				For benchmarking usage you should consider [method get_ticks_usec] or [method get_ticks_msec] instead.
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
