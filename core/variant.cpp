@@ -1598,6 +1598,10 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			Object *obj = _OBJ_PTR(*this);
 			if (obj) {
+				if (_get_obj().ref.is_null() && !ObjectDB::get_instance(obj->get_instance_id())) {
+					return "[Deleted Object]";
+				}
+
 				return obj->to_string();
 			} else {
 #ifdef DEBUG_ENABLED
