@@ -1,6 +1,6 @@
 namespace GodotTools.Build
 {
-    public enum BuildTool
+    public enum BuildTool : long
     {
         MsBuildMono,
         MsBuildVs,
