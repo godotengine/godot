@@ -134,6 +134,7 @@ private:
 	void update_placeholder_width();
 
 	bool caret_blink_enabled;
+	bool caret_force_displayed;
 	bool draw_caret;
 	bool window_has_focus;
 
@@ -200,6 +201,9 @@ public:
 
 	float cursor_get_blink_speed() const;
 	void cursor_set_blink_speed(const float p_speed);
+
+	bool cursor_get_force_displayed() const;
+	void cursor_set_force_displayed(const bool p_enabled);
 
 	void copy_text();
 	void cut_text();

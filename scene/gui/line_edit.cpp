@@ -699,7 +699,7 @@ void LineEdit::_notification(int p_what) {
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
-			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
+			if ((!has_focus() && !menu->has_focus() && !caret_force_displayed) || !window_has_focus) {
 				draw_caret = false;
 			}
 
@@ -925,10 +925,14 @@ void LineEdit::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
-			if (caret_blink_enabled) {
-				caret_blink_timer->start();
-			} else {
-				draw_caret = true;
+			if (!caret_force_displayed) {
+				if (caret_blink_enabled) {
+					if (caret_blink_timer->is_stopped()) {
+						caret_blink_timer->start();
+					}
+				} else {
+					draw_caret = true;
+				}
 			}
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
@@ -947,7 +951,7 @@ void LineEdit::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
-			if (caret_blink_enabled) {
+			if (caret_blink_enabled && !caret_force_displayed) {
 				caret_blink_timer->stop();
 			}
 
@@ -1167,15 +1171,27 @@ bool LineEdit::cursor_get_blink_enabled() const {
 void LineEdit::cursor_set_blink_enabled(const bool p_enabled) {
 	caret_blink_enabled = p_enabled;
 
-	if (has_focus()) {
+	if (has_focus() || caret_force_displayed) {
 		if (p_enabled) {
-			caret_blink_timer->start();
+			if (caret_blink_timer->is_stopped()) {
+				caret_blink_timer->start();
+			}
 		} else {
 			caret_blink_timer->stop();
 		}
 	}
 
 	draw_caret = true;
+}
+
+bool LineEdit::cursor_get_force_displayed() const {
+	return caret_force_displayed;
+}
+
+void LineEdit::cursor_set_force_displayed(const bool p_enabled) {
+	caret_force_displayed = p_enabled;
+	cursor_set_blink_enabled(caret_blink_enabled);
+	update();
 }
 
 float LineEdit::cursor_get_blink_speed() const {
@@ -1200,7 +1216,7 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible_in_tree() && has_focus() && window_has_focus) {
+	if (is_visible_in_tree() && ((has_focus() && window_has_focus) || caret_force_displayed)) {
 		update();
 	}
 }
@@ -1796,6 +1812,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_expand_to_text_length"), &LineEdit::get_expand_to_text_length);
 	ClassDB::bind_method(D_METHOD("cursor_set_blink_enabled", "enabled"), &LineEdit::cursor_set_blink_enabled);
 	ClassDB::bind_method(D_METHOD("cursor_get_blink_enabled"), &LineEdit::cursor_get_blink_enabled);
+	ClassDB::bind_method(D_METHOD("cursor_set_force_displayed", "enabled"), &LineEdit::cursor_set_force_displayed);
+	ClassDB::bind_method(D_METHOD("cursor_get_force_displayed"), &LineEdit::cursor_get_force_displayed);
 	ClassDB::bind_method(D_METHOD("cursor_set_blink_speed", "blink_speed"), &LineEdit::cursor_set_blink_speed);
 	ClassDB::bind_method(D_METHOD("cursor_get_blink_speed"), &LineEdit::cursor_get_blink_speed);
 	ClassDB::bind_method(D_METHOD("set_max_length", "chars"), &LineEdit::set_max_length);
@@ -1859,6 +1877,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "cursor_set_blink_speed", "cursor_get_blink_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_position"), "set_cursor_position", "get_cursor_position");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "cursor_set_force_displayed", "cursor_get_force_displayed");
 }
 
 LineEdit::LineEdit() {
@@ -1888,6 +1907,7 @@ LineEdit::LineEdit() {
 
 	draw_caret = true;
 	caret_blink_enabled = false;
+	caret_force_displayed = false;
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
 	caret_blink_timer->set_wait_time(0.65);
