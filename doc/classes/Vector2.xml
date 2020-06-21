@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+		[b]Note:[/b] In a boolean context, a Vector2 will evaluate to [code]false[/code] if it's equal to [code]Vector2(0, 0)[/code]. Otherwise, a Vector2 will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
