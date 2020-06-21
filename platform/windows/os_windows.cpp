@@ -290,52 +290,45 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool utc) const {
+OS::DateTime OS_Windows::get_datetime(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
 		GetSystemTime(&systemtime);
 	else
 		GetLocalTime(&systemtime);
 
-	Date date;
-	date.day = systemtime.wDay;
-	date.month = Month(systemtime.wMonth);
-	date.weekday = Weekday(systemtime.wDayOfWeek);
-	date.year = systemtime.wYear;
-	date.dst = false;
-	return date;
-}
+	DateTime ret;
+	ret.day = systemtime.wDay;
+	ret.month = Month(systemtime.wMonth);
+	ret.weekday = Weekday(systemtime.wDayOfWeek);
+	ret.year = systemtime.wYear;
+	ret.dst = false;
+	ret.hour = systemtime.wHour;
+	ret.min = systemtime.wMinute;
+	ret.sec = systemtime.wSecond;
+	ret.msec = systemtime.wMilliseconds;
 
-OS::Time OS_Windows::get_time(bool utc) const {
-	SYSTEMTIME systemtime;
-	if (utc)
-		GetSystemTime(&systemtime);
-	else
-		GetLocalTime(&systemtime);
-
-	Time time;
-	time.hour = systemtime.wHour;
-	time.min = systemtime.wMinute;
-	time.sec = systemtime.wSecond;
-	return time;
-}
-
-OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
-	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
-	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
-		daylight = true;
-
-	TimeZoneInfo ret;
-	if (daylight) {
-		ret.name = info.DaylightName;
+	// Retreive timezone info
+	if (utc) {
+		ret.timezone.name = String("UTC");
+		ret.timezone.bias = 0;
 	} else {
-		ret.name = info.StandardName;
+		TIME_ZONE_INFORMATION info;
+		bool daylight = false;
+		if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+			daylight = true;
+
+		if (daylight) {
+			ret.timezone.name = info.DaylightName;
+		} else {
+			ret.timezone.name = info.StandardName;
+		}
+
+		// Bias value returned by GetTimeZoneInformation is inverted of what we expect
+		// For example on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
+		ret.timezone.bias = -info.Bias;
 	}
 
-	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
-	// For example on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
-	ret.bias = -info.Bias;
 	return ret;
 }
 

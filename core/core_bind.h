@@ -202,8 +202,8 @@ public:
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
-	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
-	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
+	Dictionary get_datetime_from_unix_time(double unix_time_val) const;
+	double get_unix_time_from_datetime(Dictionary datetime) const;
 	Dictionary get_time_zone_info() const;
 	double get_unix_time() const;
 

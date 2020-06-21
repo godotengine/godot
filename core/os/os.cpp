@@ -51,33 +51,63 @@ uint32_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000;
 }
 
-String OS::get_iso_date_time(bool local) const {
-	OS::Date date = get_date(local);
-	OS::Time time = get_time(local);
+String OS::get_iso_date_time(bool local, bool msec) const {
+	OS::DateTime dt = get_datetime(local);
 
 	String timezone;
 	if (!local) {
-		TimeZoneInfo zone = get_time_zone_info();
-		if (zone.bias >= 0) {
+		if (dt.timezone.bias >= 0) {
 			timezone = "+";
 		}
-		timezone = timezone + itos(zone.bias / 60).pad_zeros(2) + itos(zone.bias % 60).pad_zeros(2);
+		timezone = timezone + itos(dt.timezone.bias / 60).pad_zeros(2) + itos(dt.timezone.bias % 60).pad_zeros(2);
 	} else {
 		timezone = "Z";
 	}
 
-	return itos(date.year).pad_zeros(2) +
-		   "-" +
-		   itos(date.month).pad_zeros(2) +
-		   "-" +
-		   itos(date.day).pad_zeros(2) +
-		   "T" +
-		   itos(time.hour).pad_zeros(2) +
-		   ":" +
-		   itos(time.min).pad_zeros(2) +
-		   ":" +
-		   itos(time.sec).pad_zeros(2) +
-		   timezone;
+	String ret = itos(dt.year).pad_zeros(2) +
+				 "-" +
+				 itos(dt.month).pad_zeros(2) +
+				 "-" +
+				 itos(dt.day).pad_zeros(2) +
+				 "T" +
+				 itos(dt.hour).pad_zeros(2) +
+				 ":" +
+				 itos(dt.min).pad_zeros(2) +
+				 ":" +
+				 itos(dt.sec).pad_zeros(2);
+
+	if (msec) {
+		ret += "." + itos(dt.msec).pad_zeros(3);
+	}
+	ret += timezone;
+
+	return ret;
+}
+
+OS::Date OS::get_date(bool local) const {
+	OS::DateTime dt = get_datetime(local);
+	OS::Date ret;
+	ret.year = dt.year;
+	ret.month = dt.month;
+	ret.day = dt.day;
+	ret.weekday = dt.weekday;
+	ret.dst = dt.dst;
+	return ret;
+}
+
+OS::Time OS::get_time(bool local) const {
+	OS::DateTime dt = get_datetime(local);
+	OS::Time ret;
+	ret.hour = dt.hour;
+	ret.min = dt.min;
+	ret.sec = dt.sec;
+	ret.msec = dt.msec;
+	return ret;
+}
+
+OS::TimeZoneInfo OS::get_time_zone_info() const {
+	OS::DateTime dt = get_datetime(true);
+	return dt.timezone;
 }
 
 void OS::debug_break() {

@@ -191,17 +191,18 @@
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current datetime as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time), [code]hour[/code], [code]minute[/code], [code]second[/code].
+				Returns current datetime as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time), [code]hour[/code], [code]minute[/code], [code]second[/code] and [code]millisecond[/code].
 			</description>
 		</method>
 		<method name="get_datetime_from_unix_time" qualifiers="const">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="unix_time_val" type="int">
+			<argument index="0" name="unix_time_val" type="float">
 			</argument>
 			<description>
 				Gets a dictionary of time values corresponding to the given UNIX epoch time (in seconds).
-				The returned Dictionary's values will be the same as [method get_datetime], with the exception of Daylight Savings Time as it cannot be determined from the epoch.
+				Retuned dictionary will be equivalent to what is returned by [method get_datetime] with [code]utc=true[/code],
+				with the exception of Daylight Savings Time as it cannot be determined from epoch.
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -363,13 +364,13 @@
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime" qualifiers="const">
-			<return type="int">
+			<return type="float">
 			</return>
 			<argument index="0" name="datetime" type="Dictionary">
 			</argument>
 			<description>
 				Gets an epoch time value from a dictionary of time values.
-				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
+				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code] and [code]millisecond[/code].
 				If the dictionary is empty [code]0[/code] is returned.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
 			</description>

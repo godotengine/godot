@@ -195,6 +195,7 @@ public:
 		int hour;
 		int min;
 		int sec;
+		int msec;
 	};
 
 	struct TimeZoneInfo {
@@ -202,10 +203,24 @@ public:
 		String name;
 	};
 
-	virtual Date get_date(bool local = false) const = 0;
-	virtual Time get_time(bool local = false) const = 0;
-	virtual TimeZoneInfo get_time_zone_info() const = 0;
-	virtual String get_iso_date_time(bool local = false) const;
+	struct DateTime {
+		int year;
+		Month month;
+		int day;
+		Weekday weekday;
+		bool dst;
+		int hour;
+		int min;
+		int sec;
+		int msec;
+		OS::TimeZoneInfo timezone;
+	};
+
+	virtual DateTime get_datetime(bool local = false) const = 0;
+	Date get_date(bool local = false) const;
+	Time get_time(bool local = false) const;
+	TimeZoneInfo get_time_zone_info() const;
+	String get_iso_date_time(bool local = false, bool msec = false) const;
 	virtual double get_unix_time() const = 0;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
