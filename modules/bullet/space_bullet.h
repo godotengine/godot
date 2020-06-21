@@ -31,7 +31,7 @@
 #ifndef SPACE_BULLET_H
 #define SPACE_BULLET_H
 
-#include "core/templates/vector.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 #include "godot_result_callbacks.h"
 #include "rid_bullet.h"
@@ -110,17 +110,27 @@ class SpaceBullet : public RIDBullet {
 	real_t linear_damp = 0.0;
 	real_t angular_damp = 0.0;
 
-	Vector<AreaBullet *> areas;
+	LocalVector<CollisionObjectBullet *> queue_pre_flush;
+	LocalVector<CollisionObjectBullet *> queue_flush;
+	LocalVector<CollisionObjectBullet *> queue_dirty;
+	LocalVector<CollisionObjectBullet *> collision_objects;
+	LocalVector<AreaBullet *> areas;
 
-	Vector<Vector3> contactDebug;
-	int contactDebugCount = 0;
+	LocalVector<Vector3> contactDebug;
+	uint32_t contactDebugCount = 0;
 	real_t delta_time = 0.;
 
 public:
 	SpaceBullet();
 	virtual ~SpaceBullet();
 
+	void add_to_flush_queue(CollisionObjectBullet *p_co);
+	void add_to_pre_flush_queue(CollisionObjectBullet *p_co);
+	void add_to_dirty_queue(CollisionObjectBullet *p_co);
+	void remove_from_any_queue(CollisionObjectBullet *p_co);
+
 	void flush_queries();
+	void flush_dirty();
 	real_t get_delta_time() { return delta_time; }
 	void step(real_t p_delta_time);
 
@@ -150,6 +160,9 @@ public:
 	void remove_area(AreaBullet *p_area);
 	void reload_collision_filters(AreaBullet *p_area);
 
+	void register_collision_object(CollisionObjectBullet *p_object);
+	void unregister_collision_object(CollisionObjectBullet *p_object);
+
 	void add_rigid_body(RigidBodyBullet *p_body);
 	void remove_rigid_body(RigidBodyBullet *p_body);
 	void reload_collision_filters(RigidBodyBullet *p_body);
@@ -173,7 +186,7 @@ public:
 	}
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
 		if (contactDebugCount < contactDebug.size()) {
-			contactDebug.write[contactDebugCount++] = p_contact;
+			contactDebug[contactDebugCount++] = p_contact;
 		}
 	}
 	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contactDebug; }

@@ -79,6 +79,7 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	GodotAllContactResultCallback btResult(&collision_object_point, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
 
 	// The results is already populated by GodotAllConvexResultCallback
@@ -98,6 +99,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 	btResult.m_collisionFilterMask = p_collision_mask;
 	btResult.m_pickRay = p_pick_ray;
 
+	space->flush_dirty();
 	space->dynamicsWorld->rayTest(btVec_from, btVec_to, btResult);
 	if (btResult.hasHit()) {
 		B_TO_G(btResult.m_hitPointWorld, r_result.position);
@@ -127,7 +129,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
-		bulletdelete(btShape);
+		shape->destroy_bt_shape(btShape);
 		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
@@ -145,9 +147,10 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
-	bulletdelete(btConvex);
+	shape->destroy_bt_shape(btShape);
 
 	return btQuery.m_count;
 }
@@ -163,7 +166,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
 	if (!btShape->isConvex()) {
-		bulletdelete(btShape);
+		shape->destroy_bt_shape(btShape);
 		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return false;
 	}
@@ -177,7 +180,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	bt_xform_to.getOrigin() += bt_motion;
 
 	if ((bt_xform_to.getOrigin() - bt_xform_from.getOrigin()).fuzzyZero()) {
-		bulletdelete(btShape);
+		shape->destroy_bt_shape(btShape);
 		return false;
 	}
 
@@ -185,6 +188,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 
+	space->flush_dirty();
 	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, space->dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 	if (btResult.hasHit()) {
@@ -207,7 +211,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 		r_closest_unsafe = 1.0f;
 	}
 
-	bulletdelete(bt_convex_shape);
+	shape->destroy_bt_shape(btShape);
 	return true; // Mean success
 }
 
@@ -222,7 +226,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
-		bulletdelete(btShape);
+		shape->destroy_bt_shape(btShape);
 		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return false;
 	}
@@ -240,10 +244,12 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
+
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
 	r_result_count = btQuery.m_count;
-	bulletdelete(btConvex);
+	shape->destroy_bt_shape(btShape);
 
 	return btQuery.m_count;
 }
@@ -254,7 +260,7 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
-		bulletdelete(btShape);
+		shape->destroy_bt_shape(btShape);
 		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return false;
 	}
@@ -272,9 +278,11 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
+
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
-	bulletdelete(btConvex);
+	shape->destroy_bt_shape(btShape);
 
 	if (btQuery.m_collided) {
 		if (btCollisionObject::CO_RIGID_BODY == btQuery.m_rest_info_collision_object->getInternalType()) {
@@ -317,6 +325,7 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 
 			input.m_transformB = body_transform * child_transform;
 
+			space->flush_dirty();
 			btPointCollector result;
 			btGjkPairDetector gjk_pair_detector(&point_shape, convex_shape, space->gjk_simplex_solver, space->gjk_epa_pen_solver);
 			gjk_pair_detector.getClosestPoints(input, result, nullptr);
@@ -349,14 +358,72 @@ SpaceBullet::~SpaceBullet() {
 	destroy_world();
 }
 
-void SpaceBullet::flush_queries() {
-	const btCollisionObjectArray &colObjArray = dynamicsWorld->getCollisionObjectArray();
-	for (int i = colObjArray.size() - 1; 0 <= i; --i) {
-		static_cast<CollisionObjectBullet *>(colObjArray[i]->getUserPointer())->dispatch_callbacks();
+void SpaceBullet::add_to_pre_flush_queue(CollisionObjectBullet *p_co) {
+	if (p_co->is_in_flush_queue == false) {
+		p_co->is_in_flush_queue = true;
+		queue_pre_flush.push_back(p_co);
 	}
 }
 
+void SpaceBullet::add_to_flush_queue(CollisionObjectBullet *p_co) {
+	if (p_co->is_in_flush_queue == false) {
+		p_co->is_in_flush_queue = true;
+		queue_flush.push_back(p_co);
+	}
+}
+
+void SpaceBullet::add_to_dirty_queue(CollisionObjectBullet *p_co) {
+	if (p_co->is_in_dirty_queue == false) {
+		p_co->is_in_dirty_queue = true;
+		queue_dirty.push_back(p_co);
+	}
+}
+
+void SpaceBullet::remove_from_any_queue(CollisionObjectBullet *p_co) {
+	if (p_co->is_in_flush_queue) {
+		p_co->is_in_flush_queue = false;
+		queue_pre_flush.erase(p_co);
+		queue_flush.erase(p_co);
+	}
+	if (p_co->is_in_dirty_queue) {
+		p_co->is_in_dirty_queue = false;
+		queue_dirty.erase(p_co);
+	}
+}
+
+void SpaceBullet::flush_queries() {
+	// The actions are delayed till the next frame, so to avoid executes multiple
+	// times the same code.
+	// This function is called before the frame start.
+	// Two queues are used so the Areas can dispatch their callbacks before the
+	// bodies, that can the properly receive the notification.
+	for (uint32_t i = 0; i < queue_pre_flush.size(); i += 1) {
+		queue_pre_flush[i]->dispatch_callbacks();
+		queue_pre_flush[i]->is_in_flush_queue = false;
+	}
+	for (uint32_t i = 0; i < queue_flush.size(); i += 1) {
+		queue_flush[i]->dispatch_callbacks();
+		queue_flush[i]->is_in_flush_queue = false;
+	}
+	queue_pre_flush.clear();
+	queue_flush.clear();
+}
+
+void SpaceBullet::flush_dirty() {
+	for (uint32_t i = 0; i < queue_dirty.size(); i += 1) {
+		queue_dirty[i]->flush_dirty();
+		queue_dirty[i]->is_in_dirty_queue = false;
+	}
+	queue_dirty.clear();
+}
+
 void SpaceBullet::step(real_t p_delta_time) {
+	flush_dirty();
+
+	for (uint32_t i = 0; i < collision_objects.size(); i += 1) {
+		collision_objects[i]->pre_process();
+	}
+
 	delta_time = p_delta_time;
 	dynamicsWorld->stepSimulation(p_delta_time, 0, 0);
 }
@@ -449,16 +516,30 @@ real_t SpaceBullet::get_param(PhysicsServer3D::SpaceParameter p_param) {
 }
 
 void SpaceBullet::add_area(AreaBullet *p_area) {
+#ifdef TOOLS_ENABLED
+	// This never happen, and there is no way for the user to trigger it.
+	// If in future a bug is introduced into this bullet integration and this
+	// function is called twice, the crash will notify the developer that will
+	// fix it even before do the eventual PR.
+	CRASH_COND(p_area->is_in_world);
+#endif
 	areas.push_back(p_area);
 	dynamicsWorld->addCollisionObject(p_area->get_bt_ghost(), p_area->get_collision_layer(), p_area->get_collision_mask());
+	p_area->is_in_world = true;
 }
 
 void SpaceBullet::remove_area(AreaBullet *p_area) {
-	areas.erase(p_area);
-	dynamicsWorld->removeCollisionObject(p_area->get_bt_ghost());
+	if (p_area->is_in_world) {
+		areas.erase(p_area);
+		dynamicsWorld->removeCollisionObject(p_area->get_bt_ghost());
+		p_area->is_in_world = false;
+	}
 }
 
 void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
+	if (p_area->is_in_world == false) {
+		return;
+	}
 	btGhostObject *ghost_object = p_area->get_bt_ghost();
 
 	btBroadphaseProxy *ghost_proxy = ghost_object->getBroadphaseHandle();
@@ -468,24 +549,47 @@ void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
 	dynamicsWorld->refreshBroadphaseProxy(ghost_object);
 }
 
+void SpaceBullet::register_collision_object(CollisionObjectBullet *p_object) {
+	collision_objects.push_back(p_object);
+}
+
+void SpaceBullet::unregister_collision_object(CollisionObjectBullet *p_object) {
+	remove_from_any_queue(p_object);
+	collision_objects.erase(p_object);
+}
+
 void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
+#ifdef TOOLS_ENABLED
+	// This never happen, and there is no way for the user to trigger it.
+	// If in future a bug is introduced into this bullet integration and this
+	// function is called twice, the crash will notify the developer that will
+	// fix it even before do the eventual PR.
+	CRASH_COND(p_body->is_in_world);
+#endif
 	if (p_body->is_static()) {
 		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 	} else {
 		dynamicsWorld->addRigidBody(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 		p_body->scratch_space_override_modificator();
 	}
+	p_body->is_in_world = true;
 }
 
 void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
-	if (p_body->is_static()) {
-		dynamicsWorld->removeCollisionObject(p_body->get_bt_rigid_body());
-	} else {
-		dynamicsWorld->removeRigidBody(p_body->get_bt_rigid_body());
+	if (p_body->is_in_world) {
+		if (p_body->is_static()) {
+			dynamicsWorld->removeCollisionObject(p_body->get_bt_rigid_body());
+		} else {
+			dynamicsWorld->removeRigidBody(p_body->get_bt_rigid_body());
+		}
+		p_body->is_in_world = false;
 	}
 }
 
 void SpaceBullet::reload_collision_filters(RigidBodyBullet *p_body) {
+	if (p_body->is_in_world == false) {
+		return;
+	}
 	btRigidBody *rigid_body = p_body->get_bt_rigid_body();
 
 	btBroadphaseProxy *body_proxy = rigid_body->getBroadphaseProxy();
@@ -665,7 +769,7 @@ void SpaceBullet::check_ghost_overlaps() {
 
 		/// 1. Reset all states
 		for (i = area->overlappingObjects.size() - 1; 0 <= i; --i) {
-			AreaBullet::OverlappingObjectData &otherObj = area->overlappingObjects.write[i];
+			AreaBullet::OverlappingObjectData &otherObj = area->overlappingObjects[i];
 			// This check prevent the overwrite of ENTER state
 			// if this function is called more times before dispatchCallbacks
 			if (otherObj.state != AreaBullet::OVERLAP_STATE_ENTER) {
@@ -912,6 +1016,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		normalLine->set_material_override(blue_mat);
 	}
 #endif
+
+	ERR_FAIL_COND_V_MSG(p_body->get_space() == nullptr, false, "The body is not part of any space.");
+	p_body->get_space()->flush_dirty();
 
 	btTransform body_transform;
 	G_TO_B(p_from, body_transform);
