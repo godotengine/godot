@@ -60,6 +60,7 @@ class JavaClass : public Reference {
 		ARG_TYPE_DOUBLE,
 		ARG_TYPE_STRING, //special case
 		ARG_TYPE_CLASS,
+		ARG_TYPE_OBJECT,
 		ARG_ARRAY_BIT = 1 << 16,
 		ARG_NUMBER_CLASS_BIT = 1 << 17,
 		ARG_TYPE_MASK = (1 << 16) - 1
@@ -70,6 +71,7 @@ class JavaClass : public Reference {
 	struct MethodInfo {
 
 		bool _static;
+		bool _constructor;
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
 		uint32_t return_type;
@@ -159,7 +161,7 @@ class JavaClass : public Reference {
 	}
 
 	_FORCE_INLINE_ static bool _convert_object_to_variant(JNIEnv *env, jobject obj, Variant &var, uint32_t p_sig);
-
+public:
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error, Variant &ret);
 
 	friend class JavaClassWrapper;
@@ -178,6 +180,7 @@ class JavaObject : public Reference {
 	GDCLASS(JavaObject, Reference);
 
 #ifdef ANDROID_ENABLED
+public:
 	Ref<JavaClass> base_class;
 	friend class JavaClass;
 
@@ -189,6 +192,7 @@ public:
 
 #ifdef ANDROID_ENABLED
 	JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance);
+	JavaObject();
 	~JavaObject();
 #endif
 };
@@ -203,6 +207,7 @@ class JavaClassWrapper : public Object {
 	jclass activityClass;
 	jmethodID findClass;
 	jmethodID getDeclaredMethods;
+	jmethodID getDeclaredConstructors;
 	jmethodID getFields;
 	jmethodID getParameterTypes;
 	jmethodID getReturnType;
@@ -212,6 +217,11 @@ class JavaClassWrapper : public Object {
 	jmethodID Field_getName;
 	jmethodID Field_getModifiers;
 	jmethodID Field_get;
+
+	jmethodID Constructor_getName;
+	jmethodID Constructor_getModifiers;
+	jmethodID Constructor_getParameterTypes;
+
 	jmethodID Boolean_booleanValue;
 	jmethodID Byte_byteValue;
 	jmethodID Character_characterValue;

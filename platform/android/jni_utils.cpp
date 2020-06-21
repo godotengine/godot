@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "jni_utils.h"
+#include "api/java_class_wrapper.h"
 
 jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject) {
 
@@ -360,9 +361,13 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		return ret;
 	};
 
+	Ref<JavaClass> java_class=JavaClassWrapper::get_singleton()->wrap(name.replace(".","/"));
+	Ref<JavaObject> rt = memnew(JavaObject);
+	rt->base_class = java_class;
+	rt->instance = env->NewGlobalRef(obj);
 	env->DeleteLocalRef(c);
 
-	return Variant();
+	return rt;
 }
 
 Variant::Type get_jni_type(const String &p_type) {
@@ -398,7 +403,7 @@ Variant::Type get_jni_type(const String &p_type) {
 	return Variant::NIL;
 }
 
-const char *get_jni_sig(const String &p_type) {
+const String get_jni_sig(const String &p_type) {
 
 	static struct {
 		const char *name;
@@ -415,7 +420,8 @@ const char *get_jni_sig(const String &p_type) {
 		{ "[B", "[B" },
 		{ "[F", "[F" },
 		{ "[Ljava.lang.String;", "[Ljava/lang/String;" },
-		{ NULL, "V" }
+		{ NULL, "V" },
+		{"java.lang.Object", "Ljava/lang/Object"}
 	};
 
 	int idx = 0;
@@ -427,6 +433,5 @@ const char *get_jni_sig(const String &p_type) {
 
 		idx++;
 	}
-
-	return "Ljava/lang/Object;";
+	return "L"+p_type.replace(".", "/")+";";
 }

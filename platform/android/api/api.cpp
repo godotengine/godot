@@ -49,6 +49,7 @@ void register_android_api() {
 #endif
 
 	ClassDB::register_class<JavaClass>();
+	ClassDB::register_class<JavaObject>();
 	ClassDB::register_class<JavaClassWrapper>();
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
 }

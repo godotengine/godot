@@ -41,11 +41,18 @@ static HashMap<String, JNISingleton *> jni_singletons;
 
 extern "C" {
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject p_object) {
 
 	String singname = jstring_to_string(name, env);
+	jclass c = env->GetObjectClass(p_object);
+	bool array;
+	String c_name = _get_class_name(env, c, &array);
+	Ref<JavaClass> java_class=JavaClassWrapper::get_singleton()->wrap(c_name.replace(".","/"));
+	Ref<JavaObject> rt = memnew(JavaObject);
+	rt->base_class = java_class;
+	rt->instance = env->NewGlobalRef(p_object);
 	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
-	s->set_instance(env->NewGlobalRef(obj));
+	s->set_instance(rt);
 	jni_singletons[singname] = s;
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
@@ -53,7 +60,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args) {
-
+	print_line("skip add_method this function will do nothing; because you can call any function in class");
+	return;
+	#if 0
 	String singname = jstring_to_string(sname, env);
 
 	ERR_FAIL_COND(!jni_singletons.has(singname));
@@ -85,6 +94,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));
+	#endif
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_param_types) {
