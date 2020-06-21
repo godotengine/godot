@@ -41,7 +41,7 @@ SoftBodyBullet::SoftBodyBullet() :
 SoftBodyBullet::~SoftBodyBullet() {
 }
 
-void SoftBodyBullet::reload_body() {
+void SoftBodyBullet::do_reload_body() {
 	if (space) {
 		space->remove_soft_body(this);
 		space->add_soft_body(this);
@@ -51,13 +51,15 @@ void SoftBodyBullet::reload_body() {
 void SoftBodyBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		isScratched = false;
+		space->unregister_collision_object(this);
 		space->remove_soft_body(this);
 	}
 
 	space = p_space;
 
 	if (space) {
-		space->add_soft_body(this);
+		space->register_collision_object(this);
+		reload_body();
 	}
 }
 

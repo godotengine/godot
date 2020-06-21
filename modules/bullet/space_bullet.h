@@ -110,6 +110,7 @@ class SpaceBullet : public RIDBullet {
 	real_t linear_damp = 0.0;
 	real_t angular_damp = 0.0;
 
+	Vector<CollisionObjectBullet *> collision_objects;
 	Vector<AreaBullet *> areas;
 
 	Vector<Vector3> contactDebug;
@@ -149,6 +150,9 @@ public:
 	void add_area(AreaBullet *p_area);
 	void remove_area(AreaBullet *p_area);
 	void reload_collision_filters(AreaBullet *p_area);
+
+	void register_collision_object(CollisionObjectBullet *p_object);
+	void unregister_collision_object(CollisionObjectBullet *p_object);
 
 	void add_rigid_body(RigidBodyBullet *p_body);
 	void remove_rigid_body(RigidBodyBullet *p_body);

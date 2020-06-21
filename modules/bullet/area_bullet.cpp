@@ -164,7 +164,7 @@ void AreaBullet::main_shape_changed() {
 	btGhost->setCollisionShape(get_main_shape());
 }
 
-void AreaBullet::reload_body() {
+void AreaBullet::do_reload_body() {
 	if (space) {
 		space->remove_area(this);
 		space->add_area(this);
@@ -178,13 +178,15 @@ void AreaBullet::set_space(SpaceBullet *p_space) {
 		isScratched = false;
 
 		// Remove this object form the physics world
+		space->unregister_collision_object(this);
 		space->remove_area(this);
 	}
 
 	space = p_space;
 
 	if (space) {
-		space->add_area(this);
+		space->register_collision_object(this);
+		reload_body();
 	}
 }
 
