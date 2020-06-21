@@ -80,10 +80,6 @@ String OS::get_iso_date_time(bool local) const {
 		   timezone;
 }
 
-double OS::get_unix_time() const {
-	return 0;
-}
-
 void OS::debug_break() {
 	// something
 }
