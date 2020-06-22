@@ -220,6 +220,8 @@ void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_
 			if (slider_count < 2) {
 				ofs = DIJOFS_SLIDER(slider_count);
 				slider_count++;
+			} else {
+				return;
 			}
 		} else
 			return;
