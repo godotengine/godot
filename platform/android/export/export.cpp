@@ -198,6 +198,81 @@ static const char *android_perms[] = {
 	NULL
 };
 
+//TODO: put this somewhere better (i.e. templates folder)
+const String ANDROID_MANIFEST_TEXT =
+		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+		"<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+		"    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+		"    package=\"*PACKAGE_NAME*\"\n"
+		"    android:versionCode=\"*VERSION_CODE*\"\n"
+		"    android:versionName=\"*VERSION_NAME*\"\n"
+		"    android:installLocation=\"auto\" >\n"
+		"\n"
+		"<instrumentation android:targetPackage=\"org.godotengine.godot\"/>\n"
+		"\n"
+		"    <!-- Adding custom text to the manifest is fine, but do it outside the custom USER and APPLICATION BEGIN/END comments, -->\n"
+		"    <!-- as that gets rewritten. -->\n"
+		"\n"
+		"    <supports-screens\n"
+		"        android:smallScreens=\"*SMALL_SCREENS*\"\n"
+		"        android:normalScreens=\"*NORMAL_SCREENS*\"\n"
+		"        android:largeScreens=\"*LARGE_SCREENS*\"\n"
+		"        android:xlargeScreens=\"*X_LARGE_SCREENS*\" />\n"
+		"\n"
+		"    <!-- glEsVersion is modified by the exporter, changing this value here has no effect. -->\n"
+		"    <uses-feature\n"
+		"        android:glEsVersion=\"*GLES_VERSION*\"\n"
+		"        android:required=\"true\" />\n"
+		"\n"
+		"*FEATURES*\n"
+		"<!-- Custom user permissions XML added by add-ons. It's recommended to add them from the export preset, though. -->\n"
+		"<!--CHUNK_USER_PERMISSIONS_BEGIN-->\n"
+		"<!--CHUNK_USER_PERMISSIONS_END-->\n"
+		"*PERMISSIONS*\n"
+		"\n"
+		"    <!-- Any tag in this line after android:icon will be erased when doing custom builds. -->\n"
+		"    <!-- If you want to add tags manually, do before it. -->\n"
+		"    <!-- WARNING: This should stay on a single line until the parsing code is improved. See GH-32414. -->\n"
+		"    <application android:label=\"@string/godot_project_name_string\" android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\" android:icon=\"@mipmap/icon\" >\n"
+		"\n"
+		"        <!-- The following metadata values are replaced when Godot exports, modifying them here has no effect. -->\n"
+		"        <!-- Do these changes in the export preset. Adding new ones is fine. -->\n"
+		"\n"
+		"        <!-- XR mode metadata. This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->\n"
+		"        *XR_MODE_TAG*\n"
+		"\n"
+		"        <!-- Metadata populated at export time and used by Godot to figure out which plugins must be enabled. -->\n"
+		"        <meta-data\n"
+		"            android:name=\"plugins\"\n"
+		"            android:value=\"*PLUGINS_VALUES*\"/>\n"
+		"\n"
+		"        <activity\n"
+		"            android:name=\"com.godot.game.GodotApp\"\n"
+		"            android:label=\"@string/godot_project_name_string\"\n"
+		"            android:theme=\"@android:style/Theme.Black.NoTitleBar.Fullscreen\"\n"
+		"            android:launchMode=\"singleTask\"\n"
+		"            android:screenOrientation=\"*SCREEN_ORIENTATION*\"\n"
+		"            android:configChanges=\"orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode\"\n"
+		"            android:resizeableActivity=\"false\"\n"
+		"            tools:ignore=\"UnusedAttribute\" >\n"
+		"\n"
+		"            <!-- Focus awareness metadata populated at export time if the user enables it in the 'Xr Features' section. -->\n"
+		"            *FOCUS_AWARENESS_TAG*\n"
+		"\n"
+		"            <intent-filter>\n"
+		"                <action android:name=\"android.intent.action.MAIN\" />\n"
+		"                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+		"            </intent-filter>\n"
+		"        </activity>\n"
+		"\n"
+		"<!-- Custom application XML added by add-ons. -->\n"
+		"<!--CHUNK_APPLICATION_BEGIN-->\n"
+		"<!--CHUNK_APPLICATION_END-->\n"
+		"\n"
+		"    </application>\n"
+		"\n"
+		"</manifest>";
+
 struct LauncherIcon {
 	const char *export_path;
 	int dimensions;
@@ -795,31 +870,128 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return OK;
 	}
 
-	Vector<String> _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet) {
-		Vector<String> perms;
+	String bool_to_string(bool v) {
+		return v ? "true" : "false";
+	}
+
+	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> *perms) {
 		const char **aperms = android_perms;
 		while (*aperms) {
 			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
 			if (enabled)
-				perms.push_back("android.permission." + String(*aperms));
+				perms->push_back("android.permission." + String(*aperms));
 			aperms++;
 		}
 		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
 		for (int i = 0; i < user_perms.size(); i++) {
 			String user_perm = user_perms[i].strip_edges();
 			if (!user_perm.empty()) {
-				perms.push_back(user_perm);
+				perms->push_back(user_perm);
 			}
 		}
 		if (p_give_internet) {
-			if (perms.find("android.permission.INTERNET") == -1)
-				perms.push_back("android.permission.INTERNET");
+			if (perms->find("android.permission.INTERNET") == -1)
+				perms->push_back("android.permission.INTERNET");
 		}
-		return perms;
+
+		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		if (xr_mode_index == 1 /* XRMode.OVR */) {
+			int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
+			if (hand_tracking_index > 0) {
+				if (perms->find("com.oculus.permission.HAND_TRACKING") == -1) {
+					perms->push_back("com.oculus.permission.HAND_TRACKING");
+				}
+			}
+		}
 	}
 
 	Error _fix_manifest_plaintext(const Ref<EditorExportPreset> &p_preset, String &manifest_path, bool p_give_internet) {
-		//TODO: replicate the functionality of _fix_manifest by editing the plaintext AndroidManifest.xml file
+		String manifest_text = ANDROID_MANIFEST_TEXT;
+
+		String package_name = p_preset->get("package/unique_name");
+		manifest_text = manifest_text.replace("*PACKAGE_NAME*", get_package_name(package_name));
+
+		String version_name = p_preset->get("version/name");
+		int version_code = p_preset->get("version/code");
+		manifest_text = manifest_text.replace("*VERSION_NAME*", version_name);
+		manifest_text = manifest_text.replace("*VERSION_CODE*", itos(version_code));
+
+		bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES3" &&
+						 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
+		String gles_version = min_gles3 ? "0x00030000" : "0x00020000";
+		manifest_text = manifest_text.replace("*GLES_VERSION*", gles_version);
+
+		int orientation = p_preset->get("screen/orientation");
+		String orientation_name;
+		if (orientation == 0) {
+			orientation_name = "landscape";
+		}
+		if (orientation == 1) {
+			orientation_name = "portrait";
+		}
+		manifest_text = manifest_text.replace("*SCREEN_ORIENTATION*", orientation_name);
+
+		String screen_support_small = bool_to_string(p_preset->get("screen/support_small"));
+		String screen_support_normal = bool_to_string(p_preset->get("screen/support_normal"));
+		String screen_support_large = bool_to_string(p_preset->get("screen/support_large"));
+		String screen_support_xlarge = bool_to_string(p_preset->get("screen/support_xlarge"));
+		manifest_text = manifest_text.replace("*SMALL_SCREENS*", screen_support_small);
+		manifest_text = manifest_text.replace("*NORMAL_SCREENS*", screen_support_normal);
+		manifest_text = manifest_text.replace("*LARGE_SCREENS*", screen_support_large);
+		manifest_text = manifest_text.replace("*X_LARGE_SCREENS*", screen_support_xlarge);
+
+		Vector<String> perms;
+		_get_permissions(p_preset, p_give_internet, &perms);
+		String permission_string;
+		for (int i = 0; i < perms.size(); i++) {
+			permission_string = permission_string.insert(0, "\t<uses-permission android:name=\"" + perms.get(i) + "\"/>\n");
+		}
+		manifest_text = manifest_text.replace("*PERMISSIONS*", permission_string);
+
+		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		String focus_awareness = bool_to_string(p_preset->get("xr_features/focus_awareness"));
+		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
+		if (plugins_names.empty()) {
+			plugins_names = "plugins_value";
+		}
+		String feature_string;
+
+		if (xr_mode_index == 1 /* XRMode.OVR */) {
+
+			String xr_text = "<meta-data android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
+			manifest_text = manifest_text.replace("*XR_MODE_TAG*", xr_text);
+			String fa_text = "<meta-data android:name=\"com.oculus.vr.focusaware\" android:value=\"" + focus_awareness + "\"/>\n";
+			manifest_text = manifest_text.replace("*FOCUS_AWARENESS_TAG*", fa_text);
+
+			int dof_index = p_preset->get("xr_features/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
+
+			if (dof_index > 0) {
+				if (dof_index == 2) {
+					feature_string = feature_string.insert(0, "<uses-feature android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\"/>\n");
+				} else {
+					feature_string = feature_string.insert(0, "<uses-feature android:name=\"android.hardware.vr.headtracking\" android:required=\"false\" android:version=\"1\"/>\n");
+				}
+			}
+
+			int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
+			if (hand_tracking_index > 0) {
+				if (hand_tracking_index == 2) {
+					feature_string = feature_string.insert(0, "<uses-feature android:name=\"oculus.software.handtracking\" android:required=\"true\"/>\n");
+				} else {
+					feature_string = feature_string.insert(0, "<uses-feature android:name=\"oculus.software.handtracking\" android:required=\"false\"/>\n");
+				}
+			}
+		} else {
+			manifest_text = manifest_text.replace("*XR_MODE_TAG*", "");
+			manifest_text = manifest_text.replace("*FOCUS_AWARENESS_TAG*", "");
+		}
+
+		manifest_text = manifest_text.replace("*FEATURES*", feature_string);
+		manifest_text = manifest_text.replace("*PLUGINS_VALUES*", plugins_names);
+		FileAccess *f = FileAccess::open(manifest_path, FileAccess::WRITE);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + manifest_path + "'.");
+		f->store_string(manifest_text);
+		memdelete(f);
 		return OK;
 	}
 
@@ -869,7 +1041,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
-		Vector<String> perms = _get_permissions(p_preset, p_give_internet);
+		Vector<String> perms;
+		_get_permissions(p_preset, p_give_internet, &perms);
 
 		while (ofs < (uint32_t)p_manifest.size()) {
 
