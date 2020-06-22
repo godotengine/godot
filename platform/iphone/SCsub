@@ -19,6 +19,9 @@ iphone_lib = [
 env_ios = env.Clone()
 ios_lib = env_ios.add_library("iphone", iphone_lib)
 
+# (iOS) Enable module support
+env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
 
 def combine_libs(target=None, source=None, env=None):
     lib_path = target[0].srcnode().abspath
