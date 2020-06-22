@@ -343,6 +343,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$push_notifications") != -1) {
 			bool is_on = p_preset->get("capabilities/push_notifications");
 			strnew += lines[i].replace("$push_notifications", is_on ? "1" : "0") + "\n";
+		} else if (lines[i].find("$entitlements_push_notifications") != -1) {
+			bool is_on = p_preset->get("capabilities/push_notifications");
+			strnew += lines[i].replace("$entitlements_push_notifications", is_on ? "<key>aps-environment</key><string>development</string>" : "") + "\n";
 		} else if (lines[i].find("$required_device_capabilities") != -1) {
 			String capabilities;
 
@@ -932,6 +935,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	files_to_parse.insert("godot_ios/dummy.cpp");
 	files_to_parse.insert("godot_ios.xcodeproj/project.xcworkspace/contents.xcworkspacedata");
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
+	files_to_parse.insert("godot_ios/godot_ios.entitlements");
 
 	IOSConfigData config_data = {
 		pkg_name,
