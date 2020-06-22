@@ -3072,10 +3072,14 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
-		CGDisplayHideCursor(kCGDirectMainDisplay);
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		CGDisplayHideCursor(kCGDirectMainDisplay);
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
 		CGAssociateMouseAndMouseCursorPosition(true);
 	} else {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
