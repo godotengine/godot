@@ -71,10 +71,7 @@ struct Transform2D {
 
 	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
-	real_t get_skew() const;
-	void set_skew(float p_angle);
 	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_rot, const Size2 &p_scale);
-	_FORCE_INLINE_ void set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew);
 	void rotate(real_t p_phi);
 
 	void scale(const Size2 &p_scale);
@@ -185,14 +182,6 @@ void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
 	elements[0][0] = Math::cos(p_rot) * p_scale.x;
 	elements[1][1] = Math::cos(p_rot) * p_scale.y;
 	elements[1][0] = -Math::sin(p_rot) * p_scale.y;
-	elements[0][1] = Math::sin(p_rot) * p_scale.x;
-}
-
-void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew) {
-
-	elements[0][0] = Math::cos(p_rot) * p_scale.x;
-	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
-	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
 	elements[0][1] = Math::sin(p_rot) * p_scale.x;
 }
 

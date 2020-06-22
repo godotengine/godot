@@ -42,7 +42,6 @@ Dictionary Node2D::_edit_get_state() const {
 	state["position"] = get_position();
 	state["rotation"] = get_rotation();
 	state["scale"] = get_scale();
-	state["skew"] = get_skew();
 
 	return state;
 }
@@ -52,14 +51,11 @@ void Node2D::_edit_set_state(const Dictionary &p_state) {
 	pos = p_state["position"];
 	angle = p_state["rotation"];
 	_scale = p_state["scale"];
-	skew = p_state["skew"];
 
 	_update_transform();
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
 	_change_notify("scale");
-	_change_notify("skew");
-	_change_notify("skew_degrees");
 	_change_notify("position");
 }
 
@@ -115,7 +111,7 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset;
 
 	Transform2D postxf;
-	postxf.set_rotation_scale_and_skew(angle, _scale, skew);
+	postxf.set_rotation_and_scale(angle, _scale);
 	new_pos = postxf.xform(new_pos);
 
 	pos += new_pos;
@@ -132,13 +128,12 @@ void Node2D::_update_xform_values() {
 	pos = _mat.elements[2];
 	angle = _mat.get_rotation();
 	_scale = _mat.get_scale();
-	skew = _mat.get_skew();
 	_xform_dirty = false;
 }
 
 void Node2D::_update_transform() {
 
-	_mat.set_rotation_scale_and_skew(angle, _scale, skew);
+	_mat.set_rotation_and_scale(angle, _scale);
 	_mat.elements[2] = pos;
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), _mat);
@@ -168,24 +163,9 @@ void Node2D::set_rotation(float p_radians) {
 	_change_notify("rotation_degrees");
 }
 
-void Node2D::set_skew(float p_radians) {
-
-	if (_xform_dirty)
-		((Node2D *)this)->_update_xform_values();
-	skew = p_radians;
-	_update_transform();
-	_change_notify("skew");
-	_change_notify("skew_degrees");
-}
-
 void Node2D::set_rotation_degrees(float p_degrees) {
 
 	set_rotation(Math::deg2rad(p_degrees));
-}
-
-void Node2D::set_skew_degrees(float p_degrees) {
-
-	set_skew(Math::deg2rad(p_degrees));
 }
 
 void Node2D::set_scale(const Size2 &p_scale) {
@@ -216,22 +196,11 @@ float Node2D::get_rotation() const {
 	return angle;
 }
 
-float Node2D::get_skew() const {
-	if (_xform_dirty)
-		((Node2D *)this)->_update_xform_values();
-
-	return skew;
-}
-
 float Node2D::get_rotation_degrees() const {
 
 	return Math::rad2deg(get_rotation());
 }
 
-float Node2D::get_skew_degrees() const {
-
-	return Math::rad2deg(get_skew());
-}
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
@@ -429,15 +398,11 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node2D::set_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Node2D::set_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Node2D::set_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("set_skew", "radians"), &Node2D::set_skew);
-	ClassDB::bind_method(D_METHOD("set_skew_degrees", "degrees"), &Node2D::set_skew_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node2D::set_scale);
 
 	ClassDB::bind_method(D_METHOD("get_position"), &Node2D::get_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node2D::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Node2D::get_rotation_degrees);
-	ClassDB::bind_method(D_METHOD("get_skew"), &Node2D::get_skew);
-	ClassDB::bind_method(D_METHOD("get_skew_degrees"), &Node2D::get_skew_degrees);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node2D::get_scale);
 
 	ClassDB::bind_method(D_METHOD("rotate", "radians"), &Node2D::rotate);
@@ -478,8 +443,6 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "skew", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_skew", "get_skew");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "skew_degrees", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1", PROPERTY_USAGE_EDITOR), "set_skew_degrees", "get_skew_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", 0), "set_transform", "get_transform");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", 0), "set_global_position", "get_global_position");
@@ -497,7 +460,6 @@ Node2D::Node2D() {
 
 	angle = 0;
 	_scale = Vector2(1, 1);
-	skew = 0;
 	_xform_dirty = false;
 	z_index = 0;
 	z_relative = true;
