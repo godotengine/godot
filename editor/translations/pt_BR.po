@@ -16,7 +16,7 @@
 # jonathan railarem <railarem@gmail.com>, 2017.
 # Lucas Silva <lucasb.hpp@gmail.com>, 2018.
 # Luiz G. Correia <luizgabriell2.0@gmail.com>, 2017.
-# Mailson Silva Marins <mailsons335@gmail.com>, 2016.
+# Mailson Silva Marins <mailsons335@gmail.com>, 2016, 2020.
 # MalcomRF <malcomkbk@gmail.com>, 2017.
 # Marcus Correia <marknokalt@live.com>, 2017-2018.
 # Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
@@ -73,7 +73,7 @@
 # Alan Tavares <alan1tavares@gmail.com>, 2019.
 # Rafael Silveira <res883@gmail.com>, 2019.
 # Luigi <luigimendeszanchett@gmail.com>, 2019.
-# Nicolas Abril <nicolas.abril@protonmail.ch>, 2019.
+# Nicolas Abril <nicolas.abril@protonmail.ch>, 2019, 2020.
 # johnnybigoode <jamarson@gmail.com>, 2019, 2020.
 # Zeero <igcdzeero@gmail.com>, 2019.
 # Gian Penna <gianfrancopen@gmail.com>, 2020.
@@ -92,13 +92,13 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # André Sousa <andrelvsousa@gmail.com>, 2020.
 # Kleyton Luiz de Sousa Vieira <kleytonluizdesouzavieira@gmail.com>, 2020.
+# Felipe Jesus Macedo <fmacedo746@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
-"Last-Translator: Kleyton Luiz de Sousa Vieira "
-"<kleytonluizdesouzavieira@gmail.com>\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: Felipe Jesus Macedo <fmacedo746@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -125,11 +125,11 @@ msgstr "Não há bytes suficientes para decodificar, ou o formato é inválido."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Entrada inválida %i (não passou) na expressão"
+msgstr "Entrada inválida %i (não passada) na expressão"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self não pode ser usado porque a instância é nula (não passou)"
+msgstr "self não pode ser usado porque a instância é nula (não passada)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -145,7 +145,7 @@ msgstr "Nome inválido de índice '%s' para base tipo %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "Argumento inválido para construir '%s'"
+msgstr "Argumentos inválidos para o construto '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -579,7 +579,7 @@ msgstr ""
 "Esta animação pertence a uma cena importada, dessa forma, mudanças das "
 "trilhas importadas não serão salvas.\n"
 "\n"
-"Para ativar a possibilidade de adicionar trilhas customizadas,  navegue até "
+"Para ativar a possibilidade de adicionar trilhas customizadas, navegue até "
 "as configurações de importação da cena e defina\n"
 "\"Animação > Armazenamento\" para \"Arquivos\", ative \"Animação > Mantenha "
 "Trilhas Customizadas\", então reimporte.\n"
@@ -841,6 +841,11 @@ msgstr "Números de linha e coluna."
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "O método no nó alvo precisa ser especificado."
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "O nome não é um identificador valido:"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1919,7 +1924,7 @@ msgstr "Alternar Modo"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
-msgstr "Focar no Caminho"
+msgstr "Habilitar"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
@@ -2622,8 +2627,8 @@ msgid ""
 "category."
 msgstr ""
 "A cena principal não foi definida, selecionar uma?\n"
-"Você pode alterá-la mais tarde nas \"Configurações do Projeto\" na "
-"categoria  'Application'."
+"Você pode alterá-la mais tarde nas \"Configurações do Projeto\" na categoria "
+"'Application'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2899,8 +2904,8 @@ msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
-"Malhas e polígonos de navegação serão visíveis no jogo se esta opção estiver "
-"ligada."
+"Malhas e polígonos de navegação serão visíveis no jogo em execução se esta "
+"opção estiver ligada."
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
@@ -3121,13 +3126,13 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Isso vai configurar seu projeto para construções customizadas do Android, "
-"instalando o modelo de fonte para \"res://android/build\".\n"
-"Você pode então aplicar modificações e construir seu próprio APK na guia "
-"Exportação (Adicionando módulos, trocando o AndroidManifest.xml, etc.).\n"
-"Note que para fazer uma construção customizada, em vez de usar APKs pre-"
-"construídos, a opção \"Usar Construção Customizada\" deve estar ativa nas "
-"predefinições de exportação Android."
+"Isso irá configurar o projeto para usar uma build do Android customizada "
+"instalando a template raiz para \"res://android/build\".\n"
+"Você poderá aplicar modificações e construir um APK customizado em exportar "
+"(adicionando módulos, changing the AndroidManifest.xml, etc.).\n"
+"Note que para fazer builds customizadas ao invés de usar APKs pré-"
+"construídas, a opção \"Usar Build Customizada\" deve sestar habilitada na "
+"pré-configuração de exportação Android."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4047,7 +4052,7 @@ msgstr "Erro ao rodar script pós-importação:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "Você retornou um objeto derivado de nó no método `post import ()`?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -5659,7 +5664,7 @@ msgstr "Seleção de Frame"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr "Visualizar Canvas Scale"
+msgstr "Pré-visualização da escala do Canvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -5667,7 +5672,7 @@ msgstr "Máscara de tradução para inserção de chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr "Mascara de rotação para inserção de chaves."
+msgstr "Máscara de rotação para inserção de chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
@@ -7005,9 +7010,8 @@ msgid ""
 msgstr "Falta método conectado '%s' para sinal '%s' do nó '%s' para nó '%s'."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(ignore)"
+msgstr "(Ignore)"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7438,27 +7442,27 @@ msgstr "Não disponível ao usar o renderizador GLES2."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr "Visão Livre Esquerda"
+msgstr "Visão Livre na Esquerda"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr "Visão Livre Direita"
+msgstr "Visão Livre na Direita"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "Visão Livre Frente"
+msgstr "Visão Livre na Frente"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "Visão Livre Trás"
+msgstr "Visão Livre Atrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "Visão Livre Cima"
+msgstr "Visão Livre em Cima"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "Visão Livre Baixo"
+msgstr "Visão Livre Embaixo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -7492,6 +7496,12 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Clique para alternar entre estados de visibilidade.\n"
+"\n"
+"Olhos abertos: Gizmo está visível.\n"
+"Olhos fechados: Gizmo não está visível.\n"
+"Olhos semi-abertos: Gizmo está visível através de superficies opacas (\"raio-"
+"x\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7517,7 +7527,7 @@ msgstr "Usar Espaço Local"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Usar Snap"
+msgstr "Use Snap"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8379,9 +8389,9 @@ msgid ""
 "Shift+LMB: Set wildcard bit.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"LMB: ligar bit.\n"
-"RMB: desligar bit.\n"
-"Shift+LMB: Escolher bit wildcard.\n"
+"LMB: Ligar bit.\n"
+"RMB: Desligar bit.\n"
+"Shift+LMB: Escolher bit curinga.\n"
 "Clique em outro Mosaico para editá-lo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -8516,7 +8526,7 @@ msgstr "Nenhuma mensagem de confirmação foi fornecida"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
-msgstr "Nenhum arquivo adicionado ao palco"
+msgstr "Nenhum arquivo em espera"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
@@ -8524,11 +8534,11 @@ msgstr "Confirmação"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "VCS Addon is not initialized"
-msgstr "Extensão VCS não está inicializada"
+msgstr "VCS Addon não inicializado"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
-msgstr "Sistema de Controle de Versionamento"
+msgstr "Sistema de Controle de Versão"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Initialize"
@@ -8536,7 +8546,7 @@ msgstr "Inicializar"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Staging area"
-msgstr "Área Temporária"
+msgstr "Área de espera"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -8560,7 +8570,7 @@ msgstr "Excluído"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Typechange"
-msgstr "Alterar tipo"
+msgstr "Alteração de tipo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage Selected"
@@ -8572,11 +8582,11 @@ msgstr "Salvar Tudo"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Add a commit message"
-msgstr "Adicione uma mensagem de confirmação"
+msgstr "Adicione uma mensagem ao commit"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit Changes"
-msgstr "Confirmar Mudanças de Script"
+msgstr "Confirmar Mudanças"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
@@ -8774,7 +8784,7 @@ msgstr "Cor constante."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color uniform."
-msgstr "Cor uniforme."
+msgstr "Uniformidade de cor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the %s comparison between two parameters."
@@ -8890,7 +8900,7 @@ msgstr "Parâmetro de entrada '%s' para o modo de sombra do vértice."
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader mode."
 msgstr ""
-"Parâmetro de entrada '%s' para os modos de sombra  de vértice e fragmentada."
+"Parâmetro de entrada '%s' para os modo de sombra fragmentada e vértice."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -9144,7 +9154,7 @@ msgstr "Execute a pesquisa de textura cúbica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the texture lookup."
-msgstr "Faz uma busca de texturas."
+msgstr "Faz uma busca por texturas."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Cubic texture uniform lookup."
@@ -9160,7 +9170,7 @@ msgstr "Consulta de textura 2D uniforme com triplanar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
-msgstr "Função Transform."
+msgstr "Função Transformação..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9182,7 +9192,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
-msgstr "Compõe transformação a partir de quatro vetores."
+msgstr "Compõe a transformação de quatro vetores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes transform to four vectors."
@@ -9190,19 +9200,19 @@ msgstr "Decompõe transformação em quatro vetores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the determinant of a transform."
-msgstr "Calcula o determinante de uma transformada."
+msgstr "Calcula o determinante de uma transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the inverse of a transform."
-msgstr "Calcula a inversa de uma transformada."
+msgstr "Calcula a inversa de uma transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the transpose of a transform."
-msgstr "Calcula a transposta de uma transformada."
+msgstr "Calcula a transposta de uma transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
-msgstr "Multiplica a transformação por transformação."
+msgstr "Multiplica transformação por transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by transform."
@@ -9210,11 +9220,11 @@ msgstr "Multiplica vetor por transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform constant."
-msgstr "Constante de transformação."
+msgstr "Transformar constante."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform uniform."
-msgstr "Uniforme de transformação."
+msgstr "Transformação uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector function."
@@ -9363,11 +9373,11 @@ msgstr "Subtrai vetor de vetor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector constant."
-msgstr "Vetor constante."
+msgstr "Constante vetorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector uniform."
-msgstr "Vector uniforme."
+msgstr "Uniformidade vetorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9381,12 +9391,13 @@ msgstr ""
 "declarações de função internas."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Retorna falloff baseado no produto escalar do normal da superfície e da "
-"direção de visualização da câmera (passe entradas associadas a ela)."
+"Retorna falloff com base no produto dos pontos da superfície normal e na "
+"direção de visualização da câmera (passa as entradas associadas a ela)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9413,7 +9424,7 @@ msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(Apenas modo Fragmento/Luz) (Vetor) Derivada em 'x' usando diferenciação "
+"(Apenas modo Fragmento/Luz) (Vetor) Derivativo em 'x' usando diferenciação "
 "local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9832,7 +9843,7 @@ msgstr "Projeto ausente"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
-msgstr "Erro: O Projeto está ausente no sistema de arquivos."
+msgstr "Erro: Projeto não encontrado no sistema de arquivos."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -9854,14 +9865,15 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"O seguinte arquivo de configurações do projeto não especifica com qual "
-"versão do Godot ele foi criado.\n"
+"O seguinte arquivo de configurações do projeto não especifica a versão do "
+"Godot pelo qual ele foi criado.\n"
 "\n"
 "%s\n"
 "\n"
-"Se escolher abrí-lo, será convertido para o formato atual de arquivo de "
-"configuração do Godot\n"
-"Aviso: Você não poderá mais abrir o projeto com versões anteriores do Godot."
+"Se você o abrir, ele será convertido para o formato de arquivo da "
+"configuração atual do Godot.\n"
+"Atenção: Você não será mais capaz de abrir o projeto com versões anteriores "
+"da engine."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9981,7 +9993,7 @@ msgstr "Novo Projeto"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
-msgstr "Remover Ausentes"
+msgstr "Remover Ausente"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -10144,7 +10156,7 @@ msgstr "Botão Direito."
 
 #: editor/project_settings_editor.cpp
 msgid "Middle Button."
-msgstr "Botão  do Meio."
+msgstr "Botão do Meio."
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Up."
@@ -10572,16 +10584,15 @@ msgstr "Instanciar Cena(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Replace with Branch Scene"
-msgstr "Substituir com Ramo como Cena"
+msgstr "Substituir por cena ramo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
 msgstr "Instânciar Cena Filha"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Adicionar Script"
+msgstr "Remover Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10751,6 +10762,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Não pode associar um script: Não existem linguagens registradas.\n"
+"É provável que o editor tenha sido construido com todos os módulos de "
+"linguagem desabilitados."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10801,14 +10815,12 @@ msgstr ""
 "existir um nó raiz."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "Adicionar um script novo ou existente para o nó selecionado."
+msgstr "Adicionar um novo script, ou um já existente, para o nó selecionado."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Remove um script do nó selecionado."
+msgstr "Remove o script do nó selecionado."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10920,7 +10932,7 @@ msgstr "Selecione um Nó"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty."
-msgstr "O caminho está vazio."
+msgstr "Caminho vazio."
 
 #: editor/script_create_dialog.cpp
 msgid "Filename is empty."
@@ -11328,7 +11340,7 @@ msgstr "Singleton GDNative ativado"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Disabled GDNative Singleton"
-msgstr "Singleton GDNative Desabilitado"
+msgstr "GDNative Singleton desativado"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
@@ -11589,8 +11601,8 @@ msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"Nó entrou em yield, mas não retornou um estado de função na primeira memória "
-"de trabalho."
+"O nó cedeu, mas não retornou um estado de função na primeira memória de "
+"trabalho."
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -12041,20 +12053,20 @@ msgstr ""
 #, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Porta-chaves de depuração não configurado nas Configurações do Editor e nem "
-"na predefinição."
+"Keystore de liberação icorretamente configurada na predefinição de "
+"exportação."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
-"A compilação personalizada requer um caminho SDK do Android válido nas "
+"Build personalizada precisa de um caminho Android SDK válido em "
 "Configurações do Editor."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
-"Caminho SDK do Android inválido para a compilação personalizada nas "
-"Configurações do Editor."
+"Caminho do Android SDK inválido para o build personalizado em Configurações "
+"do Editor."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12066,7 +12078,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr "Chave pública inválida para expansão de APK."
+msgstr "Chave pública inválida para expansão do APK."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
@@ -12077,34 +12089,45 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"Módulo inválido \"GodotPaymentV3\" incluido na configuração de projeto "
+"\"android/modules\" (changed in Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"\"Use Custom Build\" precisa estar ativo para ser possível utilizar plugins."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"\"Degrees Of Freedom\" só é válido quando o \"Oculus Mobile VR\" está no "
+"\"Mode Xr\"."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Hand Tracking\" só é válido quando o\"Oculus Mobile VR\" está no \"Xr Mode"
+"\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"\"Focus Awareness\" só é válido quando o \"Oculus Mobile VR\" está no \"Xr "
+"Mode\"."
 
 #: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
-"Tentando compilar a partir de um modelo compilado personalizado, mas nenhuma "
-"informação de versão para ele existe. Por favor, reinstale pelo menu "
+"Tentando construir a partir de um modelo compilado personalizado, mas "
+"nenhuma informação de versão para ele existe. Por favor, reinstale pelo menu "
 "'Projeto'."
 
 #: platform/android/export/export.cpp
@@ -12114,7 +12137,7 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Diferença de versão da compilação do Android:\n"
+"Diferença na versão da build do Android:\n"
 "   Modelo instalado: %s\n"
 "   Versão do Godot: %s\n"
 "Por favor reinstale o modelo de compilação do Android pelo menu 'Projeto'."
@@ -12128,13 +12151,13 @@ msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"A compilação do projeto Android falhou, verifique a saída pelo erro.\n"
+"A construção do projeto Android falhou, verifique a saída para detalhes.\n"
 "Alternativamente, visite docs.godotengine.org para ver a documentação de "
 "compilação do Android."
 
 #: platform/android/export/export.cpp
 msgid "No build apk generated at: "
-msgstr "Nenhuma compilação apk gerada em: "
+msgstr "Nenhuma construção apk gerada em: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12545,7 +12568,8 @@ msgstr ""
 #: scene/3d/collision_shape.cpp
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
-msgstr "Lol."
+msgstr ""
+"ConcavePolygonShape não suporta um RigidBody em outro modo além do estático."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -12718,7 +12742,7 @@ msgstr "Nada está ligado à entrada '%s' do nó '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
-msgstr "Um AnimationNode raiz para o gráfico não está definido."
+msgstr "Nenhuma raiz AnimationNode para o gráfico está definida."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -12784,9 +12808,9 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
-"A Dica não será exibida quando o controle de Filtro do Mouse estiver "
-"definido como \"Ignorar\". Para resolver, defina o Filtro do Mouse como "
-"\"Parar\" ou \"Continuar\"."
+"A sugestão de dica não será exibida quando o Filtro do Mouse do controle "
+"estiver definido como \"Ignorar\". Para resolver isto, defina o Filtro do "
+"Mouse como \"Parar\" ou \"Passar\"."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -12831,7 +12855,7 @@ msgid ""
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
 "O Ambiente Padrão especificado nas Configurações de Projeto (Rendering -> "
-"Environment -> Default Environment)  não pôde ser carregado."
+"Environment -> Default Environment) não pôde ser carregado."
 
 #: scene/main/viewport.cpp
 msgid ""

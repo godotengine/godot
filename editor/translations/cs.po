@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-06 10:15+0000\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
 "Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -33,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -771,6 +771,11 @@ msgstr "Čísla řádků a sloupců."
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "Je nutné zadat metodu v cílovém uzlu."
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Jméno není platný identifikátor:"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -10055,7 +10060,7 @@ msgstr "Přidat akci"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Tlačítko"
+msgstr "Button"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
