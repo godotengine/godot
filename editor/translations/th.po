@@ -744,6 +744,11 @@ msgid "Method in target node must be specified."
 msgstr "ต้องระบุเมธอดในโหนดเป้าหมาย"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "ไม่สามารถใช้ชื่อนี้ได้:"
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
