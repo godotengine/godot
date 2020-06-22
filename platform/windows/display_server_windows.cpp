@@ -103,7 +103,11 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	}
 
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
-		hCursor = SetCursor(nullptr);
+		if (hCursor == nullptr) {
+			hCursor = SetCursor(nullptr);
+		} else {
+			SetCursor(nullptr);
+		}
 	} else {
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
@@ -117,9 +121,9 @@ void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
 	if (mouse_mode == p_mode)
 		return;
 
-	_set_mouse_mode_impl(p_mode);
-
 	mouse_mode = p_mode;
+
+	_set_mouse_mode_impl(p_mode);
 }
 
 DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
@@ -2654,10 +2658,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (LOWORD(lParam) == HTCLIENT) {
 				if (windows[window_id].window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED)) {
 					//Hide the cursor
-					if (hCursor == nullptr)
+					if (hCursor == nullptr) {
 						hCursor = SetCursor(nullptr);
-					else
+					} else {
 						SetCursor(nullptr);
+					}
 				} else {
 					if (hCursor != nullptr) {
 						CursorShape c = cursor_shape;
