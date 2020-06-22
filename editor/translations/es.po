@@ -53,8 +53,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
-"Last-Translator: paco <pacosoftfree@protonmail.com>\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -79,7 +79,8 @@ msgstr "Se esperaba un string de longitud 1 (un carácter)."
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"No hay suficientes bytes para decodificar bytes, o el formato es invalido."
+"No hay suficientes bytes para decodificar los bytes, o el formato es "
+"inválido."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -96,11 +97,11 @@ msgstr "Operandos inválidos para el operador %s, %s y %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Indice inválido de tipo %s para tipo base %s"
+msgstr "Índice inválido de tipo %s para el tipo base %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "El índice de nombre «%s» no es válido para el tipo de base %s"
+msgstr "El índice de nombre '%s' no es válido para el tipo de base %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -804,6 +805,11 @@ msgstr "Números de línea y columna."
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "Se debe establecer un método en el nodo destino."
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "El nombre no es un identificador válido:"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -2014,7 +2020,7 @@ msgstr "Propiedades del Tema"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Enumeraciones"
+msgstr "Enumerados"
 
 #: editor/editor_help.cpp
 msgid "Constants"
@@ -3378,7 +3384,7 @@ msgstr "Página: "
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Item"
-msgstr "Eliminar Item"
+msgstr "Eliminar Ítem"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
@@ -5906,15 +5912,15 @@ msgstr "Degradado Editado"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
-msgstr "Elemento %d"
+msgstr "Ítem %d"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Items"
-msgstr "Elementos"
+msgstr "Ítems"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item List Editor"
-msgstr "Editor de Lista de Items"
+msgstr "Editor de Lista de Ítems"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -6104,7 +6110,7 @@ msgstr "Depuración del Canal UV"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
-msgstr "¿Quieres borrar el elemento %d?"
+msgstr "¿Eliminar el ítem %d?"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid ""
@@ -6121,11 +6127,11 @@ msgstr "Librería de Mallas"
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item"
-msgstr "Añadir Item"
+msgstr "Añadir Ítem"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove Selected Item"
-msgstr "Borrar elemento seleccionado"
+msgstr "Eliminar Ítem Seleccionado"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import from Scene"
@@ -7935,7 +7941,7 @@ msgstr "Región de Textura"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
-msgstr "Añadir Todos los Elementos"
+msgstr "Añadir Todos los Ítems"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All"
@@ -7959,11 +7965,11 @@ msgstr "Menú de edición de tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
-msgstr "Añadir elementos de clase"
+msgstr "Añadir Clases de Ítems"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
-msgstr "Eliminar Ítems de Clases"
+msgstr "Eliminar Clases de Ítems"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
@@ -11146,7 +11152,7 @@ msgstr "Monitores"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
-msgstr "Elige uno o más elementos de la lista para mostrar el gráfico."
+msgstr "Elige uno o más ítems de la lista para mostrar el gráfico."
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"

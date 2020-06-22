@@ -5,12 +5,13 @@
 # Calum Knott <calum@calumk.com>, 2017.
 # Zion Nimchuk <zionnimchuk@gmail.com>, 2016-2017.
 # Allan Nordhøy <epost@anotheragency.no>, 2018.
+# David Fatheree <david.fathereewcchs@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:42+0100\n"
-"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: David Fatheree <david.fathereewcchs@gmail.com>\n"
 "Language-Team: Pirate <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pr/>\n"
 "Language: pr\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -29,7 +30,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Expected a strin' o' length 1 (a character)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -39,19 +40,17 @@ msgstr "Nah enough bytes fer decodin' bytes, or ye got th' wrong ship."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Shiver me timbers! Ye input %i (not passed) in ye expression!"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Yer index property name '%s' in node %s be walkin' th' plank!"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
 msgstr "Yer index property name '%s' in node %s be walkin' th' plank!"
 
@@ -102,11 +101,11 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Smooth Sailin'"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "See'in Double"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -765,6 +764,11 @@ msgstr ""
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr ""
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Yer name's got no valid identifier:"
 
 #: editor/connections_dialog.cpp
 msgid ""

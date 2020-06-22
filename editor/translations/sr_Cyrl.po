@@ -841,6 +841,11 @@ msgstr "Метода у циљаном чвору мора бити наведе
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Име није важећи идентификатор:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."

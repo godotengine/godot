@@ -784,6 +784,11 @@ msgstr "متد در گره مقصد باید مشخص شده باشد!"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "نام یک شناسه‌ی معتبر نیست:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."

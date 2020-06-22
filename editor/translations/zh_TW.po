@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -764,6 +764,11 @@ msgstr "行號和列號。"
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "必須指定目標節點的方法。"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "名稱不是一個有效的識別符："
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -9880,7 +9885,7 @@ msgstr "新增事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Button（按鈕）"
+msgstr "Button (按鈕)"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."

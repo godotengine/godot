@@ -64,12 +64,14 @@
 # binotaliu <binota@protonmail.ch>, 2020.
 # BinotaLIU <binota@protonmail.ch>, 2020.
 # Tim Bao <honiebao@gmail.com>, 2020.
+# UnluckyNinja <unluckyninja1994@gmail.com>, 2020.
+# 无双流 <1257678024@qq.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
-"Last-Translator: Tim Bao <honiebao@gmail.com>\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: 无双流 <1257678024@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -77,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -804,6 +806,11 @@ msgstr "行号和列号。"
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "必须指定目标节点的方法。"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "名称不是有效的标识符："
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -2438,6 +2445,8 @@ msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"当前场景有未保存的更改。\n"
+"是否重新加载保存的场景？ 此操作无法撤消。"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2655,7 +2664,7 @@ msgstr "下一个标签页"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr "上一个标签页"
+msgstr "上一个标签"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
@@ -2855,7 +2864,7 @@ msgstr "编辑器布局"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
-msgstr "截取屏幕"
+msgstr "截屏"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
@@ -3339,9 +3348,8 @@ msgid "Did you forget the '_run' method?"
 msgstr "您是否遗漏了_run()方法？"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
-msgstr "按住Ctrl键放置一个Getter节点。按住Shift键放置一个通用签名。"
+msgstr "按住Ctrl键来四舍五入至整数。 按住Shift键获取更精确的变化。"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3932,7 +3940,7 @@ msgstr "后处理脚本运行发生错误："
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "你是否在 `post_import()` 方法中返回了 Node 衍生对象？"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6844,9 +6852,8 @@ msgid ""
 msgstr "未找到方法“%s”（连接于信号“%s”、来自节点“%s”、目标节点“%s”）。"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "（忽略）"
+msgstr "[忽略]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7276,27 +7283,27 @@ msgstr "使用GLES2渲染器时不可用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr "自由视图 左"
+msgstr "自由观看向左"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr "自由视图 右"
+msgstr "自由观看向右"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "自由视图 前"
+msgstr "自由观看向前"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "自由视图 后"
+msgstr "自由观看向后"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "自由视图 上"
+msgstr "自由观看向上"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "自由视图 下"
+msgstr "自由观看向下"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -7330,6 +7337,11 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"点击以切换可见状态。\n"
+"\n"
+"睁眼：标志可见。\n"
+"闭眼：标志隐藏。\n"
+"半睁眼：标志也可穿过不透明的表面可见（“X光”）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7359,11 +7371,11 @@ msgstr "使用吸附"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
-msgstr "底视图"
+msgstr "仰视图。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr "顶视图"
+msgstr "俯视"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
@@ -7371,7 +7383,7 @@ msgstr "后视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View"
-msgstr "前视图"
+msgstr "正视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View"
@@ -7383,7 +7395,7 @@ msgstr "右视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
-msgstr "切换投影/正交视图"
+msgstr "切换透视图/正交视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
@@ -7399,7 +7411,7 @@ msgstr "聚焦选中项"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
-msgstr "切换自由观察模式"
+msgstr "切换自由观看"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7408,7 +7420,7 @@ msgstr "变换"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr "将对象吸附到地板"
+msgstr "吸附物体到地面"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -10354,9 +10366,8 @@ msgid "Instance Child Scene"
 msgstr "实例化子场景"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "添加脚本"
+msgstr "分离脚本"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10519,6 +10530,8 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"无法附加脚本：没有语言被注册。\n"
+"这可能是因为这个编辑器是在所有语言模块被关闭的状态下被构建的。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10567,14 +10580,12 @@ msgid ""
 msgstr "实例化场景文件为一个节点，如果没有根节点则创建一个继承自该文件的场景。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "为选中节点创建或设置脚本。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "清除选中节点的脚本。"
+msgstr "从选中节点分离脚本。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11780,9 +11791,8 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "未在编辑器设置或预设中配置调试密钥库。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
-msgstr "未在编辑器设置或预设中配置调试密钥库。"
+msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11811,26 +11821,28 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"“android/modules”项目设置（变更于Godot 3.2.2）中包含了无效模"
+"组“GodotPaymentV3”.\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
+msgstr "必须启用“使用自定义构建”才能使用插件。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
-msgstr ""
+msgstr "“自由度”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
+msgstr "“手部追踪”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
-msgstr ""
+msgstr "“焦点感知”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
 
 #: platform/android/export/export.cpp
 msgid ""

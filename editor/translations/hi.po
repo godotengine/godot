@@ -756,6 +756,11 @@ msgid "Method in target node must be specified."
 msgstr "Method को target node में निर्दिष्ट कीजिए."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Method को target node में निर्दिष्ट कीजिए."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
