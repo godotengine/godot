@@ -854,7 +854,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
 		String dst_path = p_path.replace_first("res://", "res://android/build/assets/");
-        store_file_in_gradle_project(dst_path, p_data, 0);
+		store_file_in_gradle_project(dst_path, p_data, 0);
 		return OK;
 	}
 
@@ -890,8 +890,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			}
 		}
 		if (p_give_internet) {
-			if (perms->find("android.permission.INTERNET") == -1)
+			if (perms->find("android.permission.INTERNET") == -1) {
 				perms->push_back("android.permission.INTERNET");
+			}
 		}
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
@@ -906,6 +907,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	Error _fix_manifest_plaintext(const Ref<EditorExportPreset> &p_preset, String &manifest_path, bool p_give_internet) {
+		//do the same changes as _fix_manifest() but on a human-readable file instead of binary
 		String manifest_text = ANDROID_MANIFEST_TEXT;
 
 		String package_name = p_preset->get("package/unique_name");
@@ -1664,7 +1666,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		//printf("end\n");
 	}
 
-	Vector<uint8_t> resize_launcher_icon(const Ref<Image> &p_source_image, const LauncherIcon p_icon) {
+	Vector<uint8_t> _resize_launcher_icon(const Ref<Image> &p_source_image, const LauncherIcon p_icon) {
 		Ref<Image> working_image = p_source_image;
 
 		if (p_source_image->get_width() != p_icon.dimensions || p_source_image->get_height() != p_icon.dimensions) {
@@ -2597,7 +2599,7 @@ public:
 		return OK;
 	}
 
-	void _copy_icon_gradle(const Ref<EditorExportPreset> &p_preset) {
+	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset) {
 		String project_icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
 
 		// Prepare images to be resized for the icons. If some image ends up being uninitialized, the default image from the export template will be used.
@@ -2630,22 +2632,26 @@ public:
 		for (int i = 0; i < icon_densities_count; ++i) {
 			//void _process_launcher_icons(const String &p_processing_file_name, const Ref<Image> &p_source_image, const LauncherIcon p_icon, Vector<uint8_t> &p_data)
 			if (launcher_icon_image.is_valid() && !launcher_icon_image->empty()) {
-				Vector<uint8_t> data = resize_launcher_icon(launcher_icon_image, launcher_icons[i]);
+				Vector<uint8_t> data = _resize_launcher_icon(launcher_icon_image, launcher_icons[i]);
 				String img_path = launcher_icons[i].export_path;
 				img_path = img_path.insert(0, "res://android/build/");
-                store_file_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
+				store_file_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
 			}
 			if (launcher_adaptive_icon_foreground_image.is_valid() && !launcher_adaptive_icon_foreground_image->empty()) {
-				Vector<uint8_t> data = resize_launcher_icon(launcher_adaptive_icon_foreground_image, launcher_adaptive_icon_foregrounds[i]);
+				Vector<uint8_t> data = _resize_launcher_icon(
+						launcher_adaptive_icon_foreground_image,
+						launcher_adaptive_icon_foregrounds[i]);
 				String img_path = launcher_adaptive_icon_foregrounds[i].export_path;
 				img_path = img_path.insert(0, "res://android/build/");
-                store_file_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
+				store_file_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
 			}
 			if (launcher_adaptive_icon_background_image.is_valid() && !launcher_adaptive_icon_background_image->empty()) {
-				Vector<uint8_t> data = resize_launcher_icon(launcher_adaptive_icon_background_image, launcher_adaptive_icon_backgrounds[i]);
+				Vector<uint8_t> data = _resize_launcher_icon(
+						launcher_adaptive_icon_background_image,
+						launcher_adaptive_icon_backgrounds[i]);
 				String img_path = launcher_adaptive_icon_backgrounds[i].export_path;
 				img_path = img_path.insert(0, "res://android/build/");
-                store_file_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
+				store_file_in_gradle_project(img_path, data, Z_NO_COMPRESSION);
 			}
 		}
 	}
@@ -2677,7 +2683,7 @@ public:
 		String output_apk_path = apk_relative_path.replace(".apk", "").insert(0, "../../../../../..") + "_${variant.name}.apk";
 
 		_update_custom_build_project(output_apk_path); //alters the build.gradle, android manifest, etc.
-		_copy_icon_gradle(p_preset);
+		_copy_icons_to_gradle_project(p_preset);
 		Error copy_value_xml_err = _copy_value_xml_files(p_preset, p_debug);
 		if (copy_value_xml_err != OK) {
 			EditorNode::add_io_error("Could not copy values.xml from lib-godot.<debug|release>.aar file\n");
@@ -2694,7 +2700,7 @@ public:
 
 		APKExportData ed;
 		err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, &ed,
-                                   store_so_file_in_gradle_project);
+				store_so_file_in_gradle_project);
 
 		if (err != OK) {
 			EditorNode::add_io_error("Could not export project files to gradle project\n");
@@ -2754,11 +2760,11 @@ public:
 			return gradle_build(p_preset, p_debug, p_path, p_flags);
 		}
 
-        String src_apk = p_preset->get((p_debug ? "custom_template/debug" : "custom_template/release"));
+		String src_apk = p_preset->get((p_debug ? "custom_template/debug" : "custom_template/release"));
 		src_apk = src_apk.strip_edges();
 
 		if (src_apk == "") {
-		    src_apk = find_export_template((p_debug ? "android_debug.apk": "android_release.apk"));
+			src_apk = find_export_template((p_debug ? "android_debug.apk" : "android_release.apk"));
 			if (src_apk == "") {
 				EditorNode::add_io_error("Package not found: " + src_apk);
 				return ERR_FILE_NOT_FOUND;
