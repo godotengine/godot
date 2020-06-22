@@ -67,6 +67,7 @@
 <<<<<<< HEAD
 # Tim Bao <honiebao@gmail.com>, 2020.
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # UnluckyNinja <unluckyninja1994@gmail.com>, 2020.
 # 无双流 <1257678024@qq.com>, 2020.
@@ -76,10 +77,15 @@
 =======
 # Tim Bao <honiebao@gmail.com>, 2020.
 >>>>>>> 77990b87c2... i18n: Sync translations with Weblate
+=======
+# UnluckyNinja <unluckyninja1994@gmail.com>, 2020.
+# 无双流 <1257678024@qq.com>, 2020.
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -97,6 +103,10 @@ msgstr ""
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: Tim Bao <honiebao@gmail.com>\n"
 >>>>>>> 77990b87c2... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: 无双流 <1257678024@qq.com>\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -106,6 +116,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "X-Generator: Weblate 4.1-dev\n"
 =======
 "X-Generator: Weblate 4.2-dev\n"
@@ -113,6 +124,9 @@ msgstr ""
 =======
 "X-Generator: Weblate 4.1-dev\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"X-Generator: Weblate 4.2-dev\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2523,12 +2537,17 @@ msgid ""
 msgstr ""
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "当前场景有未保存的更改。\n"
 "是否重新加载保存的场景？ 此操作无法撤消。"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"当前场景有未保存的更改。\n"
+"是否重新加载保存的场景？ 此操作无法撤消。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3432,6 +3451,7 @@ msgstr "您是否遗漏了_run()方法？"
 #: editor/editor_spin_slider.cpp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr "按住Ctrl键放置一个Getter节点。按住Shift键放置一个通用签名。"
@@ -3444,6 +3464,10 @@ msgstr "按住Ctrl键来四舍五入至整数。 按住Shift键获取更精确�
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr "按住Ctrl键放置一个Getter节点。按住Shift键放置一个通用签名。"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr "按住Ctrl键来四舍五入至整数。 按住Shift键获取更精确的变化。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4036,6 +4060,7 @@ msgstr "后处理脚本运行发生错误："
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr ""
 =======
 msgstr "你是否在 `post_import()` 方法中返回了 Node 衍生对象？"
@@ -4043,6 +4068,9 @@ msgstr "你是否在 `post_import()` 方法中返回了 Node 衍生对象？"
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "你是否在 `post_import()` 方法中返回了 Node 衍生对象？"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6956,6 +6984,7 @@ msgstr "未找到方法“%s”（连接于信号“%s”、来自节点“%s”
 #: editor/plugins/script_text_editor.cpp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "[Ignore]"
 msgstr "（忽略）"
@@ -6968,6 +6997,10 @@ msgstr "[忽略]"
 msgid "[Ignore]"
 msgstr "（忽略）"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "[Ignore]"
+msgstr "[忽略]"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7453,15 +7486,21 @@ msgid ""
 msgstr ""
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 "点击以切换可见状态。\n"
 "\n"
 "睁眼：标志可见。\n"
 "闭眼：标志隐藏。\n"
 "半睁眼：标志也可穿过不透明的表面可见（“X光”）。"
+<<<<<<< HEAD
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10488,6 +10527,7 @@ msgstr "实例化子场景"
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "Detach Script"
 msgstr "添加脚本"
@@ -10500,6 +10540,10 @@ msgstr "分离脚本"
 msgid "Detach Script"
 msgstr "添加脚本"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Detach Script"
+msgstr "分离脚本"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10664,12 +10708,17 @@ msgid ""
 msgstr ""
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 "无法附加脚本：没有语言被注册。\n"
 "这可能是因为这个编辑器是在所有语言模块被关闭的状态下被构建的。"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"无法附加脚本：没有语言被注册。\n"
+"这可能是因为这个编辑器是在所有语言模块被关闭的状态下被构建的。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10720,16 +10769,20 @@ msgstr "实例化场景文件为一个节点，如果没有根节点则创建一
 #: editor/scene_tree_dock.cpp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 =======
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 #, fuzzy
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 msgid "Attach a new or existing script to the selected node."
 msgstr "为选中节点创建或设置脚本。"
 
 #: editor/scene_tree_dock.cpp
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -10741,6 +10794,10 @@ msgstr "清除选中节点的脚本。"
 msgid "Detach the script from the selected node."
 msgstr "从选中节点分离脚本。"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
+=======
+msgid "Detach the script from the selected node."
+msgstr "从选中节点分离脚本。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11948,6 +12005,7 @@ msgstr "未在编辑器设置或预设中配置调试密钥库。"
 #: platform/android/export/export.cpp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "未在编辑器设置或预设中配置调试密钥库。"
@@ -11960,6 +12018,10 @@ msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "未在编辑器设置或预设中配置调试密钥库。"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11990,6 +12052,7 @@ msgid ""
 msgstr ""
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
 
@@ -12007,11 +12070,20 @@ msgstr "必须启用“使用自定义构建”才能使用插件。"
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"“android/modules”项目设置（变更于Godot 3.2.2）中包含了无效模"
+"组“GodotPaymentV3”.\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr "必须启用“使用自定义构建”才能使用插件。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 msgstr ""
@@ -12021,10 +12093,14 @@ msgstr "“自由度”只有在当“Xr Mode”是“Oculus Mobile VR”时才�
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "“自由度”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 msgstr ""
@@ -12034,10 +12110,14 @@ msgstr "“手部追踪”只有在当“Xr Mode”是“Oculus Mobile VR”时�
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "“手部追踪”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 msgstr ""
@@ -12047,6 +12127,9 @@ msgstr "“焦点感知”只有在当“Xr Mode”是“Oculus Mobile VR”时�
 =======
 msgstr ""
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "“焦点感知”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: platform/android/export/export.cpp
 msgid ""

@@ -63,6 +63,7 @@ msgstr ""
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: paco <pacosoftfree@protonmail.com>\n"
 =======
@@ -77,6 +78,10 @@ msgstr ""
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: paco <pacosoftfree@protonmail.com>\n"
 >>>>>>> 77990b87c2... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"

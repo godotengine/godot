@@ -21,6 +21,7 @@ msgstr ""
 "POT-Creation-Date: \n"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-03 20:09+0000\n"
 =======
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
@@ -28,6 +29,9 @@ msgstr ""
 =======
 "PO-Revision-Date: 2020-06-03 20:09+0000\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
@@ -38,6 +42,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "X-Generator: Weblate 4.1-dev\n"
 =======
 "X-Generator: Weblate 4.2-dev\n"
@@ -45,6 +50,9 @@ msgstr ""
 =======
 "X-Generator: Weblate 4.1-dev\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"X-Generator: Weblate 4.2-dev\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp

@@ -31,6 +31,7 @@ msgstr ""
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 =======
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
@@ -41,6 +42,9 @@ msgstr ""
 =======
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 >>>>>>> 77990b87c2... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -51,6 +55,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "X-Generator: Weblate 4.1-dev\n"
 =======
 "X-Generator: Weblate 4.2-dev\n"
@@ -58,6 +63,9 @@ msgstr ""
 =======
 "X-Generator: Weblate 4.1-dev\n"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+"X-Generator: Weblate 4.2-dev\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -788,15 +796,21 @@ msgstr "必須指定目標節點的方法。"
 #: editor/connections_dialog.cpp
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 #, fuzzy
 msgid "Method name must be a valid identifier."
 msgstr "名稱不是一個有效的識別符："
 
 #: editor/connections_dialog.cpp
+<<<<<<< HEAD
 >>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 =======
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -9980,6 +9994,7 @@ msgstr "新增事件"
 msgid "Button"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgstr "Button（按鈕）"
 =======
 msgstr "Button (按鈕)"
@@ -9987,6 +10002,9 @@ msgstr "Button (按鈕)"
 =======
 msgstr "Button（按鈕）"
 >>>>>>> bcac39551d... i18n: Sync translations with Weblate
+=======
+msgstr "Button (按鈕)"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."

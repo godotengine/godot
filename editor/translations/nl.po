@@ -46,6 +46,7 @@ msgstr ""
 "POT-Creation-Date: \n"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 =======
 "PO-Revision-Date: 2020-06-22 06:40+0000\n"
@@ -53,6 +54,9 @@ msgstr ""
 =======
 "PO-Revision-Date: 2020-06-15 01:48+0000\n"
 >>>>>>> 77990b87c2... i18n: Sync translations with Weblate
+=======
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+>>>>>>> 492625db28... i18n: Sync translations with Weblate
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
