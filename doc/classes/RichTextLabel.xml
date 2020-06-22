@@ -50,7 +50,7 @@
 				Clears the tag stack and sets [member bbcode_text] to an empty string.
 			</description>
 		</method>
-		<method name="get_content_height">
+		<method name="get_content_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
