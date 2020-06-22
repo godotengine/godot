@@ -15,7 +15,7 @@
 			When [member node_a] and [member node_b] move in different directions the [code]bias[/code] controls how fast the joint pulls them back to their original position. The lower the [code]bias[/code] the more the two bodies can pull on the joint.
 		</member>
 		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
-			If [code]true[/code], [member node_a] and [member node_b] can collide.
+			If [code]true[/code], [member node_a] and [member node_b] can not collide.
 		</member>
 		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a" default="NodePath(&quot;&quot;)">
 			The first body attached to the joint. Must derive from [PhysicsBody2D].
