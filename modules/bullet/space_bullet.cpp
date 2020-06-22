@@ -123,6 +123,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	}
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ERR_FAIL_COND_V(!shape, 0);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
@@ -153,6 +154,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 
 bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &r_closest_safe, float &r_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
 	if (!btShape->isConvex()) {
@@ -209,6 +211,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	}
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
@@ -240,6 +243,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
+	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
