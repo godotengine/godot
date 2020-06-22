@@ -1186,10 +1186,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (LOWORD(lParam) == HTCLIENT) {
 				if (window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED)) {
 					//Hide the cursor
-					if (hCursor == NULL)
+					if (hCursor == NULL) {
 						hCursor = SetCursor(NULL);
-					else
+					} else {
 						SetCursor(NULL);
+					}
 				} else {
 					if (hCursor != NULL) {
 						CursorShape c = cursor_shape;
@@ -1864,9 +1865,9 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 	if (mouse_mode == p_mode)
 		return;
 
-	_set_mouse_mode_impl(p_mode);
-
 	mouse_mode = p_mode;
+
+	_set_mouse_mode_impl(p_mode);
 }
 
 void OS_Windows::_set_mouse_mode_impl(MouseMode p_mode) {
@@ -1890,7 +1891,11 @@ void OS_Windows::_set_mouse_mode_impl(MouseMode p_mode) {
 	}
 
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_HIDDEN) {
-		hCursor = SetCursor(NULL);
+		if (hCursor == NULL) {
+			hCursor = SetCursor(NULL);
+		} else {
+			SetCursor(NULL);
+		}
 	} else {
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
