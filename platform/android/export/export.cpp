@@ -1911,16 +1911,16 @@ public:
 			err += etc_error;
 		}
 
-		// The GodotPaymentV3 module was converted to the GodotPayment plugin in Godot 3.2.2,
+		// The GodotPaymentV3 module was converted to the external GodotGooglePlayBilling plugin in Godot 3.2.2,
 		// this check helps users to notice the change to ensure that they change their settings.
 		String modules = ProjectSettings::get_singleton()->get("android/modules");
 		if (modules.find("org/godotengine/godot/GodotPaymentV3") != -1) {
-			bool godot_payment_enabled = p_preset->get("plugins/" + GODOT_PAYMENT.name);
-			if (!godot_payment_enabled) {
+			bool godot_google_play_billing_enabled = p_preset->get("plugins/GodotGooglePlayBilling");
+			if (!godot_google_play_billing_enabled) {
 				valid = false;
 				err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\n"
-						   "Replace it by the \"GodotPayment\" plugin, which should be enabled in the \"Plugins\" preset section.\n"
-						   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotPayment\".");
+						   "Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+						   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotGooglePlayBilling\".");
 				err += "\n";
 			}
 		}
