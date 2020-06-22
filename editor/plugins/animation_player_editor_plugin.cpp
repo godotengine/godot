@@ -380,26 +380,25 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 
+	String path;
 	//file->set_current_path(current_path);
 	if (p_resource->get_path() != "") {
-		file->set_current_path(p_resource->get_path());
+		path = p_resource->get_path();
 		if (extensions.size()) {
-			String ext = p_resource->get_path().get_extension().to_lower();
-			if (extensions.find(ext) == nullptr) {
-				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
+			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == nullptr) {
+				path = p_resource->get_path().get_base_dir() + p_resource->get_name() + "." + extensions.front()->get();
 			}
 		}
 	} else {
-		String existing;
 		if (extensions.size()) {
 			if (p_resource->get_name() != "") {
-				existing = p_resource->get_name() + "." + extensions.front()->get().to_lower();
+				path = p_resource->get_name() + "." + extensions.front()->get().to_lower();
 			} else {
-				existing = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
+				path = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
 			}
 		}
-		file->set_current_path(existing);
 	}
+	file->set_current_path(path);
 	file->popup_centered_ratio();
 	file->set_title(TTR("Save Resource As..."));
 	current_option = RESOURCE_SAVE;
@@ -1503,24 +1502,29 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 
-	play_bw_from = memnew(ToolButton);
+	play_bw_from = memnew(Button);
+	play_bw_from->set_flat(true);
 	play_bw_from->set_tooltip(TTR("Play selected animation backwards from current pos. (A)"));
 	hb->add_child(play_bw_from);
 
-	play_bw = memnew(ToolButton);
+	play_bw = memnew(Button);
+	play_bw->set_flat(true);
 	play_bw->set_tooltip(TTR("Play selected animation backwards from end. (Shift+A)"));
 	hb->add_child(play_bw);
 
-	stop = memnew(ToolButton);
+	stop = memnew(Button);
+	stop->set_flat(true);
 	stop->set_toggle_mode(true);
 	hb->add_child(stop);
 	stop->set_tooltip(TTR("Stop animation playback. (S)"));
 
-	play = memnew(ToolButton);
+	play = memnew(Button);
+	play->set_flat(true);
 	play->set_tooltip(TTR("Play selected animation from start. (Shift+D)"));
 	hb->add_child(play);
 
-	play_from = memnew(ToolButton);
+	play_from = memnew(Button);
+	play_from->set_flat(true);
 	play_from->set_tooltip(TTR("Play selected animation from current pos. (D)"));
 	hb->add_child(play_from);
 
@@ -1572,7 +1576,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	animation->set_tooltip(TTR("Display list of animations in player."));
 	animation->set_clip_text(true);
 
-	autoplay = memnew(ToolButton);
+	autoplay = memnew(Button);
+	autoplay->set_flat(true);
 	hb->add_child(autoplay);
 	autoplay->set_tooltip(TTR("Autoplay on Load"));
 
@@ -1584,7 +1589,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	hb->add_child(memnew(VSeparator));
 
-	onion_toggle = memnew(ToolButton);
+	onion_toggle = memnew(Button);
+	onion_toggle->set_flat(true);
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip(TTR("Enable Onion Skinning"));
 	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu), varray(ONION_SKINNING_ENABLE));
@@ -1609,7 +1615,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	hb->add_child(memnew(VSeparator));
 
-	pin = memnew(ToolButton);
+	pin = memnew(Button);
+	pin->set_flat(true);
 	pin->set_toggle_mode(true);
 	pin->set_tooltip(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);

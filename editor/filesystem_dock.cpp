@@ -2543,13 +2543,15 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	toolbar_hbc->add_theme_constant_override("separation", 0);
 	top_vbc->add_child(toolbar_hbc);
 
-	button_hist_prev = memnew(ToolButton);
+	button_hist_prev = memnew(Button);
+	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
 	button_hist_prev->set_tooltip(TTR("Previous Folder/File"));
 	toolbar_hbc->add_child(button_hist_prev);
 
-	button_hist_next = memnew(ToolButton);
+	button_hist_next = memnew(Button);
+	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
 	button_hist_next->set_tooltip(TTR("Next Folder/File"));
@@ -2627,7 +2629,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
 
-	button_file_list_display_mode = memnew(ToolButton);
+	button_file_list_display_mode = memnew(Button);
+	button_file_list_display_mode->set_flat(true);
 	path_hb->add_child(button_file_list_display_mode);
 
 	files = memnew(ItemList);

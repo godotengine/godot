@@ -773,6 +773,11 @@ msgstr "Metodas pasirinktame Node turi būti nurodytas!"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Metodas pasirinktame Node turi būti nurodytas!"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."

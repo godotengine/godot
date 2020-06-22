@@ -144,7 +144,8 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
-	bake = memnew(ToolButton);
+	bake = memnew(Button);
+	bake->set_flat(true);
 	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect("pressed", callable_mp(this, &GIProbeEditorPlugin::_bake));

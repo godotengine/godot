@@ -673,7 +673,8 @@ Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 		d["type"] = "create_favorite_drag";
 		d["class"] = ti->get_text(0);
 
-		ToolButton *tb = memnew(ToolButton);
+		Button *tb = memnew(Button);
+		tb->set_flat(true);
 		tb->set_icon(ti->get_icon(0));
 		tb->set_text(ti->get_text(0));
 		favorites->set_drag_preview(tb);

@@ -68,10 +68,10 @@ class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
 	Separator *sep;
-	ToolButton *curve_create;
-	ToolButton *curve_edit;
-	ToolButton *curve_del;
-	ToolButton *curve_close;
+	Button *curve_create;
+	Button *curve_edit;
+	Button *curve_del;
+	Button *curve_close;
 	MenuButton *handle_menu;
 
 	EditorNode *editor;

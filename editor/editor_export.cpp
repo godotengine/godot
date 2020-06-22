@@ -100,7 +100,10 @@ void EditorExportPreset::update_files_to_export() {
 	for (int i = 0; i < to_remove.size(); ++i) {
 		selected_files.erase(to_remove[i]);
 	}
+<<<<<<< HEAD
 	EditorExport::singleton->save_presets();
+=======
+>>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 }
 
 Vector<String> EditorExportPreset::get_files_to_export() const {

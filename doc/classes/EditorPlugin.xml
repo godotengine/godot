@@ -22,7 +22,7 @@
 			</description>
 		</method>
 		<method name="add_control_to_bottom_panel">
-			<return type="ToolButton">
+			<return type="Button">
 			</return>
 			<argument index="0" name="control" type="Control">
 			</argument>

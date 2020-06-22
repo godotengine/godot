@@ -86,17 +86,18 @@ struct PluginConfig {
 
 /*
  * Set of prebuilt plugins.
+ * Currently unused, this is just for future reference:
  */
-static const PluginConfig GODOT_PAYMENT = {
-	/*.valid_config =*/true,
-	/*.last_updated =*/0,
-	/*.name =*/"GodotPayment",
-	/*.binary_type =*/"local",
-	/*.binary =*/"res://android/build/libs/plugins/GodotPayment.release.aar",
-	/*.local_dependencies =*/{},
-	/*.remote_dependencies =*/String("com.android.billingclient:billing:2.2.1").split("|"),
-	/*.custom_maven_repos =*/{}
-};
+// static const PluginConfig MY_PREBUILT_PLUGIN = {
+//	/*.valid_config =*/true,
+//	/*.last_updated =*/0,
+//	/*.name =*/"GodotPayment",
+//	/*.binary_type =*/"local",
+//	/*.binary =*/"res://android/build/libs/plugins/GodotPayment.release.aar",
+//	/*.local_dependencies =*/{},
+// 	/*.remote_dependencies =*/String("com.android.billingclient:billing:2.2.1").split("|"),
+// 	/*.custom_maven_repos =*/{}
+// };
 
 static inline String resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
 	String absolute_path;
@@ -125,7 +126,7 @@ static inline PluginConfig resolve_prebuilt_plugin(PluginConfig prebuilt_plugin,
 
 static inline Vector<PluginConfig> get_prebuilt_plugins(String plugins_base_dir) {
 	Vector<PluginConfig> prebuilt_plugins;
-	prebuilt_plugins.push_back(resolve_prebuilt_plugin(GODOT_PAYMENT, plugins_base_dir));
+	// prebuilt_plugins.push_back(resolve_prebuilt_plugin(MY_PREBUILT_PLUGIN, plugins_base_dir));
 	return prebuilt_plugins;
 }
 

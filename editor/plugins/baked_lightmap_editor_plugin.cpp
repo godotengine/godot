@@ -117,7 +117,8 @@ void BakedLightmapEditorPlugin::_bind_methods() {
 
 BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
-	bake = memnew(ToolButton);
+	bake = memnew(Button);
+	bake->set_flat(true);
 	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake Lightmaps"));
 	bake->hide();

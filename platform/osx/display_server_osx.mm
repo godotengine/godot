@@ -1937,10 +1937,14 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
-		CGDisplayHideCursor(kCGDirectMainDisplay);
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		CGDisplayHideCursor(kCGDirectMainDisplay);
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			CGDisplayHideCursor(kCGDirectMainDisplay);
+		}
 		CGAssociateMouseAndMouseCursorPosition(true);
 	} else {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
@@ -3058,11 +3062,19 @@ void DisplayServerOSX::keyboard_set_current_layout(int p_index) {
 	if (keyboard_layout_dirty) {
 		_update_keyboard_layouts();
 	}
+<<<<<<< HEAD
 
 	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
 
 	NSString *cur_name = [NSString stringWithUTF8String:kbd_layouts[p_index].name.utf8().get_data()];
 
+=======
+
+	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
+
+	NSString *cur_name = [NSString stringWithUTF8String:kbd_layouts[p_index].name.utf8().get_data()];
+
+>>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 	NSDictionary *filter_kbd = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardLayout };
 	NSArray *list_kbd = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_kbd, false);
 	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
@@ -3073,6 +3085,7 @@ void DisplayServerOSX::keyboard_set_current_layout(int p_index) {
 		}
 	}
 	[list_kbd release];
+<<<<<<< HEAD
 
 	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
 	NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
@@ -3094,6 +3107,29 @@ int DisplayServerOSX::keyboard_get_current_layout() const {
 	return current_layout;
 }
 
+=======
+
+	NSDictionary *filter_ime = @{ (NSString *)kTISPropertyInputSourceType : (NSString *)kTISTypeKeyboardInputMode };
+	NSArray *list_ime = (NSArray *)TISCreateInputSourceList((CFDictionaryRef)filter_ime, false);
+	for (NSUInteger i = 0; i < [list_ime count]; i++) {
+		NSString *name = (NSString *)TISGetInputSourceProperty((TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
+		if ([name isEqualToString:cur_name]) {
+			TISSelectInputSource((TISInputSourceRef)[list_ime objectAtIndex:i]);
+			break;
+		}
+	}
+	[list_ime release];
+}
+
+int DisplayServerOSX::keyboard_get_current_layout() const {
+	if (keyboard_layout_dirty) {
+		_update_keyboard_layouts();
+	}
+
+	return current_layout;
+}
+
+>>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 String DisplayServerOSX::keyboard_get_layout_language(int p_index) const {
 	if (keyboard_layout_dirty) {
 		_update_keyboard_layouts();

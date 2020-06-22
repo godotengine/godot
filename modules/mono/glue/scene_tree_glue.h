@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  haiku_application.h                                                  */
+/*  scene_tree_glue.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HAIKU_APPLICATION_H
-#define HAIKU_APPLICATION_H
+#ifndef SCENE_TREE_GLUE_H
+#define SCENE_TREE_GLUE_H
 
-#include <kernel/image.h> // needed for image_id
+#ifdef MONO_GLUE_ENABLED
 
-#include <Application.h>
+#include "core/array.h"
+#include "core/string_name.h"
+#include "scene/main/scene_tree.h"
 
-class HaikuApplication : public BApplication {
-public:
-	HaikuApplication();
-};
+#include "../mono_gd/gd_mono_marshal.h"
 
-#endif
+Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringName *group, MonoReflectionType *refltype);
+
+// Register internal calls
+
+void godot_register_scene_tree_icalls();
+
+#endif // MONO_GLUE_ENABLED
+
+#endif // SCENE_TREE_GLUE_H

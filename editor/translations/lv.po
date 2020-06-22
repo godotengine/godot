@@ -755,6 +755,14 @@ msgstr "Rindu un kolonnu numuri."
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "Metodi mērķa mezglā nepieciešams specificēt."
+<<<<<<< HEAD
+=======
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Metodi mērķa mezglā nepieciešams specificēt."
+>>>>>>> 6869d5d19030e29ca7e15812bb98d93ef1eafcc0
 
 #: editor/connections_dialog.cpp
 msgid ""

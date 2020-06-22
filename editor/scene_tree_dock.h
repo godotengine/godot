@@ -46,7 +46,6 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
@@ -106,15 +105,15 @@ class SceneTreeDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 	RenameDialog *rename_dialog;
 
-	ToolButton *button_add;
-	ToolButton *button_instance;
-	ToolButton *button_create_script;
-	ToolButton *button_detach_script;
+	Button *button_add;
+	Button *button_instance;
+	Button *button_create_script;
+	Button *button_detach_script;
 
 	Button *button_3d;
 
 	HBoxContainer *button_hb;
-	ToolButton *edit_local, *edit_remote;
+	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree;
 	Control *remote_tree;
 

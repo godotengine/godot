@@ -35,6 +35,7 @@
 #include "gd_glue.h"
 #include "nodepath_glue.h"
 #include "rid_glue.h"
+#include "scene_tree_glue.h"
 #include "string_glue.h"
 #include "string_name_glue.h"
 
@@ -50,6 +51,7 @@ void godot_register_glue_header_icalls() {
 	godot_register_object_icalls();
 	godot_register_rid_icalls();
 	godot_register_string_icalls();
+	godot_register_scene_tree_icalls();
 }
 
 // Used by the generated glue

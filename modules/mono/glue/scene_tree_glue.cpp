@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_haiku.cpp                                                      */
+/*  scene_tree_glue.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,22 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "main/main.h"
-#include "os_haiku.h"
+#include "scene_tree_glue.h"
 
-int main(int argc, char *argv[]) {
-	OS_Haiku os;
+#ifdef MONO_GLUE_ENABLED
 
-	Error error = Main::setup(argv[0], argc - 1, &argv[1]);
-	if (error != OK) {
-		return 255;
+#include "core/class_db.h"
+#include "modules/mono/csharp_script.h"
+#include "modules/mono/mono_gd/gd_mono_utils.h"
+#include "scene/main/node.h"
+
+Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringName *group, MonoReflectionType *refltype) {
+	List<Node *> nodes;
+	Array ret;
+
+	// Retrieve all the nodes in the group
+	ptr->get_nodes_in_group(*group, &nodes);
+
+	// No need to bother if the group is empty
+	if (!nodes.empty()) {
+		MonoType *elem_type = mono_reflection_type_get_type(refltype);
+		MonoClass *mono_class = mono_class_from_mono_type(elem_type);
+		GDMonoClass *klass = GDMono::get_singleton()->get_class(mono_class);
+
+		if (klass == GDMonoUtils::get_class_native_base(klass)) {
+			// If we're trying to get native objects, just check the inheritance list
+			StringName native_class_name = GDMonoUtils::get_native_godot_class_name(klass);
+			for (int i = 0; i < nodes.size(); ++i) {
+				if (ClassDB::is_parent_class(nodes[i]->get_class(), native_class_name))
+					ret.push_back(nodes[i]);
+			}
+		} else {
+			// If we're trying to get csharpscript instances, get the mono object and compare the classes
+			for (int i = 0; i < nodes.size(); ++i) {
+				CSharpInstance *si = CAST_CSHARP_INSTANCE(nodes[i]->get_script_instance());
+
+				if (si != nullptr) {
+					MonoObject *obj = si->get_mono_object();
+					if (obj != nullptr && mono_object_get_class(obj) == mono_class) {
+						ret.push_back(nodes[i]);
+					}
+				}
+			}
+		}
 	}
 
-	if (Main::start()) {
-		os.run();
-	}
-
-	Main::cleanup();
-
-	return os.get_exit_code();
+	return memnew(Array(ret));
 }
+
+void godot_register_scene_tree_icalls() {
+	mono_add_internal_call("Godot.SceneTree::godot_icall_SceneTree_get_nodes_in_group_Generic", (void *)godot_icall_SceneTree_get_nodes_in_group_Generic);
+}
+
+#endif // MONO_GLUE_ENABLED

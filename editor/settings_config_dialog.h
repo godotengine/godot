@@ -38,7 +38,6 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
@@ -94,7 +93,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Label *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
-	ToolButton *restart_close_button;
+	Button *restart_close_button;
 
 	void _editor_restart_request();
 	void _editor_restart();
