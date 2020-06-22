@@ -211,6 +211,7 @@ void FileDialog::_action_pressed() {
 
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
 
+	//TODO: It should enter this!
 	if ((mode == MODE_OPEN_ANY || mode == MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		emit_signal("file_selected", f);
 		hide();
@@ -333,6 +334,7 @@ void FileDialog::_go_up() {
 	dir_access->change_dir("..");
 	update_file_list();
 	update_dir();
+	update();
 }
 
 void FileDialog::deselect_items() {
@@ -401,6 +403,15 @@ void FileDialog::_tree_item_activated() {
 
 		_action_pressed();
 	}
+
+	update_file_list();
+}
+
+void FileDialog::_column_title_pressed() {
+	int col = tree->get_selected_column();
+	//print_lineprint_line((String ("Title column {0} selected").format(varray(col))));
+
+	update_file_list(col);
 }
 
 void FileDialog::update_file_name() {
@@ -415,12 +426,15 @@ void FileDialog::update_file_name() {
 	}
 }
 
-void FileDialog::update_file_list() {
+void FileDialog::update_file_list(int sort_col) {
 
 	tree->clear();
 
 	// Scroll back to the top after opening a directory
-	tree->get_vscroll_bar()->set_value(0);
+	if (sort_col < 0) {
+		// Scroll back to the top after opening a directory
+		tree->get_vscroll_bar()->set_value(0);
+	}
 
 	dir_access->list_dir_begin();
 
@@ -429,8 +443,8 @@ void FileDialog::update_file_list() {
 	Ref<Texture> file_icon = get_icon("file");
 	const Color folder_color = get_color("folder_icon_modulate");
 	const Color file_color = get_color("file_icon_modulate");
-	List<String> files;
-	List<String> dirs;
+	List<Entry> files;
+	List<Entry> dirs;
 
 	bool is_hidden;
 	String item;
@@ -443,25 +457,86 @@ void FileDialog::update_file_list() {
 		is_hidden = dir_access->current_is_hidden();
 
 		if (show_hidden_files || !is_hidden) {
-			if (!dir_access->current_is_dir())
-				files.push_back(item);
-			else
-				dirs.push_back(item);
+			String full_path = dir_access->get_current_dir() + "/" + item;
+			uint64_t last_modified = FileAccess::get_modified_time(full_path);
+
+			if (!dir_access->current_is_dir()) {
+				FileAccess::FileSize size = FileAccess::get_size_simplified(full_path);
+				files.push_back((Entry{ item, size.size, size.unit, last_modified }));
+			} else {
+				FileAccess::FileSize fs;
+				fs.size = 0;
+				fs.unit = FileAccess::FileSizeType::B;
+				dirs.push_back((Entry{ item, fs, last_modified }));
+			}
 		}
 	}
 
-	dirs.sort_custom<NaturalNoCaseComparator>();
-	files.sort_custom<NaturalNoCaseComparator>();
+if (sort_col < 0) {
+		name_sorted = true;
+
+		dirs.sort_custom<EntrySortByNameDesending>();
+		files.sort_custom<EntrySortByNameDesending>();
+
+	} else if (sort_col == TitleColumn::NAME) {
+		size_sorted = false;
+		last_modified_sorted = false;
+
+		if (name_sorted) {
+			name_sorted = false;
+
+			dirs.sort_custom<EntrySortByNameAscending>();
+			files.sort_custom<EntrySortByNameAscending>();
+		} else {
+			name_sorted = true;
+
+			dirs.sort_custom<EntrySortByNameDesending>();
+			files.sort_custom<EntrySortByNameDesending>();
+		}
+	} else if (sort_col == TitleColumn::SIZE) {
+		name_sorted = false;
+		last_modified_sorted = false;
+
+		if (size_sorted) {
+			size_sorted = false;
+
+			//dirs.sort_custom<EntrySortBySizeAsending>(); //dirs dont sort by size
+			files.sort_custom<EntrySortBySizeAsending>();
+		} else {
+			size_sorted = true;
+
+			//dirs.sort_custom<EntrySortBySizeDesending>(); //dirs dont sort by size
+			files.sort_custom<EntrySortBySizeDesending>();
+		}
+	} else if (sort_col == TitleColumn::LAST_MODIFIED) {
+		name_sorted = false;
+		size_sorted = false;
+
+		if (last_modified_sorted) {
+			last_modified_sorted = false;
+
+			dirs.sort_custom<EntrySortByLastModifiedAsending>();
+			files.sort_custom<EntrySortByLastModifiedAsending>();
+		} else {
+			last_modified_sorted = true;
+
+			dirs.sort_custom<EntrySortByLastModifiedDesending>();
+			files.sort_custom<EntrySortByLastModifiedDesending>();
+		}
+	}
 
 	while (!dirs.empty()) {
-		String &dir_name = dirs.front()->get();
+		Entry entry = dirs.front()->get();
 		TreeItem *ti = tree->create_item(root);
-		ti->set_text(0, dir_name);
+		ti->set_text(0, entry.name);
 		ti->set_icon(0, folder);
 		ti->set_icon_modulate(0, folder_color);
 
+		Dictionary dic = _OS::get_singleton()->get_datetime_from_unix_time(entry.last_modified);
+		ti->set_text(2, String("{0}-{1}-{2} {3}:{4}").format(varray(dic["year"], dic["month"], dic["day"], (String(dic["hour"]).pad_zeros(2)), (String(dic["minute"]).pad_zeros(2)))));
+
 		Dictionary d;
-		d["name"] = dir_name;
+		d["name"] = entry.name;
 		d["dir"] = true;
 
 		ti->set_metadata(0, d);
@@ -502,13 +577,14 @@ void FileDialog::update_file_list() {
 	String base_dir = dir_access->get_current_dir();
 
 	while (!files.empty()) {
+		Entry &entry = files.front()->get();
 
 		bool match = patterns.empty();
 		String match_str;
 
 		for (List<String>::Element *E = patterns.front(); E; E = E->next()) {
 
-			if (files.front()->get().matchn(E->get())) {
+			if (entry.name.matchn(E->get())) {
 				match_str = E->get();
 				match = true;
 				break;
@@ -517,11 +593,11 @@ void FileDialog::update_file_list() {
 
 		if (match) {
 			TreeItem *ti = tree->create_item(root);
-			ti->set_text(0, files.front()->get());
+			ti->set_text(0, entry.name);
 
 			if (get_icon_func) {
 
-				Ref<Texture> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
+				Ref<Texture> icon = get_icon_func(base_dir.plus_file(entry.name));
 				ti->set_icon(0, icon);
 			} else {
 				ti->set_icon(0, file_icon);
@@ -533,11 +609,11 @@ void FileDialog::update_file_list() {
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
-			d["name"] = files.front()->get();
+			d["name"] = entry.name;
 			d["dir"] = false;
 			ti->set_metadata(0, d);
 
-			if (file->get_text() == files.front()->get() || match_str == files.front()->get())
+			if (file->get_text() == entry.name || match_str == entry.name)
 				ti->select(0);
 		}
 
@@ -708,7 +784,7 @@ void FileDialog::set_mode(Mode p_mode) {
 	if (mode == MODE_OPEN_FILES) {
 		tree->set_select_mode(Tree::SELECT_MULTI);
 	} else {
-		tree->set_select_mode(Tree::SELECT_SINGLE);
+		tree->set_select_mode(Tree::SELECT_ROW);
 	}
 }
 
@@ -820,6 +896,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_tree_multi_selected"), &FileDialog::_tree_multi_selected);
 	ClassDB::bind_method(D_METHOD("_tree_selected"), &FileDialog::_tree_selected);
 	ClassDB::bind_method(D_METHOD("_tree_item_activated"), &FileDialog::_tree_item_activated);
+	ClassDB::bind_method(D_METHOD("_column_title_pressed"), &FileDialog::_column_title_pressed);
 	ClassDB::bind_method(D_METHOD("_dir_entered"), &FileDialog::_dir_entered);
 	ClassDB::bind_method(D_METHOD("_file_entered"), &FileDialog::_file_entered);
 	ClassDB::bind_method(D_METHOD("_action_pressed"), &FileDialog::_action_pressed);
@@ -951,6 +1028,13 @@ FileDialog::FileDialog() {
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	vbc->add_margin_child(RTR("Directories & Files:"), tree, true);
+	tree->set_columns(3);
+
+	tree->set_column_title(0, "Name");
+	tree->set_column_title(1, "Size");
+	tree->set_column_title(2, "Last modified");
+
+	tree->set_column_titles_visible(true);
 
 	file_box = memnew(HBoxContainer);
 	file_box->add_child(memnew(Label(RTR("File:"))));
@@ -974,6 +1058,7 @@ FileDialog::FileDialog() {
 	tree->connect("cell_selected", this, "_tree_selected", varray(), CONNECT_DEFERRED);
 	tree->connect("item_activated", this, "_tree_item_activated", varray());
 	tree->connect("nothing_selected", this, "deselect_items");
+	tree->connect("column_title_pressed", this, "_column_title_pressed");
 	dir->connect("text_entered", this, "_dir_entered");
 	file->connect("text_entered", this, "_file_entered");
 	filter->connect("item_selected", this, "_filter_selected");

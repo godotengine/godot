@@ -35,6 +35,7 @@
 #include "core/os/memory.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
+#include "core/dictionary.h"
 
 /**
  * Multi-Platform abstraction for accessing to files.
@@ -58,6 +59,18 @@ public:
 
 	virtual uint32_t _get_unix_permissions(const String &p_file) = 0;
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) = 0;
+
+	enum FileSizeType {
+		B,
+		KB,
+		MB,
+		GB
+	};
+
+	struct FileSize {
+		uint64_t size;
+		FileSizeType unit;
+	};
 
 protected:
 	String fix_path(const String &p_path) const;
@@ -169,6 +182,10 @@ public:
 
 	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = NULL);
 	static String get_file_as_string(const String &p_path, Error *r_error = NULL);
+
+	static uint64_t get_size(const String &p_file); //Get file size in bytes
+	static Dictionary get_sizes(const String &p_file); //Get file size in diffirent formats
+	static FileSize get_size_simplified(const String &p_file); //Returns 'Unit' (b,mb,kb,gb) and 'Size' by best unit fit
 
 	template <class T>
 	static void make_default(AccessType p_access) {

@@ -1588,6 +1588,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 				selected_col = 0;
 				if (!emitted_row) {
 					emit_signal("item_selected");
+					emit_signal("cell_selected");
 					emitted_row = true;
 				}
 				/*
@@ -1597,7 +1598,10 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 
 			} else if (c.selected) {
 
-				c.selected = false;
+				if (p_selected != p_current) {
+					//Deselect other rows
+					c.selected = false;
+				}
 				//p_current->deselected_signal.call(p_col);
 			}
 		} else if (select_mode == SELECT_SINGLE || select_mode == SELECT_MULTI) {
@@ -2582,7 +2586,8 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 							len += get_column_width(i);
 							if (pos.x < len) {
-								emit_signal("column_title_pressed", i);
+								selected_col = i;
+								emit_signal("column_title_pressed");
 								break;
 							}
 						}

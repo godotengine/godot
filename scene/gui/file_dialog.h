@@ -37,7 +37,9 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tool_button.h"
+#include "core/os/file_access.h"
 #include "scene/gui/tree.h"
+#include "core/bind/core_bind.h"
 
 class FileDialog : public ConfirmationDialog {
 
@@ -67,6 +69,69 @@ public:
 	static RegisterFunc unregister_func;
 
 private:
+	struct Entry {
+		String name; //file name or dir name
+		FileAccess::FileSize size;
+		uint64_t last_modified; //in seconds, unix (epoch) time
+	};
+
+	struct EntrySortByNameDesending {
+		bool operator()(const Entry &p_a, const Entry &p_b) const {
+			return p_a.name.naturalnocasecmp_to(p_b.name) < 0;
+		}
+	};
+
+	struct EntrySortByNameAscending {
+		bool operator()(const Entry &p_a, const Entry &p_b) const {
+			return p_a.name.naturalnocasecmp_to(p_b.name) >= 0;
+		}
+	};
+
+	struct EntrySortBySizeDesending {
+		bool operator()(const Entry &p_a, const Entry &p_b) const {
+			if (p_a.size.unit != p_b.size.unit) {
+				return p_a.size.unit < p_b.size.unit;
+			} else {
+				return p_a.size.size < p_b.size.size;
+			}
+		}
+	};
+
+	struct EntrySortBySizeAsending {
+		bool operator()(const Entry &p_a, const Entry &p_b) const {
+			if (p_a.size.unit != p_b.size.unit) {
+				return p_a.size.unit >= p_b.size.unit;
+			} else {
+				return p_a.size.size >= p_b.size.size;
+			}
+		}
+	};
+
+	struct EntrySortByLastModifiedDesending {
+		bool operator()(const Entry &p_a, const Entry &p_b) const {
+			return p_a.last_modified < p_b.last_modified;
+		}
+	};
+
+	struct EntrySortByLastModifiedAsending {
+		bool operator()(const Entry &p_a, const Entry &p_b) const {
+			return p_a.last_modified >= p_b.last_modified;
+		}
+	};
+
+	//Value is the index of the column in the tree
+	enum TitleColumn {
+		NAME = 0,
+		SIZE = 1,
+		LAST_MODIFIED = 2
+	};
+
+	bool name_sorted = true;
+	bool size_sorted = false;
+	bool last_modified_sorted = false;
+
+
+
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
 
@@ -104,7 +169,7 @@ private:
 
 	void update_dir();
 	void update_file_name();
-	void update_file_list();
+	void update_file_list(int sort_col = -1);
 	void update_filters();
 
 	void _tree_multi_selected(Object *p_object, int p_cell, bool p_selected);
@@ -112,6 +177,7 @@ private:
 
 	void _select_drive(int p_idx);
 	void _tree_item_activated();
+	void _column_title_pressed();
 	void _dir_entered(String p_dir);
 	void _file_entered(const String &p_file);
 	void _action_pressed();

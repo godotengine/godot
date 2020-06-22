@@ -501,8 +501,57 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint64_t mt = fa->_get_modified_time(p_file);
+	//fa->close();
 	memdelete(fa);
 	return mt;
+}
+
+uint64_t FileAccess::get_size(const String &p_file) {
+
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file))
+		return 0;
+
+	FileAccess *fa = open(p_file, READ);
+	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	uint64_t mt = fa->get_len();
+	fa->close();
+	memdelete(fa);
+	return mt;
+}
+
+Dictionary FileAccess::get_sizes(const String &p_file) {
+	Dictionary dic;
+	uint64_t bytes = get_size(p_file);
+	dic["b"] = bytes;
+	dic["kb"] = bytes / (1024);
+	dic["mb"] = bytes / (1024 * 1024);
+	dic["gb"] = bytes / (1024 * 1024 * 1024);
+	return dic;
+}
+
+FileAccess::FileSize FileAccess::get_size_simplified(const String &p_file) {
+	Dictionary dic = get_sizes(p_file);
+	uint64_t b = dic["b"];
+	uint64_t kb = dic["kb"];
+	uint64_t mb = dic["mb"];
+	uint64_t gb = dic["gb"];
+
+	FileSize fs;
+	if (gb > 0) {
+		fs.size = gb;
+		fs.unit = FileSizeType::GB;
+	} else if (mb > 0) {
+		fs.size = mb;
+		fs.unit = FileSizeType::MB;
+	} else if (kb > 0) {
+		fs.size = KB;
+		fs.unit = FileSizeType::KB;
+	} else {
+		fs.size = b;
+		fs.unit = FileSizeType::B;
+	}
+	return fs;
 }
 
 uint32_t FileAccess::get_unix_permissions(const String &p_file) {
