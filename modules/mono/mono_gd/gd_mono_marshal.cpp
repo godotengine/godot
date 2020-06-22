@@ -554,8 +554,8 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return BOX_BOOLEAN(val);
 				}
 				case Variant::INT: {
-					int64_t val = p_var->operator int64_t();
-					return BOX_INT64(val);
+					int32_t val = p_var->operator signed int();
+					return BOX_INT32(val);
 				}
 				case Variant::REAL: {
 #ifdef REAL_T_IS_DOUBLE
