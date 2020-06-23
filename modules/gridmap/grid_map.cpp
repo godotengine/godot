@@ -711,6 +711,43 @@ void GridMap::_update_visibility() {
 	}
 }
 
+void GridMap::set_cell_item_visibility(int p_x, int p_y, int p_z, bool p_visible) {
+	if (!is_inside_tree())
+		return;
+
+	IndexKey key;
+	key.x = p_x;
+	key.y = p_y;
+	key.z = p_z;
+
+	for (Map<OctantKey, Octant *>::Element *e = octant_map.front(); e; e = e->next()) {
+		Octant *octant = e->value();
+		for (int i = 0; i < octant->multimesh_instances.size(); i++) {
+			const Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
+
+			for (int j = 0; j < mi.items.size(); j++) {
+				IndexKey instance_key = mi.items[j].key;
+
+				if (instance_key == key) {
+					Transform transform;
+
+					if (p_visible) {
+						transform = mi.items[j].transform;
+					} else {
+						// Move the multimesh instance far away to effectively hide it,
+						// as MultiMesh doesn't have an API to hide specific meshes yet.
+						real_t dimension = -10000000000;
+						transform.translate(dimension, dimension, dimension);
+					}
+
+					VS::get_singleton()->multimesh_instance_set_transform(mi.multimesh, mi.items[j].index, transform);
+					return;
+				}
+			}
+		}
+	}
+}
+
 void GridMap::_queue_octants_dirty() {
 	if (awaiting_update) {
 		return;
