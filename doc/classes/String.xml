@@ -309,7 +309,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the string is empty.
+				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
 		<method name="ends_with">
