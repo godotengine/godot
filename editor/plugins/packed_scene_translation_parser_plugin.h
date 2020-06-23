@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  pot_generator.h                                                      */
+/*  packed_scene_translation_parser_plugin.h                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POT_GENERATOR_H
-#define POT_GENERATOR_H
+#ifndef PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H
+#define PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H
 
-#include "core/ordered_hash_map.h"
-#include "core/set.h"
+#include "editor/editor_translation_parser.h"
 
-class POTGenerator {
-	static POTGenerator *singleton;
-	// Stores all translatable strings and the source files containing them.
-	OrderedHashMap<String, Set<String>> all_translation_strings;
+class PackedSceneEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
+	GDCLASS(PackedSceneEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
-	void _write_to_pot(const String &p_file);
+	// Scene Node's properties that contain translation strings.
+	Set<String> lookup_properties;
 
 public:
-	static POTGenerator *get_singleton();
-	void generate_pot(const String &p_file);
+	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings);
+	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 
-	POTGenerator();
-	~POTGenerator();
+	PackedSceneEditorTranslationParserPlugin();
 };
 
-#endif // POT_GENERATOR_H
+#endif // PACKED_SCENE_TRANSLATION_PARSER_PLUGIN_H

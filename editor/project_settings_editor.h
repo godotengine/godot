@@ -168,6 +168,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _translation_pot_file_open();
 	void _translation_pot_generate_open();
 	void _translation_pot_generate(const String &p_file);
+	void _update_translation_pot_file_extensions();
 
 	void _toggle_search_bar(bool p_pressed);
 
