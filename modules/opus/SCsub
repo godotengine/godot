@@ -227,6 +227,9 @@ if env["builtin_opus"]:
             env_opus.Append(CPPDEFINES=["OPUS_ARM_OPT"])
         elif "arch" in env and env["arch"] == "arm64":
             env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
+    elif env["platform"] == "osx":
+        if "arch" in env and env["arch"] == "arm64":
+            env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
 
     env_thirdparty = env_opus.Clone()
     env_thirdparty.disable_warnings()
