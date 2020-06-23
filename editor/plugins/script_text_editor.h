@@ -160,7 +160,6 @@ protected:
 	void _load_theme_settings();
 	void _set_theme_for_script();
 	void _show_warnings_panel(bool p_show);
-	void _error_pressed();
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);

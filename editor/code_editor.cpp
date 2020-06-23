@@ -1561,7 +1561,7 @@ void CodeTextEditor::_toggle_scripts_pressed() {
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-		emit_signal("error_pressed");
+		goto_error();
 	}
 }
 
@@ -1688,7 +1688,6 @@ void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
-	ADD_SIGNAL(MethodInfo("error_pressed"));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {
