@@ -12,6 +12,7 @@ using GodotTools.IdeMessaging;
 using GodotTools.IdeMessaging.Requests;
 using GodotTools.IdeMessaging.Utils;
 using GodotTools.Internals;
+using GodotTools.Utils;
 using Newtonsoft.Json;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
@@ -362,8 +363,13 @@ namespace GodotTools.Ides
 
             private static async Task<Response> HandleCodeCompletionRequest(CodeCompletionRequest request)
             {
+                // This is needed if the "resource path" part of the path is case insensitive.
+                // However, it doesn't fix resource loading if the rest of the path is also case insensitive.
+                string scriptFileLocalized = FsPathUtils.LocalizePathWithCaseChecked(request.ScriptFile);
+
                 var response = new CodeCompletionResponse {Kind = request.Kind, ScriptFile = request.ScriptFile};
-                response.Suggestions = await Task.Run(() => Internal.CodeCompletionRequest(response.Kind, response.ScriptFile));
+                response.Suggestions = await Task.Run(() =>
+                    Internal.CodeCompletionRequest(response.Kind, scriptFileLocalized ?? request.ScriptFile));
                 return response;
             }
         }

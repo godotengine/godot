@@ -25,8 +25,9 @@ namespace GodotTools.Core
             bool rooted = path.IsAbsolutePath();
 
             path = path.Replace('\\', '/');
+            path = path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
 
-            string[] parts = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = path.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
