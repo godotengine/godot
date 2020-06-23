@@ -34,6 +34,7 @@
 #include "core/io/config_file.h"
 #include "core/undo_redo.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
@@ -219,6 +220,9 @@ public:
 
 	virtual void restore_global_state();
 	virtual void save_global_state();
+
+	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
+	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 
 	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);

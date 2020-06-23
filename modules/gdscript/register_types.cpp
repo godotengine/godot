@@ -46,7 +46,9 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/gdscript_highlighter.h"
+#include "editor/gdscript_translation_parser_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
 #include "core/engine.h"
@@ -164,6 +166,10 @@ void register_gdscript_types() {
 #ifdef TOOLS_ENABLED
 	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
+
+	Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
+	gdscript_translation_parser_plugin.instance();
+	EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 #endif // TOOLS_ENABLED
 }
 

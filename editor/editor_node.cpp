@@ -85,6 +85,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/editor_themes.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_collada.h"
@@ -137,6 +138,7 @@
 #include "editor/plugins/multimesh_editor_plugin.h"
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
@@ -3588,6 +3590,7 @@ void EditorNode::register_editor_types() {
 	ResourceSaver::set_timestamp_on_save(true);
 
 	ClassDB::register_class<EditorPlugin>();
+	ClassDB::register_class<EditorTranslationParserPlugin>();
 	ClassDB::register_class<EditorImportPlugin>();
 	ClassDB::register_class<EditorScript>();
 	ClassDB::register_class<EditorSelection>();
@@ -6655,6 +6658,10 @@ EditorNode::EditorNode() {
 	export_text_to_binary_plugin.instance();
 
 	EditorExport::get_singleton()->add_export_plugin(export_text_to_binary_plugin);
+
+	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
+	packed_scene_translation_parser_plugin.instance();
+	EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
 
 	_edit_current();
 	current = nullptr;

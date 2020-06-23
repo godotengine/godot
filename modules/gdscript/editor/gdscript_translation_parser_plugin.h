@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  pot_generator.h                                                      */
+/*  gdscript_translation_parser_plugin.h                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POT_GENERATOR_H
-#define POT_GENERATOR_H
+#ifndef GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
+#define GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 
-#include "core/ordered_hash_map.h"
-#include "core/set.h"
+#include "editor/editor_translation_parser.h"
+#include "modules/regex/regex.h"
 
-class POTGenerator {
-	static POTGenerator *singleton;
-	// Stores all translatable strings and the source files containing them.
-	OrderedHashMap<String, Set<String>> all_translation_strings;
+class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
+	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
-	void _write_to_pot(const String &p_file);
+	// Regex and search patterns that are used to match translation strings.
+	const String text = "((?:[^\"\\\\]|\\\\[\\s\\S])*(?:\"[\\s\\\\]*\\+[\\s\\\\]*\"(?:[^\"\\\\]|\\\\[\\s\\S])*)*)";
+	RegEx regex;
+	Vector<String> patterns;
+	Vector<String> file_dialog_patterns;
+
+	void _parse_file_dialog(const String &p_source_code, Vector<String> *r_output);
+	void _get_captured_strings(const Array &p_results, Vector<String> *r_output);
 
 public:
-	static POTGenerator *get_singleton();
-	void generate_pot(const String &p_file);
+	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings);
+	virtual void parse_text(const String &p_text, Vector<String> *r_extracted_strings);
+	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 
-	POTGenerator();
-	~POTGenerator();
+	GDScriptEditorTranslationParserPlugin();
 };
 
-#endif // POT_GENERATOR_H
+#endif // GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H

@@ -663,6 +663,14 @@ bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
+void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
+	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
+}
+
+void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
+	EditorTranslationParser::get_singleton()->remove_parser(p_parser, EditorTranslationParser::CUSTOM);
+}
+
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
 	EditorFileSystem::get_singleton()->call_deferred("scan");
@@ -796,6 +804,8 @@ void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::_get_undo_redo);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
+	ClassDB::bind_method(D_METHOD("add_translation_parser_plugin", "parser"), &EditorPlugin::add_translation_parser_plugin);
+	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer"), &EditorPlugin::add_import_plugin);
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_scene_import_plugin", "scene_importer"), &EditorPlugin::add_scene_import_plugin);

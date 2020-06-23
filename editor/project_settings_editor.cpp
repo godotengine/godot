@@ -38,6 +38,7 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/pot_generator.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
@@ -142,13 +143,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				translation_res_option_file_open->add_filter("*." + E->get());
 			}
 
-			List<String> pfn;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &pfn);
-			for (List<String>::Element *E = pfn.front(); E; E = E->next()) {
-				translation_pot_file_open->add_filter("*." + E->get());
-			}
-			// Currently we only support GDScript.
-			translation_pot_file_open->add_filter("*.gd");
+			_update_translation_pot_file_extensions();
 			translation_pot_generate->add_filter("*.pot");
 
 			restart_close_button->set_icon(input_editor->get_theme_icon("Close", "EditorIcons"));
@@ -876,6 +871,8 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	// New translation parser plugin might extend possible file extensions in POT generation.
+	_update_translation_pot_file_extensions();
 	set_process_unhandled_input(true);
 }
 
@@ -1584,8 +1581,17 @@ void ProjectSettingsEditor::_translation_pot_generate(const String &p_file) {
 	POTGenerator::get_singleton()->generate_pot(p_file);
 }
 
+void ProjectSettingsEditor::_update_translation_pot_file_extensions() {
+	translation_pot_file_open->clear_filters();
+	List<String> translation_parse_file_extensions;
+	EditorTranslationParser::get_singleton()->get_recognized_extensions(&translation_parse_file_extensions);
+	for (List<String>::Element *E = translation_parse_file_extensions.front(); E; E = E->next()) {
+		translation_pot_file_open->add_filter("*." + E->get());
+	}
+}
+
 void ProjectSettingsEditor::_update_translations() {
-	//update translations
+	// Update translations.
 
 	if (updating_translations) {
 		return;
@@ -1666,7 +1672,7 @@ void ProjectSettingsEditor::_update_translations() {
 		}
 	}
 
-	//update translation remaps
+	// Update translation remaps.
 
 	String remap_selected;
 	if (translation_remap->get_selected()) {
@@ -1761,7 +1767,7 @@ void ProjectSettingsEditor::_update_translations() {
 		}
 	}
 
-	//update translation POT files
+	// Update translation POT files.
 
 	translation_pot_list->clear();
 	root = translation_pot_list->create_item(nullptr);
