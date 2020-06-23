@@ -142,6 +142,15 @@
 				Adds a custom submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. [code]submenu[/code] should be an object of class [PopupMenu]. This submenu should be cleaned up using [code]remove_tool_menu_item(name)[/code].
 			</description>
 		</method>
+		<method name="add_translation_parser_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="parser" type="EditorTranslationParserPlugin">
+			</argument>
+			<description>
+				Registers a custom translation parser plugin for extracting translatable strings from custom files.
+			</description>
+		</method>
 		<method name="apply_changes" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -462,6 +471,15 @@
 			</argument>
 			<description>
 				Removes a menu [code]name[/code] from [b]Project &gt; Tools[/b].
+			</description>
+		</method>
+		<method name="remove_translation_parser_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="parser" type="EditorTranslationParserPlugin">
+			</argument>
+			<description>
+				Removes a registered custom translation parser plugin.
 			</description>
 		</method>
 		<method name="save_external_data" qualifiers="virtual">
