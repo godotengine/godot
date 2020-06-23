@@ -659,13 +659,22 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 		glEnableVertexAttribArray(VS::ARRAY_COLOR);
 	}
 
+	// We only want to set the GL wrapping mode if the texture is not already tiled (i.e. set in Import).
+	// This  is an optimization left over from the legacy renderer.
+	// If we DID set tiling in the API, and reverted to clamped, then the next draw using this texture
+	// may use clamped mode incorrectly.
+	bool tex_is_already_tiled = tex.flags & VS::TEXTURE_FLAG_REPEAT;
+
 	switch (tex.tile_mode) {
 		case BatchTex::TILE_FORCE_REPEAT: {
 			state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
 		} break;
 		case BatchTex::TILE_NORMAL: {
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			// if the texture is imported as tiled, no need to set GL state, as it will already be bound with repeat
+			if (!tex_is_already_tiled) {
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
 		} break;
 		default: {
 		} break;
@@ -689,8 +698,11 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 			state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
 		} break;
 		case BatchTex::TILE_NORMAL: {
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			// if the texture is imported as tiled, no need to revert GL state
+			if (!tex_is_already_tiled) {
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
 		} break;
 		default: {
 		} break;
