@@ -2321,8 +2321,8 @@ void Main::cleanup() {
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
 
+	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
-	memdelete(message_queue);
 
 	OS::get_singleton()->delete_main_loop();
 
@@ -2407,6 +2407,10 @@ void Main::cleanup() {
 		OS::get_singleton()->execute(exec, args, false, &pid);
 		OS::get_singleton()->set_restart_on_exit(false, List<String>()); //clear list (uses memory)
 	}
+
+	// Now should be safe to delete MessageQueue (famous last words).
+	message_queue->flush();
+	memdelete(message_queue);
 
 	unregister_core_driver_types();
 	unregister_core_types();
