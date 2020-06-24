@@ -43,6 +43,12 @@
 #include "scene/gui/popup_menu.h"
 #include "servers/rendering_server.h"
 
+#include "editor/plugins/mesh_instance_3d_editor_plugin.h"
+#include "modules/csg/csg_shape.h"
+#include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/multimesh_instance_2d.h"
+#include "scene/3d/multimesh_instance_3d.h"
+
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;
 
@@ -606,6 +612,46 @@ void EditorPlugin::edit(Object *p_object) {
 }
 
 bool EditorPlugin::handles(Object *p_object) const {
+	if (p_object->is_class("Node")) {
+		String editable_warning;
+		if (p_object->is_class("MeshInstance3D")) {
+			MeshInstance3D *MI3D = Object::cast_to<MeshInstance3D>(p_object);
+			if (MI3D->get_mesh() != nullptr && MI3D->get_mesh()->get_path().is_resource_file()) {
+				if (FileAccess::exists(MI3D->get_mesh()->get_path() + ".import")) {
+					editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
+				}
+			}
+		} else if (p_object->is_class("CSGMesh3D")) {
+			CSGMesh3D *CSGM3D = Object::cast_to<CSGMesh3D>(p_object);
+			if (CSGM3D->get_mesh() != nullptr && CSGM3D->get_mesh()->get_path().is_resource_file()) {
+				if (FileAccess::exists(CSGM3D->get_mesh()->get_path() + ".import")) {
+					editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
+				}
+			}
+		} else if (p_object->is_class("MultiMeshInstance3D")) {
+			MultiMeshInstance3D *MMI3D = Object::cast_to<MultiMeshInstance3D>(p_object);
+			if (MMI3D->get_multimesh() != nullptr && MMI3D->get_multimesh()->get_path().is_resource_file()) {
+				if (FileAccess::exists(MMI3D->get_multimesh()->get_path() + ".import")) {
+					editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
+				}
+			}
+		} else if (p_object->is_class("MeshInstance2D")) {
+			MeshInstance2D *MI2D = Object::cast_to<MeshInstance2D>(p_object);
+			if (MI2D->get_mesh() != nullptr && MI2D->get_mesh()->get_path().is_resource_file()) {
+				if (FileAccess::exists(MI2D->get_mesh()->get_path() + ".import")) {
+					editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
+				}
+			}
+		} else if (p_object->is_class("MultiMeshInstance2D")) {
+			MultiMeshInstance2D *MMI2D = Object::cast_to<MultiMeshInstance2D>(p_object);
+			if (MMI2D->get_multimesh() != nullptr && MMI2D->get_multimesh()->get_path().is_resource_file()) {
+				if (FileAccess::exists(MMI2D->get_multimesh()->get_path() + ".import")) {
+					editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
+				}
+			}
+		}
+		EditorNode::get_singleton()->get_inspector_dock()->set_warning(editable_warning);
+	}
 	if (get_script_instance() && get_script_instance()->has_method("handles")) {
 		return get_script_instance()->call("handles", p_object);
 	}

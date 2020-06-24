@@ -234,6 +234,8 @@ void EditorNode::_update_scene_tabs() {
 		}
 		scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
 	}
+
+	_edit_current();
 }
 
 void EditorNode::_version_control_menu_option(int p_idx) {
