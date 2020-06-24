@@ -148,7 +148,8 @@ private:
 	bool _find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths);
 
 	HashMap<StringName, String> _script_class_icon_paths;
-	HashMap<String, StringName> _script_class_file_to_path;
+	HashMap<String, StringName> _script_class_path_to_name;
+	HashMap<String, Ref<Script> > _script_cache;
 
 public:
 	EditorPlugin *get_editor(Object *p_object);
@@ -229,6 +230,8 @@ public:
 	void script_class_clear_icon_paths() { _script_class_icon_paths.clear(); }
 	void script_class_save_icon_paths();
 	void script_class_load_icon_paths();
+
+	void script_class_update_cache();
 
 	EditorData();
 };

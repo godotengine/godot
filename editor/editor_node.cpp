@@ -357,6 +357,8 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->connect("files_dropped", this, "_dropped_files");
 			get_tree()->connect("global_menu_action", this, "_global_menu_action");
 
+			editor_data.script_class_update_cache();
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
