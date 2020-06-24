@@ -58,7 +58,7 @@ private:
 	TabAlign align;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
-	Popup *popup;
+	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled;
 	bool use_hidden_tabs_for_min_size;
 	int tabs_rearrange_group;

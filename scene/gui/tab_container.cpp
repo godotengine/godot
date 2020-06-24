@@ -71,6 +71,8 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
+	Popup *popup = get_popup();
+
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 		Point2 pos(mb->get_position().x, mb->get_position().y);
@@ -231,6 +233,7 @@ void TabContainer::_notification(int p_what) {
 			int header_width = get_size().width - side_margin * 2;
 
 			// Find the width of the header area.
+			Popup *popup = get_popup();
 			if (popup)
 				header_width -= menu->get_width();
 			if (buttons_visible_cache)
@@ -289,6 +292,7 @@ void TabContainer::_notification(int p_what) {
 			int header_x = side_margin;
 			int header_width = size.width - side_margin * 2;
 			int header_height = _get_top_margin();
+			Popup *popup = get_popup();
 			if (popup)
 				header_width -= menu->get_width();
 
@@ -750,6 +754,7 @@ int TabContainer::get_tab_idx_at_point(const Point2 &p_point) const {
 	Size2 size = get_size();
 	int right_ofs = 0;
 
+	Popup *popup = get_popup();
 	if (popup) {
 		Ref<Texture> menu = get_icon("menu");
 		right_ofs += menu->get_width();
@@ -957,12 +962,24 @@ Size2 TabContainer::get_minimum_size() const {
 
 void TabContainer::set_popup(Node *p_popup) {
 	ERR_FAIL_NULL(p_popup);
-	popup = Object::cast_to<Popup>(p_popup);
+	Popup *popup = Object::cast_to<Popup>(p_popup);
+	popup_obj_id = popup ? popup->get_instance_id() : 0;
 	update();
 }
 
 Popup *TabContainer::get_popup() const {
-	return popup;
+	if (popup_obj_id) {
+		Popup *popup = Object::cast_to<Popup>(ObjectDB::get_instance(popup_obj_id));
+		if (popup) {
+			return popup;
+		} else {
+#ifdef DEBUG_ENABLED
+			ERR_PRINT("Popup assigned to TabContainer is gone!");
+#endif
+			popup_obj_id = 0;
+		}
+	}
+	return NULL;
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
@@ -1049,7 +1066,7 @@ TabContainer::TabContainer() {
 	previous = 0;
 	align = ALIGN_CENTER;
 	tabs_visible = true;
-	popup = NULL;
+	popup_obj_id = 0;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 	use_hidden_tabs_for_min_size = false;
