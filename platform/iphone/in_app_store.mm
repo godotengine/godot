@@ -215,7 +215,7 @@ Error InAppStore::restore_purchases() {
 
 				NSString *receipt_to_send = nil;
 				if (receipt != nil) {
-					receipt_to_send = [receipt description];
+					receipt_to_send = [receipt base64EncodedStringWithOptions:0];
 				}
 				Dictionary receipt_ret;
 				receipt_ret["receipt"] = String::utf8(receipt_to_send != nil ? [receipt_to_send UTF8String] : "");
