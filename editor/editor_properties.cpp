@@ -1354,13 +1354,25 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector3::update_property() {
-	Vector3 val = get_edited_object()->get(get_edited_property());
+	update_using_vector(get_edited_object()->get(get_edited_property()));
+}
+
+void EditorPropertyVector3::update_using_vector(Vector3 p_vector) {
 	setting = true;
-	spin[0]->set_value(val.x);
-	spin[1]->set_value(val.y);
-	spin[2]->set_value(val.z);
+	spin[0]->set_value(p_vector.x);
+	spin[1]->set_value(p_vector.y);
+	spin[2]->set_value(p_vector.z);
 	setting = false;
 }
+
+Vector3 EditorPropertyVector3::get_vector() {
+	Vector3 v3;
+	v3.x = spin[0]->get_value();
+	v3.y = spin[1]->get_value();
+	v3.z = spin[2]->get_value();
+	return v3;
+}
+
 void EditorPropertyVector3::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_color("accent_color", "Editor");
@@ -1860,6 +1872,24 @@ void EditorPropertyTransform::update_property() {
 
 	setting = false;
 }
+
+void EditorPropertyTransform::update_using_transform(Transform p_transform) {
+	setting = true;
+	spin[0]->set_value(p_transform.basis[0][0]);
+	spin[1]->set_value(p_transform.basis[1][0]);
+	spin[2]->set_value(p_transform.basis[2][0]);
+	spin[3]->set_value(p_transform.basis[0][1]);
+	spin[4]->set_value(p_transform.basis[1][1]);
+	spin[5]->set_value(p_transform.basis[2][1]);
+	spin[6]->set_value(p_transform.basis[0][2]);
+	spin[7]->set_value(p_transform.basis[1][2]);
+	spin[8]->set_value(p_transform.basis[2][2]);
+	spin[9]->set_value(p_transform.origin[0]);
+	spin[10]->set_value(p_transform.origin[1]);
+	spin[11]->set_value(p_transform.origin[2]);
+	setting = false;
+}
+
 void EditorPropertyTransform::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_color("accent_color", "Editor");

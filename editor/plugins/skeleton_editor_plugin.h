@@ -41,30 +41,19 @@ class PhysicalBone;
 class SkeletonEditorPlugin;
 class Button;
 class CheckBox;
+class EditorPropertyTransform;
+class EditorPropertyVector3;
 
 class BoneTransformEditor : public VBoxContainer {
 	GDCLASS(BoneTransformEditor, VBoxContainer);
 
-	static const int32_t TRANSLATION_COMPONENTS = 3;
-	static const int32_t ROTATION_DEGREES_COMPONENTS = 3;
-	static const int32_t SCALE_COMPONENTS = 3;
-	static const int32_t BASIS_COMPONENTS = 9;
-	static const int32_t BASIS_SPLIT_COMPONENTS = 3;
-	static const int32_t TRANSFORM_COMPONENTS = 12;
-	static const int32_t TRANSFORM_SPLIT_COMPONENTS = 3;
-	static const int32_t TRANSFORM_CONTROL_COMPONENTS = 3;
-
 	EditorInspectorSection *section;
 
-	GridContainer *translation_grid;
-	GridContainer *rotation_grid;
-	GridContainer *scale_grid;
-	GridContainer *transform_grid;
-
-	EditorSpinSlider *translation_slider[TRANSLATION_COMPONENTS];
-	EditorSpinSlider *rotation_slider[ROTATION_DEGREES_COMPONENTS];
-	EditorSpinSlider *scale_slider[SCALE_COMPONENTS];
-	EditorSpinSlider *transform_slider[TRANSFORM_COMPONENTS];
+	EditorPropertyVector3 *translation_property;
+	EditorPropertyVector3 *rotation_property;
+	EditorPropertyVector3 *scale_property;
+	EditorInspectorSection *transform_section;
+	EditorPropertyTransform *transform_property;
 
 	Rect2 background_rects[5];
 
@@ -83,11 +72,17 @@ class BoneTransformEditor : public VBoxContainer {
 	String label;
 
 	void create_editors();
-	void setup_spinner(EditorSpinSlider *spinner, const bool is_transform_spinner);
 
-	void _value_changed(const double p_value, const bool p_from_transform);
-
-	Transform compute_transform(const bool p_from_transform) const;
+	// Called when one of the EditorSpinSliders are changed.
+	void _value_changed(const double p_value);
+	// Called when the one of the EditorPropertyVector3 are updated.
+	void _value_changed_vector3(const String p_property_name, const Vector3 p_vector, const StringName p_edited_property_name, const bool p_boolean);
+	// Called when the transform_property is updated.
+	void _value_changed_transform(const String p_property_name, const Transform p_transform, const StringName p_edited_property_name, const bool p_boolean);
+	// Changes the transform to the given transform and updates the UI accordingly.
+	void _change_transform(Transform p_new_transform);
+	// Creates a Transform using the EditorPropertyVector3 properties.
+	Transform compute_transform_from_vector3s() const;
 
 	void update_enabled_checkbox();
 
