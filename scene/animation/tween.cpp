@@ -1371,6 +1371,10 @@ void Tween::interpolate_property(Object *p_object, NodePath p_property, Variant 
 		p_final_val = p_final_val.operator real_t();
 	}
 
+	Variant::Type property_type = p_object->get_indexed(p_property.get_subnames()).get_type();
+	ERR_FAIL_COND_MSG(p_initial_val.get_type() != property_type, "Tween property expected type " + Variant::get_type_name(property_type) + " for initial value, but got " + Variant::get_type_name(p_initial_val.get_type()) + " instead.");
+	ERR_FAIL_COND_MSG(p_final_val.get_type() != property_type, "Tween property expected type " + Variant::get_type_name(property_type) + " for final value, but got " + Variant::get_type_name(p_final_val.get_type()) + " instead.");
+
 	// Build the interpolation data
 	_build_interpolation(INTER_PROPERTY, p_object, &p_property, nullptr, p_initial_val, p_final_val, p_duration, p_trans_type, p_ease_type, p_delay);
 }
