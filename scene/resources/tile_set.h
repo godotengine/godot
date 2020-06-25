@@ -32,6 +32,7 @@
 #define TILE_SET_H
 
 #include "core/array.h"
+#include "core/typed_array.h"
 #include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
@@ -148,6 +149,8 @@ public:
 
 	void tile_set_texture(int p_id, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> tile_get_texture(int p_id) const;
+
+	TypedArray<Texture2D> get_textures() const;
 
 	void tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map);
 	Ref<Texture2D> tile_get_normal_map(int p_id) const;
