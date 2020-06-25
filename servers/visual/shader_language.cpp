@@ -883,6 +883,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 		if (r_data_type) {
 			*r_data_type = p_builtin_types[p_identifier].type;
 		}
+		if (r_is_const) {
+			*r_is_const = p_builtin_types[p_identifier].constant;
+		}
 		if (r_type) {
 			*r_type = IDENTIFIER_BUILTIN_VAR;
 		}
@@ -2962,7 +2965,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 					bnode = bnode->parent_block;
 				}
-
+				int function_index = -1;
 				//test if function was parsed first
 				for (int i = 0; i < shader->functions.size(); i++) {
 					if (shader->functions[i].name == name) {
@@ -2973,6 +2976,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								break;
 							}
 						}
+						function_index = i;
 						break;
 					}
 				}
@@ -2993,6 +2997,54 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return NULL;
 				}
 				completion_class = TAG_GLOBAL; // reset sub-class
+
+				if (function_index >= 0) {
+					FunctionNode *call_function = shader->functions[function_index].function;
+					if (call_function) {
+						for (int i = 0; i < call_function->arguments.size(); i++) {
+							int argidx = i + 1;
+							if (argidx < func->arguments.size()) {
+								if (call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
+									bool error = false;
+									Node *n = func->arguments[argidx];
+									if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
+										error = true;
+									} else if (n->type == Node::TYPE_ARRAY) {
+										ArrayNode *an = static_cast<ArrayNode *>(n);
+										if (an->call_expression != nullptr || an->is_const) {
+											error = true;
+										}
+									} else if (n->type == Node::TYPE_VARIABLE) {
+										VariableNode *vn = static_cast<VariableNode *>(n);
+										if (vn->is_const) {
+											error = true;
+										} else {
+											StringName varname = vn->name;
+											if (shader->constants.has(varname)) {
+												error = true;
+											} else if (shader->uniforms.has(varname)) {
+												error = true;
+											} else {
+												if (p_builtin_types.has(varname)) {
+													BuiltInInfo info = p_builtin_types[varname];
+													if (info.constant) {
+														error = true;
+													}
+												}
+											}
+										}
+									}
+									if (error) {
+										_set_error(vformat("Constant value cannot be passed for '%s' parameter!", _get_qualifier_str(call_function->arguments[i].qualifier)));
+										return nullptr;
+									}
+								}
+							} else {
+								break;
+							}
+						}
+					}
+				}
 
 				expr = func;
 
@@ -4727,6 +4779,18 @@ String ShaderLanguage::_get_shader_type_list(const Set<String> &p_shader_types) 
 	}
 
 	return valid_types;
+}
+
+String ShaderLanguage::_get_qualifier_str(ArgumentQualifier p_qualifier) const {
+	switch (p_qualifier) {
+		case ArgumentQualifier::ARGUMENT_QUALIFIER_IN:
+			return "in";
+		case ArgumentQualifier::ARGUMENT_QUALIFIER_OUT:
+			return "out";
+		case ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT:
+			return "inout";
+	}
+	return "";
 }
 
 Error ShaderLanguage::_validate_datatype(DataType p_type) {
