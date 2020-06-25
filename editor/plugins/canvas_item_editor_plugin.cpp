@@ -1303,6 +1303,18 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid() && !p_already_accepted) {
+		// If control key pressed, then zoom instead of pan
+		if (pan_gesture->get_control()) {
+			const float factor = pan_gesture->get_delta().y;
+			float new_zoom = _get_next_zoom_value(-1);
+
+			if (factor != 1.f) {
+				new_zoom = zoom * ((new_zoom / zoom - 1.f) * factor + 1.f);
+			}
+			_zoom_on_position(new_zoom, pan_gesture->get_position());
+			return true;
+		}
+
 		// Pan gesture
 		const Vector2 delta = (int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom) * pan_gesture->get_delta();
 		view_offset.x += delta.x;
