@@ -86,6 +86,18 @@ public:
 		SSAO_BLUR_3x3
 	};
 
+	enum SDFGICascades {
+		SDFGI_CASCADES_4,
+		SDFGI_CASCADES_6,
+		SDFGI_CASCADES_8,
+	};
+
+	enum SDFGIYScale {
+		SDFGI_Y_SCALE_DISABLED,
+		SDFGI_Y_SCALE_75_PERCENT,
+		SDFGI_Y_SCALE_50_PERCENT,
+	};
+
 private:
 	RID environment;
 
@@ -162,6 +174,20 @@ private:
 	float fog_height_min;
 	float fog_height_max;
 	float fog_height_curve;
+
+	bool sdfgi_enabled;
+	SDFGICascades sdfgi_cascades;
+	float sdfgi_min_cell_size;
+	bool sdfgi_use_occlusion;
+	bool sdfgi_use_multibounce;
+	bool sdfgi_read_sky_light;
+	bool sdfgi_enhance_ssr;
+	float sdfgi_energy;
+	float sdfgi_normal_bias;
+	float sdfgi_probe_bias;
+	SDFGIYScale sdfgi_y_scale;
+
+	void _update_sdfgi();
 
 protected:
 	static void _bind_methods();
@@ -354,6 +380,45 @@ public:
 	void set_fog_height_curve(float p_distance);
 	float get_fog_height_curve() const;
 
+	void set_sdfgi_enabled(bool p_enabled);
+	bool is_sdfgi_enabled() const;
+
+	void set_sdfgi_cascades(SDFGICascades p_cascades);
+	SDFGICascades get_sdfgi_cascades() const;
+
+	void set_sdfgi_min_cell_size(float p_size);
+	float get_sdfgi_min_cell_size() const;
+
+	void set_sdfgi_cascade0_distance(float p_size);
+	float get_sdfgi_cascade0_distance() const;
+
+	void set_sdfgi_max_distance(float p_size);
+	float get_sdfgi_max_distance() const;
+
+	void set_sdfgi_use_occlusion(bool p_enable);
+	bool is_sdfgi_using_occlusion() const;
+
+	void set_sdfgi_use_multi_bounce(bool p_enable);
+	bool is_sdfgi_using_multi_bounce() const;
+
+	void set_sdfgi_use_enhance_ssr(bool p_enable);
+	bool is_sdfgi_using_enhance_ssr() const;
+
+	void set_sdfgi_read_sky_light(bool p_enable);
+	bool is_sdfgi_reading_sky_light() const;
+
+	void set_sdfgi_energy(float p_energy);
+	float get_sdfgi_energy() const;
+
+	void set_sdfgi_normal_bias(float p_bias);
+	float get_sdfgi_normal_bias() const;
+
+	void set_sdfgi_probe_bias(float p_bias);
+	float get_sdfgi_probe_bias() const;
+
+	void set_sdfgi_y_scale(SDFGIYScale p_y_scale);
+	SDFGIYScale get_sdfgi_y_scale() const;
+
 	virtual RID get_rid() const;
 
 	Environment();
@@ -366,6 +431,8 @@ VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
+VARIANT_ENUM_CAST(Environment::SDFGICascades)
+VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 
 class CameraEffects : public Resource {
 	GDCLASS(CameraEffects, Resource);

@@ -222,6 +222,10 @@ bool RenderingServerRaster::has_feature(Features p_feature) const {
 	return false;
 }
 
+void RenderingServerRaster::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
+	RSG::scene_render->sdfgi_set_debug_probe_select(p_position, p_dir);
+}
+
 RID RenderingServerRaster::get_test_cube() {
 	if (!test_cube.is_valid()) {
 		test_cube = _make_test_cube();

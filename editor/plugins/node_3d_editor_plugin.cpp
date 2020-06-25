@@ -487,6 +487,10 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, b
 	Vector3 pos = _get_ray_pos(p_pos);
 	Vector2 shrinked_pos = p_pos / subviewport_container->get_stretch_shrink();
 
+	if (viewport->get_debug_draw() == Viewport::DEBUG_DRAW_SDFGI_PROBES) {
+		RS::get_singleton()->sdfgi_set_debug_probe_select(pos, ray);
+	}
+
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world_3d()->get_scenario());
 	Set<Ref<EditorNode3DGizmo>> found_gizmos;
 
@@ -2984,7 +2988,9 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_SSAO:
 		case VIEW_DISPLAY_DEBUG_PSSM_SPLITS:
 		case VIEW_DISPLAY_DEBUG_DECAL_ATLAS:
-		case VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER: {
+		case VIEW_DISPLAY_DEBUG_SDFGI:
+		case VIEW_DISPLAY_DEBUG_SDFGI_PROBES:
+		case VIEW_DISPLAY_DEBUG_GI_BUFFER: {
 			static const int display_options[] = {
 				VIEW_DISPLAY_NORMAL,
 				VIEW_DISPLAY_WIREFRAME,
@@ -3000,9 +3006,11 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION,
 				VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 				VIEW_DISPLAY_DEBUG_SSAO,
-				VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER,
+				VIEW_DISPLAY_DEBUG_GI_BUFFER,
 				VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
 				VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+				VIEW_DISPLAY_DEBUG_SDFGI,
+				VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 				VIEW_MAX
 			};
 			static const Viewport::DebugDraw debug_draw_modes[] = {
@@ -3020,9 +3028,11 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_GI_PROBE_EMISSION,
 				Viewport::DEBUG_DRAW_SCENE_LUMINANCE,
 				Viewport::DEBUG_DRAW_SSAO,
-				Viewport::DEBUG_DRAW_ROUGHNESS_LIMITER,
+				Viewport::DEBUG_DRAW_GI_BUFFER,
 				Viewport::DEBUG_DRAW_PSSM_SPLITS,
 				Viewport::DEBUG_DRAW_DECAL_ATLAS,
+				Viewport::DEBUG_DRAW_SDFGI,
+				Viewport::DEBUG_DRAW_SDFGI_PROBES,
 			};
 
 			int idx = 0;
@@ -3898,11 +3908,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	display_submenu->add_radio_check_item(TTR("GIProbe Albedo"), VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO);
 	display_submenu->add_radio_check_item(TTR("GIProbe Emission"), VIEW_DISPLAY_DEBUG_GIPROBE_EMISSION);
 	display_submenu->add_separator();
+	display_submenu->add_radio_check_item(TTR("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI);
+	display_submenu->add_radio_check_item(TTR("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES);
+	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("SSAO"), VIEW_DISPLAY_DEBUG_SSAO);
 	display_submenu->add_separator();
-	display_submenu->add_radio_check_item(TTR("Roughness Limiter"), VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER);
+	display_submenu->add_radio_check_item(TTR("GI Buffer"), VIEW_DISPLAY_DEBUG_GI_BUFFER);
 	display_submenu->set_name("display_advanced");
 	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced", VIEW_DISPLAY_ADVANCED);
 	view_menu->get_popup()->add_separator();

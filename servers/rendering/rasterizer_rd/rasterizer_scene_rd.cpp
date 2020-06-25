@@ -32,8 +32,8 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "rasterizer_rd.h"
 #include "servers/rendering/rendering_server_raster.h"
-
 uint64_t RasterizerSceneRD::auto_exposure_counter = 2;
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -193,6 +193,1541 @@ void RasterizerSceneRD::_update_reflection_mipmaps(ReflectionData &rd) {
 			}
 		}
 	}
+}
+
+void RasterizerSceneRD::_sdfgi_erase(RenderBuffers *rb) {
+	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+		const SDFGI::Cascade &c = rb->sdfgi->cascades[i];
+		RD::get_singleton()->free(c.light_data);
+		RD::get_singleton()->free(c.light_aniso_0_tex);
+		RD::get_singleton()->free(c.light_aniso_1_tex);
+		RD::get_singleton()->free(c.sdf_tex);
+		RD::get_singleton()->free(c.solid_cell_dispatch_buffer);
+		RD::get_singleton()->free(c.solid_cell_buffer);
+		RD::get_singleton()->free(c.lightprobe_history_tex);
+		RD::get_singleton()->free(c.lightprobe_average_tex);
+		RD::get_singleton()->free(c.lights_buffer);
+	}
+
+	RD::get_singleton()->free(rb->sdfgi->render_albedo);
+	RD::get_singleton()->free(rb->sdfgi->render_emission);
+	RD::get_singleton()->free(rb->sdfgi->render_emission_aniso);
+
+	RD::get_singleton()->free(rb->sdfgi->render_sdf[0]);
+	RD::get_singleton()->free(rb->sdfgi->render_sdf[1]);
+
+	RD::get_singleton()->free(rb->sdfgi->render_sdf_half[0]);
+	RD::get_singleton()->free(rb->sdfgi->render_sdf_half[1]);
+
+	for (int i = 0; i < 8; i++) {
+		RD::get_singleton()->free(rb->sdfgi->render_occlusion[i]);
+	}
+
+	RD::get_singleton()->free(rb->sdfgi->render_geom_facing);
+
+	RD::get_singleton()->free(rb->sdfgi->lightprobe_data);
+	RD::get_singleton()->free(rb->sdfgi->lightprobe_history_scroll);
+	RD::get_singleton()->free(rb->sdfgi->occlusion_data);
+
+	RD::get_singleton()->free(rb->sdfgi->cascades_ubo);
+
+	memdelete(rb->sdfgi);
+
+	rb->sdfgi = nullptr;
+}
+
+const Vector3i RasterizerSceneRD::SDFGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
+
+void RasterizerSceneRD::sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
+	Environent *env = environment_owner.getornull(p_environment);
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	bool needs_sdfgi = env && env->sdfgi_enabled;
+
+	if (!needs_sdfgi) {
+		if (rb->sdfgi != nullptr) {
+			//erase it
+			_sdfgi_erase(rb);
+			_render_buffers_uniform_set_changed(p_render_buffers);
+		}
+		return;
+	}
+
+	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
+	uint32_t requested_history_size = history_frames_to_converge[sdfgi_frames_to_converge];
+
+	if (rb->sdfgi && (rb->sdfgi->cascade_mode != env->sdfgi_cascades || rb->sdfgi->min_cell_size != env->sdfgi_min_cell_size || requested_history_size != rb->sdfgi->history_size || rb->sdfgi->uses_occlusion != env->sdfgi_use_occlusion || rb->sdfgi->y_scale_mode != env->sdfgi_y_scale)) {
+		//configuration changed, erase
+		_sdfgi_erase(rb);
+	}
+
+	SDFGI *sdfgi = rb->sdfgi;
+	if (sdfgi == nullptr) {
+		//re-create
+		rb->sdfgi = memnew(SDFGI);
+		sdfgi = rb->sdfgi;
+		sdfgi->cascade_mode = env->sdfgi_cascades;
+		sdfgi->min_cell_size = env->sdfgi_min_cell_size;
+		sdfgi->uses_occlusion = env->sdfgi_use_occlusion;
+		sdfgi->y_scale_mode = env->sdfgi_y_scale;
+		static const float y_scale[3] = { 1.0, 1.5, 2.0 };
+		sdfgi->y_mult = y_scale[sdfgi->y_scale_mode];
+		static const int cascasde_size[3] = { 4, 6, 8 };
+		sdfgi->cascades.resize(cascasde_size[sdfgi->cascade_mode]);
+		sdfgi->probe_axis_count = SDFGI::PROBE_DIVISOR + 1;
+		sdfgi->solid_cell_ratio = sdfgi_solid_cell_ratio;
+		sdfgi->solid_cell_count = uint32_t(float(sdfgi->cascade_size * sdfgi->cascade_size * sdfgi->cascade_size) * sdfgi->solid_cell_ratio);
+
+		float base_cell_size = sdfgi->min_cell_size;
+
+		RD::TextureFormat tf_sdf;
+		tf_sdf.format = RD::DATA_FORMAT_R8_UNORM;
+		tf_sdf.width = sdfgi->cascade_size; // Always 64x64
+		tf_sdf.height = sdfgi->cascade_size;
+		tf_sdf.depth = sdfgi->cascade_size;
+		tf_sdf.type = RD::TEXTURE_TYPE_3D;
+		tf_sdf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+
+		{
+			RD::TextureFormat tf_render = tf_sdf;
+			tf_render.format = RD::DATA_FORMAT_R16_UINT;
+			sdfgi->render_albedo = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+			tf_render.format = RD::DATA_FORMAT_R32_UINT;
+			sdfgi->render_emission = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+			sdfgi->render_emission_aniso = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+
+			tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
+
+			for (int i = 0; i < 8; i++) {
+				sdfgi->render_occlusion[i] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+			}
+
+			tf_render.format = RD::DATA_FORMAT_R32_UINT;
+			sdfgi->render_geom_facing = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+
+			tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
+			sdfgi->render_sdf[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+			sdfgi->render_sdf[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+
+			tf_render.width /= 2;
+			tf_render.height /= 2;
+			tf_render.depth /= 2;
+
+			sdfgi->render_sdf_half[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+			sdfgi->render_sdf_half[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		}
+
+		RD::TextureFormat tf_occlusion = tf_sdf;
+		tf_occlusion.format = RD::DATA_FORMAT_R16_UINT;
+		tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
+		tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
+		tf_occlusion.depth *= sdfgi->cascades.size(); //use depth for occlusion slices
+		tf_occlusion.width *= 2; //use width for the other half
+
+		RD::TextureFormat tf_light = tf_sdf;
+		tf_light.format = RD::DATA_FORMAT_R32_UINT;
+		tf_light.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
+		tf_light.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+
+		RD::TextureFormat tf_aniso0 = tf_sdf;
+		tf_aniso0.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		RD::TextureFormat tf_aniso1 = tf_sdf;
+		tf_aniso1.format = RD::DATA_FORMAT_R8G8_UNORM;
+
+		int passes = nearest_shift(sdfgi->cascade_size) - 1;
+
+		//store lightprobe SH
+		RD::TextureFormat tf_probes;
+		tf_probes.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf_probes.width = sdfgi->probe_axis_count * sdfgi->probe_axis_count;
+		tf_probes.height = sdfgi->probe_axis_count * SDFGI::SH_SIZE;
+		tf_probes.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		tf_probes.type = RD::TEXTURE_TYPE_2D_ARRAY;
+
+		sdfgi->history_size = requested_history_size;
+
+		RD::TextureFormat tf_probe_history = tf_probes;
+		tf_probe_history.format = RD::DATA_FORMAT_R16G16B16A16_SINT; //signed integer because SH are signed
+		tf_probe_history.array_layers = sdfgi->history_size;
+
+		RD::TextureFormat tf_probe_average = tf_probes;
+		tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
+		tf_probe_average.type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf_probe_average.array_layers = 1;
+
+		sdfgi->lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
+		sdfgi->lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
+
+		{
+			//octahedral lightprobes
+			RD::TextureFormat tf_octprobes = tf_probes;
+			tf_octprobes.array_layers = sdfgi->cascades.size() * 2;
+			tf_octprobes.format = RD::DATA_FORMAT_R32_UINT; //pack well with RGBE
+			tf_octprobes.width = sdfgi->probe_axis_count * sdfgi->probe_axis_count * (SDFGI::LIGHTPROBE_OCT_SIZE + 2);
+			tf_octprobes.height = sdfgi->probe_axis_count * (SDFGI::LIGHTPROBE_OCT_SIZE + 2);
+			tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
+			tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+			//lightprobe texture is an octahedral texture
+
+			sdfgi->lightprobe_data = RD::get_singleton()->texture_create(tf_octprobes, RD::TextureView());
+			RD::TextureView tv;
+			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+			sdfgi->lightprobe_texture = RD::get_singleton()->texture_create_shared(tv, sdfgi->lightprobe_data);
+		}
+
+		sdfgi->cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
+
+		sdfgi->occlusion_data = RD::get_singleton()->texture_create(tf_occlusion, RD::TextureView());
+		{
+			RD::TextureView tv;
+			tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
+			sdfgi->occlusion_texture = RD::get_singleton()->texture_create_shared(tv, sdfgi->occlusion_data);
+		}
+
+		for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
+			SDFGI::Cascade &cascade = sdfgi->cascades[i];
+
+			/* 3D Textures */
+
+			cascade.sdf_tex = RD::get_singleton()->texture_create(tf_sdf, RD::TextureView());
+
+			cascade.light_data = RD::get_singleton()->texture_create(tf_light, RD::TextureView());
+
+			cascade.light_aniso_0_tex = RD::get_singleton()->texture_create(tf_aniso0, RD::TextureView());
+			cascade.light_aniso_1_tex = RD::get_singleton()->texture_create(tf_aniso1, RD::TextureView());
+
+			{
+				RD::TextureView tv;
+				tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+				cascade.light_tex = RD::get_singleton()->texture_create_shared(tv, cascade.light_data);
+
+				RD::get_singleton()->texture_clear(cascade.light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+				RD::get_singleton()->texture_clear(cascade.light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+				RD::get_singleton()->texture_clear(cascade.light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1);
+			}
+
+			cascade.cell_size = base_cell_size;
+			Vector3 world_position = p_world_position;
+			world_position.y *= sdfgi->y_mult;
+			int32_t probe_cells = sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+			Vector3 probe_size = Vector3(1, 1, 1) * cascade.cell_size * probe_cells;
+			Vector3i probe_pos = Vector3i((world_position / probe_size + Vector3(0.5, 0.5, 0.5)).floor());
+			cascade.position = probe_pos * probe_cells;
+
+			cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
+
+			base_cell_size *= 2.0;
+
+			/* Probe History */
+
+			cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
+			RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color(0, 0, 0, 0), 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
+
+			cascade.lightprobe_average_tex = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
+			RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color(0, 0, 0, 0), 0, 1, 0, 1); //needs to be cleared for average to work
+
+			/* Buffers */
+
+			cascade.solid_cell_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDFGI::Cascade::SolidCell) * sdfgi->solid_cell_count);
+			cascade.solid_cell_dispatch_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4, Vector<uint8_t>(), RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+			cascade.lights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(SDGIShader::Light) * MAX(SDFGI::MAX_STATIC_LIGHTS, SDFGI::MAX_DYNAMIC_LIGHTS));
+			{
+				Vector<RD::Uniform> uniforms;
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 1;
+					u.ids.push_back(sdfgi->render_sdf[(passes & 1) ? 1 : 0]); //if passes are even, we read from buffer 0, else we read from buffer 1
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 2;
+					u.ids.push_back(sdfgi->render_albedo);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 3;
+					for (int j = 0; j < 8; j++) {
+						u.ids.push_back(sdfgi->render_occlusion[j]);
+					}
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 4;
+					u.ids.push_back(sdfgi->render_emission);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 5;
+					u.ids.push_back(sdfgi->render_emission_aniso);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 6;
+					u.ids.push_back(sdfgi->render_geom_facing);
+					uniforms.push_back(u);
+				}
+
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 7;
+					u.ids.push_back(cascade.sdf_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 8;
+					u.ids.push_back(sdfgi->occlusion_data);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 10;
+					u.ids.push_back(cascade.solid_cell_dispatch_buffer);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 11;
+					u.ids.push_back(cascade.solid_cell_buffer);
+					uniforms.push_back(u);
+				}
+
+				cascade.sdf_store_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_STORE), 0);
+			}
+
+			{
+				Vector<RD::Uniform> uniforms;
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 1;
+					u.ids.push_back(sdfgi->render_albedo);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 2;
+					u.ids.push_back(sdfgi->render_geom_facing);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 3;
+					u.ids.push_back(sdfgi->render_emission);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 4;
+					u.ids.push_back(sdfgi->render_emission_aniso);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 5;
+					u.ids.push_back(cascade.solid_cell_dispatch_buffer);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 6;
+					u.ids.push_back(cascade.solid_cell_buffer);
+					uniforms.push_back(u);
+				}
+
+				cascade.scroll_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_SCROLL), 0);
+			}
+			{
+				Vector<RD::Uniform> uniforms;
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 1;
+					for (int j = 0; j < 8; j++) {
+						u.ids.push_back(sdfgi->render_occlusion[j]);
+					}
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 2;
+					u.ids.push_back(sdfgi->occlusion_data);
+					uniforms.push_back(u);
+				}
+
+				cascade.scroll_occlusion_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_SCROLL_OCCLUSION), 0);
+			}
+		}
+
+		//direct light
+		for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
+			SDFGI::Cascade &cascade = sdfgi->cascades[i];
+
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.binding = 1;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+					if (j < rb->sdfgi->cascades.size()) {
+						u.ids.push_back(rb->sdfgi->cascades[j].sdf_tex);
+					} else {
+						u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					}
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 2;
+				u.type = RD::UNIFORM_TYPE_SAMPLER;
+				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 3;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.ids.push_back(cascade.solid_cell_dispatch_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 4;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.ids.push_back(cascade.solid_cell_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 5;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.ids.push_back(cascade.light_data);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 6;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.ids.push_back(cascade.light_aniso_0_tex);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 7;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.ids.push_back(cascade.light_aniso_1_tex);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 8;
+				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.ids.push_back(rb->sdfgi->cascades_ubo);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 9;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.ids.push_back(cascade.lights_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 10;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.ids.push_back(rb->sdfgi->lightprobe_texture);
+				uniforms.push_back(u);
+			}
+
+			cascade.sdf_direct_light_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.direct_light.version_get_shader(sdfgi_shader.direct_light_shader, 0), 0);
+		}
+
+		//preprocess initialize uniform set
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 1;
+				u.ids.push_back(sdfgi->render_albedo);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 2;
+				u.ids.push_back(sdfgi->render_sdf[0]);
+				uniforms.push_back(u);
+			}
+
+			sdfgi->sdf_initialize_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE), 0);
+		}
+
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 1;
+				u.ids.push_back(sdfgi->render_albedo);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 2;
+				u.ids.push_back(sdfgi->render_sdf_half[0]);
+				uniforms.push_back(u);
+			}
+
+			sdfgi->sdf_initialize_half_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF), 0);
+		}
+
+		//jump flood uniform set
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 1;
+				u.ids.push_back(sdfgi->render_sdf[0]);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 2;
+				u.ids.push_back(sdfgi->render_sdf[1]);
+				uniforms.push_back(u);
+			}
+
+			sdfgi->jump_flood_uniform_set[0] = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
+			SWAP(uniforms.write[0].ids.write[0], uniforms.write[1].ids.write[0]);
+			sdfgi->jump_flood_uniform_set[1] = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
+		}
+		//jump flood half uniform set
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 1;
+				u.ids.push_back(sdfgi->render_sdf_half[0]);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 2;
+				u.ids.push_back(sdfgi->render_sdf_half[1]);
+				uniforms.push_back(u);
+			}
+
+			sdfgi->jump_flood_half_uniform_set[0] = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
+			SWAP(uniforms.write[0].ids.write[0], uniforms.write[1].ids.write[0]);
+			sdfgi->jump_flood_half_uniform_set[1] = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD), 0);
+		}
+
+		//upscale half size sdf
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 1;
+				u.ids.push_back(sdfgi->render_albedo);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 2;
+				u.ids.push_back(sdfgi->render_sdf_half[(passes & 1) ? 0 : 1]); //reverse pass order because half size
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 3;
+				u.ids.push_back(sdfgi->render_sdf[(passes & 1) ? 0 : 1]); //reverse pass order because it needs an extra JFA pass
+				uniforms.push_back(u);
+			}
+
+			sdfgi->upscale_jfa_uniform_set_index = (passes & 1) ? 0 : 1;
+			sdfgi->sdf_upscale_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_JUMP_FLOOD_UPSCALE), 0);
+		}
+
+		//occlusion uniform set
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 1;
+				u.ids.push_back(sdfgi->render_albedo);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 2;
+				for (int i = 0; i < 8; i++) {
+					u.ids.push_back(sdfgi->render_occlusion[i]);
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 3;
+				u.ids.push_back(sdfgi->render_geom_facing);
+				uniforms.push_back(u);
+			}
+
+			sdfgi->occlusion_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, SDGIShader::PRE_PROCESS_OCCLUSION), 0);
+		}
+
+		for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
+			//integrate uniform
+
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.binding = 1;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+					if (j < sdfgi->cascades.size()) {
+						u.ids.push_back(sdfgi->cascades[j].sdf_tex);
+					} else {
+						u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					}
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 2;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+					if (j < sdfgi->cascades.size()) {
+						u.ids.push_back(sdfgi->cascades[j].light_tex);
+					} else {
+						u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					}
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 3;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+					if (j < sdfgi->cascades.size()) {
+						u.ids.push_back(sdfgi->cascades[j].light_aniso_0_tex);
+					} else {
+						u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					}
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.binding = 4;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+					if (j < sdfgi->cascades.size()) {
+						u.ids.push_back(sdfgi->cascades[j].light_aniso_1_tex);
+					} else {
+						u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+					}
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_SAMPLER;
+				u.binding = 6;
+				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.binding = 7;
+				u.ids.push_back(sdfgi->cascades_ubo);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 8;
+				u.ids.push_back(sdfgi->lightprobe_data);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 9;
+				u.ids.push_back(sdfgi->cascades[i].lightprobe_history_tex);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 10;
+				u.ids.push_back(sdfgi->cascades[i].lightprobe_average_tex);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 11;
+				u.ids.push_back(sdfgi->lightprobe_history_scroll);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 12;
+				u.ids.push_back(sdfgi->lightprobe_average_scroll);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 13;
+				RID parent_average;
+				if (i < sdfgi->cascades.size() - 1) {
+					parent_average = sdfgi->cascades[i + 1].lightprobe_average_tex;
+				} else {
+					parent_average = sdfgi->cascades[i - 1].lightprobe_average_tex; //to use something, but it wont be used
+				}
+				u.ids.push_back(parent_average);
+				uniforms.push_back(u);
+			}
+
+			sdfgi->cascades[i].integrate_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 0);
+		}
+
+		sdfgi->uses_multibounce = env->sdfgi_use_multibounce;
+		sdfgi->energy = env->sdfgi_energy;
+		sdfgi->normal_bias = env->sdfgi_normal_bias;
+		sdfgi->probe_bias = env->sdfgi_probe_bias;
+		sdfgi->reads_sky = env->sdfgi_read_sky_light;
+
+		_render_buffers_uniform_set_changed(p_render_buffers);
+
+		return; //done. all levels will need to be rendered which its going to take a bit
+	}
+
+	//check for updates
+
+	sdfgi->uses_multibounce = env->sdfgi_use_multibounce;
+	sdfgi->energy = env->sdfgi_energy;
+	sdfgi->normal_bias = env->sdfgi_normal_bias;
+	sdfgi->probe_bias = env->sdfgi_probe_bias;
+	sdfgi->reads_sky = env->sdfgi_read_sky_light;
+
+	int32_t drag_margin = (sdfgi->cascade_size / SDFGI::PROBE_DIVISOR) / 2;
+
+	for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
+		SDFGI::Cascade &cascade = sdfgi->cascades[i];
+		cascade.dirty_regions = Vector3i();
+
+		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(sdfgi->cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;
+		probe_half_size = Vector3(0, 0, 0);
+
+		Vector3 world_position = p_world_position;
+		world_position.y *= sdfgi->y_mult;
+		Vector3i pos_in_cascade = Vector3i((world_position + probe_half_size) / cascade.cell_size);
+
+		for (int j = 0; j < 3; j++) {
+			if (pos_in_cascade[j] < cascade.position[j]) {
+				while (pos_in_cascade[j] < (cascade.position[j] - drag_margin)) {
+					cascade.position[j] -= drag_margin * 2;
+					cascade.dirty_regions[j] += drag_margin * 2;
+				}
+			} else if (pos_in_cascade[j] > cascade.position[j]) {
+				while (pos_in_cascade[j] > (cascade.position[j] + drag_margin)) {
+					cascade.position[j] += drag_margin * 2;
+					cascade.dirty_regions[j] -= drag_margin * 2;
+				}
+			}
+
+			if (cascade.dirty_regions[j] == 0) {
+				continue; // not dirty
+			} else if (uint32_t(ABS(cascade.dirty_regions[j])) >= sdfgi->cascade_size) {
+				//moved too much, just redraw everything (make all dirty)
+				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
+				break;
+			}
+		}
+
+		if (cascade.dirty_regions != Vector3i() && cascade.dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			//see how much the total dirty volume represents from the total volume
+			uint32_t total_volume = sdfgi->cascade_size * sdfgi->cascade_size * sdfgi->cascade_size;
+			uint32_t safe_volume = 1;
+			for (int j = 0; j < 3; j++) {
+				safe_volume *= sdfgi->cascade_size - ABS(cascade.dirty_regions[j]);
+			}
+			uint32_t dirty_volume = total_volume - safe_volume;
+			if (dirty_volume > (safe_volume / 2)) {
+				//more than half the volume is dirty, make all dirty so its only rendered once
+				cascade.dirty_regions = SDFGI::Cascade::DIRTY_ALL;
+			}
+		}
+	}
+}
+
+int RasterizerSceneRD::sdfgi_get_pending_region_count(RID p_render_buffers) const {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+
+	ERR_FAIL_COND_V(rb == nullptr, 0);
+
+	if (rb->sdfgi == nullptr) {
+		return 0;
+	}
+
+	int dirty_count = 0;
+	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+		const SDFGI::Cascade &c = rb->sdfgi->cascades[i];
+
+		if (c.dirty_regions == SDFGI::Cascade::DIRTY_ALL) {
+			dirty_count++;
+		} else {
+			for (int j = 0; j < 3; j++) {
+				if (c.dirty_regions[j] != 0) {
+					dirty_count++;
+				}
+			}
+		}
+	}
+
+	return dirty_count;
+}
+
+int RasterizerSceneRD::_sdfgi_get_pending_region_data(RID p_render_buffers, int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(rb == nullptr, -1);
+	ERR_FAIL_COND_V(rb->sdfgi == nullptr, -1);
+
+	int dirty_count = 0;
+	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+		const SDFGI::Cascade &c = rb->sdfgi->cascades[i];
+
+		if (c.dirty_regions == SDFGI::Cascade::DIRTY_ALL) {
+			if (dirty_count == p_region) {
+				r_local_offset = Vector3i();
+				r_local_size = Vector3i(1, 1, 1) * rb->sdfgi->cascade_size;
+
+				r_bounds.position = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + c.position)) * c.cell_size * Vector3(1, 1.0 / rb->sdfgi->y_mult, 1);
+				r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / rb->sdfgi->y_mult, 1);
+				return i;
+			}
+			dirty_count++;
+		} else {
+			for (int j = 0; j < 3; j++) {
+				if (c.dirty_regions[j] != 0) {
+					if (dirty_count == p_region) {
+						Vector3i from = Vector3i(0, 0, 0);
+						Vector3i to = Vector3i(1, 1, 1) * rb->sdfgi->cascade_size;
+
+						if (c.dirty_regions[j] > 0) {
+							//fill from the beginning
+							to[j] = c.dirty_regions[j];
+						} else {
+							//fill from the end
+							from[j] = to[j] + c.dirty_regions[j];
+						}
+
+						for (int k = 0; k < j; k++) {
+							// "chip" away previous regions to avoid re-voxelizing the same thing
+							if (c.dirty_regions[k] > 0) {
+								from[k] += c.dirty_regions[k];
+							} else if (c.dirty_regions[k] < 0) {
+								to[k] += c.dirty_regions[k];
+							}
+						}
+
+						r_local_offset = from;
+						r_local_size = to - from;
+
+						r_bounds.position = Vector3(from + Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + c.position) * c.cell_size * Vector3(1, 1.0 / rb->sdfgi->y_mult, 1);
+						r_bounds.size = Vector3(r_local_size) * c.cell_size * Vector3(1, 1.0 / rb->sdfgi->y_mult, 1);
+
+						return i;
+					}
+
+					dirty_count++;
+				}
+			}
+		}
+	}
+	return -1;
+}
+
+AABB RasterizerSceneRD::sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const {
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	int c = _sdfgi_get_pending_region_data(p_render_buffers, p_region, from, size, bounds);
+	ERR_FAIL_COND_V(c == -1, AABB());
+	return bounds;
+}
+
+uint32_t RasterizerSceneRD::sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const {
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	return _sdfgi_get_pending_region_data(p_render_buffers, p_region, from, size, bounds);
+}
+
+void RasterizerSceneRD::_sdfgi_update_cascades(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(rb == nullptr);
+	if (rb->sdfgi == nullptr) {
+		return;
+	}
+
+	//update cascades
+	SDFGI::Cascade::UBO cascade_data[SDFGI::MAX_CASCADES];
+	int32_t probe_divisor = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+
+	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+		Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + rb->sdfgi->cascades[i].position)) * rb->sdfgi->cascades[i].cell_size;
+
+		cascade_data[i].offset[0] = pos.x;
+		cascade_data[i].offset[1] = pos.y;
+		cascade_data[i].offset[2] = pos.z;
+		cascade_data[i].to_cell = 1.0 / rb->sdfgi->cascades[i].cell_size;
+		cascade_data[i].probe_offset[0] = rb->sdfgi->cascades[i].position.x / probe_divisor;
+		cascade_data[i].probe_offset[1] = rb->sdfgi->cascades[i].position.y / probe_divisor;
+		cascade_data[i].probe_offset[2] = rb->sdfgi->cascades[i].position.z / probe_divisor;
+		cascade_data[i].pad = 0;
+	}
+
+	RD::get_singleton()->buffer_update(rb->sdfgi->cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, true);
+}
+
+void RasterizerSceneRD::sdfgi_update_probes(RID p_render_buffers, RID p_environment, const RID *p_directional_light_instances, uint32_t p_directional_light_count, const RID *p_positional_light_instances, uint32_t p_positional_light_count) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(rb == nullptr);
+	if (rb->sdfgi == nullptr) {
+		return;
+	}
+	Environent *env = environment_owner.getornull(p_environment);
+
+	RENDER_TIMESTAMP(">SDFGI Update Probes");
+
+	/* Update Cascades UBO */
+	_sdfgi_update_cascades(p_render_buffers);
+	/* Update Dynamic Lights Buffer */
+
+	RENDER_TIMESTAMP("Update Lights");
+
+	/* Update dynamic lights */
+
+	{
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.direct_light_pipeline[SDGIShader::DIRECT_LIGHT_MODE_DYNAMIC]);
+
+		SDGIShader::DirectLightPushConstant push_constant;
+
+		push_constant.grid_size[0] = rb->sdfgi->cascade_size;
+		push_constant.grid_size[1] = rb->sdfgi->cascade_size;
+		push_constant.grid_size[2] = rb->sdfgi->cascade_size;
+		push_constant.max_cascades = rb->sdfgi->cascades.size();
+		push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+		push_constant.multibounce = rb->sdfgi->uses_multibounce;
+		push_constant.y_mult = rb->sdfgi->y_mult;
+
+		push_constant.process_offset = 0;
+		push_constant.process_increment = 1;
+
+		for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+			SDFGI::Cascade &cascade = rb->sdfgi->cascades[i];
+
+			{ //fill light buffer
+
+				SDGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
+				uint32_t idx = 0;
+				for (uint32_t j = 0; j < p_directional_light_count; j++) {
+					if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
+						break;
+					}
+
+					LightInstance *li = light_instance_owner.getornull(p_directional_light_instances[j]);
+					ERR_CONTINUE(!li);
+					Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+					dir.y *= rb->sdfgi->y_mult;
+					dir.normalize();
+					lights[idx].direction[0] = dir.x;
+					lights[idx].direction[1] = dir.y;
+					lights[idx].direction[2] = dir.z;
+					Color color = storage->light_get_color(li->light);
+					color = color.to_linear();
+					lights[idx].color[0] = color.r;
+					lights[idx].color[1] = color.g;
+					lights[idx].color[2] = color.b;
+					lights[idx].type = RS::LIGHT_DIRECTIONAL;
+					lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+					lights[idx].has_shadow = storage->light_has_shadow(li->light);
+
+					idx++;
+				}
+
+				AABB cascade_aabb;
+				cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + cascade.position)) * cascade.cell_size;
+				cascade_aabb.size = Vector3(1, 1, 1) * rb->sdfgi->cascade_size * cascade.cell_size;
+
+				for (uint32_t j = 0; j < p_positional_light_count; j++) {
+					if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
+						break;
+					}
+
+					LightInstance *li = light_instance_owner.getornull(p_positional_light_instances[j]);
+					ERR_CONTINUE(!li);
+
+					uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
+					if (i > max_sdfgi_cascade) {
+						continue;
+					}
+
+					if (!cascade_aabb.intersects(li->aabb)) {
+						continue;
+					}
+
+					Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+					//faster to not do this here
+					//dir.y *= rb->sdfgi->y_mult;
+					//dir.normalize();
+					lights[idx].direction[0] = dir.x;
+					lights[idx].direction[1] = dir.y;
+					lights[idx].direction[2] = dir.z;
+					Vector3 pos = li->transform.origin;
+					pos.y *= rb->sdfgi->y_mult;
+					lights[idx].position[0] = pos.x;
+					lights[idx].position[1] = pos.y;
+					lights[idx].position[2] = pos.z;
+					Color color = storage->light_get_color(li->light);
+					color = color.to_linear();
+					lights[idx].color[0] = color.r;
+					lights[idx].color[1] = color.g;
+					lights[idx].color[2] = color.b;
+					lights[idx].type = storage->light_get_type(li->light);
+					lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+					lights[idx].has_shadow = storage->light_has_shadow(li->light);
+					lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
+					lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
+					lights[idx].spot_angle = Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE));
+					lights[idx].spot_attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+
+					idx++;
+				}
+
+				if (idx > 0) {
+					RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
+				}
+				push_constant.light_count = idx;
+			}
+
+			push_constant.cascade = i;
+
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::DirectLightPushConstant));
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cascade.solid_cell_dispatch_buffer, 0);
+		}
+		RD::get_singleton()->compute_list_end();
+	}
+
+	RENDER_TIMESTAMP("Raytrace");
+
+	SDGIShader::IntegratePushConstant push_constant;
+	push_constant.grid_size[1] = rb->sdfgi->cascade_size;
+	push_constant.grid_size[2] = rb->sdfgi->cascade_size;
+	push_constant.grid_size[0] = rb->sdfgi->cascade_size;
+	push_constant.max_cascades = rb->sdfgi->cascades.size();
+	push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+	push_constant.history_index = rb->sdfgi->render_pass % rb->sdfgi->history_size;
+	push_constant.history_size = rb->sdfgi->history_size;
+	static const uint32_t ray_count[RS::ENV_SDFGI_RAY_COUNT_MAX] = { 8, 16, 32, 64, 96, 128 };
+	push_constant.ray_count = ray_count[sdfgi_ray_count];
+	push_constant.ray_bias = rb->sdfgi->probe_bias;
+	push_constant.image_size[0] = rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count;
+	push_constant.image_size[1] = rb->sdfgi->probe_axis_count;
+
+	RID sky_uniform_set = sdfgi_shader.integrate_default_sky_uniform_set;
+	push_constant.sky_mode = SDGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
+	push_constant.y_mult = rb->sdfgi->y_mult;
+
+	if (rb->sdfgi->reads_sky && env) {
+		push_constant.sky_energy = env->bg_energy;
+
+		if (env->background == RS::ENV_BG_CLEAR_COLOR) {
+			push_constant.sky_mode = SDGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			Color c = storage->get_default_clear_color().to_linear();
+			push_constant.sky_color[0] = c.r;
+			push_constant.sky_color[1] = c.g;
+			push_constant.sky_color[2] = c.b;
+		} else if (env->background == RS::ENV_BG_COLOR) {
+			push_constant.sky_mode = SDGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			Color c = env->bg_color;
+			push_constant.sky_color[0] = c.r;
+			push_constant.sky_color[1] = c.g;
+			push_constant.sky_color[2] = c.b;
+
+		} else if (env->background == RS::ENV_BG_SKY) {
+			Sky *sky = sky_owner.getornull(env->sky);
+			if (sky && sky->radiance.is_valid()) {
+				if (sky->sdfgi_integrate_sky_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(sky->sdfgi_integrate_sky_uniform_set)) {
+					Vector<RD::Uniform> uniforms;
+
+					{
+						RD::Uniform u;
+						u.type = RD::UNIFORM_TYPE_TEXTURE;
+						u.binding = 0;
+						u.ids.push_back(sky->radiance);
+						uniforms.push_back(u);
+					}
+
+					{
+						RD::Uniform u;
+						u.type = RD::UNIFORM_TYPE_SAMPLER;
+						u.binding = 1;
+						u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+						uniforms.push_back(u);
+					}
+
+					sky->sdfgi_integrate_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 1);
+				}
+				sky_uniform_set = sky->sdfgi_integrate_sky_uniform_set;
+				push_constant.sky_mode = SDGIShader::IntegratePushConstant::SKY_MODE_SKY;
+			}
+		}
+	}
+
+	rb->sdfgi->render_pass++;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.integrate_pipeline[SDGIShader::INTEGRATE_MODE_PROCESS]);
+
+	int32_t probe_divisor = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+		push_constant.cascade = i;
+		push_constant.world_offset[0] = rb->sdfgi->cascades[i].position.x / probe_divisor;
+		push_constant.world_offset[1] = rb->sdfgi->cascades[i].position.y / probe_divisor;
+		push_constant.world_offset[2] = rb->sdfgi->cascades[i].position.z / probe_divisor;
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[i].integrate_uniform_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sky_uniform_set, 1);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::IntegratePushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count, rb->sdfgi->probe_axis_count, 1, 8, 8, 1);
+	}
+
+	RD::get_singleton()->compute_list_add_barrier(compute_list); //wait until done
+
+	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
+	RENDER_TIMESTAMP("Average Probes");
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.integrate_pipeline[SDGIShader::INTEGRATE_MODE_STORE]);
+
+	//convert to octahedral to store
+	push_constant.image_size[0] *= SDFGI::LIGHTPROBE_OCT_SIZE;
+	push_constant.image_size[1] *= SDFGI::LIGHTPROBE_OCT_SIZE;
+
+	for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+		push_constant.cascade = i;
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[i].integrate_uniform_set, 0);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::IntegratePushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, rb->sdfgi->probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1, 8, 8, 1);
+	}
+
+	RD::get_singleton()->compute_list_end();
+
+	RENDER_TIMESTAMP("<SDFGI Update Probes");
+}
+
+void RasterizerSceneRD::_process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_ambient_buffer, RID p_reflection_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count) {
+	RENDER_TIMESTAMP("Render GI");
+
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(rb == nullptr);
+	Environent *env = environment_owner.getornull(p_environment);
+
+	GI::PushConstant push_constant;
+
+	push_constant.screen_size[0] = rb->width;
+	push_constant.screen_size[1] = rb->height;
+	push_constant.z_near = p_projection.get_z_near();
+	push_constant.z_far = p_projection.get_z_far();
+	push_constant.orthogonal = p_projection.is_orthogonal();
+	push_constant.proj_info[0] = -2.0f / (rb->width * p_projection.matrix[0][0]);
+	push_constant.proj_info[1] = -2.0f / (rb->height * p_projection.matrix[1][1]);
+	push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
+	push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
+	push_constant.max_giprobes = MIN(RenderBuffers::MAX_GIPROBES, p_gi_probe_cull_count);
+	push_constant.high_quality_vct = gi_probe_quality == RS::GI_PROBE_QUALITY_HIGH;
+	push_constant.use_sdfgi = rb->sdfgi != nullptr;
+
+	if (env) {
+		push_constant.ao_color[0] = env->ao_color.r;
+		push_constant.ao_color[1] = env->ao_color.g;
+		push_constant.ao_color[2] = env->ao_color.b;
+	} else {
+		push_constant.ao_color[0] = 0;
+		push_constant.ao_color[1] = 0;
+		push_constant.ao_color[2] = 0;
+	}
+
+	push_constant.cam_rotation[0] = p_transform.basis[0][0];
+	push_constant.cam_rotation[1] = p_transform.basis[1][0];
+	push_constant.cam_rotation[2] = p_transform.basis[2][0];
+	push_constant.cam_rotation[3] = 0;
+	push_constant.cam_rotation[4] = p_transform.basis[0][1];
+	push_constant.cam_rotation[5] = p_transform.basis[1][1];
+	push_constant.cam_rotation[6] = p_transform.basis[2][1];
+	push_constant.cam_rotation[7] = 0;
+	push_constant.cam_rotation[8] = p_transform.basis[0][2];
+	push_constant.cam_rotation[9] = p_transform.basis[1][2];
+	push_constant.cam_rotation[10] = p_transform.basis[2][2];
+	push_constant.cam_rotation[11] = 0;
+
+	if (rb->sdfgi) {
+		GI::SDFGIData sdfgi_data;
+
+		sdfgi_data.grid_size[0] = rb->sdfgi->cascade_size;
+		sdfgi_data.grid_size[1] = rb->sdfgi->cascade_size;
+		sdfgi_data.grid_size[2] = rb->sdfgi->cascade_size;
+
+		sdfgi_data.max_cascades = rb->sdfgi->cascades.size();
+		sdfgi_data.probe_axis_size = rb->sdfgi->probe_axis_count;
+		sdfgi_data.cascade_probe_size[0] = sdfgi_data.probe_axis_size - 1; //float version for performance
+		sdfgi_data.cascade_probe_size[1] = sdfgi_data.probe_axis_size - 1;
+		sdfgi_data.cascade_probe_size[2] = sdfgi_data.probe_axis_size - 1;
+
+		float csize = rb->sdfgi->cascade_size;
+		sdfgi_data.probe_to_uvw = 1.0 / float(sdfgi_data.cascade_probe_size[0]);
+		sdfgi_data.use_occlusion = rb->sdfgi->uses_occlusion;
+		//sdfgi_data.energy = rb->sdfgi->energy;
+
+		sdfgi_data.y_mult = rb->sdfgi->y_mult;
+
+		float cascade_voxel_size = (csize / sdfgi_data.cascade_probe_size[0]);
+		float occlusion_clamp = (cascade_voxel_size - 0.5) / cascade_voxel_size;
+		sdfgi_data.occlusion_clamp[0] = occlusion_clamp;
+		sdfgi_data.occlusion_clamp[1] = occlusion_clamp;
+		sdfgi_data.occlusion_clamp[2] = occlusion_clamp;
+		sdfgi_data.normal_bias = (rb->sdfgi->normal_bias / csize) * sdfgi_data.cascade_probe_size[0];
+
+		//vec2 tex_pixel_size = 1.0 / vec2(ivec2( (OCT_SIZE+2) * params.probe_axis_size * params.probe_axis_size, (OCT_SIZE+2) * params.probe_axis_size ) );
+		//vec3 probe_uv_offset = (ivec3(OCT_SIZE+2,OCT_SIZE+2,(OCT_SIZE+2) * params.probe_axis_size)) * tex_pixel_size.xyx;
+
+		uint32_t oct_size = SDFGI::LIGHTPROBE_OCT_SIZE;
+
+		sdfgi_data.lightprobe_tex_pixel_size[0] = 1.0 / ((oct_size + 2) * sdfgi_data.probe_axis_size * sdfgi_data.probe_axis_size);
+		sdfgi_data.lightprobe_tex_pixel_size[1] = 1.0 / ((oct_size + 2) * sdfgi_data.probe_axis_size);
+		sdfgi_data.lightprobe_tex_pixel_size[2] = 1.0;
+
+		sdfgi_data.energy = rb->sdfgi->energy;
+
+		sdfgi_data.lightprobe_uv_offset[0] = float(oct_size + 2) * sdfgi_data.lightprobe_tex_pixel_size[0];
+		sdfgi_data.lightprobe_uv_offset[1] = float(oct_size + 2) * sdfgi_data.lightprobe_tex_pixel_size[1];
+		sdfgi_data.lightprobe_uv_offset[2] = float((oct_size + 2) * sdfgi_data.probe_axis_size) * sdfgi_data.lightprobe_tex_pixel_size[0];
+
+		sdfgi_data.occlusion_renormalize[0] = 0.5;
+		sdfgi_data.occlusion_renormalize[1] = 1.0;
+		sdfgi_data.occlusion_renormalize[2] = 1.0 / float(sdfgi_data.max_cascades);
+
+		int32_t probe_divisor = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+
+		for (uint32_t i = 0; i < sdfgi_data.max_cascades; i++) {
+			GI::SDFGIData::ProbeCascadeData &c = sdfgi_data.cascades[i];
+			Vector3 pos = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + rb->sdfgi->cascades[i].position)) * rb->sdfgi->cascades[i].cell_size;
+			Vector3 cam_origin = p_transform.origin;
+			cam_origin.y *= rb->sdfgi->y_mult;
+			pos -= cam_origin; //make pos local to camera, to reduce numerical error
+			c.position[0] = pos.x;
+			c.position[1] = pos.y;
+			c.position[2] = pos.z;
+			c.to_probe = 1.0 / (float(rb->sdfgi->cascade_size) * rb->sdfgi->cascades[i].cell_size / float(rb->sdfgi->probe_axis_count - 1));
+
+			Vector3i probe_ofs = rb->sdfgi->cascades[i].position / probe_divisor;
+			c.probe_world_offset[0] = probe_ofs.x;
+			c.probe_world_offset[1] = probe_ofs.y;
+			c.probe_world_offset[2] = probe_ofs.z;
+
+			c.to_cell = 1.0 / rb->sdfgi->cascades[i].cell_size;
+		}
+
+		RD::get_singleton()->buffer_update(gi.sdfgi_ubo, 0, sizeof(GI::SDFGIData), &sdfgi_data, true);
+	}
+
+	{
+		RID gi_probe_buffer = render_buffers_get_gi_probe_buffer(p_render_buffers);
+		GI::GIProbeData gi_probe_data[RenderBuffers::MAX_GIPROBES];
+
+		bool giprobes_changed = false;
+
+		Transform to_camera;
+		to_camera.origin = p_transform.origin; //only translation, make local
+
+		for (int i = 0; i < RenderBuffers::MAX_GIPROBES; i++) {
+			RID texture;
+			if (i < p_gi_probe_cull_count) {
+				GIProbeInstance *gipi = gi_probe_instance_owner.getornull(p_gi_probe_cull_result[i]);
+
+				if (gipi) {
+					texture = gipi->texture;
+					GI::GIProbeData &gipd = gi_probe_data[i];
+
+					RID base_probe = gipi->probe;
+
+					Transform to_cell = storage->gi_probe_get_to_cell_xform(gipi->probe) * gipi->transform.affine_inverse() * to_camera;
+
+					gipd.xform[0] = to_cell.basis.elements[0][0];
+					gipd.xform[1] = to_cell.basis.elements[1][0];
+					gipd.xform[2] = to_cell.basis.elements[2][0];
+					gipd.xform[3] = 0;
+					gipd.xform[4] = to_cell.basis.elements[0][1];
+					gipd.xform[5] = to_cell.basis.elements[1][1];
+					gipd.xform[6] = to_cell.basis.elements[2][1];
+					gipd.xform[7] = 0;
+					gipd.xform[8] = to_cell.basis.elements[0][2];
+					gipd.xform[9] = to_cell.basis.elements[1][2];
+					gipd.xform[10] = to_cell.basis.elements[2][2];
+					gipd.xform[11] = 0;
+					gipd.xform[12] = to_cell.origin.x;
+					gipd.xform[13] = to_cell.origin.y;
+					gipd.xform[14] = to_cell.origin.z;
+					gipd.xform[15] = 1;
+
+					Vector3 bounds = storage->gi_probe_get_octree_size(base_probe);
+
+					gipd.bounds[0] = bounds.x;
+					gipd.bounds[1] = bounds.y;
+					gipd.bounds[2] = bounds.z;
+
+					gipd.dynamic_range = storage->gi_probe_get_dynamic_range(base_probe) * storage->gi_probe_get_energy(base_probe);
+					gipd.bias = storage->gi_probe_get_bias(base_probe);
+					gipd.normal_bias = storage->gi_probe_get_normal_bias(base_probe);
+					gipd.blend_ambient = !storage->gi_probe_is_interior(base_probe);
+					gipd.anisotropy_strength = 0;
+					gipd.ao = storage->gi_probe_get_ao(base_probe);
+					gipd.ao_size = Math::pow(storage->gi_probe_get_ao_size(base_probe), 4.0f);
+				}
+			}
+
+			if (texture == RID()) {
+				texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+			}
+
+			if (texture != rb->giprobe_textures[i]) {
+				giprobes_changed = true;
+				rb->giprobe_textures[i] = texture;
+			}
+		}
+
+		if (giprobes_changed) {
+			RD::get_singleton()->free(rb->gi_uniform_set);
+			rb->gi_uniform_set = RID();
+		}
+
+		if (p_gi_probe_cull_count > 0) {
+			RD::get_singleton()->buffer_update(gi_probe_buffer, 0, sizeof(GI::GIProbeData) * MIN(RenderBuffers::MAX_GIPROBES, p_gi_probe_cull_count), gi_probe_data, true);
+		}
+	}
+
+	if (rb->gi_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(rb->gi_uniform_set)) {
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 1;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[j].sdf_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 2;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[j].light_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 3;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[j].light_aniso_0_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 4;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t j = 0; j < SDFGI::MAX_CASCADES; j++) {
+				if (rb->sdfgi && j < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[j].light_aniso_1_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 5;
+			if (rb->sdfgi) {
+				u.ids.push_back(rb->sdfgi->occlusion_texture);
+			} else {
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 6;
+			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 7;
+			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 9;
+			u.ids.push_back(p_ambient_buffer);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 10;
+			u.ids.push_back(p_reflection_buffer);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 11;
+			if (rb->sdfgi) {
+				u.ids.push_back(rb->sdfgi->lightprobe_texture);
+			} else {
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE));
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 12;
+			u.ids.push_back(rb->depth_texture);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 13;
+			u.ids.push_back(p_normal_roughness_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 14;
+			RID buffer = p_gi_probe_buffer.is_valid() ? p_gi_probe_buffer : storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+			u.ids.push_back(buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.binding = 15;
+			u.ids.push_back(gi.sdfgi_ubo);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.binding = 16;
+			u.ids.push_back(rb->giprobe_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 17;
+			for (int i = 0; i < RenderBuffers::MAX_GIPROBES; i++) {
+				u.ids.push_back(rb->giprobe_textures[i]);
+			}
+			uniforms.push_back(u);
+		}
+
+		rb->gi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi.shader.version_get_shader(gi.shader_version, 0), 0);
+	}
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi.pipelines[0]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->gi_uniform_set, 0);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GI::PushConstant));
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1, 8, 8, 1);
+	RD::get_singleton()->compute_list_end();
 }
 
 RID RasterizerSceneRD::sky_create() {
@@ -1291,6 +2826,31 @@ void RasterizerSceneRD::environment_glow_set_use_bicubic_upscale(bool p_enable) 
 	glow_bicubic_upscale = p_enable;
 }
 
+void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, bool p_enhance_ssr, float p_energy, float p_normal_bias, float p_probe_bias) {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->sdfgi_enabled = p_enable;
+	env->sdfgi_cascades = p_cascades;
+	env->sdfgi_min_cell_size = p_min_cell_size;
+	env->sdfgi_use_occlusion = p_use_occlusion;
+	env->sdfgi_use_multibounce = p_use_multibounce;
+	env->sdfgi_read_sky_light = p_read_sky;
+	env->sdfgi_enhance_ssr = p_enhance_ssr;
+	env->sdfgi_energy = p_energy;
+	env->sdfgi_normal_bias = p_normal_bias;
+	env->sdfgi_probe_bias = p_probe_bias;
+	env->sdfgi_y_scale = p_y_scale;
+}
+
+void RasterizerSceneRD::environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) {
+	sdfgi_ray_count = p_ray_count;
+}
+
+void RasterizerSceneRD::environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) {
+	sdfgi_frames_to_converge = p_frames;
+}
+
 void RasterizerSceneRD::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -1350,6 +2910,11 @@ bool RasterizerSceneRD::environment_is_ssr_enabled(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, false);
 	return env->ssr_enabled;
+}
+bool RasterizerSceneRD::environment_is_sdfgi_enabled(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->sdfgi_enabled;
 }
 
 bool RasterizerSceneRD::is_environment(RID p_env) const {
@@ -2099,6 +3664,13 @@ void RasterizerSceneRD::light_instance_set_transform(RID p_light_instance, const
 	light_instance->transform = p_transform;
 }
 
+void RasterizerSceneRD::light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) {
+	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
+	ERR_FAIL_COND(!light_instance);
+
+	light_instance->aabb = p_aabb;
+}
+
 void RasterizerSceneRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
 	LightInstance *light_instance = light_instance_owner.getornull(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
@@ -2193,23 +3765,9 @@ void RasterizerSceneRD::decal_instance_set_transform(RID p_decal, const Transfor
 /////////////////////////////////
 
 RID RasterizerSceneRD::gi_probe_instance_create(RID p_base) {
-	//find a free slot
-	int index = -1;
-	for (int i = 0; i < gi_probe_slots.size(); i++) {
-		if (gi_probe_slots[i] == RID()) {
-			index = i;
-			break;
-		}
-	}
-
-	ERR_FAIL_COND_V(index == -1, RID());
-
 	GIProbeInstance gi_probe;
-	gi_probe.slot = index;
 	gi_probe.probe = p_base;
 	RID rid = gi_probe_instance_owner.make_rid(gi_probe);
-	gi_probe_slots.write[index] = rid;
-
 	return rid;
 }
 
@@ -2240,10 +3798,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 		//need to re-create everything
 		if (gi_probe->texture.is_valid()) {
 			RD::get_singleton()->free(gi_probe->texture);
-			if (gi_probe_use_anisotropy) {
-				RD::get_singleton()->free(gi_probe->anisotropy_r16[0]);
-				RD::get_singleton()->free(gi_probe->anisotropy_r16[1]);
-			}
 			RD::get_singleton()->free(gi_probe->write_buffer);
 			gi_probe->mipmaps.clear();
 		}
@@ -2275,32 +3829,10 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 
 			RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
 
-			if (gi_probe_use_anisotropy) {
-				tf.format = RD::DATA_FORMAT_R16_UINT;
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R5G6B5_UNORM_PACK16);
-
-				//need to create R16 first, else driver does not like the storage bit for compute..
-				gi_probe->anisotropy_r16[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-				gi_probe->anisotropy_r16[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-				RD::TextureView tv;
-				tv.format_override = RD::DATA_FORMAT_R5G6B5_UNORM_PACK16;
-				gi_probe->anisotropy[0] = RD::get_singleton()->texture_create_shared(tv, gi_probe->anisotropy_r16[0]);
-				gi_probe->anisotropy[1] = RD::get_singleton()->texture_create_shared(tv, gi_probe->anisotropy_r16[1]);
-
-				RD::get_singleton()->texture_clear(gi_probe->anisotropy[0], Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
-				RD::get_singleton()->texture_clear(gi_probe->anisotropy[1], Color(0, 0, 0, 0), 0, levels.size(), 0, 1, false);
-			}
-
 			{
 				int total_elements = 0;
 				for (int i = 0; i < levels.size(); i++) {
 					total_elements += levels[i];
-				}
-
-				if (gi_probe_use_anisotropy) {
-					total_elements *= 6;
 				}
 
 				gi_probe->write_buffer = RD::get_singleton()->storage_buffer_create(total_elements * 16);
@@ -2309,13 +3841,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 			for (int i = 0; i < levels.size(); i++) {
 				GIProbeInstance::Mipmap mipmap;
 				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), gi_probe->texture, 0, i, RD::TEXTURE_SLICE_3D);
-				if (gi_probe_use_anisotropy) {
-					RD::TextureView tv;
-					tv.format_override = RD::DATA_FORMAT_R16_UINT;
-					mipmap.anisotropy[0] = RD::get_singleton()->texture_create_shared_from_slice(tv, gi_probe->anisotropy[0], 0, i, RD::TEXTURE_SLICE_3D);
-					mipmap.anisotropy[1] = RD::get_singleton()->texture_create_shared_from_slice(tv, gi_probe->anisotropy[1], 0, i, RD::TEXTURE_SLICE_3D);
-				}
-
 				mipmap.level = levels.size() - i - 1;
 				mipmap.cell_offset = 0;
 				for (uint32_t j = 0; j < mipmap.level; j++) {
@@ -2383,24 +3908,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 							u.ids.push_back(gi_probe->texture);
 							copy_uniforms.push_back(u);
 						}
-
-						if (gi_probe_use_anisotropy) {
-							{
-								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_TEXTURE;
-								u.binding = 7;
-								u.ids.push_back(gi_probe->anisotropy[0]);
-								copy_uniforms.push_back(u);
-							}
-							{
-								RD::Uniform u;
-								u.type = RD::UNIFORM_TYPE_TEXTURE;
-								u.binding = 8;
-								u.ids.push_back(gi_probe->anisotropy[1]);
-								copy_uniforms.push_back(u);
-							}
-						}
-
 						mipmap.second_bounce_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE], 0);
 					} else {
 						mipmap.uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP], 0);
@@ -2413,23 +3920,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					u.binding = 5;
 					u.ids.push_back(mipmap.texture);
 					uniforms.push_back(u);
-				}
-
-				if (gi_probe_use_anisotropy) {
-					{
-						RD::Uniform u;
-						u.type = RD::UNIFORM_TYPE_IMAGE;
-						u.binding = 6;
-						u.ids.push_back(mipmap.anisotropy[0]);
-						uniforms.push_back(u);
-					}
-					{
-						RD::Uniform u;
-						u.type = RD::UNIFORM_TYPE_IMAGE;
-						u.binding = 7;
-						u.ids.push_back(mipmap.anisotropy[1]);
-						uniforms.push_back(u);
-					}
 				}
 
 				mipmap.write_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_WRITE_TEXTURE], 0);
@@ -2626,22 +4116,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 								u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].texture);
 								uniforms.push_back(u);
 							}
-							if (gi_probe_is_anisotropic()) {
-								{
-									RD::Uniform u;
-									u.type = RD::UNIFORM_TYPE_IMAGE;
-									u.binding = 12;
-									u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].anisotropy[0]);
-									uniforms.push_back(u);
-								}
-								{
-									RD::Uniform u;
-									u.type = RD::UNIFORM_TYPE_IMAGE;
-									u.binding = 13;
-									u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].anisotropy[1]);
-									uniforms.push_back(u);
-								}
-							}
 						}
 
 						dmap.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_lighting_shader_version_shaders[(write && plot) ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT : write ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE : GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT], 0);
@@ -2663,10 +4137,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 	if (gi_probe->has_dynamic_object_data) {
 		//if it has dynamic object data, it needs to be cleared
 		RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
-		if (gi_probe_is_anisotropic()) {
-			RD::get_singleton()->texture_clear(gi_probe->anisotropy[0], Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
-			RD::get_singleton()->texture_clear(gi_probe->anisotropy[1], Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
-		}
 	}
 
 	uint32_t light_count = 0;
@@ -2733,7 +4203,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 			push_constant.propagation = storage->gi_probe_get_propagation(gi_probe->probe);
 			push_constant.dynamic_range = storage->gi_probe_get_dynamic_range(gi_probe->probe);
 			push_constant.light_count = light_count;
-			push_constant.aniso_strength = storage->gi_probe_get_anisotropy_strength(gi_probe->probe);
+			push_constant.aniso_strength = 0;
 
 			/*		print_line("probe update to version " + itos(gi_probe->last_probe_version));
 			print_line("propagation " + rtos(push_constant.propagation));
@@ -3067,23 +4537,6 @@ void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_lis
 		uniforms.push_back(u);
 	}
 
-	if (gi_probe_use_anisotropy) {
-		{
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 4;
-			u.ids.push_back(gi_probe->anisotropy[0]);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 5;
-			u.ids.push_back(gi_probe->anisotropy[1]);
-			uniforms.push_back(u);
-		}
-	}
-
 	int cell_count;
 	if (!p_emission && p_lighting && gi_probe->has_dynamic_object_data) {
 		cell_count = push_constant.bounds[0] * push_constant.bounds[1] * push_constant.bounds[2];
@@ -3098,12 +4551,140 @@ void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_lis
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, cell_count, 36);
 }
 
-const Vector<RID> &RasterizerSceneRD::gi_probe_get_slots() const {
-	return gi_probe_slots;
-}
+void RasterizerSceneRD::_debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
 
-RasterizerSceneRD::GIProbeQuality RasterizerSceneRD::gi_probe_get_quality() const {
-	return gi_probe_quality;
+	if (!rb->sdfgi) {
+		return; //nothing to debug
+	}
+
+	SDGIShader::DebugProbesPushConstant push_constant;
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			push_constant.projection[i * 4 + j] = p_camera_with_transform.matrix[i][j];
+		}
+	}
+
+	//gen spheres from strips
+	uint32_t band_points = 16;
+	push_constant.band_power = 4;
+	push_constant.sections_in_band = ((band_points / 2) - 1);
+	push_constant.band_mask = band_points - 2;
+	push_constant.section_arc = (Math_PI * 2.0) / float(push_constant.sections_in_band);
+	push_constant.y_mult = rb->sdfgi->y_mult;
+
+	uint32_t total_points = push_constant.sections_in_band * band_points;
+	uint32_t total_probes = rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count;
+
+	push_constant.grid_size[0] = rb->sdfgi->cascade_size;
+	push_constant.grid_size[1] = rb->sdfgi->cascade_size;
+	push_constant.grid_size[2] = rb->sdfgi->cascade_size;
+	push_constant.cascade = 0;
+
+	push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+
+	if (!rb->sdfgi->debug_probes_uniform_set.is_valid() || !RD::get_singleton()->uniform_set_is_valid(rb->sdfgi->debug_probes_uniform_set)) {
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 1;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.ids.push_back(rb->sdfgi->cascades_ubo);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 2;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids.push_back(rb->sdfgi->lightprobe_texture);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 3;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 4;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids.push_back(rb->sdfgi->occlusion_texture);
+			uniforms.push_back(u);
+		}
+
+		rb->sdfgi->debug_probes_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.debug_probes.version_get_shader(sdfgi_shader.debug_probes_shader, 0), 0);
+	}
+
+	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, sdfgi_shader.debug_probes_pipeline[SDGIShader::PROBE_DEBUG_PROBES].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, rb->sdfgi->debug_probes_uniform_set, 0);
+	RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(SDGIShader::DebugProbesPushConstant));
+	RD::get_singleton()->draw_list_draw(p_draw_list, false, total_probes, total_points);
+
+	if (sdfgi_debug_probe_dir != Vector3()) {
+		print_line("CLICK DEBUG ME?");
+		uint32_t cascade = 0;
+		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + rb->sdfgi->cascades[cascade].position)) * rb->sdfgi->cascades[cascade].cell_size * Vector3(1.0, 1.0 / rb->sdfgi->y_mult, 1.0);
+		Vector3 probe_size = rb->sdfgi->cascades[cascade].cell_size * (rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / rb->sdfgi->y_mult, 1.0);
+		Vector3 ray_from = sdfgi_debug_probe_pos;
+		Vector3 ray_to = sdfgi_debug_probe_pos + sdfgi_debug_probe_dir * rb->sdfgi->cascades[cascade].cell_size * Math::sqrt(3.0) * rb->sdfgi->cascade_size;
+		float sphere_radius = 0.2;
+		float closest_dist = 1e20;
+		sdfgi_debug_probe_enabled = false;
+
+		Vector3i probe_from = rb->sdfgi->cascades[cascade].position / (rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR);
+		for (int i = 0; i < (SDFGI::PROBE_DIVISOR + 1); i++) {
+			for (int j = 0; j < (SDFGI::PROBE_DIVISOR + 1); j++) {
+				for (int k = 0; k < (SDFGI::PROBE_DIVISOR + 1); k++) {
+					Vector3 pos = offset + probe_size * Vector3(i, j, k);
+					Vector3 res;
+					if (Geometry3D::segment_intersects_sphere(ray_from, ray_to, pos, sphere_radius, &res)) {
+						float d = ray_from.distance_to(res);
+						if (d < closest_dist) {
+							closest_dist = d;
+							sdfgi_debug_probe_enabled = true;
+							sdfgi_debug_probe_index = probe_from + Vector3i(i, j, k);
+						}
+					}
+				}
+			}
+		}
+
+		if (sdfgi_debug_probe_enabled) {
+			print_line("found: " + sdfgi_debug_probe_index);
+		} else {
+			print_line("no found");
+		}
+		sdfgi_debug_probe_dir = Vector3();
+	}
+
+	if (sdfgi_debug_probe_enabled) {
+		uint32_t cascade = 0;
+		uint32_t probe_cells = (rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR);
+		Vector3i probe_from = rb->sdfgi->cascades[cascade].position / probe_cells;
+		Vector3i ofs = sdfgi_debug_probe_index - probe_from;
+		if (ofs.x < 0 || ofs.y < 0 || ofs.z < 0) {
+			return;
+		}
+		if (ofs.x > SDFGI::PROBE_DIVISOR || ofs.y > SDFGI::PROBE_DIVISOR || ofs.z > SDFGI::PROBE_DIVISOR) {
+			return;
+		}
+
+		uint32_t mult = (SDFGI::PROBE_DIVISOR + 1);
+		uint32_t index = ofs.z * mult * mult + ofs.y * mult + ofs.x;
+
+		push_constant.probe_debug_index = index;
+
+		uint32_t cell_count = probe_cells * 2 * probe_cells * 2 * probe_cells * 2;
+
+		RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, sdfgi_shader.debug_probes_pipeline[SDGIShader::PROBE_DEBUG_VISIBILITY].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+		RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, rb->sdfgi->debug_probes_uniform_set, 0);
+		RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(SDGIShader::DebugProbesPushConstant));
+		RD::get_singleton()->draw_list_draw(p_draw_list, false, cell_count, total_points);
+	}
 }
 
 ////////////////////////////////
@@ -3273,7 +4854,7 @@ void RasterizerSceneRD::_process_sss(RID p_render_buffers, const CameraMatrix &p
 	storage->get_effects()->sub_surface_scattering(rb->texture, rb->blur[0].mipmaps[0].texture, rb->depth_texture, p_camera, Size2i(rb->width, rb->height), sss_scale, sss_depth_scale, sss_quality);
 }
 
-void RasterizerSceneRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_roughness_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive) {
+void RasterizerSceneRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
@@ -3322,7 +4903,7 @@ void RasterizerSceneRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffe
 		_render_buffers_uniform_set_changed(p_render_buffers);
 	}
 
-	storage->get_effects()->screen_space_reflection(rb->texture, p_normal_buffer, ssr_roughness_quality, p_roughness_buffer, rb->ssr.blur_radius[0], rb->ssr.blur_radius[1], p_metallic, p_metallic_mask, rb->depth_texture, rb->ssr.depth_scaled, rb->ssr.normal_scaled, rb->blur[0].mipmaps[1].texture, rb->blur[1].mipmaps[0].texture, Size2i(rb->width / 2, rb->height / 2), env->ssr_max_steps, env->ssr_fade_in, env->ssr_fade_out, env->ssr_depth_tolerance, p_projection);
+	storage->get_effects()->screen_space_reflection(rb->texture, p_normal_buffer, ssr_roughness_quality, rb->ssr.blur_radius[0], rb->ssr.blur_radius[1], p_metallic, p_metallic_mask, rb->depth_texture, rb->ssr.depth_scaled, rb->ssr.normal_scaled, rb->blur[0].mipmaps[1].texture, rb->blur[1].mipmaps[0].texture, Size2i(rb->width / 2, rb->height / 2), env->ssr_max_steps, env->ssr_fade_in, env->ssr_fade_out, env->ssr_depth_tolerance, p_projection);
 	storage->get_effects()->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : rb->texture, rb->blur[0].mipmaps[1].texture);
 }
 
@@ -3563,15 +5144,163 @@ void RasterizerSceneRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_s
 		effects->copy_to_fb_rect(ao_buf, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER && _render_buffers_get_roughness_texture(p_render_buffers).is_valid()) {
-		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		effects->copy_to_fb_rect(_render_buffers_get_roughness_texture(p_render_buffers), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
-	}
-
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(p_render_buffers).is_valid()) {
 		Size2 rtsize = storage->render_target_get_size(rb->render_target);
 		effects->copy_to_fb_rect(_render_buffers_get_normal_texture(p_render_buffers), storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false);
 	}
+
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER && _render_buffers_get_ambient_texture(p_render_buffers).is_valid()) {
+		Size2 rtsize = storage->render_target_get_size(rb->render_target);
+		RID ambient_texture = _render_buffers_get_ambient_texture(p_render_buffers);
+		RID reflection_texture = _render_buffers_get_reflection_texture(p_render_buffers);
+		effects->copy_to_fb_rect(ambient_texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture);
+	}
+}
+
+void RasterizerSceneRD::_sdfgi_debug_draw(RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+
+	if (!rb->sdfgi) {
+		return; //eh
+	}
+
+	if (!rb->sdfgi->debug_uniform_set.is_valid() || !RD::get_singleton()->uniform_set_is_valid(rb->sdfgi->debug_uniform_set)) {
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 1;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
+				if (i < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[i].sdf_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 2;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
+				if (i < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[i].light_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 3;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
+				if (i < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[i].light_aniso_0_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 4;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			for (uint32_t i = 0; i < SDFGI::MAX_CASCADES; i++) {
+				if (i < rb->sdfgi->cascades.size()) {
+					u.ids.push_back(rb->sdfgi->cascades[i].light_aniso_1_tex);
+				} else {
+					u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				}
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 5;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids.push_back(rb->sdfgi->occlusion_texture);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 8;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 9;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.ids.push_back(rb->sdfgi->cascades_ubo);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 10;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.ids.push_back(rb->texture);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 11;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids.push_back(rb->sdfgi->lightprobe_texture);
+			uniforms.push_back(u);
+		}
+		rb->sdfgi->debug_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.debug_shader_version, 0);
+	}
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.debug_pipeline);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->debug_uniform_set, 0);
+
+	SDGIShader::DebugPushConstant push_constant;
+	push_constant.grid_size[0] = rb->sdfgi->cascade_size;
+	push_constant.grid_size[1] = rb->sdfgi->cascade_size;
+	push_constant.grid_size[2] = rb->sdfgi->cascade_size;
+	push_constant.max_cascades = rb->sdfgi->cascades.size();
+	push_constant.screen_size[0] = rb->width;
+	push_constant.screen_size[1] = rb->height;
+	push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+	push_constant.use_occlusion = rb->sdfgi->uses_occlusion;
+	push_constant.y_mult = rb->sdfgi->y_mult;
+
+	Vector2 vp_half = p_projection.get_viewport_half_extents();
+	push_constant.cam_extent[0] = vp_half.x;
+	push_constant.cam_extent[1] = vp_half.y;
+	push_constant.cam_extent[2] = -p_projection.get_z_near();
+
+	push_constant.cam_transform[0] = p_transform.basis.elements[0][0];
+	push_constant.cam_transform[1] = p_transform.basis.elements[1][0];
+	push_constant.cam_transform[2] = p_transform.basis.elements[2][0];
+	push_constant.cam_transform[3] = 0;
+	push_constant.cam_transform[4] = p_transform.basis.elements[0][1];
+	push_constant.cam_transform[5] = p_transform.basis.elements[1][1];
+	push_constant.cam_transform[6] = p_transform.basis.elements[2][1];
+	push_constant.cam_transform[7] = 0;
+	push_constant.cam_transform[8] = p_transform.basis.elements[0][2];
+	push_constant.cam_transform[9] = p_transform.basis.elements[1][2];
+	push_constant.cam_transform[10] = p_transform.basis.elements[2][2];
+	push_constant.cam_transform[11] = 0;
+	push_constant.cam_transform[12] = p_transform.origin.x;
+	push_constant.cam_transform[13] = p_transform.origin.y;
+	push_constant.cam_transform[14] = p_transform.origin.z;
+	push_constant.cam_transform[15] = 1;
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::DebugPushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1, 8, 8, 1);
+	RD::get_singleton()->compute_list_end();
+
+	Size2 rtsize = storage->render_target_get_size(rb->render_target);
+	storage->get_effects()->copy_to_fb_rect(rb->texture, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), true);
 }
 
 RID RasterizerSceneRD::render_buffers_get_back_buffer_texture(RID p_render_buffers) {
@@ -3590,6 +5319,113 @@ RID RasterizerSceneRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	return rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
 }
 
+RID RasterizerSceneRD::render_buffers_get_gi_probe_buffer(RID p_render_buffers) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	if (rb->giprobe_buffer.is_null()) {
+		rb->giprobe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(GI::GIProbeData) * RenderBuffers::MAX_GIPROBES);
+	}
+	return rb->giprobe_buffer;
+}
+
+RID RasterizerSceneRD::render_buffers_get_default_gi_probe_buffer() {
+	return default_giprobe_buffer;
+}
+
+uint32_t RasterizerSceneRD::render_buffers_get_sdfgi_cascade_count(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, 0);
+	ERR_FAIL_COND_V(!rb->sdfgi, 0);
+
+	return rb->sdfgi->cascades.size();
+}
+bool RasterizerSceneRD::render_buffers_is_sdfgi_enabled(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, false);
+
+	return rb->sdfgi != nullptr;
+}
+RID RasterizerSceneRD::render_buffers_get_sdfgi_irradiance_probes(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	ERR_FAIL_COND_V(!rb->sdfgi, RID());
+
+	return rb->sdfgi->lightprobe_texture;
+}
+
+Vector3 RasterizerSceneRD::render_buffers_get_sdfgi_cascade_offset(RID p_render_buffers, uint32_t p_cascade) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, Vector3());
+	ERR_FAIL_COND_V(!rb->sdfgi, Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_cascade, rb->sdfgi->cascades.size(), Vector3());
+
+	return Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + rb->sdfgi->cascades[p_cascade].position)) * rb->sdfgi->cascades[p_cascade].cell_size;
+}
+
+Vector3i RasterizerSceneRD::render_buffers_get_sdfgi_cascade_probe_offset(RID p_render_buffers, uint32_t p_cascade) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, Vector3i());
+	ERR_FAIL_COND_V(!rb->sdfgi, Vector3i());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_cascade, rb->sdfgi->cascades.size(), Vector3i());
+	int32_t probe_divisor = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+
+	return rb->sdfgi->cascades[p_cascade].position / probe_divisor;
+}
+
+float RasterizerSceneRD::render_buffers_get_sdfgi_normal_bias(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, 0);
+	ERR_FAIL_COND_V(!rb->sdfgi, 0);
+
+	return rb->sdfgi->normal_bias;
+}
+float RasterizerSceneRD::render_buffers_get_sdfgi_cascade_probe_size(RID p_render_buffers, uint32_t p_cascade) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, 0);
+	ERR_FAIL_COND_V(!rb->sdfgi, 0);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_cascade, rb->sdfgi->cascades.size(), 0);
+
+	return float(rb->sdfgi->cascade_size) * rb->sdfgi->cascades[p_cascade].cell_size / float(rb->sdfgi->probe_axis_count - 1);
+}
+uint32_t RasterizerSceneRD::render_buffers_get_sdfgi_cascade_probe_count(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, 0);
+	ERR_FAIL_COND_V(!rb->sdfgi, 0);
+
+	return rb->sdfgi->probe_axis_count;
+}
+
+uint32_t RasterizerSceneRD::render_buffers_get_sdfgi_cascade_size(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, 0);
+	ERR_FAIL_COND_V(!rb->sdfgi, 0);
+
+	return rb->sdfgi->cascade_size;
+}
+
+bool RasterizerSceneRD::render_buffers_is_sdfgi_using_occlusion(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, false);
+	ERR_FAIL_COND_V(!rb->sdfgi, false);
+
+	return rb->sdfgi->uses_occlusion;
+}
+
+float RasterizerSceneRD::render_buffers_get_sdfgi_energy(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, 0);
+	ERR_FAIL_COND_V(!rb->sdfgi, false);
+
+	return rb->sdfgi->energy;
+}
+RID RasterizerSceneRD::render_buffers_get_sdfgi_occlusion_texture(RID p_render_buffers) const {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+	ERR_FAIL_COND_V(!rb->sdfgi, RID());
+
+	return rb->sdfgi->occlusion_texture;
+}
+
 void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	rb->width = p_width;
@@ -3606,7 +5442,7 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 		tf.height = rb->height;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		} else {
 			tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		}
@@ -3616,12 +5452,20 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 
 	{
 		RD::TextureFormat tf;
-		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		if (rb->msaa == RS::VIEWPORT_MSAA_DISABLED) {
+			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		} else {
+			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+		}
+
 		tf.width = p_width;
 		tf.height = p_height;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+
 		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		} else {
+			tf.usage_bits |= RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		}
 
 		rb->depth_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -3748,6 +5592,14 @@ void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_ca
 		clear_color = storage->get_default_clear_color();
 	}
 
+	//assign render indices to giprobes
+	for (int i = 0; i < p_gi_probe_cull_count; i++) {
+		GIProbeInstance *giprobe_inst = gi_probe_instance_owner.getornull(p_gi_probe_cull_result[i]);
+		if (giprobe_inst) {
+			giprobe_inst->render_index = i;
+		}
+	}
+
 	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_decal_cull_result, p_decal_cull_count, p_lightmap_cull_result, p_lightmap_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
 
 	if (p_render_buffers.is_valid()) {
@@ -3755,6 +5607,9 @@ void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_ca
 
 		_render_buffers_post_process_and_tonemap(p_render_buffers, p_environment, p_camera_effects, p_cam_projection);
 		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas);
+		if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SDFGI) {
+			_sdfgi_debug_draw(p_render_buffers, p_cam_projection, p_cam_transform);
+		}
 	}
 }
 
@@ -3938,11 +5793,455 @@ void RasterizerSceneRD::render_material(const Transform &p_cam_transform, const 
 	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_framebuffer, p_region);
 }
 
+void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) {
+	//print_line("rendering region " + itos(p_region));
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+	ERR_FAIL_COND(!rb->sdfgi);
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	int cascade_prev = _sdfgi_get_pending_region_data(p_render_buffers, p_region - 1, from, size, bounds);
+	int cascade_next = _sdfgi_get_pending_region_data(p_render_buffers, p_region + 1, from, size, bounds);
+	int cascade = _sdfgi_get_pending_region_data(p_render_buffers, p_region, from, size, bounds);
+	ERR_FAIL_COND(cascade < 0);
+
+	if (cascade_prev != cascade) {
+		//initialize render
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+	}
+
+	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(rb->sdfgi->cascades[cascade].cell_size));
+	_render_sdfgi(p_render_buffers, from, size, bounds, p_cull_result, p_cull_count, rb->sdfgi->render_albedo, rb->sdfgi->render_emission, rb->sdfgi->render_emission_aniso, rb->sdfgi->render_geom_facing);
+
+	if (cascade_next != cascade) {
+		RENDER_TIMESTAMP(">SDFGI Update SDF");
+		//done rendering! must update SDF
+		//clear dispatch indirect data
+
+		SDGIShader::PreprocessPushConstant push_constant;
+		zeromem(&push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+
+		RENDER_TIMESTAMP("Scroll SDF");
+
+		//scroll
+		if (rb->sdfgi->cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			//for scroll
+			Vector3i dirty = rb->sdfgi->cascades[cascade].dirty_regions;
+			push_constant.scroll[0] = dirty.x;
+			push_constant.scroll[1] = dirty.y;
+			push_constant.scroll[2] = dirty.z;
+		} else {
+			//for no scroll
+			push_constant.scroll[0] = 0;
+			push_constant.scroll[1] = 0;
+			push_constant.scroll[2] = 0;
+		}
+		push_constant.grid_size = rb->sdfgi->cascade_size;
+		push_constant.cascade = cascade;
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		if (rb->sdfgi->cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			//must pre scroll existing data because not all is dirty
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_SCROLL]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].scroll_uniform_set, 0);
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, rb->sdfgi->cascades[cascade].solid_cell_dispatch_buffer, 0);
+			// no barrier do all together
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_SCROLL_OCCLUSION]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].scroll_occlusion_uniform_set, 0);
+
+			Vector3i dirty = rb->sdfgi->cascades[cascade].dirty_regions;
+			Vector3i groups;
+			groups.x = rb->sdfgi->cascade_size - ABS(dirty.x);
+			groups.y = rb->sdfgi->cascade_size - ABS(dirty.y);
+			groups.z = rb->sdfgi->cascade_size - ABS(dirty.z);
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, groups.x, groups.y, groups.z, 4, 4, 4);
+
+			//no barrier, continue together
+
+			{
+				//scroll probes and their history also
+
+				SDGIShader::IntegratePushConstant ipush_constant;
+				ipush_constant.grid_size[1] = rb->sdfgi->cascade_size;
+				ipush_constant.grid_size[2] = rb->sdfgi->cascade_size;
+				ipush_constant.grid_size[0] = rb->sdfgi->cascade_size;
+				ipush_constant.max_cascades = rb->sdfgi->cascades.size();
+				ipush_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+				ipush_constant.history_index = 0;
+				ipush_constant.history_size = rb->sdfgi->history_size;
+				ipush_constant.ray_count = 0;
+				ipush_constant.ray_bias = 0;
+				ipush_constant.sky_mode = 0;
+				ipush_constant.sky_energy = 0;
+				ipush_constant.sky_color[0] = 0;
+				ipush_constant.sky_color[1] = 0;
+				ipush_constant.sky_color[2] = 0;
+				ipush_constant.y_mult = rb->sdfgi->y_mult;
+
+				ipush_constant.image_size[0] = rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count;
+				ipush_constant.image_size[1] = rb->sdfgi->probe_axis_count;
+				ipush_constant.image_size[1] = rb->sdfgi->probe_axis_count;
+
+				int32_t probe_divisor = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+				ipush_constant.cascade = cascade;
+				ipush_constant.world_offset[0] = rb->sdfgi->cascades[cascade].position.x / probe_divisor;
+				ipush_constant.world_offset[1] = rb->sdfgi->cascades[cascade].position.y / probe_divisor;
+				ipush_constant.world_offset[2] = rb->sdfgi->cascades[cascade].position.z / probe_divisor;
+
+				ipush_constant.scroll[0] = dirty.x / probe_divisor;
+				ipush_constant.scroll[1] = dirty.y / probe_divisor;
+				ipush_constant.scroll[2] = dirty.z / probe_divisor;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.integrate_pipeline[SDGIShader::INTEGRATE_MODE_SCROLL]);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].integrate_uniform_set, 0);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdfgi_shader.integrate_default_sky_uniform_set, 1);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDGIShader::IntegratePushConstant));
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count, rb->sdfgi->probe_axis_count, 1, 8, 8, 1);
+
+				RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.integrate_pipeline[SDGIShader::INTEGRATE_MODE_SCROLL_STORE]);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].integrate_uniform_set, 0);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sdfgi_shader.integrate_default_sky_uniform_set, 1);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ipush_constant, sizeof(SDGIShader::IntegratePushConstant));
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->probe_axis_count * rb->sdfgi->probe_axis_count, rb->sdfgi->probe_axis_count, 1, 8, 8, 1);
+			}
+
+			//ok finally barrier
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+
+		//clear dispatch indirect data
+		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
+		RD::get_singleton()->buffer_update(rb->sdfgi->cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data, true);
+
+		bool half_size = true; //much faster, very little differnce
+		static const int optimized_jf_group_size = 8;
+
+		if (half_size) {
+			push_constant.grid_size >>= 1;
+
+			uint32_t cascade_half_size = rb->sdfgi->cascade_size >> 1;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE_HALF]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->sdf_initialize_half_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size, 4, 4, 4);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			//must start with regular jumpflood
+
+			push_constant.half_size = true;
+			{
+				RENDER_TIMESTAMP("SDFGI Jump Flood (Half Size)");
+
+				uint32_t s = cascade_half_size;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD]);
+
+				int jf_us = 0;
+				//start with regular jump flood for very coarse reads, as this is impossible to optimize
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->jump_flood_half_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size, 4, 4, 4);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+
+					if (cascade_half_size / (s / 2) >= optimized_jf_group_size) {
+						break;
+					}
+				}
+
+				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized (Half Size)");
+
+				//continue with optimized jump flood for smaller reads
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->jump_flood_half_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, cascade_half_size, cascade_half_size, cascade_half_size, optimized_jf_group_size, optimized_jf_group_size, optimized_jf_group_size);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+				}
+			}
+
+			// restore grid size for last passes
+			push_constant.grid_size = rb->sdfgi->cascade_size;
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD_UPSCALE]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->sdf_upscale_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, 4, 4, 4);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			//run one pass of fullsize jumpflood to fix up half size arctifacts
+
+			push_constant.half_size = false;
+			push_constant.step_size = 1;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->jump_flood_uniform_set[rb->sdfgi->upscale_jfa_uniform_set_index], 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, optimized_jf_group_size, optimized_jf_group_size, optimized_jf_group_size);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		} else {
+			//full size jumpflood
+			RENDER_TIMESTAMP("SDFGI Jump Flood");
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD_INITIALIZE]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->sdf_initialize_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, 4, 4, 4);
+
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+			push_constant.half_size = false;
+			{
+				uint32_t s = rb->sdfgi->cascade_size;
+
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD]);
+
+				int jf_us = 0;
+				//start with regular jump flood for very coarse reads, as this is impossible to optimize
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->jump_flood_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, 4, 4, 4);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+
+					if (rb->sdfgi->cascade_size / (s / 2) >= optimized_jf_group_size) {
+						break;
+					}
+				}
+
+				RENDER_TIMESTAMP("SDFGI Jump Flood Optimized");
+
+				//continue with optimized jump flood for smaller reads
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_JUMP_FLOOD_OPTIMIZED]);
+				while (s > 1) {
+					s /= 2;
+					push_constant.step_size = s;
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->jump_flood_uniform_set[jf_us], 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, optimized_jf_group_size, optimized_jf_group_size, optimized_jf_group_size);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+					jf_us = jf_us == 0 ? 1 : 0;
+				}
+			}
+		}
+
+		RENDER_TIMESTAMP("SDFGI Occlusion");
+
+		// occlusion
+		{
+			uint32_t probe_size = rb->sdfgi->cascade_size / SDFGI::PROBE_DIVISOR;
+			Vector3i probe_global_pos = rb->sdfgi->cascades[cascade].position / probe_size;
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_OCCLUSION]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->occlusion_uniform_set, 0);
+			for (int i = 0; i < 8; i++) {
+				//dispatch all at once for performance
+				Vector3i offset(i & 1, (i >> 1) & 1, (i >> 2) & 1);
+
+				if ((probe_global_pos.x & 1) != 0) {
+					offset.x = (offset.x + 1) & 1;
+				}
+				if ((probe_global_pos.y & 1) != 0) {
+					offset.y = (offset.y + 1) & 1;
+				}
+				if ((probe_global_pos.z & 1) != 0) {
+					offset.z = (offset.z + 1) & 1;
+				}
+				push_constant.probe_offset[0] = offset.x;
+				push_constant.probe_offset[1] = offset.y;
+				push_constant.probe_offset[2] = offset.z;
+				push_constant.occlusion_index = i;
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+
+				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offseted, its one less probe per axis to compute
+				RD::get_singleton()->compute_list_dispatch(compute_list, groups.x, groups.y, groups.z);
+			}
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+
+		RENDER_TIMESTAMP("SDFGI Store");
+
+		// store
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_STORE]);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].sdf_store_uniform_set, 0);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, 4, 4, 4);
+
+		RD::get_singleton()->compute_list_end();
+
+		//clear these textures, as they will have previous garbage on next draw
+		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_tex, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_aniso_0_tex, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+		RD::get_singleton()->texture_clear(rb->sdfgi->cascades[cascade].light_aniso_1_tex, Color(0, 0, 0, 0), 0, 1, 0, 1, true);
+
+#if 0
+		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rb->sdfgi->cascades[cascade].sdf, 0);
+		Ref<Image> img;
+		img.instance();
+		for (uint32_t i = 0; i < rb->sdfgi->cascade_size; i++) {
+			Vector<uint8_t> subarr = data.subarray(128 * 128 * i, 128 * 128 * (i + 1) - 1);
+			img->create(rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, false, Image::FORMAT_L8, subarr);
+			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
+		}
+
+		//finalize render and update sdf
+#endif
+
+#if 0
+		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rb->sdfgi->render_albedo, 0);
+		Ref<Image> img;
+		img.instance();
+		for (uint32_t i = 0; i < rb->sdfgi->cascade_size; i++) {
+			Vector<uint8_t> subarr = data.subarray(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2 - 1);
+			img->create(rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, false, Image::FORMAT_RGB565, subarr);
+			img->convert(Image::FORMAT_RGBA8);
+			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");
+		}
+
+		//finalize render and update sdf
+#endif
+
+		RENDER_TIMESTAMP("<SDFGI Update SDF");
+	}
+}
+
+void RasterizerSceneRD::render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) {
+	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND(!rb);
+	ERR_FAIL_COND(!rb->sdfgi);
+
+	ERR_FAIL_COND(p_positional_light_cull_count == 0);
+
+	_sdfgi_update_cascades(p_render_buffers); //need cascades updated for this
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.direct_light_pipeline[SDGIShader::DIRECT_LIGHT_MODE_STATIC]);
+
+	SDGIShader::DirectLightPushConstant dl_push_constant;
+
+	dl_push_constant.grid_size[0] = rb->sdfgi->cascade_size;
+	dl_push_constant.grid_size[1] = rb->sdfgi->cascade_size;
+	dl_push_constant.grid_size[2] = rb->sdfgi->cascade_size;
+	dl_push_constant.max_cascades = rb->sdfgi->cascades.size();
+	dl_push_constant.probe_axis_size = rb->sdfgi->probe_axis_count;
+	dl_push_constant.multibounce = false; // this is static light, do not multibounce yet
+	dl_push_constant.y_mult = rb->sdfgi->y_mult;
+
+	//all must be processed
+	dl_push_constant.process_offset = 0;
+	dl_push_constant.process_increment = 1;
+
+	SDGIShader::Light lights[SDFGI::MAX_STATIC_LIGHTS];
+
+	for (uint32_t i = 0; i < p_cascade_count; i++) {
+		ERR_CONTINUE(p_cascade_indices[i] >= rb->sdfgi->cascades.size());
+
+		SDFGI::Cascade &cc = rb->sdfgi->cascades[p_cascade_indices[i]];
+
+		{ //fill light buffer
+
+			AABB cascade_aabb;
+			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + cc.position)) * cc.cell_size;
+			cascade_aabb.size = Vector3(1, 1, 1) * rb->sdfgi->cascade_size * cc.cell_size;
+
+			int idx = 0;
+
+			for (uint32_t j = 0; j < p_positional_light_cull_count[i]; j++) {
+				if (idx == SDFGI::MAX_STATIC_LIGHTS) {
+					break;
+				}
+
+				LightInstance *li = light_instance_owner.getornull(p_positional_light_cull_result[i][j]);
+				ERR_CONTINUE(!li);
+
+				uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
+				if (p_cascade_indices[i] > max_sdfgi_cascade) {
+					continue;
+				}
+
+				if (!cascade_aabb.intersects(li->aabb)) {
+					continue;
+				}
+
+				lights[idx].type = storage->light_get_type(li->light);
+
+				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+				if (lights[idx].type == RS::LIGHT_DIRECTIONAL) {
+					dir.y *= rb->sdfgi->y_mult; //only makes sense for directional
+					dir.normalize();
+				}
+				lights[idx].direction[0] = dir.x;
+				lights[idx].direction[1] = dir.y;
+				lights[idx].direction[2] = dir.z;
+				Vector3 pos = li->transform.origin;
+				pos.y *= rb->sdfgi->y_mult;
+				lights[idx].position[0] = pos.x;
+				lights[idx].position[1] = pos.y;
+				lights[idx].position[2] = pos.z;
+				Color color = storage->light_get_color(li->light);
+				color = color.to_linear();
+				lights[idx].color[0] = color.r;
+				lights[idx].color[1] = color.g;
+				lights[idx].color[2] = color.b;
+				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+				lights[idx].has_shadow = storage->light_has_shadow(li->light);
+				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
+				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
+				lights[idx].spot_angle = Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE));
+				lights[idx].spot_attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+
+				idx++;
+			}
+
+			if (idx > 0) {
+				RD::get_singleton()->buffer_update(cc.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
+			}
+			dl_push_constant.light_count = idx;
+		}
+
+		dl_push_constant.cascade = p_cascade_indices[i];
+
+		if (dl_push_constant.light_count > 0) {
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cc.sdf_direct_light_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &dl_push_constant, sizeof(SDGIShader::DirectLightPushConstant));
+			RD::get_singleton()->compute_list_dispatch_indirect(compute_list, cc.solid_cell_dispatch_buffer, 0);
+		}
+	}
+
+	RD::get_singleton()->compute_list_end();
+}
+
 bool RasterizerSceneRD::free(RID p_rid) {
 	if (render_buffers_owner.owns(p_rid)) {
 		RenderBuffers *rb = render_buffers_owner.getornull(p_rid);
 		_free_render_buffer_data(rb);
 		memdelete(rb->data);
+		if (rb->sdfgi) {
+			_sdfgi_erase(rb);
+		}
 		render_buffers_owner.free(p_rid);
 	} else if (environment_owner.owns(p_rid)) {
 		//not much to delete, just free it
@@ -3966,17 +6265,11 @@ bool RasterizerSceneRD::free(RID p_rid) {
 			RD::get_singleton()->free(gi_probe->texture);
 			RD::get_singleton()->free(gi_probe->write_buffer);
 		}
-		if (gi_probe->anisotropy[0].is_valid()) {
-			RD::get_singleton()->free(gi_probe->anisotropy[0]);
-			RD::get_singleton()->free(gi_probe->anisotropy[1]);
-		}
 
 		for (int i = 0; i < gi_probe->dynamic_maps.size(); i++) {
 			RD::get_singleton()->free(gi_probe->dynamic_maps[i].texture);
 			RD::get_singleton()->free(gi_probe->dynamic_maps[i].depth);
 		}
-
-		gi_probe_slots.write[gi_probe->slot] = RID();
 
 		gi_probe_instance_owner.free(p_rid);
 	} else if (sky_owner.owns(p_rid)) {
@@ -4050,17 +6343,22 @@ void RasterizerSceneRD::set_time(double p_time, double p_step) {
 	time_step = p_step;
 }
 
-void RasterizerSceneRD::screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) {
+void RasterizerSceneRD::screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) {
 	screen_space_roughness_limiter = p_enable;
-	screen_space_roughness_limiter_curve = p_curve;
+	screen_space_roughness_limiter_amount = p_amount;
+	screen_space_roughness_limiter_limit = p_limit;
 }
 
 bool RasterizerSceneRD::screen_space_roughness_limiter_is_active() const {
 	return screen_space_roughness_limiter;
 }
 
-float RasterizerSceneRD::screen_space_roughness_limiter_get_curve() const {
-	return screen_space_roughness_limiter_curve;
+float RasterizerSceneRD::screen_space_roughness_limiter_get_amount() const {
+	return screen_space_roughness_limiter_amount;
+}
+
+float RasterizerSceneRD::screen_space_roughness_limiter_get_limit() const {
+	return screen_space_roughness_limiter_limit;
 }
 
 TypedArray<Image> RasterizerSceneRD::bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) {
@@ -4154,6 +6452,11 @@ TypedArray<Image> RasterizerSceneRD::bake_render_uv2(RID p_base, const Vector<RI
 	return ret;
 }
 
+void RasterizerSceneRD::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
+	sdfgi_debug_probe_pos = p_position;
+	sdfgi_debug_probe_dir = p_dir;
+}
+
 RasterizerSceneRD *RasterizerSceneRD::singleton = nullptr;
 
 RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
@@ -4165,7 +6468,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	sky_use_cubemap_array = GLOBAL_GET("rendering/quality/reflections/texture_array_reflections");
 	//	sky_use_cubemap_array = false;
 
-	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+	//uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	{
 		//kinda complicated to compute the amount of slots, we try to use as many as we can
@@ -4174,34 +6477,9 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 		gi_probe_lights = memnew_arr(GIProbeLight, gi_probe_max_lights);
 		gi_probe_lights_uniform = RD::get_singleton()->uniform_buffer_create(gi_probe_max_lights * sizeof(GIProbeLight));
-
-		gi_probe_use_anisotropy = GLOBAL_GET("rendering/quality/gi_probes/anisotropic");
-		gi_probe_quality = GIProbeQuality(CLAMP(int(GLOBAL_GET("rendering/quality/gi_probes/quality")), 0, 2));
-
-		if (textures_per_stage <= 16) {
-			gi_probe_slots.resize(2); //thats all you can get
-			gi_probe_use_anisotropy = false;
-		} else if (textures_per_stage <= 31) {
-			gi_probe_slots.resize(4); //thats all you can get, iOS
-			gi_probe_use_anisotropy = false;
-		} else if (textures_per_stage <= 128) {
-			gi_probe_slots.resize(32); //old intel
-			gi_probe_use_anisotropy = false;
-		} else if (textures_per_stage <= 256) {
-			gi_probe_slots.resize(64); //old intel too
-			gi_probe_use_anisotropy = false;
-		} else {
-			if (gi_probe_use_anisotropy) {
-				gi_probe_slots.resize(1024 / 3); //needs 3 textures
-			} else {
-				gi_probe_slots.resize(1024); //modern intel, nvidia, 8192 or greater
-			}
-		}
+		gi_probe_quality = RS::GIProbeQuality(CLAMP(int(GLOBAL_GET("rendering/quality/gi_probes/quality")), 0, 1));
 
 		String defines = "\n#define MAX_LIGHTS " + itos(gi_probe_max_lights) + "\n";
-		if (gi_probe_use_anisotropy) {
-			defines += "\n#define MODE_ANISOTROPIC\n";
-		}
 
 		Vector<String> versions;
 		versions.push_back("\n#define MODE_COMPUTE_LIGHT\n");
@@ -4223,9 +6501,6 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 	{
 		String defines;
-		if (gi_probe_use_anisotropy) {
-			defines += "\n#define USE_ANISOTROPY\n";
-		}
 		Vector<String> versions;
 		versions.push_back("\n#define MODE_DEBUG_COLOR\n");
 		versions.push_back("\n#define MODE_DEBUG_LIGHT\n");
@@ -4373,11 +6648,131 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		sky_scene_state.sampler_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_SAMPLERS);
 	}
 
+	{
+		Vector<String> preprocess_modes;
+		preprocess_modes.push_back("\n#define MODE_SCROLL\n");
+		preprocess_modes.push_back("\n#define MODE_SCROLL_OCCLUSION\n");
+		preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD\n");
+		preprocess_modes.push_back("\n#define MODE_INITIALIZE_JUMP_FLOOD_HALF\n");
+		preprocess_modes.push_back("\n#define MODE_JUMPFLOOD\n");
+		preprocess_modes.push_back("\n#define MODE_JUMPFLOOD_OPTIMIZED\n");
+		preprocess_modes.push_back("\n#define MODE_UPSCALE_JUMP_FLOOD\n");
+		preprocess_modes.push_back("\n#define MODE_OCCLUSION\n");
+		preprocess_modes.push_back("\n#define MODE_STORE\n");
+		String defines = "\n#define OCCLUSION_SIZE " + itos(SDFGI::CASCADE_SIZE / SDFGI::PROBE_DIVISOR) + "\n";
+		sdfgi_shader.preprocess.initialize(preprocess_modes, defines);
+		sdfgi_shader.preprocess_shader = sdfgi_shader.preprocess.version_create();
+		for (int i = 0; i < SDGIShader::PRE_PROCESS_MAX; i++) {
+			sdfgi_shader.preprocess_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.preprocess.version_get_shader(sdfgi_shader.preprocess_shader, i));
+		}
+	}
+
+	{
+		//calculate tables
+		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+
+		Vector<String> direct_light_modes;
+		direct_light_modes.push_back("\n#define MODE_PROCESS_STATIC\n");
+		direct_light_modes.push_back("\n#define MODE_PROCESS_DYNAMIC\n");
+		sdfgi_shader.direct_light.initialize(direct_light_modes, defines);
+		sdfgi_shader.direct_light_shader = sdfgi_shader.direct_light.version_create();
+		for (int i = 0; i < SDGIShader::DIRECT_LIGHT_MODE_MAX; i++) {
+			sdfgi_shader.direct_light_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.direct_light.version_get_shader(sdfgi_shader.direct_light_shader, i));
+		}
+	}
+
+	{
+		//calculate tables
+		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
+
+		Vector<String> integrate_modes;
+		integrate_modes.push_back("\n#define MODE_PROCESS\n");
+		integrate_modes.push_back("\n#define MODE_STORE\n");
+		integrate_modes.push_back("\n#define MODE_SCROLL\n");
+		integrate_modes.push_back("\n#define MODE_SCROLL_STORE\n");
+		sdfgi_shader.integrate.initialize(integrate_modes, defines);
+		sdfgi_shader.integrate_shader = sdfgi_shader.integrate.version_create();
+
+		for (int i = 0; i < SDGIShader::INTEGRATE_MODE_MAX; i++) {
+			sdfgi_shader.integrate_pipeline[i] = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, i));
+		}
+
+		{
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 0;
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_SAMPLER;
+				u.binding = 1;
+				u.ids.push_back(storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+				uniforms.push_back(u);
+			}
+
+			sdfgi_shader.integrate_default_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sdfgi_shader.integrate.version_get_shader(sdfgi_shader.integrate_shader, 0), 1);
+		}
+	}
+	{
+		//calculate tables
+		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		Vector<String> gi_modes;
+		gi_modes.push_back("");
+		gi.shader.initialize(gi_modes, defines);
+		gi.shader_version = gi.shader.version_create();
+		for (int i = 0; i < GI::MODE_MAX; i++) {
+			gi.pipelines[i] = RD::get_singleton()->compute_pipeline_create(gi.shader.version_get_shader(gi.shader_version, i));
+		}
+
+		gi.sdfgi_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(GI::SDFGIData));
+	}
+	{
+		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		Vector<String> debug_modes;
+		debug_modes.push_back("");
+		sdfgi_shader.debug.initialize(debug_modes, defines);
+		sdfgi_shader.debug_shader = sdfgi_shader.debug.version_create();
+		sdfgi_shader.debug_shader_version = sdfgi_shader.debug.version_get_shader(sdfgi_shader.debug_shader, 0);
+		sdfgi_shader.debug_pipeline = RD::get_singleton()->compute_pipeline_create(sdfgi_shader.debug_shader_version);
+	}
+	{
+		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+
+		Vector<String> versions;
+		versions.push_back("\n#define MODE_PROBES\n");
+		versions.push_back("\n#define MODE_VISIBILITY\n");
+
+		sdfgi_shader.debug_probes.initialize(versions, defines);
+		sdfgi_shader.debug_probes_shader = sdfgi_shader.debug_probes.version_create();
+
+		{
+			RD::PipelineRasterizationState rs;
+			rs.cull_mode = RD::POLYGON_CULL_DISABLED;
+			RD::PipelineDepthStencilState ds;
+			ds.enable_depth_test = true;
+			ds.enable_depth_write = true;
+			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			for (int i = 0; i < SDGIShader::PROBE_DEBUG_MAX; i++) {
+				RID debug_probes_shader_version = sdfgi_shader.debug_probes.version_get_shader(sdfgi_shader.debug_probes_shader, i);
+				sdfgi_shader.debug_probes_pipeline[i].setup(debug_probes_shader_version, RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+			}
+		}
+	}
+
+	default_giprobe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(GI::GIProbeData) * RenderBuffers::MAX_GIPROBES);
+
 	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_shape"))));
 	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter"));
 	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
-	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter");
-	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_curve");
+	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled");
+	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount");
+	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
 	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
@@ -4405,6 +6800,8 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 	if (sky_scene_state.light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.light_uniform_set)) {
 		RD::get_singleton()->free(sky_scene_state.light_uniform_set);
 	}
+
+	RD::get_singleton()->free(default_giprobe_buffer);
 
 	RD::get_singleton()->free(gi_probe_lights_uniform);
 	giprobe_debug_shader.version_free(giprobe_debug_shader_version);

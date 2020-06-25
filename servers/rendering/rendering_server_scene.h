@@ -33,6 +33,8 @@
 
 #include "servers/rendering/rasterizer.h"
 
+#include "core/local_vector.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -120,6 +122,8 @@ public:
 		RID reflection_atlas;
 
 		SelfList<Instance>::List instances;
+
+		LocalVector<RID> dynamic_lights;
 
 		Scenario() { debug = RS::SCENARIO_DEBUG_DISABLED; }
 	};
@@ -309,7 +313,13 @@ public:
 
 		Instance *baked_light;
 
+		RS::LightBakeMode bake_mode;
+		uint32_t max_sdfgi_cascade = 2;
+
+		uint64_t sdfgi_cascade_light_pass = 0;
+
 		InstanceLightData() {
+			bake_mode = RS::LIGHT_BAKE_DISABLED;
 			shadow_dirty = true;
 			D = nullptr;
 			last_version = 0;
@@ -379,7 +389,9 @@ public:
 	Instance *instance_cull_result[MAX_INSTANCE_CULL];
 	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
 	Instance *light_cull_result[MAX_LIGHTS_CULLED];
+	RID sdfgi_light_cull_result[MAX_LIGHTS_CULLED];
 	RID light_instance_cull_result[MAX_LIGHTS_CULLED];
+	uint64_t sdfgi_light_cull_pass = 0;
 	int light_cull_count;
 	int directional_light_count;
 	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
@@ -438,9 +450,11 @@ public:
 
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario);
 
+	RID _render_get_environment(RID p_camera, RID p_scenario);
+
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
-	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
+	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);

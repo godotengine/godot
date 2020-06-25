@@ -369,6 +369,11 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 		switch (instance->base_type) {
 			case RS::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
+
+				if (RSG::storage->light_get_type(instance->base) != RS::LIGHT_DIRECTIONAL && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+					instance->scenario->dynamic_lights.erase(light->instance);
+				}
+
 #ifdef DEBUG_ENABLED
 				if (light->geometries.size()) {
 					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
@@ -976,7 +981,26 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 		RSG::scene_render->light_instance_set_transform(light->instance, p_instance->transform);
+		RSG::scene_render->light_instance_set_aabb(light->instance, p_instance->transform.xform(p_instance->aabb));
 		light->shadow_dirty = true;
+
+		RS::LightBakeMode bake_mode = RSG::storage->light_get_bake_mode(p_instance->base);
+		if (RSG::storage->light_get_type(p_instance->base) != RS::LIGHT_DIRECTIONAL && bake_mode != light->bake_mode) {
+			if (light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+				p_instance->scenario->dynamic_lights.erase(light->instance);
+			}
+
+			light->bake_mode = bake_mode;
+
+			if (light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+				p_instance->scenario->dynamic_lights.push_back(light->instance);
+			}
+		}
+
+		uint32_t max_sdfgi_cascade = RSG::storage->light_get_max_sdfgi_cascade(p_instance->base);
+		if (light->max_sdfgi_cascade != max_sdfgi_cascade) {
+			light->max_sdfgi_cascade = max_sdfgi_cascade; //should most likely make sdfgi dirty in scenario
+		}
 	}
 
 	if (p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE) {
@@ -1788,8 +1812,10 @@ void RenderingServerScene::render_camera(RID p_render_buffers, RID p_camera, RID
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->vaspect, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
-	_render_scene(p_render_buffers, camera->transform, camera_matrix, ortho, camera->env, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
+	RID environment = _render_get_environment(p_camera, p_scenario);
+
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->vaspect, p_render_buffers, environment, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_render_scene(p_render_buffers, camera->transform, camera_matrix, ortho, environment, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
@@ -1807,6 +1833,8 @@ void RenderingServerScene::render_camera(RID p_render_buffers, Ref<XRInterface> 
 	// Instead we take our origin point and have our ar/vr interface add fresh tracking data! Whoohoo!
 	Transform world_origin = XRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
+
+	RID environment = _render_get_environment(p_camera, p_scenario);
 
 	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
 	if (p_eye == XRInterface::EYE_LEFT) {
@@ -1865,17 +1893,17 @@ void RenderingServerScene::render_camera(RID p_render_buffers, Ref<XRInterface> 
 		mono_transform *= apply_z_shift;
 
 		// now prepare our scene with our adjusted transform projection matrix
-		_prepare_scene(mono_transform, combined_matrix, false, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(mono_transform, combined_matrix, false, false, p_render_buffers, environment, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	} else if (p_eye == XRInterface::EYE_MONO) {
 		// For mono render, prepare as per usual
-		_prepare_scene(cam_transform, camera_matrix, false, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(cam_transform, camera_matrix, false, false, p_render_buffers, environment, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	}
 
 	// And render our scene...
-	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, camera->env, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
+	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, environment, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
+void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -1886,6 +1914,10 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 	uint32_t camera_layer_mask = p_visible_layers;
 
 	RSG::scene_render->set_scene_pass(render_pass);
+
+	if (p_render_buffers.is_valid()) {
+		RSG::scene_render->sdfgi_update(p_render_buffers, p_environment, p_cam_transform.origin); //update conditions for SDFGI (whether its used or not)
+	}
 
 	RENDER_TIMESTAMP("Frustum Culling");
 
@@ -2224,21 +2256,96 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 			}
 		}
 	}
+
+	/* UPDATE SDFGI */
+
+	if (p_render_buffers.is_valid()) {
+		uint32_t cascade_index[8];
+		uint32_t cascade_sizes[8];
+		const RID *cascade_ptrs[8];
+		uint32_t cascade_count = 0;
+		uint32_t sdfgi_light_cull_count = 0;
+
+		uint32_t prev_cascade = 0xFFFFFFFF;
+		for (int i = 0; i < RSG::scene_render->sdfgi_get_pending_region_count(p_render_buffers); i++) {
+			AABB region = RSG::scene_render->sdfgi_get_pending_region_bounds(p_render_buffers, i);
+			uint32_t region_cascade = RSG::scene_render->sdfgi_get_pending_region_cascade(p_render_buffers, i);
+
+			if (region_cascade != prev_cascade) {
+				cascade_sizes[cascade_count] = 0;
+				cascade_index[cascade_count] = region_cascade;
+				cascade_ptrs[cascade_count] = &sdfgi_light_cull_result[sdfgi_light_cull_count];
+				cascade_count++;
+				sdfgi_light_cull_pass++;
+				prev_cascade = region_cascade;
+			}
+			uint32_t sdfgi_cull_count = scenario->octree.cull_aabb(region, instance_shadow_cull_result, MAX_INSTANCE_CULL);
+
+			for (uint32_t j = 0; j < sdfgi_cull_count; j++) {
+				Instance *ins = instance_shadow_cull_result[j];
+
+				bool keep = false;
+
+				if (ins->base_type == RS::INSTANCE_LIGHT && ins->visible) {
+					InstanceLightData *instance_light = (InstanceLightData *)ins->base_data;
+					if (instance_light->bake_mode != RS::LIGHT_BAKE_STATIC || region_cascade > instance_light->max_sdfgi_cascade) {
+						continue;
+					}
+
+					if (sdfgi_light_cull_pass != instance_light->sdfgi_cascade_light_pass && sdfgi_light_cull_count < MAX_LIGHTS_CULLED) {
+						instance_light->sdfgi_cascade_light_pass = sdfgi_light_cull_pass;
+						sdfgi_light_cull_result[sdfgi_light_cull_count++] = instance_light->instance;
+						cascade_sizes[cascade_count - 1]++;
+					}
+				} else if ((1 << ins->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
+					if (ins->baked_light) {
+						keep = true;
+					}
+				}
+
+				if (!keep) {
+					// remove, no reason to keep
+					sdfgi_cull_count--;
+					SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[sdfgi_cull_count]);
+					j--;
+				}
+			}
+
+			RSG::scene_render->render_sdfgi(p_render_buffers, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, sdfgi_cull_count);
+			//have to save updated cascades, then update static lights.
+		}
+
+		if (sdfgi_light_cull_count) {
+			RSG::scene_render->render_sdfgi_static_lights(p_render_buffers, cascade_count, cascade_index, cascade_ptrs, cascade_sizes);
+		}
+
+		RSG::scene_render->sdfgi_update_probes(p_render_buffers, p_environment, directional_light_ptr, directional_light_count, scenario->dynamic_lights.ptr(), scenario->dynamic_lights.size());
+	}
 }
 
-void RenderingServerScene::_render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
-	Scenario *scenario = scenario_owner.getornull(p_scenario);
-
-	/* ENVIRONMENT */
-
-	RID environment;
-	if (p_force_environment.is_valid()) { //camera has more environment priority
-		environment = p_force_environment;
-	} else if (scenario->environment.is_valid()) {
-		environment = scenario->environment;
-	} else {
-		environment = scenario->fallback_environment;
+RID RenderingServerScene::_render_get_environment(RID p_camera, RID p_scenario) {
+	Camera *camera = camera_owner.getornull(p_camera);
+	if (camera && RSG::scene_render->is_environment(camera->env)) {
+		return camera->env;
 	}
+
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	if (!scenario) {
+		return RID();
+	}
+	if (RSG::scene_render->is_environment(scenario->environment)) {
+		return scenario->environment;
+	}
+
+	if (RSG::scene_render->is_environment(scenario->fallback_environment)) {
+		return scenario->fallback_environment;
+	}
+
+	return RID();
+}
+
+void RenderingServerScene::_render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
 	RID camera_effects;
 	if (p_force_camera_effects.is_valid()) {
@@ -2249,7 +2356,7 @@ void RenderingServerScene::_render_scene(RID p_render_buffers, const Transform p
 	/* PROCESS GEOMETRY AND DRAW SCENE */
 
 	RENDER_TIMESTAMP("Render Scene ");
-	RSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, gi_probe_instance_cull_result, gi_probe_cull_count, decal_instance_cull_result, decal_cull_count, (RasterizerScene::InstanceBase **)lightmap_cull_result, lightmap_cull_count, environment, camera_effects, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	RSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, gi_probe_instance_cull_result, gi_probe_cull_count, decal_instance_cull_result, decal_cull_count, (RasterizerScene::InstanceBase **)lightmap_cull_result, lightmap_cull_count, p_environment, camera_effects, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void RenderingServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {

@@ -50,6 +50,16 @@ public:
 	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
 	virtual void set_directional_shadow_count(int p_count) = 0;
 
+	/* SDFGI UPDATE */
+
+	struct InstanceBase;
+
+	virtual void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) = 0;
+	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const = 0;
+	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const = 0;
+	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const = 0;
+	virtual void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const RID *p_directional_light_instances, uint32_t p_directional_light_count, const RID *p_positional_light_instances, uint32_t p_positional_light_count) = 0;
+
 	/* SKY API */
 
 	virtual RID sky_create() = 0;
@@ -86,6 +96,11 @@ public:
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) = 0;
 
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, bool p_enhance_ssr, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+
+	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
+	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
+
 	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
@@ -110,8 +125,6 @@ public:
 
 	virtual void shadows_quality_set(RS::ShadowQuality p_quality) = 0;
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
-
-	struct InstanceBase;
 
 	struct InstanceDependency {
 		void instance_notify_changed(bool p_aabb, bool p_dependencies);
@@ -248,6 +261,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light) = 0;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
+	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) = 0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const {
@@ -273,10 +287,14 @@ public:
 	virtual bool gi_probe_needs_update(RID p_probe) const = 0;
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) = 0;
 
+	virtual void gi_probe_set_quality(RS::GIProbeQuality) = 0;
+
 	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) = 0;
+	virtual void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time, double p_step) = 0;
@@ -285,7 +303,7 @@ public:
 	virtual RID render_buffers_create() = 0;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa) = 0;
 
-	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) = 0;
 	virtual bool screen_space_roughness_limiter_is_active() const = 0;
 
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) = 0;
@@ -294,6 +312,8 @@ public:
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
 
 	virtual bool free(RID p_rid) = 0;
+
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual void update() = 0;
 	virtual ~RasterizerScene() {}
@@ -484,7 +504,8 @@ public:
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
-	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
+	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) = 0;
+	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) = 0;
 
@@ -503,7 +524,8 @@ public:
 	virtual AABB light_get_aabb(RID p_light) const = 0;
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
-	virtual bool light_get_use_gi(RID p_light) = 0;
+	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) = 0;
+	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 
 	/* PROBE API */
@@ -513,9 +535,9 @@ public:
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
-	virtual void reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) = 0;
-	virtual void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) = 0;
-	virtual void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) = 0;
+	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) = 0;
+	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
+	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) = 0;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) = 0;
 	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) = 0;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) = 0;

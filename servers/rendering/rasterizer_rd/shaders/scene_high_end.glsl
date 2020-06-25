@@ -258,7 +258,6 @@ VERTEX_SHADER_CODE
 		}
 	}
 #endif
-
 #ifdef MODE_RENDER_MATERIAL
 	if (scene_data.material_uv2_mode) {
 		gl_Position.xy = (uv2_attrib.xy + draw_call.bake_uv2_offset) * 2.0 - 1.0;
@@ -341,11 +340,13 @@ layout(location = 4) out float depth_output_buffer;
 
 #endif
 
-#ifdef MODE_RENDER_NORMAL
-layout(location = 0) out vec4 normal_output_buffer;
-#ifdef MODE_RENDER_ROUGHNESS
-layout(location = 1) out float roughness_output_buffer;
-#endif //MODE_RENDER_ROUGHNESS
+#ifdef MODE_RENDER_NORMAL_ROUGHNESS
+layout(location = 0) out vec4 normal_roughness_output_buffer;
+
+#ifdef MODE_RENDER_GIPROBE
+layout(location = 1) out uvec2 giprobe_buffer;
+#endif
+
 #endif //MODE_RENDER_NORMAL
 #else // RENDER DEPTH
 
@@ -1321,37 +1322,39 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal, float roughnes
 		reflection_accum += reflection;
 	}
 
-#if !defined(USE_LIGHTMAP) && !defined(USE_VOXEL_CONE_TRACING)
-	if (reflections.data[ref_index].ambient.a > 0.0) { //compute ambient using skybox
+	switch (reflections.data[ref_index].ambient_mode) {
+		case REFLECTION_AMBIENT_DISABLED: {
+			//do nothing
+		} break;
+		case REFLECTION_AMBIENT_ENVIRONMENT: {
+			//do nothing
+			vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
 
-		vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
+			vec4 ambient_out;
 
-		vec4 ambient_out;
+			ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
+			ambient_out.a = blend;
+			if (reflections.data[ref_index].params.z < 0.5) { //interior
+				ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
+			}
 
-		ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
-
-		ambient_out.a = blend;
-		ambient_out.rgb = mix(reflections.data[ref_index].ambient.rgb, ambient_out.rgb, reflections.data[ref_index].ambient.a);
-		if (reflections.data[ref_index].params.z < 0.5) {
-			ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
-		}
-
-		ambient_out.rgb *= ambient_out.a;
-		ambient_accum += ambient_out;
-	} else {
-		vec4 ambient_out;
-		ambient_out.a = blend;
-		ambient_out.rgb = reflections.data[ref_index].ambient.rgb;
-		if (reflections.data[ref_index].params.z < 0.5) {
-			ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
-		}
-		ambient_out.rgb *= ambient_out.a;
-		ambient_accum += ambient_out;
+			ambient_out.rgb *= ambient_out.a;
+			ambient_accum += ambient_out;
+		} break;
+		case REFLECTION_AMBIENT_COLOR: {
+			vec4 ambient_out;
+			ambient_out.a = blend;
+			ambient_out.rgb = reflections.data[ref_index].ambient;
+			if (reflections.data[ref_index].params.z < 0.5) {
+				ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
+			}
+			ambient_out.rgb *= ambient_out.a;
+			ambient_accum += ambient_out;
+		} break;
 	}
-#endif //USE_LIGHTMAP or VCT
 }
 
-#ifdef USE_VOXEL_CONE_TRACING
+#ifdef USE_FORWARD_GI
 
 //standard voxel cone trace
 vec4 voxel_cone_trace(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
@@ -1374,42 +1377,6 @@ vec4 voxel_cone_trace(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction,
 
 	return color;
 }
-
-#ifndef GI_PROBE_HIGH_QUALITY
-//faster version for 45 degrees
-
-#ifdef GI_PROBE_USE_ANISOTROPY
-
-vec4 voxel_cone_trace_anisotropic_45_degrees(texture3D probe, texture3D aniso_pos, texture3D aniso_neg, vec3 normal, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
-	float dist = p_bias;
-	vec4 color = vec4(0.0);
-	float radius = max(0.5, tan_half_angle * dist);
-	float lod_level = log2(radius * 2.0);
-
-	while (dist < max_distance && color.a < 0.95) {
-		vec3 uvw_pos = (pos + dist * direction) * cell_size;
-		//check if outside, then break
-		if (any(greaterThan(abs(uvw_pos - 0.5), vec3(0.5f + radius * cell_size)))) {
-			break;
-		}
-
-		vec4 scolor = textureLod(sampler3D(probe, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, lod_level);
-		vec3 aniso_neg = textureLod(sampler3D(aniso_neg, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, lod_level).rgb;
-		vec3 aniso_pos = textureLod(sampler3D(aniso_pos, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, lod_level).rgb;
-
-		scolor.rgb *= dot(max(vec3(0.0), (normal * aniso_pos)), vec3(1.0)) + dot(max(vec3(0.0), (-normal * aniso_neg)), vec3(1.0));
-		lod_level += 1.0;
-
-		float a = (1.0 - color.a);
-		scolor *= a;
-		color += scolor;
-		dist += radius;
-		radius = max(0.5, tan_half_angle * dist);
-	}
-
-	return color;
-}
-#else
 
 vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
 	float dist = p_bias;
@@ -1437,41 +1404,6 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 	return color;
 }
 
-#endif
-
-#elif defined(GI_PROBE_USE_ANISOTROPY)
-
-//standard voxel cone trace
-vec4 voxel_cone_trace_anisotropic(texture3D probe, texture3D aniso_pos, texture3D aniso_neg, vec3 normal, vec3 cell_size, vec3 pos, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
-	float dist = p_bias;
-	vec4 color = vec4(0.0);
-
-	while (dist < max_distance && color.a < 0.95) {
-		float diameter = max(1.0, 2.0 * tan_half_angle * dist);
-		vec3 uvw_pos = (pos + dist * direction) * cell_size;
-		float half_diameter = diameter * 0.5;
-		//check if outside, then break
-		if (any(greaterThan(abs(uvw_pos - 0.5), vec3(0.5f + half_diameter * cell_size)))) {
-			break;
-		}
-		float log2_diameter = log2(diameter);
-		vec4 scolor = textureLod(sampler3D(probe, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, log2_diameter);
-		vec3 aniso_neg = textureLod(sampler3D(aniso_neg, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, log2_diameter).rgb;
-		vec3 aniso_pos = textureLod(sampler3D(aniso_pos, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uvw_pos, log2_diameter).rgb;
-
-		scolor.rgb *= dot(max(vec3(0.0), (normal * aniso_pos)), vec3(1.0)) + dot(max(vec3(0.0), (-normal * aniso_neg)), vec3(1.0));
-
-		float a = (1.0 - color.a);
-		scolor *= a;
-		color += scolor;
-		dist += half_diameter;
-	}
-
-	return color;
-}
-
-#endif
-
 void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3 normal_xform, float roughness, vec3 ambient, vec3 environment, inout vec4 out_spec, inout vec4 out_diff) {
 	position = (gi_probes.data[index].xform * vec4(position, 1.0)).xyz;
 	ref_vec = normalize((gi_probes.data[index].xform * vec4(ref_vec, 0.0)).xyz);
@@ -1493,31 +1425,6 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 
 	//radiance
 
-#ifdef GI_PROBE_HIGH_QUALITY
-
-#define MAX_CONE_DIRS 6
-	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[](
-			vec3(0.0, 0.0, 1.0),
-			vec3(0.866025, 0.0, 0.5),
-			vec3(0.267617, 0.823639, 0.5),
-			vec3(-0.700629, 0.509037, 0.5),
-			vec3(-0.700629, -0.509037, 0.5),
-			vec3(0.267617, -0.823639, 0.5));
-
-	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
-	float cone_angle_tan = 0.577;
-
-#elif defined(GI_PROBE_LOW_QUALITY)
-
-#define MAX_CONE_DIRS 1
-
-	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[](
-			vec3(0.0, 0.0, 1.0));
-
-	float cone_weights[MAX_CONE_DIRS] = float[](1.0);
-	float cone_angle_tan = 4; //~76 degrees
-#else // MEDIUM QUALITY
-
 #define MAX_CONE_DIRS 4
 
 	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[](
@@ -1529,31 +1436,13 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.25, 0.25, 0.25);
 	float cone_angle_tan = 0.98269;
 
-#endif
 	vec3 light = vec3(0.0);
 
 	for (int i = 0; i < MAX_CONE_DIRS; i++) {
 		vec3 dir = normalize((gi_probes.data[index].xform * vec4(normal_xform * cone_dirs[i], 0.0)).xyz);
 
-#if defined(GI_PROBE_HIGH_QUALITY) || defined(GI_PROBE_LOW_QUALITY)
+		vec4 cone_light = voxel_cone_trace_45_degrees(gi_probe_textures[index], cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
 
-#ifdef GI_PROBE_USE_ANISOTROPY
-		vec4 cone_light = voxel_cone_trace_anisotropic(gi_probe_textures[gi_probes.data[index].texture_slot], gi_probe_textures[gi_probes.data[index].texture_slot + 1], gi_probe_textures[gi_probes.data[index].texture_slot + 2], normalize(mix(dir, normal, gi_probes.data[index].anisotropy_strength)), cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
-#else
-
-		vec4 cone_light = voxel_cone_trace(gi_probe_textures[gi_probes.data[index].texture_slot], cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
-
-#endif // GI_PROBE_USE_ANISOTROPY
-
-#else
-
-#ifdef GI_PROBE_USE_ANISOTROPY
-		vec4 cone_light = voxel_cone_trace_anisotropic_45_degrees(gi_probe_textures[gi_probes.data[index].texture_slot], gi_probe_textures[gi_probes.data[index].texture_slot + 1], gi_probe_textures[gi_probes.data[index].texture_slot + 2], normalize(mix(dir, normal, gi_probes.data[index].anisotropy_strength)), cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
-#else
-		vec4 cone_light = voxel_cone_trace_45_degrees(gi_probe_textures[gi_probes.data[index].texture_slot], cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
-#endif // GI_PROBE_USE_ANISOTROPY
-
-#endif
 		if (gi_probes.data[index].blend_ambient) {
 			cone_light.rgb = mix(ambient, cone_light.rgb, min(1.0, cone_light.a / 0.95));
 		}
@@ -1562,33 +1451,10 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	}
 
 	light *= gi_probes.data[index].dynamic_range;
-
-	if (gi_probes.data[index].ambient_occlusion > 0.001) {
-		float size = 1.0 + gi_probes.data[index].ambient_occlusion_size * 7.0;
-
-		float taps, blend;
-		blend = modf(size, taps);
-		float ao = 0.0;
-		for (float i = 1.0; i <= taps; i++) {
-			vec3 ofs = (position + normal * (i * 0.5 + 1.0)) * cell_size;
-			ao += textureLod(sampler3D(gi_probe_textures[gi_probes.data[index].texture_slot], material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ofs, i - 1.0).a * i;
-		}
-
-		if (blend > 0.001) {
-			vec3 ofs = (position + normal * ((taps + 1.0) * 0.5 + 1.0)) * cell_size;
-			ao += textureLod(sampler3D(gi_probe_textures[gi_probes.data[index].texture_slot], material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ofs, taps).a * (taps + 1.0) * blend;
-		}
-
-		ao = 1.0 - min(1.0, ao);
-
-		light = mix(scene_data.ao_color.rgb, light, mix(1.0, ao, gi_probes.data[index].ambient_occlusion));
-	}
-
 	out_diff += vec4(light * blend, blend);
 
 	//irradiance
-#ifndef GI_PROBE_LOW_QUALITY
-	vec4 irr_light = voxel_cone_trace(gi_probe_textures[gi_probes.data[index].texture_slot], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, gi_probes.data[index].bias);
+	vec4 irr_light = voxel_cone_trace(gi_probe_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, gi_probes.data[index].bias);
 	if (gi_probes.data[index].blend_ambient) {
 		irr_light.rgb = mix(environment, irr_light.rgb, min(1.0, irr_light.a / 0.95));
 	}
@@ -1596,10 +1462,142 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	//irr_light=vec3(0.0);
 
 	out_spec += vec4(irr_light.rgb * blend, blend);
-#endif
 }
 
-#endif //USE_VOXEL_CONE_TRACING
+#endif //USE_FORWARD_GI
+
+vec2 octahedron_wrap(vec2 v) {
+	vec2 signVal;
+	signVal.x = v.x >= 0.0 ? 1.0 : -1.0;
+	signVal.y = v.y >= 0.0 ? 1.0 : -1.0;
+	return (1.0 - abs(v.yx)) * signVal;
+}
+
+vec2 octahedron_encode(vec3 n) {
+	// https://twitter.com/Stubbesaurus/status/937994790553227264
+	n /= (abs(n.x) + abs(n.y) + abs(n.z));
+	n.xy = n.z >= 0.0 ? n.xy : octahedron_wrap(n.xy);
+	n.xy = n.xy * 0.5 + 0.5;
+	return n.xy;
+}
+
+void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, bool use_specular, float roughness, out vec3 diffuse_light, out vec3 specular_light, out float blend) {
+	cascade_pos += cam_normal * sdfgi.normal_bias;
+
+	vec3 base_pos = floor(cascade_pos);
+	//cascade_pos += mix(vec3(0.0),vec3(0.01),lessThan(abs(cascade_pos-base_pos),vec3(0.01))) * cam_normal;
+	ivec3 probe_base_pos = ivec3(base_pos);
+
+	vec4 diffuse_accum = vec4(0.0);
+	vec3 specular_accum;
+
+	ivec3 tex_pos = ivec3(probe_base_pos.xy, int(cascade));
+	tex_pos.x += probe_base_pos.z * sdfgi.probe_axis_size;
+	tex_pos.xy = tex_pos.xy * (SDFGI_OCT_SIZE + 2) + ivec2(1);
+
+	vec3 diffuse_posf = (vec3(tex_pos) + vec3(octahedron_encode(cam_normal) * float(SDFGI_OCT_SIZE), 0.0)) * sdfgi.lightprobe_tex_pixel_size;
+
+	vec3 specular_posf;
+
+	if (use_specular) {
+		specular_accum = vec3(0.0);
+		specular_posf = (vec3(tex_pos) + vec3(octahedron_encode(cam_specular_normal) * float(SDFGI_OCT_SIZE), 0.0)) * sdfgi.lightprobe_tex_pixel_size;
+	}
+
+	vec4 light_accum = vec4(0.0);
+	float weight_accum = 0.0;
+
+	for (uint j = 0; j < 8; j++) {
+		ivec3 offset = (ivec3(j) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1);
+		ivec3 probe_posi = probe_base_pos;
+		probe_posi += offset;
+
+		// Compute weight
+
+		vec3 probe_pos = vec3(probe_posi);
+		vec3 probe_to_pos = cascade_pos - probe_pos;
+		vec3 probe_dir = normalize(-probe_to_pos);
+
+		vec3 trilinear = vec3(1.0) - abs(probe_to_pos);
+		float weight = trilinear.x * trilinear.y * trilinear.z * max(0.005, dot(cam_normal, probe_dir));
+
+		// Compute lightprobe occlusion
+
+		if (sdfgi.use_occlusion) {
+			ivec3 occ_indexv = abs((sdfgi.cascades[cascade].probe_world_offset + probe_posi) & ivec3(1, 1, 1)) * ivec3(1, 2, 4);
+			vec4 occ_mask = mix(vec4(0.0), vec4(1.0), equal(ivec4(occ_indexv.x | occ_indexv.y), ivec4(0, 1, 2, 3)));
+
+			vec3 occ_pos = clamp(cascade_pos, probe_pos - sdfgi.occlusion_clamp, probe_pos + sdfgi.occlusion_clamp) * sdfgi.probe_to_uvw;
+			occ_pos.z += float(cascade);
+			if (occ_indexv.z != 0) { //z bit is on, means index is >=4, so make it switch to the other half of textures
+				occ_pos.x += 1.0;
+			}
+
+			occ_pos *= sdfgi.occlusion_renormalize;
+			float occlusion = dot(textureLod(sampler3D(sdfgi_occlusion_cascades, material_samplers[SAMPLER_LINEAR_CLAMP]), occ_pos, 0.0), occ_mask);
+
+			weight *= max(occlusion, 0.01);
+		}
+
+		// Compute lightprobe texture position
+
+		vec3 diffuse;
+		vec3 pos_uvw = diffuse_posf;
+		pos_uvw.xy += vec2(offset.xy) * sdfgi.lightprobe_uv_offset.xy;
+		pos_uvw.x += float(offset.z) * sdfgi.lightprobe_uv_offset.z;
+		diffuse = textureLod(sampler2DArray(sdfgi_lightprobe_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), pos_uvw, 0.0).rgb;
+
+		diffuse_accum += vec4(diffuse * weight, weight);
+
+		if (use_specular) {
+			vec3 specular = vec3(0.0);
+			vec3 pos_uvw = specular_posf;
+			pos_uvw.xy += vec2(offset.xy) * sdfgi.lightprobe_uv_offset.xy;
+			pos_uvw.x += float(offset.z) * sdfgi.lightprobe_uv_offset.z;
+			if (roughness < 0.99) {
+				specular = textureLod(sampler2DArray(sdfgi_lightprobe_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), pos_uvw + vec3(0, 0, float(sdfgi.max_cascades)), 0.0).rgb;
+			}
+			if (roughness > 0.5) {
+				specular = mix(specular, textureLod(sampler2DArray(sdfgi_lightprobe_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), pos_uvw, 0.0).rgb, (roughness - 0.5) * 2.0);
+			}
+
+			specular_accum += specular * weight;
+		}
+	}
+
+	if (diffuse_accum.a > 0.0) {
+		diffuse_accum.rgb /= diffuse_accum.a;
+	}
+
+	diffuse_light = diffuse_accum.rgb;
+
+	if (use_specular) {
+		if (diffuse_accum.a > 0.0) {
+			specular_accum /= diffuse_accum.a;
+		}
+
+		specular_light = specular_accum;
+	}
+
+	{
+		//process blend
+		float blend_from = (float(sdfgi.probe_axis_size - 1) / 2.0) - 2.5;
+		float blend_to = blend_from + 2.0;
+
+		vec3 inner_pos = cam_pos * sdfgi.cascades[cascade].to_probe;
+
+		float len = length(inner_pos);
+
+		inner_pos = abs(normalize(inner_pos));
+		len *= max(inner_pos.x, max(inner_pos.y, inner_pos.z));
+
+		if (len >= blend_from) {
+			blend = smoothstep(blend_from, blend_to, len);
+		} else {
+			blend = 0.0;
+		}
+	}
+}
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -1812,6 +1810,15 @@ FRAGMENT_SHADER_CODE
 #endif //not render depth
 	/////////////////////// LIGHTING //////////////////////////////
 
+	if (scene_data.roughness_limiter_enabled) {
+		//http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
+		float roughness2 = roughness * roughness;
+		vec3 dndu = dFdx(normal), dndv = dFdx(normal);
+		float variance = scene_data.roughness_limiter_amount * (dot(dndu, dndu) + dot(dndv, dndv));
+		float kernelRoughness2 = min(2.0 * variance, scene_data.roughness_limiter_limit); //limit effect
+		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
+		roughness = sqrt(filteredRoughness2);
+	}
 	//apply energy conservation
 
 	vec3 specular_light = vec3(0.0, 0.0, 0.0);
@@ -1819,11 +1826,6 @@ FRAGMENT_SHADER_CODE
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
-
-	if (scene_data.roughness_limiter_enabled) {
-		float limit = texelFetch(sampler2D(roughness_buffer, material_samplers[SAMPLER_NEAREST_CLAMP]), ivec2(gl_FragCoord.xy), 0).r;
-		roughness = max(roughness, limit);
-	}
 
 	if (scene_data.use_reflection_cubemap) {
 		vec3 ref_vec = reflect(-view, normal);
@@ -1871,7 +1873,6 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
-	//gi probes
 
 #ifdef USE_LIGHTMAP
 
@@ -1928,10 +1929,80 @@ FRAGMENT_SHADER_CODE
 			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw, 0.0).rgb;
 		}
 	}
-#endif
-	//lightmap capture
+#elif defined(USE_FORWARD_GI)
 
-#ifdef USE_VOXEL_CONE_TRACING
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SDFGI)) { //has lightmap capture
+
+		//make vertex orientation the world one, but still align to camera
+		vec3 cam_pos = mat3(scene_data.camera_matrix) * vertex;
+		vec3 cam_normal = mat3(scene_data.camera_matrix) * normal;
+		vec3 cam_reflection = mat3(scene_data.camera_matrix) * reflect(-view, normal);
+
+		//apply y-mult
+		cam_pos.y *= sdfgi.y_mult;
+		cam_normal.y *= sdfgi.y_mult;
+		cam_normal = normalize(cam_normal);
+		cam_reflection.y *= sdfgi.y_mult;
+		cam_normal = normalize(cam_normal);
+		cam_reflection = normalize(cam_reflection);
+
+		vec4 light_accum = vec4(0.0);
+		float weight_accum = 0.0;
+
+		vec4 light_blend_accum = vec4(0.0);
+		float weight_blend_accum = 0.0;
+
+		float blend = -1.0;
+
+		// helper constants, compute once
+
+		uint cascade = 0xFFFFFFFF;
+		vec3 cascade_pos;
+		vec3 cascade_normal;
+
+		for (uint i = 0; i < sdfgi.max_cascades; i++) {
+			cascade_pos = (cam_pos - sdfgi.cascades[i].position) * sdfgi.cascades[i].to_probe;
+
+			if (any(lessThan(cascade_pos, vec3(0.0))) || any(greaterThanEqual(cascade_pos, sdfgi.cascade_probe_size))) {
+				continue; //skip cascade
+			}
+
+			cascade = i;
+			break;
+		}
+
+		if (cascade < SDFGI_MAX_CASCADES) {
+			bool use_specular = true;
+			float blend;
+			vec3 diffuse, specular;
+			sdfgi_process(cascade, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse, specular, blend);
+
+			if (blend > 0.0) {
+				//blend
+				if (cascade == sdfgi.max_cascades - 1) {
+					diffuse = mix(diffuse, ambient_light, blend);
+					if (use_specular) {
+						specular = mix(specular, specular_light, blend);
+					}
+				} else {
+					vec3 diffuse2, specular2;
+					float blend2;
+					cascade_pos = (cam_pos - sdfgi.cascades[cascade + 1].position) * sdfgi.cascades[cascade + 1].to_probe;
+					sdfgi_process(cascade + 1, cascade_pos, cam_pos, cam_normal, cam_reflection, use_specular, roughness, diffuse2, specular2, blend2);
+					diffuse = mix(diffuse, diffuse2, blend);
+					if (use_specular) {
+						specular = mix(specular, specular2, blend);
+					}
+				}
+			}
+
+			ambient_light = diffuse;
+			if (use_specular) {
+				specular_light = specular;
+			}
+		}
+	}
+
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
 
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
@@ -1962,6 +2033,56 @@ FRAGMENT_SHADER_CODE
 
 		specular_light = spec_accum.rgb;
 		ambient_light = amb_accum.rgb;
+	}
+#else
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GI_BUFFERS)) { //use GI buffers
+
+		ivec2 coord;
+
+		if (scene_data.gi_upscale_for_msaa) {
+			/*
+			//find the closest depth to upscale from, based on neighbours
+			ivec2 base_coord = ivec2(gl_FragCoord.xy);
+			float z_dist = gl_FragCoord.z;
+			ivec2 closest_coord = base_coord;
+			float closest_z_dist = abs(texelFetch(sampler2D(depth_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord,0).r-z_dist);
+
+			for(int i=0;i<4;i++) {
+				const ivec2 neighbours[4]=ivec2[](ivec2(-1,0),ivec2(1,0),ivec2(0,-1),ivec2(0,1));
+				ivec2 neighbour_coord = base_coord + neighbours[i];
+				float neighbour_z_dist = abs(texelFetch(sampler2D(depth_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord,0).r-z_dist);
+				if (neighbour_z_dist < closest_z_dist) {
+					closest_z_dist = neighbour_z_dist;
+					closest_coord = neighbour_coord;
+				}
+			}
+
+*/
+			ivec2 base_coord = ivec2(gl_FragCoord.xy);
+			ivec2 closest_coord = base_coord;
+			float closest_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0).xyz * 2.0 - 1.0);
+
+			for (int i = 0; i < 4; i++) {
+				const ivec2 neighbours[4] = ivec2[](ivec2(-1, 0), ivec2(1, 0), ivec2(0, -1), ivec2(0, 1));
+				ivec2 neighbour_coord = base_coord + neighbours[i];
+				float neighbour_ang = dot(normal, texelFetch(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord, 0).xyz * 2.0 - 1.0);
+				if (neighbour_ang > closest_ang) {
+					closest_ang = neighbour_ang;
+					closest_coord = neighbour_coord;
+				}
+			}
+
+			coord = closest_coord;
+
+		} else {
+			coord = ivec2(gl_FragCoord.xy);
+		}
+
+		vec4 buffer_ambient = texelFetch(sampler2D(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0);
+		vec4 buffer_reflection = texelFetch(sampler2D(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0);
+
+		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
+		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);
 	}
 #endif
 
@@ -2376,6 +2497,93 @@ FRAGMENT_SHADER_CODE
 
 #ifdef MODE_RENDER_DEPTH
 
+#ifdef MODE_RENDER_SDF
+
+	{
+		vec3 local_pos = (scene_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
+		ivec3 grid_pos = scene_data.sdf_offset + ivec3(local_pos * vec3(scene_data.sdf_size));
+
+		uint albedo16 = 0x1; //solid flag
+		albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;
+		albedo16 |= clamp(uint(albedo.g * 31.0), 0, 31) << 6;
+		albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 1;
+
+		imageStore(albedo_volume_grid, grid_pos, uvec4(albedo16));
+
+		uint facing_bits = 0;
+		const vec3 aniso_dir[6] = vec3[](
+				vec3(1, 0, 0),
+				vec3(0, 1, 0),
+				vec3(0, 0, 1),
+				vec3(-1, 0, 0),
+				vec3(0, -1, 0),
+				vec3(0, 0, -1));
+
+		vec3 cam_normal = mat3(scene_data.camera_matrix) * normal;
+
+		for (uint i = 0; i < 6; i++) {
+			if (dot(cam_normal, aniso_dir[i]) > 0.001) {
+				facing_bits |= (1 << i);
+			}
+		}
+
+		imageAtomicOr(geom_facing_grid, grid_pos, facing_bits); //store facing bits
+
+		if (length(emission) > 0.001) {
+			float lumas[6];
+			vec3 light_total = vec3(0);
+
+			for (int i = 0; i < 6; i++) {
+				float strength = max(0.0, dot(cam_normal, aniso_dir[i]));
+				vec3 light = emission * strength;
+				light_total += light;
+				lumas[i] = max(light.r, max(light.g, light.b));
+			}
+
+			float luma_total = max(light_total.r, max(light_total.g, light_total.b));
+
+			uint light_aniso = 0;
+
+			for (int i = 0; i < 6; i++) {
+				light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
+			}
+
+			//compress to RGBE9995 to save space
+
+			const float pow2to9 = 512.0f;
+			const float B = 15.0f;
+			const float N = 9.0f;
+			const float LN2 = 0.6931471805599453094172321215;
+
+			float cRed = clamp(light_total.r, 0.0, 65408.0);
+			float cGreen = clamp(light_total.g, 0.0, 65408.0);
+			float cBlue = clamp(light_total.b, 0.0, 65408.0);
+
+			float cMax = max(cRed, max(cGreen, cBlue));
+
+			float expp = max(-B - 1.0f, floor(log(cMax) / LN2)) + 1.0f + B;
+
+			float sMax = floor((cMax / pow(2.0f, expp - B - N)) + 0.5f);
+
+			float exps = expp + 1.0f;
+
+			if (0.0 <= sMax && sMax < pow2to9) {
+				exps = expp;
+			}
+
+			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
+			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
+			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
+			//store as 8985 to have 2 extra neighbour bits
+			uint light_rgbe = ((uint(sRed) & 0x1FF) >> 1) | ((uint(sGreen) & 0x1FF) << 8) | (((uint(sBlue) & 0x1FF) >> 1) << 17) | ((uint(exps) & 0x1F) << 25);
+
+			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));
+			imageStore(emission_aniso_grid, grid_pos, uvec4(light_aniso));
+		}
+	}
+
+#endif
+
 #ifdef MODE_RENDER_MATERIAL
 
 	albedo_output_buffer.rgb = albedo;
@@ -2398,11 +2606,21 @@ FRAGMENT_SHADER_CODE
 	emission_output_buffer.a = 0.0;
 #endif
 
-#ifdef MODE_RENDER_NORMAL
-	normal_output_buffer = vec4(normal * 0.5 + 0.5, 0.0);
-#ifdef MODE_RENDER_ROUGHNESS
-	roughness_output_buffer = roughness;
-#endif //MODE_RENDER_ROUGHNESS
+#ifdef MODE_RENDER_NORMAL_ROUGHNESS
+	normal_roughness_output_buffer = vec4(normal * 0.5 + 0.5, roughness);
+
+#ifdef MODE_RENDER_GIPROBE
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
+		uint index2 = instances.data[instance_index].gi_offset >> 16;
+		giprobe_buffer.x = index1 & 0xFF;
+		giprobe_buffer.y = index2 & 0xFF;
+	} else {
+		giprobe_buffer.x = 0xFF;
+		giprobe_buffer.y = 0xFF;
+	}
+#endif
+
 #endif //MODE_RENDER_NORMAL
 
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
@@ -2455,7 +2673,6 @@ FRAGMENT_SHADER_CODE
 #endif
 	diffuse_buffer = vec4(emission + diffuse_light + ambient_light, sss_strength);
 	specular_buffer = vec4(specular_light, metallic);
-
 #endif
 
 #else //MODE_MULTIPLE_RENDER_TARGETS
