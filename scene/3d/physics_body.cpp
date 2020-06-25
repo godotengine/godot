@@ -453,6 +453,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	set_global_transform(state->get_transform());
 	linear_velocity = state->get_linear_velocity();
 	angular_velocity = state->get_angular_velocity();
+	inverse_inertia_tensor = state->get_inverse_inertia_tensor();
 	if (sleeping != state->is_sleeping()) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
@@ -765,6 +766,10 @@ Vector3 RigidBody::get_angular_velocity() const {
 	return angular_velocity;
 }
 
+Basis RigidBody::get_inverse_inertia_tensor() {
+	return inverse_inertia_tensor;
+}
+
 void RigidBody::set_use_custom_integrator(bool p_enable) {
 
 	if (custom_integrator == p_enable)
@@ -955,6 +960,8 @@ void RigidBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &RigidBody::set_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &RigidBody::get_angular_velocity);
+
+	ClassDB::bind_method(D_METHOD("get_inverse_inertia_tensor"), &RigidBody::get_inverse_inertia_tensor);
 
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidBody::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidBody::get_gravity_scale);

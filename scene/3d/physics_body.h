@@ -135,6 +135,7 @@ protected:
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
+	Basis inverse_inertia_tensor;
 	real_t gravity_scale;
 	real_t linear_damp;
 	real_t angular_damp;
@@ -223,6 +224,8 @@ public:
 
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
+
+	Basis get_inverse_inertia_tensor();
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
