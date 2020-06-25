@@ -79,7 +79,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
 "Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -88,7 +88,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7070,7 +7070,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
-msgstr "Symbole de recherche"
+msgstr "Rechercher un symbole"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
@@ -8598,7 +8598,7 @@ msgstr "Détecter de nouveaux changements"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Changes"
-msgstr "Changements"
+msgstr "Modifications"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9612,15 +9612,15 @@ msgstr "Ressources"
 
 #: editor/project_export.cpp
 msgid "Export all resources in the project"
-msgstr "Exporter toutes les ressources dans le projet"
+msgstr "Exporter toutes les ressources du projet"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
-msgstr "Exporter les scènes sélectionnées (y compris les dépendences)"
+msgstr "Exporter les scènes sélectionnées (y compris les dépendances)"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
-msgstr "Exporter les ressources sélectionnées (y compris les dépendences)"
+msgstr "Exporter les ressources sélectionnées (y compris les dépendances)"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"

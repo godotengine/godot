@@ -70,8 +70,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
-"Last-Translator: 无双流 <1257678024@qq.com>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: UnluckyNinja <unluckyninja1994@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -808,9 +808,8 @@ msgid "Method in target node must be specified."
 msgstr "必须指定目标节点的方法。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "名称不是有效的标识符："
+msgstr "方法名称必须是一个有效的标识符。"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -6660,7 +6659,7 @@ msgstr "查找下一项"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr "查找上一项"
+msgstr "查找上一个"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
@@ -6942,7 +6941,7 @@ msgstr "切换注释"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "折叠/展开当前行"
+msgstr "折叠/展开行"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -6958,7 +6957,7 @@ msgstr "拷贝到下一行"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
-msgstr "代码补全"
+msgstr "符号自动补全"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
@@ -6966,7 +6965,7 @@ msgstr "所选内容求值"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
-msgstr "修剪行后空白"
+msgstr "移除尾部空格"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Spaces"

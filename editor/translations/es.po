@@ -53,7 +53,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -807,9 +807,8 @@ msgid "Method in target node must be specified."
 msgstr "Se debe establecer un método en el nodo destino."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "El nombre no es un identificador válido:"
+msgstr "El nombre del método debe ser un identificador válido."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -3045,7 +3044,7 @@ msgstr "Reproducir Escena Personalizada"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr "Cambiar el driver de video requiere reiniciar el editor."
+msgstr "Cambiar el driver de vídeo requiere reiniciar el editor."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -9564,11 +9563,11 @@ msgstr "Exportar todos los recursos del proyecto"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
-msgstr "Exportar las escenas seleccionadas (incluyendo dependencias)"
+msgstr "Exportar escenas seleccionadas (y dependencias)"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
-msgstr "Exportar los recursos seleccionado (incluyendo dependencias)"
+msgstr "Exportar los recursos seleccionados (y dependencias)"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
@@ -11112,7 +11111,7 @@ msgstr "Copiar Error"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video RAM"
-msgstr "Vídeo RAM"
+msgstr "Memoria de Vídeo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
@@ -11156,7 +11155,7 @@ msgstr "Elige uno o más ítems de la lista para mostrar el gráfico."
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
-msgstr "Lista de uso de memoria de video por recurso:"
+msgstr "Listado de la Memoria de Vídeo Utilizada por Recurso:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
@@ -12612,7 +12611,7 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
-"Las GIProbes no están soportadas por el controlador de video GLES2.\n"
+"Las GIProbes no están soportadas por el controlador de vídeo GLES2.\n"
 "Usa un BakedLightmap en su lugar."
 
 #: scene/3d/light.cpp
