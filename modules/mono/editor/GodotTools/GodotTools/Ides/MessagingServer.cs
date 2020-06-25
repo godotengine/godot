@@ -342,7 +342,7 @@ namespace GodotTools.Ides
                 DispatchToMainThread(() =>
                 {
                     GodotSharpEditor.Instance.CurrentPlaySettings =
-                        new PlaySettings(request.DebuggerHost, request.DebuggerPort, buildBeforePlaying: true);
+                        new PlaySettings(request.DebuggerHost, request.DebuggerPort, request.BuildBeforePlaying ?? true);
                     Internal.EditorRunPlay();
                     GodotSharpEditor.Instance.CurrentPlaySettings = null;
                 });
