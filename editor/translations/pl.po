@@ -39,12 +39,13 @@
 # Maciej Chamera <chameramaciej@gmail.com>, 2019.
 # Cezary Stasiak <cezary.p.stasiak@gmail.com>, 2019.
 # Jan Ligudziński <jan.ligudzinski@gmail.com>, 2020.
+# Adam Jagoda <kontakt@lukasz.xyz>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: Adam Jagoda <kontakt@lukasz.xyz>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -791,9 +792,8 @@ msgid "Method in target node must be specified."
 msgstr "Metoda w węźle docelowym musi zostać podana."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Nazwa nie jest prawidłowym identyfikatorem:"
+msgstr "Nazwa metody musi być poprawnym identyfikatorem."
 
 #: editor/connections_dialog.cpp
 msgid ""
