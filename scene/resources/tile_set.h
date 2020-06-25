@@ -150,8 +150,6 @@ public:
 	void tile_set_texture(int p_id, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> tile_get_texture(int p_id) const;
 
-	TypedArray<Texture2D> get_textures() const;
-
 	void tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map);
 	Ref<Texture2D> tile_get_normal_map(int p_id) const;
 

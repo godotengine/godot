@@ -76,8 +76,11 @@ class TileMapEditor : public VBoxContainer {
 
 	LineEdit *search_box;
 	HSlider *size_slider;
-	ItemList *palette;
-	ItemList *manual_palette;
+	TabContainer *palette_tabs;
+	// List<ItemList*> palettes;
+	// List<ItemList*> manual_palettes;
+	ItemList *current_palette;
+	ItemList *current_manual_palette;
 
 	Label *info_message;
 
@@ -175,10 +178,16 @@ class TileMapEditor : public VBoxContainer {
 	void _text_entered(const String &p_text);
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _create_palettes();
+	VSplitContainer _create_palette_container(String name);
+	ItemList _create_palette();
+	ItemList _create_manual_palette();
 	void _update_palette();
+	void _add_tile(int tile_id, ItemList& palette);
 	void _update_button_tool();
 	void _button_tool_select(int p_tool);
 	void _menu_option(int p_option);
+	void _palette_changed(int id);
 	void _palette_selected(int index);
 	void _palette_multi_selected(int index, bool selected);
 	void _palette_input(const Ref<InputEvent> &p_event);

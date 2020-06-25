@@ -403,19 +403,6 @@ Ref<Texture2D> TileSet::tile_get_texture(int p_id) const {
 	return tile_map[p_id].texture;
 }
 
-TypedArray<Texture2D> TileSet::get_textures() const {
-	TypedArray<Texture2D> res;
-	for (Map<int, TileData>::Element *E = tile_map.front(); E; E = E->next()) {
-		Ref<Texture2D> texture = E->get();
-		print_line("Test2");
-		print_line(E->get().name);
-		if(!res.has(texture)) {
-			res.push_back(texture);
-		}
-    }
-	return res;
-}
-
 void TileSet::tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].normal_map = p_normal_map;
