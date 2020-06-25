@@ -45,8 +45,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-09 02:02+0000\n"
-"Last-Translator: HeroFight dev <abdkafi2002@gmail.com>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: Airbus5717 <Abdussamadf350@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -55,7 +55,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -785,9 +785,8 @@ msgid "Method in target node must be specified."
 msgstr "يجب تحديد الدالة في العقدة المستهدفة."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "هذا الاسم ليس مُعرفاً مميزاً صالحاً:"
+msgstr "اسم الدالة يجب أن تكون مميزاً و صالحاً."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1482,7 +1481,7 @@ msgstr "اعادة ترتيب التحميلات التلقائية"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "لا يمكن اضافة التحميل التلقائي"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2431,15 +2430,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "لا يمكن إعادة تحميل مشهد لم يتم حفظه من قبل."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "حفظ المشهد"
+msgstr "إعادة تحميل المشهد المحفوظ"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"يحتوي المشهد الحالي على تغييرات غير محفوظة.\n"
+"إعادة تحميل المشهد المحفوظ على أي حال؟ لا يمكن التراجع عن هذا الإجراء."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3366,11 +3366,9 @@ msgid "Did you forget the '_run' method?"
 msgstr "هل نسيت الطريقة '_run' ؟"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"اضغط مطولاً على Ctrl لإسقاط جالب Getter. اضغط مطولاً على Shift لإسقاط توقيع "
-"عام generic signature."
+"امسك Ctrl للتدوير للأعداد الصحيحة. اضغط على Shift لإجراء تغييرات أكثر دقة."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3967,7 +3965,7 @@ msgstr "خطأ في تشغيل الكود الملصق- المستورد:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "هل قمت بإرجاع كائن مشتق من العقدة في دالة`post_import ()`؟"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -4186,14 +4184,12 @@ msgid "Move Node Point"
 msgstr "تحريك نقطة العقدة"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Limits"
-msgstr "تغيير وقت الدمج"
+msgstr "تغيير حدود BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "تغيير وقت الدمج"
+msgstr "تغيير ملصقات BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4209,9 +4205,8 @@ msgstr "إضافة نقطة العقدة"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Animation Point"
-msgstr "أضف حركة"
+msgstr "أضف نقطة حركة"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Remove BlendSpace1D Point"
@@ -4245,7 +4240,6 @@ msgstr "حدد وحرك النقاط، أنشئ النقاط باستخدام RM
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Enable snap and show grid."
 msgstr "تمكين المحاذاة وإظهار الشبكة."
 
@@ -4457,14 +4451,12 @@ msgid "Remove Animation"
 msgstr "مسح الحركة"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid animation name!"
-msgstr "خطأ: إسم حركة خاطئ!"
+msgstr "خطأ: إسم الرسوم المتحركة خاطئ!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Animation name already exists!"
-msgstr "خطأ: إسم الحركة موجود بالفعل!"
+msgstr "اسم الحركة موجود بالفعل!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -4680,19 +4672,16 @@ msgid "Start and end nodes are needed for a sub-transition."
 msgstr "عُقد البداية والنهاية مطلوبة لأجل الانتقال الجزيئ sub-transition."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "No playback resource set at path: %s."
-msgstr "ليس في مسار الموارد."
+msgstr "لم يتم تعيين موارد التشغيل في المسار:٪ s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "مُسِح:"
+msgstr "مُسِحت العقدة"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "عقدة التنقل"
+msgstr "تمت إزالة النقل"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
@@ -4709,19 +4698,16 @@ msgstr ""
 "LMB + Shift (زر الفأرة الأيسر) لإنشاء الوصلات."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Create new nodes."
-msgstr "إنشاء %s جديد"
+msgstr "إنشاء عُقد جديدة."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Connect nodes."
-msgstr "صلها بالعقدة:"
+msgstr "توصيل عقد."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "ازالة المسار المحدد."
+msgstr "ازالة الكائن المحدد او الإنتقال المحدد."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -4735,9 +4721,8 @@ msgstr ""
 "تحديد الرسومية المتحركة الخاصة بالنهاية. سيكون ذلك مفيداً للحركات الفرعية."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "تحول"
+msgstr "التحريك "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
