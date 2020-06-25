@@ -47,15 +47,25 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	bool force_luminance;
 	bool alpha_to_zero;
-	uint pad[2];
+	bool srgb;
+	uint pad;
 }
 params;
 
 layout(location = 0) in vec2 uv_interp;
 
 layout(set = 0, binding = 0) uniform sampler2D source_color;
-
+#ifdef MODE_TWO_SOURCES
+layout(set = 1, binding = 0) uniform sampler2D source_color2;
+#endif
 layout(location = 0) out vec4 frag_color;
+
+vec3 linear_to_srgb(vec3 color) {
+	//if going to srgb, clamp from 0 to 1.
+	color = clamp(color, vec3(0.0), vec3(1.0));
+	const vec3 a = vec3(0.055f);
+	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
 
 void main() {
 	vec2 uv = uv_interp;
@@ -89,11 +99,17 @@ void main() {
 	}
 #endif
 	vec4 color = textureLod(source_color, uv, 0.0);
+#ifdef MODE_TWO_SOURCES
+	color += textureLod(source_color2, uv, 0.0);
+#endif
 	if (params.force_luminance) {
 		color.rgb = vec3(max(max(color.r, color.g), color.b));
 	}
 	if (params.alpha_to_zero) {
 		color.rgb *= color.a;
+	}
+	if (params.srgb) {
+		color.rgb = linear_to_srgb(color.rgb);
 	}
 	frag_color = color;
 }
