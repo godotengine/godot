@@ -322,7 +322,8 @@ public:
 	BIND2(light_set_negative, RID, bool)
 	BIND2(light_set_cull_mask, RID, uint32_t)
 	BIND2(light_set_reverse_cull_face_mode, RID, bool)
-	BIND2(light_set_use_gi, RID, bool)
+	BIND2(light_set_bake_mode, RID, LightBakeMode)
+	BIND2(light_set_max_sdfgi_cascade, RID, uint32_t)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 
@@ -336,9 +337,9 @@ public:
 
 	BIND2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	BIND2(reflection_probe_set_intensity, RID, float)
-	BIND2(reflection_probe_set_interior_ambient, RID, const Color &)
-	BIND2(reflection_probe_set_interior_ambient_energy, RID, float)
-	BIND2(reflection_probe_set_interior_ambient_probe_contribution, RID, float)
+	BIND2(reflection_probe_set_ambient_color, RID, const Color &)
+	BIND2(reflection_probe_set_ambient_energy, RID, float)
+	BIND2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)
 	BIND2(reflection_probe_set_max_distance, RID, float)
 	BIND2(reflection_probe_set_extents, RID, const Vector3 &)
 	BIND2(reflection_probe_set_origin_offset, RID, const Vector3 &)
@@ -523,6 +524,7 @@ public:
 #define BINDBASE RSG::scene_render
 
 	BIND1(directional_shadow_atlas_set_size, int)
+	BIND1(gi_probe_set_quality, GIProbeQuality)
 
 	/* SKY API */
 
@@ -564,9 +566,13 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
+	BIND12(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, bool, float, float, float)
+	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
+	BIND1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+
 	BIND3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
-	BIND2(screen_space_roughness_limiter_set_active, bool, float)
+	BIND3(screen_space_roughness_limiter_set_active, bool, float, float)
 	BIND1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
 	BIND2(sub_surface_scattering_set_scale, float, float)
 
@@ -792,6 +798,8 @@ public:
 	virtual void call_set_use_vsync(bool p_enable);
 
 	virtual bool is_low_end() const;
+
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
 
 	RenderingServerRaster();
 	~RenderingServerRaster();

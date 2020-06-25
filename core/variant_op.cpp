@@ -1786,6 +1786,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = true;
 	}
+
 	switch (type) {
 		case VECTOR2: {
 			const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);

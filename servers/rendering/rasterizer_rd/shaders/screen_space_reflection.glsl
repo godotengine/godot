@@ -12,11 +12,8 @@ layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D ssr_ima
 #ifdef MODE_ROUGH
 layout(r8, set = 1, binding = 1) uniform restrict writeonly image2D blur_radius_image;
 #endif
-layout(rgba8, set = 2, binding = 0) uniform restrict readonly image2D source_normal;
+layout(rgba8, set = 2, binding = 0) uniform restrict readonly image2D source_normal_roughness;
 layout(set = 3, binding = 0) uniform sampler2D source_metallic;
-#ifdef MODE_ROUGH
-layout(set = 3, binding = 1) uniform sampler2D source_roughness;
-#endif
 
 layout(push_constant, binding = 2, std430) uniform Params {
 	vec4 proj_info;
@@ -75,7 +72,8 @@ void main() {
 	// World space point being shaded
 	vec3 vertex = reconstructCSPosition(uv * vec2(params.screen_size), base_depth);
 
-	vec3 normal = imageLoad(source_normal, ssC).xyz * 2.0 - 1.0;
+	vec4 normal_roughness = imageLoad(source_normal_roughness, ssC);
+	vec3 normal = normal_roughness.xyz * 2.0 - 1.0;
 	normal = normalize(normal);
 	normal.y = -normal.y; //because this code reads flipped
 
@@ -208,7 +206,7 @@ void main() {
 
 		// if roughness is enabled, do screen space cone tracing
 		float blur_radius = 0.0;
-		float roughness = texelFetch(source_roughness, ssC << 1, 0).r;
+		float roughness = normal_roughness.w;
 
 		if (roughness > 0.001) {
 			float cone_angle = min(roughness, 0.999) * M_PI * 0.5;

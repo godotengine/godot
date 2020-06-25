@@ -47,18 +47,23 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		MATERIAL_UNIFORM_SET = 5
 	};
 
+	enum {
+		SDFGI_MAX_CASCADES = 8,
+		MAX_GI_PROBES = 8
+	};
+
 	/* Scene Shader */
 
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
 		SHADER_VERSION_DEPTH_PASS_DP,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL,
 		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
+		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE,
 		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
+		SHADER_VERSION_DEPTH_PASS_WITH_SDF,
 		SHADER_VERSION_COLOR_PASS,
+		SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI,
 		SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-		SHADER_VERSION_VCT_COLOR_PASS,
-		SHADER_VERSION_VCT_COLOR_PASS_WITH_SEPARATE_SPECULAR,
 		SHADER_VERSION_LIGHTMAP_COLOR_PASS,
 		SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
 		SHADER_VERSION_MAX
@@ -203,8 +208,11 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		RID color;
 		RID depth;
 		RID specular;
-		RID normal_buffer;
-		RID roughness_buffer;
+		RID normal_roughness_buffer;
+		RID giprobe_buffer;
+
+		RID ambient_buffer;
+		RID reflection_buffer;
 
 		RS::ViewportMSAA msaa;
 		RD::TextureSamples texture_samples;
@@ -212,18 +220,22 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		RID color_msaa;
 		RID depth_msaa;
 		RID specular_msaa;
-		RID normal_buffer_msaa;
+		RID normal_roughness_buffer_msaa;
 		RID roughness_buffer_msaa;
+		RID giprobe_buffer_msaa;
 
 		RID depth_fb;
-		RID depth_normal_fb;
 		RID depth_normal_roughness_fb;
+		RID depth_normal_roughness_giprobe_fb;
 		RID color_fb;
 		RID color_specular_fb;
 		RID specular_only_fb;
 		int width, height;
 
+		RID render_sdfgi_uniform_set;
 		void ensure_specular();
+		void ensure_gi();
+		void ensure_giprobe();
 		void clear();
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa);
 
@@ -233,8 +245,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	};
 
 	virtual RenderBufferData *_create_render_buffer_data();
-	void _allocate_normal_texture(RenderBufferDataHighEnd *rb);
-	void _allocate_roughness_texture(RenderBufferDataHighEnd *rb);
+	void _allocate_normal_roughness_texture(RenderBufferDataHighEnd *rb);
 
 	RID shadow_sampler;
 	RID render_base_uniform_set;
@@ -245,11 +256,12 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	virtual void _base_uniforms_changed();
 	void _render_buffers_clear_uniform_set(RenderBufferDataHighEnd *rb);
 	virtual void _render_buffers_uniform_set_changed(RID p_render_buffers);
-	virtual RID _render_buffers_get_roughness_texture(RID p_render_buffers);
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers);
+	virtual RID _render_buffers_get_ambient_texture(RID p_render_buffers);
+	virtual RID _render_buffers_get_reflection_texture(RID p_render_buffers);
 
 	void _update_render_base_uniform_set();
-	void _setup_view_dependant_uniform_set(RID p_shadow_atlas, RID p_reflection_atlas);
+	void _setup_view_dependant_uniform_set(RID p_shadow_atlas, RID p_reflection_atlas, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count);
 	void _update_render_buffers_uniform_set(RID p_render_buffers);
 
 	/* Scene State UBO */
@@ -260,7 +272,8 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float box_offset[3];
 		uint32_t mask;
 		float params[4]; // intensity, 0, interior , boxproject
-		float ambient[4]; // ambient color, energy
+		float ambient[3]; // ambient color,
+		uint32_t ambient_mode;
 		float local_matrix[16]; // up to here for spot and omni, rest is for directional
 	};
 
@@ -315,22 +328,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float uv_scale4[2];
 	};
 
-	struct GIProbeData {
-		float xform[16];
-		float bounds[3];
-		float dynamic_range;
-
-		float bias;
-		float normal_bias;
-		uint32_t blend_ambient;
-		uint32_t texture_slot;
-
-		float anisotropy_strength;
-		float ao;
-		float ao_size;
-		uint32_t pad[1];
-	};
-
 	struct LightmapData {
 		float normal_xform[12];
 	};
@@ -358,6 +355,8 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	};
 
 	enum {
+		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 6,
+		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 7,
 		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
 		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
 		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
@@ -430,10 +429,19 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float ssao_ao_affect;
 			uint32_t roughness_limiter_enabled;
 
+			float roughness_limiter_amount;
+			float roughness_limiter_limit;
+			uint32_t roughness_limiter_pad[2];
+
 			float ao_color[4];
 
+			float sdf_to_bounds[16];
+
+			int32_t sdf_offset[3];
 			uint32_t material_uv2_mode;
-			uint32_t pad_material[3];
+
+			int32_t sdf_size[3];
+			uint32_t gi_upscale_for_msaa;
 		};
 
 		UBO ubo;
@@ -444,11 +452,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		uint32_t max_reflections;
 		RID reflection_buffer;
 		uint32_t max_reflection_probes_per_instance;
-
-		GIProbeData *gi_probes;
-		uint32_t max_gi_probes;
-		RID gi_probe_buffer;
-		uint32_t max_gi_probe_probes_per_instance;
 
 		LightmapData *lightmaps;
 		uint32_t max_lightmaps;
@@ -498,7 +501,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 					uint64_t material_index : 15;
 					uint64_t shader_index : 12;
 					uint64_t uses_instancing : 1;
-					uint64_t uses_vct : 1;
+					uint64_t uses_forward_gi : 1;
 					uint64_t uses_lightmap : 1;
 					uint64_t depth_layer : 4;
 					uint64_t priority : 8;
@@ -625,6 +628,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	RID wireframe_material_shader;
 	RID wireframe_material;
 	RID default_shader_rd;
+	RID default_shader_sdfgi_rd;
 	RID default_radiance_uniform_set;
 	RID default_render_buffers_uniform_set;
 
@@ -640,30 +644,33 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		PASS_MODE_SHADOW,
 		PASS_MODE_SHADOW_DP,
 		PASS_MODE_DEPTH,
-		PASS_MODE_DEPTH_NORMAL,
 		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
+		PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE,
 		PASS_MODE_DEPTH_MATERIAL,
+		PASS_MODE_SDF,
 	};
 
-	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
+	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
 	void _setup_decals(const RID *p_decal_instances, int p_decal_count, const Transform &p_camera_inverse_xform);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
-	void _setup_gi_probes(RID *p_gi_probe_probe_cull_result, int p_gi_probe_probe_cull_count, const Transform &p_camera_transform);
 	void _setup_lightmaps(InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, const Transform &p_cam_transform);
 
-	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth);
+	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_radiance_uniform_set, RID p_render_buffers_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2());
-	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index);
-	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index);
+	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
+	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index, bool p_using_sdfgi = false);
 
-	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_no_gi);
+	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_using_sdfgi = false);
+
+	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
 
 protected:
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color);
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake);
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 	virtual void _render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
+	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, InstanceBase **p_cull_result, int p_cull_count, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture);
 
 public:
 	virtual void set_time(double p_time, double p_step);

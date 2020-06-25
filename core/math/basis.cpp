@@ -773,7 +773,7 @@ Basis::operator String() const {
 				mtx += ", ";
 			}
 
-			mtx += rtos(elements[i][j]);
+			mtx += rtos(elements[j][i]); //matrix is stored transposed for performance, so print it transposed
 		}
 	}
 

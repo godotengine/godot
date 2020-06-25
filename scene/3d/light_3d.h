@@ -64,8 +64,8 @@ public:
 
 	enum BakeMode {
 		BAKE_DISABLED,
-		BAKE_INDIRECT,
-		BAKE_ALL
+		BAKE_DYNAMIC,
+		BAKE_STATIC
 	};
 
 private:

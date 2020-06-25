@@ -945,6 +945,16 @@ public:
 		return Color(va6 * v6, vb6 * v6, vc6 * v6, vd6 * v6);
 #undef STP
 	}
+
+	_FORCE_INLINE_ static Vector3 octahedron_map_decode(const Vector2 &p_uv) {
+		// https://twitter.com/Stubbesaurus/status/937994790553227264
+		Vector2 f = p_uv * 2.0 - Vector2(1.0, 1.0);
+		Vector3 n = Vector3(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
+		float t = CLAMP(-n.z, 0.0, 1.0);
+		n.x += n.x >= 0 ? -t : t;
+		n.y += n.y >= 0 ? -t : t;
+		return n.normalized();
+	}
 };
 
 #endif // GEOMETRY_3D_H
