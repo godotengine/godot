@@ -3560,7 +3560,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											error = true;
 										} else if (n->type == Node::TYPE_ARRAY) {
 											ArrayNode *an = static_cast<ArrayNode *>(n);
-											if (an->call_expression != nullptr) {
+											if (an->call_expression != nullptr || an->is_const) {
 												error = true;
 											}
 										} else if (n->type == Node::TYPE_VARIABLE) {
@@ -3569,7 +3569,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 												error = true;
 											} else {
 												StringName varname = vn->name;
-												if (shader->uniforms.has(varname)) {
+												if (shader->constants.has(varname)) {
+													error = true;
+												} else if (shader->uniforms.has(varname)) {
 													error = true;
 												} else {
 													if (p_builtin_types.has(varname)) {
