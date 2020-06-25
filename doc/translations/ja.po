@@ -1,73 +1,68 @@
-# French translation of the Godot Engine class reference.
+# Japanese translation of the Godot Engine class reference.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Rémi Verschelde <remi@godotengine.org>, 2020.
-# Freyja <aerandil@gmail.com>, 2020.
-# Gol.D.eNI <eniolamy1@gmail.com>, 2020.
-# Anonymous <noreply@weblate.org>, 2020.
-# Nathan <bonnemainsnathan@gmail.com>, 2020.
-# Fox Lahoki <alexbar@live.fr>, 2020.
+# Wataru Onuki <bettawat@yahoo.co.jp>, 2020.
+# BinotaLIU <me@binota.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-18 00:28+0000\n"
-"Last-Translator: Fox Lahoki <alexbar@live.fr>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot-class-reference/fr/>\n"
-"Language: fr\n"
+"PO-Revision-Date: 2020-06-25 08:53+0000\n"
+"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/ja/>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
-msgstr "Description"
+msgstr "説明"
 
 #: doc/tools/makerst.py
 msgid "Tutorials"
-msgstr "Tutoriels"
+msgstr "チュートリアル"
 
 #: doc/tools/makerst.py
 msgid "Properties"
-msgstr "Propriétés"
+msgstr "プロパティ"
 
 #: doc/tools/makerst.py
 msgid "Methods"
-msgstr "Méthodes"
+msgstr "メソッド"
 
 #: doc/tools/makerst.py
 msgid "Theme Properties"
-msgstr "Propriétés du thème"
+msgstr "テーマ プロパティ"
 
 #: doc/tools/makerst.py
 msgid "Signals"
-msgstr "Signaux"
+msgstr "シグナル"
 
 #: doc/tools/makerst.py
 msgid "Enumerations"
-msgstr "Énumérations"
+msgstr "列挙型"
 
 #: doc/tools/makerst.py
 msgid "Constants"
-msgstr "Constantes"
+msgstr "定数"
 
 #: doc/tools/makerst.py
 msgid "Property Descriptions"
-msgstr "Description des propriétés"
+msgstr "プロパティの説明"
 
 #: doc/tools/makerst.py
 msgid "Method Descriptions"
-msgstr "Descriptions des méthodes"
+msgstr "メソッドの説明"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr "Fonctions intégrées à GDScript."
+msgstr "組み込みGDScript関数。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -75,10 +70,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
-"Liste de fonctions de base intégrées à GDScript. Fonctions mathématiques et "
-"autres fonctions utilitaires. Toutes les autres fonctionnalités sont "
-"fournies directement par les objets. (Mots-clés : builtin, built-in, "
-"intégré, intégrées, fonctions de base, fonctions globales.)"
+"コア組み込みGDScript関数のリスト。数学関数などのユーティリティです。その他す"
+"べてはオブジェクトによって提供されます。(キーワード: ビルトイン、内蔵、グロー"
+"バル関数)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""
@@ -93,13 +87,12 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une couleur construite à partir d'entiers représentants les canaux "
-"rouge, vert, bleu et alpha. Chaque canal devrait comporter 8 bits "
-"d'information allant de 0 à 255.\n"
-"[code]r8[/code] canal rouge\n"
-"[code]g8[/code] canal vert\n"
-"[code]b8[/code] canal bleu\n"
-"[code]a8[/code] canal alpha\n"
+"整数による赤、緑、青、そしてアルファのチャンネルから構成される色を返します。"
+"それぞれのチャンネルには 0 から 255 まで、8 ビットの情報が要ります。\n"
+"[code]r8[/code] 赤チャンネル\n"
+"[code]g8[/code] 緑チャンネル\n"
+"[code]b8[/code] 青チャンネル\n"
+"[code]a8[/code] アルファチャンネル\n"
 "[codeblock]\n"
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
@@ -113,13 +106,12 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
-"Renvoie une couleur selon la norme [code]name[/code] avec [code]alpha[/code] "
-"allant de 0 à 1.\n"
+"統一化された名前([code]name[/code])と、0 から 1 までのアルファ([code]alpha[/"
+"code])に合った色を返します。\n"
 "[codeblock]\n"
 "red = ColorN(\"red\", 1)\n"
 "[/codeblock]\n"
-"Les noms de couleurs pris en charge sont les mêmes que les constantes "
-"définies dans [Color]."
+"サポートされる色の名前は [Color] にて定数として定義されているものと同様です。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
 msgid ""
@@ -130,10 +122,10 @@ msgid ""
 "a = abs(-1)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la valeur absolue du paramètre [code]s[/code] (par ex. valeur non "
-"signée, fonctionne pour entier et flottant).\n"
+"パラメータ [code]s[/code] の絶対値を返します (符号が外れる。整数あるいは浮動"
+"小数点数に対し使用可)。\n"
 "[codeblock]\n"
-"# a is 1\n"
+"# a は 1 に\n"
 "a = abs(-1)\n"
 "[/codeblock]"
 
@@ -146,10 +138,10 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus inverse de [code]s[/code] en radians. Utiliser pour "
-"obtenir l'angle du cosinus [code]s[/code].\n"
+"[code]s[/code] のアークコサインをラジアンで返します。コサイン [code]s[/code] "
+"の角度を得るのに使えます。\n"
 "[codeblock]\n"
-"# c vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
+"# c は 0.523599。rad2deg(s) で変換すれば 30 度。\n"
 "c = acos(0.866025)\n"
 "[/codeblock]"
 
@@ -162,10 +154,10 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le sinus inverse de [code]s[/code] en radians. Utiliser pour obtenir "
-"l'angle du sinus [code]s[/code].\n"
+"[code]s[/code] のアークサインをラジアンで返します。サイン [code]s[/code] の角"
+"度を得るのに使えます。\n"
 "[codeblock]\n"
-"# s vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
+"# s は 0.523599。rad2deg(s) で変換すれば 30 度。\n"
 "s = asin(0.5)\n"
 "[/codeblock]"
 
@@ -190,26 +182,22 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
-"Vérifie que la [code]condition[/code] est [code]vraie[/code]. Si la "
-"[code]condition[/code] est [code]fausse[/code], une erreur est générée et le "
-"programme est interrompu jusqu'à ce que vous le redémarriez. Ne s'exécute "
-"que pour les builds de débogage, ou quand vous lancez votre jeu depuis "
-"l'éditeur. Utilisez ceci à des fins de débogage, pour vous assurer qu'une "
-"déclaration est [code]vraie[/ code] au cours du développement.\n"
-"L'argument facultatif [code]message[/code], s'il est donné, est affiché en "
-"plus du message générique « Échec de l'assertion ». Vous pouvez l'utiliser "
-"pour fournir des détails supplémentaires sur la raison de l'échec de "
-"l'assertion.\n"
+"[code]condition[/code] が [code]true[/code] であるとアサートします。もし "
+"[code]condition[/code] が [code]false[/code] であった場合は、エラーが出力さ"
+"れ、プログラムは再開されるまで中断されます。debugビルド、もしくはエディタから"
+"ゲームを走らせている場合にのみ実行されます。これはデバッグのためで、開発中に"
+"その文が [code]true[/code] であることを確実にするために使用してください。\n"
+"追加の引数 [code]message[/code] は、与えられたときは、規定の「アサート失敗」"
+"メッセージにそれを追加して表示します。これはアサートが失敗した理由について、"
+"より詳しい情報を加えたいときに使えます。\n"
 "[codeblock]\n"
-"# Imaginez que nous voulons toujours que la vitesse soit comprise entre 0 et "
-"20\n"
+"# speedを 0 から 20 の間に制限したいとします\n"
 "speed = -10\n"
-"assert(speed < 20) # Vrai, le programme continue\n"
-"assert(speed >= 0) # Faux, le programme s'interrompt\n"
-"assert(speed >= 0 && speed < 20) # Vous pouvez aussi combiner les deux "
-"conditionnelles en une seule vérification\n"
-"assert(speed < 20, \"speed = %f, mais la limite de vitesse est 20\" % speed) "
-"# Affiche un message avec la clarification des détails\n"
+"assert(speed < 20) # 真。プログラムは続行します\n"
+"assert(speed >= 0) # 偽。プログラムは停止します\n"
+"assert(speed >= 0 && speed < 20) # ふたつの文をひとつにまとめられます\n"
+"assert(speed < 20, \"speed = %f ですが、スピード制限は 20 です\" % speed) # "
+"より詳細なメッセージを表示します\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:114
@@ -223,13 +211,13 @@ msgid ""
 "a = atan(0.5) # a is 0.463648\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la tangente inverse de [code]s[/code] en radians. Utilisez ceci pour "
-"obtenir l'angle à partir de la tangente d'un angle en trigonométrie : "
-"[code]atan(tan(angle)) == angle[/code].\n"
-"La méthode ne peut pas savoir dans quel quart de cercle l'angle doit se "
-"situer. Voir [method atan2] si vous voulez toujours un angle exact.\n"
+"[code]s[/code] のアーク タンジェントをラジアンで返します。三角法において、あ"
+"る角度のタンジェントから元の角度を得るのに使ってください。[code]atan(tan(角"
+"度)) == 角度[/code]。\n"
+"このメソッドでは角度の象限がどれなのかまでは分かりません。もし正確な角度を得"
+"たければ [method atan2] を参照してください。\n"
 "[codeblock]\n"
-"a = atan(0.5) # a vaut 0.463648\n"
+"a = atan(0.5) # a は 0.463648\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:129
@@ -241,12 +229,11 @@ msgid ""
 "a = atan2(0, -1) # a is 3.141593\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la tangente inverse de [code] y/x [/code] en radians. Utilisez ceci "
-"pour obtenir l'angle de la tangente [code] y/x [/code]. Pour calculer la "
-"valeur, la méthode prend en compte le signe des deux arguments afin de "
-"déterminer l'arc de cercle.\n"
+"[code]y/x[/code] のアーク タンジェントをラジアンで返します。タンジェント "
+"[code]y/x[/code] の角度を得るのに使用してください。値を計算するさい、このメ"
+"ソッドは象限を決めるため両引数とも符号の有無を考慮に入れます。\n"
 "[codeblock]\n"
-"a = atan2(0, -1) # a vaut 3.141593\n"
+"a = atan2(0, -1) # a は 3.141593\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:143
@@ -257,13 +244,12 @@ msgid ""
 "not use this option if the serialized object comes from untrusted sources to "
 "avoid potential security threats (remote code execution)."
 msgstr ""
-"Déchiffre un tableau d'octets pour le ramener à une valeur. Lorsque "
-"[code]allow_objects[/code] est défini à [code]true[/code] (vrai), le "
-"déchiffrage des objets est autorisé.\n"
-"[b]ATTENTION :[/b] L'objet désérialisé peut contenir du code qui sera "
-"exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
-"sources non fiables afin d'éviter d'éventuelles menaces de sécurité "
-"(exécution de code distant)."
+"バイト配列をデコードして値に戻します。[code]allow_objects[/code] が "
+"[code]true[/code] のときは、オブジェクトのデコードを許可します。\n"
+"[b]警告:[/b] 逆シリアル化されたオブジェクトにコードが含まれていると実行されま"
+"す。シリアル化されたオブジェクトが信頼できない入手先からのものならば、潜在的"
+"なセキュリティ上の危険（遠隔コード実行）を防ぐため、このオプションは使用しな"
+"いでください。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:155
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:145
@@ -272,9 +258,8 @@ msgid ""
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
-"Convertit un point 2D exprimé dans le système de coordonnées cartésiennes "
-"(axes X et Y) vers le système de coordonnées polaires (une distance par "
-"rapport à l'origine et un angle)."
+"直交座標系 (X および Y 軸) で表された二次元の位置を、極座標系 (原点からの距離"
+"と角度) に変換します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:164
 msgid ""
@@ -285,11 +270,11 @@ msgid ""
 "i = ceil(1.001) # i is 2\n"
 "[/codeblock]"
 msgstr ""
-"Arrondit [code]s[/code] au supérieur, et renvoie la plus petite valeur "
-"entière qui n'est pas inférieure à [code]s[/code].\n"
+"[code]s[/code] を切り上げて丸め、[code]s[/code] を超えてかつ最小の整数値を返"
+"します。\n"
 "[codeblock]\n"
-"i = ceil(1.45)  # i vaut 2\n"
-"i = ceil(1.001) # i vaut 2\n"
+"i = ceil(1.45)  # i は 2\n"
+"i = ceil(1.001) # i は 2\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:177
@@ -303,14 +288,14 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
-"Renvoie un caractère au format chaîne de caractère correspondant à la valeur "
-"Unicode donnée (compatible avec le code ASCII).\n"
+"与えられたUnicodeコードポイントの文字をStringとして返します (ASCIIコードとも"
+"互換性あり)。\n"
 "[codeblock]\n"
-"a = char(65)      # a vaut « A »\n"
-"a = char(65 + 32) # a vaut « a »\n"
-"a = char(8364)    # a vaut « € »\n"
+"a = char(65)      # a は \"A\"\n"
+"a = char(65 + 32) # a は \"a\"\n"
+"a = char(8364)    # a は \"€\"\n"
 "[/codeblock]\n"
-"C'est l'inverse de [method ord]."
+"これは [method ord] の逆です。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:196
 msgid ""
@@ -326,16 +311,16 @@ msgid ""
 "a = clamp(speed, 1, 20)\n"
 "[/codeblock]"
 msgstr ""
-"Fixe une [code]value[/code] (valeur) et renvoie la valeur comprise entre "
-"[code]min[/code] et [code]max[/code].\n"
+"[code]value[/code] をクランプし、[code]min[/code] より多くかつ [code]max[/"
+"code] より少ない値を返します。\n"
 "[codeblock]\n"
-"vitesse = 1000\n"
-"# a vaut 20\n"
-"a = clamp(vitesse, 1, 20)\n"
+"speed = 1000\n"
+"# a は 20\n"
+"a = clamp(speed, 1, 20)\n"
 "\n"
-"vitesse = -10\n"
-"# a vaut 1\n"
-"a = clamp(vitesse, 1, 20)\n"
+"speed = -10\n"
+"# a は 1\n"
+"a = clamp(speed, 1, 20)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:216
@@ -351,14 +336,14 @@ msgid ""
 "print(a.length())\n"
 "[/codeblock]"
 msgstr ""
-"Convertit un type en un autre de la meilleure façon possible. Le paramètre "
-"[code]type[/code] utilise les valeurs de [enum Variant.Type].\n"
+"ある型を他の型へと、できるだけ最善の方法で変換します。[code]type[/code] パラ"
+"メータには [enum Variant.Type] の値を使用します。\n"
 "[codeblock]\n"
 "a = Vector2(1, 0)\n"
-"# Renvoie 1\n"
+"# 1 と表示\n"
 "print(a.length())\n"
 "a = convert(a, TYPE_STRING)\n"
-"# Renvoie 6 car « (1, 0) » fait 6 caractères\n"
+"# \"(1, 0)\" は 6 文字あるので、6 と表示\n"
 "print(a.length())\n"
 "[/codeblock]"
 
@@ -371,9 +356,9 @@ msgid ""
 "print(cos(PI))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus de l'angle [code]s[/code] en radians.\n"
+"角度 [code]s[/code] のコサインをラジアンで返します。\n"
 "[codeblock]\n"
-"# Renvoie 1 puis -1\n"
+"# 1 そして -1 と表示\n"
 "print(cos(PI * 2))\n"
 "print(cos(PI))\n"
 "[/codeblock]"
@@ -386,15 +371,15 @@ msgid ""
 "print(cosh(1))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus hyperbolique de [code]s[/code] en radians.\n"
+"[code]s[/code] のハイパボリック コサインをラジアンで返します。\n"
 "[codeblock]\n"
-"# Renvoie 1.543081\n"
+"# 1.543081 と表示\n"
 "print(cosh(1))\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:260
 msgid "Converts from decibels to linear energy (audio)."
-msgstr "Convertit les décibels en énergie linéaire (audio)."
+msgstr "デシベルからリニア エネルギーに変換します (オーディオ)。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:273
 msgid ""
@@ -405,8 +390,8 @@ msgid ""
 "a = dectime(60, 10, 0.1))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le résultat de [code]valeur[/code] diminuée par [code]étape[/code] * "
-"[code]quantité[/code].\n"
+"[code]value[/code] から [code]step[/code] * [code]amount[/code] を引いた値を"
+"返します。\n"
 "[codeblock]\n"
 "# a = 59\n"
 "a = dectime(60, 10, 0.1))\n"
@@ -420,9 +405,9 @@ msgid ""
 "r = deg2rad(180)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la conversion des degrés en radians.\n"
+"角度をラジアンに変換して返します。\n"
 "[codeblock]\n"
-"# r vaut 3.141593\n"
+"# r は 3.141593\n"
 "r = deg2rad(180)\n"
 "[/codeblock]"
 
@@ -431,8 +416,8 @@ msgid ""
 "Converts a previously converted instance to a dictionary, back into an "
 "instance. Useful for deserializing."
 msgstr ""
-"Convertit une instance précédemment convertie en dictionnaire, puis la "
-"convertit à nouveau en instance. Utile pour la désérialisation."
+"インスタンスから変換された辞書を、元のインスタンスに変換して戻します。デシリ"
+"アライズするのに便利です。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:310
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:90
@@ -440,6 +425,8 @@ msgid ""
 "Easing function, based on exponent. 0 is constant, 1 is linear, 0 to 1 is "
 "ease-in, 1+ is ease out. Negative values are in-out/out in."
 msgstr ""
+"指数によるイージング関数です。0 は不変、1 は等速、0 から 1 の間はイーズイン、"
+"1 より上はイーズアウトです。負の値はインアウト / アウトインになります。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:319
 msgid ""
@@ -451,12 +438,11 @@ msgid ""
 "a = exp(2) # Approximately 7.39\n"
 "[/codeblock]"
 msgstr ""
-"La fonction exponentielle naturelle. Elle élève la constante mathématique "
-"[b]e[/b] à la puissance de [code]s[/code] et la renvoie.\n"
-"[b]e[/b] a une valeur approximative de 2,71828.\n"
-"Pour les exposants vers d'autres bases, utilisez la méthode [method pow].\n"
+"自然対数関数です。定数 [b]e[/b] を [code]s[/code] 乗した数を返します。\n"
+"[b]e[/b] の値は約 2.71828 です。\n"
+"その他の底による冪乗をするには [method pow] メソッドを使用してください。\n"
 "[codeblock]\n"
-"a = exp(2) # Environ 7.39\n"
+"a = exp(2) # およそ 7.39\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:333
@@ -471,16 +457,15 @@ msgid ""
 "[b]Note:[/b] This method returns a float. If you need an integer, you can "
 "use [code]int(s)[/code] directly."
 msgstr ""
-"Arrondit [code]s[/code] à l'entier inférieur le plus proche et le renvoie.\n"
+"[code]s[/code] を整数に切り捨てて丸め、返します。\n"
 "[codeblock]\n"
-"# a vaut 2.0\n"
+"# a は 2.0\n"
 "a = floor(2.99)\n"
-"# a vaut -3.0\n"
+"# a は -3.0\n"
 "a = floor(-2.99)\n"
 "[/codeblock]\n"
-"[b]Remarque :[/b] Cette méthode renvoie un nombre flottant. Si vous avez "
-"besoin d'un nombre entier, vous pouvez utiliser directement [code]int(s)[/"
-"code]."
+"[b]注:[/b] このメソッドは浮動小数点数で返します。もし整数が必要であれば、直"
+"接 [code]int(s)[/code] が使えます。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:351
 msgid ""
@@ -492,13 +477,13 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
-"Renvoie le reste en virgule flottante de [code]a/b[/code], en conservant le "
-"signe de [code]a[/code].\n"
+"[code]a/b[/code] の剰余を浮動小数点数で返します。符号は [code]a[/code] のもの"
+"と同じになります。\n"
 "[codeblock]\n"
-"# Le reste vaut 1.5\n"
-"var reste = fmod(7, 5.5)\n"
+"# 余りは 1.5\n"
+"var remainder = fmod(7, 5.5)\n"
 "[/codeblock]\n"
-"Pour l'opération de reste entier, utilisez l'opérateur %."
+"整数による剰余計算をするには、% オペレータを使用してください。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:367
 msgid ""
@@ -525,15 +510,14 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le modulo en virgule flottante de [code]a/b[/code] qui englobe aussi "
-"bien le positif que le négatif.\n"
+"[code]a/b[/code] の剰余を浮動小数点数で返します。符号は除数と同一です。\n"
 "[codeblock]\n"
 "var i = -6\n"
 "while i < 5:\n"
 "    prints(i, fposmod(i, 3))\n"
 "    i += 1\n"
 "[/codeblock]\n"
-"Donne :\n"
+"結果:\n"
 "[codeblock]\n"
 "-6 0\n"
 "-5 1\n"
@@ -562,16 +546,16 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une référence à la fonction spécifiée [code]funcname[/code] dans le "
-"nœud  de [code]instance[/code]. Comme les fonctions ne sont pas des objets "
-"de première classe  en GDscript, utilisez [code]funcref[/code] pour stocker "
-"une [FuncRef] dans une variable et l'appeler plus tard.\n"
+"ノードインスタンス [code]instance[/code] にある指定された関数名 "
+"[code]funcname[/code] への参照を返します。GDScriptでは関数は第一級オブジェク"
+"トではないため、[code]funcref[/code] で変数に [FuncRef] を格納してから、後で"
+"それを呼び出してください。\n"
 "[codeblock]\n"
-"func titi():\n"
-"    return(\"toto\")\n"
+"func foo():\n"
+"    return(\"bar\")\n"
 "\n"
-"a = funcref(self, \"titi\")\n"
-"print(a.call_func()) # Affiche toto\n"
+"a = funcref(self, \"foo\")\n"
+"print(a.call_func()) # bar と表示\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:412
@@ -593,20 +577,20 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie un tableau de dictionnaires représentant la pile d'appels en cours.\n"
+"現在のコールスタックを辞書の配列として返します。\n"
 "[codeblock]\n"
 "func _ready():\n"
-"    titi()\n"
+"    foo()\n"
 "\n"
-"func titi():\n"
-"    toto()\n"
+"func foo():\n"
+"    bar()\n"
 "\n"
-"func toto():\n"
+"func bar():\n"
 "    print(get_stack())\n"
 "[/codeblock]\n"
-"renverra\n"
+"は次にように表示\n"
 "[codeblock]\n"
-"[{function:toto, line:12, source:res://script.gd}, {function:titi, line:9, "
+"[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 
@@ -617,9 +601,9 @@ msgid ""
 "print(hash(\"a\")) # Prints 177670\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le hachage en entier de la variable passée.\n"
+"渡された変数のハッシュを整数として返します。\n"
 "[codeblock]\n"
-"print(hash(\"a\")) # Affiche 177670\n"
+"print(hash(\"a\")) # 177670 と表示\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:447
@@ -639,19 +623,18 @@ msgid ""
 "[, res://test.gd, bar]\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie l'instance passée convertie en dictionnaire (utile pour la "
-"sérialisation).\n"
+"渡されたインスタンスを辞書に変換して返します (シリアライズに便利)。\n"
 "[codeblock]\n"
-"var titi = \"toto\"\n"
+"var foo = \"bar\"\n"
 "func _ready():\n"
 "    var d = inst2dict(self)\n"
 "    print(d.keys())\n"
 "    print(d.values())\n"
 "[/codeblock]\n"
-"Affiche :\n"
+"表示:\n"
 "[codeblock]\n"
-"[@subpath, @path, titi]\n"
-"[, res://test.gd, toto]\n"
+"[@subpath, @path, foo]\n"
+"[, res://test.gd, bar]\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:468
@@ -666,14 +649,14 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie l'objet correspondant à l'[code]instance_id[/code]. Tous les objets "
-"ont un identifiant d'instance unique.\n"
+"インスタンスID [code]instance_id[/code] に一致した Object を返します。すべて"
+"の Object は固有のインスタンスIDを持ちます。\n"
 "[codeblock]\n"
-"var titi = \"toto\"\n"
+"var foo = \"bar\"\n"
 "func _ready():\n"
 "    var id = get_instance_id()\n"
 "    var inst = instance_from_id(id)\n"
-"    print(inst.titi) # Affiche toto\n"
+"    print(inst.foo) # bar と表示\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:488
@@ -689,15 +672,14 @@ msgid ""
 "# `ratio` is now 0.75.\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une valeur normalisée en tenant compte de la fourchette donnée. "
-"C'est l'inverse de [method lerp].\n"
+"与えられた範囲において正規化された値を返します。これは [method lerp] の逆で"
+"す。\n"
 "[codeblock]\n"
-"var milieu = lerp(20, 30, 0.75)\n"
-"# `milieu` vaut maintenant 27.5.\n"
-"# Maintenant, nous prétendons avoir oublié le ratio d'origine et nous "
-"voulons le récupérer.\n"
+"var middle = lerp(20, 30, 0.75)\n"
+"# `middle` は 27.5 になる。\n"
+"# 元の比を忘れてしまって、また知りたいとします。\n"
 "var ratio = inverse_lerp(20, 30, 27.5)\n"
-"# `ratio` vaut maintenant 0.75.\n"
+"# `ratio` は 0.75 になる。\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:506
@@ -705,34 +687,35 @@ msgid ""
 "Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are "
 "approximately equal to each other."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]a[/code] et [code]b[/code] sont "
-"approximativement égaux l'un à l'autre."
+"もし [code]a[/code] と [code]b[/code] がほとんど等しいならば [code]true[/"
+"code] を返します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:515
 msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
-"Renvoie si [code]s[/code] est une valeur infinie (infini positif ou infini "
-"négatif)."
+"[code]s[/code] が無限大かどうかを返します (正の無限大か負の無限大かにかかわら"
+"ず)。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:524
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
-"Renvoie si [code]instance[/code] est un objet valide (par ex. s'il n'a pas "
-"été supprimé de la mémoire)."
+"[code]instance[/code] が有効なオブジェクト (まだメモリから消去されていない) "
+"かどうかを返します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:533
 msgid "Returns whether [code]s[/code] is a NaN (Not-A-Number) value."
-msgstr "Renvoie si [code]s[/code] est une valeur NaN (Not-A-Number)."
+msgstr ""
+"[code]s[/code] が NaN (Not-A-Number, 非数) 値であるかどうかを返します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:542
 msgid "Returns [code]true[/code] if [code]s[/code] is zero or almost zero."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"[code]s[/code] がゼロあるいは、ほぼゼロであれば [code]true[/code] を返しま"
+"す。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:551
 msgid ""
@@ -744,14 +727,13 @@ msgid ""
 "len(a) # Returns 4\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la longueur de la variable [code]var[/code]. La longueur est le "
-"nombre de caractères pour une chaîne de caractères, le nombre d'éléments "
-"pour un tableau, la taille pour un dictionnaire, etc.\n"
-"[b]Remarque :[/b] Génère une erreur fatale si la variable n'a pas de "
-"longueur possible.\n"
+"Variant [code]var[/code] の長さを返します。String の文字数、Array の要素数、"
+"Dictionary のサイズ、など。\n"
+"[b]注:[/b] もし Variant が長さを用意できないときは、致命的なエラーが発生しま"
+"す。\n"
 "[codeblock]\n"
 "a = [1, 2, 3, 4]\n"
-"len(a) # Renvoie 4\n"
+"len(a) # 4 を返す\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:569
@@ -768,6 +750,17 @@ msgid ""
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)\n"
 "[/codeblock]"
 msgstr ""
+"２つの値および正規化された値から線形補間します。これは [method inverse_lerp] "
+"の逆です。\n"
+"引数 [code]from[/code] と [code]to[/code] の型が [int] あるいは [float] の場"
+"合、戻り値は [float] になります。\n"
+"もし２つとも同じベクトル型 ([Vector2]、[Vector3] あるいは [Color]) の場合、戻"
+"り値はそれと同じ型になります (このとき [code]lerp[/code] はそのベクトル型の "
+"[code]lerp[/code] メソッドを呼び出します)。\n"
+"[codeblock]\n"
+"lerp(0, 4, 0.75) # 3.0 と返す\n"
+"lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Vector2(2, 3.5) と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:588
 msgid ""
@@ -785,6 +778,18 @@ msgid ""
 "    elapsed += delta\n"
 "[/codeblock]"
 msgstr ""
+"正規化された値によって２つの角度 (ラジアン) 間を線形補間します。\n"
+"[method lerp] と似ていますが、しかし [constant @GDScript.TAU] を振り切れたと"
+"きでも正しく補間できます。\n"
+"[codeblock]\n"
+"extends Sprite\n"
+"var elapsed = 0.0\n"
+"func _process(delta):\n"
+"    var min_angle = deg2rad(0.0)\n"
+"    var max_angle = deg2rad(90.0)\n"
+"    rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
+"    elapsed += delta\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:607
 msgid ""
@@ -801,6 +806,15 @@ msgid ""
 "linear2db($Slider.value))\n"
 "[/codeblock]"
 msgstr ""
+"リニア エネルギーからデシベル (オーディオ) へ変換します。これは音量スライダー"
+"を見た目通り機能させるのに使えます (音量はリニアではないため)。例:\n"
+"[codeblock]\n"
+"# \"Slider\" は HSlider や VSlider のような Range を継承したノード。\n"
+"# 範囲は 0 から 1 までに設定する必要があります。\n"
+"# 特定のバスの音量を変えたいときは、この中のバス名を変更してください。\n"
+"AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"Master\"), "
+"linear2db($Slider.value))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:622
 msgid ""
@@ -814,6 +828,16 @@ msgid ""
 "[b]Important:[/b] The path must be absolute, a local path will just return "
 "[code]null[/code]."
 msgstr ""
+"ファイルシステムの [code]path[/code] にあるリソースを読み込みます。\n"
+"[b]注:[/b] リソースのパスは、ファイルシステム ドック内にあるリソースを右ク"
+"リックして、[b]パスをコピー[/b] を選べば得られます。\n"
+"[codeblock]\n"
+"# プロジェクト ディレクトリのルートにある main という名前のシーンを読み込"
+"む。\n"
+"var main = load(\"res://main.tscn\")\n"
+"[/codeblock]\n"
+"[b]重要:[/b] 絶対パスである必要があり、相対パスだと単に [code]null[/code] を"
+"返します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:637
 msgid ""
@@ -825,6 +849,12 @@ msgid ""
 "log(10) # Returns 2.302585\n"
 "[/codeblock]"
 msgstr ""
+"自然対数。連続的な増加において、特定の位置に達するまでに必要な時間です。\n"
+"[b]注:[/b] ほとんどの計算機についている log 関数は、底が 10 なので、これと異"
+"なります。\n"
+"[codeblock]\n"
+"log(10) # 2.302585 を返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:652
 msgid ""
@@ -834,10 +864,10 @@ msgid ""
 "max(-3.99, -4) # Returns -3.99\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le maximum entre deux valeurs.\n"
+"２つの値のうち最大値を返します。\n"
 "[codeblock]\n"
-"max(1, 2) # Renvoie 2\n"
-"max(-3.99, -4) # Renvoie -3.99\n"
+"max(1, 2) # 2 と返す\n"
+"max(-3.99, -4) # -3.99 と返す\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:667
@@ -848,10 +878,10 @@ msgid ""
 "min(-3.99, -4) # Returns -4\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le minimum entre deux valeurs.\n"
+"２つの値のうち最小値を返します。\n"
 "[codeblock]\n"
-"min(1, 2) # Renvoie 1\n"
-"min(-3.99, -4) # Renvoie -4\n"
+"min(1, 2) # 1 と返す\n"
+"min(-3.99, -4) # -4 と返す\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:684
@@ -863,6 +893,12 @@ msgid ""
 "move_toward(10, 5, 4) # Returns 6\n"
 "[/codeblock]"
 msgstr ""
+"[code]delta[/code] の分だけ [code]from[/code] から [code]to[/code] に移動させ"
+"ます。\n"
+"負数の [code]delta[/code] を使うと遠ざかります。\n"
+"[codeblock]\n"
+"move_toward(10, 5, 4) # 6 と返る\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:697
 msgid ""
@@ -873,6 +909,12 @@ msgid ""
 "nearest_po2(5) # Returns 8\n"
 "[/codeblock]"
 msgstr ""
+"整数 [code]value[/code] 以上で1 番近い2の冪数を返します。\n"
+"[codeblock]\n"
+"nearest_po2(3) # 4 と返る\n"
+"nearest_po2(4) # 4 と返る\n"
+"nearest_po2(5) # 8 と返る\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:711
 msgid ""
@@ -885,6 +927,13 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method char]."
 msgstr ""
+"Unicode文字 [code]char[/code] のUnicodeコードポイントを整数で返します。\n"
+"[codeblock]\n"
+"a = ord(\"A\") # a は 65\n"
+"a = ord(\"a\") # a は 97\n"
+"a = ord(\"€\") # a は 8364\n"
+"[/codeblock]\n"
+"これは [method char] の逆です。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:726
 msgid ""
@@ -905,6 +954,21 @@ msgid ""
 "    print(\"unexpected results\")\n"
 "[/codeblock]"
 msgstr ""
+"JSONテキストをパースしてVariantにします (正しいかどうかは [method typeof] で"
+"確認してください)。\n"
+"JSONの規格で定義されているのは数値型のみで、整数型と浮動小数点数型は無いので"
+"気をつけてください。そのため、JSONテキストをパースする際は、すべての数値型は "
+"[float] 型に変換されます。\n"
+"Godotの辞書と異なり、JSONオブジェクトはキーの順序を保持しないので、JSONから作"
+"成された辞書のキー順序は信頼してはいけません。その一方でJSONの配列は、要素の"
+"順序を維持します:\n"
+"[codeblock]\n"
+"p = parse_json('[\"a\", \"b\", \"c\"]')\n"
+"if typeof(p) == TYPE_ARRAY:\n"
+"    print(p[0]) # a と表示\n"
+"else:\n"
+"    print(\"想定外の結果\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:746
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:142
@@ -913,6 +977,8 @@ msgid ""
 "from the origin [code]r[/code] and an angle [code]th[/code]) to the "
 "cartesian coordinate system (X and Y axis)."
 msgstr ""
+"極座標系 (原点からの距離 [code]r[/code] と角度 [code]th[/code] からなる) にお"
+"ける二次元の点を、デカルト座標系 (X および Y 軸) に変換します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:757
 msgid ""
@@ -939,6 +1005,27 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
+"[code]a/b[/code] の剰余を整数で返します。符号は除数と同一です。\n"
+"[codeblock]\n"
+"var i = -6\n"
+"while i < 5:\n"
+"    prints(i, posmod(i, 3))\n"
+"    i += 1\n"
+"[/codeblock]\n"
+"結果:\n"
+"[codeblock]\n"
+"-6 0\n"
+"-5 1\n"
+"-4 2\n"
+"-3 0\n"
+"-2 1\n"
+"-1 2\n"
+"0 0\n"
+"1 1\n"
+"2 2\n"
+"3 0\n"
+"4 1\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:788
 msgid ""
@@ -947,6 +1034,10 @@ msgid ""
 "pow(2, 5) # Returns 32\n"
 "[/codeblock]"
 msgstr ""
+"[code]x[/code] を [code]y[/code] 乗した結果を返します。\n"
+"[codeblock]\n"
+"pow(2, 5) # 32 と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:800
 msgid ""
@@ -959,6 +1050,14 @@ msgid ""
 "var main = preload(\"res://main.tscn\")\n"
 "[/codeblock]"
 msgstr ""
+"ファイルシステムにあるリソースを、スクリプトのパース中に読み込みます。\n"
+"[b]注:[/b] リソースのパスは、ファイルシステム ドック内にあるリソースを右ク"
+"リックして「パスをコピー」を選べば得られます。\n"
+"[codeblock]\n"
+"# プロジェクト ディレクトリのルートにある main という名前のシーンを読み込"
+"む。\n"
+"var main = preload(\"res://main.tscn\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:812
 msgid ""
@@ -969,10 +1068,16 @@ msgid ""
 "print(\"a\", \"b\", a) # Prints ab[1, 2, 3]\n"
 "[/codeblock]"
 msgstr ""
+"ひとつ又は複数の引数を、可能なかぎり最適な方法で文字列に変換してからコンソー"
+"ルに表示します。\n"
+"[codeblock]\n"
+"a = [1, 2, 3]\n"
+"print(\"a\", \"b\", a) # ab[1, 2, 3] と表示\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:823
 msgid "Like [method print], but prints only when used in debug mode."
-msgstr ""
+msgstr "[method print] と同様ですが、しかしデバッグモード時にのみ表示します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:830
 msgid ""
@@ -983,6 +1088,12 @@ msgid ""
 "Frame 0 - res://test.gd:16 in function '_process'\n"
 "[/codeblock]"
 msgstr ""
+"コード位置のスタックトラックを表示します。デバッガを有効にして実行した時にの"
+"み動作します。\n"
+"コンソール内での出力はこのようになります:\n"
+"[codeblock]\n"
+"Frame 0 - res://test.gd:16 in function '_process'\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:841
 msgid ""
@@ -992,6 +1103,11 @@ msgid ""
 "printerr(\"prints to stderr\")\n"
 "[/codeblock]"
 msgstr ""
+"ひとつ又は複数の引数を、可能なかぎり最適な方法で文字列に変換してから標準エ"
+"ラーとして出力します。\n"
+"[codeblock]\n"
+"printerr(\"stderr に出力\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:851
 msgid ""
@@ -1006,6 +1122,16 @@ msgid ""
 "prints to the terminal. If you need to print in the editor, use another "
 "method, such as [method print]."
 msgstr ""
+"ひとつ又は複数の引数を、可能なかぎり最適な方法で文字列に変換してからコンソー"
+"ルに表示します。一番最後に改行が追加されません。\n"
+"[codeblock]\n"
+"printraw(\"A\")\n"
+"printraw(\"B\")\n"
+"# AB と出力\n"
+"[/codeblock]\n"
+"[b]注:[/b] Godotの内蔵コンソールに関する制限により、これはターミナルに対して"
+"のみ出力します。もしエディタ上で表示する必要がある場合は、[method print] など"
+"の他の関数を利用してください。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:864
 msgid ""
@@ -1015,6 +1141,10 @@ msgid ""
 "prints(\"A\", \"B\", \"C\") # Prints A B C\n"
 "[/codeblock]"
 msgstr ""
+"ひとつ又は複数の引数を、それぞれの間に空白を入れてコンソールに表示します。\n"
+"[codeblock]\n"
+"prints(\"A\", \"B\", \"C\") # A B Cと出力\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:874
 msgid ""
@@ -1024,6 +1154,10 @@ msgid ""
 "printt(\"A\", \"B\", \"C\") # Prints A       B       C\n"
 "[/codeblock]"
 msgstr ""
+"ひとつ又は複数の引数を、それぞれの間にタブを入れてコンソールに表示します。\n"
+"[codeblock]\n"
+"printt(\"A\", \"B\", \"C\") # A       B       Cと出力\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:886
 msgid ""
@@ -1034,6 +1168,11 @@ msgid ""
 "as error call\n"
 "[/codeblock]"
 msgstr ""
+"Godotの内蔵デバッガおよびOSターミナルにエラーメッセージを出します。\n"
+"[codeblock]\n"
+"push_error(\"test error\") # \"test error\" をエラーコールとしてデバッガと"
+"ターミナルに出力\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:898
 msgid ""
@@ -1044,6 +1183,11 @@ msgid ""
 "terminal as warning call\n"
 "[/codeblock]"
 msgstr ""
+"Godotの内蔵デバッガおよびOSターミナルに警告メッセージを出します。\n"
+"[codeblock]\n"
+"push_warning(\"test warning\") # \"test warning\" を警告コールとしてデバッガ"
+"とターミナルに出力\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:910
 msgid ""
@@ -1052,6 +1196,10 @@ msgid ""
 "rad2deg(0.523599) # Returns 30\n"
 "[/codeblock]"
 msgstr ""
+"ラジアンから角度に変換します。\n"
+"[codeblock]\n"
+"rad2deg(0.523599) # 30 と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:924
 msgid ""
@@ -1061,6 +1209,11 @@ msgid ""
 "prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263\n"
 "[/codeblock]"
 msgstr ""
+"[code]from[/code] から [code]to[/code] までの間で、ランダムな値を浮動小数点数"
+"として生成します。\n"
+"[codeblock]\n"
+"prints(rand_range(0, 1), rand_range(0, 1)) # 0.135591 0.405263 のように出力\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:936
 msgid ""
@@ -1069,6 +1222,9 @@ msgid ""
 "pseudo random number generator. The internal state of the current "
 "implementation is 64 bits."
 msgstr ""
+"シードによるランダムです: [code]seed[/code] を渡すと、数値と新しいシードから"
+"なる配列を返します。ここでいう「シード」とは、疑似乱数生成器の内部状態を指し"
+"ます。現在の実装における内部状態は64ビットです。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:943
 msgid ""
@@ -1077,6 +1233,10 @@ msgid ""
 "randf() # Returns e.g. 0.375671\n"
 "[/codeblock]"
 msgstr ""
+"区間 [code][0, 1][/code] の中でランダムな浮動小数点数を返します。\n"
+"[codeblock]\n"
+"randf() # 0.375671 のように返る\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:953
 msgid ""
@@ -1090,6 +1250,14 @@ msgid ""
 "randi() % 100 + 1 # Returns random integer between 1 and 100\n"
 "[/codeblock]"
 msgstr ""
+"ランダムな符号なし32bit整数を返します。区間 [code][0, N - 1][/code] (N は "
+"2^32 より小さいこと) の中でランダムな値を得るには、剰余を使ってください。\n"
+"[codeblock]\n"
+"randi()           # 0 から 2^32 - 1 までのランダムな整数を返す\n"
+"randi() % 20      # 0 から 19 までのランダムな整数を返す\n"
+"randi() % 100     # 0 から 99 までのランダムな整数を返す\n"
+"randi() % 100 + 1 # 1 から 100 までのランダムな整数を返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:966
 msgid ""
@@ -1100,6 +1268,12 @@ msgid ""
 "    randomize()\n"
 "[/codeblock]"
 msgstr ""
+"乱数生成器のシード (内部状態とも) をランダム化します。現在の実装では、時間を"
+"元にした数字からシードを再設定します。\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    randomize()\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:977
 msgid ""
@@ -1130,6 +1304,32 @@ msgid ""
 "4\n"
 "[/codeblock]"
 msgstr ""
+"与えられた範囲の配列を返します。Range は1つの引数 (0 から N-1)、2つの引数 (開"
+"始値, 終了値 - 1)、または3つの引数 (開始値, 終了値 - 1, 増加量) をとれま"
+"す。\n"
+"[codeblock]\n"
+"for i in range(4):\n"
+"    print(i)\n"
+"for i in range(2, 5):\n"
+"    print(i)\n"
+"for i in range(0, 6, 2):\n"
+"    print(i)\n"
+"[/codeblock]\n"
+"出力:\n"
+"[codeblock]\n"
+"0\n"
+"1\n"
+"2\n"
+"3\n"
+"\n"
+"2\n"
+"3\n"
+"4\n"
+"\n"
+"0\n"
+"2\n"
+"4\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1017
 msgid ""
@@ -1139,6 +1339,11 @@ msgid ""
 "range_lerp(75, 0, 100, -1, 1) # Returns 0.5\n"
 "[/codeblock]"
 msgstr ""
+"範囲 [code][istart, istop][/code] の値 [code]value[/code] を、範囲 [code]"
+"[ostart, ostop][/code] へとマップします。\n"
+"[codeblock]\n"
+"range_lerp(75, 0, 100, -1, 1) # 0.5 と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1029
 msgid ""
@@ -1148,6 +1353,11 @@ msgid ""
 "round(2.6) # Returns 3\n"
 "[/codeblock]"
 msgstr ""
+"[code]s[/code] にもっとも近い整数値を返します。端数は小数点以下切り上げで丸め"
+"ます。\n"
+"[codeblock]\n"
+"round(2.6) # 3 と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1041
 msgid ""
@@ -1157,6 +1367,11 @@ msgid ""
 "seed(my_seed.hash())\n"
 "[/codeblock]"
 msgstr ""
+"乱数生成器用のシードを設定します。\n"
+"[codeblock]\n"
+"my_seed = \"Godot Rocks\"\n"
+"seed(my_seed.hash())\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1054
 msgid ""
@@ -1168,6 +1383,13 @@ msgid ""
 "sign(6)  # Returns 1\n"
 "[/codeblock]"
 msgstr ""
+"[code]s[/code] の符号を -1 か 1 で返します。もし [code]s[/code] が 0 ならば "
+"0 を返します。\n"
+"[codeblock]\n"
+"sign(-6) # 返り値は -1\n"
+"sign(0)  # 返り値は 0\n"
+"sign(6)  # 返り値は 1\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1068
 msgid ""
@@ -1176,6 +1398,10 @@ msgid ""
 "sin(0.523599) # Returns 0.5\n"
 "[/codeblock]"
 msgstr ""
+"角度 [code]s[/code] のサインをラジアンで返します。\n"
+"[codeblock]\n"
+"sin(0.523599) # 返り値は 0.5\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1080
 msgid ""
@@ -1185,6 +1411,11 @@ msgid ""
 "sinh(a) # Returns 0.75\n"
 "[/codeblock]"
 msgstr ""
+"[code]s[/code] のハイパボリック サインを返します。\n"
+"[codeblock]\n"
+"a = log(2.0) # 返り値は 0.693147\n"
+"sinh(a) # 返り値は 0.75\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1097
 msgid ""
@@ -1197,6 +1428,14 @@ msgid ""
 "smoothstep(0, 2, 2.0) # Returns 1.0\n"
 "[/codeblock]"
 msgstr ""
+"[code]from[/code] から [code]to[/code] の間を、[code]weight[/code] によってス"
+"ムーズに補完して値を返します。[method lerp] と似ていますが、開始時はより進め"
+"て、最終時はより遅れて補完します。\n"
+"[codeblock]\n"
+"smoothstep(0, 2, 0.5) # 返り値は 0.15\n"
+"smoothstep(0, 2, 1.0) # 返り値は 0.5\n"
+"smoothstep(0, 2, 2.0) # 返り値は 1.0\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1111
 msgid ""
@@ -1205,6 +1444,10 @@ msgid ""
 "sqrt(9) # Returns 3\n"
 "[/codeblock]"
 msgstr ""
+"[code]s[/code] の平方根を返します。\n"
+"[codeblock]\n"
+"sqrt(9) # 3 と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1123
 msgid ""
@@ -1220,6 +1463,16 @@ msgid ""
 "n = step_decimals(0.000000005)\n"
 "[/codeblock]"
 msgstr ""
+"小数点より後ろで、最初に非ゼロとなる桁の位置を返します。注意点として、実装の"
+"設計時の決定により、返り値は最大 10 までになっています。\n"
+"[codeblock]\n"
+"# n は 0\n"
+"n = step_decimals(5)\n"
+"# n は 4\n"
+"n = step_decimals(1.0005)\n"
+"# n は 9\n"
+"n = step_decimals(0.000000005)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1142
 msgid ""
@@ -1231,6 +1484,12 @@ msgid ""
 "stepify(3.14159, 0.01) # Returns 3.14\n"
 "[/codeblock]"
 msgstr ""
+"与えられた [code]step[/code] に対して浮動小数点数値 [code]s[/code] をスナップ"
+"します。これは、浮動小数点数を特定の桁に丸めることにも使えます。\n"
+"[codeblock]\n"
+"stepify(100, 32) # 返り値は 96\n"
+"stepify(3.14159, 0.01) # 返り値は 3.14\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1153
 msgid ""
@@ -1242,6 +1501,13 @@ msgid ""
 "len(b) # Returns 12\n"
 "[/codeblock]"
 msgstr ""
+"ひとつ又は複数の引数を、できるだけ最善の方法で文字列に変換します。\n"
+"[codeblock]\n"
+"var a = [10, 20, 30]\n"
+"var b = str(a);\n"
+"len(a) # 返り値は 3\n"
+"len(b) # 返り値は 12\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1168
 msgid ""
@@ -1253,6 +1519,12 @@ msgid ""
 "print(b[\"a\"]) # Prints 1\n"
 "[/codeblock]"
 msgstr ""
+"[method var2str] が返したフォーマット済み文字列を、元の値へと戻します。\n"
+"[codeblock]\n"
+"a = '{ \"a\": 1, \"b\": 2 }'\n"
+"b = str2var(a)\n"
+"print(b[\"a\"]) # 1 と表示\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1182
 msgid ""
@@ -1261,6 +1533,10 @@ msgid ""
 "tan(deg2rad(45)) # Returns 1\n"
 "[/codeblock]"
 msgstr ""
+"角度 [code]s[/code] のタンジェントをラジアンで返します。\n"
+"[codeblock]\n"
+"tan(deg2rad(45)) # 1 と返す\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1194
 msgid ""
@@ -1270,6 +1546,11 @@ msgid ""
 "tanh(a)      # Returns 0.6\n"
 "[/codeblock]"
 msgstr ""
+"[code]s[/code] のハイパボリック タンジェントを返します。\n"
+"[codeblock]\n"
+"a = log(2.0) # 返り値は 0.693147\n"
+"tanh(a)      # 返り値は 0.6\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1207
 msgid ""
@@ -1281,6 +1562,13 @@ msgid ""
 "print(b) # {\"a\":1, \"b\":2}\n"
 "[/codeblock]"
 msgstr ""
+"Variant [code]var[/code] をJSONテキストに変換してから返します。保存したりネッ"
+"トワーク上で送信したりするためのデータをシリアライズする際に便利です。\n"
+"[codeblock]\n"
+"a = { \"a\": 1, \"b\": 2 }\n"
+"b = to_json(a)\n"
+"print(b) # {\"a\":1, \"b\":2}\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1221
 msgid ""
@@ -1290,6 +1578,11 @@ msgid ""
 "type_exists(\"Variant\") # Returns false\n"
 "[/codeblock]"
 msgstr ""
+"渡したクラス名が [ClassDB] 上に存在するかどうかを返します。\n"
+"[codeblock]\n"
+"type_exists(\"Sprite2D\") # 返り値は true\n"
+"type_exists(\"Variant\") # 返り値は false\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1234
 msgid ""
@@ -1303,6 +1596,14 @@ msgid ""
 "    print(\"unexpected results\")\n"
 "[/codeblock]"
 msgstr ""
+"渡した Variant オブジェクトの内部型を、[enum Variant.Type] の値で返します。\n"
+"[codeblock]\n"
+"p = parse_json('[\"a\", \"b\", \"c\"]')\n"
+"if typeof(p) == TYPE_ARRAY:\n"
+"    print(p[0]) # a と表示\n"
+"else:\n"
+"    print(\"予期しない結果\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1250
 msgid ""
@@ -1317,6 +1618,16 @@ msgid ""
 "    prints(\"invalid\", v)\n"
 "[/codeblock]"
 msgstr ""
+"[code]json[/code] が有効なJSONデータかどうか検証します。もし有効であれば空の"
+"文字列を、そうでなければエラーメッセージを返します。\n"
+"[codeblock]\n"
+"j = to_json([1, 2, 3])\n"
+"v = validate_json(j)\n"
+"if not v:\n"
+"    print(\"有効\")\n"
+"else:\n"
+"    prints(\"無効\", v)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1269
 msgid ""
@@ -1324,6 +1635,9 @@ msgid ""
 "[code]true[/code] encoding objects is allowed (and can potentially include "
 "code)."
 msgstr ""
+"変数の値をバイト配列にエンコードします。[code]full_objects[/code] が "
+"[code]true[/code] のときは、オブジェクトのエンコードも許します(コードも含まれ"
+"る可能性があります)。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1278
 msgid ""
@@ -1341,6 +1655,19 @@ msgid ""
 "}\n"
 "[/codeblock]"
 msgstr ""
+"Variant [code]var[/code] を、あとで [method str2var] によってパースできる"
+"フォーマット済み文字列へと変換します。\n"
+"[codeblock]\n"
+"a = { \"a\": 1, \"b\": 2 }\n"
+"print(var2str(a))\n"
+"[/codeblock]\n"
+"結果\n"
+"[codeblock]\n"
+"{\n"
+"\"a\": 1,\n"
+"\"b\": 2\n"
+"}\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1298
 msgid ""
@@ -1351,6 +1678,12 @@ msgid ""
 "something else. However, until the object is actually destroyed the weak "
 "reference may return the object even if there are no strong references to it."
 msgstr ""
+"オブジェクトへの弱参照を返します。\n"
+"オブジェクトへの弱参照ではオブジェクトを生存させ続けるには不十分です。もし、"
+"残る参照が弱参照のみである場合、ガベージコレクションは自由に参照先を破棄し、"
+"そのメモリ領域を他のことに再利用します。しかし、オブジェクトが実際に破棄され"
+"るまでは、それへの強参照がなくなった場合でも、弱参照はそのオブジェクトを返せ"
+"ます。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1312
 msgid ""
@@ -1459,20 +1792,59 @@ msgid ""
 "[code]GDScriptFunctionState[/code]. Notice [code]yield(get_tree(), "
 "\"idle_frame\")[/code] from the above example."
 msgstr ""
+"現在の関数の実行を一時停止して、停止中の現在のステートを、呼び出し元の関数に"
+"返します。\n"
+"呼び出し元からは、そのステートの [method GDScriptFunctionState.resume] を呼び"
+"出せば実行再開できます。これはステートを取り消します。再開された関数内では、"
+"[code]yield()[/code] は [code]resume()[/code] 関数に渡されたすべての引数を返"
+"します。\n"
+"オブジェクトとシグナルを渡せば、その渡されたシグナルをオブジェクトが発信した"
+"ときに、実行が再開されます。この場合 [code]yield()[/code] は、"
+"[code]emit_signal()[/code] に渡された引数を返します。もし、そのシグナルの引数"
+"がひとつだけなら引数をそのまま返し、引数が複数あれば [code]emit_signal()[/"
+"code] に渡されたすべての引数を含む配列を返します。\n"
+"関数の実行が完了するまで待ちたいときにも [code]yield[/code] は使えます:\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    yield(countdown(), \"completed\") # countdown() 関数が完了するまで待つ\n"
+"    print('Ready')\n"
+"\n"
+"func countdown():\n"
+"    yield(get_tree(), \"idle_frame\") # GDScriptFunctionStateオブジェクトを "
+"_ready() に返す\n"
+"    print(3)\n"
+"    yield(get_tree().create_timer(1.0), \"timeout\")\n"
+"    print(2)\n"
+"    yield(get_tree().create_timer(1.0), \"timeout\")\n"
+"    print(1)\n"
+"    yield(get_tree().create_timer(1.0), \"timeout\")\n"
+"\n"
+"# 結果:\n"
+"# 3\n"
+"# 2\n"
+"# 1\n"
+"# Ready\n"
+"[/codeblock]\n"
+"関数をyieldすると、関数がreturnするときに [code]completed[/code] シグナルが自"
+"動的に発信されます。そのため、これを [code]yield[/code] メソッドの "
+"[code]signal[/code] パラメータにすれば再開できます。\n"
+"関数をyieldするには、その結果となる関数もまた  [code]GDScriptFunctionState[/"
+"code] を返す必要があります。上記の例の [code]yield(get_tree(), \"idle_frame"
+"\")[/code] に注目してみてください。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1409
 msgid ""
 "Constant that represents how many times the diameter of a circle fits around "
 "its perimeter."
-msgstr ""
+msgstr "円周の長さを、円の直径の何倍かで表した定数。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1412
 msgid "The circle constant, the circumference of the unit circle."
-msgstr ""
+msgstr "円定数。単位円の円周。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1415
 msgid "A positive infinity. (For negative infinity, use -INF)."
-msgstr ""
+msgstr "正の無限大 (負の無限大には -INF を使ってください)。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1418
 msgid ""
@@ -1482,10 +1854,13 @@ msgid ""
 "for floating-point elements, such as the square root of negative numbers or "
 "the result of 0/0."
 msgstr ""
+"NaNを表現する浮動小数点数型として展開するマクロ定数。\n"
+"NaN値は、浮動小数点数の要素において、負数の平方根や 0/0 の結果といった、未定"
+"義または表現不能な値を識別するのに使います。"
 
 #: doc/classes/@GlobalScope.xml:4
 msgid "Global scope constants and variables."
-msgstr ""
+msgstr "グローバルスコープ定数および変数。"
 
 #: doc/classes/@GlobalScope.xml:7
 msgid ""
@@ -1494,1179 +1869,1198 @@ msgid ""
 "Singletons are also documented here, since they can be accessed from "
 "anywhere."
 msgstr ""
+"グローバルスコープの定数と変数です。ここにはグローバルにあるものすべて、エ"
+"ラーコード用定数、キーコード、プロパティのヒントなどがあります。\n"
+"シングルトンも、あらゆる場所からアクセスできるので、ここに書かれています。"
 
 #: doc/classes/@GlobalScope.xml:16
 msgid "The [AudioServer] singleton."
-msgstr ""
+msgstr "[AudioServer] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:19
 msgid "The [CameraServer] singleton."
-msgstr ""
+msgstr "[CameraServer] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:22
 msgid "The [ClassDB] singleton."
-msgstr ""
+msgstr "[ClassDB] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:25
 msgid "The [DisplayServer] singleton."
-msgstr ""
+msgstr "[DisplayServer] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:28
 msgid "The [Engine] singleton."
-msgstr ""
+msgstr "[Engine] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:31
 msgid "The [Geometry] singleton."
-msgstr ""
+msgstr "[Geometry] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:34
 msgid "The [IP] singleton."
-msgstr ""
+msgstr "[IP] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:37
 msgid "The [Input] singleton."
-msgstr ""
+msgstr "[Input] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:40
 msgid "The [InputMap] singleton."
-msgstr ""
+msgstr "[InputMap] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:43
 msgid "The [JSON] singleton."
-msgstr ""
+msgstr "[JSON] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:46
 msgid ""
 "The [JavaClassWrapper] singleton.\n"
 "[b]Note:[/b] Only implemented on Android."
 msgstr ""
+"[JavaClassWrapper] シングルトン。\n"
+"[b]注:[/b] Androidでのみ実装されています。"
 
 #: doc/classes/@GlobalScope.xml:50
 msgid ""
 "The [JavaScript] singleton.\n"
 "[b]Note:[/b] Only implemented on HTML5."
 msgstr ""
+"[JavaScript] シングルトン。\n"
+"[b]注:[/b] HTML5でのみ実装されています。"
 
 #: doc/classes/@GlobalScope.xml:54
 msgid "The [Marshalls] singleton."
-msgstr ""
+msgstr "[Marshalls] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:57
 msgid "The [NavigationMeshGenerator] singleton."
-msgstr ""
+msgstr "[NavigationMeshGenerator] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:60 doc/classes/@GlobalScope.xml:63
 msgid "The [NavigationServer2D] singleton."
-msgstr ""
+msgstr "[NavigationServer2D] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:66
 msgid "The [OS] singleton."
-msgstr ""
+msgstr "[OS] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:69
 msgid "The [Performance] singleton."
-msgstr ""
+msgstr "[Performance] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:72
 msgid "The [PhysicsServer2D] singleton."
-msgstr ""
+msgstr "[PhysicsServer2D] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:75
 msgid "The [PhysicsServer3D] singleton."
-msgstr ""
+msgstr "[PhysicsServer3D] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:78
 msgid "The [ProjectSettings] singleton."
-msgstr ""
+msgstr "[ProjectSettings] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:81
 msgid "The [RenderingServer] singleton."
-msgstr ""
+msgstr "[RenderingServer] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:84
 msgid "The [ResourceLoader] singleton."
-msgstr ""
+msgstr "[ResourceLoader] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:87
 msgid "The [ResourceSaver] singleton."
-msgstr ""
+msgstr "[ResourceSaver] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:90
 msgid "The [TranslationServer] singleton."
-msgstr ""
+msgstr "[TranslationServer] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:93
 msgid "The [VisualScriptEditor] singleton."
-msgstr ""
+msgstr "[VisualScriptEditor] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:96
 msgid "The [XRServer] singleton."
-msgstr ""
+msgstr "[XRServer] シングルトン。"
 
 #: doc/classes/@GlobalScope.xml:101
 msgid "Left margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"左側の余白。通常は [Control] あるいは [StyleBox] を継承したクラスにて使用され"
+"ます。"
 
 #: doc/classes/@GlobalScope.xml:104
 msgid "Top margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"上側の余白。通常は [Control] あるいは [StyleBox] を継承したクラスにて使用され"
+"ます。"
 
 #: doc/classes/@GlobalScope.xml:107
 msgid "Right margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"右側の余白。通常は [Control] あるいは [StyleBox] を継承したクラスにて使用され"
+"ます。"
 
 #: doc/classes/@GlobalScope.xml:110
 msgid ""
 "Bottom margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"下側の余白。通常は [Control] あるいは [StyleBox] を継承したクラスにて使用され"
+"ます。"
 
 #: doc/classes/@GlobalScope.xml:113
 msgid "Top-left corner."
-msgstr ""
+msgstr "左上の角。"
 
 #: doc/classes/@GlobalScope.xml:116
 msgid "Top-right corner."
-msgstr ""
+msgstr "右上の角。"
 
 #: doc/classes/@GlobalScope.xml:119
 msgid "Bottom-right corner."
-msgstr ""
+msgstr "右下の角。"
 
 #: doc/classes/@GlobalScope.xml:122
 msgid "Bottom-left corner."
-msgstr ""
+msgstr "左下の角。"
 
 #: doc/classes/@GlobalScope.xml:125
 msgid ""
 "General vertical alignment, usually used for [Separator], [ScrollBar], "
 "[Slider], etc."
 msgstr ""
+"一般的な垂直方向への整列。通常は、[Separator]、[ScrollBar]、[Slider] などのた"
+"めに使用されます。"
 
 #: doc/classes/@GlobalScope.xml:128
 msgid ""
 "General horizontal alignment, usually used for [Separator], [ScrollBar], "
 "[Slider], etc."
 msgstr ""
+"一般的な水平方向への整列。通常は、[Separator]、[ScrollBar]、[Slider] などのた"
+"めに使用されます。"
 
 #: doc/classes/@GlobalScope.xml:131
 msgid "Horizontal left alignment, usually for text-derived classes."
-msgstr ""
+msgstr "水平左側への整列。通常はテキストに関連したクラスのためにあります。"
 
 #: doc/classes/@GlobalScope.xml:134
 msgid "Horizontal center alignment, usually for text-derived classes."
-msgstr ""
+msgstr "水平中央への整列。通常はテキストに関連したクラスのためにあります。"
 
 #: doc/classes/@GlobalScope.xml:137
 msgid "Horizontal right alignment, usually for text-derived classes."
-msgstr ""
+msgstr "水平右側への整列。通常はテキストに関連したクラスのためにあります。"
 
 #: doc/classes/@GlobalScope.xml:140
 msgid "Vertical top alignment, usually for text-derived classes."
-msgstr ""
+msgstr "垂直上側への整列。通常はテキストに関連したクラスのためにあります。"
 
 #: doc/classes/@GlobalScope.xml:143
 msgid "Vertical center alignment, usually for text-derived classes."
-msgstr ""
+msgstr "垂直中央への整列。通常はテキストに関連したクラスのためにあります。"
 
 #: doc/classes/@GlobalScope.xml:146
 msgid "Vertical bottom alignment, usually for text-derived classes."
-msgstr ""
+msgstr "垂直下側への整列。通常はテキストに関連したクラスのためにあります。"
 
 #: doc/classes/@GlobalScope.xml:149
 msgid "Keycodes with this bit applied are non-printable."
-msgstr ""
+msgstr "このビットを適用したKeycodeはprint不可になります。"
 
 #: doc/classes/@GlobalScope.xml:152
 msgid "Escape key."
-msgstr ""
+msgstr "Escapeキー。"
 
 #: doc/classes/@GlobalScope.xml:155
 msgid "Tab key."
-msgstr ""
+msgstr "Tabキー。"
 
 #: doc/classes/@GlobalScope.xml:158
 msgid "Shift + Tab key."
-msgstr ""
+msgstr "Shift + Tabキー。"
 
 #: doc/classes/@GlobalScope.xml:161
 msgid "Backspace key."
-msgstr ""
+msgstr "Backspaceキー。"
 
 #: doc/classes/@GlobalScope.xml:164
 msgid "Return key (on the main keyboard)."
-msgstr ""
+msgstr "Returnキー (メイン キーボードの)。"
 
 #: doc/classes/@GlobalScope.xml:167
 msgid "Enter key on the numeric keypad."
-msgstr ""
+msgstr "テンキー上のEnterキー。"
 
 #: doc/classes/@GlobalScope.xml:170
 msgid "Insert key."
-msgstr ""
+msgstr "Insertキー。"
 
 #: doc/classes/@GlobalScope.xml:173
 msgid "Delete key."
-msgstr ""
+msgstr "Deleteキー。"
 
 #: doc/classes/@GlobalScope.xml:176
 msgid "Pause key."
-msgstr ""
+msgstr "Pauseキー。"
 
 #: doc/classes/@GlobalScope.xml:179
 msgid "Print Screen key."
-msgstr ""
+msgstr "Print Screenキー。"
 
 #: doc/classes/@GlobalScope.xml:182
 msgid "System Request key."
-msgstr ""
+msgstr "System Requestキー。"
 
 #: doc/classes/@GlobalScope.xml:185
 msgid "Clear key."
-msgstr ""
+msgstr "Clearキー。"
 
 #: doc/classes/@GlobalScope.xml:188
 msgid "Home key."
-msgstr ""
+msgstr "Homeキー。"
 
 #: doc/classes/@GlobalScope.xml:191
 msgid "End key."
-msgstr ""
+msgstr "Endキー。"
 
 #: doc/classes/@GlobalScope.xml:194
 msgid "Left arrow key."
-msgstr ""
+msgstr "左矢印キー。"
 
 #: doc/classes/@GlobalScope.xml:197
 msgid "Up arrow key."
-msgstr ""
+msgstr "上矢印キー。"
 
 #: doc/classes/@GlobalScope.xml:200
 msgid "Right arrow key."
-msgstr ""
+msgstr "右矢印キー。"
 
 #: doc/classes/@GlobalScope.xml:203
 msgid "Down arrow key."
-msgstr ""
+msgstr "下矢印キー。"
 
 #: doc/classes/@GlobalScope.xml:206
 msgid "Page Up key."
-msgstr ""
+msgstr "Page Upキー。"
 
 #: doc/classes/@GlobalScope.xml:209
 msgid "Page Down key."
-msgstr ""
+msgstr "Page Downキー。"
 
 #: doc/classes/@GlobalScope.xml:212
 msgid "Shift key."
-msgstr ""
+msgstr "Shiftキー。"
 
 #: doc/classes/@GlobalScope.xml:215
 msgid "Control key."
-msgstr ""
+msgstr "Controlキー。"
 
 #: doc/classes/@GlobalScope.xml:218
 msgid "Meta key."
-msgstr ""
+msgstr "メタキー。"
 
 #: doc/classes/@GlobalScope.xml:221
 msgid "Alt key."
-msgstr ""
+msgstr "Altキー。"
 
 #: doc/classes/@GlobalScope.xml:224
 msgid "Caps Lock key."
-msgstr ""
+msgstr "Caps Lockキー。"
 
 #: doc/classes/@GlobalScope.xml:227
 msgid "Num Lock key."
-msgstr ""
+msgstr "Num Lockキー。"
 
 #: doc/classes/@GlobalScope.xml:230
 msgid "Scroll Lock key."
-msgstr ""
+msgstr "Scroll Lockキー。"
 
 #: doc/classes/@GlobalScope.xml:233
 msgid "F1 key."
-msgstr ""
+msgstr "F1キー。"
 
 #: doc/classes/@GlobalScope.xml:236
 msgid "F2 key."
-msgstr ""
+msgstr "F2キー。"
 
 #: doc/classes/@GlobalScope.xml:239
 msgid "F3 key."
-msgstr ""
+msgstr "F3キー。"
 
 #: doc/classes/@GlobalScope.xml:242
 msgid "F4 key."
-msgstr ""
+msgstr "F4キー。"
 
 #: doc/classes/@GlobalScope.xml:245
 msgid "F5 key."
-msgstr ""
+msgstr "F5キー。"
 
 #: doc/classes/@GlobalScope.xml:248
 msgid "F6 key."
-msgstr ""
+msgstr "F6キー。"
 
 #: doc/classes/@GlobalScope.xml:251
 msgid "F7 key."
-msgstr ""
+msgstr "F7キー。"
 
 #: doc/classes/@GlobalScope.xml:254
 msgid "F8 key."
-msgstr ""
+msgstr "F8キー。"
 
 #: doc/classes/@GlobalScope.xml:257
 msgid "F9 key."
-msgstr ""
+msgstr "F9キー。"
 
 #: doc/classes/@GlobalScope.xml:260
 msgid "F10 key."
-msgstr ""
+msgstr "F10キー。"
 
 #: doc/classes/@GlobalScope.xml:263
 msgid "F11 key."
-msgstr ""
+msgstr "F11キー。"
 
 #: doc/classes/@GlobalScope.xml:266
 msgid "F12 key."
-msgstr ""
+msgstr "F12キー。"
 
 #: doc/classes/@GlobalScope.xml:269
 msgid "F13 key."
-msgstr ""
+msgstr "F13キー。"
 
 #: doc/classes/@GlobalScope.xml:272
 msgid "F14 key."
-msgstr ""
+msgstr "F14キー。"
 
 #: doc/classes/@GlobalScope.xml:275
 msgid "F15 key."
-msgstr ""
+msgstr "F15キー。"
 
 #: doc/classes/@GlobalScope.xml:278
 msgid "F16 key."
-msgstr ""
+msgstr "F16キー。"
 
 #: doc/classes/@GlobalScope.xml:281
 msgid "Multiply (*) key on the numeric keypad."
-msgstr ""
+msgstr "テンキー上の乗算 (*) キー。"
 
 #: doc/classes/@GlobalScope.xml:284
 msgid "Divide (/) key on the numeric keypad."
-msgstr ""
+msgstr "テンキー上の除算 (/) キー。"
 
 #: doc/classes/@GlobalScope.xml:287
 msgid "Subtract (-) key on the numeric keypad."
-msgstr ""
+msgstr "テンキー上の減算 (-) キー。"
 
 #: doc/classes/@GlobalScope.xml:290
 msgid "Period (.) key on the numeric keypad."
-msgstr ""
+msgstr "テンキー上のピリオド (.) キー。"
 
 #: doc/classes/@GlobalScope.xml:293
 msgid "Add (+) key on the numeric keypad."
-msgstr ""
+msgstr "テンキー上の加算 (+) キー。"
 
 #: doc/classes/@GlobalScope.xml:296
 msgid "Number 0 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの0。"
 
 #: doc/classes/@GlobalScope.xml:299
 msgid "Number 1 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの1。"
 
 #: doc/classes/@GlobalScope.xml:302
 msgid "Number 2 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの2。"
 
 #: doc/classes/@GlobalScope.xml:305
 msgid "Number 3 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの3。"
 
 #: doc/classes/@GlobalScope.xml:308
 msgid "Number 4 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの4。"
 
 #: doc/classes/@GlobalScope.xml:311
 msgid "Number 5 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの5。"
 
 #: doc/classes/@GlobalScope.xml:314
 msgid "Number 6 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの6。"
 
 #: doc/classes/@GlobalScope.xml:317
 msgid "Number 7 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの7。"
 
 #: doc/classes/@GlobalScope.xml:320
 msgid "Number 8 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの8。"
 
 #: doc/classes/@GlobalScope.xml:323
 msgid "Number 9 on the numeric keypad."
-msgstr ""
+msgstr "テンキーの9。"
 
 #: doc/classes/@GlobalScope.xml:326
 msgid "Left Super key (Windows key)."
-msgstr ""
+msgstr "左Superキー (Windowsキー)。"
 
 #: doc/classes/@GlobalScope.xml:329
 msgid "Right Super key (Windows key)."
-msgstr ""
+msgstr "右Superキー (Windowsキー)。"
 
 #: doc/classes/@GlobalScope.xml:332
 msgid "Context menu key."
-msgstr ""
+msgstr "コンテキストメニュー キー。"
 
 #: doc/classes/@GlobalScope.xml:335
 msgid "Left Hyper key."
-msgstr ""
+msgstr "左Hyperキー。"
 
 #: doc/classes/@GlobalScope.xml:338
 msgid "Right Hyper key."
-msgstr ""
+msgstr "右Hyperキー。"
 
 #: doc/classes/@GlobalScope.xml:341
 msgid "Help key."
-msgstr ""
+msgstr "Helpキー。"
 
 #: doc/classes/@GlobalScope.xml:344
 msgid "Left Direction key."
-msgstr ""
+msgstr "左方向キー。"
 
 #: doc/classes/@GlobalScope.xml:347
 msgid "Right Direction key."
-msgstr ""
+msgstr "右方向キー。"
 
 #: doc/classes/@GlobalScope.xml:350
 msgid "Back key."
-msgstr ""
+msgstr "Backキー。"
 
 #: doc/classes/@GlobalScope.xml:353
 msgid "Forward key."
-msgstr ""
+msgstr "Forwardキー。"
 
 #: doc/classes/@GlobalScope.xml:356
 msgid "Stop key."
-msgstr ""
+msgstr "Stopキー。"
 
 #: doc/classes/@GlobalScope.xml:359
 msgid "Refresh key."
-msgstr ""
+msgstr "Refreshキー。"
 
 #: doc/classes/@GlobalScope.xml:362
 msgid "Volume down key."
-msgstr ""
+msgstr "音量ダウンキー。"
 
 #: doc/classes/@GlobalScope.xml:365
 msgid "Mute volume key."
-msgstr ""
+msgstr "音声ミュート キー。"
 
 #: doc/classes/@GlobalScope.xml:368
 msgid "Volume up key."
-msgstr ""
+msgstr "音量アップキー。"
 
 #: doc/classes/@GlobalScope.xml:371
 msgid "Bass Boost key."
-msgstr ""
+msgstr "Bassブースト キー。"
 
 #: doc/classes/@GlobalScope.xml:374
 msgid "Bass up key."
-msgstr ""
+msgstr "Bassアップキー。"
 
 #: doc/classes/@GlobalScope.xml:377
 msgid "Bass down key."
-msgstr ""
+msgstr "Bassダウンキー。"
 
 #: doc/classes/@GlobalScope.xml:380
 msgid "Treble up key."
-msgstr ""
+msgstr "Trebleアップキー。"
 
 #: doc/classes/@GlobalScope.xml:383
 msgid "Treble down key."
-msgstr ""
+msgstr "Trebleダウンキー。"
 
 #: doc/classes/@GlobalScope.xml:386
 msgid "Media play key."
-msgstr ""
+msgstr "メディア再生キー。"
 
 #: doc/classes/@GlobalScope.xml:389
 msgid "Media stop key."
-msgstr ""
+msgstr "メディア停止キー。"
 
 #: doc/classes/@GlobalScope.xml:392
 msgid "Previous song key."
-msgstr ""
+msgstr "前の曲キー。"
 
 #: doc/classes/@GlobalScope.xml:395
 msgid "Next song key."
-msgstr ""
+msgstr "次の曲キー。"
 
 #: doc/classes/@GlobalScope.xml:398
 msgid "Media record key."
-msgstr ""
+msgstr "メディア録画キー。"
 
 #: doc/classes/@GlobalScope.xml:401
 msgid "Home page key."
-msgstr ""
+msgstr "ホームページ キー。"
 
 #: doc/classes/@GlobalScope.xml:404
 msgid "Favorites key."
-msgstr ""
+msgstr "お気に入りキー。"
 
 #: doc/classes/@GlobalScope.xml:407
 msgid "Search key."
-msgstr ""
+msgstr "検索キー。"
 
 #: doc/classes/@GlobalScope.xml:410
 msgid "Standby key."
-msgstr ""
+msgstr "スタンバイキー。"
 
 #: doc/classes/@GlobalScope.xml:413
 msgid "Open URL / Launch Browser key."
-msgstr ""
+msgstr "URLを開く / ブラウザ起動キー。"
 
 #: doc/classes/@GlobalScope.xml:416
 msgid "Launch Mail key."
-msgstr ""
+msgstr "メール起動キー。"
 
 #: doc/classes/@GlobalScope.xml:419
 msgid "Launch Media key."
-msgstr ""
+msgstr "メディア起動キー。"
 
 #: doc/classes/@GlobalScope.xml:422
 msgid "Launch Shortcut 0 key."
-msgstr ""
+msgstr "ショートカット 0 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:425
 msgid "Launch Shortcut 1 key."
-msgstr ""
+msgstr "ショートカット 1 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:428
 msgid "Launch Shortcut 2 key."
-msgstr ""
+msgstr "ショートカット 2 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:431
 msgid "Launch Shortcut 3 key."
-msgstr ""
+msgstr "ショートカット 3 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:434
 msgid "Launch Shortcut 4 key."
-msgstr ""
+msgstr "ショートカット 4 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:437
 msgid "Launch Shortcut 5 key."
-msgstr ""
+msgstr "ショートカット 5 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:440
 msgid "Launch Shortcut 6 key."
-msgstr ""
+msgstr "ショートカット 6 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:443
 msgid "Launch Shortcut 7 key."
-msgstr ""
+msgstr "ショートカット 7 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:446
 msgid "Launch Shortcut 8 key."
-msgstr ""
+msgstr "ショートカット 8 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:449
 msgid "Launch Shortcut 9 key."
-msgstr ""
+msgstr "ショートカット 9 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:452
 msgid "Launch Shortcut A key."
-msgstr ""
+msgstr "ショートカット A 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:455
 msgid "Launch Shortcut B key."
-msgstr ""
+msgstr "ショートカット B 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:458
 msgid "Launch Shortcut C key."
-msgstr ""
+msgstr "ショートカット C 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:461
 msgid "Launch Shortcut D key."
-msgstr ""
+msgstr "ショートカット D 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:464
 msgid "Launch Shortcut E key."
-msgstr ""
+msgstr "ショートカット E 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:467
 msgid "Launch Shortcut F key."
-msgstr ""
+msgstr "ショートカット F 起動キー。"
 
 #: doc/classes/@GlobalScope.xml:470
 msgid "Unknown key."
-msgstr ""
+msgstr "不明なキー。"
 
 #: doc/classes/@GlobalScope.xml:473
 msgid "Space key."
-msgstr ""
+msgstr "スペースキー。"
 
 #: doc/classes/@GlobalScope.xml:476
 msgid "! key."
-msgstr ""
+msgstr "! キー。"
 
 #: doc/classes/@GlobalScope.xml:479
 msgid "\" key."
-msgstr ""
+msgstr "\" キー。"
 
 #: doc/classes/@GlobalScope.xml:482
 msgid "# key."
-msgstr ""
+msgstr "# キー。"
 
 #: doc/classes/@GlobalScope.xml:485
 msgid "$ key."
-msgstr ""
+msgstr "$ キー。"
 
 #: doc/classes/@GlobalScope.xml:488
 msgid "% key."
-msgstr ""
+msgstr "% キー。"
 
 #: doc/classes/@GlobalScope.xml:491
 msgid "& key."
-msgstr ""
+msgstr "& キー。"
 
 #: doc/classes/@GlobalScope.xml:494
 msgid "' key."
-msgstr ""
+msgstr "' キー。"
 
 #: doc/classes/@GlobalScope.xml:497
 msgid "( key."
-msgstr ""
+msgstr "( キー。"
 
 #: doc/classes/@GlobalScope.xml:500
 msgid ") key."
-msgstr ""
+msgstr ") キー。"
 
 #: doc/classes/@GlobalScope.xml:503
 msgid "* key."
-msgstr ""
+msgstr "* キー。"
 
 #: doc/classes/@GlobalScope.xml:506
 msgid "+ key."
-msgstr ""
+msgstr "+ キー。"
 
 #: doc/classes/@GlobalScope.xml:509
 msgid ", key."
-msgstr ""
+msgstr ", キー。"
 
 #: doc/classes/@GlobalScope.xml:512
 msgid "- key."
-msgstr ""
+msgstr "- キー。"
 
 #: doc/classes/@GlobalScope.xml:515
 msgid ". key."
-msgstr ""
+msgstr ". キー。"
 
 #: doc/classes/@GlobalScope.xml:518
 msgid "/ key."
-msgstr ""
+msgstr "/ キー。"
 
 #: doc/classes/@GlobalScope.xml:521
 msgid "Number 0."
-msgstr ""
+msgstr "数字 0。"
 
 #: doc/classes/@GlobalScope.xml:524
 msgid "Number 1."
-msgstr ""
+msgstr "数字 1。"
 
 #: doc/classes/@GlobalScope.xml:527
 msgid "Number 2."
-msgstr ""
+msgstr "数字 2。"
 
 #: doc/classes/@GlobalScope.xml:530
 msgid "Number 3."
-msgstr ""
+msgstr "数字 3。"
 
 #: doc/classes/@GlobalScope.xml:533
 msgid "Number 4."
-msgstr ""
+msgstr "数字 4。"
 
 #: doc/classes/@GlobalScope.xml:536
 msgid "Number 5."
-msgstr ""
+msgstr "数字 5。"
 
 #: doc/classes/@GlobalScope.xml:539
 msgid "Number 6."
-msgstr ""
+msgstr "数字 6。"
 
 #: doc/classes/@GlobalScope.xml:542
 msgid "Number 7."
-msgstr ""
+msgstr "数字 7。"
 
 #: doc/classes/@GlobalScope.xml:545
 msgid "Number 8."
-msgstr ""
+msgstr "数字 8。"
 
 #: doc/classes/@GlobalScope.xml:548
 msgid "Number 9."
-msgstr ""
+msgstr "数字 9。"
 
 #: doc/classes/@GlobalScope.xml:551
 msgid ": key."
-msgstr ""
+msgstr ": キー。"
 
 #: doc/classes/@GlobalScope.xml:554
 msgid "; key."
-msgstr ""
+msgstr "; キー。"
 
 #: doc/classes/@GlobalScope.xml:557
 msgid "< key."
-msgstr ""
+msgstr "< キー。"
 
 #: doc/classes/@GlobalScope.xml:560
 msgid "= key."
-msgstr ""
+msgstr "= キー。"
 
 #: doc/classes/@GlobalScope.xml:563
 msgid "> key."
-msgstr ""
+msgstr "> キー。"
 
 #: doc/classes/@GlobalScope.xml:566
 msgid "? key."
-msgstr ""
+msgstr "? キー。"
 
 #: doc/classes/@GlobalScope.xml:569
 msgid "@ key."
-msgstr ""
+msgstr "@ キー。"
 
 #: doc/classes/@GlobalScope.xml:572
 msgid "A key."
-msgstr ""
+msgstr "A キー。"
 
 #: doc/classes/@GlobalScope.xml:575
 msgid "B key."
-msgstr ""
+msgstr "B キー。"
 
 #: doc/classes/@GlobalScope.xml:578
 msgid "C key."
-msgstr ""
+msgstr "C キー。"
 
 #: doc/classes/@GlobalScope.xml:581
 msgid "D key."
-msgstr ""
+msgstr "D キー。"
 
 #: doc/classes/@GlobalScope.xml:584
 msgid "E key."
-msgstr ""
+msgstr "E キー。"
 
 #: doc/classes/@GlobalScope.xml:587
 msgid "F key."
-msgstr ""
+msgstr "F キー。"
 
 #: doc/classes/@GlobalScope.xml:590
 msgid "G key."
-msgstr ""
+msgstr "G キー。"
 
 #: doc/classes/@GlobalScope.xml:593
 msgid "H key."
-msgstr ""
+msgstr "H キー。"
 
 #: doc/classes/@GlobalScope.xml:596
 msgid "I key."
-msgstr ""
+msgstr "I キー。"
 
 #: doc/classes/@GlobalScope.xml:599
 msgid "J key."
-msgstr ""
+msgstr "J キー。"
 
 #: doc/classes/@GlobalScope.xml:602
 msgid "K key."
-msgstr ""
+msgstr "K キー。"
 
 #: doc/classes/@GlobalScope.xml:605
 msgid "L key."
-msgstr ""
+msgstr "L キー。"
 
 #: doc/classes/@GlobalScope.xml:608
 msgid "M key."
-msgstr ""
+msgstr "M キー。"
 
 #: doc/classes/@GlobalScope.xml:611
 msgid "N key."
-msgstr ""
+msgstr "N キー。"
 
 #: doc/classes/@GlobalScope.xml:614
 msgid "O key."
-msgstr ""
+msgstr "O キー。"
 
 #: doc/classes/@GlobalScope.xml:617
 msgid "P key."
-msgstr ""
+msgstr "P キー。"
 
 #: doc/classes/@GlobalScope.xml:620
 msgid "Q key."
-msgstr ""
+msgstr "Q キー。"
 
 #: doc/classes/@GlobalScope.xml:623
 msgid "R key."
-msgstr ""
+msgstr "R キー。"
 
 #: doc/classes/@GlobalScope.xml:626
 msgid "S key."
-msgstr ""
+msgstr "S キー。"
 
 #: doc/classes/@GlobalScope.xml:629
 msgid "T key."
-msgstr ""
+msgstr "T キー。"
 
 #: doc/classes/@GlobalScope.xml:632
 msgid "U key."
-msgstr ""
+msgstr "U キー。"
 
 #: doc/classes/@GlobalScope.xml:635
 msgid "V key."
-msgstr ""
+msgstr "V キー。"
 
 #: doc/classes/@GlobalScope.xml:638
 msgid "W key."
-msgstr ""
+msgstr "W キー。"
 
 #: doc/classes/@GlobalScope.xml:641
 msgid "X key."
-msgstr ""
+msgstr "X キー。"
 
 #: doc/classes/@GlobalScope.xml:644
 msgid "Y key."
-msgstr ""
+msgstr "Y キー。"
 
 #: doc/classes/@GlobalScope.xml:647
 msgid "Z key."
-msgstr ""
+msgstr "Z キー。"
 
 #: doc/classes/@GlobalScope.xml:650
 msgid "[ key."
-msgstr ""
+msgstr "[ キー。"
 
 #: doc/classes/@GlobalScope.xml:653
 msgid "\\ key."
-msgstr ""
+msgstr "\\ キー。"
 
 #: doc/classes/@GlobalScope.xml:656
 msgid "] key."
-msgstr ""
+msgstr "] キー。"
 
 #: doc/classes/@GlobalScope.xml:659
 msgid "^ key."
-msgstr ""
+msgstr "^ キー。"
 
 #: doc/classes/@GlobalScope.xml:662
 msgid "_ key."
-msgstr ""
+msgstr "_ キー。"
 
 #: doc/classes/@GlobalScope.xml:665
 msgid "` key."
-msgstr ""
+msgstr "` キー。"
 
 #: doc/classes/@GlobalScope.xml:668
 msgid "{ key."
-msgstr ""
+msgstr "{ キー。"
 
 #: doc/classes/@GlobalScope.xml:671
 msgid "| key."
-msgstr ""
+msgstr "| キー。"
 
 #: doc/classes/@GlobalScope.xml:674
 msgid "} key."
-msgstr ""
+msgstr "} キー。"
 
 #: doc/classes/@GlobalScope.xml:677
 msgid "~ key."
-msgstr ""
+msgstr "~ キー。"
 
 #: doc/classes/@GlobalScope.xml:680
 msgid "Non-breakable space key."
-msgstr ""
+msgstr "ノーブレークスペース キー。"
 
 #: doc/classes/@GlobalScope.xml:683
 msgid "¡ key."
-msgstr ""
+msgstr "¡ キー。"
 
 #: doc/classes/@GlobalScope.xml:686
 msgid "¢ key."
-msgstr ""
+msgstr "¢ キー。"
 
 #: doc/classes/@GlobalScope.xml:689
 msgid "£ key."
-msgstr ""
+msgstr "£ キー。"
 
 #: doc/classes/@GlobalScope.xml:692
 msgid "¤ key."
-msgstr ""
+msgstr "¤ キー。"
 
 #: doc/classes/@GlobalScope.xml:695
 msgid "¥ key."
-msgstr ""
+msgstr "¥ キー。"
 
 #: doc/classes/@GlobalScope.xml:698
 msgid "¦ key."
-msgstr ""
+msgstr "¦ キー。"
 
 #: doc/classes/@GlobalScope.xml:701
 msgid "§ key."
-msgstr ""
+msgstr "§ キー。"
 
 #: doc/classes/@GlobalScope.xml:704
 msgid "¨ key."
-msgstr ""
+msgstr "¨ キー。"
 
 #: doc/classes/@GlobalScope.xml:707
 msgid "© key."
-msgstr ""
+msgstr "© キー。"
 
 #: doc/classes/@GlobalScope.xml:710
 msgid "ª key."
-msgstr ""
+msgstr "ª キー。"
 
 #: doc/classes/@GlobalScope.xml:713
 msgid "« key."
-msgstr ""
+msgstr "« キー。"
 
 #: doc/classes/@GlobalScope.xml:716
 msgid "¬ key."
-msgstr ""
+msgstr "¬ キー。"
 
 #: doc/classes/@GlobalScope.xml:719
 msgid "Soft hyphen key."
-msgstr ""
+msgstr "ソフトハイフン キー。"
 
 #: doc/classes/@GlobalScope.xml:722
 msgid "® key."
-msgstr ""
+msgstr "® キー。"
 
 #: doc/classes/@GlobalScope.xml:725
 msgid "¯ key."
-msgstr ""
+msgstr "¯ キー。"
 
 #: doc/classes/@GlobalScope.xml:728
 msgid "° key."
-msgstr ""
+msgstr "° キー。"
 
 #: doc/classes/@GlobalScope.xml:731
 msgid "± key."
-msgstr ""
+msgstr "± キー。"
 
 #: doc/classes/@GlobalScope.xml:734
 msgid "² key."
-msgstr ""
+msgstr "² キー。"
 
 #: doc/classes/@GlobalScope.xml:737
 msgid "³ key."
-msgstr ""
+msgstr "³ キー。"
 
 #: doc/classes/@GlobalScope.xml:740
 msgid "´ key."
-msgstr ""
+msgstr "´ キー。"
 
 #: doc/classes/@GlobalScope.xml:743
 msgid "µ key."
-msgstr ""
+msgstr "µ キー。"
 
 #: doc/classes/@GlobalScope.xml:746
 msgid "¶ key."
-msgstr ""
+msgstr "¶ キー。"
 
 #: doc/classes/@GlobalScope.xml:749
 msgid "· key."
-msgstr ""
+msgstr "· キー。"
 
 #: doc/classes/@GlobalScope.xml:752
 msgid "¸ key."
-msgstr ""
+msgstr "¸ キー。"
 
 #: doc/classes/@GlobalScope.xml:755
 msgid "¹ key."
-msgstr ""
+msgstr "¹ キー。"
 
 #: doc/classes/@GlobalScope.xml:758
 msgid "º key."
-msgstr ""
+msgstr "º キー。"
 
 #: doc/classes/@GlobalScope.xml:761
 msgid "» key."
-msgstr ""
+msgstr "» キー。"
 
 #: doc/classes/@GlobalScope.xml:764
 msgid "¼ key."
-msgstr ""
+msgstr "¼ キー。"
 
 #: doc/classes/@GlobalScope.xml:767
 msgid "½ key."
-msgstr ""
+msgstr "½ キー。"
 
 #: doc/classes/@GlobalScope.xml:770
 msgid "¾ key."
-msgstr ""
+msgstr "¾ キー。"
 
 #: doc/classes/@GlobalScope.xml:773
 msgid "¿ key."
-msgstr ""
+msgstr "¿ キー。"
 
 #: doc/classes/@GlobalScope.xml:776
 msgid "À key."
-msgstr ""
+msgstr "À キー。"
 
 #: doc/classes/@GlobalScope.xml:779
 msgid "Á key."
-msgstr ""
+msgstr "Á キー。"
 
 #: doc/classes/@GlobalScope.xml:782
 msgid "Â key."
-msgstr ""
+msgstr "Â キー。"
 
 #: doc/classes/@GlobalScope.xml:785
 msgid "Ã key."
-msgstr ""
+msgstr "Ã キー。"
 
 #: doc/classes/@GlobalScope.xml:788
 msgid "Ä key."
-msgstr ""
+msgstr "Ä キー。"
 
 #: doc/classes/@GlobalScope.xml:791
 msgid "Å key."
-msgstr ""
+msgstr "Å キー。"
 
 #: doc/classes/@GlobalScope.xml:794
 msgid "Æ key."
-msgstr ""
+msgstr "Æ キー。"
 
 #: doc/classes/@GlobalScope.xml:797
 msgid "Ç key."
-msgstr ""
+msgstr "Ç キー。"
 
 #: doc/classes/@GlobalScope.xml:800
 msgid "È key."
-msgstr ""
+msgstr "È キー。"
 
 #: doc/classes/@GlobalScope.xml:803
 msgid "É key."
-msgstr ""
+msgstr "É キー。"
 
 #: doc/classes/@GlobalScope.xml:806
 msgid "Ê key."
-msgstr ""
+msgstr "Ê キー。"
 
 #: doc/classes/@GlobalScope.xml:809
 msgid "Ë key."
-msgstr ""
+msgstr "Ë キー。"
 
 #: doc/classes/@GlobalScope.xml:812
 msgid "Ì key."
-msgstr ""
+msgstr "Ì キー。"
 
 #: doc/classes/@GlobalScope.xml:815
 msgid "Í key."
-msgstr ""
+msgstr "Í キー。"
 
 #: doc/classes/@GlobalScope.xml:818
 msgid "Î key."
-msgstr ""
+msgstr "Î キー。"
 
 #: doc/classes/@GlobalScope.xml:821
 msgid "Ï key."
-msgstr ""
+msgstr "Ï キー。"
 
 #: doc/classes/@GlobalScope.xml:824
 msgid "Ð key."
-msgstr ""
+msgstr "Ð キー。"
 
 #: doc/classes/@GlobalScope.xml:827
 msgid "Ñ key."
-msgstr ""
+msgstr "Ñ キー。"
 
 #: doc/classes/@GlobalScope.xml:830
 msgid "Ò key."
-msgstr ""
+msgstr "Ò キー。"
 
 #: doc/classes/@GlobalScope.xml:833
 msgid "Ó key."
-msgstr ""
+msgstr "Ó キー。"
 
 #: doc/classes/@GlobalScope.xml:836
 msgid "Ô key."
-msgstr ""
+msgstr "Ô キー。"
 
 #: doc/classes/@GlobalScope.xml:839
 msgid "Õ key."
-msgstr ""
+msgstr "Õ キー。"
 
 #: doc/classes/@GlobalScope.xml:842
 msgid "Ö key."
-msgstr ""
+msgstr "Ö キー。"
 
 #: doc/classes/@GlobalScope.xml:845
 msgid "× key."
-msgstr ""
+msgstr "× キー。"
 
 #: doc/classes/@GlobalScope.xml:848
 msgid "Ø key."
-msgstr ""
+msgstr "Ø キー。"
 
 #: doc/classes/@GlobalScope.xml:851
 msgid "Ù key."
-msgstr ""
+msgstr "Ù キー。"
 
 #: doc/classes/@GlobalScope.xml:854
 msgid "Ú key."
-msgstr ""
+msgstr "Ú キー。"
 
 #: doc/classes/@GlobalScope.xml:857
 msgid "Û key."
-msgstr ""
+msgstr "Û キー。"
 
 #: doc/classes/@GlobalScope.xml:860
 msgid "Ü key."
-msgstr ""
+msgstr "Ü キー。"
 
 #: doc/classes/@GlobalScope.xml:863
 msgid "Ý key."
-msgstr ""
+msgstr "Ý キー。"
 
 #: doc/classes/@GlobalScope.xml:866
 msgid "Þ key."
-msgstr ""
+msgstr "Þ キー。"
 
 #: doc/classes/@GlobalScope.xml:869
 msgid "ß key."
-msgstr ""
+msgstr "ß キー。"
 
 #: doc/classes/@GlobalScope.xml:872
 msgid "÷ key."
-msgstr ""
+msgstr "÷ キー。"
 
 #: doc/classes/@GlobalScope.xml:875
 msgid "ÿ key."
-msgstr ""
+msgstr "ÿ キー。"
 
 #: doc/classes/@GlobalScope.xml:878
 msgid "Key Code mask."
-msgstr ""
+msgstr "Key Codeマスク。"
 
 #: doc/classes/@GlobalScope.xml:881
 msgid "Modifier key mask."
-msgstr ""
+msgstr "装飾キーマスク。"
 
 #: doc/classes/@GlobalScope.xml:884
 msgid "Shift key mask."
-msgstr ""
+msgstr "Shiftキーマスク。"
 
 #: doc/classes/@GlobalScope.xml:887
 msgid "Alt key mask."
-msgstr ""
+msgstr "Altキーマスク。"
 
 #: doc/classes/@GlobalScope.xml:890
 msgid "Meta key mask."
-msgstr ""
+msgstr "Metaキーマスク。"
 
 #: doc/classes/@GlobalScope.xml:893
 msgid "Ctrl key mask."
-msgstr ""
+msgstr "Ctrlキーマスク。"
 
 #: doc/classes/@GlobalScope.xml:896
 msgid ""
@@ -2675,366 +3069,378 @@ msgid ""
 "mask should be preferred to [constant KEY_MASK_META] or [constant "
 "KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly."
 msgstr ""
+"Commandキーマスク。macOS上では、これは [constant KEY_MASK_META] と同じです。"
+"その他のプラットフォームでは [constant KEY_MASK_CTRL] と同じです。このマスク"
+"は、すべてのプラットフォーム上でシステムショートカットを正しく扱えるので、"
+"[constant KEY_MASK_META] や [constant KEY_MASK_CTRL] よりも好ましいでしょう。"
 
 #: doc/classes/@GlobalScope.xml:899
 msgid "Keypad key mask."
-msgstr ""
+msgstr "Keypadキーマスク。"
 
 #: doc/classes/@GlobalScope.xml:902
 msgid "Group Switch key mask."
-msgstr ""
+msgstr "Group Switch キーマスク。"
 
 #: doc/classes/@GlobalScope.xml:905
 msgid "Left mouse button."
-msgstr ""
+msgstr "左マウスボタン。"
 
 #: doc/classes/@GlobalScope.xml:908
 msgid "Right mouse button."
-msgstr ""
+msgstr "右マウスボタン。"
 
 #: doc/classes/@GlobalScope.xml:911
 msgid "Middle mouse button."
-msgstr ""
+msgstr "中マウスボタン。"
 
 #: doc/classes/@GlobalScope.xml:914
 msgid "Extra mouse button 1 (only present on some mice)."
-msgstr ""
+msgstr "追加マウスボタン 1 (一部のマウスのみにある)。"
 
 #: doc/classes/@GlobalScope.xml:917
 msgid "Extra mouse button 2 (only present on some mice)."
-msgstr ""
+msgstr "追加マウスボタン 2 (一部のマウスのみにある)。"
 
 #: doc/classes/@GlobalScope.xml:920
 msgid "Mouse wheel up."
-msgstr ""
+msgstr "マウスホイール アップ。"
 
 #: doc/classes/@GlobalScope.xml:923
 msgid "Mouse wheel down."
-msgstr ""
+msgstr "マウスホイール ダウン。"
 
 #: doc/classes/@GlobalScope.xml:926
 msgid "Mouse wheel left button (only present on some mice)."
-msgstr ""
+msgstr "マウスホイール左ボタン (一部のマウスのみにある)。"
 
 #: doc/classes/@GlobalScope.xml:929
 msgid "Mouse wheel right button (only present on some mice)."
-msgstr ""
+msgstr "マウスホイール右ボタン (一部のマウスのみにある)。"
 
 #: doc/classes/@GlobalScope.xml:932
 msgid "Left mouse button mask."
-msgstr ""
+msgstr "左マウスボタンマスク。"
 
 #: doc/classes/@GlobalScope.xml:935
 msgid "Right mouse button mask."
-msgstr ""
+msgstr "右マウスボタンマスク。"
 
 #: doc/classes/@GlobalScope.xml:938
 msgid "Middle mouse button mask."
-msgstr ""
+msgstr "中マウスボタンマスク。"
 
 #: doc/classes/@GlobalScope.xml:941
 msgid "Extra mouse button 1 mask."
-msgstr ""
+msgstr "追加マウスボタン1マスク。"
 
 #: doc/classes/@GlobalScope.xml:944
 msgid "Extra mouse button 2 mask."
-msgstr ""
+msgstr "追加マウスボタン2マスク。"
 
 #: doc/classes/@GlobalScope.xml:947
 msgid "Gamepad button 0."
-msgstr ""
+msgstr "ゲームパッド ボタン0。"
 
 #: doc/classes/@GlobalScope.xml:950
 msgid "Gamepad button 1."
-msgstr ""
+msgstr "ゲームパッド ボタン1。"
 
 #: doc/classes/@GlobalScope.xml:953
 msgid "Gamepad button 2."
-msgstr ""
+msgstr "ゲームパッド ボタン2。"
 
 #: doc/classes/@GlobalScope.xml:956
 msgid "Gamepad button 3."
-msgstr ""
+msgstr "ゲームパッド ボタン3。"
 
 #: doc/classes/@GlobalScope.xml:959
 msgid "Gamepad button 4."
-msgstr ""
+msgstr "ゲームパッド ボタン4。"
 
 #: doc/classes/@GlobalScope.xml:962
 msgid "Gamepad button 5."
-msgstr ""
+msgstr "ゲームパッド ボタン5。"
 
 #: doc/classes/@GlobalScope.xml:965
 msgid "Gamepad button 6."
-msgstr ""
+msgstr "ゲームパッド ボタン6。"
 
 #: doc/classes/@GlobalScope.xml:968
 msgid "Gamepad button 7."
-msgstr ""
+msgstr "ゲームパッド ボタン7。"
 
 #: doc/classes/@GlobalScope.xml:971
 msgid "Gamepad button 8."
-msgstr ""
+msgstr "ゲームパッド ボタン8。"
 
 #: doc/classes/@GlobalScope.xml:974
 msgid "Gamepad button 9."
-msgstr ""
+msgstr "ゲームパッド ボタン9。"
 
 #: doc/classes/@GlobalScope.xml:977
 msgid "Gamepad button 10."
-msgstr ""
+msgstr "ゲームパッド ボタン10。"
 
 #: doc/classes/@GlobalScope.xml:980
 msgid "Gamepad button 11."
-msgstr ""
+msgstr "ゲームパッド ボタン11。"
 
 #: doc/classes/@GlobalScope.xml:983
 msgid "Gamepad button 12."
-msgstr ""
+msgstr "ゲームパッド ボタン12。"
 
 #: doc/classes/@GlobalScope.xml:986
 msgid "Gamepad button 13."
-msgstr ""
+msgstr "ゲームパッド ボタン13。"
 
 #: doc/classes/@GlobalScope.xml:989
 msgid "Gamepad button 14."
-msgstr ""
+msgstr "ゲームパッド ボタン14。"
 
 #: doc/classes/@GlobalScope.xml:992
 msgid "Gamepad button 15."
-msgstr ""
+msgstr "ゲームパッド ボタン15。"
 
 #: doc/classes/@GlobalScope.xml:995
 msgid "Represents the maximum number of joystick buttons supported."
-msgstr ""
+msgstr "サポートされるジョイスティック ボタンの最大数を表す。"
 
 #: doc/classes/@GlobalScope.xml:998
 msgid "DualShock circle button."
-msgstr ""
+msgstr "デュアルショック丸ボタン。"
 
 #: doc/classes/@GlobalScope.xml:1001
 msgid "DualShock X button."
-msgstr ""
+msgstr "デュアルショックXボタン。"
 
 #: doc/classes/@GlobalScope.xml:1004
 msgid "DualShock square button."
-msgstr ""
+msgstr "デュアルショック四角ボタン。"
 
 #: doc/classes/@GlobalScope.xml:1007
 msgid "DualShock triangle button."
-msgstr ""
+msgstr "デュアルショック三角ボタン。"
 
 #: doc/classes/@GlobalScope.xml:1010
 msgid "Xbox controller B button."
-msgstr ""
+msgstr "XboxコントローラBボタン。"
 
 #: doc/classes/@GlobalScope.xml:1013
 msgid "Xbox controller A button."
-msgstr ""
+msgstr "XboxコントローラAボタン。"
 
 #: doc/classes/@GlobalScope.xml:1016
 msgid "Xbox controller X button."
-msgstr ""
+msgstr "XboxコントローラXボタン。"
 
 #: doc/classes/@GlobalScope.xml:1019
 msgid "Xbox controller Y button."
-msgstr ""
+msgstr "XboxコントローラYボタン。"
 
 #: doc/classes/@GlobalScope.xml:1022
 msgid "Nintendo controller A button."
-msgstr ""
+msgstr "任天堂コントローラAボタン。"
 
 #: doc/classes/@GlobalScope.xml:1025
 msgid "Nintendo controller B button."
-msgstr ""
+msgstr "任天堂コントローラBボタン。"
 
 #: doc/classes/@GlobalScope.xml:1028
 msgid "Nintendo controller X button."
-msgstr ""
+msgstr "任天堂コントローラXボタン。"
 
 #: doc/classes/@GlobalScope.xml:1031
 msgid "Nintendo controller Y button."
-msgstr ""
+msgstr "任天堂コントローラYボタン。"
 
 #: doc/classes/@GlobalScope.xml:1034
 msgid "Grip (side) buttons on a VR controller."
-msgstr ""
+msgstr "VRコントローラのグリップ(サイド)ボタン。"
 
 #: doc/classes/@GlobalScope.xml:1037
 msgid "Push down on the touchpad or main joystick on a VR controller."
-msgstr ""
+msgstr "VRコントローラのタッチパッドあるいはメインジョイスティックの押下。"
 
 #: doc/classes/@GlobalScope.xml:1040
 msgid "Trigger on a VR controller."
-msgstr ""
+msgstr "VRコントローラのトリガー。"
 
 #: doc/classes/@GlobalScope.xml:1043
 msgid ""
 "A button on the right Oculus Touch controller, X button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"Oculus Touchの右コントローラAボタン、左コントローラのXボタン (OpenVRでの使用"
+"時)。"
 
 #: doc/classes/@GlobalScope.xml:1046
 msgid ""
 "B button on the right Oculus Touch controller, Y button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"Oculus Touchの右コントローラBボタン、左コントローラのYボタン (OpenVRでの使用"
+"時)。"
 
 #: doc/classes/@GlobalScope.xml:1049
 msgid "Menu button on either Oculus Touch controller."
-msgstr ""
+msgstr "どちらかのOculus Touchコントローラのメニューボタン。"
 
 #: doc/classes/@GlobalScope.xml:1052
 msgid "Menu button in OpenVR (Except when Oculus Touch controllers are used)."
-msgstr ""
+msgstr "OpenVRでのメニューボタン (Oculus Touchコントローラ使用時を除く)。"
 
 #: doc/classes/@GlobalScope.xml:1055
 msgid "Gamepad button Select."
-msgstr ""
+msgstr "ゲームパッドのSelectボタン。"
 
 #: doc/classes/@GlobalScope.xml:1058
 msgid "Gamepad button Start."
-msgstr ""
+msgstr "ゲームパッドのStartボタン。"
 
 #: doc/classes/@GlobalScope.xml:1061
 msgid "Gamepad DPad up."
-msgstr ""
+msgstr "ゲームパッドの十字ボタン上。"
 
 #: doc/classes/@GlobalScope.xml:1064
 msgid "Gamepad DPad down."
-msgstr ""
+msgstr "ゲームパッドの十字ボタン下。"
 
 #: doc/classes/@GlobalScope.xml:1067
 msgid "Gamepad DPad left."
-msgstr ""
+msgstr "ゲームパッドの十字ボタン左。"
 
 #: doc/classes/@GlobalScope.xml:1070
 msgid "Gamepad DPad right."
-msgstr ""
+msgstr "ゲームパッドの十字ボタン右。"
 
 #: doc/classes/@GlobalScope.xml:1073
 msgid "Gamepad left Shoulder button."
-msgstr ""
+msgstr "ゲームパッドのLボタン。"
 
 #: doc/classes/@GlobalScope.xml:1076
 msgid "Gamepad left trigger."
-msgstr ""
+msgstr "ゲームパッドの左トリガー。"
 
 #: doc/classes/@GlobalScope.xml:1079
 msgid "Gamepad left stick click."
-msgstr ""
+msgstr "ゲームパッドの左スティック クリック。"
 
 #: doc/classes/@GlobalScope.xml:1082
 msgid "Gamepad right Shoulder button."
-msgstr ""
+msgstr "ゲームパッドのRボタン。"
 
 #: doc/classes/@GlobalScope.xml:1085
 msgid "Gamepad right trigger."
-msgstr ""
+msgstr "ゲームパッドの右トリガー。"
 
 #: doc/classes/@GlobalScope.xml:1088
 msgid "Gamepad right stick click."
-msgstr ""
+msgstr "ゲームパッドの右スティック クリック。"
 
 #: doc/classes/@GlobalScope.xml:1091 doc/classes/@GlobalScope.xml:1124
 msgid "Gamepad left stick horizontal axis."
-msgstr ""
+msgstr "ゲームパッドの左スティック水平軸。"
 
 #: doc/classes/@GlobalScope.xml:1094 doc/classes/@GlobalScope.xml:1127
 msgid "Gamepad left stick vertical axis."
-msgstr ""
+msgstr "ゲームパッドの左スティック垂直軸。"
 
 #: doc/classes/@GlobalScope.xml:1097 doc/classes/@GlobalScope.xml:1130
 msgid "Gamepad right stick horizontal axis."
-msgstr ""
+msgstr "ゲームパッドの右スティック水平軸。"
 
 #: doc/classes/@GlobalScope.xml:1100 doc/classes/@GlobalScope.xml:1133
 msgid "Gamepad right stick vertical axis."
-msgstr ""
+msgstr "ゲームパッドの右スティック垂直軸。"
 
 #: doc/classes/@GlobalScope.xml:1103
 msgid "Generic gamepad axis 4."
-msgstr ""
+msgstr "汎用ゲームパッド軸 4。"
 
 #: doc/classes/@GlobalScope.xml:1106
 msgid "Generic gamepad axis 5."
-msgstr ""
+msgstr "汎用ゲームパッド軸 5。"
 
 #: doc/classes/@GlobalScope.xml:1109
 msgid "Gamepad left trigger analog axis."
-msgstr ""
+msgstr "ゲームパッドの左トリガー アナログ軸。"
 
 #: doc/classes/@GlobalScope.xml:1112
 msgid "Gamepad right trigger analog axis."
-msgstr ""
+msgstr "ゲームパッドの右トリガー アナログ軸。"
 
 #: doc/classes/@GlobalScope.xml:1115
 msgid "Generic gamepad axis 8."
-msgstr ""
+msgstr "汎用ゲームパッド軸 8。"
 
 #: doc/classes/@GlobalScope.xml:1118
 msgid "Generic gamepad axis 9."
-msgstr ""
+msgstr "汎用ゲームパッド軸 9。"
 
 #: doc/classes/@GlobalScope.xml:1121
 msgid "Represents the maximum number of joystick axes supported."
-msgstr ""
+msgstr "サポートされるジョイスティック軸の最大数を表す。"
 
 #: doc/classes/@GlobalScope.xml:1136
 msgid "Gamepad left analog trigger."
-msgstr ""
+msgstr "ゲームパッドの左アナログトリガー。"
 
 #: doc/classes/@GlobalScope.xml:1139
 msgid "Gamepad right analog trigger."
-msgstr ""
+msgstr "ゲームパッドの右アナログトリガー。"
 
 #: doc/classes/@GlobalScope.xml:1142
 msgid "VR Controller analog trigger."
-msgstr ""
+msgstr "VRコントローラのアナログトリガー。"
 
 #: doc/classes/@GlobalScope.xml:1145
 msgid "VR Controller analog grip (side buttons)."
-msgstr ""
+msgstr "VRコントローラのアナロググリップ (側面のボタン)。"
 
 #: doc/classes/@GlobalScope.xml:1148
 msgid ""
 "OpenVR touchpad X axis (Joystick axis on Oculus Touch and Windows MR "
 "controllers)."
 msgstr ""
+"OpenVRタッチパッドX軸 (Oculus TouchおよびWindows MRコントローラのジョイス"
+"ティック軸)。"
 
 #: doc/classes/@GlobalScope.xml:1151
 msgid ""
 "OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR "
 "controllers)."
 msgstr ""
+"OpenVRタッチパッドY軸 (Oculus TouchおよびWindows MRコントローラのジョイス"
+"ティック軸)。"
 
 #: doc/classes/@GlobalScope.xml:1154
 msgid "MIDI note OFF message."
-msgstr ""
+msgstr "MIDIノート オフメッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1157
 msgid "MIDI note ON message."
-msgstr ""
+msgstr "MIDIノート オンメッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1160
 msgid "MIDI aftertouch message."
-msgstr ""
+msgstr "MIDIアフタータッチ メッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1163
 msgid "MIDI control change message."
-msgstr ""
+msgstr "MIDIコントロールチェンジ メッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1166
 msgid "MIDI program change message."
-msgstr ""
+msgstr "MIDIプログラムチェンジ メッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1169
 msgid "MIDI channel pressure message."
-msgstr ""
+msgstr "MIDIチャンネルプレッシャー メッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1172
 msgid "MIDI pitch bend message."
-msgstr ""
+msgstr "MIDIピッチベンド メッセージ。"
 
 #: doc/classes/@GlobalScope.xml:1175
 msgid ""
@@ -3055,127 +3461,127 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1187
 msgid "Generic error."
-msgstr ""
+msgstr "汎用エラー。"
 
 #: doc/classes/@GlobalScope.xml:1190
 msgid "Unavailable error."
-msgstr ""
+msgstr "利用不可エラー。"
 
 #: doc/classes/@GlobalScope.xml:1193
 msgid "Unconfigured error."
-msgstr ""
+msgstr "未設定エラー。"
 
 #: doc/classes/@GlobalScope.xml:1196
 msgid "Unauthorized error."
-msgstr ""
+msgstr "未認証エラー。"
 
 #: doc/classes/@GlobalScope.xml:1199
 msgid "Parameter range error."
-msgstr ""
+msgstr "パラメータ範囲エラー。"
 
 #: doc/classes/@GlobalScope.xml:1202
 msgid "Out of memory (OOM) error."
-msgstr ""
+msgstr "メモリ不足 (Out of memory) エラー。"
 
 #: doc/classes/@GlobalScope.xml:1205
 msgid "File: Not found error."
-msgstr ""
+msgstr "ファイル: 未検出エラー。"
 
 #: doc/classes/@GlobalScope.xml:1208
 msgid "File: Bad drive error."
-msgstr ""
+msgstr "ファイル: 不正なドライブ エラー。"
 
 #: doc/classes/@GlobalScope.xml:1211
 msgid "File: Bad path error."
-msgstr ""
+msgstr "ファイル: 不正なパス エラー。"
 
 #: doc/classes/@GlobalScope.xml:1214
 msgid "File: No permission error."
-msgstr ""
+msgstr "ファイル: 無権限エラー。"
 
 #: doc/classes/@GlobalScope.xml:1217
 msgid "File: Already in use error."
-msgstr ""
+msgstr "ファイル: 使用中エラー。"
 
 #: doc/classes/@GlobalScope.xml:1220
 msgid "File: Can't open error."
-msgstr ""
+msgstr "ファイル: 読み取り不可エラー。"
 
 #: doc/classes/@GlobalScope.xml:1223
 msgid "File: Can't write error."
-msgstr ""
+msgstr "ファイル: 書き込み不可エラー。"
 
 #: doc/classes/@GlobalScope.xml:1226
 msgid "File: Can't read error."
-msgstr ""
+msgstr "ファイル: 読み込み不可エラー。"
 
 #: doc/classes/@GlobalScope.xml:1229
 msgid "File: Unrecognized error."
-msgstr ""
+msgstr "ファイル: 認識失敗エラー。"
 
 #: doc/classes/@GlobalScope.xml:1232
 msgid "File: Corrupt error."
-msgstr ""
+msgstr "ファイル: 破損エラー。"
 
 #: doc/classes/@GlobalScope.xml:1235
 msgid "File: Missing dependencies error."
-msgstr ""
+msgstr "ファイル: 依存ファイル不足エラー。"
 
 #: doc/classes/@GlobalScope.xml:1238
 msgid "File: End of file (EOF) error."
-msgstr ""
+msgstr "ファイル: End of file (EOF) エラー。"
 
 #: doc/classes/@GlobalScope.xml:1241
 msgid "Can't open error."
-msgstr ""
+msgstr "読み込み不可エラー。"
 
 #: doc/classes/@GlobalScope.xml:1244
 msgid "Can't create error."
-msgstr ""
+msgstr "作成不可エラー。"
 
 #: doc/classes/@GlobalScope.xml:1247
 msgid "Query failed error."
-msgstr ""
+msgstr "クエリ失敗エラー。"
 
 #: doc/classes/@GlobalScope.xml:1250
 msgid "Already in use error."
-msgstr ""
+msgstr "使用中エラー。"
 
 #: doc/classes/@GlobalScope.xml:1253
 msgid "Locked error."
-msgstr ""
+msgstr "ロック中エラー。"
 
 #: doc/classes/@GlobalScope.xml:1256
 msgid "Timeout error."
-msgstr ""
+msgstr "時間切れエラー。"
 
 #: doc/classes/@GlobalScope.xml:1259
 msgid "Can't connect error."
-msgstr ""
+msgstr "接続不能エラー。"
 
 #: doc/classes/@GlobalScope.xml:1262
 msgid "Can't resolve error."
-msgstr ""
+msgstr "解決不能エラー。"
 
 #: doc/classes/@GlobalScope.xml:1265
 msgid "Connection error."
-msgstr ""
+msgstr "接続エラー。"
 
 #: doc/classes/@GlobalScope.xml:1268
 msgid "Can't acquire resource error."
-msgstr ""
+msgstr "リソース確保不能エラー。"
 
 #: doc/classes/@GlobalScope.xml:1271
 msgid "Can't fork process error."
-msgstr ""
+msgstr "プロセス フォーク不能エラー。"
 
 #: doc/classes/@GlobalScope.xml:1274
 msgid "Invalid data error."
-msgstr ""
+msgstr "不正なデータ エラー。"
 
 #: doc/classes/@GlobalScope.xml:1277
 msgid "Invalid parameter error."
-msgstr ""
+msgstr "不正なパラメータ エラー。"
 
 #: doc/classes/@GlobalScope.xml:1280
 msgid "Already exists error."
@@ -3187,69 +3593,72 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1286
 msgid "Database: Read error."
-msgstr ""
+msgstr "データベース: 読み込みエラー。"
 
 #: doc/classes/@GlobalScope.xml:1289
 msgid "Database: Write error."
-msgstr ""
+msgstr "データベース: 書き込みエラー。"
 
 #: doc/classes/@GlobalScope.xml:1292
 msgid "Compilation failed error."
-msgstr ""
+msgstr "コンパイル失敗エラー。"
 
 #: doc/classes/@GlobalScope.xml:1295
 msgid "Method not found error."
-msgstr ""
+msgstr "メソッド不明エラー。"
 
 #: doc/classes/@GlobalScope.xml:1298
 msgid "Linking failed error."
-msgstr ""
+msgstr "リンク失敗エラー。"
 
 #: doc/classes/@GlobalScope.xml:1301
 msgid "Script failed error."
-msgstr ""
+msgstr "スクリプト失敗エラー。"
 
 #: doc/classes/@GlobalScope.xml:1304
 msgid "Cycling link (import cycle) error."
-msgstr ""
+msgstr "循環リンク(インポート循環)エラー。"
 
 #: doc/classes/@GlobalScope.xml:1307
 msgid "Invalid declaration error."
-msgstr ""
+msgstr "不正な宣言エラー。"
 
 #: doc/classes/@GlobalScope.xml:1310
 msgid "Duplicate symbol error."
-msgstr ""
+msgstr "シンボル重複エラー。"
 
 #: doc/classes/@GlobalScope.xml:1313
 msgid "Parse error."
-msgstr ""
+msgstr "パース エラー。"
 
 #: doc/classes/@GlobalScope.xml:1316
 msgid "Busy error."
-msgstr ""
+msgstr "ビジー エラー。"
 
 #: doc/classes/@GlobalScope.xml:1319
 msgid "Skip error."
-msgstr ""
+msgstr "スキップ エラー。"
 
 #: doc/classes/@GlobalScope.xml:1322
 msgid "Help error."
-msgstr ""
+msgstr "ヘルプ エラー。"
 
 #: doc/classes/@GlobalScope.xml:1325
 msgid "Bug error."
-msgstr ""
+msgstr "バグ エラー。"
 
 #: doc/classes/@GlobalScope.xml:1328
 msgid ""
 "Printer on fire error. (This is an easter egg, no engine methods return this "
 "error code.)"
 msgstr ""
+"プリンター発火エラー。(これはイースターエッグで、このエラーコードを返すエンジ"
+"ンメソッドは無い)"
 
 #: doc/classes/@GlobalScope.xml:1331
+#, fuzzy
 msgid "No hint for the edited property."
-msgstr ""
+msgstr "編集済みプロパティにヒントなし。"
 
 #: doc/classes/@GlobalScope.xml:1334
 msgid ""
@@ -5378,9 +5787,8 @@ msgid ""
 "This node can be used to cause a seek command to happen to any sub-children "
 "of the graph. After setting the time, this value returns to -1."
 msgstr ""
-"Ce nœud peut être utilisé pour faire en sorte qu'une commande de recherche "
-"soit exécutée sur n'importe quel sous-enfant du graphe. Après avoir réglé le "
-"temps, cette valeur revient à -1."
+"このノードは、グラフのどんな副子ノードに対してもシーク命令を送ります。時間を"
+"セットした後は、値は -1 に戻ります。"
 
 #: doc/classes/AnimationNodeTransition.xml:4
 msgid "A generic animation transition node for [AnimationTree]."
@@ -25043,13 +25451,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml:238
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the joypad button (see [enum "
 "JoyButtonList])."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/Input.xml:247
 msgid ""
@@ -47272,184 +47677,138 @@ msgstr ""
 #: doc/classes/String.xml:19
 msgid "Constructs a new String from the given [bool]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [bool] (booléen) "
-"donné."
 
 #: doc/classes/String.xml:28
 msgid "Constructs a new String from the given [int]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [int] (entier) donné."
 
 #: doc/classes/String.xml:37
 msgid "Constructs a new String from the given [float]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [float] (flottant) "
-"donné."
 
 #: doc/classes/String.xml:46
 msgid "Constructs a new String from the given [Vector2]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector2] donné."
 
 #: doc/classes/String.xml:55
 msgid "Constructs a new String from the given [Vector2i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector2i] donné."
 
 #: doc/classes/String.xml:64
 msgid "Constructs a new String from the given [Rect2]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Rect2] donné."
+msgstr ""
 
 #: doc/classes/String.xml:73
 msgid "Constructs a new String from the given [Rect2i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Rect2i] donné."
 
 #: doc/classes/String.xml:82
 msgid "Constructs a new String from the given [Vector3]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector3] donné."
 
 #: doc/classes/String.xml:91
 msgid "Constructs a new String from the given [Vector3i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector3i] donné."
 
 #: doc/classes/String.xml:100
 msgid "Constructs a new String from the given [Transform2D]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Transform2D] donné."
 
 #: doc/classes/String.xml:109
 msgid "Constructs a new String from the given [Plane]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Plane] donné."
+msgstr ""
 
 #: doc/classes/String.xml:118
 msgid "Constructs a new String from the given [Quat]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Quat] donné."
+msgstr ""
 
 #: doc/classes/String.xml:127
 msgid "Constructs a new String from the given [AABB]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [AABB] donné."
+msgstr ""
 
 #: doc/classes/String.xml:136
 msgid "Constructs a new String from the given [Basis]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Basis] donné."
+msgstr ""
 
 #: doc/classes/String.xml:145
 msgid "Constructs a new String from the given [Transform]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Transform] "
-"donnée."
 
 #: doc/classes/String.xml:154
 msgid "Constructs a new String from the given [Color]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Color] (couleur) "
-"donnée."
 
 #: doc/classes/String.xml:163
 msgid "Constructs a new String from the given [StringName]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [StringName] (nom de "
-"la chaîne de caractères) donné."
 
 #: doc/classes/String.xml:172
 msgid "Constructs a new String from the given [NodePath]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [NodePath] (chemin "
-"du nœud) donné."
 
 #: doc/classes/String.xml:181
 msgid "Constructs a new String from the given [RID]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [RID] donné."
+msgstr ""
 
 #: doc/classes/String.xml:190
 msgid "Constructs a new String from the given [Callable]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Callable] donné."
 
 #: doc/classes/String.xml:199
 msgid "Constructs a new String from the given [Signal]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Signal] (signal) "
-"donné."
 
 #: doc/classes/String.xml:208
 msgid "Constructs a new String from the given [Dictionary]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Dictionary]"
-"(dictionaire) donné."
 
 #: doc/classes/String.xml:217
 msgid "Constructs a new String from the given [Array]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Array] donné."
+msgstr ""
 
 #: doc/classes/String.xml:226
 msgid "Constructs a new String from the given [PackedByteArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedByteArray] "
-"donné."
 
 #: doc/classes/String.xml:235
 msgid "Constructs a new String from the given [PackedInt32Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt32Array] "
-"donné."
 
 #: doc/classes/String.xml:244
 msgid "Constructs a new String from the given [PackedInt64Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt64Array] "
-"donné."
 
 #: doc/classes/String.xml:253
 msgid "Constructs a new String from the given [PackedFloat32Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedFloat32Array] "
-"donné."
 
 #: doc/classes/String.xml:262
 msgid "Constructs a new String from the given [PackedFloat64Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedFloat64Array] "
-"donné."
 
 #: doc/classes/String.xml:271
 msgid "Constructs a new String from the given [PackedStringArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedStringArray] "
-"donné."
 
 #: doc/classes/String.xml:280
 msgid "Constructs a new String from the given [PackedVector2Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector2Array] "
-"donné."
 
 #: doc/classes/String.xml:289
 msgid "Constructs a new String from the given [PackedVector3Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector3Array] "
-"donné."
 
 #: doc/classes/String.xml:298
 msgid "Constructs a new String from the given [PackedColorArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedColorArray] "
-"donné."
 
 #: doc/classes/String.xml:307
 msgid "Returns [code]true[/code] if the string begins with the given string."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères commence par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/String.xml:314
 msgid "Returns the bigrams (pairs of consecutive letters) of this string."
 msgstr ""
-"Retourne les bigrammes (paires de lettres consécutives) de cette chaîne de "
-"caractères."
 
 #: doc/classes/String.xml:321
 msgid ""
@@ -47500,26 +47859,20 @@ msgid ""
 "Returns a copy of the string with indentation (leading tabs and spaces) "
 "removed."
 msgstr ""
-"Retourne une copie de la chaîne de caractères avec indentation (tabulations "
-"et espaces antéposés)."
 
 #: doc/classes/String.xml:384
 msgid "Returns [code]true[/code] if the string is empty."
-msgstr "Retourne [code]true[/code] (vrai) si la chaîne de caractères est vide."
+msgstr ""
 
 #: doc/classes/String.xml:393
 msgid "Returns [code]true[/code] if the string ends with the given string."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/String.xml:404
 msgid ""
 "Erases [code]chars[/code] characters from the string starting from "
 "[code]position[/code]."
 msgstr ""
-"Efface [code]chars[/code] les caractères de la chaîne de caractères à partir "
-"de la [code]position[/code]."
 
 #: doc/classes/String.xml:415
 msgid ""
@@ -47527,18 +47880,12 @@ msgid ""
 "the substring or -1 if not found. Optionally, the initial search index can "
 "be passed."
 msgstr ""
-"Trouve la première occurrence d'une sous-chaîne de caractères. Retourne le "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
 
 #: doc/classes/String.xml:424
 msgid ""
 "Finds the last occurrence of a substring. Returns the starting position of "
 "the substring or -1 if not found."
 msgstr ""
-"Trouve la dernière occurence d'une sous-chaîne de caractère. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée."
 
 #: doc/classes/String.xml:435
 msgid ""
@@ -47546,18 +47893,12 @@ msgid ""
 "starting position of the substring or -1 if not found. Optionally, the "
 "initial search index can be passed."
 msgstr ""
-"Trouve la première occurence d'une sous-chaîne de caractères. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
 
 #: doc/classes/String.xml:446
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
 "with [code]values[/code]."
 msgstr ""
-"Formate la chaîne de caractères en remplaçant toutes les occurences de "
-"[code]placeholder[/code] par [code]values[/code]."
 
 #: doc/classes/String.xml:453
 msgid "If the string is a valid file path, returns the base directory name."
@@ -47572,14 +47913,10 @@ msgstr ""
 #: doc/classes/String.xml:467
 msgid "If the string is a valid file path, returns the extension."
 msgstr ""
-"Si la chaîne de caractères est un chemin de fichier valide, retourne "
-"l'extension."
 
 #: doc/classes/String.xml:474
 msgid "If the string is a valid file path, returns the filename."
 msgstr ""
-"Si la chaîne de caractères est un chemin de fichier valide, retourne le nom "
-"du fichier."
 
 #: doc/classes/String.xml:481
 msgid "Hashes the string and returns a 32-bit integer."
@@ -47594,12 +47931,6 @@ msgid ""
 "print(\"0xff\".hex_to_int()) # Print \"255\"\n"
 "[/codeblock]"
 msgstr ""
-"Convertit une chaîne de caractères contenant un nombre en héxadécimal en un "
-"nombre entier (int). Les chaînes de caractères en héxadécimal sont censées "
-"avoir le préfixe \"[code]0x[/code]\" autrement [code]0[/code] est retourné.\n"
-"[codeblock]\n"
-"print(\"0xff\".hex_to_int()) # Affiche \"255\"\n"
-"[/codeblock]"
 
 #: doc/classes/String.xml:498
 msgid ""
@@ -47933,11 +48264,11 @@ msgstr ""
 
 #: doc/classes/String.xml:965
 msgid "Returns the string converted to lowercase."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr ""
 
 #: doc/classes/String.xml:972
 msgid "Returns the string converted to uppercase."
-msgstr "Retourne la chaîne de caractères convertie en majuscules."
+msgstr ""
 
 #: doc/classes/String.xml:979
 msgid ""
@@ -47946,11 +48277,6 @@ msgid ""
 "to_ascii], but supports all UTF-8 characters. Therefore, you should prefer "
 "this function over [method to_ascii]."
 msgstr ""
-"Convertit la chaîne de caractères (qui est un array (tableau) de caractères) "
-"en un [PackedByteArray] (qui est un array de bytes). La conversion est un "
-"plus lente que [method to_ascii], mais est compatible avec tous les "
-"caractères UTF-8. Par conséquent, il est préférable d'utiliser cette "
-"fonction à la place [method to_ascii]."
 
 #: doc/classes/String.xml:988
 msgid ""
@@ -47978,7 +48304,7 @@ msgstr ""
 
 #: doc/classes/StringName.xml:4
 msgid "An optimized string type for unique names."
-msgstr "Un type de chaîne de caractères optimisé pour les noms uniques."
+msgstr ""
 
 #: doc/classes/StringName.xml:7
 msgid ""
@@ -56900,8 +57226,8 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Renvoie l'atténuation en fonction du produit scalaire de la surface normale "
-"et de la direction de la caméra (transmettez-lui les entrées associées)."
+"サーフェス法線とカメラのビュー方向(関連する入力を渡す)の内積に基づいて減衰を"
+"返します。"
 
 #: doc/classes/VisualShaderNodeGlobalExpression.xml:4
 msgid ""
@@ -58328,8 +58654,8 @@ msgid ""
 "Returns [code]true[/code] if the button at index [code]button[/code] is "
 "pressed. See [enum JoyButtonList]."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
+"[code]s[/code] がゼロあるいは、ほぼゼロであれば [code]true[/code] を返しま"
+"す。"
 
 #: doc/classes/XRController3D.xml:71
 msgid ""
@@ -58442,7 +58768,7 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:71
 msgid "Turns the interface off."
-msgstr "Désactive l'interface."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:77
 msgid "On an AR interface, [code]true[/code] if anchor detection is enabled."
@@ -58450,15 +58776,15 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:80
 msgid "[code]true[/code] if this interface been initialized."
-msgstr "[code]true[/code] (vrai) si cette interface a été initialisée."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:83
 msgid "[code]true[/code] if this is the primary interface."
-msgstr "[code]true[/code] (vrai) si c'est l'interface principale."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:88
 msgid "No XR capabilities."
-msgstr "Pas de capacité XR."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:91
 msgid ""
@@ -58467,7 +58793,7 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:94
 msgid "This interface supports stereoscopic rendering."
-msgstr "Cette interface est compatible avec le rendu stéréoscopique."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:97
 msgid "This interface supports AR (video background and real world tracking)."
@@ -58717,8 +59043,6 @@ msgstr ""
 msgid ""
 "Returns a list of available interfaces the ID and name of each interface."
 msgstr ""
-"Retourne une liste des interfaces disponibles avec l'identifiant et le nom "
-"de chaque interface."
 
 #: doc/classes/XRServer.xml:72
 msgid ""
@@ -58767,11 +59091,11 @@ msgstr ""
 
 #: doc/classes/XRServer.xml:126
 msgid "Emitted when a new interface has been added."
-msgstr "Émis lorsqu'une nouvelle interface a été ajoutée."
+msgstr ""
 
 #: doc/classes/XRServer.xml:133
 msgid "Emitted when an interface is removed."
-msgstr "Émis lorsqu'une interface est supprimée."
+msgstr ""
 
 #: doc/classes/XRServer.xml:144
 msgid ""
@@ -58835,7 +59159,7 @@ msgstr ""
 
 #: doc/classes/YSort.xml:4
 msgid "Sort all child nodes based on their Y positions."
-msgstr "Trier tous les nœuds enfants en fonction de leur position sur l'axe Y."
+msgstr ""
 
 #: doc/classes/YSort.xml:7
 msgid ""
@@ -58847,19 +59171,8 @@ msgid ""
 "the same space as the parent YSort, allowing to better organize a scene or "
 "divide it in multiple ones, yet keep the unique sorting."
 msgstr ""
-"Trier tous les nœuds enfants en fonction de leur position sur l'axe Y. Le "
-"nœud enfant doit hériter de [CanvasItem] pour être trié. Les nœuds qui ont "
-"une position plus élevée sur l'axe Y seront dessinés plus tard, ils "
-"apparaîtront donc au-dessus des nœuds ayant une position sur l'axe Y plus "
-"basse.\n"
-"L'imbrication des nœuds YSort est possible. Les nœuds YSort enfants seront "
-"triés dans le même espace que le nœud YSort parent, ce qui permet de mieux "
-"organiser une scène ou de la diviser en plusieurs autres, tout en conservant "
-"le tri unique."
 
 #: doc/classes/YSort.xml:16
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-"Si [code]true[/code] (vrai), les nœuds enfants sont triés, sinon le tri est "
-"désactivé."
