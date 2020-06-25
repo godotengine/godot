@@ -758,37 +758,37 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						bone_painting_bone = bone_selected;
 					}
 				}
+			} else {
+				if (uv_drag && !uv_create) {
+					if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
+						undo_redo->create_action(TTR("Transform UV Map"));
+						undo_redo->add_do_method(node, "set_uv", node->get_uv());
+						undo_redo->add_undo_method(node, "set_uv", points_prev);
+						undo_redo->add_do_method(uv_edit_draw, "update");
+						undo_redo->add_undo_method(uv_edit_draw, "update");
+						undo_redo->commit_action();
+					} else if (uv_edit_mode[1]->is_pressed() && uv_move_current == UV_MODE_EDIT_POINT) { // Edit polygon.
+						undo_redo->create_action(TTR("Transform Polygon"));
+						undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
+						undo_redo->add_undo_method(node, "set_polygon", points_prev);
+						undo_redo->add_do_method(uv_edit_draw, "update");
+						undo_redo->add_undo_method(uv_edit_draw, "update");
+						undo_redo->commit_action();
+					}
 
-			} else if (uv_drag && !uv_create) {
-
-				if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
-					undo_redo->create_action(TTR("Transform UV Map"));
-					undo_redo->add_do_method(node, "set_uv", node->get_uv());
-					undo_redo->add_undo_method(node, "set_uv", points_prev);
-					undo_redo->add_do_method(uv_edit_draw, "update");
-					undo_redo->add_undo_method(uv_edit_draw, "update");
-					undo_redo->commit_action();
-				} else if (uv_edit_mode[1]->is_pressed() && uv_move_current == UV_MODE_EDIT_POINT) { // Edit polygon.
-					undo_redo->create_action(TTR("Transform Polygon"));
-					undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
-					undo_redo->add_undo_method(node, "set_polygon", points_prev);
-					undo_redo->add_do_method(uv_edit_draw, "update");
-					undo_redo->add_undo_method(uv_edit_draw, "update");
-					undo_redo->commit_action();
+					uv_drag = false;
 				}
 
-				uv_drag = false;
-			} else if (bone_painting) {
-
-				undo_redo->create_action(TTR("Paint Bone Weights"));
-				undo_redo->add_do_method(node, "set_bone_weights", bone_painting_bone, node->get_bone_weights(bone_painting_bone));
-				undo_redo->add_undo_method(node, "set_bone_weights", bone_painting_bone, prev_weights);
-				undo_redo->add_do_method(uv_edit_draw, "update");
-				undo_redo->add_undo_method(uv_edit_draw, "update");
-				undo_redo->commit_action();
-				bone_painting = false;
+				if (bone_painting) {
+					undo_redo->create_action(TTR("Paint Bone Weights"));
+					undo_redo->add_do_method(node, "set_bone_weights", bone_painting_bone, node->get_bone_weights(bone_painting_bone));
+					undo_redo->add_undo_method(node, "set_bone_weights", bone_painting_bone, prev_weights);
+					undo_redo->add_do_method(uv_edit_draw, "update");
+					undo_redo->add_undo_method(uv_edit_draw, "update");
+					undo_redo->commit_action();
+					bone_painting = false;
+				}
 			}
-
 		} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
 			_cancel_editing();
