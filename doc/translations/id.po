@@ -1,73 +1,67 @@
-# French translation of the Godot Engine class reference.
+# Indonesian translation of the Godot Engine class reference.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Rémi Verschelde <remi@godotengine.org>, 2020.
-# Freyja <aerandil@gmail.com>, 2020.
-# Gol.D.eNI <eniolamy1@gmail.com>, 2020.
-# Anonymous <noreply@weblate.org>, 2020.
-# Nathan <bonnemainsnathan@gmail.com>, 2020.
-# Fox Lahoki <alexbar@live.fr>, 2020.
+# Sofyan Sugianto <sofyanartem@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-18 00:28+0000\n"
-"Last-Translator: Fox Lahoki <alexbar@live.fr>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot-class-reference/fr/>\n"
-"Language: fr\n"
+"PO-Revision-Date: 2020-06-03 20:09+0000\n"
+"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/id/>\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 4.1-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
-msgstr "Description"
+msgstr "Deskripsi"
 
 #: doc/tools/makerst.py
 msgid "Tutorials"
-msgstr "Tutoriels"
+msgstr "Tutorial"
 
 #: doc/tools/makerst.py
 msgid "Properties"
-msgstr "Propriétés"
+msgstr "Properti"
 
 #: doc/tools/makerst.py
 msgid "Methods"
-msgstr "Méthodes"
+msgstr "Method"
 
 #: doc/tools/makerst.py
 msgid "Theme Properties"
-msgstr "Propriétés du thème"
+msgstr "Properti Tema"
 
 #: doc/tools/makerst.py
 msgid "Signals"
-msgstr "Signaux"
+msgstr "Sinyal"
 
 #: doc/tools/makerst.py
 msgid "Enumerations"
-msgstr "Énumérations"
+msgstr "Enumerasi"
 
 #: doc/tools/makerst.py
 msgid "Constants"
-msgstr "Constantes"
+msgstr "Konstanta"
 
 #: doc/tools/makerst.py
 msgid "Property Descriptions"
-msgstr "Description des propriétés"
+msgstr "Deskripsi Properti"
 
 #: doc/tools/makerst.py
 msgid "Method Descriptions"
-msgstr "Descriptions des méthodes"
+msgstr "Deskripsi Method"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr "Fonctions intégrées à GDScript."
+msgstr "Fungsi bawaan GDScript."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -75,10 +69,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
-"Liste de fonctions de base intégrées à GDScript. Fonctions mathématiques et "
-"autres fonctions utilitaires. Toutes les autres fonctionnalités sont "
-"fournies directement par les objets. (Mots-clés : builtin, built-in, "
-"intégré, intégrées, fonctions de base, fonctions globales.)"
+"Daftar fungsi bawaan GDScript. Fungsi matematika dan utilitas lain. Segala "
+"sesuatu yang lain disediakan oleh objek. (Kata kunci: builtin, built in, "
+"fungsi global.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""
@@ -93,13 +86,12 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une couleur construite à partir d'entiers représentants les canaux "
-"rouge, vert, bleu et alpha. Chaque canal devrait comporter 8 bits "
-"d'information allant de 0 à 255.\n"
-"[code]r8[/code] canal rouge\n"
-"[code]g8[/code] canal vert\n"
-"[code]b8[/code] canal bleu\n"
-"[code]a8[/code] canal alpha\n"
+"Mengembalikan warna yang dibangun dari kanal integer merah, hijau, biru, dan "
+"alfa. Setiap kanal harus memiliki 8 bit informasi mulai dari 0 hingga 255.\n"
+"[code]r8[/code] kanal merah\n"
+"[code]g8[/code] kanal hijau\n"
+"[code]b8[/code] kanal biru\n"
+"[code]a8[/code] kanal alpha\n"
 "[codeblock]\n"
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
@@ -113,13 +105,13 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
-"Renvoie une couleur selon la norme [code]name[/code] avec [code]alpha[/code] "
-"allant de 0 à 1.\n"
+"Mengembalikan warna sesuai dengan standar [code]nama[/code] dengan "
+"[code]alfa[/code] berkisar dari 0 sampai 1.\n"
 "[codeblock]\n"
-"red = ColorN(\"red\", 1)\n"
+"red = ColorN(\"red\",1)\n"
 "[/codeblock]\n"
-"Les noms de couleurs pris en charge sont les mêmes que les constantes "
-"définies dans [Color]."
+"Nama-nama warna yang didukung sesuai dengan konstanta yang didefinisikan "
+"dalam [Color]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
 msgid ""
@@ -130,10 +122,10 @@ msgid ""
 "a = abs(-1)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la valeur absolue du paramètre [code]s[/code] (par ex. valeur non "
-"signée, fonctionne pour entier et flottant).\n"
+"Mengembalikan nilai absolut dari parameter [code]s[/code] (contoh: unsigned "
+"value, berfungsi untuk integer and float).\n"
 "[codeblock]\n"
-"# a is 1\n"
+"# nilai a adalah 1\n"
 "a = abs(-1)\n"
 "[/codeblock]"
 
@@ -146,12 +138,6 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus inverse de [code]s[/code] en radians. Utiliser pour "
-"obtenir l'angle du cosinus [code]s[/code].\n"
-"[codeblock]\n"
-"# c vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
-"c = acos(0.866025)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:81
 msgid ""
@@ -162,12 +148,6 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le sinus inverse de [code]s[/code] en radians. Utiliser pour obtenir "
-"l'angle du sinus [code]s[/code].\n"
-"[codeblock]\n"
-"# s vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
-"s = asin(0.5)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:96
 msgid ""
@@ -190,27 +170,6 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
-"Vérifie que la [code]condition[/code] est [code]vraie[/code]. Si la "
-"[code]condition[/code] est [code]fausse[/code], une erreur est générée et le "
-"programme est interrompu jusqu'à ce que vous le redémarriez. Ne s'exécute "
-"que pour les builds de débogage, ou quand vous lancez votre jeu depuis "
-"l'éditeur. Utilisez ceci à des fins de débogage, pour vous assurer qu'une "
-"déclaration est [code]vraie[/ code] au cours du développement.\n"
-"L'argument facultatif [code]message[/code], s'il est donné, est affiché en "
-"plus du message générique « Échec de l'assertion ». Vous pouvez l'utiliser "
-"pour fournir des détails supplémentaires sur la raison de l'échec de "
-"l'assertion.\n"
-"[codeblock]\n"
-"# Imaginez que nous voulons toujours que la vitesse soit comprise entre 0 et "
-"20\n"
-"speed = -10\n"
-"assert(speed < 20) # Vrai, le programme continue\n"
-"assert(speed >= 0) # Faux, le programme s'interrompt\n"
-"assert(speed >= 0 && speed < 20) # Vous pouvez aussi combiner les deux "
-"conditionnelles en une seule vérification\n"
-"assert(speed < 20, \"speed = %f, mais la limite de vitesse est 20\" % speed) "
-"# Affiche un message avec la clarification des détails\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:114
 msgid ""
@@ -223,14 +182,6 @@ msgid ""
 "a = atan(0.5) # a is 0.463648\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la tangente inverse de [code]s[/code] en radians. Utilisez ceci pour "
-"obtenir l'angle à partir de la tangente d'un angle en trigonométrie : "
-"[code]atan(tan(angle)) == angle[/code].\n"
-"La méthode ne peut pas savoir dans quel quart de cercle l'angle doit se "
-"situer. Voir [method atan2] si vous voulez toujours un angle exact.\n"
-"[codeblock]\n"
-"a = atan(0.5) # a vaut 0.463648\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:129
 msgid ""
@@ -241,13 +192,6 @@ msgid ""
 "a = atan2(0, -1) # a is 3.141593\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la tangente inverse de [code] y/x [/code] en radians. Utilisez ceci "
-"pour obtenir l'angle de la tangente [code] y/x [/code]. Pour calculer la "
-"valeur, la méthode prend en compte le signe des deux arguments afin de "
-"déterminer l'arc de cercle.\n"
-"[codeblock]\n"
-"a = atan2(0, -1) # a vaut 3.141593\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:143
 msgid ""
@@ -257,13 +201,6 @@ msgid ""
 "not use this option if the serialized object comes from untrusted sources to "
 "avoid potential security threats (remote code execution)."
 msgstr ""
-"Déchiffre un tableau d'octets pour le ramener à une valeur. Lorsque "
-"[code]allow_objects[/code] est défini à [code]true[/code] (vrai), le "
-"déchiffrage des objets est autorisé.\n"
-"[b]ATTENTION :[/b] L'objet désérialisé peut contenir du code qui sera "
-"exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
-"sources non fiables afin d'éviter d'éventuelles menaces de sécurité "
-"(exécution de code distant)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:155
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:145
@@ -272,9 +209,6 @@ msgid ""
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
-"Convertit un point 2D exprimé dans le système de coordonnées cartésiennes "
-"(axes X et Y) vers le système de coordonnées polaires (une distance par "
-"rapport à l'origine et un angle)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:164
 msgid ""
@@ -285,12 +219,6 @@ msgid ""
 "i = ceil(1.001) # i is 2\n"
 "[/codeblock]"
 msgstr ""
-"Arrondit [code]s[/code] au supérieur, et renvoie la plus petite valeur "
-"entière qui n'est pas inférieure à [code]s[/code].\n"
-"[codeblock]\n"
-"i = ceil(1.45)  # i vaut 2\n"
-"i = ceil(1.001) # i vaut 2\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:177
 msgid ""
@@ -303,14 +231,6 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
-"Renvoie un caractère au format chaîne de caractère correspondant à la valeur "
-"Unicode donnée (compatible avec le code ASCII).\n"
-"[codeblock]\n"
-"a = char(65)      # a vaut « A »\n"
-"a = char(65 + 32) # a vaut « a »\n"
-"a = char(8364)    # a vaut « € »\n"
-"[/codeblock]\n"
-"C'est l'inverse de [method ord]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:196
 msgid ""
@@ -326,17 +246,6 @@ msgid ""
 "a = clamp(speed, 1, 20)\n"
 "[/codeblock]"
 msgstr ""
-"Fixe une [code]value[/code] (valeur) et renvoie la valeur comprise entre "
-"[code]min[/code] et [code]max[/code].\n"
-"[codeblock]\n"
-"vitesse = 1000\n"
-"# a vaut 20\n"
-"a = clamp(vitesse, 1, 20)\n"
-"\n"
-"vitesse = -10\n"
-"# a vaut 1\n"
-"a = clamp(vitesse, 1, 20)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:216
 msgid ""
@@ -351,16 +260,6 @@ msgid ""
 "print(a.length())\n"
 "[/codeblock]"
 msgstr ""
-"Convertit un type en un autre de la meilleure façon possible. Le paramètre "
-"[code]type[/code] utilise les valeurs de [enum Variant.Type].\n"
-"[codeblock]\n"
-"a = Vector2(1, 0)\n"
-"# Renvoie 1\n"
-"print(a.length())\n"
-"a = convert(a, TYPE_STRING)\n"
-"# Renvoie 6 car « (1, 0) » fait 6 caractères\n"
-"print(a.length())\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:233
 msgid ""
@@ -371,12 +270,6 @@ msgid ""
 "print(cos(PI))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus de l'angle [code]s[/code] en radians.\n"
-"[codeblock]\n"
-"# Renvoie 1 puis -1\n"
-"print(cos(PI * 2))\n"
-"print(cos(PI))\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:247
 msgid ""
@@ -386,15 +279,10 @@ msgid ""
 "print(cosh(1))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus hyperbolique de [code]s[/code] en radians.\n"
-"[codeblock]\n"
-"# Renvoie 1.543081\n"
-"print(cosh(1))\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:260
 msgid "Converts from decibels to linear energy (audio)."
-msgstr "Convertit les décibels en énergie linéaire (audio)."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:273
 msgid ""
@@ -405,12 +293,6 @@ msgid ""
 "a = dectime(60, 10, 0.1))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le résultat de [code]valeur[/code] diminuée par [code]étape[/code] * "
-"[code]quantité[/code].\n"
-"[codeblock]\n"
-"# a = 59\n"
-"a = dectime(60, 10, 0.1))\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:286
 msgid ""
@@ -420,19 +302,12 @@ msgid ""
 "r = deg2rad(180)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la conversion des degrés en radians.\n"
-"[codeblock]\n"
-"# r vaut 3.141593\n"
-"r = deg2rad(180)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:299
 msgid ""
 "Converts a previously converted instance to a dictionary, back into an "
 "instance. Useful for deserializing."
 msgstr ""
-"Convertit une instance précédemment convertie en dictionnaire, puis la "
-"convertit à nouveau en instance. Utile pour la désérialisation."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:310
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:90
@@ -451,13 +326,6 @@ msgid ""
 "a = exp(2) # Approximately 7.39\n"
 "[/codeblock]"
 msgstr ""
-"La fonction exponentielle naturelle. Elle élève la constante mathématique "
-"[b]e[/b] à la puissance de [code]s[/code] et la renvoie.\n"
-"[b]e[/b] a une valeur approximative de 2,71828.\n"
-"Pour les exposants vers d'autres bases, utilisez la méthode [method pow].\n"
-"[codeblock]\n"
-"a = exp(2) # Environ 7.39\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:333
 msgid ""
@@ -471,16 +339,6 @@ msgid ""
 "[b]Note:[/b] This method returns a float. If you need an integer, you can "
 "use [code]int(s)[/code] directly."
 msgstr ""
-"Arrondit [code]s[/code] à l'entier inférieur le plus proche et le renvoie.\n"
-"[codeblock]\n"
-"# a vaut 2.0\n"
-"a = floor(2.99)\n"
-"# a vaut -3.0\n"
-"a = floor(-2.99)\n"
-"[/codeblock]\n"
-"[b]Remarque :[/b] Cette méthode renvoie un nombre flottant. Si vous avez "
-"besoin d'un nombre entier, vous pouvez utiliser directement [code]int(s)[/"
-"code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:351
 msgid ""
@@ -492,13 +350,6 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
-"Renvoie le reste en virgule flottante de [code]a/b[/code], en conservant le "
-"signe de [code]a[/code].\n"
-"[codeblock]\n"
-"# Le reste vaut 1.5\n"
-"var reste = fmod(7, 5.5)\n"
-"[/codeblock]\n"
-"Pour l'opération de reste entier, utilisez l'opérateur %."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:367
 msgid ""
@@ -525,28 +376,6 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le modulo en virgule flottante de [code]a/b[/code] qui englobe aussi "
-"bien le positif que le négatif.\n"
-"[codeblock]\n"
-"var i = -6\n"
-"while i < 5:\n"
-"    prints(i, fposmod(i, 3))\n"
-"    i += 1\n"
-"[/codeblock]\n"
-"Donne :\n"
-"[codeblock]\n"
-"-6 0\n"
-"-5 1\n"
-"-4 2\n"
-"-3 0\n"
-"-2 1\n"
-"-1 2\n"
-"0 0\n"
-"1 1\n"
-"2 2\n"
-"3 0\n"
-"4 1\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:398
 msgid ""
@@ -562,17 +391,6 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une référence à la fonction spécifiée [code]funcname[/code] dans le "
-"nœud  de [code]instance[/code]. Comme les fonctions ne sont pas des objets "
-"de première classe  en GDscript, utilisez [code]funcref[/code] pour stocker "
-"une [FuncRef] dans une variable et l'appeler plus tard.\n"
-"[codeblock]\n"
-"func titi():\n"
-"    return(\"toto\")\n"
-"\n"
-"a = funcref(self, \"titi\")\n"
-"print(a.call_func()) # Affiche toto\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:412
 msgid ""
@@ -593,22 +411,6 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie un tableau de dictionnaires représentant la pile d'appels en cours.\n"
-"[codeblock]\n"
-"func _ready():\n"
-"    titi()\n"
-"\n"
-"func titi():\n"
-"    toto()\n"
-"\n"
-"func toto():\n"
-"    print(get_stack())\n"
-"[/codeblock]\n"
-"renverra\n"
-"[codeblock]\n"
-"[{function:toto, line:12, source:res://script.gd}, {function:titi, line:9, "
-"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:435
 msgid ""
@@ -617,10 +419,6 @@ msgid ""
 "print(hash(\"a\")) # Prints 177670\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le hachage en entier de la variable passée.\n"
-"[codeblock]\n"
-"print(hash(\"a\")) # Affiche 177670\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:447
 msgid ""
@@ -639,20 +437,6 @@ msgid ""
 "[, res://test.gd, bar]\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie l'instance passée convertie en dictionnaire (utile pour la "
-"sérialisation).\n"
-"[codeblock]\n"
-"var titi = \"toto\"\n"
-"func _ready():\n"
-"    var d = inst2dict(self)\n"
-"    print(d.keys())\n"
-"    print(d.values())\n"
-"[/codeblock]\n"
-"Affiche :\n"
-"[codeblock]\n"
-"[@subpath, @path, titi]\n"
-"[, res://test.gd, toto]\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:468
 msgid ""
@@ -666,15 +450,6 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie l'objet correspondant à l'[code]instance_id[/code]. Tous les objets "
-"ont un identifiant d'instance unique.\n"
-"[codeblock]\n"
-"var titi = \"toto\"\n"
-"func _ready():\n"
-"    var id = get_instance_id()\n"
-"    var inst = instance_from_id(id)\n"
-"    print(inst.titi) # Affiche toto\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:488
 msgid ""
@@ -689,50 +464,32 @@ msgid ""
 "# `ratio` is now 0.75.\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une valeur normalisée en tenant compte de la fourchette donnée. "
-"C'est l'inverse de [method lerp].\n"
-"[codeblock]\n"
-"var milieu = lerp(20, 30, 0.75)\n"
-"# `milieu` vaut maintenant 27.5.\n"
-"# Maintenant, nous prétendons avoir oublié le ratio d'origine et nous "
-"voulons le récupérer.\n"
-"var ratio = inverse_lerp(20, 30, 27.5)\n"
-"# `ratio` vaut maintenant 0.75.\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:506
 msgid ""
 "Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are "
 "approximately equal to each other."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]a[/code] et [code]b[/code] sont "
-"approximativement égaux l'un à l'autre."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:515
 msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
-"Renvoie si [code]s[/code] est une valeur infinie (infini positif ou infini "
-"négatif)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:524
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
-"Renvoie si [code]instance[/code] est un objet valide (par ex. s'il n'a pas "
-"été supprimé de la mémoire)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:533
 msgid "Returns whether [code]s[/code] is a NaN (Not-A-Number) value."
-msgstr "Renvoie si [code]s[/code] est une valeur NaN (Not-A-Number)."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:542
 msgid "Returns [code]true[/code] if [code]s[/code] is zero or almost zero."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:551
 msgid ""
@@ -744,15 +501,6 @@ msgid ""
 "len(a) # Returns 4\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la longueur de la variable [code]var[/code]. La longueur est le "
-"nombre de caractères pour une chaîne de caractères, le nombre d'éléments "
-"pour un tableau, la taille pour un dictionnaire, etc.\n"
-"[b]Remarque :[/b] Génère une erreur fatale si la variable n'a pas de "
-"longueur possible.\n"
-"[codeblock]\n"
-"a = [1, 2, 3, 4]\n"
-"len(a) # Renvoie 4\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:569
 msgid ""
@@ -834,11 +582,6 @@ msgid ""
 "max(-3.99, -4) # Returns -3.99\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le maximum entre deux valeurs.\n"
-"[codeblock]\n"
-"max(1, 2) # Renvoie 2\n"
-"max(-3.99, -4) # Renvoie -3.99\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:667
 msgid ""
@@ -848,11 +591,6 @@ msgid ""
 "min(-3.99, -4) # Returns -4\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le minimum entre deux valeurs.\n"
-"[codeblock]\n"
-"min(1, 2) # Renvoie 1\n"
-"min(-3.99, -4) # Renvoie -4\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:684
 msgid ""
@@ -5378,9 +5116,6 @@ msgid ""
 "This node can be used to cause a seek command to happen to any sub-children "
 "of the graph. After setting the time, this value returns to -1."
 msgstr ""
-"Ce nœud peut être utilisé pour faire en sorte qu'une commande de recherche "
-"soit exécutée sur n'importe quel sous-enfant du graphe. Après avoir réglé le "
-"temps, cette valeur revient à -1."
 
 #: doc/classes/AnimationNodeTransition.xml:4
 msgid "A generic animation transition node for [AnimationTree]."
@@ -25043,13 +24778,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml:238
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the joypad button (see [enum "
 "JoyButtonList])."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/Input.xml:247
 msgid ""
@@ -47272,184 +47004,138 @@ msgstr ""
 #: doc/classes/String.xml:19
 msgid "Constructs a new String from the given [bool]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [bool] (booléen) "
-"donné."
 
 #: doc/classes/String.xml:28
 msgid "Constructs a new String from the given [int]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [int] (entier) donné."
 
 #: doc/classes/String.xml:37
 msgid "Constructs a new String from the given [float]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [float] (flottant) "
-"donné."
 
 #: doc/classes/String.xml:46
 msgid "Constructs a new String from the given [Vector2]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector2] donné."
 
 #: doc/classes/String.xml:55
 msgid "Constructs a new String from the given [Vector2i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector2i] donné."
 
 #: doc/classes/String.xml:64
 msgid "Constructs a new String from the given [Rect2]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Rect2] donné."
+msgstr ""
 
 #: doc/classes/String.xml:73
 msgid "Constructs a new String from the given [Rect2i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Rect2i] donné."
 
 #: doc/classes/String.xml:82
 msgid "Constructs a new String from the given [Vector3]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector3] donné."
 
 #: doc/classes/String.xml:91
 msgid "Constructs a new String from the given [Vector3i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector3i] donné."
 
 #: doc/classes/String.xml:100
 msgid "Constructs a new String from the given [Transform2D]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Transform2D] donné."
 
 #: doc/classes/String.xml:109
 msgid "Constructs a new String from the given [Plane]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Plane] donné."
+msgstr ""
 
 #: doc/classes/String.xml:118
 msgid "Constructs a new String from the given [Quat]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Quat] donné."
+msgstr ""
 
 #: doc/classes/String.xml:127
 msgid "Constructs a new String from the given [AABB]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [AABB] donné."
+msgstr ""
 
 #: doc/classes/String.xml:136
 msgid "Constructs a new String from the given [Basis]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Basis] donné."
+msgstr ""
 
 #: doc/classes/String.xml:145
 msgid "Constructs a new String from the given [Transform]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Transform] "
-"donnée."
 
 #: doc/classes/String.xml:154
 msgid "Constructs a new String from the given [Color]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Color] (couleur) "
-"donnée."
 
 #: doc/classes/String.xml:163
 msgid "Constructs a new String from the given [StringName]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [StringName] (nom de "
-"la chaîne de caractères) donné."
 
 #: doc/classes/String.xml:172
 msgid "Constructs a new String from the given [NodePath]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [NodePath] (chemin "
-"du nœud) donné."
 
 #: doc/classes/String.xml:181
 msgid "Constructs a new String from the given [RID]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [RID] donné."
+msgstr ""
 
 #: doc/classes/String.xml:190
 msgid "Constructs a new String from the given [Callable]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Callable] donné."
 
 #: doc/classes/String.xml:199
 msgid "Constructs a new String from the given [Signal]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Signal] (signal) "
-"donné."
 
 #: doc/classes/String.xml:208
 msgid "Constructs a new String from the given [Dictionary]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Dictionary]"
-"(dictionaire) donné."
 
 #: doc/classes/String.xml:217
 msgid "Constructs a new String from the given [Array]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Array] donné."
+msgstr ""
 
 #: doc/classes/String.xml:226
 msgid "Constructs a new String from the given [PackedByteArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedByteArray] "
-"donné."
 
 #: doc/classes/String.xml:235
 msgid "Constructs a new String from the given [PackedInt32Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt32Array] "
-"donné."
 
 #: doc/classes/String.xml:244
 msgid "Constructs a new String from the given [PackedInt64Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt64Array] "
-"donné."
 
 #: doc/classes/String.xml:253
 msgid "Constructs a new String from the given [PackedFloat32Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedFloat32Array] "
-"donné."
 
 #: doc/classes/String.xml:262
 msgid "Constructs a new String from the given [PackedFloat64Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedFloat64Array] "
-"donné."
 
 #: doc/classes/String.xml:271
 msgid "Constructs a new String from the given [PackedStringArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedStringArray] "
-"donné."
 
 #: doc/classes/String.xml:280
 msgid "Constructs a new String from the given [PackedVector2Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector2Array] "
-"donné."
 
 #: doc/classes/String.xml:289
 msgid "Constructs a new String from the given [PackedVector3Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector3Array] "
-"donné."
 
 #: doc/classes/String.xml:298
 msgid "Constructs a new String from the given [PackedColorArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedColorArray] "
-"donné."
 
 #: doc/classes/String.xml:307
 msgid "Returns [code]true[/code] if the string begins with the given string."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères commence par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/String.xml:314
 msgid "Returns the bigrams (pairs of consecutive letters) of this string."
 msgstr ""
-"Retourne les bigrammes (paires de lettres consécutives) de cette chaîne de "
-"caractères."
 
 #: doc/classes/String.xml:321
 msgid ""
@@ -47500,26 +47186,20 @@ msgid ""
 "Returns a copy of the string with indentation (leading tabs and spaces) "
 "removed."
 msgstr ""
-"Retourne une copie de la chaîne de caractères avec indentation (tabulations "
-"et espaces antéposés)."
 
 #: doc/classes/String.xml:384
 msgid "Returns [code]true[/code] if the string is empty."
-msgstr "Retourne [code]true[/code] (vrai) si la chaîne de caractères est vide."
+msgstr ""
 
 #: doc/classes/String.xml:393
 msgid "Returns [code]true[/code] if the string ends with the given string."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/String.xml:404
 msgid ""
 "Erases [code]chars[/code] characters from the string starting from "
 "[code]position[/code]."
 msgstr ""
-"Efface [code]chars[/code] les caractères de la chaîne de caractères à partir "
-"de la [code]position[/code]."
 
 #: doc/classes/String.xml:415
 msgid ""
@@ -47527,18 +47207,12 @@ msgid ""
 "the substring or -1 if not found. Optionally, the initial search index can "
 "be passed."
 msgstr ""
-"Trouve la première occurrence d'une sous-chaîne de caractères. Retourne le "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
 
 #: doc/classes/String.xml:424
 msgid ""
 "Finds the last occurrence of a substring. Returns the starting position of "
 "the substring or -1 if not found."
 msgstr ""
-"Trouve la dernière occurence d'une sous-chaîne de caractère. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée."
 
 #: doc/classes/String.xml:435
 msgid ""
@@ -47546,18 +47220,12 @@ msgid ""
 "starting position of the substring or -1 if not found. Optionally, the "
 "initial search index can be passed."
 msgstr ""
-"Trouve la première occurence d'une sous-chaîne de caractères. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
 
 #: doc/classes/String.xml:446
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
 "with [code]values[/code]."
 msgstr ""
-"Formate la chaîne de caractères en remplaçant toutes les occurences de "
-"[code]placeholder[/code] par [code]values[/code]."
 
 #: doc/classes/String.xml:453
 msgid "If the string is a valid file path, returns the base directory name."
@@ -47572,14 +47240,10 @@ msgstr ""
 #: doc/classes/String.xml:467
 msgid "If the string is a valid file path, returns the extension."
 msgstr ""
-"Si la chaîne de caractères est un chemin de fichier valide, retourne "
-"l'extension."
 
 #: doc/classes/String.xml:474
 msgid "If the string is a valid file path, returns the filename."
 msgstr ""
-"Si la chaîne de caractères est un chemin de fichier valide, retourne le nom "
-"du fichier."
 
 #: doc/classes/String.xml:481
 msgid "Hashes the string and returns a 32-bit integer."
@@ -47594,12 +47258,6 @@ msgid ""
 "print(\"0xff\".hex_to_int()) # Print \"255\"\n"
 "[/codeblock]"
 msgstr ""
-"Convertit une chaîne de caractères contenant un nombre en héxadécimal en un "
-"nombre entier (int). Les chaînes de caractères en héxadécimal sont censées "
-"avoir le préfixe \"[code]0x[/code]\" autrement [code]0[/code] est retourné.\n"
-"[codeblock]\n"
-"print(\"0xff\".hex_to_int()) # Affiche \"255\"\n"
-"[/codeblock]"
 
 #: doc/classes/String.xml:498
 msgid ""
@@ -47933,11 +47591,11 @@ msgstr ""
 
 #: doc/classes/String.xml:965
 msgid "Returns the string converted to lowercase."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr ""
 
 #: doc/classes/String.xml:972
 msgid "Returns the string converted to uppercase."
-msgstr "Retourne la chaîne de caractères convertie en majuscules."
+msgstr ""
 
 #: doc/classes/String.xml:979
 msgid ""
@@ -47946,11 +47604,6 @@ msgid ""
 "to_ascii], but supports all UTF-8 characters. Therefore, you should prefer "
 "this function over [method to_ascii]."
 msgstr ""
-"Convertit la chaîne de caractères (qui est un array (tableau) de caractères) "
-"en un [PackedByteArray] (qui est un array de bytes). La conversion est un "
-"plus lente que [method to_ascii], mais est compatible avec tous les "
-"caractères UTF-8. Par conséquent, il est préférable d'utiliser cette "
-"fonction à la place [method to_ascii]."
 
 #: doc/classes/String.xml:988
 msgid ""
@@ -47978,7 +47631,7 @@ msgstr ""
 
 #: doc/classes/StringName.xml:4
 msgid "An optimized string type for unique names."
-msgstr "Un type de chaîne de caractères optimisé pour les noms uniques."
+msgstr ""
 
 #: doc/classes/StringName.xml:7
 msgid ""
@@ -56900,8 +56553,6 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Renvoie l'atténuation en fonction du produit scalaire de la surface normale "
-"et de la direction de la caméra (transmettez-lui les entrées associées)."
 
 #: doc/classes/VisualShaderNodeGlobalExpression.xml:4
 msgid ""
@@ -58323,13 +57974,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/XRController3D.xml:65
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the button at index [code]button[/code] is "
 "pressed. See [enum JoyButtonList]."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
 
 #: doc/classes/XRController3D.xml:71
 msgid ""
@@ -58442,7 +58090,7 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:71
 msgid "Turns the interface off."
-msgstr "Désactive l'interface."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:77
 msgid "On an AR interface, [code]true[/code] if anchor detection is enabled."
@@ -58450,15 +58098,15 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:80
 msgid "[code]true[/code] if this interface been initialized."
-msgstr "[code]true[/code] (vrai) si cette interface a été initialisée."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:83
 msgid "[code]true[/code] if this is the primary interface."
-msgstr "[code]true[/code] (vrai) si c'est l'interface principale."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:88
 msgid "No XR capabilities."
-msgstr "Pas de capacité XR."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:91
 msgid ""
@@ -58467,7 +58115,7 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:94
 msgid "This interface supports stereoscopic rendering."
-msgstr "Cette interface est compatible avec le rendu stéréoscopique."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:97
 msgid "This interface supports AR (video background and real world tracking)."
@@ -58717,8 +58365,6 @@ msgstr ""
 msgid ""
 "Returns a list of available interfaces the ID and name of each interface."
 msgstr ""
-"Retourne une liste des interfaces disponibles avec l'identifiant et le nom "
-"de chaque interface."
 
 #: doc/classes/XRServer.xml:72
 msgid ""
@@ -58767,11 +58413,11 @@ msgstr ""
 
 #: doc/classes/XRServer.xml:126
 msgid "Emitted when a new interface has been added."
-msgstr "Émis lorsqu'une nouvelle interface a été ajoutée."
+msgstr ""
 
 #: doc/classes/XRServer.xml:133
 msgid "Emitted when an interface is removed."
-msgstr "Émis lorsqu'une interface est supprimée."
+msgstr ""
 
 #: doc/classes/XRServer.xml:144
 msgid ""
@@ -58835,7 +58481,7 @@ msgstr ""
 
 #: doc/classes/YSort.xml:4
 msgid "Sort all child nodes based on their Y positions."
-msgstr "Trier tous les nœuds enfants en fonction de leur position sur l'axe Y."
+msgstr ""
 
 #: doc/classes/YSort.xml:7
 msgid ""
@@ -58847,19 +58493,8 @@ msgid ""
 "the same space as the parent YSort, allowing to better organize a scene or "
 "divide it in multiple ones, yet keep the unique sorting."
 msgstr ""
-"Trier tous les nœuds enfants en fonction de leur position sur l'axe Y. Le "
-"nœud enfant doit hériter de [CanvasItem] pour être trié. Les nœuds qui ont "
-"une position plus élevée sur l'axe Y seront dessinés plus tard, ils "
-"apparaîtront donc au-dessus des nœuds ayant une position sur l'axe Y plus "
-"basse.\n"
-"L'imbrication des nœuds YSort est possible. Les nœuds YSort enfants seront "
-"triés dans le même espace que le nœud YSort parent, ce qui permet de mieux "
-"organiser une scène ou de la diviser en plusieurs autres, tout en conservant "
-"le tri unique."
 
 #: doc/classes/YSort.xml:16
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-"Si [code]true[/code] (vrai), les nœuds enfants sont triés, sinon le tri est "
-"désactivé."
