@@ -154,14 +154,14 @@ void Node::_notification(int p_notification) {
 			data.in_constructor = false;
 		} break;
 		case NOTIFICATION_PREDELETE: {
-			set_owner(nullptr);
-
-			while (data.owned.size()) {
-				data.owned.front()->get()->set_owner(nullptr);
-			}
-
 			if (data.parent) {
-				data.parent->remove_child(this);
+				data.parent->remove_child(this); // This also removes the owner.
+			} else {
+				set_owner(nullptr);
+
+				while (data.owned.size()) {
+					data.owned.front()->get()->set_owner(nullptr);
+				}
 			}
 
 			// kill children as cleanly as possible
