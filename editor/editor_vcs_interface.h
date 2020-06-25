@@ -50,12 +50,20 @@ protected:
 	virtual bool _is_vcs_initialized();
 	virtual Dictionary _get_modified_files_data();
 	virtual void _stage_file(String p_file_path);
+	virtual void _discard_file(String p_file_path);
 	virtual void _unstage_file(String p_file_path);
 	virtual void _commit(String p_msg);
 	virtual Array _get_file_diff(String p_file_path);
 	virtual bool _shut_down();
 	virtual String _get_project_name();
 	virtual String _get_vcs_name();
+	virtual Array _get_previous_commits();
+	virtual Array _get_branch_list();
+	virtual void _pull();
+	virtual void _push();
+	virtual void _fetch();
+	virtual bool _checkout_branch(String p_branch);
+	virtual void _set_up_credentials(String p_username, String p_password);
 
 public:
 	static EditorVCSInterface *get_singleton();
@@ -69,11 +77,19 @@ public:
 	Dictionary get_modified_files_data();
 	void stage_file(String p_file_path);
 	void unstage_file(String p_file_path);
+	void discard_file(String p_file_path);
 	void commit(String p_msg);
 	Array get_file_diff(String p_file_path);
 	bool shut_down();
 	String get_project_name();
 	String get_vcs_name();
+	Array get_previous_commits();
+	Array get_branch_list();
+	bool checkout_branch(String p_branch);
+	void pull();
+	void push();
+	void fetch();
+	void set_up_credentials(String p_username, String p_password);
 
 	EditorVCSInterface();
 	virtual ~EditorVCSInterface();
