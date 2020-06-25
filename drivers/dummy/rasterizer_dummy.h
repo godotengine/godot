@@ -726,27 +726,33 @@ public:
 
 	bool free(RID p_rid) {
 
+		bool freed;
 		if (texture_owner.owns(p_rid)) {
 			// delete the texture
 			DummyTexture *texture = texture_owner.get(p_rid);
 			texture_owner.free(p_rid);
 			memdelete(texture);
+			freed = true;
 		}
-
-		if (mesh_owner.owns(p_rid)) {
+		else if (mesh_owner.owns(p_rid)) {
 			// delete the mesh
-			DummyMesh *mesh = mesh_owner.getornull(p_rid);
+			DummyMesh *mesh = mesh_owner.get(p_rid);
 			mesh_owner.free(p_rid);
 			memdelete(mesh);
+			freed = true;
 		}
 		else if (lightmap_capture_data_owner.owns(p_rid)) {
 			// delete the lightmap
 			LightmapCapture *lightmap_capture = lightmap_capture_data_owner.get(p_rid);
 			lightmap_capture_data_owner.free(p_rid);
 			memdelete(lightmap_capture);
+			freed = true;
+		}
+		else {
+			freed = false;
 		}
 		
-		return true;
+		return freed;
 	}
 
 	bool has_os_feature(const String &p_feature) const { return false; }
