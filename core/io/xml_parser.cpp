@@ -203,8 +203,9 @@ void XMLParser::_parse_comment() {
 	node_type = NODE_COMMENT;
 	ERR_FAIL_COND_MSG(*P != '!', "Bad XML comment");
 	++P;
-	if (*P == '\0') // End of string - exist
+	if (*P == '\0') { // End of string - exist
 		return;
+	}
 
 	char *pCommentBegin = P;
 	int count = 0;
@@ -212,36 +213,41 @@ void XMLParser::_parse_comment() {
 
 	ERR_FAIL_COND_MSG(*P != '-', "Bad XML comment");
 	++P;
-	if (*P == '\0') // End of string - exist
+	if (*P == '\0') { // End of string - exist
 		return;
+	}
 	ERR_FAIL_COND_MSG(*P != '-', "Bad XML comment");
-	if (*P == '\0') // End of string - exist
+	if (*P == '\0') { // End of string - exist
 		return;
+	}
 
 	// move until end of comment reached
-	for (;;) {
+	while (true) {
 		++P;
-		if (*P == '\0') // End of string - exist
+		if (*P == '\0') { // End of string - exist
 			return;
+		}
 		if (*P == '<') { // detect open comment (not XML standard, but use in godot)
 			hyphen = 0;
 			++P;
-			if (*P == '\0') // End of string - exist
+			if (*P == '\0') { // End of string - exist
 				return;
-			if (*P != '!') // continue if not comment like : '<!--'
+			} else if (*P != '!') { // continue if not comment like : '<!--'
 				continue;
+			}
 			++P;
-			if (*P == '\0') // End of string - exist
+			if (*P == '\0') { // End of string - exist
 				return;
-			if (*P != '-') // continue if not comment like : '<!--'
+			} else if (*P != '-') { // continue if not comment like : '<!--'
 				continue;
+			}
 			++P;
-			if (*P == '\0') // End of string - exist
+			if (*P == '\0') { // End of string - exist
 				return;
-			if (*P != '-') // continue if not comment like : '<!--'
+			} else if (*P != '-') { // continue if not comment like : '<!--'
 				continue;
+			}
 			++count;
-			hyphen = 0;
 		} else if (*P == '>' && hyphen == 2) { // Check if end comment is '-->'
 			if (count > 0) {
 				--count;
@@ -249,10 +255,12 @@ void XMLParser::_parse_comment() {
 			}
 			break;
 		} else if (*P == '-') {
-			if (hyphen < 3) // in XML, doesn't exist comment like '--->', so not necessary to check number hyphen > 3
+			if (hyphen < 3) { // in XML, doesn't exist comment like '--->', so not necessary to check number hyphen > 3
 				++hyphen;
-		} else
+			}
+		} else {
 			hyphen = 0;
+		}
 	}
 
 	P -= 3;
