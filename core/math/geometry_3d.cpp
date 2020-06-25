@@ -993,6 +993,8 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 		}
 	}
 
+	memdelete_arr(work_memory);
+
 	return ret;
 }
 

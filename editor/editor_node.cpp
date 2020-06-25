@@ -360,7 +360,7 @@ void EditorNode::_notification(int p_what) {
 				bool dof_jitter = GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter");
 				RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
 				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
-				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_curve"));
+				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enable"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit"));
 				bool glow_bicubic = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
 				RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
@@ -376,6 +376,12 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
 				float probe_update_speed = GLOBAL_GET("rendering/lightmapper/probe_capture_update_speed");
 				RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
+				RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/sdfgi/frames_to_converge")));
+				RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
+				RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/sdfgi/probe_ray_count")));
+				RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
+				RS::GIProbeQuality gi_probe_quality = RS::GIProbeQuality(int(GLOBAL_GET("rendering/quality/gi_probes/quality")));
+				RS::get_singleton()->gi_probe_set_quality(gi_probe_quality);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

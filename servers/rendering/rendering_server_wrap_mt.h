@@ -237,7 +237,8 @@ public:
 	FUNC2(light_set_negative, RID, bool)
 	FUNC2(light_set_cull_mask, RID, uint32_t)
 	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
-	FUNC2(light_set_use_gi, RID, bool)
+	FUNC2(light_set_bake_mode, RID, LightBakeMode)
+	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 
@@ -251,9 +252,9 @@ public:
 
 	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
-	FUNC2(reflection_probe_set_interior_ambient, RID, const Color &)
-	FUNC2(reflection_probe_set_interior_ambient_energy, RID, float)
-	FUNC2(reflection_probe_set_interior_ambient_probe_contribution, RID, float)
+	FUNC2(reflection_probe_set_ambient_color, RID, const Color &)
+	FUNC2(reflection_probe_set_ambient_energy, RID, float)
+	FUNC2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)
 	FUNC2(reflection_probe_set_max_distance, RID, float)
 	FUNC2(reflection_probe_set_extents, RID, const Vector3 &)
 	FUNC2(reflection_probe_set_origin_offset, RID, const Vector3 &)
@@ -320,6 +321,8 @@ public:
 
 	FUNC2(gi_probe_set_anisotropy_strength, RID, float)
 	FUNC1RC(float, gi_probe_get_anisotropy_strength, RID)
+
+	FUNC1(gi_probe_set_quality, GIProbeQuality)
 
 	/* LIGHTMAP CAPTURE */
 
@@ -465,6 +468,10 @@ public:
 
 	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
+	FUNC12(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, bool, float, float, float)
+	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
+	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+
 	FUNC11(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
@@ -478,7 +485,7 @@ public:
 
 	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
-	FUNC2(screen_space_roughness_limiter_set_active, bool, float)
+	FUNC3(screen_space_roughness_limiter_set_active, bool, float, float)
 	FUNC1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
 	FUNC2(sub_surface_scattering_set_scale, float, float)
 
@@ -712,6 +719,10 @@ public:
 
 	virtual Vector<FrameProfileArea> get_frame_profile() {
 		return rendering_server->get_frame_profile();
+	}
+
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
+		rendering_server->sdfgi_set_debug_probe_select(p_position, p_dir);
 	}
 
 	RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread);

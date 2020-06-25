@@ -3387,11 +3387,21 @@ void RasterizerStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_e
 	light->instance_dependency.instance_notify_changed(true, false);
 }
 
-void RasterizerStorageRD::light_set_use_gi(RID p_light, bool p_enabled) {
+void RasterizerStorageRD::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->use_gi = p_enabled;
+	light->bake_mode = p_bake_mode;
+
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) {
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->max_sdfgi_cascade = p_cascade;
 
 	light->version++;
 	light->instance_dependency.instance_notify_changed(true, false);
@@ -3460,11 +3470,18 @@ RS::LightDirectionalShadowDepthRangeMode RasterizerStorageRD::light_directional_
 	return light->directional_range_mode;
 }
 
-bool RasterizerStorageRD::light_get_use_gi(RID p_light) {
-	Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light, false);
+uint32_t RasterizerStorageRD::light_get_max_sdfgi_cascade(RID p_light) {
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, 0);
 
-	return light->use_gi;
+	return light->max_sdfgi_cascade;
+}
+
+RS::LightBakeMode RasterizerStorageRD::light_get_bake_mode(RID p_light) {
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, RS::LIGHT_BAKE_DISABLED);
+
+	return light->bake_mode;
 }
 
 uint64_t RasterizerStorageRD::light_get_version(RID p_light) const {
@@ -3517,25 +3534,25 @@ void RasterizerStorageRD::reflection_probe_set_intensity(RID p_probe, float p_in
 	reflection_probe->intensity = p_intensity;
 }
 
-void RasterizerStorageRD::reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) {
+void RasterizerStorageRD::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
-	reflection_probe->interior_ambient = p_ambient;
+	reflection_probe->ambient_mode = p_mode;
 }
 
-void RasterizerStorageRD::reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) {
+void RasterizerStorageRD::reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
-	reflection_probe->interior_ambient_energy = p_energy;
+	reflection_probe->ambient_color = p_color;
 }
 
-void RasterizerStorageRD::reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) {
+void RasterizerStorageRD::reflection_probe_set_ambient_energy(RID p_probe, float p_energy) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
-	reflection_probe->interior_ambient_probe_contrib = p_contrib;
+	reflection_probe->ambient_color_energy = p_energy;
 }
 
 void RasterizerStorageRD::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
@@ -3683,25 +3700,23 @@ bool RasterizerStorageRD::reflection_probe_is_box_projection(RID p_probe) const 
 	return reflection_probe->box_projection;
 }
 
-Color RasterizerStorageRD::reflection_probe_get_interior_ambient(RID p_probe) const {
+RS::ReflectionProbeAmbientMode RasterizerStorageRD::reflection_probe_get_ambient_mode(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, RS::REFLECTION_PROBE_AMBIENT_DISABLED);
+	return reflection_probe->ambient_mode;
+}
+
+Color RasterizerStorageRD::reflection_probe_get_ambient_color(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Color());
 
-	return reflection_probe->interior_ambient;
+	return reflection_probe->ambient_color;
 }
-
-float RasterizerStorageRD::reflection_probe_get_interior_ambient_energy(RID p_probe) const {
+float RasterizerStorageRD::reflection_probe_get_ambient_color_energy(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, 0);
 
-	return reflection_probe->interior_ambient_energy;
-}
-
-float RasterizerStorageRD::reflection_probe_get_interior_ambient_probe_contribution(RID p_probe) const {
-	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!reflection_probe, 0);
-
-	return reflection_probe->interior_ambient_probe_contrib;
+	return reflection_probe->ambient_color_energy;
 }
 
 RID RasterizerStorageRD::decal_create() {
@@ -5878,6 +5893,20 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 
 		default_rd_textures[DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER] = RD::get_singleton()->texture_buffer_create(16, RD::DATA_FORMAT_R8G8B8A8_UNORM, pv);
+
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 0);
+		}
+
+		{
+			tformat.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_2D_UINT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
 	}
 
 	{ //create default cubemap

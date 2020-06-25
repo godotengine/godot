@@ -204,10 +204,17 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _insert_staging_block();
 
 	struct Buffer {
-		uint32_t size = 0;
-		VkBuffer buffer = VK_NULL_HANDLE;
-		VmaAllocation allocation = nullptr;
+		uint32_t size;
+		uint32_t usage;
+		VkBuffer buffer;
+		VmaAllocation allocation;
 		VkDescriptorBufferInfo buffer_info; //used for binding
+		Buffer() {
+			size = 0;
+			usage = 0;
+			buffer = VK_NULL_HANDLE;
+			allocation = nullptr;
+		}
 	};
 
 	Error _buffer_allocate(Buffer *p_buffer, uint32_t p_size, uint32_t p_usage, VmaMemoryUsage p_mapping);
@@ -229,8 +236,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// used for the render pipelines.
 
 	struct FramebufferFormatKey {
+		Size2i empty_size;
 		Vector<AttachmentFormat> attachments;
 		bool operator<(const FramebufferFormatKey &p_key) const {
+			if (empty_size != p_key.empty_size) {
+				return empty_size < p_key.empty_size;
+			}
+
 			int as = attachments.size();
 			int bs = p_key.attachments.size();
 			if (as != bs) {
@@ -773,12 +785,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint32_t draw_list_count;
 	bool draw_list_split;
 	Vector<RID> draw_list_bound_textures;
+	Vector<RID> draw_list_storage_textures;
 	bool draw_list_unbind_color_textures;
 	bool draw_list_unbind_depth_textures;
 
 	void _draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil);
 	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass);
-	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents);
+	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
 
 	/**********************/
@@ -923,9 +936,11 @@ public:
 	/*********************/
 
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
+	virtual FramebufferFormatID framebuffer_format_create_empty(const Size2i &p_size);
 	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format);
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID);
+	virtual RID framebuffer_create_empty(const Size2i &p_size, FramebufferFormatID p_format_check = INVALID_ID);
 
 	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
 
@@ -961,7 +976,7 @@ public:
 	/*****************/
 
 	virtual RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	virtual RID storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	virtual RID storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), uint32_t p_usage = 0);
 	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
@@ -998,8 +1013,8 @@ public:
 
 	virtual DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
 
-	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
-	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
+	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
 
 	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
 	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
@@ -1026,7 +1041,10 @@ public:
 	virtual void compute_list_add_barrier(ComputeListID p_list);
 
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
+	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
 	virtual void compute_list_end();
+
+	virtual void full_barrier();
 
 	/**************/
 	/**** FREE ****/

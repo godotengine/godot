@@ -212,10 +212,14 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags);
 }
 
-Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
+Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures) {
 	Vector<DrawListID> splits;
 	splits.resize(p_splits);
-	draw_list_begin_split(p_framebuffer, p_splits, splits.ptrw(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region);
+	Vector<RID> stextures;
+	for (int i = 0; i < p_storage_textures.size(); i++) {
+		stextures.push_back(p_storage_textures[i]);
+	}
+	draw_list_begin_split(p_framebuffer, p_splits, splits.ptrw(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, stextures);
 
 	Vector<int64_t> split_ids;
 	split_ids.resize(splits.size());
@@ -236,6 +240,10 @@ void RenderingDevice::_compute_list_set_push_constant(ComputeListID p_list, cons
 	compute_list_set_push_constant(p_list, p_data.ptr(), p_data_size);
 }
 
+void RenderingDevice::compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads, uint32_t p_x_local_group, uint32_t p_y_local_group, uint32_t p_z_local_group) {
+	compute_list_dispatch(p_list, (p_x_threads - 1) / p_x_local_group + 1, (p_y_threads - 1) / p_y_local_group + 1, (p_z_threads - 1) / p_z_local_group + 1);
+}
+
 void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
@@ -254,8 +262,10 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "sync_with_draw"), &RenderingDevice::texture_resolve_multisample, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments"), &RenderingDevice::_framebuffer_format_create);
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "size"), &RenderingDevice::framebuffer_format_create_empty);
 	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format"), &RenderingDevice::framebuffer_format_get_texture_samples);
 	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID));
+	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(INVALID_FORMAT_ID));
 	ClassDB::bind_method(D_METHOD("framebuffer_get_format", "framebuffer"), &RenderingDevice::framebuffer_get_format);
 
 	ClassDB::bind_method(D_METHOD("sampler_create", "state"), &RenderingDevice::_sampler_create);
@@ -292,8 +302,8 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()));
-	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::draw_list_begin, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2i()), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("draw_list_bind_render_pipeline", "draw_list", "render_pipeline"), &RenderingDevice::draw_list_bind_render_pipeline);
 	ClassDB::bind_method(D_METHOD("draw_list_bind_uniform_set", "draw_list", "uniform_set", "set_index"), &RenderingDevice::draw_list_bind_uniform_set);
@@ -624,6 +634,8 @@ void RenderingDevice::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT16);
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT32);
+
+	BIND_ENUM_CONSTANT(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
 
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER); //for sampling only (sampler GLSL type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER_WITH_TEXTURE); // for sampling only); but includes a texture); (samplerXX GLSL type)); first a sampler then a texture
