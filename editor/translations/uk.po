@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -773,9 +773,8 @@ msgid "Method in target node must be specified."
 msgstr "Має бути вказано метод у цільовому вузлі."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Назва не є коректним ідентифікатором:"
+msgstr "Назва методу має бути коректним ідентифікатором."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1981,7 +1980,7 @@ msgstr "Властивості теми"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Перелічуваний"
+msgstr "Переліки"
 
 #: editor/editor_help.cpp
 msgid "Constants"
