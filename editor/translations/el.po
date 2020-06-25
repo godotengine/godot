@@ -7,13 +7,13 @@
 # Overloaded <manoschool@yahoo.gr>, 2019.
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
 # Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
+# pandektis <pandektis@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-10 12:37+0000\n"
-"Last-Translator: Overloaded @ Orama Interactive http://orama-interactive."
-"com/ <manoschool@yahoo.gr>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: pandektis <pandektis@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -744,11 +744,11 @@ msgstr "Μεγέθυνση"
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr "Σμύκρινση"
+msgstr "Σμίκρυνση"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "Επαναφορά μεγέθυνσης"
+msgstr "Επαναφορά μεγένθυνσης"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -763,9 +763,8 @@ msgid "Method in target node must be specified."
 msgstr "Πρέπει να οριστεί συνάρτηση στον στοχευμένο κόμβο."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικό:"
+msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικό."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1466,7 +1465,7 @@ msgstr "Αναδιάταξη των AutoLoad"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Αδυναμία προσθήκης autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2428,15 +2427,17 @@ msgstr ""
 "Δεν είναι δυνατό να φορτώσετε εκ νέου μια σκηνή που δεν αποθηκεύτηκε ποτέ."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Αποθηκεύσετε σκηνής"
+msgstr "Ανανέωση Αποθηκευμένης Σκηνής"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Η τρέχουσα σκηνή έχει μη αποθηκευμένες αλλαγές.\n"
+"Επαναφόρτωση της αποθηκευμένης σκηνής; Αυτή η ενέργεια δεν μπορεί να "
+"αναιρεθεί."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3383,11 +3384,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "Μήπως ξεχάσατε τη μέθοδο '_run';"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Πατήστε παρατεταμένα το Ctrl για να προσθέσετε έναν Getter. Πατήστε "
-"παρατεταμένα το Shift για να προσθέσετε μία γενική υπογραφή."
+"Πατήστε παρατεταμένα το Ctrl για στρογγυλοποίηση ακεραίων και το Shift για "
+"πιο ακριβείς αλλαγές."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"

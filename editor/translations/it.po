@@ -51,12 +51,13 @@
 # Andrea Terenziani <andrea.terenziani.at@gmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # riccardo boffelli <riccardo.boffelli.96@gmail.com>, 2020.
+# Lorenzo Asolan <brixiumx@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
-"Last-Translator: riccardo boffelli <riccardo.boffelli.96@gmail.com>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: Lorenzo Asolan <brixiumx@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -805,7 +806,7 @@ msgstr "Il metodo del nodo designato deve essere specificato."
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Il nome non è un identificatore valido:"
+msgstr "Il nome del metodo dev'essere un identificatore valido."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -12055,7 +12056,8 @@ msgstr ""
 #, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Debug keystore non configurato nelle Impostazioni dell'Editor né nel preset."
+"Debug keystore non configurato correttamente nelle Impostazioni dell'Editor "
+"né nel preset."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12092,7 +12094,7 @@ msgid ""
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
 "Modulo \"GodotPaymentV3\" non valido incluso nell'impostazione del progetto "
-"\" android/moduli\" (modificato in Godot 3.2.2).\n"
+"\"android/moduli\" (modificato in Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."

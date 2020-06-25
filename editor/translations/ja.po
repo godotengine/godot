@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-03 20:09+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -786,9 +786,8 @@ msgid "Method in target node must be specified."
 msgstr "対象ノードのメソッドを指定してください。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "この名前は無効な識別子です:"
+msgstr "メソッド名は有効な識別子である必要があります。"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1600,8 +1599,9 @@ msgid ""
 "Enabled'."
 msgstr ""
 "対象プラットフォームではGLES2へフォールバックするために'ETC'テクスチャ圧縮が"
-"必要です。プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To "
-"Gles 2' をオフにしてください。"
+"必要です。\n"
+"プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To Gles 2' をオフ"
+"にしてください。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2441,9 +2441,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr "保存されていないシーンを読み込むことはできません。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "シーンを保存"
+msgstr "保存済みのシーンをリロード"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3383,11 +3382,8 @@ msgid "Did you forget the '_run' method?"
 msgstr "'_run' メソッドを忘れていませんか？"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
-msgstr ""
-"Ctrlを押したままGetterを(ドラッグ＆)ドロップする。Shiftを押したまま汎用シグネ"
-"チャを(ドラッグ＆)ドロップする."
+msgstr "Ctrlを押したままで整数値に丸める。Shiftを押したままで精密調整。"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3523,8 +3519,8 @@ msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"テンプレートのインストールに失敗しました。 問題のテンプレートのアーカイブは "
-"'%s' にあります。"
+"テンプレートのインストールに失敗しました。\n"
+"問題のテンプレートのアーカイブは '%s' にあります。"
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -6929,9 +6925,8 @@ msgstr ""
 "ド'%s'へのシグナル用です。"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(無視)"
+msgstr "[無視]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -9456,8 +9451,9 @@ msgid ""
 "Only one preset per platform may be marked as runnable."
 msgstr ""
 "チェックを入れると、１クリック・デプロイでもこのプリセットが使われるようにな"
-"ります。ひとつのプラットフォームに対し、ひとつのプリセットのみが実行可能とし"
-"てマークできます。"
+"ります。\n"
+"ひとつのプラットフォームに対し、ひとつのプリセットのみが実行可能としてマーク"
+"できます。"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -10498,9 +10494,8 @@ msgid "Instance Child Scene"
 msgstr "子シーンをインスタンス化"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "スクリプトをアタッチ"
+msgstr "スクリプトをデタッチ"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10719,14 +10714,12 @@ msgstr ""
 "合は、継承されたシーンを作成します。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "選択したノードに新規または既存のスクリプトをアタッチする。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "選択したノードのスクリプトをクリアする。"
+msgstr "選択したノードのスクリプトをデタッチする。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10773,7 +10766,7 @@ msgid ""
 "Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
-"ノードに  %s 個接続があります。\n"
+"ノードに %s 個接続があります。\n"
 "クリックでシグナル ドックを表示。"
 
 #: editor/scene_tree_editor.cpp
@@ -11952,9 +11945,8 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "デバッグキーストアがエディタ設定にもプリセットにも設定されていません。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
-msgstr "デバッグキーストアがエディタ設定にもプリセットにも設定されていません。"
+msgstr "エクスポート設定にてリリース キーストアが誤って設定されています。"
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
