@@ -1,73 +1,69 @@
-# French translation of the Godot Engine class reference.
+# Polish translation of the Godot Engine class reference.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Rémi Verschelde <remi@godotengine.org>, 2020.
-# Freyja <aerandil@gmail.com>, 2020.
-# Gol.D.eNI <eniolamy1@gmail.com>, 2020.
-# Anonymous <noreply@weblate.org>, 2020.
-# Nathan <bonnemainsnathan@gmail.com>, 2020.
-# Fox Lahoki <alexbar@live.fr>, 2020.
+# Tomek <kobewi4e@gmail.com>, 2020.
+# wieslaw.mlynarski Wiesław <wieslaw.mlynarski@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-18 00:28+0000\n"
-"Last-Translator: Fox Lahoki <alexbar@live.fr>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot-class-reference/fr/>\n"
-"Language: fr\n"
+"PO-Revision-Date: 2020-06-25 08:53+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/pl/>\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
-msgstr "Description"
+msgstr "Opis"
 
 #: doc/tools/makerst.py
 msgid "Tutorials"
-msgstr "Tutoriels"
+msgstr "Samouczki"
 
 #: doc/tools/makerst.py
 msgid "Properties"
-msgstr "Propriétés"
+msgstr "Właściwości"
 
 #: doc/tools/makerst.py
 msgid "Methods"
-msgstr "Méthodes"
+msgstr "Metody"
 
 #: doc/tools/makerst.py
 msgid "Theme Properties"
-msgstr "Propriétés du thème"
+msgstr "Właściwości motywu"
 
 #: doc/tools/makerst.py
 msgid "Signals"
-msgstr "Signaux"
+msgstr "Sygnały"
 
 #: doc/tools/makerst.py
 msgid "Enumerations"
-msgstr "Énumérations"
+msgstr "Wyliczenia"
 
 #: doc/tools/makerst.py
 msgid "Constants"
-msgstr "Constantes"
+msgstr "Stałe"
 
 #: doc/tools/makerst.py
 msgid "Property Descriptions"
-msgstr "Description des propriétés"
+msgstr "Opisy właściwości"
 
 #: doc/tools/makerst.py
 msgid "Method Descriptions"
-msgstr "Descriptions des méthodes"
+msgstr "Opisy metod"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr "Fonctions intégrées à GDScript."
+msgstr "Wbudowane funkcje GDScript."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -75,10 +71,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
-"Liste de fonctions de base intégrées à GDScript. Fonctions mathématiques et "
-"autres fonctions utilitaires. Toutes les autres fonctionnalités sont "
-"fournies directement par les objets. (Mots-clés : builtin, built-in, "
-"intégré, intégrées, fonctions de base, fonctions globales.)"
+"Lista wbudowanych funkcji GDScript. Funkcje matematyczne i inne narzędzia. "
+"Wszystko inne jest zapewnione przez obiekty (Słowa kluczowe: wbudowane, "
+"funkcje globalne, built in.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""
@@ -93,15 +88,15 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une couleur construite à partir d'entiers représentants les canaux "
-"rouge, vert, bleu et alpha. Chaque canal devrait comporter 8 bits "
-"d'information allant de 0 à 255.\n"
-"[code]r8[/code] canal rouge\n"
-"[code]g8[/code] canal vert\n"
-"[code]b8[/code] canal bleu\n"
-"[code]a8[/code] canal alpha\n"
+"Zwraca kolor skonstruowany z całkowitych kanałów czerwonego, zielonego, "
+"niebieskiego i alfa. Każdy kanał powinien mieć 8 bitów informacji z zakresu "
+"0 do 255.\n"
+"[code]r8[/code] czerwony kanał\n"
+"[code]g8[/code] zielonykanał\n"
+"[code]b8[/code] niebieski kanał\n"
+"[code]a8[/code] kanał alfa\n"
 "[codeblock]\n"
-"red = Color8(255, 0, 0)\n"
+"czerwony = Color8(255, 0, 0)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:42
@@ -113,13 +108,12 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
-"Renvoie une couleur selon la norme [code]name[/code] avec [code]alpha[/code] "
-"allant de 0 à 1.\n"
+"Zwraca kolor zgodnie z standrową [code]nazwą[/code] z [code]alpha[/code] w "
+"zakresie od 0 do 1.\n"
 "[codeblock]\n"
-"red = ColorN(\"red\", 1)\n"
+"czerwony = ColorN(\"red\", 1)\n"
 "[/codeblock]\n"
-"Les noms de couleurs pris en charge sont les mêmes que les constantes "
-"définies dans [Color]."
+"Wspierane nazwy są takie same jak stałe zdefiniowane w [Color]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
 msgid ""
@@ -130,10 +124,10 @@ msgid ""
 "a = abs(-1)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la valeur absolue du paramètre [code]s[/code] (par ex. valeur non "
-"signée, fonctionne pour entier et flottant).\n"
+"Zwraca absolutną wartość [code]s[/code] (tzn. bezwzględna wartość, działa "
+"dla typu integer i float).\n"
 "[codeblock]\n"
-"# a is 1\n"
+"# a jest równe 1\n"
 "a = abs(-1)\n"
 "[/codeblock]"
 
@@ -146,12 +140,6 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus inverse de [code]s[/code] en radians. Utiliser pour "
-"obtenir l'angle du cosinus [code]s[/code].\n"
-"[codeblock]\n"
-"# c vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
-"c = acos(0.866025)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:81
 msgid ""
@@ -162,12 +150,6 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le sinus inverse de [code]s[/code] en radians. Utiliser pour obtenir "
-"l'angle du sinus [code]s[/code].\n"
-"[codeblock]\n"
-"# s vaut 0.523599 ou 30 degrés si converti avec rad2deg(s)\n"
-"s = asin(0.5)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:96
 msgid ""
@@ -190,27 +172,6 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
-"Vérifie que la [code]condition[/code] est [code]vraie[/code]. Si la "
-"[code]condition[/code] est [code]fausse[/code], une erreur est générée et le "
-"programme est interrompu jusqu'à ce que vous le redémarriez. Ne s'exécute "
-"que pour les builds de débogage, ou quand vous lancez votre jeu depuis "
-"l'éditeur. Utilisez ceci à des fins de débogage, pour vous assurer qu'une "
-"déclaration est [code]vraie[/ code] au cours du développement.\n"
-"L'argument facultatif [code]message[/code], s'il est donné, est affiché en "
-"plus du message générique « Échec de l'assertion ». Vous pouvez l'utiliser "
-"pour fournir des détails supplémentaires sur la raison de l'échec de "
-"l'assertion.\n"
-"[codeblock]\n"
-"# Imaginez que nous voulons toujours que la vitesse soit comprise entre 0 et "
-"20\n"
-"speed = -10\n"
-"assert(speed < 20) # Vrai, le programme continue\n"
-"assert(speed >= 0) # Faux, le programme s'interrompt\n"
-"assert(speed >= 0 && speed < 20) # Vous pouvez aussi combiner les deux "
-"conditionnelles en une seule vérification\n"
-"assert(speed < 20, \"speed = %f, mais la limite de vitesse est 20\" % speed) "
-"# Affiche un message avec la clarification des détails\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:114
 msgid ""
@@ -223,14 +184,6 @@ msgid ""
 "a = atan(0.5) # a is 0.463648\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la tangente inverse de [code]s[/code] en radians. Utilisez ceci pour "
-"obtenir l'angle à partir de la tangente d'un angle en trigonométrie : "
-"[code]atan(tan(angle)) == angle[/code].\n"
-"La méthode ne peut pas savoir dans quel quart de cercle l'angle doit se "
-"situer. Voir [method atan2] si vous voulez toujours un angle exact.\n"
-"[codeblock]\n"
-"a = atan(0.5) # a vaut 0.463648\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:129
 msgid ""
@@ -241,13 +194,6 @@ msgid ""
 "a = atan2(0, -1) # a is 3.141593\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la tangente inverse de [code] y/x [/code] en radians. Utilisez ceci "
-"pour obtenir l'angle de la tangente [code] y/x [/code]. Pour calculer la "
-"valeur, la méthode prend en compte le signe des deux arguments afin de "
-"déterminer l'arc de cercle.\n"
-"[codeblock]\n"
-"a = atan2(0, -1) # a vaut 3.141593\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:143
 msgid ""
@@ -257,13 +203,6 @@ msgid ""
 "not use this option if the serialized object comes from untrusted sources to "
 "avoid potential security threats (remote code execution)."
 msgstr ""
-"Déchiffre un tableau d'octets pour le ramener à une valeur. Lorsque "
-"[code]allow_objects[/code] est défini à [code]true[/code] (vrai), le "
-"déchiffrage des objets est autorisé.\n"
-"[b]ATTENTION :[/b] L'objet désérialisé peut contenir du code qui sera "
-"exécuté. N'utilisez pas cette option si l'objet désérialisé provient de "
-"sources non fiables afin d'éviter d'éventuelles menaces de sécurité "
-"(exécution de code distant)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:155
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:145
@@ -272,9 +211,6 @@ msgid ""
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
-"Convertit un point 2D exprimé dans le système de coordonnées cartésiennes "
-"(axes X et Y) vers le système de coordonnées polaires (une distance par "
-"rapport à l'origine et un angle)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:164
 msgid ""
@@ -285,12 +221,6 @@ msgid ""
 "i = ceil(1.001) # i is 2\n"
 "[/codeblock]"
 msgstr ""
-"Arrondit [code]s[/code] au supérieur, et renvoie la plus petite valeur "
-"entière qui n'est pas inférieure à [code]s[/code].\n"
-"[codeblock]\n"
-"i = ceil(1.45)  # i vaut 2\n"
-"i = ceil(1.001) # i vaut 2\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:177
 msgid ""
@@ -303,14 +233,6 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
-"Renvoie un caractère au format chaîne de caractère correspondant à la valeur "
-"Unicode donnée (compatible avec le code ASCII).\n"
-"[codeblock]\n"
-"a = char(65)      # a vaut « A »\n"
-"a = char(65 + 32) # a vaut « a »\n"
-"a = char(8364)    # a vaut « € »\n"
-"[/codeblock]\n"
-"C'est l'inverse de [method ord]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:196
 msgid ""
@@ -326,17 +248,6 @@ msgid ""
 "a = clamp(speed, 1, 20)\n"
 "[/codeblock]"
 msgstr ""
-"Fixe une [code]value[/code] (valeur) et renvoie la valeur comprise entre "
-"[code]min[/code] et [code]max[/code].\n"
-"[codeblock]\n"
-"vitesse = 1000\n"
-"# a vaut 20\n"
-"a = clamp(vitesse, 1, 20)\n"
-"\n"
-"vitesse = -10\n"
-"# a vaut 1\n"
-"a = clamp(vitesse, 1, 20)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:216
 msgid ""
@@ -351,16 +262,6 @@ msgid ""
 "print(a.length())\n"
 "[/codeblock]"
 msgstr ""
-"Convertit un type en un autre de la meilleure façon possible. Le paramètre "
-"[code]type[/code] utilise les valeurs de [enum Variant.Type].\n"
-"[codeblock]\n"
-"a = Vector2(1, 0)\n"
-"# Renvoie 1\n"
-"print(a.length())\n"
-"a = convert(a, TYPE_STRING)\n"
-"# Renvoie 6 car « (1, 0) » fait 6 caractères\n"
-"print(a.length())\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:233
 msgid ""
@@ -371,12 +272,6 @@ msgid ""
 "print(cos(PI))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus de l'angle [code]s[/code] en radians.\n"
-"[codeblock]\n"
-"# Renvoie 1 puis -1\n"
-"print(cos(PI * 2))\n"
-"print(cos(PI))\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:247
 msgid ""
@@ -386,15 +281,10 @@ msgid ""
 "print(cosh(1))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le cosinus hyperbolique de [code]s[/code] en radians.\n"
-"[codeblock]\n"
-"# Renvoie 1.543081\n"
-"print(cosh(1))\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:260
 msgid "Converts from decibels to linear energy (audio)."
-msgstr "Convertit les décibels en énergie linéaire (audio)."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:273
 msgid ""
@@ -405,12 +295,6 @@ msgid ""
 "a = dectime(60, 10, 0.1))\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le résultat de [code]valeur[/code] diminuée par [code]étape[/code] * "
-"[code]quantité[/code].\n"
-"[codeblock]\n"
-"# a = 59\n"
-"a = dectime(60, 10, 0.1))\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:286
 msgid ""
@@ -420,19 +304,12 @@ msgid ""
 "r = deg2rad(180)\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la conversion des degrés en radians.\n"
-"[codeblock]\n"
-"# r vaut 3.141593\n"
-"r = deg2rad(180)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:299
 msgid ""
 "Converts a previously converted instance to a dictionary, back into an "
 "instance. Useful for deserializing."
 msgstr ""
-"Convertit une instance précédemment convertie en dictionnaire, puis la "
-"convertit à nouveau en instance. Utile pour la désérialisation."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:310
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:90
@@ -451,13 +328,6 @@ msgid ""
 "a = exp(2) # Approximately 7.39\n"
 "[/codeblock]"
 msgstr ""
-"La fonction exponentielle naturelle. Elle élève la constante mathématique "
-"[b]e[/b] à la puissance de [code]s[/code] et la renvoie.\n"
-"[b]e[/b] a une valeur approximative de 2,71828.\n"
-"Pour les exposants vers d'autres bases, utilisez la méthode [method pow].\n"
-"[codeblock]\n"
-"a = exp(2) # Environ 7.39\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:333
 msgid ""
@@ -471,16 +341,6 @@ msgid ""
 "[b]Note:[/b] This method returns a float. If you need an integer, you can "
 "use [code]int(s)[/code] directly."
 msgstr ""
-"Arrondit [code]s[/code] à l'entier inférieur le plus proche et le renvoie.\n"
-"[codeblock]\n"
-"# a vaut 2.0\n"
-"a = floor(2.99)\n"
-"# a vaut -3.0\n"
-"a = floor(-2.99)\n"
-"[/codeblock]\n"
-"[b]Remarque :[/b] Cette méthode renvoie un nombre flottant. Si vous avez "
-"besoin d'un nombre entier, vous pouvez utiliser directement [code]int(s)[/"
-"code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:351
 msgid ""
@@ -492,13 +352,6 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
-"Renvoie le reste en virgule flottante de [code]a/b[/code], en conservant le "
-"signe de [code]a[/code].\n"
-"[codeblock]\n"
-"# Le reste vaut 1.5\n"
-"var reste = fmod(7, 5.5)\n"
-"[/codeblock]\n"
-"Pour l'opération de reste entier, utilisez l'opérateur %."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:367
 msgid ""
@@ -525,28 +378,6 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le modulo en virgule flottante de [code]a/b[/code] qui englobe aussi "
-"bien le positif que le négatif.\n"
-"[codeblock]\n"
-"var i = -6\n"
-"while i < 5:\n"
-"    prints(i, fposmod(i, 3))\n"
-"    i += 1\n"
-"[/codeblock]\n"
-"Donne :\n"
-"[codeblock]\n"
-"-6 0\n"
-"-5 1\n"
-"-4 2\n"
-"-3 0\n"
-"-2 1\n"
-"-1 2\n"
-"0 0\n"
-"1 1\n"
-"2 2\n"
-"3 0\n"
-"4 1\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:398
 msgid ""
@@ -562,17 +393,6 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une référence à la fonction spécifiée [code]funcname[/code] dans le "
-"nœud  de [code]instance[/code]. Comme les fonctions ne sont pas des objets "
-"de première classe  en GDscript, utilisez [code]funcref[/code] pour stocker "
-"une [FuncRef] dans une variable et l'appeler plus tard.\n"
-"[codeblock]\n"
-"func titi():\n"
-"    return(\"toto\")\n"
-"\n"
-"a = funcref(self, \"titi\")\n"
-"print(a.call_func()) # Affiche toto\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:412
 msgid ""
@@ -593,22 +413,6 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie un tableau de dictionnaires représentant la pile d'appels en cours.\n"
-"[codeblock]\n"
-"func _ready():\n"
-"    titi()\n"
-"\n"
-"func titi():\n"
-"    toto()\n"
-"\n"
-"func toto():\n"
-"    print(get_stack())\n"
-"[/codeblock]\n"
-"renverra\n"
-"[codeblock]\n"
-"[{function:toto, line:12, source:res://script.gd}, {function:titi, line:9, "
-"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:435
 msgid ""
@@ -617,10 +421,6 @@ msgid ""
 "print(hash(\"a\")) # Prints 177670\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le hachage en entier de la variable passée.\n"
-"[codeblock]\n"
-"print(hash(\"a\")) # Affiche 177670\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:447
 msgid ""
@@ -639,20 +439,6 @@ msgid ""
 "[, res://test.gd, bar]\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie l'instance passée convertie en dictionnaire (utile pour la "
-"sérialisation).\n"
-"[codeblock]\n"
-"var titi = \"toto\"\n"
-"func _ready():\n"
-"    var d = inst2dict(self)\n"
-"    print(d.keys())\n"
-"    print(d.values())\n"
-"[/codeblock]\n"
-"Affiche :\n"
-"[codeblock]\n"
-"[@subpath, @path, titi]\n"
-"[, res://test.gd, toto]\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:468
 msgid ""
@@ -666,15 +452,6 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie l'objet correspondant à l'[code]instance_id[/code]. Tous les objets "
-"ont un identifiant d'instance unique.\n"
-"[codeblock]\n"
-"var titi = \"toto\"\n"
-"func _ready():\n"
-"    var id = get_instance_id()\n"
-"    var inst = instance_from_id(id)\n"
-"    print(inst.titi) # Affiche toto\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:488
 msgid ""
@@ -689,50 +466,32 @@ msgid ""
 "# `ratio` is now 0.75.\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie une valeur normalisée en tenant compte de la fourchette donnée. "
-"C'est l'inverse de [method lerp].\n"
-"[codeblock]\n"
-"var milieu = lerp(20, 30, 0.75)\n"
-"# `milieu` vaut maintenant 27.5.\n"
-"# Maintenant, nous prétendons avoir oublié le ratio d'origine et nous "
-"voulons le récupérer.\n"
-"var ratio = inverse_lerp(20, 30, 27.5)\n"
-"# `ratio` vaut maintenant 0.75.\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:506
 msgid ""
 "Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are "
 "approximately equal to each other."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]a[/code] et [code]b[/code] sont "
-"approximativement égaux l'un à l'autre."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:515
 msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
-"Renvoie si [code]s[/code] est une valeur infinie (infini positif ou infini "
-"négatif)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:524
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
-"Renvoie si [code]instance[/code] est un objet valide (par ex. s'il n'a pas "
-"été supprimé de la mémoire)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:533
 msgid "Returns whether [code]s[/code] is a NaN (Not-A-Number) value."
-msgstr "Renvoie si [code]s[/code] est une valeur NaN (Not-A-Number)."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:542
 msgid "Returns [code]true[/code] if [code]s[/code] is zero or almost zero."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:551
 msgid ""
@@ -744,15 +503,6 @@ msgid ""
 "len(a) # Returns 4\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie la longueur de la variable [code]var[/code]. La longueur est le "
-"nombre de caractères pour une chaîne de caractères, le nombre d'éléments "
-"pour un tableau, la taille pour un dictionnaire, etc.\n"
-"[b]Remarque :[/b] Génère une erreur fatale si la variable n'a pas de "
-"longueur possible.\n"
-"[codeblock]\n"
-"a = [1, 2, 3, 4]\n"
-"len(a) # Renvoie 4\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:569
 msgid ""
@@ -834,11 +584,6 @@ msgid ""
 "max(-3.99, -4) # Returns -3.99\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le maximum entre deux valeurs.\n"
-"[codeblock]\n"
-"max(1, 2) # Renvoie 2\n"
-"max(-3.99, -4) # Renvoie -3.99\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:667
 msgid ""
@@ -848,11 +593,6 @@ msgid ""
 "min(-3.99, -4) # Returns -4\n"
 "[/codeblock]"
 msgstr ""
-"Renvoie le minimum entre deux valeurs.\n"
-"[codeblock]\n"
-"min(1, 2) # Renvoie 1\n"
-"min(-3.99, -4) # Renvoie -4\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:684
 msgid ""
@@ -1472,7 +1212,7 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1415
 msgid "A positive infinity. (For negative infinity, use -INF)."
-msgstr ""
+msgstr "Dodatnia nieskończoność. (Dla ujemnej nieskończoności, użyj -INF)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1418
 msgid ""
@@ -1485,7 +1225,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:4
 msgid "Global scope constants and variables."
-msgstr ""
+msgstr "Stałe i zmienne o globalnym zasięgu."
 
 #: doc/classes/@GlobalScope.xml:7
 msgid ""
@@ -1497,144 +1237,156 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:16
 msgid "The [AudioServer] singleton."
-msgstr ""
+msgstr "Singleton [AudioServer]."
 
 #: doc/classes/@GlobalScope.xml:19
 msgid "The [CameraServer] singleton."
-msgstr ""
+msgstr "Singleton [CameraServer]."
 
 #: doc/classes/@GlobalScope.xml:22
 msgid "The [ClassDB] singleton."
-msgstr ""
+msgstr "Singleton [ClassDB]."
 
 #: doc/classes/@GlobalScope.xml:25
 msgid "The [DisplayServer] singleton."
-msgstr ""
+msgstr "Singleton [DisplayServer]."
 
 #: doc/classes/@GlobalScope.xml:28
 msgid "The [Engine] singleton."
-msgstr ""
+msgstr "Singleton [Engine]."
 
 #: doc/classes/@GlobalScope.xml:31
 msgid "The [Geometry] singleton."
-msgstr ""
+msgstr "Singleton [Geometry]."
 
 #: doc/classes/@GlobalScope.xml:34
 msgid "The [IP] singleton."
-msgstr ""
+msgstr "Singleton [IP]."
 
 #: doc/classes/@GlobalScope.xml:37
 msgid "The [Input] singleton."
-msgstr ""
+msgstr "Singleton [Input]."
 
 #: doc/classes/@GlobalScope.xml:40
 msgid "The [InputMap] singleton."
-msgstr ""
+msgstr "Singleton [InputMap]."
 
 #: doc/classes/@GlobalScope.xml:43
 msgid "The [JSON] singleton."
-msgstr ""
+msgstr "Singleton [JSON]."
 
 #: doc/classes/@GlobalScope.xml:46
 msgid ""
 "The [JavaClassWrapper] singleton.\n"
 "[b]Note:[/b] Only implemented on Android."
 msgstr ""
+"Singleton [JavaClassWrapper].\n"
+"[b]Uwaga:[/b] Zaimplementowany tylko na Androidzie."
 
 #: doc/classes/@GlobalScope.xml:50
 msgid ""
 "The [JavaScript] singleton.\n"
 "[b]Note:[/b] Only implemented on HTML5."
 msgstr ""
+"Singleton [JavaScript].\n"
+"[b]Uwaga:[/b] Zaimplementowany tylko dla HTML5."
 
 #: doc/classes/@GlobalScope.xml:54
 msgid "The [Marshalls] singleton."
-msgstr ""
+msgstr "Singleton [Marshalls]."
 
 #: doc/classes/@GlobalScope.xml:57
 msgid "The [NavigationMeshGenerator] singleton."
-msgstr ""
+msgstr "Singleton [NavigationMeshGenerator]."
 
 #: doc/classes/@GlobalScope.xml:60 doc/classes/@GlobalScope.xml:63
 msgid "The [NavigationServer2D] singleton."
-msgstr ""
+msgstr "Singleton [NavigationServer2D]."
 
 #: doc/classes/@GlobalScope.xml:66
 msgid "The [OS] singleton."
-msgstr ""
+msgstr "Singleton [OS]."
 
 #: doc/classes/@GlobalScope.xml:69
 msgid "The [Performance] singleton."
-msgstr ""
+msgstr "Singleton [Performance]."
 
 #: doc/classes/@GlobalScope.xml:72
 msgid "The [PhysicsServer2D] singleton."
-msgstr ""
+msgstr "Singleton [PhysicsServer2D]."
 
 #: doc/classes/@GlobalScope.xml:75
 msgid "The [PhysicsServer3D] singleton."
-msgstr ""
+msgstr "Singleton [PhysicsServer3D]."
 
 #: doc/classes/@GlobalScope.xml:78
 msgid "The [ProjectSettings] singleton."
-msgstr ""
+msgstr "Singleton [ProjectSettings]."
 
 #: doc/classes/@GlobalScope.xml:81
 msgid "The [RenderingServer] singleton."
-msgstr ""
+msgstr "Singleton [RenderingServer]."
 
 #: doc/classes/@GlobalScope.xml:84
 msgid "The [ResourceLoader] singleton."
-msgstr ""
+msgstr "Singleton [ResourceLoader]."
 
 #: doc/classes/@GlobalScope.xml:87
 msgid "The [ResourceSaver] singleton."
-msgstr ""
+msgstr "Singleton [ResourceSaver]."
 
 #: doc/classes/@GlobalScope.xml:90
 msgid "The [TranslationServer] singleton."
-msgstr ""
+msgstr "Singleton [TranslationServer]."
 
 #: doc/classes/@GlobalScope.xml:93
 msgid "The [VisualScriptEditor] singleton."
-msgstr ""
+msgstr "Singleton [VisualScriptEditor]."
 
 #: doc/classes/@GlobalScope.xml:96
 msgid "The [XRServer] singleton."
-msgstr ""
+msgstr "Singleton [XRServer]."
 
 #: doc/classes/@GlobalScope.xml:101
 msgid "Left margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"Lewy margines, używany zazwyczaj dla klas dziedziczących z [Control] lub "
+"[StyleBox]."
 
 #: doc/classes/@GlobalScope.xml:104
 msgid "Top margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"Górny margines, używany zazwyczaj dla klas dziedziczących z [Control] lub "
+"[StyleBox]."
 
 #: doc/classes/@GlobalScope.xml:107
 msgid "Right margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"Prawy margines, używany zazwyczaj dla klas dziedziczących z [Control] lub "
+"[StyleBox]."
 
 #: doc/classes/@GlobalScope.xml:110
 msgid ""
 "Bottom margin, usually used for [Control] or [StyleBox]-derived classes."
 msgstr ""
+"Dolny margines, używany zazwyczaj dla klas dziedziczących z [Control] lub "
+"[StyleBox]."
 
 #: doc/classes/@GlobalScope.xml:113
 msgid "Top-left corner."
-msgstr ""
+msgstr "Lewy-górny róg."
 
 #: doc/classes/@GlobalScope.xml:116
 msgid "Top-right corner."
-msgstr ""
+msgstr "Prawy-górny róg."
 
 #: doc/classes/@GlobalScope.xml:119
 msgid "Bottom-right corner."
-msgstr ""
+msgstr "Prawy-dolny róg."
 
 #: doc/classes/@GlobalScope.xml:122
 msgid "Bottom-left corner."
-msgstr ""
+msgstr "Lewy-dolny róg."
 
 #: doc/classes/@GlobalScope.xml:125
 msgid ""
@@ -1682,43 +1434,43 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:155
 msgid "Tab key."
-msgstr ""
+msgstr "Klawisz Tab."
 
 #: doc/classes/@GlobalScope.xml:158
 msgid "Shift + Tab key."
-msgstr ""
+msgstr "Klawisz Shift + Tab."
 
 #: doc/classes/@GlobalScope.xml:161
 msgid "Backspace key."
-msgstr ""
+msgstr "Klawisz Backspace."
 
 #: doc/classes/@GlobalScope.xml:164
 msgid "Return key (on the main keyboard)."
-msgstr ""
+msgstr "Klawisz Return (na głównej klawiaturze)."
 
 #: doc/classes/@GlobalScope.xml:167
 msgid "Enter key on the numeric keypad."
-msgstr ""
+msgstr "Klawisz Enter na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:170
 msgid "Insert key."
-msgstr ""
+msgstr "Klawisz Insert."
 
 #: doc/classes/@GlobalScope.xml:173
 msgid "Delete key."
-msgstr ""
+msgstr "Klawisz Delete."
 
 #: doc/classes/@GlobalScope.xml:176
 msgid "Pause key."
-msgstr ""
+msgstr "Klawisz Pause."
 
 #: doc/classes/@GlobalScope.xml:179
 msgid "Print Screen key."
-msgstr ""
+msgstr "Klawisz Print Screen."
 
 #: doc/classes/@GlobalScope.xml:182
 msgid "System Request key."
-msgstr ""
+msgstr "Klawisz System Request."
 
 #: doc/classes/@GlobalScope.xml:185
 msgid "Clear key."
@@ -1726,199 +1478,199 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:188
 msgid "Home key."
-msgstr ""
+msgstr "Klawisz Home."
 
 #: doc/classes/@GlobalScope.xml:191
 msgid "End key."
-msgstr ""
+msgstr "Klawisz End."
 
 #: doc/classes/@GlobalScope.xml:194
 msgid "Left arrow key."
-msgstr ""
+msgstr "Klawisz strzałki w lewo."
 
 #: doc/classes/@GlobalScope.xml:197
 msgid "Up arrow key."
-msgstr ""
+msgstr "Klawisz strzałki w górę."
 
 #: doc/classes/@GlobalScope.xml:200
 msgid "Right arrow key."
-msgstr ""
+msgstr "Klawisz strzałki w prawo."
 
 #: doc/classes/@GlobalScope.xml:203
 msgid "Down arrow key."
-msgstr ""
+msgstr "Klawisz strzałki w dół."
 
 #: doc/classes/@GlobalScope.xml:206
 msgid "Page Up key."
-msgstr ""
+msgstr "Klawisz Page Up."
 
 #: doc/classes/@GlobalScope.xml:209
 msgid "Page Down key."
-msgstr ""
+msgstr "Klawisz Page Down."
 
 #: doc/classes/@GlobalScope.xml:212
 msgid "Shift key."
-msgstr ""
+msgstr "Klawisz Shift."
 
 #: doc/classes/@GlobalScope.xml:215
 msgid "Control key."
-msgstr ""
+msgstr "Klawisz Control."
 
 #: doc/classes/@GlobalScope.xml:218
 msgid "Meta key."
-msgstr ""
+msgstr "Klawisz Meta."
 
 #: doc/classes/@GlobalScope.xml:221
 msgid "Alt key."
-msgstr ""
+msgstr "Klawisz Alt."
 
 #: doc/classes/@GlobalScope.xml:224
 msgid "Caps Lock key."
-msgstr ""
+msgstr "Klawisz Caps Lock."
 
 #: doc/classes/@GlobalScope.xml:227
 msgid "Num Lock key."
-msgstr ""
+msgstr "Klawisz Num Lock."
 
 #: doc/classes/@GlobalScope.xml:230
 msgid "Scroll Lock key."
-msgstr ""
+msgstr "Klawisz Scroll Lock."
 
 #: doc/classes/@GlobalScope.xml:233
 msgid "F1 key."
-msgstr ""
+msgstr "Klawisz F1."
 
 #: doc/classes/@GlobalScope.xml:236
 msgid "F2 key."
-msgstr ""
+msgstr "Klawisz F2."
 
 #: doc/classes/@GlobalScope.xml:239
 msgid "F3 key."
-msgstr ""
+msgstr "Klawisz F3."
 
 #: doc/classes/@GlobalScope.xml:242
 msgid "F4 key."
-msgstr ""
+msgstr "Klawisz F4."
 
 #: doc/classes/@GlobalScope.xml:245
 msgid "F5 key."
-msgstr ""
+msgstr "Klawisz F5."
 
 #: doc/classes/@GlobalScope.xml:248
 msgid "F6 key."
-msgstr ""
+msgstr "Klawisz F6."
 
 #: doc/classes/@GlobalScope.xml:251
 msgid "F7 key."
-msgstr ""
+msgstr "Klawisz F7."
 
 #: doc/classes/@GlobalScope.xml:254
 msgid "F8 key."
-msgstr ""
+msgstr "Klawisz F8."
 
 #: doc/classes/@GlobalScope.xml:257
 msgid "F9 key."
-msgstr ""
+msgstr "Klawisz F9."
 
 #: doc/classes/@GlobalScope.xml:260
 msgid "F10 key."
-msgstr ""
+msgstr "Klawisz F10."
 
 #: doc/classes/@GlobalScope.xml:263
 msgid "F11 key."
-msgstr ""
+msgstr "Klawisz F11."
 
 #: doc/classes/@GlobalScope.xml:266
 msgid "F12 key."
-msgstr ""
+msgstr "Klawisz F12."
 
 #: doc/classes/@GlobalScope.xml:269
 msgid "F13 key."
-msgstr ""
+msgstr "Klawisz F13."
 
 #: doc/classes/@GlobalScope.xml:272
 msgid "F14 key."
-msgstr ""
+msgstr "Klawisz F14."
 
 #: doc/classes/@GlobalScope.xml:275
 msgid "F15 key."
-msgstr ""
+msgstr "Klawisz F15."
 
 #: doc/classes/@GlobalScope.xml:278
 msgid "F16 key."
-msgstr ""
+msgstr "Klawisz F16."
 
 #: doc/classes/@GlobalScope.xml:281
 msgid "Multiply (*) key on the numeric keypad."
-msgstr ""
+msgstr "Klawisz mnożenia (*) na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:284
 msgid "Divide (/) key on the numeric keypad."
-msgstr ""
+msgstr "Klawisz dzielenia (/) na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:287
 msgid "Subtract (-) key on the numeric keypad."
-msgstr ""
+msgstr "Klawisz odejmowania (-) na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:290
 msgid "Period (.) key on the numeric keypad."
-msgstr ""
+msgstr "Klawisz kropki (.) na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:293
 msgid "Add (+) key on the numeric keypad."
-msgstr ""
+msgstr "Klawisz dodawania (+) na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:296
 msgid "Number 0 on the numeric keypad."
-msgstr ""
+msgstr "Numer 0 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:299
 msgid "Number 1 on the numeric keypad."
-msgstr ""
+msgstr "Numer 1 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:302
 msgid "Number 2 on the numeric keypad."
-msgstr ""
+msgstr "Numer 2 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:305
 msgid "Number 3 on the numeric keypad."
-msgstr ""
+msgstr "Numer 3 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:308
 msgid "Number 4 on the numeric keypad."
-msgstr ""
+msgstr "Numer 4 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:311
 msgid "Number 5 on the numeric keypad."
-msgstr ""
+msgstr "Numer 5 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:314
 msgid "Number 6 on the numeric keypad."
-msgstr ""
+msgstr "Numer 6 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:317
 msgid "Number 7 on the numeric keypad."
-msgstr ""
+msgstr "Numer 7 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:320
 msgid "Number 8 on the numeric keypad."
-msgstr ""
+msgstr "Numer 8 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:323
 msgid "Number 9 on the numeric keypad."
-msgstr ""
+msgstr "Numer 9 na klawiaturze numerycznej."
 
 #: doc/classes/@GlobalScope.xml:326
 msgid "Left Super key (Windows key)."
-msgstr ""
+msgstr "Lewy klawisz Super (Windows)."
 
 #: doc/classes/@GlobalScope.xml:329
 msgid "Right Super key (Windows key)."
-msgstr ""
+msgstr "Prawy klawisz Super (Windows)."
 
 #: doc/classes/@GlobalScope.xml:332
 msgid "Context menu key."
-msgstr ""
+msgstr "Klawisz menu kontekstowego."
 
 #: doc/classes/@GlobalScope.xml:335
 msgid "Left Hyper key."
@@ -1930,7 +1682,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:341
 msgid "Help key."
-msgstr ""
+msgstr "Klawisz pomocy."
 
 #: doc/classes/@GlobalScope.xml:344
 msgid "Left Direction key."
@@ -1942,31 +1694,31 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:350
 msgid "Back key."
-msgstr ""
+msgstr "Klawisz cofnięcia."
 
 #: doc/classes/@GlobalScope.xml:353
 msgid "Forward key."
-msgstr ""
+msgstr "Klawisz w przód."
 
 #: doc/classes/@GlobalScope.xml:356
 msgid "Stop key."
-msgstr ""
+msgstr "Klawisz stop."
 
 #: doc/classes/@GlobalScope.xml:359
 msgid "Refresh key."
-msgstr ""
+msgstr "Klawisz odświeżenia."
 
 #: doc/classes/@GlobalScope.xml:362
 msgid "Volume down key."
-msgstr ""
+msgstr "Klawisz przyciszenia."
 
 #: doc/classes/@GlobalScope.xml:365
 msgid "Mute volume key."
-msgstr ""
+msgstr "Klawisz wyciszenia."
 
 #: doc/classes/@GlobalScope.xml:368
 msgid "Volume up key."
-msgstr ""
+msgstr "Klawisz podgłośnienia."
 
 #: doc/classes/@GlobalScope.xml:371
 msgid "Bass Boost key."
@@ -2018,11 +1770,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:407
 msgid "Search key."
-msgstr ""
+msgstr "Klawisz wyszukiwania."
 
 #: doc/classes/@GlobalScope.xml:410
 msgid "Standby key."
-msgstr ""
+msgstr "Klawisz gotowości."
 
 #: doc/classes/@GlobalScope.xml:413
 msgid "Open URL / Launch Browser key."
@@ -2102,283 +1854,283 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:470
 msgid "Unknown key."
-msgstr ""
+msgstr "Nieznany klawisz."
 
 #: doc/classes/@GlobalScope.xml:473
 msgid "Space key."
-msgstr ""
+msgstr "Spacja."
 
 #: doc/classes/@GlobalScope.xml:476
 msgid "! key."
-msgstr ""
+msgstr "Klawisz !."
 
 #: doc/classes/@GlobalScope.xml:479
 msgid "\" key."
-msgstr ""
+msgstr "Klawisz \"."
 
 #: doc/classes/@GlobalScope.xml:482
 msgid "# key."
-msgstr ""
+msgstr "Klawisz #."
 
 #: doc/classes/@GlobalScope.xml:485
 msgid "$ key."
-msgstr ""
+msgstr "Klawisz $."
 
 #: doc/classes/@GlobalScope.xml:488
 msgid "% key."
-msgstr ""
+msgstr "Klawisz %."
 
 #: doc/classes/@GlobalScope.xml:491
 msgid "& key."
-msgstr ""
+msgstr "Klawisz &."
 
 #: doc/classes/@GlobalScope.xml:494
 msgid "' key."
-msgstr ""
+msgstr "Klawisz '."
 
 #: doc/classes/@GlobalScope.xml:497
 msgid "( key."
-msgstr ""
+msgstr "Klawisz (."
 
 #: doc/classes/@GlobalScope.xml:500
 msgid ") key."
-msgstr ""
+msgstr "Klawisz )."
 
 #: doc/classes/@GlobalScope.xml:503
 msgid "* key."
-msgstr ""
+msgstr "Klawisz *."
 
 #: doc/classes/@GlobalScope.xml:506
 msgid "+ key."
-msgstr ""
+msgstr "Klawisz +."
 
 #: doc/classes/@GlobalScope.xml:509
 msgid ", key."
-msgstr ""
+msgstr "Klawisz ,."
 
 #: doc/classes/@GlobalScope.xml:512
 msgid "- key."
-msgstr ""
+msgstr "Klawisz -."
 
 #: doc/classes/@GlobalScope.xml:515
 msgid ". key."
-msgstr ""
+msgstr "Klawisz .."
 
 #: doc/classes/@GlobalScope.xml:518
 msgid "/ key."
-msgstr ""
+msgstr "Klawisz /."
 
 #: doc/classes/@GlobalScope.xml:521
 msgid "Number 0."
-msgstr ""
+msgstr "Numer 0."
 
 #: doc/classes/@GlobalScope.xml:524
 msgid "Number 1."
-msgstr ""
+msgstr "Numer 1."
 
 #: doc/classes/@GlobalScope.xml:527
 msgid "Number 2."
-msgstr ""
+msgstr "Numer 2."
 
 #: doc/classes/@GlobalScope.xml:530
 msgid "Number 3."
-msgstr ""
+msgstr "Numer 3."
 
 #: doc/classes/@GlobalScope.xml:533
 msgid "Number 4."
-msgstr ""
+msgstr "Numer 4."
 
 #: doc/classes/@GlobalScope.xml:536
 msgid "Number 5."
-msgstr ""
+msgstr "Numer 5."
 
 #: doc/classes/@GlobalScope.xml:539
 msgid "Number 6."
-msgstr ""
+msgstr "Numer 6."
 
 #: doc/classes/@GlobalScope.xml:542
 msgid "Number 7."
-msgstr ""
+msgstr "Numer 7."
 
 #: doc/classes/@GlobalScope.xml:545
 msgid "Number 8."
-msgstr ""
+msgstr "Numer 8."
 
 #: doc/classes/@GlobalScope.xml:548
 msgid "Number 9."
-msgstr ""
+msgstr "Numer 9."
 
 #: doc/classes/@GlobalScope.xml:551
 msgid ": key."
-msgstr ""
+msgstr "Klawisz :."
 
 #: doc/classes/@GlobalScope.xml:554
 msgid "; key."
-msgstr ""
+msgstr "Klawisz ;."
 
 #: doc/classes/@GlobalScope.xml:557
 msgid "< key."
-msgstr ""
+msgstr "Klawisz <."
 
 #: doc/classes/@GlobalScope.xml:560
 msgid "= key."
-msgstr ""
+msgstr "Klawisz =."
 
 #: doc/classes/@GlobalScope.xml:563
 msgid "> key."
-msgstr ""
+msgstr "Klawisz >."
 
 #: doc/classes/@GlobalScope.xml:566
 msgid "? key."
-msgstr ""
+msgstr "Klawisz ?."
 
 #: doc/classes/@GlobalScope.xml:569
 msgid "@ key."
-msgstr ""
+msgstr "Klawisz @."
 
 #: doc/classes/@GlobalScope.xml:572
 msgid "A key."
-msgstr ""
+msgstr "Klawisz A."
 
 #: doc/classes/@GlobalScope.xml:575
 msgid "B key."
-msgstr ""
+msgstr "Klawisz B."
 
 #: doc/classes/@GlobalScope.xml:578
 msgid "C key."
-msgstr ""
+msgstr "Klawisz C."
 
 #: doc/classes/@GlobalScope.xml:581
 msgid "D key."
-msgstr ""
+msgstr "Klawisz D."
 
 #: doc/classes/@GlobalScope.xml:584
 msgid "E key."
-msgstr ""
+msgstr "Klawisz E."
 
 #: doc/classes/@GlobalScope.xml:587
 msgid "F key."
-msgstr ""
+msgstr "Klawisz F."
 
 #: doc/classes/@GlobalScope.xml:590
 msgid "G key."
-msgstr ""
+msgstr "Klawisz G."
 
 #: doc/classes/@GlobalScope.xml:593
 msgid "H key."
-msgstr ""
+msgstr "Klawisz H."
 
 #: doc/classes/@GlobalScope.xml:596
 msgid "I key."
-msgstr ""
+msgstr "Klawisz I."
 
 #: doc/classes/@GlobalScope.xml:599
 msgid "J key."
-msgstr ""
+msgstr "Klawisz J."
 
 #: doc/classes/@GlobalScope.xml:602
 msgid "K key."
-msgstr ""
+msgstr "Klawisz K."
 
 #: doc/classes/@GlobalScope.xml:605
 msgid "L key."
-msgstr ""
+msgstr "Klawisz L."
 
 #: doc/classes/@GlobalScope.xml:608
 msgid "M key."
-msgstr ""
+msgstr "Klawisz M."
 
 #: doc/classes/@GlobalScope.xml:611
 msgid "N key."
-msgstr ""
+msgstr "Klawisz N."
 
 #: doc/classes/@GlobalScope.xml:614
 msgid "O key."
-msgstr ""
+msgstr "Klawisz O."
 
 #: doc/classes/@GlobalScope.xml:617
 msgid "P key."
-msgstr ""
+msgstr "Klawisz P."
 
 #: doc/classes/@GlobalScope.xml:620
 msgid "Q key."
-msgstr ""
+msgstr "Klawisz Q."
 
 #: doc/classes/@GlobalScope.xml:623
 msgid "R key."
-msgstr ""
+msgstr "Klawisz R."
 
 #: doc/classes/@GlobalScope.xml:626
 msgid "S key."
-msgstr ""
+msgstr "Klawisz S."
 
 #: doc/classes/@GlobalScope.xml:629
 msgid "T key."
-msgstr ""
+msgstr "Klawisz T."
 
 #: doc/classes/@GlobalScope.xml:632
 msgid "U key."
-msgstr ""
+msgstr "Klawisz U."
 
 #: doc/classes/@GlobalScope.xml:635
 msgid "V key."
-msgstr ""
+msgstr "Klawisz V."
 
 #: doc/classes/@GlobalScope.xml:638
 msgid "W key."
-msgstr ""
+msgstr "Klawisz W."
 
 #: doc/classes/@GlobalScope.xml:641
 msgid "X key."
-msgstr ""
+msgstr "Klawisz X."
 
 #: doc/classes/@GlobalScope.xml:644
 msgid "Y key."
-msgstr ""
+msgstr "Klawisz Y."
 
 #: doc/classes/@GlobalScope.xml:647
 msgid "Z key."
-msgstr ""
+msgstr "Klawisz Z."
 
 #: doc/classes/@GlobalScope.xml:650
 msgid "[ key."
-msgstr ""
+msgstr "Klawisz [."
 
 #: doc/classes/@GlobalScope.xml:653
 msgid "\\ key."
-msgstr ""
+msgstr "Klawisz \\."
 
 #: doc/classes/@GlobalScope.xml:656
 msgid "] key."
-msgstr ""
+msgstr "Klawisz ]."
 
 #: doc/classes/@GlobalScope.xml:659
 msgid "^ key."
-msgstr ""
+msgstr "Klawisz ^."
 
 #: doc/classes/@GlobalScope.xml:662
 msgid "_ key."
-msgstr ""
+msgstr "Klawisz _."
 
 #: doc/classes/@GlobalScope.xml:665
 msgid "` key."
-msgstr ""
+msgstr "Klawisz `."
 
 #: doc/classes/@GlobalScope.xml:668
 msgid "{ key."
-msgstr ""
+msgstr "Klawisz {."
 
 #: doc/classes/@GlobalScope.xml:671
 msgid "| key."
-msgstr ""
+msgstr "Klawisz |."
 
 #: doc/classes/@GlobalScope.xml:674
 msgid "} key."
-msgstr ""
+msgstr "Klawisz }."
 
 #: doc/classes/@GlobalScope.xml:677
 msgid "~ key."
-msgstr ""
+msgstr "Klawisz ~."
 
 #: doc/classes/@GlobalScope.xml:680
 msgid "Non-breakable space key."
@@ -2390,47 +2142,47 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:686
 msgid "¢ key."
-msgstr ""
+msgstr "Klawisz ¢."
 
 #: doc/classes/@GlobalScope.xml:689
 msgid "£ key."
-msgstr ""
+msgstr "Klawisz £."
 
 #: doc/classes/@GlobalScope.xml:692
 msgid "¤ key."
-msgstr ""
+msgstr "Klawisz ¤."
 
 #: doc/classes/@GlobalScope.xml:695
 msgid "¥ key."
-msgstr ""
+msgstr "Klawisz ¥."
 
 #: doc/classes/@GlobalScope.xml:698
 msgid "¦ key."
-msgstr ""
+msgstr "Klawisz ¦."
 
 #: doc/classes/@GlobalScope.xml:701
 msgid "§ key."
-msgstr ""
+msgstr "Klawisz §."
 
 #: doc/classes/@GlobalScope.xml:704
 msgid "¨ key."
-msgstr ""
+msgstr "Klawisz ¨."
 
 #: doc/classes/@GlobalScope.xml:707
 msgid "© key."
-msgstr ""
+msgstr "Klawisz ©."
 
 #: doc/classes/@GlobalScope.xml:710
 msgid "ª key."
-msgstr ""
+msgstr "Klawisz ª."
 
 #: doc/classes/@GlobalScope.xml:713
 msgid "« key."
-msgstr ""
+msgstr "Klawisz «."
 
 #: doc/classes/@GlobalScope.xml:716
 msgid "¬ key."
-msgstr ""
+msgstr "Klawisz ¬."
 
 #: doc/classes/@GlobalScope.xml:719
 msgid "Soft hyphen key."
@@ -2438,211 +2190,211 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:722
 msgid "® key."
-msgstr ""
+msgstr "Klawisz ®."
 
 #: doc/classes/@GlobalScope.xml:725
 msgid "¯ key."
-msgstr ""
+msgstr "Klawisz ¯."
 
 #: doc/classes/@GlobalScope.xml:728
 msgid "° key."
-msgstr ""
+msgstr "Klawisz °."
 
 #: doc/classes/@GlobalScope.xml:731
 msgid "± key."
-msgstr ""
+msgstr "Klawisz ±."
 
 #: doc/classes/@GlobalScope.xml:734
 msgid "² key."
-msgstr ""
+msgstr "Klawisz ²."
 
 #: doc/classes/@GlobalScope.xml:737
 msgid "³ key."
-msgstr ""
+msgstr "Klawisz ³."
 
 #: doc/classes/@GlobalScope.xml:740
 msgid "´ key."
-msgstr ""
+msgstr "Klawisz ´."
 
 #: doc/classes/@GlobalScope.xml:743
 msgid "µ key."
-msgstr ""
+msgstr "Klawisz µ."
 
 #: doc/classes/@GlobalScope.xml:746
 msgid "¶ key."
-msgstr ""
+msgstr "Klawisz ¶."
 
 #: doc/classes/@GlobalScope.xml:749
 msgid "· key."
-msgstr ""
+msgstr "Klawisz ·."
 
 #: doc/classes/@GlobalScope.xml:752
 msgid "¸ key."
-msgstr ""
+msgstr "Klawisz ¸."
 
 #: doc/classes/@GlobalScope.xml:755
 msgid "¹ key."
-msgstr ""
+msgstr "Klawisz ¹."
 
 #: doc/classes/@GlobalScope.xml:758
 msgid "º key."
-msgstr ""
+msgstr "Klawisz º."
 
 #: doc/classes/@GlobalScope.xml:761
 msgid "» key."
-msgstr ""
+msgstr "Klawisz »."
 
 #: doc/classes/@GlobalScope.xml:764
 msgid "¼ key."
-msgstr ""
+msgstr "Klawisz ¼."
 
 #: doc/classes/@GlobalScope.xml:767
 msgid "½ key."
-msgstr ""
+msgstr "Klawisz ½."
 
 #: doc/classes/@GlobalScope.xml:770
 msgid "¾ key."
-msgstr ""
+msgstr "Klawisz ¾."
 
 #: doc/classes/@GlobalScope.xml:773
 msgid "¿ key."
-msgstr ""
+msgstr "Klawisz ¿."
 
 #: doc/classes/@GlobalScope.xml:776
 msgid "À key."
-msgstr ""
+msgstr "Klawisz À."
 
 #: doc/classes/@GlobalScope.xml:779
 msgid "Á key."
-msgstr ""
+msgstr "Klawisz Á."
 
 #: doc/classes/@GlobalScope.xml:782
 msgid "Â key."
-msgstr ""
+msgstr "Klawisz Â."
 
 #: doc/classes/@GlobalScope.xml:785
 msgid "Ã key."
-msgstr ""
+msgstr "Klawisz Ã."
 
 #: doc/classes/@GlobalScope.xml:788
 msgid "Ä key."
-msgstr ""
+msgstr "Klawisz Ä."
 
 #: doc/classes/@GlobalScope.xml:791
 msgid "Å key."
-msgstr ""
+msgstr "Klawisz Å."
 
 #: doc/classes/@GlobalScope.xml:794
 msgid "Æ key."
-msgstr ""
+msgstr "Klawisz Æ."
 
 #: doc/classes/@GlobalScope.xml:797
 msgid "Ç key."
-msgstr ""
+msgstr "Klawisz Ç."
 
 #: doc/classes/@GlobalScope.xml:800
 msgid "È key."
-msgstr ""
+msgstr "Klawisz È."
 
 #: doc/classes/@GlobalScope.xml:803
 msgid "É key."
-msgstr ""
+msgstr "Klawisz É."
 
 #: doc/classes/@GlobalScope.xml:806
 msgid "Ê key."
-msgstr ""
+msgstr "Klawisz Ê."
 
 #: doc/classes/@GlobalScope.xml:809
 msgid "Ë key."
-msgstr ""
+msgstr "Klawisz Ë."
 
 #: doc/classes/@GlobalScope.xml:812
 msgid "Ì key."
-msgstr ""
+msgstr "Klawisz Ì."
 
 #: doc/classes/@GlobalScope.xml:815
 msgid "Í key."
-msgstr ""
+msgstr "Klawisz Í."
 
 #: doc/classes/@GlobalScope.xml:818
 msgid "Î key."
-msgstr ""
+msgstr "Klawisz Î."
 
 #: doc/classes/@GlobalScope.xml:821
 msgid "Ï key."
-msgstr ""
+msgstr "Klawisz Ï."
 
 #: doc/classes/@GlobalScope.xml:824
 msgid "Ð key."
-msgstr ""
+msgstr "Klawisz Ð."
 
 #: doc/classes/@GlobalScope.xml:827
 msgid "Ñ key."
-msgstr ""
+msgstr "Klawisz Ñ."
 
 #: doc/classes/@GlobalScope.xml:830
 msgid "Ò key."
-msgstr ""
+msgstr "Klawisz Ò."
 
 #: doc/classes/@GlobalScope.xml:833
 msgid "Ó key."
-msgstr ""
+msgstr "Klawisz Ó."
 
 #: doc/classes/@GlobalScope.xml:836
 msgid "Ô key."
-msgstr ""
+msgstr "Klawisz Ô."
 
 #: doc/classes/@GlobalScope.xml:839
 msgid "Õ key."
-msgstr ""
+msgstr "Klawisz Õ."
 
 #: doc/classes/@GlobalScope.xml:842
 msgid "Ö key."
-msgstr ""
+msgstr "Klawisz Ö."
 
 #: doc/classes/@GlobalScope.xml:845
 msgid "× key."
-msgstr ""
+msgstr "Klawisz ×."
 
 #: doc/classes/@GlobalScope.xml:848
 msgid "Ø key."
-msgstr ""
+msgstr "Klawisz Ø."
 
 #: doc/classes/@GlobalScope.xml:851
 msgid "Ù key."
-msgstr ""
+msgstr "Klawisz Ù."
 
 #: doc/classes/@GlobalScope.xml:854
 msgid "Ú key."
-msgstr ""
+msgstr "Klawisz Ú."
 
 #: doc/classes/@GlobalScope.xml:857
 msgid "Û key."
-msgstr ""
+msgstr "Klawisz Û."
 
 #: doc/classes/@GlobalScope.xml:860
 msgid "Ü key."
-msgstr ""
+msgstr "Klawisz Ü."
 
 #: doc/classes/@GlobalScope.xml:863
 msgid "Ý key."
-msgstr ""
+msgstr "Klawisz Ý."
 
 #: doc/classes/@GlobalScope.xml:866
 msgid "Þ key."
-msgstr ""
+msgstr "Klawisz Þ."
 
 #: doc/classes/@GlobalScope.xml:869
 msgid "ß key."
-msgstr ""
+msgstr "Klawisz ß."
 
 #: doc/classes/@GlobalScope.xml:872
 msgid "÷ key."
-msgstr ""
+msgstr "Klawisz ÷."
 
 #: doc/classes/@GlobalScope.xml:875
 msgid "ÿ key."
-msgstr ""
+msgstr "Klawisz ÿ."
 
 #: doc/classes/@GlobalScope.xml:878
 msgid "Key Code mask."
@@ -5378,9 +5130,6 @@ msgid ""
 "This node can be used to cause a seek command to happen to any sub-children "
 "of the graph. After setting the time, this value returns to -1."
 msgstr ""
-"Ce nœud peut être utilisé pour faire en sorte qu'une commande de recherche "
-"soit exécutée sur n'importe quel sous-enfant du graphe. Après avoir réglé le "
-"temps, cette valeur revient à -1."
 
 #: doc/classes/AnimationNodeTransition.xml:4
 msgid "A generic animation transition node for [AnimationTree]."
@@ -25043,13 +24792,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml:238
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the joypad button (see [enum "
 "JoyButtonList])."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/Input.xml:247
 msgid ""
@@ -47272,184 +47018,138 @@ msgstr ""
 #: doc/classes/String.xml:19
 msgid "Constructs a new String from the given [bool]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [bool] (booléen) "
-"donné."
 
 #: doc/classes/String.xml:28
 msgid "Constructs a new String from the given [int]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [int] (entier) donné."
 
 #: doc/classes/String.xml:37
 msgid "Constructs a new String from the given [float]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [float] (flottant) "
-"donné."
 
 #: doc/classes/String.xml:46
 msgid "Constructs a new String from the given [Vector2]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector2] donné."
 
 #: doc/classes/String.xml:55
 msgid "Constructs a new String from the given [Vector2i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector2i] donné."
 
 #: doc/classes/String.xml:64
 msgid "Constructs a new String from the given [Rect2]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Rect2] donné."
+msgstr ""
 
 #: doc/classes/String.xml:73
 msgid "Constructs a new String from the given [Rect2i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Rect2i] donné."
 
 #: doc/classes/String.xml:82
 msgid "Constructs a new String from the given [Vector3]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector3] donné."
 
 #: doc/classes/String.xml:91
 msgid "Constructs a new String from the given [Vector3i]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Vector3i] donné."
 
 #: doc/classes/String.xml:100
 msgid "Constructs a new String from the given [Transform2D]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Transform2D] donné."
 
 #: doc/classes/String.xml:109
 msgid "Constructs a new String from the given [Plane]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Plane] donné."
+msgstr ""
 
 #: doc/classes/String.xml:118
 msgid "Constructs a new String from the given [Quat]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Quat] donné."
+msgstr ""
 
 #: doc/classes/String.xml:127
 msgid "Constructs a new String from the given [AABB]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [AABB] donné."
+msgstr ""
 
 #: doc/classes/String.xml:136
 msgid "Constructs a new String from the given [Basis]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Basis] donné."
+msgstr ""
 
 #: doc/classes/String.xml:145
 msgid "Constructs a new String from the given [Transform]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Transform] "
-"donnée."
 
 #: doc/classes/String.xml:154
 msgid "Constructs a new String from the given [Color]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir de la [Color] (couleur) "
-"donnée."
 
 #: doc/classes/String.xml:163
 msgid "Constructs a new String from the given [StringName]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [StringName] (nom de "
-"la chaîne de caractères) donné."
 
 #: doc/classes/String.xml:172
 msgid "Constructs a new String from the given [NodePath]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [NodePath] (chemin "
-"du nœud) donné."
 
 #: doc/classes/String.xml:181
 msgid "Constructs a new String from the given [RID]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [RID] donné."
+msgstr ""
 
 #: doc/classes/String.xml:190
 msgid "Constructs a new String from the given [Callable]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Callable] donné."
 
 #: doc/classes/String.xml:199
 msgid "Constructs a new String from the given [Signal]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Signal] (signal) "
-"donné."
 
 #: doc/classes/String.xml:208
 msgid "Constructs a new String from the given [Dictionary]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [Dictionary]"
-"(dictionaire) donné."
 
 #: doc/classes/String.xml:217
 msgid "Constructs a new String from the given [Array]."
-msgstr "Construit une nouvelle chaîne de caractères à partir du [Array] donné."
+msgstr ""
 
 #: doc/classes/String.xml:226
 msgid "Constructs a new String from the given [PackedByteArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedByteArray] "
-"donné."
 
 #: doc/classes/String.xml:235
 msgid "Constructs a new String from the given [PackedInt32Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt32Array] "
-"donné."
 
 #: doc/classes/String.xml:244
 msgid "Constructs a new String from the given [PackedInt64Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedInt64Array] "
-"donné."
 
 #: doc/classes/String.xml:253
 msgid "Constructs a new String from the given [PackedFloat32Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedFloat32Array] "
-"donné."
 
 #: doc/classes/String.xml:262
 msgid "Constructs a new String from the given [PackedFloat64Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedFloat64Array] "
-"donné."
 
 #: doc/classes/String.xml:271
 msgid "Constructs a new String from the given [PackedStringArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedStringArray] "
-"donné."
 
 #: doc/classes/String.xml:280
 msgid "Constructs a new String from the given [PackedVector2Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector2Array] "
-"donné."
 
 #: doc/classes/String.xml:289
 msgid "Constructs a new String from the given [PackedVector3Array]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedVector3Array] "
-"donné."
 
 #: doc/classes/String.xml:298
 msgid "Constructs a new String from the given [PackedColorArray]."
 msgstr ""
-"Construit une nouvelle chaîne de caractères à partir du [PackedColorArray] "
-"donné."
 
 #: doc/classes/String.xml:307
 msgid "Returns [code]true[/code] if the string begins with the given string."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères commence par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/String.xml:314
 msgid "Returns the bigrams (pairs of consecutive letters) of this string."
 msgstr ""
-"Retourne les bigrammes (paires de lettres consécutives) de cette chaîne de "
-"caractères."
 
 #: doc/classes/String.xml:321
 msgid ""
@@ -47500,26 +47200,20 @@ msgid ""
 "Returns a copy of the string with indentation (leading tabs and spaces) "
 "removed."
 msgstr ""
-"Retourne une copie de la chaîne de caractères avec indentation (tabulations "
-"et espaces antéposés)."
 
 #: doc/classes/String.xml:384
 msgid "Returns [code]true[/code] if the string is empty."
-msgstr "Retourne [code]true[/code] (vrai) si la chaîne de caractères est vide."
+msgstr ""
 
 #: doc/classes/String.xml:393
 msgid "Returns [code]true[/code] if the string ends with the given string."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères finit par la "
-"chaîne de caractères donnée."
 
 #: doc/classes/String.xml:404
 msgid ""
 "Erases [code]chars[/code] characters from the string starting from "
 "[code]position[/code]."
 msgstr ""
-"Efface [code]chars[/code] les caractères de la chaîne de caractères à partir "
-"de la [code]position[/code]."
 
 #: doc/classes/String.xml:415
 msgid ""
@@ -47527,18 +47221,12 @@ msgid ""
 "the substring or -1 if not found. Optionally, the initial search index can "
 "be passed."
 msgstr ""
-"Trouve la première occurrence d'une sous-chaîne de caractères. Retourne le "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
 
 #: doc/classes/String.xml:424
 msgid ""
 "Finds the last occurrence of a substring. Returns the starting position of "
 "the substring or -1 if not found."
 msgstr ""
-"Trouve la dernière occurence d'une sous-chaîne de caractère. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée."
 
 #: doc/classes/String.xml:435
 msgid ""
@@ -47546,18 +47234,12 @@ msgid ""
 "starting position of the substring or -1 if not found. Optionally, the "
 "initial search index can be passed."
 msgstr ""
-"Trouve la première occurence d'une sous-chaîne de caractères. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
 
 #: doc/classes/String.xml:446
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
 "with [code]values[/code]."
 msgstr ""
-"Formate la chaîne de caractères en remplaçant toutes les occurences de "
-"[code]placeholder[/code] par [code]values[/code]."
 
 #: doc/classes/String.xml:453
 msgid "If the string is a valid file path, returns the base directory name."
@@ -47572,14 +47254,10 @@ msgstr ""
 #: doc/classes/String.xml:467
 msgid "If the string is a valid file path, returns the extension."
 msgstr ""
-"Si la chaîne de caractères est un chemin de fichier valide, retourne "
-"l'extension."
 
 #: doc/classes/String.xml:474
 msgid "If the string is a valid file path, returns the filename."
 msgstr ""
-"Si la chaîne de caractères est un chemin de fichier valide, retourne le nom "
-"du fichier."
 
 #: doc/classes/String.xml:481
 msgid "Hashes the string and returns a 32-bit integer."
@@ -47594,12 +47272,6 @@ msgid ""
 "print(\"0xff\".hex_to_int()) # Print \"255\"\n"
 "[/codeblock]"
 msgstr ""
-"Convertit une chaîne de caractères contenant un nombre en héxadécimal en un "
-"nombre entier (int). Les chaînes de caractères en héxadécimal sont censées "
-"avoir le préfixe \"[code]0x[/code]\" autrement [code]0[/code] est retourné.\n"
-"[codeblock]\n"
-"print(\"0xff\".hex_to_int()) # Affiche \"255\"\n"
-"[/codeblock]"
 
 #: doc/classes/String.xml:498
 msgid ""
@@ -47933,11 +47605,11 @@ msgstr ""
 
 #: doc/classes/String.xml:965
 msgid "Returns the string converted to lowercase."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr ""
 
 #: doc/classes/String.xml:972
 msgid "Returns the string converted to uppercase."
-msgstr "Retourne la chaîne de caractères convertie en majuscules."
+msgstr ""
 
 #: doc/classes/String.xml:979
 msgid ""
@@ -47946,11 +47618,6 @@ msgid ""
 "to_ascii], but supports all UTF-8 characters. Therefore, you should prefer "
 "this function over [method to_ascii]."
 msgstr ""
-"Convertit la chaîne de caractères (qui est un array (tableau) de caractères) "
-"en un [PackedByteArray] (qui est un array de bytes). La conversion est un "
-"plus lente que [method to_ascii], mais est compatible avec tous les "
-"caractères UTF-8. Par conséquent, il est préférable d'utiliser cette "
-"fonction à la place [method to_ascii]."
 
 #: doc/classes/String.xml:988
 msgid ""
@@ -47978,7 +47645,7 @@ msgstr ""
 
 #: doc/classes/StringName.xml:4
 msgid "An optimized string type for unique names."
-msgstr "Un type de chaîne de caractères optimisé pour les noms uniques."
+msgstr ""
 
 #: doc/classes/StringName.xml:7
 msgid ""
@@ -56900,8 +56567,8 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Renvoie l'atténuation en fonction du produit scalaire de la surface normale "
-"et de la direction de la caméra (transmettez-lui les entrées associées)."
+"Zwraca spadek na podstawie iloczynu skalarnego normalnej powierzchni i "
+"kierunku widoku kamery (podaj tu powiązane wejście)."
 
 #: doc/classes/VisualShaderNodeGlobalExpression.xml:4
 msgid ""
@@ -58323,13 +57990,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/XRController3D.xml:65
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the button at index [code]button[/code] is "
 "pressed. See [enum JoyButtonList]."
 msgstr ""
-"Renvoie [code]true[/code] (vrai) si [code]s[/code] vaut zéro ou quasiment "
-"zéro."
 
 #: doc/classes/XRController3D.xml:71
 msgid ""
@@ -58442,7 +58106,7 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:71
 msgid "Turns the interface off."
-msgstr "Désactive l'interface."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:77
 msgid "On an AR interface, [code]true[/code] if anchor detection is enabled."
@@ -58450,15 +58114,15 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:80
 msgid "[code]true[/code] if this interface been initialized."
-msgstr "[code]true[/code] (vrai) si cette interface a été initialisée."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:83
 msgid "[code]true[/code] if this is the primary interface."
-msgstr "[code]true[/code] (vrai) si c'est l'interface principale."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:88
 msgid "No XR capabilities."
-msgstr "Pas de capacité XR."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:91
 msgid ""
@@ -58467,7 +58131,7 @@ msgstr ""
 
 #: doc/classes/XRInterface.xml:94
 msgid "This interface supports stereoscopic rendering."
-msgstr "Cette interface est compatible avec le rendu stéréoscopique."
+msgstr ""
 
 #: doc/classes/XRInterface.xml:97
 msgid "This interface supports AR (video background and real world tracking)."
@@ -58717,8 +58381,6 @@ msgstr ""
 msgid ""
 "Returns a list of available interfaces the ID and name of each interface."
 msgstr ""
-"Retourne une liste des interfaces disponibles avec l'identifiant et le nom "
-"de chaque interface."
 
 #: doc/classes/XRServer.xml:72
 msgid ""
@@ -58767,11 +58429,11 @@ msgstr ""
 
 #: doc/classes/XRServer.xml:126
 msgid "Emitted when a new interface has been added."
-msgstr "Émis lorsqu'une nouvelle interface a été ajoutée."
+msgstr ""
 
 #: doc/classes/XRServer.xml:133
 msgid "Emitted when an interface is removed."
-msgstr "Émis lorsqu'une interface est supprimée."
+msgstr ""
 
 #: doc/classes/XRServer.xml:144
 msgid ""
@@ -58835,7 +58497,7 @@ msgstr ""
 
 #: doc/classes/YSort.xml:4
 msgid "Sort all child nodes based on their Y positions."
-msgstr "Trier tous les nœuds enfants en fonction de leur position sur l'axe Y."
+msgstr ""
 
 #: doc/classes/YSort.xml:7
 msgid ""
@@ -58847,19 +58509,10 @@ msgid ""
 "the same space as the parent YSort, allowing to better organize a scene or "
 "divide it in multiple ones, yet keep the unique sorting."
 msgstr ""
-"Trier tous les nœuds enfants en fonction de leur position sur l'axe Y. Le "
-"nœud enfant doit hériter de [CanvasItem] pour être trié. Les nœuds qui ont "
-"une position plus élevée sur l'axe Y seront dessinés plus tard, ils "
-"apparaîtront donc au-dessus des nœuds ayant une position sur l'axe Y plus "
-"basse.\n"
-"L'imbrication des nœuds YSort est possible. Les nœuds YSort enfants seront "
-"triés dans le même espace que le nœud YSort parent, ce qui permet de mieux "
-"organiser une scène ou de la diviser en plusieurs autres, tout en conservant "
-"le tri unique."
 
 #: doc/classes/YSort.xml:16
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-"Si [code]true[/code] (vrai), les nœuds enfants sont triés, sinon le tri est "
-"désactivé."
+"Jeśli [code]true[/code], potomne węzły są sortowane. W innym przypadku jest "
+"wyłączone."
