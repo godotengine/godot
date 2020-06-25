@@ -517,6 +517,12 @@
 		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;gdshader&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
+		<member name="editor/version_control/autoload_on_startup" type="bool" setter="" getter="" default="false">
+			Load the previously opened VCS plugin when the editor starts up. This is set to [code]true[/code] whenever a new VCS plugin is initialized.
+		</member>
+		<member name="editor/version_control/plugin_name" type="String" setter="" getter="" default="&quot;&quot;">
+			Last loaded VCS plugin name. Used to autoload the plugin when the editor starts up.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>

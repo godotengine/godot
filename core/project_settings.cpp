@@ -1061,6 +1061,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
 	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);
 
+	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
+	GLOBAL_DEF("editor/version_control/plugin_name", "");
+
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();

@@ -5932,6 +5932,11 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("run/auto_save/save_before_running", true);
+	EDITOR_DEF("version_control/username", "");
+	EDITOR_DEF("version_control/ssh_public_key_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "version_control/ssh_public_key_path", PROPERTY_HINT_GLOBAL_FILE));
+	EDITOR_DEF("version_control/ssh_private_key_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "version_control/ssh_private_key_path", PROPERTY_HINT_GLOBAL_FILE));
 
 	theme_base = memnew(Control);
 	add_child(theme_base);

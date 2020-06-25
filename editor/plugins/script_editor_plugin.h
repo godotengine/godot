@@ -278,7 +278,6 @@ class ScriptEditor : public PanelContainer {
 	String _get_debug_tooltip(const String &p_text, Node *_se);
 
 	void _resave_scripts(const String &p_str);
-	void _reload_scripts();
 
 	bool _test_script_times_on_disk(RES p_for_script = Ref<Resource>());
 
@@ -423,6 +422,7 @@ public:
 	void ensure_focus_current();
 	void apply_scripts() const;
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
+	void reload_scripts();
 
 	void ensure_select_current();
 

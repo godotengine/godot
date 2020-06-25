@@ -59,6 +59,12 @@
 				Opens the script create dialog. The script will extend [code]base_name[/code]. The file extension can be omitted from [code]base_path[/code]. It will be added based on the selected scripting language.
 			</description>
 		</method>
+		<method name="reload_scripts">
+			<return type="void" />
+			<description>
+				Reload all currently opened scripts from disk in case the file contents are newer.
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="editor_script_changed">
