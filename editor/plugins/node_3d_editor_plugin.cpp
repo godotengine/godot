@@ -4948,7 +4948,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node3D *spatial = Object::cast_to<Node3D>(E->get());
-				if (!spatial || !spatial->is_visible_in_tree()) {
+				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
 
@@ -4962,8 +4962,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
-			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNLOCK_SELECTED: {
@@ -4973,7 +4973,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node3D *spatial = Object::cast_to<Node3D>(E->get());
-				if (!spatial || !spatial->is_visible_in_tree()) {
+				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
 
@@ -4987,8 +4987,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
-			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 		case MENU_GROUP_SELECTED: {
@@ -4998,7 +4998,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node3D *spatial = Object::cast_to<Node3D>(E->get());
-				if (!spatial || !spatial->is_visible_in_tree()) {
+				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
 
@@ -5012,8 +5012,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
-			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNGROUP_SELECTED: {
@@ -5022,7 +5022,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node3D *spatial = Object::cast_to<Node3D>(E->get());
-				if (!spatial || !spatial->is_visible_in_tree()) {
+				if (!spatial || !spatial->is_inside_tree()) {
 					continue;
 				}
 
@@ -5036,8 +5036,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
-			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 	}
@@ -5979,6 +5979,7 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_unhandled_key_input", &Node3DEditor::_unhandled_key_input);
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
+	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
@@ -6086,24 +6087,28 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
+	tool_button[TOOL_LOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_LOCK_SELECTED;
 	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
+	tool_button[TOOL_UNLOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
 	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_GROUP_SELECTED]);
+	tool_button[TOOL_GROUP_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_GROUP_SELECTED;
 	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
+	tool_button[TOOL_UNGROUP_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNGROUP_SELECTED;
 	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip(TTR("Restores the object's children's ability to be selected."));
