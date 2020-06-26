@@ -744,8 +744,40 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return OK;
 	}
 
-	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
+	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
+		const char **aperms = android_perms;
+		while (*aperms) {
+			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
+			if (enabled) {
+				r_permissions.push_back("android.permission." + String(*aperms));
+			}
+			aperms++;
+		}
+		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
+		for (int i = 0; i < user_perms.size(); i++) {
+			String user_perm = user_perms[i].strip_edges();
+			if (!user_perm.empty()) {
+				r_permissions.push_back(user_perm);
+			}
+		}
+		if (p_give_internet) {
+			if (r_permissions.find("android.permission.INTERNET") == -1) {
+				r_permissions.push_back("android.permission.INTERNET");
+			}
+		}
 
+		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		if (xr_mode_index == 1 /* XRMode.OVR */) {
+			int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
+			if (hand_tracking_index > 0) {
+				if (r_permissions.find("com.oculus.permission.HAND_TRACKING") == -1) {
+					r_permissions.push_back("com.oculus.permission.HAND_TRACKING");
+				}
+			}
+		}
+	}
+
+	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
 		// Leaving the unused types commented because looking these constants up
 		// again later would be annoying
 		// const int CHUNK_AXML_FILE = 0x00080003;
@@ -791,29 +823,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
 		Vector<String> perms;
-
-		const char **aperms = android_perms;
-		while (*aperms) {
-
-			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
-			if (enabled)
-				perms.push_back("android.permission." + String(*aperms));
-			aperms++;
-		}
-
-		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
-
-		for (int i = 0; i < user_perms.size(); i++) {
-			String user_perm = user_perms[i].strip_edges();
-			if (!user_perm.empty()) {
-				perms.push_back(user_perm);
-			}
-		}
-
-		if (p_give_internet) {
-			if (perms.find("android.permission.INTERNET") == -1)
-				perms.push_back("android.permission.INTERNET");
-		}
+		// Write permissions into the perms variable.
+		_get_permissions(p_preset, p_give_internet, perms);
 
 		while (ofs < (uint32_t)p_manifest.size()) {
 
@@ -998,10 +1009,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								feature_names.push_back("oculus.software.handtracking");
 								feature_required_list.push_back(hand_tracking_index == 2);
 								feature_versions.push_back(-1); // no version attribute should be added.
-
-								if (perms.find("com.oculus.permission.HAND_TRACKING") == -1) {
-									perms.push_back("com.oculus.permission.HAND_TRACKING");
-								}
 							}
 						}
 
@@ -1287,7 +1294,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8) {
-
 		uint32_t offset = 0;
 		uint32_t len = 0;
 
@@ -1339,13 +1345,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			return str;
 		}
 	}
-	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest) {
 
+	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest) {
 		const int UTF8_FLAG = 0x00000100;
 
-		uint32_t string_block_len = decode_uint32(&p_manifest[16]);
-		uint32_t string_count = decode_uint32(&p_manifest[20]);
-		uint32_t string_flags = decode_uint32(&p_manifest[28]);
+		uint32_t string_block_len = decode_uint32(&r_manifest[16]);
+		uint32_t string_count = decode_uint32(&r_manifest[20]);
+		uint32_t string_flags = decode_uint32(&r_manifest[28]);
 		const uint32_t string_table_begins = 40;
 
 		Vector<String> string_table;
@@ -1354,10 +1360,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		for (uint32_t i = 0; i < string_count; i++) {
 
-			uint32_t offset = decode_uint32(&p_manifest[string_table_begins + i * 4]);
+			uint32_t offset = decode_uint32(&r_manifest[string_table_begins + i * 4]);
 			offset += string_table_begins + string_count * 4;
 
-			String str = _parse_string(&p_manifest[offset], string_flags & UTF8_FLAG);
+			String str = _parse_string(&r_manifest[offset], string_flags & UTF8_FLAG);
 
 			if (str.begins_with("godot-project-name")) {
 
@@ -1386,7 +1392,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		for (uint32_t i = 0; i < string_table_begins; i++) {
 
-			ret.write[i] = p_manifest[i];
+			ret.write[i] = r_manifest[i];
 		}
 
 		int ofs = 0;
@@ -1422,15 +1428,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		//append the rest...
 		int rest_from = 12 + string_block_len;
 		int rest_to = ret.size();
-		int rest_len = (p_manifest.size() - rest_from);
-		ret.resize(ret.size() + (p_manifest.size() - rest_from));
+		int rest_len = (r_manifest.size() - rest_from);
+		ret.resize(ret.size() + (r_manifest.size() - rest_from));
 		for (int i = 0; i < rest_len; i++) {
-			ret.write[rest_to + i] = p_manifest[rest_from + i];
+			ret.write[rest_to + i] = r_manifest[rest_from + i];
 		}
 		//finally update the size
 		encode_uint32(ret.size(), &ret.write[4]);
 
-		p_manifest = ret;
+		r_manifest = ret;
 		//printf("end\n");
 	}
 
@@ -2274,6 +2280,79 @@ public:
 		return have_plugins_changed || first_build;
 	}
 
+	Error get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags) {
+		String cmdline = p_preset->get("command_line/extra_args");
+		Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
+		for (int i = 0; i < command_line_strings.size(); i++) {
+			if (command_line_strings[i].strip_edges().length() == 0) {
+				command_line_strings.remove(i);
+				i--;
+			}
+		}
+
+		gen_export_flags(command_line_strings, p_flags);
+
+		bool apk_expansion = p_preset->get("apk_expansion/enable");
+		if (apk_expansion) {
+			int version_code = p_preset->get("version/code");
+			String package_name = p_preset->get("package/unique_name");
+			String apk_file_name = "main." + itos(version_code) + "." + get_package_name(package_name) + ".obb";
+			String fullpath = p_path.get_base_dir().plus_file(apk_file_name);
+			String apk_expansion_public_key = p_preset->get("apk_expansion/public_key");
+			Error err = save_pack(p_preset, fullpath);
+
+			if (err != OK) {
+				EditorNode::add_io_error("Could not write expansion package file: " + apk_file_name);
+				return err;
+			}
+
+			command_line_strings.push_back("--use_apk_expansion");
+			command_line_strings.push_back("--apk_expansion_md5");
+			command_line_strings.push_back(FileAccess::get_md5(fullpath));
+			command_line_strings.push_back("--apk_expansion_key");
+			command_line_strings.push_back(apk_expansion_public_key.strip_edges());
+		}
+
+		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		if (xr_mode_index == 1) {
+			command_line_strings.push_back("--xr_mode_ovr");
+		} else { // XRMode.REGULAR is the default.
+			command_line_strings.push_back("--xr_mode_regular");
+		}
+
+		bool use_32_bit_framebuffer = p_preset->get("graphics/32_bits_framebuffer");
+		if (use_32_bit_framebuffer) {
+			command_line_strings.push_back("--use_depth_32");
+		}
+
+		bool immersive = p_preset->get("screen/immersive_mode");
+		if (immersive) {
+			command_line_strings.push_back("--use_immersive");
+		}
+
+		bool debug_opengl = p_preset->get("screen/opengl_debug");
+		if (debug_opengl) {
+			command_line_strings.push_back("--debug_opengl");
+		}
+
+		if (command_line_strings.size()) {
+			r_command_line_flags.resize(4);
+			encode_uint32(command_line_strings.size(), &r_command_line_flags.write[0]);
+			for (int i = 0; i < command_line_strings.size(); i++) {
+				print_line(itos(i) + " param: " + command_line_strings[i]);
+				CharString command_line_argument = command_line_strings[i].utf8();
+				int base = r_command_line_flags.size();
+				int length = command_line_argument.length();
+				if (length == 0)
+					continue;
+				r_command_line_flags.resize(base + 4 + length);
+				encode_uint32(length, &r_command_line_flags.write[base]);
+				copymem(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
+			}
+		}
+		return OK;
+	}
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
 
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
@@ -2414,20 +2493,13 @@ public:
 
 		zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
 
-		bool use_32_fb = p_preset->get("graphics/32_bits_framebuffer");
-		bool immersive = p_preset->get("screen/immersive_mode");
-		bool debug_opengl = p_preset->get("screen/opengl_debug");
-
 		bool _signed = p_preset->get("package/signed");
-
-		bool apk_expansion = p_preset->get("apk_expansion/enable");
-
 		String cmdline = p_preset->get("command_line/extra_args");
 
-		int version_code = p_preset->get("version/code");
 		String version_name = p_preset->get("version/name");
 		String package_name = p_preset->get("package/unique_name");
 
+		bool apk_expansion = p_preset->get("apk_expansion/enable");
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
 		String release_keystore = p_preset->get("keystore/release");
@@ -2562,105 +2634,42 @@ public:
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 		Error err = OK;
-		Vector<String> cl = cmdline.strip_edges().split(" ");
-		for (int i = 0; i < cl.size(); i++) {
-			if (cl[i].strip_edges().length() == 0) {
-				cl.remove(i);
-				i--;
-			}
-		}
-
-		gen_export_flags(cl, p_flags);
 
 		if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
 			err = export_project_files(p_preset, ignore_apk_file, &ed, save_apk_so);
-		} else {
-			//all files
-
-			if (apk_expansion) {
-
-				String apkfname = "main." + itos(version_code) + "." + get_package_name(package_name) + ".obb";
-				String fullpath = p_path.get_base_dir().plus_file(apkfname);
-				err = save_pack(p_preset, fullpath);
-
-				if (err != OK) {
-					unzClose(pkg);
-					EditorNode::add_io_error("Could not write expansion package file: " + apkfname);
-
-					CLEANUP_AND_RETURN(ERR_SKIP);
-				}
-
-				cl.push_back("--use_apk_expansion");
-				cl.push_back("--apk_expansion_md5");
-				cl.push_back(FileAccess::get_md5(fullpath));
-				cl.push_back("--apk_expansion_key");
-				cl.push_back(apk_expansion_pkey.strip_edges());
-
-			} else {
-
-				APKExportData ed;
-				ed.ep = &ep;
-				ed.apk = unaligned_apk;
-
-				err = export_project_files(p_preset, save_apk_file, &ed, save_apk_so);
-			}
+		} else if (!apk_expansion) {
+			APKExportData ed;
+			ed.ep = &ep;
+			ed.apk = unaligned_apk;
+			err = export_project_files(p_preset, save_apk_file, &ed, save_apk_so);
 		}
 
-		int xr_mode_index = p_preset->get("xr_features/xr_mode");
-		if (xr_mode_index == 1 /* XRMode.OVR */) {
-			cl.push_back("--xr_mode_ovr");
-		} else {
-			// XRMode.REGULAR is the default.
-			cl.push_back("--xr_mode_regular");
+		if (err != OK) {
+			unzClose(pkg);
+			EditorNode::add_io_error("Could not export project files");
+			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
-		if (use_32_fb)
-			cl.push_back("--use_depth_32");
+		Vector<uint8_t> command_line_flags;
+		// Write command line flags into the command_line_flags variable.
+		err = get_command_line_flags(p_preset, p_path, p_flags, command_line_flags);
 
-		if (immersive)
-			cl.push_back("--use_immersive");
-
-		if (debug_opengl)
-			cl.push_back("--debug_opengl");
-
-		if (cl.size()) {
-			//add comandline
-			Vector<uint8_t> clf;
-			clf.resize(4);
-			encode_uint32(cl.size(), &clf.write[0]);
-			for (int i = 0; i < cl.size(); i++) {
-
-				print_line(itos(i) + " param: " + cl[i]);
-				CharString txt = cl[i].utf8();
-				int base = clf.size();
-				int length = txt.length();
-				if (!length)
-					continue;
-				clf.resize(base + 4 + length);
-				encode_uint32(length, &clf.write[base]);
-				copymem(&clf.write[base + 4], txt.ptr(), length);
-			}
-
-			zip_fileinfo zipfi = get_zip_fileinfo();
-
-			zipOpenNewFileInZip(unaligned_apk,
-					"assets/_cl_",
-					&zipfi,
-					NULL,
-					0,
-					NULL,
-					0,
-					NULL,
-					0, // No compress (little size gain and potentially slower startup)
-					Z_DEFAULT_COMPRESSION);
-
-			zipWriteInFileInZip(unaligned_apk, clf.ptr(), clf.size());
-			zipCloseFileInZip(unaligned_apk);
-		}
+		zip_fileinfo zipfi = get_zip_fileinfo();
+		zipOpenNewFileInZip(unaligned_apk,
+				"assets/_cl_",
+				&zipfi,
+				NULL,
+				0,
+				NULL,
+				0,
+				NULL,
+				0, // No compress (little size gain and potentially slower startup)
+				Z_DEFAULT_COMPRESSION);
+		zipWriteInFileInZip(unaligned_apk, command_line_flags.ptr(), command_line_flags.size());
+		zipCloseFileInZip(unaligned_apk);
 
 		zipClose(unaligned_apk, NULL);
 		unzClose(pkg);
@@ -2811,12 +2820,10 @@ public:
 
 			memset(extra + info.size_file_extra, 0, padding);
 
-			// write
-			zip_fileinfo zipfi = get_zip_fileinfo();
-
+			zip_fileinfo fileinfo = get_zip_fileinfo();
 			zipOpenNewFileInZip2(final_apk,
 					file.utf8().get_data(),
-					&zipfi,
+					&fileinfo,
 					extra,
 					info.size_file_extra + padding,
 					NULL,
