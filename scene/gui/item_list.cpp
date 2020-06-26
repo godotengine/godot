@@ -1350,14 +1350,12 @@ void ItemList::set_autoscroll_to_bottom(const bool p_enable) {
 }
 
 void ItemList::set_auto_width(bool p_enable) {
-
 	auto_width = p_enable;
 	shape_changed = true;
 	update();
 }
 
 bool ItemList::has_auto_width() const {
-
 	return auto_width;
 }
 
