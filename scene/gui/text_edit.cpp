@@ -1747,6 +1747,11 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 		}
 	}
 
+	// Pair symbol should work inside documentation comments.
+	if (line.strip_edges(true, false).begins_with("##")) {
+		found_comment = false;
+	}
+
 	// Do not need to duplicate quotes while in comments
 	if (found_comment) {
 		insert_text_at_cursor(ch_single);
@@ -2738,6 +2743,20 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
+				// Doc comment inside indentation (only spaces are support)
+				bool is_doc_comment = text[cursor.line].strip_edges(true, false).begins_with("##");
+				if (is_doc_comment) {
+					ins += "##";
+					int begin = text[cursor.line].find("##");
+					for (int i = begin + 2; i < cursor.column; i++) {
+						if (text[cursor.line][i] == ' ') {
+							ins += ' ';
+						} else {
+							break;
+						}
+					}
+				}
+
 				if (is_folded(cursor.line)) {
 					unfold_line(cursor.line);
 				}
@@ -2776,8 +2795,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							}
 						}
 
-						if (!is_line_comment(cursor.line) && should_indent) {
-							if (indent_using_spaces) {
+						if ((!is_line_comment(cursor.line) || is_doc_comment) && should_indent) {
+							// Only spaces are supported for Indentation in doc comments.
+							if (indent_using_spaces || is_doc_comment) {
 								ins += space_indent;
 							} else {
 								ins += "\t";
@@ -2787,7 +2807,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							char closing_char = _get_right_pair_symbol(indent_char);
 							if ((closing_char != 0) && (closing_char == text[cursor.line][cursor.column]) && !k->get_command()) {
 								brace_indent = true;
-								ins += "\n" + ins.substr(1, ins.length() - 2);
+								// Doc string indents are spaces so need to subtract space_indent.length() instead 1 `\t`.
+								ins += "\n" + ins.substr(1, ins.length() - 1 - ((is_doc_comment) ? space_indent.length() : 1));
 							}
 						}
 					}
@@ -3317,6 +3338,18 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 								break;
 							}
 							current_line_whitespace_len++;
+						}
+
+						// For Doc comments it should skip ##.
+						if (text[cursor.line].strip_edges(true, false).begins_with("##")) {
+							current_line_whitespace_len += 2;
+							while (current_line_whitespace_len < text[cursor.line].length()) {
+								CharType c = text[cursor.line][current_line_whitespace_len];
+								if (c != '\t' && c != ' ') {
+									break;
+								}
+								current_line_whitespace_len++;
+							}
 						}
 
 						if (cursor_get_column() == current_line_whitespace_len) {
