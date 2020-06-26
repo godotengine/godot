@@ -45,6 +45,12 @@ public:
 		UPDATE_ALWAYS,
 	};
 
+	enum AmbientMode {
+		AMBIENT_DISABLED,
+		AMBIENT_ENVIRONMENT,
+		AMBIENT_COLOR
+	};
+
 private:
 	RID probe;
 	float intensity;
@@ -54,9 +60,9 @@ private:
 	bool box_projection;
 	bool enable_shadows;
 	bool interior;
-	Color interior_ambient;
-	float interior_ambient_energy;
-	float interior_ambient_probe_contribution;
+	AmbientMode ambient_mode;
+	Color ambient_color;
+	float ambient_color_energy;
 
 	uint32_t cull_mask;
 	UpdateMode update_mode;
@@ -69,11 +75,14 @@ public:
 	void set_intensity(float p_intensity);
 	float get_intensity() const;
 
-	void set_interior_ambient(Color p_ambient);
-	Color get_interior_ambient() const;
+	void set_ambient_mode(AmbientMode p_mode);
+	AmbientMode get_ambient_mode() const;
 
-	void set_interior_ambient_energy(float p_energy);
-	float get_interior_ambient_energy() const;
+	void set_ambient_color(Color p_ambient);
+	Color get_ambient_color() const;
+
+	void set_ambient_color_energy(float p_energy);
+	float get_ambient_color_energy() const;
 
 	void set_interior_ambient_probe_contribution(float p_contribution);
 	float get_interior_ambient_probe_contribution() const;
@@ -109,6 +118,7 @@ public:
 	~ReflectionProbe();
 };
 
+VARIANT_ENUM_CAST(ReflectionProbe::AmbientMode);
 VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
 
 #endif // REFLECTIONPROBE_H

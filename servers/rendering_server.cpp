@@ -1608,7 +1608,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_set_negative", "light", "enable"), &RenderingServer::light_set_negative);
 	ClassDB::bind_method(D_METHOD("light_set_cull_mask", "light", "mask"), &RenderingServer::light_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("light_set_reverse_cull_face_mode", "light", "enabled"), &RenderingServer::light_set_reverse_cull_face_mode);
-	ClassDB::bind_method(D_METHOD("light_set_use_gi", "light", "enabled"), &RenderingServer::light_set_use_gi);
+	ClassDB::bind_method(D_METHOD("light_set_bake_mode", "light", "bake_mode"), &RenderingServer::light_set_bake_mode);
 
 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_mode", "light", "mode"), &RenderingServer::light_omni_set_shadow_mode);
 
@@ -1619,9 +1619,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reflection_probe_create"), &RenderingServer::reflection_probe_create);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_update_mode", "probe", "mode"), &RenderingServer::reflection_probe_set_update_mode);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_intensity", "probe", "intensity"), &RenderingServer::reflection_probe_set_intensity);
-	ClassDB::bind_method(D_METHOD("reflection_probe_set_interior_ambient", "probe", "color"), &RenderingServer::reflection_probe_set_interior_ambient);
-	ClassDB::bind_method(D_METHOD("reflection_probe_set_interior_ambient_energy", "probe", "energy"), &RenderingServer::reflection_probe_set_interior_ambient_energy);
-	ClassDB::bind_method(D_METHOD("reflection_probe_set_interior_ambient_probe_contribution", "probe", "contrib"), &RenderingServer::reflection_probe_set_interior_ambient_probe_contribution);
+	ClassDB::bind_method(D_METHOD("reflection_probe_set_ambient_mode", "probe", "mode"), &RenderingServer::reflection_probe_set_ambient_mode);
+	ClassDB::bind_method(D_METHOD("reflection_probe_set_ambient_color", "probe", "color"), &RenderingServer::reflection_probe_set_ambient_color);
+	ClassDB::bind_method(D_METHOD("reflection_probe_set_ambient_energy", "probe", "energy"), &RenderingServer::reflection_probe_set_ambient_energy);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_max_distance", "probe", "distance"), &RenderingServer::reflection_probe_set_max_distance);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_extents", "probe", "extents"), &RenderingServer::reflection_probe_set_extents);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_origin_offset", "probe", "offset"), &RenderingServer::reflection_probe_set_origin_offset);
@@ -2060,9 +2060,11 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSAO);
-	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DECAL_ATLAS);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI_PROBES);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_GI_BUFFER);
 
 	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY);
 	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);
@@ -2346,7 +2348,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Lowest (1 Cone - Fast),Medium (4 Cones - Average),High (6 Cones - Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Low (4 Cones - Fast),High (6 Cones - Slow)"));
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
@@ -2372,10 +2374,11 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow),Ultra (Slower)"));
 	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
 
-	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled (Fast),Enabled (Average)"));
-	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_curve", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::FLOAT, "rendering/quality/screen_filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
+	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_enable", true);
+	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", 0.25);
+	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_limit", 0.18);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", PropertyInfo(Variant::FLOAT, "rendering/quality/screen_filters/screen_space_roughness_limiter_amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter_limit", PropertyInfo(Variant::FLOAT, "rendering/quality/screen_filters/screen_space_roughness_limiter_limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
@@ -2395,6 +2398,11 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/lightmapper/probe_capture_update_speed", 15);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/lightmapper/probe_capture_update_speed", PropertyInfo(Variant::FLOAT, "rendering/lightmapper/probe_capture_update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"));
+
+	GLOBAL_DEF("rendering/sdfgi/probe_ray_count", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
+	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
 }
 
 RenderingServer::~RenderingServer() {
