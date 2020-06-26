@@ -43,7 +43,9 @@
 class GodotJavaWrapper {
 private:
 	jobject godot_instance;
-	jclass cls;
+	jobject activity;
+	jclass godot_class;
+	jclass activity_class;
 
 	jmethodID _on_video_init = 0;
 	jmethodID _restart = 0;
@@ -62,9 +64,10 @@ private:
 	jmethodID _vibrate = 0;
 	jmethodID _get_input_fallback_mapping = 0;
 	jmethodID _on_godot_main_loop_started = 0;
+	jmethodID _get_class_loader = 0;
 
 public:
-	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
+	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
 	~GodotJavaWrapper();
 
 	jobject get_activity();
