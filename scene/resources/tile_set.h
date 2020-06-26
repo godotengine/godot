@@ -32,7 +32,6 @@
 #define TILE_SET_H
 
 #include "core/array.h"
-#include "core/typed_array.h"
 #include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"

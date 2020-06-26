@@ -182,6 +182,7 @@ class TileMapEditor : public VBoxContainer {
 	VSplitContainer* _create_palette_container(const String& name);
 	ItemList* _create_palette();
 	ItemList* _create_manual_palette();
+	String _get_texture_name(Ref<Texture2D> tex);
 	void _update_palette();
 	void _add_tile(int tile_id, ItemList& palette);
 	void _update_button_tool();

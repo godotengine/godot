@@ -200,9 +200,10 @@ void TileMapEditor::_menu_option(int p_option) {
 }
 
 void TileMapEditor::_palette_changed(int id) {
-	if(id < palettes.size() && id < manual_palettes.size()) {
+	if (id < palettes.size() && id < manual_palettes.size()) {
 		current_palette = palettes[id];
 		current_manual_palette = manual_palettes[id];
+		_update_palette();
 	}
 }
 
@@ -429,9 +430,7 @@ void TileMapEditor::_create_palettes() {
 	TypedArray<String> texture_names;
 	for (int i = 0; i < tiles.size(); i++) {
 		Ref<Texture2D> tile_texture = tileset->tile_get_texture(tiles[i]);
-		Vector<String> path = tile_texture->get_path().split("/");
-		String name = path.get(path.size() - 1).split(".").get(0);
-
+		String name = _get_texture_name(tile_texture);
 		// Create tab for unknown texture
 		if (!texture_names.has(name)) {
 			texture_names.push_back(name);
@@ -486,11 +485,17 @@ ItemList *TileMapEditor::_create_manual_palette() {
 	// return ItemList();
 }
 
+String TileMapEditor::_get_texture_name(Ref<Texture2D> tex) {
+	Vector<String> path = tex->get_path().split("/");
+	String name = path.get(path.size() - 1).split(".").get(0);
+	return name;
+}
+
+
 void TileMapEditor::_update_palette() {
 	if (!node) {
 		return;
 	}
-	_create_palettes();
 
 	// Update the clear button.
 	clear_transform_button->set_disabled(!flip_h && !flip_v && !transpose);
@@ -567,43 +572,46 @@ void TileMapEditor::_update_palette() {
 	}
 
 	for (int i = 0; i < entries.size(); i++) {
-		if (show_tile_names) {
-			current_palette->add_item(entries[i].name);
-		} else {
-			current_palette->add_item(String());
-		}
-
 		Ref<Texture2D> tex = tileset->tile_get_texture(entries[i].id);
-
-		if (tex.is_valid()) {
-			Rect2 region = tileset->tile_get_region(entries[i].id);
-
-			if (tileset->tile_get_tile_mode(entries[i].id) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(entries[i].id) == TileSet::ATLAS_TILE) {
-				int spacing = tileset->autotile_get_spacing(entries[i].id);
-				region.size = tileset->autotile_get_size(entries[i].id);
-				region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(entries[i].id);
+		String name = _get_texture_name(tex);
+		if(current_palette->get_parent()->get_name() == name || name == TTR("All")) {
+			// if(tex == current_palette->)
+			if (show_tile_names) {
+				current_palette->add_item(entries[i].name);
+			} else {
+				current_palette->add_item(String());
 			}
 
-			// Transpose and flip.
-			current_palette->set_item_icon_transposed(current_palette->get_item_count() - 1, transpose);
-			if (flip_h) {
-				region.size.x = -region.size.x;
-			}
-			if (flip_v) {
-				region.size.y = -region.size.y;
-			}
+			if (tex.is_valid()) {
+				Rect2 region = tileset->tile_get_region(entries[i].id);
 
-			// Set region.
-			if (region.size != Size2()) {
-				current_palette->set_item_icon_region(current_palette->get_item_count() - 1, region);
+				if (tileset->tile_get_tile_mode(entries[i].id) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(entries[i].id) == TileSet::ATLAS_TILE) {
+					int spacing = tileset->autotile_get_spacing(entries[i].id);
+					region.size = tileset->autotile_get_size(entries[i].id);
+					region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(entries[i].id);
+				}
+
+				// Transpose and flip.
+				current_palette->set_item_icon_transposed(current_palette->get_item_count() - 1, transpose);
+				if (flip_h) {
+					region.size.x = -region.size.x;
+				}
+				if (flip_v) {
+					region.size.y = -region.size.y;
+				}
+
+				// Set region.
+				if (region.size != Size2()) {
+					current_palette->set_item_icon_region(current_palette->get_item_count() - 1, region);
+				}
+
+				// Set icon.
+				current_palette->set_item_icon(current_palette->get_item_count() - 1, tex);
+
+				// Modulation.
+				Color color = tileset->tile_get_modulate(entries[i].id);
+				current_palette->set_item_icon_modulate(current_palette->get_item_count() - 1, color);
 			}
-
-			// Set icon.
-			current_palette->set_item_icon(current_palette->get_item_count() - 1, tex);
-
-			// Modulation.
-			Color color = tileset->tile_get_modulate(entries[i].id);
-			current_palette->set_item_icon_modulate(current_palette->get_item_count() - 1, color);
 		}
 
 		current_palette->set_item_metadata(current_palette->get_item_count() - 1, entries[i].id);
@@ -1834,6 +1842,7 @@ void TileMapEditor::edit(Node *p_tile_map) {
 			canvas_item_editor_viewport->connect("mouse_exited", callable_mp(this, &TileMapEditor::_canvas_mouse_exit));
 		}
 
+		_create_palettes();
 		_update_palette();
 
 	} else {
@@ -2018,6 +2027,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(palette_tabs);
 
+	_create_palettes();
 	// VSplitContainer *palette_container = memnew(VSplitContainer);
 	// palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
 	// palette_container->set_custom_minimum_size(Size2(mw, 0));
