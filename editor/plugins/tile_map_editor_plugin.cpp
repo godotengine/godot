@@ -38,6 +38,8 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
 
+#include <thirdparty/glslang/glslang/Include/Common.h>
+
 void TileMapEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
@@ -198,9 +200,10 @@ void TileMapEditor::_menu_option(int p_option) {
 }
 
 void TileMapEditor::_palette_changed(int id) {
-	print_line("Palette selected" + id);
-	current_palette = palettes[id];
-	current_manual_palette = manual_palettes[id];
+	if(id < palettes.size() && id < manual_palettes.size()) {
+		current_palette = palettes[id];
+		current_manual_palette = manual_palettes[id];
+	}
 }
 
 void TileMapEditor::_palette_selected(int index) {
@@ -410,8 +413,9 @@ struct _PaletteEntry {
 void TileMapEditor::_create_palettes() {
 	if (!node)
 		return;
-	for (int i = 0; i < palette_tabs->get_child_count(); i++) {
-		palette_tabs->remove_child(palette_tabs->get_child(i));
+	int children = palette_tabs->get_child_count();
+	for (int i = 0; i <= children; i++) {
+		palette_tabs->remove_child(palette_tabs->get_child(children - i));
 	}
 	palettes.clear();
 	manual_palettes.clear();
@@ -434,8 +438,6 @@ void TileMapEditor::_create_palettes() {
 			palette_tabs->add_child(_create_palette_container(name));
 		}
 	}
-	// current_palette = &palettes.get(0);
-	// current_manual_palette = &manual_palettes.get(0);
 }
 
 VSplitContainer *TileMapEditor::_create_palette_container(const String &name) {
