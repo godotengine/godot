@@ -573,8 +573,9 @@ void TileMapEditor::_update_palette() {
 
 	for (int i = 0; i < entries.size(); i++) {
 		Ref<Texture2D> tex = tileset->tile_get_texture(entries[i].id);
-		String name = _get_texture_name(tex);
-		if(current_palette->get_parent()->get_name() == name || name == TTR("All")) {
+		String tex_name = _get_texture_name(tex);
+		String palette_name = current_palette->get_parent()->get_name();
+		if(palette_name == tex_name || palette_name == TTR("All")) {
 			// if(tex == current_palette->)
 			if (show_tile_names) {
 				current_palette->add_item(entries[i].name);
