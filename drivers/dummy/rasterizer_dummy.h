@@ -725,20 +725,25 @@ public:
 	}
 
 	bool free(RID p_rid) {
-
 		if (texture_owner.owns(p_rid)) {
 			// delete the texture
 			DummyTexture *texture = texture_owner.get(p_rid);
 			texture_owner.free(p_rid);
 			memdelete(texture);
-		}
-
-		if (mesh_owner.owns(p_rid)) {
+		} else if (mesh_owner.owns(p_rid)) {
 			// delete the mesh
 			DummyMesh *mesh = mesh_owner.getornull(p_rid);
 			mesh_owner.free(p_rid);
 			memdelete(mesh);
+		} else if (lightmap_capture_data_owner.owns(p_rid)) {
+			// delete the lightmap
+			LightmapCapture *lightmap_capture = lightmap_capture_data_owner.getornull(p_rid);
+			lightmap_capture_data_owner.free(p_rid);
+			memdelete(lightmap_capture);
+		} else {
+			return false;
 		}
+
 		return true;
 	}
 
