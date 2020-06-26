@@ -137,11 +137,7 @@ void PhysicsShapeQueryParameters2D::set_shape(const RES &p_shape) {
 	shape = p_shape->get_rid();
 }
 
-void PhysicsShapeQueryParameters2D::set_shape_rid(const RID &p_shape) {
-	shape = p_shape;
-}
-
-RID PhysicsShapeQueryParameters2D::get_shape_rid() const {
+RES PhysicsShapeQueryParameters2D::get_shape() const {
 	return shape;
 }
 
@@ -212,8 +208,7 @@ bool PhysicsShapeQueryParameters2D::is_collide_with_areas_enabled() const {
 
 void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &PhysicsShapeQueryParameters2D::set_shape);
-	ClassDB::bind_method(D_METHOD("set_shape_rid", "shape"), &PhysicsShapeQueryParameters2D::set_shape_rid);
-	ClassDB::bind_method(D_METHOD("get_shape_rid"), &PhysicsShapeQueryParameters2D::get_shape_rid);
+	ClassDB::bind_method(D_METHOD("get_shape"), &PhysicsShapeQueryParameters2D::get_shape);
 
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &PhysicsShapeQueryParameters2D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &PhysicsShapeQueryParameters2D::get_transform);
@@ -240,8 +235,7 @@ void PhysicsShapeQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_NONE, itos(Variant::_RID) + ":"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "motion"), "set_motion", "get_motion");
-	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", ""); // FIXME: Lacks a getter
-	ADD_PROPERTY(PropertyInfo(Variant::_RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
@@ -281,10 +275,11 @@ Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Vector2 &p_from, cons
 
 Array PhysicsDirectSpaceState2D::_intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+	ERR_FAIL_COND_V_MSG(!p_shape_query->shape.is_valid(), Array(), "Shape not set in query parameters.");
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
-	int rc = intersect_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, sr.ptrw(), sr.size(), p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
+	int rc = intersect_shape(p_shape_query->shape->get_rid(), p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, sr.ptrw(), sr.size(), p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	Array ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
@@ -302,9 +297,10 @@ Array PhysicsDirectSpaceState2D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 
 Array PhysicsDirectSpaceState2D::_cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+	ERR_FAIL_COND_V_MSG(!p_shape_query->shape.is_valid(), Array(), "Shape not set in query parameters.");
 
 	float closest_safe, closest_unsafe;
-	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
+	bool res = cast_motion(p_shape_query->shape->get_rid(), p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	if (!res) {
 		return Array();
 	}
@@ -359,11 +355,12 @@ Array PhysicsDirectSpaceState2D::_intersect_point_on_canvas(const Vector2 &p_poi
 
 Array PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+	ERR_FAIL_COND_V_MSG(!p_shape_query->shape.is_valid(), Array(), "Shape not set in query parameters.");
 
 	Vector<Vector2> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
-	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
+	bool res = collide_shape(p_shape_query->shape->get_rid(), p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	if (!res) {
 		return Array();
 	}
@@ -377,10 +374,11 @@ Array PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParam
 
 Dictionary PhysicsDirectSpaceState2D::_get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
+	ERR_FAIL_COND_V_MSG(!p_shape_query->shape.is_valid(), Dictionary(), "Shape not set in query parameters.");
 
 	ShapeRestInfo sri;
 
-	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
+	bool res = rest_info(p_shape_query->shape->get_rid(), p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	Dictionary r;
 	if (!res) {
 		return r;

@@ -9,15 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="Resource">
-			</argument>
-			<description>
-				Sets the [Shape3D] that will be used for collision/intersection queries.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
@@ -35,8 +26,8 @@
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The collision margin for the shape.
 		</member>
-		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid">
-			The queried shape's [RID]. See also [method set_shape].
+		<member name="shape" type="Resource" setter="set_shape" getter="get_shape">
+			The [Shape3D] that will be used for collision/intersection queries.
 		</member>
 		<member name="transform" type="Transform" setter="set_transform" getter="get_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			The queried shape's transform matrix.

@@ -100,7 +100,7 @@ class PhysicsShapeQueryParameters3D : public Reference {
 	GDCLASS(PhysicsShapeQueryParameters3D, Reference);
 	friend class PhysicsDirectSpaceState3D;
 
-	RID shape;
+	RES shape;
 	Transform transform;
 	float margin;
 	Set<RID> exclude;
@@ -114,8 +114,7 @@ protected:
 
 public:
 	void set_shape(const RES &p_shape);
-	void set_shape_rid(const RID &p_shape);
-	RID get_shape_rid() const;
+	RES get_shape() const;
 
 	void set_transform(const Transform &p_transform);
 	Transform get_transform() const;

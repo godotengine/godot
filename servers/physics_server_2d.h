@@ -98,7 +98,7 @@ class PhysicsShapeQueryResult2D;
 class PhysicsShapeQueryParameters2D : public Reference {
 	GDCLASS(PhysicsShapeQueryParameters2D, Reference);
 	friend class PhysicsDirectSpaceState2D;
-	RID shape;
+	RES shape;
 	Transform2D transform;
 	Vector2 motion;
 	float margin;
@@ -113,8 +113,7 @@ protected:
 
 public:
 	void set_shape(const RES &p_shape);
-	void set_shape_rid(const RID &p_shape);
-	RID get_shape_rid() const;
+	RES get_shape() const;
 
 	void set_transform(const Transform2D &p_transform);
 	Transform2D get_transform() const;
