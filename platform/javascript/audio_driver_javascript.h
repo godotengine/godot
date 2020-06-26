@@ -37,6 +37,7 @@ class AudioDriverJavaScript : public AudioDriver {
 
 	float *internal_buffer;
 
+	int _driver_id;
 	int buffer_length;
 
 public:
@@ -56,6 +57,7 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+	void finish_async();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();

@@ -31,12 +31,16 @@
 #include "os_javascript.h"
 
 #include "core/io/file_access_buffered_fa.h"
+#include "core/io/json.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
+#ifndef NO_THREADS
+#include "servers/visual/visual_server_wrap_mt.h"
+#endif
 
 #include <emscripten.h>
 #include <png.h>
@@ -49,48 +53,58 @@
 #define DOM_BUTTON_RIGHT 2
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
-#define GODOT_CANVAS_SELECTOR "#canvas"
 
 // Window (canvas)
 
 static void focus_canvas() {
 
 	/* clang-format off */
-	EM_ASM(
-		Module.canvas.focus();
-	);
+	EM_ASM({
+		Module['canvas'].focus();
+	});
 	/* clang-format on */
 }
 
 static bool is_canvas_focused() {
 
 	/* clang-format off */
-	return EM_ASM_INT_V(
-		return document.activeElement == Module.canvas;
-	);
+	return EM_ASM_INT({
+		return document.activeElement == Module['canvas'];
+	});
 	/* clang-format on */
 }
 
 static Point2 compute_position_in_canvas(int x, int y) {
+	OS_JavaScript *os = OS_JavaScript::get_singleton();
 	int canvas_x = EM_ASM_INT({
-		return document.getElementById('canvas').getBoundingClientRect().x;
+		return Module['canvas'].getBoundingClientRect().x;
 	});
 	int canvas_y = EM_ASM_INT({
-		return document.getElementById('canvas').getBoundingClientRect().y;
+		return Module['canvas'].getBoundingClientRect().y;
 	});
 	int canvas_width;
 	int canvas_height;
-	emscripten_get_canvas_element_size(GODOT_CANVAS_SELECTOR, &canvas_width, &canvas_height);
+	emscripten_get_canvas_element_size(os->canvas_id.utf8().get_data(), &canvas_width, &canvas_height);
 
 	double element_width;
 	double element_height;
-	emscripten_get_element_css_size(GODOT_CANVAS_SELECTOR, &element_width, &element_height);
+	emscripten_get_element_css_size(os->canvas_id.utf8().get_data(), &element_width, &element_height);
 
 	return Point2((int)(canvas_width / element_width * (x - canvas_x)),
 			(int)(canvas_height / element_height * (y - canvas_y)));
 }
 
 static bool cursor_inside_canvas = true;
+
+extern "C" EMSCRIPTEN_KEEPALIVE void _canvas_resize_callback() {
+	OS_JavaScript *os = OS_JavaScript::get_singleton();
+	int canvas_width;
+	int canvas_height;
+	// Update the framebuffer size.
+	emscripten_get_canvas_element_size(os->canvas_id.utf8().get_data(), &canvas_width, &canvas_height);
+	emscripten_set_canvas_element_size(os->canvas_id.utf8().get_data(), canvas_width, canvas_height);
+	Main::force_redraw();
+}
 
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 
@@ -141,14 +155,14 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 			emscripten_exit_soft_fullscreen();
 			window_maximized = false;
 		}
-		emscripten_set_canvas_element_size(GODOT_CANVAS_SELECTOR, p_size.x, p_size.y);
+		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), p_size.x, p_size.y);
 	}
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
 	int canvas[2];
-	emscripten_get_canvas_element_size(GODOT_CANVAS_SELECTOR, canvas, canvas + 1);
+	emscripten_get_canvas_element_size(canvas_id.utf8().get_data(), canvas, canvas + 1);
 	return Size2(canvas[0], canvas[1]);
 }
 
@@ -168,7 +182,7 @@ void OS_JavaScript::set_window_maximized(bool p_enabled) {
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
-		emscripten_enter_soft_fullscreen(GODOT_CANVAS_SELECTOR, &strategy);
+		emscripten_enter_soft_fullscreen(canvas_id.utf8().get_data(), &strategy);
 		window_maximized = p_enabled;
 	}
 }
@@ -197,7 +211,7 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
-		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(GODOT_CANVAS_SELECTOR, false, &strategy);
+		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(canvas_id.utf8().get_data(), false, &strategy);
 		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		// Not fullscreen yet, so prevent "windowed" canvas dimensions from
@@ -434,8 +448,8 @@ static const char *godot2dom_cursor(OS::CursorShape p_shape) {
 static void set_css_cursor(const char *p_cursor) {
 
 	/* clang-format off */
-	EM_ASM_({
-		Module.canvas.style.cursor = UTF8ToString($0);
+	EM_ASM({
+		Module['canvas'].style.cursor = UTF8ToString($0);
 	}, p_cursor);
 	/* clang-format on */
 }
@@ -444,7 +458,7 @@ static bool is_css_cursor_hidden() {
 
 	/* clang-format off */
 	return EM_ASM_INT({
-		return Module.canvas.style.cursor === 'none';
+		return Module['canvas'].style.cursor === 'none';
 	});
 	/* clang-format on */
 }
@@ -697,9 +711,9 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 bool OS_JavaScript::has_touchscreen_ui_hint() const {
 
 	/* clang-format off */
-	return EM_ASM_INT_V(
+	return EM_ASM_INT({
 		return 'ontouchstart' in window;
-	);
+	});
 	/* clang-format on */
 }
 
@@ -902,6 +916,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
 	attributes.antialias = false;
+	attributes.explicitSwapControl = true;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
 
 	if (p_desired.layered) {
@@ -945,8 +960,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		}
 	}
 
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(GODOT_CANVAS_SELECTOR, &attributes);
-	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
+	webgl_ctx = emscripten_webgl_create_context(canvas_id.utf8().get_data(), &attributes);
+	if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
 		gl_initialization_error = true;
 	}
 
@@ -968,6 +983,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	if (p_desired.fullscreen) {
 		/* clang-format off */
 		EM_ASM({
+			const canvas = Module['canvas'];
 			(canvas.requestFullscreen || canvas.msRequestFullscreen ||
 				canvas.mozRequestFullScreen || canvas.mozRequestFullscreen ||
 				canvas.webkitRequestFullscreen
@@ -976,26 +992,22 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		/* clang-format on */
 	}
 	/* clang-format off */
-	if (EM_ASM_INT_V({ return Module.resizeCanvasOnStart })) {
+	if (EM_ASM_INT({ return Module['resizeCanvasOnStart'] })) {
 		/* clang-format on */
 		set_window_size(Size2(video_mode.width, video_mode.height));
 	} else {
 		set_window_size(get_window_size());
 	}
 
-	char locale_ptr[16];
-	/* clang-format off */
-	EM_ASM_ARGS({
-		stringToUTF8(Module.locale, $0, 16);
-	}, locale_ptr);
-	/* clang-format on */
-	setenv("LANG", locale_ptr, true);
-
 	AudioDriverManager::initialize(p_audio_driver);
-	VisualServer *visual_server = memnew(VisualServerRaster());
+	visual_server = memnew(VisualServerRaster());
+#ifndef NO_THREADS
+	visual_server = memnew(VisualServerWrapMT(visual_server, false));
+#endif
 	input = memnew(InputDefault);
 
 	EMSCRIPTEN_RESULT result;
+	CharString id = canvas_id.utf8().get_data();
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
 	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
@@ -1009,16 +1021,16 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, mousedown, mouse_button_callback)
+	SET_EM_CALLBACK(id.get_data(), mousedown, mouse_button_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, wheel, wheel_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchstart, touch_press_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchmove, touchmove_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchend, touch_press_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchcancel, touch_press_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, keydown, keydown_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, keypress, keypress_callback)
-	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, keyup, keyup_callback)
+	SET_EM_CALLBACK(id.get_data(), wheel, wheel_callback)
+	SET_EM_CALLBACK(id.get_data(), touchstart, touch_press_callback)
+	SET_EM_CALLBACK(id.get_data(), touchmove, touchmove_callback)
+	SET_EM_CALLBACK(id.get_data(), touchend, touch_press_callback)
+	SET_EM_CALLBACK(id.get_data(), touchcancel, touch_press_callback)
+	SET_EM_CALLBACK(id.get_data(), keydown, keydown_callback)
+	SET_EM_CALLBACK(id.get_data(), keypress, keypress_callback)
+	SET_EM_CALLBACK(id.get_data(), keyup, keyup_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, fullscreenchange, fullscreen_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepadconnected, gamepad_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepaddisconnected, gamepad_change_callback)
@@ -1027,28 +1039,55 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 #undef EM_CHECK
 
 	/* clang-format off */
-	EM_ASM_ARGS({
+	EM_ASM({
+		Module.listeners = {};
+		const canvas = Module['canvas'];
 		const send_notification = cwrap('send_notification', null, ['number']);
 		const notifications = arguments;
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
-			Module.canvas.addEventListener(event, send_notification.bind(null, notifications[index]));
+			Module.listeners[event] = send_notification.bind(null, notifications[index]);
+			canvas.addEventListener(event, Module.listeners[event]);
 		});
 		// Clipboard
 		const update_clipboard = cwrap('update_clipboard', null, ['string']);
-		window.addEventListener('paste', function(evt) {
+		Module.listeners['paste'] = function(evt) {
 			update_clipboard(evt.clipboardData.getData('text'));
-		}, true);
+		};
+		window.addEventListener('paste', Module.listeners['paste'], true);
+		Module.listeners['dragover'] = function(ev) {
+			// Prevent default behavior (which would try to open the file(s))
+			ev.preventDefault();
+		};
+		// Drag an drop
+		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
+		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
+		canvas.addEventListener('drop', Module.listeners['drop'], false);
+		// Resize
+		const resize_callback = cwrap('_canvas_resize_callback', null, []);
+		Module.resize_observer = new window['ResizeObserver'](function(elements) {
+			resize_callback();
+		});
+		Module.resize_observer.observe(canvas);
+		// Quit request
+		Module['request_quit'] = function() {
+			send_notification(notifications[notifications.length - 1]);
+		};
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
 		MainLoop::NOTIFICATION_WM_FOCUS_IN,
-		MainLoop::NOTIFICATION_WM_FOCUS_OUT
+		MainLoop::NOTIFICATION_WM_FOCUS_OUT,
+		MainLoop::NOTIFICATION_WM_QUIT_REQUEST
 	);
 	/* clang-format on */
 
 	visual_server->init();
 
 	return OK;
+}
+
+void OS_JavaScript::swap_buffers() {
+	emscripten_webgl_commit_frame();
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
@@ -1060,17 +1099,6 @@ void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
 MainLoop *OS_JavaScript::get_main_loop() const {
 
 	return main_loop;
-}
-
-void OS_JavaScript::run_async() {
-
-	main_loop->init();
-	emscripten_set_main_loop(main_loop_callback, -1, false);
-}
-
-void OS_JavaScript::main_loop_callback() {
-
-	get_singleton()->main_loop_iterate();
 }
 
 bool OS_JavaScript::main_loop_iterate() {
@@ -1103,15 +1131,16 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 			strategy.canvasResizedCallback = NULL;
-			emscripten_enter_soft_fullscreen(GODOT_CANVAS_SELECTOR, &strategy);
+			emscripten_enter_soft_fullscreen(canvas_id.utf8().get_data(), &strategy);
 		} else {
-			emscripten_set_canvas_element_size(GODOT_CANVAS_SELECTOR, windowed_size.width, windowed_size.height);
+			emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), windowed_size.width, windowed_size.height);
 		}
+		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), windowed_size.width, windowed_size.height);
 		just_exited_fullscreen = false;
 	}
 
 	int canvas[2];
-	emscripten_get_canvas_element_size(GODOT_CANVAS_SELECTOR, canvas, canvas + 1);
+	emscripten_get_canvas_element_size(canvas_id.utf8().get_data(), canvas, canvas + 1);
 	video_mode.width = canvas[0];
 	video_mode.height = canvas[1];
 	if (!window_maximized && !video_mode.fullscreen && !just_exited_fullscreen && !entering_fullscreen) {
@@ -1127,16 +1156,54 @@ void OS_JavaScript::delete_main_loop() {
 	memdelete(main_loop);
 }
 
+void OS_JavaScript::finalize_async() {
+	EM_ASM({
+		const canvas = Module['canvas'];
+		Object.entries(Module.listeners).forEach(function(kv) {
+			if (kv[0] == 'paste') {
+				window.removeEventListener(kv[0], kv[1], true);
+			} else {
+				canvas.removeEventListener(kv[0], kv[1]);
+			}
+		});
+		Module.listeners = {};
+		Module.resize_observer.unobserve(canvas);
+		delete Module.resize_observer;
+	});
+	audio_driver_javascript.finish_async();
+}
+
 void OS_JavaScript::finalize() {
 
 	memdelete(input);
+	visual_server->finish();
+	emscripten_webgl_commit_frame();
+	memdelete(visual_server);
+	emscripten_webgl_destroy_context(webgl_ctx);
 }
 
 // Miscellaneous
 
 Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
-	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::execute() is not available on the HTML5 platform.");
+	Array args;
+	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+		args.push_back(E->get());
+	}
+	String json_args = JSON::print(args);
+	/* clang-format off */
+	int failed = EM_ASM_INT({
+		const json_args = UTF8ToString($0);
+		const args = JSON.parse(json_args);
+		if (Module["onExecute"]) {
+			Module["onExecute"](args);
+			return 0;
+		}
+		return 1;
+	}, json_args.utf8().get_data());
+	/* clang-format on */
+	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() must be implemented in Javascript via 'engine.setOnExecute' if required.");
+	return OK;
 }
 
 Error OS_JavaScript::kill(const ProcessID &p_pid) {
@@ -1154,7 +1221,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int p_notification) {
 	if (p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || p_notification == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
 		cursor_inside_canvas = p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
 	}
-	OS_JavaScript::get_singleton()->get_main_loop()->notification(p_notification);
+	MainLoop *loop = OS_JavaScript::get_singleton()->get_main_loop();
+	if (loop)
+		loop->notification(p_notification);
 }
 
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
@@ -1173,7 +1242,7 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
 
 	/* clang-format off */
-	EM_ASM_({
+	EM_ASM({
 		window.alert(UTF8ToString($0));
 	}, p_alert.utf8().get_data());
 	/* clang-format on */
@@ -1182,7 +1251,7 @@ void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
 void OS_JavaScript::set_window_title(const String &p_title) {
 
 	/* clang-format off */
-	EM_ASM_({
+	EM_ASM({
 		document.title = UTF8ToString($0);
 	}, p_title.utf8().get_data());
 	/* clang-format on */
@@ -1221,7 +1290,7 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 
 	r = png.read();
 	/* clang-format off */
-	EM_ASM_ARGS({
+	EM_ASM({
 		var PNG_PTR = $0;
 		var PNG_LEN = $1;
 
@@ -1248,7 +1317,7 @@ Error OS_JavaScript::shell_open(String p_uri) {
 
 	// Open URI in a new tab, browser will deal with it by protocol.
 	/* clang-format off */
-	EM_ASM_({
+	EM_ASM({
 		window.open(UTF8ToString($0), '_blank');
 	}, p_uri.utf8().get_data());
 	/* clang-format on */
@@ -1270,26 +1339,36 @@ String OS_JavaScript::get_user_data_dir() const {
 	return "/userfs";
 };
 
-String OS_JavaScript::get_resource_dir() const {
+String OS_JavaScript::get_cache_path() const {
 
-	return "/";
+	return "/home/web_user/.cache";
+}
+
+String OS_JavaScript::get_config_path() const {
+
+	return "/home/web_user/.config";
+}
+
+String OS_JavaScript::get_data_path() const {
+
+	return "/home/web_user/.local/share";
 }
 
 OS::PowerState OS_JavaScript::get_power_state() {
 
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to POWERSTATE_UNKNOWN");
+	WARN_PRINT_ONCE("Power management is not supported for the HTML5 platform, defaulting to POWERSTATE_UNKNOWN");
 	return OS::POWERSTATE_UNKNOWN;
 }
 
 int OS_JavaScript::get_power_seconds_left() {
 
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
+	WARN_PRINT_ONCE("Power management is not supported for the HTML5 platform, defaulting to -1");
 	return -1;
 }
 
 int OS_JavaScript::get_power_percent_left() {
 
-	WARN_PRINT("Power management is not supported for the HTML5 platform, defaulting to -1");
+	WARN_PRINT_ONCE("Power management is not supported for the HTML5 platform, defaulting to -1");
 	return -1;
 }
 
@@ -1336,6 +1415,7 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	transparency_enabled = false;
 
 	main_loop = NULL;
+	visual_server = NULL;
 
 	idb_available = false;
 	sync_wait_time = -1;

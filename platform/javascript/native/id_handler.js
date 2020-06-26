@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-var IDHandler = function() {
+var IDHandler = /** @constructor */ function() {
 
 	var ids = {};
 	var size = 0;
