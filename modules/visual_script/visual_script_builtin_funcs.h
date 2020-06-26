@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "visual_script.h"
 
 class VisualScriptBuiltinFunc : public VisualScriptNode {
-
 	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode);
 
 public:
@@ -63,7 +62,7 @@ public:
 		MATH_ISNAN,
 		MATH_ISINF,
 		MATH_EASE,
-		MATH_DECIMALS,
+		MATH_STEP_DECIMALS,
 		MATH_STEPIFY,
 		MATH_LERP,
 		MATH_INVERSE_LERP,
@@ -112,7 +111,7 @@ public:
 
 	static int get_func_argument_count(BuiltinFunc p_func);
 	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str);
+	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Callable::CallError &r_error, String &r_error_str);
 	static BuiltinFunc find_function(const String &p_string);
 
 private:

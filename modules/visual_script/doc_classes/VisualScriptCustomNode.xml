@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core" version="3.2">
+<class name="VisualScriptCustomNode" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 		A scripted Visual Script node.
 	</brief_description>
@@ -45,7 +45,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the specified input port's type. See the [code]TYPE_*[/code] enum in [@GlobalScope].
+				Return the specified input port's type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_output_sequence_port_count" qualifiers="virtual">
@@ -86,7 +86,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the specified output's type. See the [code]TYPE_*[/code] enum in [@GlobalScope].
+				Return the specified output's type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_text" qualifiers="virtual">
@@ -136,17 +136,17 @@
 			The start mode used the first time when [method _step] is called.
 		</constant>
 		<constant name="START_MODE_CONTINUE_SEQUENCE" value="1" enum="StartMode">
-			The start mode used when [method _step] is called after coming back from a STEP_PUSH_STACK_BIT.
+			The start mode used when [method _step] is called after coming back from a [constant STEP_PUSH_STACK_BIT].
 		</constant>
 		<constant name="START_MODE_RESUME_YIELD" value="2" enum="StartMode">
-			The start mode used when [method _step] is called after resuming from STEP_YIELD_BIT.
+			The start mode used when [method _step] is called after resuming from [constant STEP_YIELD_BIT].
 		</constant>
 		<constant name="STEP_PUSH_STACK_BIT" value="16777216">
 			Hint used by [method _step] to tell that control should return to it when there is no other node left to execute.
 			This is used by [VisualScriptCondition] to redirect the sequence to the "Done" port after the [code]true[/code]/[code]false[/code] branch has finished execution.
 		</constant>
 		<constant name="STEP_GO_BACK_BIT" value="33554432">
-			Hint used by [method _step] to tell that control should return back, either hitting a previous STEP_PUSH_STACK_BIT or exiting the function.
+			Hint used by [method _step] to tell that control should return back, either hitting a previous [constant STEP_PUSH_STACK_BIT] or exiting the function.
 		</constant>
 		<constant name="STEP_NO_ADVANCE_BIT" value="67108864">
 		</constant>

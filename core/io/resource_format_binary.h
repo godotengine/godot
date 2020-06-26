@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,23 +35,21 @@
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
 
-class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
-
-	bool translation_remapped;
+class ResourceLoaderBinary {
+	bool translation_remapped = false;
 	String local_path;
 	String res_path;
 	String type;
 	Ref<Resource> resource;
-	uint32_t ver_format;
+	uint32_t ver_format = 0;
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
-	uint64_t importmd_ofs;
+	uint64_t importmd_ofs = 0;
 
 	Vector<char> str_buf;
 	List<RES> resource_cache;
 
-	//Map<int,StringName> string_map;
 	Vector<StringName> string_map;
 
 	StringName _get_string();
@@ -59,8 +57,11 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	struct ExtResource {
 		String path;
 		String type;
+		RES cache;
 	};
 
+	bool use_sub_threads = false;
+	float *progress = nullptr;
 	Vector<ExtResource> external_resources;
 
 	struct IntResource {
@@ -69,39 +70,40 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	};
 
 	Vector<IntResource> internal_resources;
+	Map<String, RES> internal_index_cache;
 
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
 
 	Map<String, String> remaps;
-	Error error;
+	Error error = OK;
 
-	int stage;
+	bool use_nocache = false;
 
 	friend class ResourceFormatLoaderBinary;
 
 	Error parse_variant(Variant &r_v);
 
+	Map<String, RES> dependency_cache;
+
 public:
-	virtual void set_local_path(const String &p_local_path);
-	virtual Ref<Resource> get_resource();
-	virtual Error poll();
-	virtual int get_stage() const;
-	virtual int get_stage_count() const;
-	virtual void set_translation_remapped(bool p_remapped);
+	void set_local_path(const String &p_local_path);
+	Ref<Resource> get_resource();
+	Error load();
+	void set_translation_remapped(bool p_remapped);
 
 	void set_remaps(const Map<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(FileAccess *p_f);
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 
-	ResourceInteractiveLoaderBinary();
-	~ResourceInteractiveLoaderBinary();
+	ResourceLoaderBinary() {}
+	~ResourceLoaderBinary();
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -111,7 +113,6 @@ public:
 };
 
 class ResourceFormatSaverBinaryInstance {
-
 	String local_path;
 	String path;
 
@@ -144,7 +145,6 @@ class ResourceFormatSaverBinaryInstance {
 	};
 
 	struct ResourceData {
-
 		String type;
 		List<Property> properties;
 	};

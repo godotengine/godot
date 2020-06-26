@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
 class TabContainer : public Container {
-
 	GDCLASS(TabContainer, Container);
 
 public:
@@ -58,7 +57,7 @@ private:
 	TabAlign align;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
-	Popup *popup;
+	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled;
 	bool use_hidden_tabs_for_min_size;
 	int tabs_rearrange_group;
@@ -66,6 +65,7 @@ private:
 	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
 	void _on_theme_changed();
+	void _repaint();
 	void _on_mouse_exited();
 	void _update_current_tab();
 
@@ -87,14 +87,14 @@ public:
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
 
-	void set_tabs_visible(bool p_visibe);
+	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
-	Ref<Texture> get_tab_icon(int p_tab) const;
+	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool get_tab_disabled(int p_tab) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,7 +52,7 @@ class DependencyEditor : public AcceptDialog {
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button);

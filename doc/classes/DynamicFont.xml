@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DynamicFont" inherits="Font" category="Core" version="3.2">
+<class name="DynamicFont" inherits="Font" version="4.0">
 	<brief_description>
 		DynamicFont renders vector font files at runtime.
 	</brief_description>
 	<description>
-		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths.
+		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths. DynamicFont also supports defining one or more fallbacks fonts, which will be used when displaying a character not supported by the main font.
+		DynamicFont uses the [url=https://www.freetype.org/]FreeType[/url] library for rasterization.
 		[codeblock]
 		var dynamic_font = DynamicFont.new()
 		dynamic_font.font_data = load("res://BarlowCondensed-Bold.ttf")
 		dynamic_font.size = 64
 		$"Label".set("custom_fonts/font", dynamic_font)
 		[/codeblock]
+		[b]Note:[/b] DynamicFont doesn't support features such as right-to-left typesetting, ligatures, text shaping, variable fonts and optional font features yet. If you wish to "bake" an optional font feature into a TTF font file, you can use [url=https://fontforge.org/]FontForge[/url] to do so. In FontForge, use [b]File &gt; Generate Fonts[/b], click [b]Options[/b], choose the desired features then generate the font.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -46,6 +48,7 @@
 			<argument index="0" name="type" type="int">
 			</argument>
 			<description>
+				Returns the spacing for the given [code]type[/code] (see [enum SpacingType]).
 			</description>
 		</method>
 		<method name="remove_fallback">
@@ -76,6 +79,7 @@
 			<argument index="1" name="value" type="int">
 			</argument>
 			<description>
+				Sets the spacing for [code]type[/code] (see [enum SpacingType]) to [code]value[/code] in pixels (not relative to the font size).
 			</description>
 		</method>
 	</methods>
@@ -96,17 +100,14 @@
 			The font data.
 		</member>
 		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color( 1, 1, 1, 1 )">
+			The font outline's color.
+			[b]Note:[/b] It's recommended to leave this at the default value so that you can adjust it in individual controls. For example, if the outline is made black here, it won't be possible to change its color using a Label's font outline modulate theme item.
 		</member>
 		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
+			The font outline's thickness in pixels (not relative to the font size).
 		</member>
 		<member name="size" type="int" setter="set_size" getter="get_size" default="16">
-			The font size.
-		</member>
-		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter" default="false">
-			If [code]true[/code], filtering is used.
-		</member>
-		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps" default="false">
-			If [code]true[/code], mipmapping is used.
+			The font size in pixels.
 		</member>
 	</members>
 	<constants>

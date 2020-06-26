@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,13 +37,16 @@
 #include "scene/resources/material.h"
 
 class GIProbeEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GIProbeEditorPlugin, EditorPlugin);
 
 	GIProbe *gi_probe;
 
-	ToolButton *bake;
+	HBoxContainer *bake_hb;
+	Label *bake_info;
+	Button *bake;
 	EditorNode *editor;
+
+	EditorFileDialog *probe_file;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);
@@ -51,9 +54,11 @@ class GIProbeEditorPlugin : public EditorPlugin {
 	static void bake_func_end();
 
 	void _bake();
+	void _giprobe_save_path_and_bake(const String &p_path);
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const { return "GIProbe"; }

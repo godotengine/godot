@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TabContainer" inherits="Container" category="Core" version="3.2">
+<class name="TabContainer" inherits="Container" version="4.0">
 	<brief_description>
 		Tabbed container.
 	</brief_description>
@@ -36,10 +36,10 @@
 		<method name="get_tab_control" qualifiers="const">
 			<return type="Control">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the currently visible tab's [Control] node.
+				Returns the [Control] node from the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
@@ -59,12 +59,12 @@
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture].
+				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
@@ -109,7 +109,7 @@
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture2D">
 			</argument>
 			<description>
 				Sets an icon for the tab at index [code]tab_idx[/code].
@@ -144,12 +144,13 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign" default="1">
-			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
+			The alignment of all tabs in the tab container. See the [enum TabAlign] constants for details.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
 		</member>
 		<member name="use_hidden_tabs_for_min_size" type="bool" setter="set_use_hidden_tabs_for_min_size" getter="get_use_hidden_tabs_for_min_size" default="false">
+			If [code]true[/code], children [Control] nodes that are hidden have their minimum size take into account in the total, instead of only the currently visible one.
 		</member>
 	</members>
 	<signals>
@@ -185,43 +186,53 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="decrement" type="Texture">
+		<theme_item name="decrement" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
 		</theme_item>
-		<theme_item name="decrement_highlight" type="Texture">
+		<theme_item name="decrement_highlight" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			The font used to draw tab names.
 		</theme_item>
 		<theme_item name="font_color_bg" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
+			Font color of inactive tabs.
 		</theme_item>
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+			Font color of disabled tabs.
 		</theme_item>
 		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Font color of the currently selected tab.
 		</theme_item>
-		<theme_item name="hseparation" type="int" default="4">
+		<theme_item name="icon_separation" type="int" default="4">
+			Space between tab's name and its icon.
 		</theme_item>
-		<theme_item name="increment" type="Texture">
+		<theme_item name="increment" type="Texture2D">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
 		</theme_item>
-		<theme_item name="increment_highlight" type="Texture">
+		<theme_item name="increment_highlight" type="Texture2D">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
-		<theme_item name="label_valign_bg" type="int" default="2">
+		<theme_item name="menu" type="Texture2D">
+			The icon for the menu button (see [method set_popup]).
 		</theme_item>
-		<theme_item name="label_valign_fg" type="int" default="0">
-		</theme_item>
-		<theme_item name="menu" type="Texture">
-		</theme_item>
-		<theme_item name="menu_highlight" type="Texture">
+		<theme_item name="menu_highlight" type="Texture2D">
+			The icon for the menu button (see [method set_popup]) when it's being hovered with the cursor.
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
+			The style for the background fill.
 		</theme_item>
 		<theme_item name="side_margin" type="int" default="8">
+			The space at the left and right edges of the tab bar.
 		</theme_item>
 		<theme_item name="tab_bg" type="StyleBox">
+			The style of inactive tabs.
 		</theme_item>
 		<theme_item name="tab_disabled" type="StyleBox">
+			The style of disabled tabs.
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
-		</theme_item>
-		<theme_item name="top_margin" type="int" default="24">
+			The style of the currently selected tab.
 		</theme_item>
 	</theme_items>
 </class>

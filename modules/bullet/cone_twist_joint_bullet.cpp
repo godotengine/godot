@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 
 ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
 		JointBullet() {
-
 	Transform scaled_AFrame(rbAFrame.scaled(rbA->get_body_scale()));
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
@@ -50,7 +49,6 @@ ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-
 		Transform scaled_BFrame(rbBFrame.scaled(rbB->get_body_scale()));
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
@@ -64,44 +62,46 @@ ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet
 	setup(coneConstraint);
 }
 
-void ConeTwistJointBullet::set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value) {
+void ConeTwistJointBullet::set_param(PhysicsServer3D::ConeTwistJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN:
+		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN:
 			coneConstraint->setLimit(5, p_value);
 			coneConstraint->setLimit(4, p_value);
 			break;
-		case PhysicsServer::CONE_TWIST_JOINT_TWIST_SPAN:
+		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN:
 			coneConstraint->setLimit(3, p_value);
 			break;
-		case PhysicsServer::CONE_TWIST_JOINT_BIAS:
+		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS:
 			coneConstraint->setLimit(coneConstraint->getSwingSpan1(), coneConstraint->getSwingSpan2(), coneConstraint->getTwistSpan(), coneConstraint->getLimitSoftness(), p_value, coneConstraint->getRelaxationFactor());
 			break;
-		case PhysicsServer::CONE_TWIST_JOINT_SOFTNESS:
+		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS:
 			coneConstraint->setLimit(coneConstraint->getSwingSpan1(), coneConstraint->getSwingSpan2(), coneConstraint->getTwistSpan(), p_value, coneConstraint->getBiasFactor(), coneConstraint->getRelaxationFactor());
 			break;
-		case PhysicsServer::CONE_TWIST_JOINT_RELAXATION:
+		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION:
 			coneConstraint->setLimit(coneConstraint->getSwingSpan1(), coneConstraint->getSwingSpan2(), coneConstraint->getTwistSpan(), coneConstraint->getLimitSoftness(), coneConstraint->getBiasFactor(), p_value);
 			break;
-		default:
-			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
+		case PhysicsServer3D::CONE_TWIST_MAX:
+			// Internal size value, nothing to do.
 			break;
 	}
 }
 
-real_t ConeTwistJointBullet::get_param(PhysicsServer::ConeTwistJointParam p_param) const {
+real_t ConeTwistJointBullet::get_param(PhysicsServer3D::ConeTwistJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN:
+		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN:
 			return coneConstraint->getSwingSpan1();
-		case PhysicsServer::CONE_TWIST_JOINT_TWIST_SPAN:
+		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN:
 			return coneConstraint->getTwistSpan();
-		case PhysicsServer::CONE_TWIST_JOINT_BIAS:
+		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS:
 			return coneConstraint->getBiasFactor();
-		case PhysicsServer::CONE_TWIST_JOINT_SOFTNESS:
+		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS:
 			return coneConstraint->getLimitSoftness();
-		case PhysicsServer::CONE_TWIST_JOINT_RELAXATION:
+		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION:
 			return coneConstraint->getRelaxationFactor();
-		default:
-			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
+		case PhysicsServer3D::CONE_TWIST_MAX:
+			// Internal size value, nothing to do.
 			return 0;
 	}
+	// Compiler doesn't seem to notice that all code paths are fulfilled...
+	return 0;
 }

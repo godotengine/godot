@@ -22,7 +22,7 @@ extern "C"
 
 #define ENET_VERSION_MAJOR 1
 #define ENET_VERSION_MINOR 3
-#define ENET_VERSION_PATCH 13
+#define ENET_VERSION_PATCH 15
 #define ENET_VERSION_CREATE(major, minor, patch) (((major)<<16) | ((minor)<<8) | (patch))
 #define ENET_VERSION_GET_MAJOR(version) (((version)>>16)&0xFF)
 #define ENET_VERSION_GET_MINOR(version) (((version)>>8)&0xFF)
@@ -248,6 +248,11 @@ typedef struct _ENetChannel
    ENetList     incomingUnreliableCommands;
 } ENetChannel;
 
+typedef enum _ENetPeerFlag
+{
+   ENET_PEER_FLAG_NEEDS_DISPATCH = (1 << 0)
+} ENetPeerFlag;
+
 /**
  * An ENet peer which data packets may be sent or received from. 
  *
@@ -309,7 +314,9 @@ typedef struct _ENetPeer
    ENetList      outgoingReliableCommands;
    ENetList      outgoingUnreliableCommands;
    ENetList      dispatchedCommands;
-   int           needsDispatch;
+   enet_uint16   flags;
+   enet_uint8    roundTripTimeRemainder;
+   enet_uint8    roundTripTimeVarianceRemainder;
    enet_uint16   incomingUnsequencedGroup;
    enet_uint16   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
@@ -507,6 +514,17 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
 /** @defgroup Address ENet address functions
     @{
 */
+
+/** Attempts to parse the printable form of the IP address in the parameter hostName
+    and sets the host field in the address parameter if successful.
+    @param address destination to store the parsed IP address
+    @param hostName IP address to parse
+    @retval 0 on success
+    @retval < 0 on failure
+    @returns the address of the given hostName in address on success
+*/
+ENET_API int enet_address_set_host_ip (ENetAddress * address, const char * hostName);
+
 /** Attempts to resolve the host named by the parameter hostName and sets
     the host field in the address parameter if successful.
     @param address destination to store resolved address
@@ -567,6 +585,8 @@ ENET_API void       enet_host_channel_limit (ENetHost *, size_t);
 ENET_API void       enet_host_bandwidth_limit (ENetHost *, enet_uint32, enet_uint32);
 extern   void       enet_host_bandwidth_throttle (ENetHost *);
 extern  enet_uint32 enet_host_random_seed (void);
+ENET_API void enet_host_dtls_server_setup (ENetHost *, void *, void *);
+ENET_API void enet_host_dtls_client_setup (ENetHost *, void *, uint8_t, const char *);
 
 ENET_API int                 enet_peer_send (ENetPeer *, enet_uint8, ENetPacket *);
 ENET_API ENetPacket *        enet_peer_receive (ENetPeer *, enet_uint8 * channelID);

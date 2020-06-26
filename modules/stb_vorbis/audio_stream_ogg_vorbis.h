@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 class AudioStreamOGGVorbis;
 
 class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
-
 	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlaybackResampled);
 
 	stb_vorbis *ogg_stream;
@@ -71,9 +70,8 @@ public:
 };
 
 class AudioStreamOGGVorbis : public AudioStream {
-
 	GDCLASS(AudioStreamOGGVorbis, AudioStream);
-	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
+	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 	RES_BASE_EXTENSION("oggstr");
 
 	friend class AudioStreamPlaybackOGGVorbis;
@@ -102,8 +100,8 @@ public:
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
 
-	void set_data(const PoolVector<uint8_t> &p_data);
-	PoolVector<uint8_t> get_data() const;
+	void set_data(const Vector<uint8_t> &p_data);
+	Vector<uint8_t> get_data() const;
 
 	virtual float get_length() const; //if supported, otherwise return 0
 

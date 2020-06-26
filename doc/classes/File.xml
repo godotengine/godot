@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="File" inherits="Reference" category="Core" version="3.2">
+<class name="File" inherits="Reference" version="4.0">
 	<brief_description>
 		Type to handle file reading and writing operations.
 	</brief_description>
@@ -54,28 +54,28 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 16 bits from the file as an integer.
+				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 32 bits from the file as an integer.
+				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 64 bits from the file as an integer.
+				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_8" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the next 8 bits from the file as an integer.
+				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
@@ -87,16 +87,16 @@
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="len" type="int">
 			</argument>
 			<description>
-				Returns next [code]len[/code] bytes of the file as a [PoolByteArray].
+				Returns next [code]len[/code] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
@@ -252,7 +252,7 @@
 			</argument>
 			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
-			<argument index="2" name="key" type="PoolByteArray">
+			<argument index="2" name="key" type="PackedByteArray">
 			</argument>
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
@@ -297,6 +297,26 @@
 			</argument>
 			<description>
 				Stores an integer as 16 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
+				[codeblock]
+				const MAX_15B = 1 &lt;&lt; 15
+				const MAX_16B = 1 &lt;&lt; 16
+
+				func unsigned16_to_signed(unsigned):
+				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
+
+				func _ready():
+				    var f = File.new()
+				    f.open("user://file.dat", File.WRITE_READ)
+				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
+				    f.store_16(121) # In bounds, will store 121.
+				    f.seek(0) # Go back to start to read the stored value.
+				    var read1 = f.get_16() # 65494
+				    var read2 = f.get_16() # 121
+				    var converted1 = unsigned16_to_signed(read1) # -42
+				    var converted2 = unsigned16_to_signed(read2) # 121
+				[/codeblock]
 			</description>
 		</method>
 		<method name="store_32">
@@ -306,6 +326,8 @@
 			</argument>
 			<description>
 				Stores an integer as 32 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_64">
@@ -315,6 +337,7 @@
 			</argument>
 			<description>
 				Stores an integer as 64 bits in the file.
+				[b]Note:[/b] The [code]value[/code] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 			</description>
 		</method>
 		<method name="store_8">
@@ -324,12 +347,14 @@
 			</argument>
 			<description>
 				Stores an integer as 8 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_buffer">
 			<return type="void">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Stores the given array of bytes in the file.
@@ -338,12 +363,12 @@
 		<method name="store_csv_line">
 			<return type="void">
 			</return>
-			<argument index="0" name="values" type="PoolStringArray">
+			<argument index="0" name="values" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8.
 			</description>
 		</method>

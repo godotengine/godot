@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PrimitiveMesh" inherits="Mesh" category="Core" version="3.2">
+<class name="PrimitiveMesh" inherits="Mesh" version="4.0">
 	<brief_description>
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
@@ -22,7 +22,8 @@
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unnexpected culling when  using a shader to offset vertices.
 		</member>
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
-			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn. Result is the same as using *CULL_BACK* in [SpatialMaterial].
+			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
+			This gives the same result as using [constant BaseMaterial3D.CULL_BACK] in [member BaseMaterial3D.cull_mode].
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.

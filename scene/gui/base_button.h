@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 class ButtonGroup;
 
 class BaseButton : public Control {
-
 	GDCLASS(BaseButton, Control);
 
 public:
@@ -55,7 +54,6 @@ private:
 
 	ActionMode action_mode;
 	struct Status {
-
 		bool pressed;
 		bool hovering;
 		bool press_attempt;
@@ -136,7 +134,6 @@ VARIANT_ENUM_CAST(BaseButton::DrawMode)
 VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
-
 	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
 	Set<BaseButton *> buttons;

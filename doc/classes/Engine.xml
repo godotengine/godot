@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Engine" inherits="Object" category="Core" version="3.2">
+<class name="Engine" inherits="Object" version="4.0">
 	<brief_description>
-		Access to basic engine properties.
+		Access to engine properties.
 	</brief_description>
 	<description>
-		The [Engine] class allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
+		The [Engine] singleton allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -41,7 +41,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of frames drawn.
+				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_idle_frames].
 			</description>
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
@@ -49,6 +49,13 @@
 			</return>
 			<description>
 				Returns the frames per second of the running game.
+			</description>
+		</method>
+		<method name="get_idle_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]idle frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
@@ -72,6 +79,13 @@
 				Returns the main loop object (see [MainLoop] and [SceneTree]).
 			</description>
 		</method>
+		<method name="get_physics_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b].
+			</description>
+		</method>
 		<method name="get_physics_interpolation_fraction" qualifiers="const">
 			<return type="float">
 			</return>
@@ -85,6 +99,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
@@ -116,6 +131,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
 			</description>
 		</method>
 		<method name="is_in_physics_frame" qualifiers="const">
@@ -131,9 +147,10 @@
 			If [code]true[/code], it is running inside the editor. Useful for tool scripts.
 		</member>
 		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second" default="60">
-			The number of fixed iterations per second (for fixed process and physics).
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around tunneling issues, but keep in mind doing so will increase CPU usage.
 		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
+			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows to smooth out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
 		</member>
 		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
 			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.

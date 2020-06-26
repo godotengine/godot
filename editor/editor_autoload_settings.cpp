@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,23 +33,20 @@
 #include "core/global_constants.h"
 #include "core/project_settings.h"
 #include "editor_node.h"
-#include "scene/main/viewport.h"
+#include "editor_scale.h"
+#include "project_settings_editor.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
 
 void EditorAutoloadSettings::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		List<String> afn;
 		ResourceLoader::get_recognized_extensions_for_type("Script", &afn);
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &afn);
 
-		EditorFileDialog *file_dialog = autoload_add_path->get_file_dialog();
-
 		for (List<String>::Element *E = afn.front(); E; E = E->next()) {
-
 			file_dialog->add_filter("*." + E->get());
 		}
 
@@ -59,29 +56,34 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				get_tree()->get_root()->call_deferred("add_child", info.node);
 			}
 		}
+		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		browse_button->set_icon(get_theme_icon("Folder", "EditorIcons"));
 	}
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-
 	if (!p_name.is_valid_identifier()) {
-		if (r_error)
+		if (r_error) {
 			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
+		}
 
 		return false;
 	}
 
 	if (ClassDB::class_exists(p_name)) {
-		if (r_error)
+		if (r_error) {
 			*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing engine class name.");
+		}
 
 		return false;
 	}
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
-			if (r_error)
+			if (r_error) {
 				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing built-in type name.");
+			}
 
 			return false;
 		}
@@ -89,8 +91,9 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 
 	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
 		if (GlobalConstants::get_global_constant_name(i) == p_name) {
-			if (r_error)
+			if (r_error) {
 				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global constant name.");
+			}
 
 			return false;
 		}
@@ -101,8 +104,9 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		ScriptServer::get_language(i)->get_reserved_words(&keywords);
 		for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 			if (E->get() == p_name) {
-				if (r_error)
+				if (r_error) {
 					*r_error = TTR("Invalid name.") + "\n" + TTR("Keyword cannot be used as an autoload name.");
+				}
 
 				return false;
 			}
@@ -113,27 +117,28 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 }
 
 void EditorAutoloadSettings::_autoload_add() {
-
-	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_line_edit()->get_text()))
-		autoload_add_path->get_line_edit()->set_text("");
+	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
+		autoload_add_path->set_text("");
+	}
 
 	autoload_add_name->set_text("");
+	add_autoload->set_disabled(true);
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
-
 	TreeItem *ti = tree->get_selected();
 
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	selected_autoload = "autoload/" + ti->get_text(0);
 }
 
 void EditorAutoloadSettings::_autoload_edited() {
-
-	if (updating_autoload)
+	if (updating_autoload) {
 		return;
+	}
 
 	TreeItem *ti = tree->get_edited();
 	int column = tree->get_edited_column();
@@ -144,8 +149,9 @@ void EditorAutoloadSettings::_autoload_edited() {
 		String name = ti->get_text(0);
 		String old_name = selected_autoload.get_slice("/", 1);
 
-		if (name == old_name)
+		if (name == old_name) {
 			return;
+		}
 
 		String error;
 		if (!_autoload_name_is_valid(name, &error)) {
@@ -195,12 +201,14 @@ void EditorAutoloadSettings::_autoload_edited() {
 		int order = ProjectSettings::get_singleton()->get_order(base);
 		String path = ProjectSettings::get_singleton()->get(base);
 
-		if (path.begins_with("*"))
+		if (path.begins_with("*")) {
 			path = path.substr(1, path.length());
+		}
 
 		// Singleton autoloads are represented with a leading "*" in their path.
-		if (checked)
+		if (checked) {
 			path = "*" + path;
+		}
 
 		undo_redo->create_action(TTR("Toggle AutoLoad Globals"));
 
@@ -223,7 +231,6 @@ void EditorAutoloadSettings::_autoload_edited() {
 }
 
 void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_column, int p_button) {
-
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String name = "autoload/" + ti->get_text(0);
@@ -236,8 +243,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 		} break;
 		case BUTTON_MOVE_UP:
 		case BUTTON_MOVE_DOWN: {
-
-			TreeItem *swap = NULL;
+			TreeItem *swap = nullptr;
 
 			if (p_button == BUTTON_MOVE_UP) {
 				swap = ti->get_prev();
@@ -245,8 +251,9 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 				swap = ti->get_next();
 			}
 
-			if (!swap)
+			if (!swap) {
 				return;
+			}
 
 			String swap_name = "autoload/" + swap->get_text(0);
 
@@ -270,7 +277,6 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 			undo_redo->commit_action();
 		} break;
 		case BUTTON_DELETE: {
-
 			int order = ProjectSettings::get_singleton()->get_order(name);
 
 			undo_redo->create_action(TTR("Remove Autoload"));
@@ -294,8 +300,9 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 
 void EditorAutoloadSettings::_autoload_activated() {
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 	_autoload_open(ti->get_text(1));
 }
 
@@ -309,14 +316,37 @@ void EditorAutoloadSettings::_autoload_open(const String &fpath) {
 }
 
 void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
+	// Convert the file name to PascalCase, which is the convention for classes in GDScript.
+	const String class_name = p_path.get_file().get_basename().capitalize().replace(" ", "");
 
-	autoload_add_name->set_text(p_path.get_file().get_basename());
+	// If the name collides with a built-in class, prefix the name to make it possible to add without having to edit the name.
+	// The prefix is subjective, but it provides better UX than leaving the Add button disabled :)
+	const String prefix = ClassDB::class_exists(class_name) ? "Global" : "";
+
+	autoload_add_name->set_text(prefix + class_name);
+	add_autoload->set_disabled(false);
+}
+
+void EditorAutoloadSettings::_autoload_text_entered(const String p_name) {
+	if (autoload_add_path->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
+		_autoload_add();
+	}
+}
+
+void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
+	add_autoload->set_disabled(
+			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
+}
+
+void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
+	add_autoload->set_disabled(
+			autoload_add_path->get_text() == "" || !_autoload_name_is_valid(p_name, nullptr));
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	RES res = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V_MSG(res.is_null(), NULL, "Can't autoload: " + p_path + ".");
-	Node *n = NULL;
+	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
+	Node *n = nullptr;
 	if (res->is_class("PackedScene")) {
 		Ref<PackedScene> ps = res;
 		n = ps->instance();
@@ -324,25 +354,25 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		Ref<Script> s = res;
 		StringName ibt = s->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_FAIL_COND_V_MSG(!valid_type, NULL, "Script does not inherit a Node: " + p_path + ".");
+		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit a Node: " + p_path + ".");
 
 		Object *obj = ClassDB::instance(ibt);
 
-		ERR_FAIL_COND_V_MSG(obj == NULL, NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		ERR_FAIL_COND_V_MSG(obj == nullptr, nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
-		n->set_script(s.get_ref_ptr());
+		n->set_script(s);
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, NULL, "Path in autoload not a node or script: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in autoload not a node or script: " + p_path + ".");
 
 	return n;
 }
 
 void EditorAutoloadSettings::update_autoload() {
-
-	if (updating_autoload)
+	if (updating_autoload) {
 		return;
+	}
 
 	updating_autoload = true;
 
@@ -363,17 +393,18 @@ void EditorAutoloadSettings::update_autoload() {
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 		const PropertyInfo &pi = E->get();
 
-		if (!pi.name.begins_with("autoload/"))
+		if (!pi.name.begins_with("autoload/")) {
 			continue;
+		}
 
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.empty())
+		if (name.empty()) {
 			continue;
+		}
 
 		AutoLoadInfo info;
 		info.is_singleton = path.begins_with("*");
@@ -399,7 +430,7 @@ void EditorAutoloadSettings::update_autoload() {
 						to_remove.erase(name);
 						need_to_add = false;
 					} else {
-						info.node = NULL;
+						info.node = nullptr;
 					}
 				}
 			}
@@ -422,10 +453,10 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_editable(2, true);
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, info.is_singleton);
-		item->add_button(3, get_icon("FileList", "EditorIcons"), BUTTON_OPEN);
-		item->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
-		item->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_icon("Remove", "EditorIcons"), BUTTON_DELETE);
+		item->add_button(3, get_theme_icon("Load", "EditorIcons"), BUTTON_OPEN);
+		item->add_button(3, get_theme_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
+		item->add_button(3, get_theme_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
+		item->add_button(3, get_theme_icon("Remove", "EditorIcons"), BUTTON_DELETE);
 		item->set_selectable(3, false);
 	}
 
@@ -444,7 +475,7 @@ void EditorAutoloadSettings::update_autoload() {
 
 		if (info.node) {
 			info.node->queue_delete();
-			info.node = NULL;
+			info.node = nullptr;
 		}
 	}
 
@@ -475,7 +506,7 @@ void EditorAutoloadSettings::update_autoload() {
 		if (!info->in_editor && !info->is_singleton) {
 			// No reason to keep this node
 			memdelete(info->node);
-			info->node = NULL;
+			info->node = nullptr;
 		}
 	}
 
@@ -487,21 +518,22 @@ void EditorAutoloadSettings::update_autoload() {
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
-
-	if (autoload_cache.size() <= 1)
+	if (autoload_cache.size() <= 1) {
 		return false;
+	}
 
-	PoolStringArray autoloads;
+	PackedStringArray autoloads;
 
-	TreeItem *next = tree->get_next_selected(NULL);
+	TreeItem *next = tree->get_next_selected(nullptr);
 
 	while (next) {
 		autoloads.push_back(next->get_text(0));
 		next = tree->get_next_selected(next);
 	}
 
-	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size())
+	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size()) {
 		return Variant();
+	}
 
 	VBoxContainer *preview = memnew(VBoxContainer);
 
@@ -525,19 +557,22 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 }
 
 bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const {
-	if (updating_autoload)
+	if (updating_autoload) {
 		return false;
+	}
 
 	Dictionary drop_data = p_data;
 
-	if (!drop_data.has("type"))
+	if (!drop_data.has("type")) {
 		return false;
+	}
 
 	if (drop_data.has("type")) {
 		TreeItem *ti = tree->get_item_at_position(p_point);
 
-		if (!ti)
+		if (!ti) {
 			return false;
+		}
 
 		int section = tree->get_drop_section_at_position(p_point);
 
@@ -548,16 +583,17 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Varia
 }
 
 void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
-
 	TreeItem *ti = tree->get_item_at_position(p_point);
 
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	int section = tree->get_drop_section_at_position(p_point);
 
-	if (section < -1)
+	if (section < -1) {
 		return;
+	}
 
 	String name;
 	bool move_to_back = false;
@@ -574,7 +610,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	int order = ProjectSettings::get_singleton()->get_order("autoload/" + name);
 
 	AutoLoadInfo aux;
-	List<AutoLoadInfo>::Element *E = NULL;
+	List<AutoLoadInfo>::Element *E = nullptr;
 
 	if (!move_to_back) {
 		aux.order = order;
@@ -582,7 +618,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	}
 
 	Dictionary drop_data = p_data;
-	PoolStringArray autoloads = drop_data["autoloads"];
+	PackedStringArray autoloads = drop_data["autoloads"];
 
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());
@@ -634,23 +670,22 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_path) {
-
 	String name = p_name;
 
 	String error;
 	if (!_autoload_name_is_valid(name, &error)) {
-		EditorNode::get_singleton()->show_warning(error);
+		EditorNode::get_singleton()->show_warning(TTR("Can't add autoload:") + "\n" + error);
 		return false;
 	}
 
 	const String &path = p_path;
 	if (!FileAccess::exists(path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("File does not exist."));
+		EditorNode::get_singleton()->show_warning(TTR("Can't add autoload:") + "\n" + TTR(vformat("%s is an invalid path. File does not exist.", path)));
 		return false;
 	}
 
 	if (!path.begins_with("res://")) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("Not in resource path."));
+		EditorNode::get_singleton()->show_warning(TTR("Can't add autoload:") + "\n" + TTR(vformat("%s is an invalid path. Not in resource path (res://).", path)));
 		return false;
 	}
 
@@ -680,7 +715,6 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 }
 
 void EditorAutoloadSettings::autoload_remove(const String &p_name) {
-
 	String name = "autoload/" + p_name;
 
 	UndoRedo *undo_redo = EditorNode::get_undo_redo();
@@ -705,15 +739,7 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 }
 
 void EditorAutoloadSettings::_bind_methods() {
-
-	ClassDB::bind_method("_autoload_add", &EditorAutoloadSettings::_autoload_add);
-	ClassDB::bind_method("_autoload_selected", &EditorAutoloadSettings::_autoload_selected);
-	ClassDB::bind_method("_autoload_edited", &EditorAutoloadSettings::_autoload_edited);
-	ClassDB::bind_method("_autoload_button_pressed", &EditorAutoloadSettings::_autoload_button_pressed);
-	ClassDB::bind_method("_autoload_activated", &EditorAutoloadSettings::_autoload_activated);
-	ClassDB::bind_method("_autoload_text_entered", &EditorAutoloadSettings::_autoload_text_entered);
 	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
-	ClassDB::bind_method("_autoload_file_callback", &EditorAutoloadSettings::_autoload_file_callback);
 
 	ClassDB::bind_method("get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
@@ -727,22 +753,22 @@ void EditorAutoloadSettings::_bind_methods() {
 }
 
 EditorAutoloadSettings::EditorAutoloadSettings() {
-
 	// Make first cache
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 		const PropertyInfo &pi = E->get();
 
-		if (!pi.name.begins_with("autoload/"))
+		if (!pi.name.begins_with("autoload/")) {
 			continue;
+		}
 
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.empty())
+		if (name.empty()) {
 			continue;
+		}
 
 		AutoLoadInfo info;
 		info.is_singleton = path.begins_with("*");
@@ -782,9 +808,9 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			}
 		}
 
-		if (!info.is_singleton && !info.in_editor && info.node != NULL) {
+		if (!info.is_singleton && !info.in_editor && info.node != nullptr) {
 			memdelete(info.node);
-			info.node = NULL;
+			info.node = nullptr;
 		}
 	}
 
@@ -800,11 +826,24 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	l->set_text(TTR("Path:"));
 	hbc->add_child(l);
 
-	autoload_add_path = memnew(EditorLineEditFileChooser);
-	autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_path->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
-	autoload_add_path->get_file_dialog()->connect("file_selected", this, "_autoload_file_callback");
+	autoload_add_path = memnew(LineEdit);
 	hbc->add_child(autoload_add_path);
+	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	autoload_add_path->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
+
+	browse_button = memnew(Button);
+	hbc->add_child(browse_button);
+	browse_button->connect("pressed", callable_mp(this, &EditorAutoloadSettings::_browse_autoload_add_path));
+
+	file_dialog = memnew(EditorFileDialog);
+	hbc->add_child(file_dialog);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
+	file_dialog->connect("dir_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
+	file_dialog->connect("files_selected", callable_mp(this, &EditorAutoloadSettings::_set_autoload_add_path));
+
+	hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_file_callback));
 
 	l = memnew(Label);
 	l->set_text(TTR("Node Name:"));
@@ -812,12 +851,15 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_name->connect("text_entered", this, "_autoload_text_entered");
+	autoload_add_name->connect("text_entered", callable_mp(this, &EditorAutoloadSettings::_autoload_text_entered));
+	autoload_add_name->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
 	hbc->add_child(autoload_add_name);
 
-	Button *add_autoload = memnew(Button);
+	add_autoload = memnew(Button);
 	add_autoload->set_text(TTR("Add"));
-	add_autoload->connect("pressed", this, "_autoload_add");
+	add_autoload->connect("pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_add));
+	// The button will be enabled once a valid name is entered (either automatically or manually).
+	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);
 
 	tree = memnew(Tree);
@@ -845,10 +887,10 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_column_expand(3, false);
 	tree->set_column_min_width(3, 120 * EDSCALE);
 
-	tree->connect("cell_selected", this, "_autoload_selected");
-	tree->connect("item_edited", this, "_autoload_edited");
-	tree->connect("button_pressed", this, "_autoload_button_pressed");
-	tree->connect("item_activated", this, "_autoload_activated");
+	tree->connect("cell_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_selected));
+	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
+	tree->connect("button_pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
+	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(tree, true);
@@ -861,4 +903,13 @@ EditorAutoloadSettings::~EditorAutoloadSettings() {
 			memdelete(info.node);
 		}
 	}
+}
+
+void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
+	autoload_add_path->set_text(p_text);
+	autoload_add_path->emit_signal("text_entered", p_text);
+}
+
+void EditorAutoloadSettings::_browse_autoload_add_path() {
+	file_dialog->popup_centered_ratio();
 }

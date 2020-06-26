@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptEditor" inherits="PanelContainer" category="Core" version="3.2">
+<class name="ScriptEditor" inherits="PanelContainer" version="4.0">
 	<brief_description>
+		Godot editor's script editor.
 	</brief_description>
 	<description>
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].
 	</description>
 	<tutorials>
 	</tutorials>

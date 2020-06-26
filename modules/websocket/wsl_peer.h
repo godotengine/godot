@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,6 @@
 #define WSL_MAX_HEADER_SIZE 4096
 
 class WSLPeer : public WebSocketPeer {
-
 	GDCIIMPL(WSLPeer, WebSocketPeer);
 
 public:
@@ -53,6 +52,7 @@ public:
 		bool destroy;
 		bool valid;
 		bool is_server;
+		bool closing;
 		void *obj;
 		void *peer;
 		Ref<StreamPeer> conn;
@@ -66,9 +66,10 @@ public:
 			valid = false;
 			is_server = false;
 			id = 1;
-			ctx = NULL;
-			obj = NULL;
-			peer = NULL;
+			ctx = nullptr;
+			obj = nullptr;
+			closing = false;
+			peer = nullptr;
 		}
 	};
 
@@ -84,7 +85,7 @@ private:
 	// Our packet info is just a boolean (is_string), using uint8_t for it.
 	PacketBuffer<uint8_t> _in_buffer;
 
-	PoolVector<uint8_t> _packet_buffer;
+	Vector<uint8_t> _packet_buffer;
 
 	WriteMode write_mode;
 
@@ -107,6 +108,7 @@ public:
 	virtual WriteMode get_write_mode() const;
 	virtual void set_write_mode(WriteMode p_mode);
 	virtual bool was_string_packet() const;
+	virtual void set_no_delay(bool p_enabled);
 
 	void make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size, unsigned int p_out_pkt_size);
 	Error parse_message(const wslay_event_on_msg_recv_arg *arg);

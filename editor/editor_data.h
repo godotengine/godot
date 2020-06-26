@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,14 +39,12 @@
 #include "scene/resources/texture.h"
 
 class EditorHistory {
-
 	enum {
 
 		HISTORY_MAX = 64
 	};
 
 	struct Obj {
-
 		REF ref;
 		ObjectID object;
 		String property;
@@ -54,7 +52,6 @@ class EditorHistory {
 	};
 
 	struct History {
-
 		Vector<Obj> path;
 		int level;
 	};
@@ -66,7 +63,6 @@ class EditorHistory {
 	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -106,13 +102,11 @@ public:
 class EditorSelection;
 
 class EditorData {
-
 public:
 	struct CustomType {
-
 		String name;
 		Ref<Script> script;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 	};
 
 	struct EditedScene {
@@ -131,11 +125,10 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
-	Map<String, Vector<CustomType> > custom_types;
+	Map<String, Vector<CustomType>> custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
@@ -178,10 +171,10 @@ public:
 	void save_editor_global_states();
 	void restore_editor_global_states();
 
-	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
+	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Object *instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
+	const Map<String, Vector<CustomType>> &get_custom_types() const { return custom_types; }
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);
@@ -234,7 +227,6 @@ public:
 };
 
 class EditorSelection : public Object {
-
 	GDCLASS(EditorSelection, Object);
 
 private:
@@ -257,15 +249,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	Array get_selected_nodes();
+	TypedArray<Node> get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;
 
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
-		if (!selection.has(p_node))
-			return NULL;
+		if (!selection.has(p_node)) {
+			return nullptr;
+		}
 		return Object::cast_to<T>(selection[p_node]);
 	}
 

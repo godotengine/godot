@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 package org.godotengine.godot.input;
+
+import org.godotengine.godot.*;
+
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,7 +40,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import org.godotengine.godot.*;
 
 public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListener {
 	// ===========================================================
@@ -48,17 +50,18 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	// ===========================================================
 	// Fields
 	// ===========================================================
-	private final GodotView mView;
+	private final GodotRenderView mRenderView;
 	private final GodotEditText mEdit;
 	private String mOriginText;
+	private boolean mHasSelection;
 
 	// ===========================================================
 	// Constructors
 	// ===========================================================
 
-	public GodotTextInputWrapper(final GodotView view, final GodotEditText edit) {
-		this.mView = view;
-		this.mEdit = edit;
+	public GodotTextInputWrapper(final GodotRenderView view, final GodotEditText edit) {
+		mRenderView = view;
+		mEdit = edit;
 	}
 
 	// ===========================================================
@@ -66,13 +69,17 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	// ===========================================================
 
 	private boolean isFullScreenEdit() {
-		final TextView textField = this.mEdit;
+		final TextView textField = mEdit;
 		final InputMethodManager imm = (InputMethodManager)textField.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 		return imm.isFullscreenMode();
 	}
 
 	public void setOriginText(final String originText) {
-		this.mOriginText = originText;
+		mOriginText = originText;
+	}
+
+	public void setSelection(boolean selection) {
+		mHasSelection = selection;
 	}
 
 	// ===========================================================
@@ -87,12 +94,17 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
 		//Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
 
-		mView.queueEvent(new Runnable() {
+		mRenderView.queueOnRenderThread(new Runnable() {
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
-					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
-					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, true);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, false);
+
+					if (mHasSelection) {
+						mHasSelection = false;
+						break;
+					}
 				}
 			}
 		});
@@ -106,12 +118,17 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 		for (int i = start; i < start + count; ++i) {
 			newChars[i - start] = pCharSequence.charAt(i);
 		}
-		mView.queueEvent(new Runnable() {
+		mRenderView.queueOnRenderThread(new Runnable() {
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
-					GodotLib.key(0, newChars[i], true);
-					GodotLib.key(0, newChars[i], false);
+					int key = newChars[i];
+					if (key == '\n') {
+						// Return keys are handled through action events
+						continue;
+					}
+					GodotLib.key(0, 0, key, true);
+					GodotLib.key(0, 0, key, false);
 				}
 			}
 		});
@@ -119,23 +136,28 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public boolean onEditorAction(final TextView pTextView, final int pActionID, final KeyEvent pKeyEvent) {
-		if (this.mEdit == pTextView && this.isFullScreenEdit()) {
+		if (mEdit == pTextView && isFullScreenEdit()) {
 			final String characters = pKeyEvent.getCharacters();
 
-			mView.queueEvent(new Runnable() {
+			mRenderView.queueOnRenderThread(new Runnable() {
 				@Override
 				public void run() {
 					for (int i = 0; i < characters.length(); i++) {
 						final int ch = characters.codePointAt(i);
-						GodotLib.key(0, ch, true);
-						GodotLib.key(0, ch, false);
+						GodotLib.key(0, 0, ch, true);
+						GodotLib.key(0, 0, ch, false);
 					}
 				}
 			});
 		}
 
-		if (pActionID == EditorInfo.IME_ACTION_DONE) {
-			this.mView.requestFocus();
+		if (pActionID == EditorInfo.IME_NULL) {
+			// Enter key has been pressed
+			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, true);
+			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, false);
+
+			mRenderView.getView().requestFocus();
+			return true;
 		}
 		return false;
 	}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/2d/collision_object_2d.h"
 
 class Area2D : public CollisionObject2D {
-
 	GDCLASS(Area2D, CollisionObject2D);
 
 public:
@@ -62,20 +61,20 @@ private:
 	bool monitorable;
 	bool locked;
 
-	void _body_inout(int p_status, const RID &p_body, int p_instance, int p_body_shape, int p_area_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape);
 
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
-
 		int body_shape;
 		int area_shape;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return area_shape < p_sp.area_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -86,7 +85,6 @@ private:
 	};
 
 	struct BodyState {
-
 		int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
@@ -94,20 +92,20 @@ private:
 
 	Map<ObjectID, BodyState> body_map;
 
-	void _area_inout(int p_status, const RID &p_area, int p_instance, int p_area_shape, int p_self_shape);
+	void _area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape);
 
 	void _area_enter_tree(ObjectID p_id);
 	void _area_exit_tree(ObjectID p_id);
 
 	struct AreaShapePair {
-
 		int area_shape;
 		int self_shape;
 		bool operator<(const AreaShapePair &p_sp) const {
-			if (area_shape == p_sp.area_shape)
+			if (area_shape == p_sp.area_shape) {
 				return self_shape < p_sp.self_shape;
-			else
+			} else {
 				return area_shape < p_sp.area_shape;
+			}
 		}
 
 		AreaShapePair() {}
@@ -118,7 +116,6 @@ private:
 	};
 
 	struct AreaState {
-
 		int rc;
 		bool in_tree;
 		VSet<AreaShapePair> shapes;
@@ -178,8 +175,8 @@ public:
 	void set_collision_layer_bit(int p_bit, bool p_value);
 	bool get_collision_layer_bit(int p_bit) const;
 
-	Array get_overlapping_bodies() const; //function for script
-	Array get_overlapping_areas() const; //function for script
+	TypedArray<Node2D> get_overlapping_bodies() const; //function for script
+	TypedArray<Area2D> get_overlapping_areas() const; //function for script
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,17 +34,19 @@
 #include "core/ordered_hash_map.h"
 #include "core/os/file_access.h"
 #include "core/reference.h"
+#include "core/variant_parser.h"
 
 class ConfigFile : public Reference {
-
 	GDCLASS(ConfigFile, Reference);
 
-	OrderedHashMap<String, OrderedHashMap<String, Variant> > values;
+	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;
 
-	PoolStringArray _get_sections() const;
-	PoolStringArray _get_section_keys(const String &p_section) const;
+	PackedStringArray _get_sections() const;
+	PackedStringArray _get_section_keys(const String &p_section) const;
 	Error _internal_load(const String &p_path, FileAccess *f);
 	Error _internal_save(FileAccess *file);
+
+	Error _parse(const String &p_path, VariantParser::Stream *p_stream);
 
 protected:
 	static void _bind_methods();
@@ -64,14 +66,13 @@ public:
 
 	Error save(const String &p_path);
 	Error load(const String &p_path);
+	Error parse(const String &p_data);
 
 	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
 	Error load_encrypted_pass(const String &p_path, const String &p_pass);
 
 	Error save_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
 	Error save_encrypted_pass(const String &p_path, const String &p_pass);
-
-	ConfigFile();
 };
 
 #endif // CONFIG_FILE_H

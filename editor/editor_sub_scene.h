@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "scene/gui/tree.h"
 
 class EditorSubScene : public ConfirmationDialog {
-
 	GDCLASS(EditorSubScene, ConfirmationDialog);
 
 	List<Node *> selection;
@@ -50,6 +49,7 @@ class EditorSubScene : public ConfirmationDialog {
 	void _fill_tree(Node *p_node, TreeItem *p_parent);
 	void _selected_changed();
 	void _item_multi_selected(Object *p_object, int p_cell, bool p_selected);
+	void _item_activated();
 	void _remove_selection_child(Node *p_node);
 	void _reown(Node *p_node, List<Node *> *p_to_reown);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Resource" inherits="Reference" category="Core" version="3.2">
+<class name="Resource" inherits="Reference" version="4.0">
 	<brief_description>
 		Base class for all resources.
 	</brief_description>
@@ -37,7 +37,7 @@
 			<return type="RID">
 			</return>
 			<description>
-				Returns the RID of the resource (or an empty RID). Many resources (such as [Texture], [Mesh], etc) are high-level abstractions of resources stored in a server, so this function will return the original RID.
+				Returns the RID of the resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], etc) are high-level abstractions of resources stored in a server, so this function will return the original RID.
 			</description>
 		</method>
 		<method name="setup_local_to_scene">

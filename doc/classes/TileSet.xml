@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" category="Core" version="3.2">
+<class name="TileSet" inherits="Resource" version="4.0">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -44,6 +44,8 @@
 			<argument index="1" name="neighbor_id" type="int">
 			</argument>
 			<description>
+				Determines when the auto-tiler should consider two different auto-tile IDs to be bound together.
+				[b]Note:[/b] [code]neighbor_id[/code] will be [code]-1[/code] ([constant TileMap.INVALID_CELL]) when checking a tile against an empty neighbor tile.
 			</description>
 		</method>
 		<method name="autotile_clear_bitmask_map">
@@ -381,7 +383,7 @@
 			</description>
 		</method>
 		<method name="tile_get_normal_map" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -480,7 +482,7 @@
 			</description>
 		</method>
 		<method name="tile_get_texture" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -586,10 +588,11 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="normal_map" type="Texture">
+			<argument index="1" name="normal_map" type="Texture2D">
 			</argument>
 			<description>
 				Sets the tile's normal map texture.
+				[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 			</description>
 		</method>
 		<method name="tile_set_occluder_offset">
@@ -694,7 +697,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Sets the tile's texture.
@@ -748,6 +751,8 @@
 		<constant name="BIND_TOPRIGHT" value="4" enum="AutotileBindings">
 		</constant>
 		<constant name="BIND_LEFT" value="8" enum="AutotileBindings">
+		</constant>
+		<constant name="BIND_CENTER" value="16" enum="AutotileBindings">
 		</constant>
 		<constant name="BIND_RIGHT" value="32" enum="AutotileBindings">
 		</constant>

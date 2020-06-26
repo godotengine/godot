@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BaseButton" inherits="Control" category="Core" version="3.2">
+<class name="BaseButton" inherits="Control" version="4.0">
 	<brief_description>
 		Base class for different kinds of buttons.
 	</brief_description>
@@ -22,14 +22,14 @@
 			<argument index="0" name="button_pressed" type="bool">
 			</argument>
 			<description>
-				Called when the button is toggled (only if toggle_mode is active).
+				Called when the button is toggled (only if [member toggle_mode] is active).
 			</description>
 		</method>
 		<method name="get_draw_mode" qualifiers="const">
 			<return type="int" enum="BaseButton.DrawMode">
 			</return>
 			<description>
-				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the [code]DRAW_*[/code] enum.
+				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the [enum DrawMode] enum.
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
@@ -42,7 +42,7 @@
 	</methods>
 	<members>
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" enum="BaseButton.ActionMode" default="1">
-			Determines when the button is considered clicked, one of the [code]ACTION_MODE_*[/code] constants.
+			Determines when the button is considered clicked, one of the [enum ActionMode] constants.
 		</member>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" default="1">
 			Binary mask to choose which mouse buttons this button will respond to.
@@ -60,9 +60,10 @@
 		</member>
 		<member name="keep_pressed_outside" type="bool" setter="set_keep_pressed_outside" getter="is_keep_pressed_outside" default="false">
 			If [code]true[/code], the button stays pressed when moving the cursor outside the button while pressing it.
+			[b]Note:[/b] This property only affects the button's visual appearance. Signals will be emitted at the same moment regardless of this property's value.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
-			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if toggle_mode is active).
+			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active).
 		</member>
 		<member name="shortcut" type="ShortCut" setter="set_shortcut" getter="get_shortcut">
 			[ShortCut] associated to the button.
@@ -112,6 +113,7 @@
 			The state of buttons are disabled.
 		</constant>
 		<constant name="DRAW_HOVER_PRESSED" value="4" enum="DrawMode">
+			The state of buttons are both hovered and pressed.
 		</constant>
 		<constant name="ACTION_MODE_BUTTON_PRESS" value="0" enum="ActionMode">
 			Require just a press to consider the button clicked.

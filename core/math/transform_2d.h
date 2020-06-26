@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 #define TRANSFORM_2D_H
 
 #include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
-#include "core/pool_vector.h"
 
 struct Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":
@@ -71,7 +70,10 @@ struct Transform2D {
 
 	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
+	real_t get_skew() const;
+	void set_skew(float p_angle);
 	_FORCE_INLINE_ void set_rotation_and_scale(real_t p_rot, const Size2 &p_scale);
+	_FORCE_INLINE_ void set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew);
 	void rotate(real_t p_phi);
 
 	void scale(const Size2 &p_scale);
@@ -112,13 +114,12 @@ struct Transform2D {
 	_FORCE_INLINE_ Vector2 xform_inv(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Rect2 xform(const Rect2 &p_rect) const;
 	_FORCE_INLINE_ Rect2 xform_inv(const Rect2 &p_rect) const;
-	_FORCE_INLINE_ PoolVector<Vector2> xform(const PoolVector<Vector2> &p_array) const;
-	_FORCE_INLINE_ PoolVector<Vector2> xform_inv(const PoolVector<Vector2> &p_array) const;
+	_FORCE_INLINE_ Vector<Vector2> xform(const Vector<Vector2> &p_array) const;
+	_FORCE_INLINE_ Vector<Vector2> xform_inv(const Vector<Vector2> &p_array) const;
 
 	operator String() const;
 
 	Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy) {
-
 		elements[0][0] = xx;
 		elements[0][1] = xy;
 		elements[1][0] = yx;
@@ -135,36 +136,33 @@ struct Transform2D {
 };
 
 Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
-
 	return Vector2(
 			tdotx(p_vec),
 			tdoty(p_vec));
 }
 
 Vector2 Transform2D::basis_xform_inv(const Vector2 &p_vec) const {
-
 	return Vector2(
 			elements[0].dot(p_vec),
 			elements[1].dot(p_vec));
 }
 
 Vector2 Transform2D::xform(const Vector2 &p_vec) const {
-
 	return Vector2(
 				   tdotx(p_vec),
 				   tdoty(p_vec)) +
 		   elements[2];
 }
-Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 
+Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 	Vector2 v = p_vec - elements[2];
 
 	return Vector2(
 			elements[0].dot(v),
 			elements[1].dot(v));
 }
-Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 
+Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 	Vector2 x = elements[0] * p_rect.size.x;
 	Vector2 y = elements[1] * p_rect.size.y;
 	Vector2 pos = xform(p_rect.position);
@@ -178,15 +176,20 @@ Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 }
 
 void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
-
 	elements[0][0] = Math::cos(p_rot) * p_scale.x;
 	elements[1][1] = Math::cos(p_rot) * p_scale.y;
 	elements[1][0] = -Math::sin(p_rot) * p_scale.y;
 	elements[0][1] = Math::sin(p_rot) * p_scale.x;
 }
 
-Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
+void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew) {
+	elements[0][0] = Math::cos(p_rot) * p_scale.x;
+	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
+	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
+	elements[0][1] = Math::sin(p_rot) * p_scale.x;
+}
 
+Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
 	Vector2 ends[4] = {
 		xform_inv(p_rect.position),
 		xform_inv(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y)),
@@ -203,13 +206,12 @@ Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
 	return new_rect;
 }
 
-PoolVector<Vector2> Transform2D::xform(const PoolVector<Vector2> &p_array) const {
-
-	PoolVector<Vector2> array;
+Vector<Vector2> Transform2D::xform(const Vector<Vector2> &p_array) const {
+	Vector<Vector2> array;
 	array.resize(p_array.size());
 
-	PoolVector<Vector2>::Read r = p_array.read();
-	PoolVector<Vector2>::Write w = array.write();
+	const Vector2 *r = p_array.ptr();
+	Vector2 *w = array.ptrw();
 
 	for (int i = 0; i < p_array.size(); ++i) {
 		w[i] = xform(r[i]);
@@ -217,13 +219,12 @@ PoolVector<Vector2> Transform2D::xform(const PoolVector<Vector2> &p_array) const
 	return array;
 }
 
-PoolVector<Vector2> Transform2D::xform_inv(const PoolVector<Vector2> &p_array) const {
-
-	PoolVector<Vector2> array;
+Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
+	Vector<Vector2> array;
 	array.resize(p_array.size());
 
-	PoolVector<Vector2>::Read r = p_array.read();
-	PoolVector<Vector2>::Write w = array.write();
+	const Vector2 *r = p_array.ptr();
+	Vector2 *w = array.ptrw();
 
 	for (int i = 0; i < p_array.size(); ++i) {
 		w[i] = xform_inv(r[i]);

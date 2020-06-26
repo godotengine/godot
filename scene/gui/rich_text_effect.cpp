@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,6 @@ RichTextEffect::RichTextEffect() {
 }
 
 void CharFXTransform::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_relative_index"), &CharFXTransform::get_relative_index);
 	ClassDB::bind_method(D_METHOD("set_relative_index", "index"), &CharFXTransform::set_relative_index);
 
@@ -89,27 +88,14 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_character"), &CharFXTransform::get_character);
 	ClassDB::bind_method(D_METHOD("set_character", "character"), &CharFXTransform::set_character);
 
-	ClassDB::bind_method(D_METHOD("get_value_or", "key", "default_value"), &CharFXTransform::get_value_or);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "relative_index"), "set_relative_index", "get_relative_index");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "absolute_index"), "set_absolute_index", "get_absolute_index");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visibility", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "env"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "character"), "set_character", "get_character");
-}
-
-Variant CharFXTransform::get_value_or(String p_key, Variant p_default_value) {
-	if (!this->environment.has(p_key))
-		return p_default_value;
-
-	Variant r = environment[p_key];
-	if (r.get_type() != p_default_value.get_type())
-		return p_default_value;
-
-	return r;
 }
 
 CharFXTransform::CharFXTransform() {

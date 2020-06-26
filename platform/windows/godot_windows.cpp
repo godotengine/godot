@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,23 +121,22 @@ CommandLineToArgvA(
 		i++;
 	}
 	_argv[j] = '\0';
-	argv[argc] = NULL;
+	argv[argc] = nullptr;
 
 	(*_argc) = argc;
 	return argv;
 }
 
 char *wc_to_utf8(const wchar_t *wc) {
-	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, NULL, 0, NULL, NULL);
+	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
 	char *ubuf = new char[ulen + 1];
-	WideCharToMultiByte(CP_UTF8, 0, wc, -1, ubuf, ulen, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, wc, -1, ubuf, ulen, nullptr, nullptr);
 	ubuf[ulen] = 0;
 	return ubuf;
 }
 
 int widechar_main(int argc, wchar_t **argv) {
-
-	OS_Windows os(NULL);
+	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
 
@@ -176,7 +175,7 @@ int _main() {
 
 	wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
-	if (NULL == wc_argv) {
+	if (nullptr == wc_argv) {
 		wprintf(L"CommandLineToArgvW failed\n");
 		return 0;
 	}
@@ -202,9 +201,9 @@ int main(int _argc, char **_argv) {
 #endif
 }
 
-HINSTANCE godot_hinstance = NULL;
+HINSTANCE godot_hinstance = nullptr;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	godot_hinstance = hInstance;
-	return main(0, NULL);
+	return main(0, nullptr);
 }

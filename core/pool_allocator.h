@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,11 +60,10 @@ private:
 	};
 
 	struct Entry {
-
-		unsigned int pos;
-		unsigned int len;
-		unsigned int lock;
-		unsigned int check;
+		unsigned int pos = 0;
+		unsigned int len = 0;
+		unsigned int lock = 0;
+		unsigned int check = 0;
 
 		inline void clear() {
 			pos = 0;
@@ -72,7 +71,7 @@ private:
 			lock = 0;
 			check = 0;
 		}
-		Entry() { clear(); }
+		Entry() {}
 	};
 
 	typedef int EntryArrayPos;
@@ -99,10 +98,10 @@ private:
 		return p_entry.pos + aligned(p_entry.len);
 	}
 	inline int aligned(int p_size) const {
-
 		int rem = p_size % align;
-		if (rem)
+		if (rem) {
 			p_size += align - rem;
+		}
 
 		return p_size;
 	}
@@ -148,4 +147,4 @@ public:
 	virtual ~PoolAllocator();
 };
 
-#endif
+#endif // POOL_ALLOCATOR_H

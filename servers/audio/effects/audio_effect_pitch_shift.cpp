@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,7 +94,9 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	freqPerBin = sampleRate/(double)fftFrameSize;
 	expct = 2.*Math_PI*(double)stepSize/(double)fftFrameSize;
 	inFifoLatency = fftFrameSize-stepSize;
-	if (gRover == 0) gRover = inFifoLatency;
+	if (gRover == 0) { gRover = inFifoLatency;
+
+}
 
 	/* initialize our static arrays */
 
@@ -142,8 +144,10 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 				/* map delta phase into +/- Pi interval */
 				qpd = tmp/Math_PI;
-				if (qpd >= 0) qpd += qpd&1;
-				else qpd -= qpd&1;
+				if (qpd >= 0) { qpd += qpd&1;
+				} else { qpd -= qpd&1;
+
+}
 				tmp -= Math_PI*(double)qpd;
 
 				/* get deviation from bin frequency from the +/- Pi interval */
@@ -200,7 +204,9 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 			}
 
 			/* zero negative frequencies */
-			for (k = fftFrameSize+2; k < 2*fftFrameSize; k++) gFFTworksp[k] = 0.;
+			for (k = fftFrameSize+2; k < 2*fftFrameSize; k++) { gFFTworksp[k] = 0.;
+
+}
 
 			/* do inverse transform */
 			smbFft(gFFTworksp, fftFrameSize, 1);
@@ -210,19 +216,24 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				window = -.5*cos(2.*Math_PI*(double)k/(double)fftFrameSize)+.5;
 				gOutputAccum[k] += 2.*window*gFFTworksp[2*k]/(fftFrameSize2*osamp);
 			}
-			for (k = 0; k < stepSize; k++) gOutFIFO[k] = gOutputAccum[k];
+			for (k = 0; k < stepSize; k++) { gOutFIFO[k] = gOutputAccum[k];
+
+}
 
 			/* shift accumulator */
 			memmove(gOutputAccum, gOutputAccum+stepSize, fftFrameSize*sizeof(float));
 
 			/* move input FIFO */
-			for (k = 0; k < inFifoLatency; k++) gInFIFO[k] = gInFIFO[k+stepSize];
+			for (k = 0; k < inFifoLatency; k++) { gInFIFO[k] = gInFIFO[k+stepSize];
+
+}
 		}
 	}
 
 
 
 }
+
 
 
 void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
@@ -244,7 +255,9 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 
 	for (i = 2; i < 2*fftFrameSize-2; i += 2) {
 		for (bitm = 2, j = 0; bitm < 2*fftFrameSize; bitm <<= 1) {
-			if (i & bitm) j++;
+			if (i & bitm) { j++;
+
+}
 			j <<= 1;
 		}
 		if (i < j) {
@@ -280,11 +293,11 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 	}
 }
 
+
 /* Godot code again */
 /* clang-format on */
 
 void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float *in_l = (float *)p_src_frames;
@@ -313,7 +326,6 @@ void AudioEffectPitchShift::set_pitch_scale(float p_pitch_scale) {
 }
 
 float AudioEffectPitchShift::get_pitch_scale() const {
-
 	return pitch_scale;
 }
 
@@ -323,7 +335,6 @@ void AudioEffectPitchShift::set_oversampling(int p_oversampling) {
 }
 
 int AudioEffectPitchShift::get_oversampling() const {
-
 	return oversampling;
 }
 
@@ -337,7 +348,6 @@ AudioEffectPitchShift::FFT_Size AudioEffectPitchShift::get_fft_size() const {
 }
 
 void AudioEffectPitchShift::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "rate"), &AudioEffectPitchShift::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioEffectPitchShift::get_pitch_scale);
 
@@ -347,8 +357,8 @@ void AudioEffectPitchShift::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fft_size", "size"), &AudioEffectPitchShift::set_fft_size);
 	ClassDB::bind_method(D_METHOD("get_fft_size"), &AudioEffectPitchShift::get_fft_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_pitch_scale", "get_pitch_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "oversampling", PROPERTY_HINT_RANGE, "4,32,1"), "set_oversampling", "get_oversampling");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_pitch_scale", "get_pitch_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "4,32,1"), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fft_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_fft_size", "get_fft_size");
 
 	BIND_ENUM_CONSTANT(FFT_SIZE_256);
@@ -363,4 +373,7 @@ AudioEffectPitchShift::AudioEffectPitchShift() {
 	pitch_scale = 1.0;
 	oversampling = 4;
 	fft_size = FFT_SIZE_2048;
+	wet = 0.0;
+	dry = 0.0;
+	filter = false;
 }

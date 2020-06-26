@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfigFile" inherits="Reference" category="Core" version="3.2">
+<class name="ConfigFile" inherits="Reference" version="4.0">
 	<brief_description>
 		Helper class to handle INI-style files.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[codeblock]
 		[section]
 		some_key=42
-		string_example="Hello World!"
+		string_example="Hello World3D!"
 		a_vector=Vector3( 1, 0, 2 )
 		[/codeblock]
 		The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly without accessing the filesystem.
@@ -26,6 +26,7 @@
 		    config.save("user://settings.cfg")
 		[/codeblock]
 		Keep in mind that section and property names can't contain spaces. Anything after a space will be ignored on save and on load.
+		ConfigFiles can also contain manually written comment lines starting with a semicolon ([code];[/code]). Those lines will be ignored when parsing the file. Note that comments will be lost when saving the ConfigFile. This can still be useful for dedicated server configuration files, which are typically never overwritten without explicit user action.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -36,7 +37,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
-				Deletes the specified section along with all the key-value pairs inside.
+				Deletes the specified section along with all the key-value pairs inside. Raises an error if the section does not exist.
 			</description>
 		</method>
 		<method name="erase_section_key">
@@ -47,19 +48,20 @@
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
+				Deletes the specified key in a section. Raises an error if either the section or the key do not exist.
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
-				Returns an array of all defined key identifiers in the specified section.
+				Returns an array of all defined key identifiers in the specified section. Raises an error and returns an empty array if the section does not exist.
 			</description>
 		</method>
 		<method name="get_sections" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns an array of all defined section identifiers.
@@ -75,7 +77,7 @@
 			<argument index="2" name="default" type="Variant" default="null">
 			</argument>
 			<description>
-				Returns the current value for the specified section and key. If the section and/or the key do not exist, the method returns the value of the optional [code]default[/code] argument, or [code]null[/code] if it is omitted.
+				Returns the current value for the specified section and key. If either the section or the key do not exist, the method returns the fallback [code]default[/code] value. If [code]default[/code] is not specified or set to [code]null[/code], an error is also raised.
 			</description>
 		</method>
 		<method name="has_section" qualifiers="const">
@@ -104,7 +106,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [constant OK], [constant FAILED] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [constant OK].
+				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="load_encrypted">
@@ -112,9 +115,11 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="key" type="PoolByteArray">
+			<argument index="1" name="key" type="PackedByteArray">
 			</argument>
 			<description>
+				Loads the encrypted config file specified as a parameter, using the provided [code]key[/code] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="load_encrypted_pass">
@@ -122,9 +127,21 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="pass" type="String">
+			<argument index="1" name="password" type="String">
 			</argument>
 			<description>
+				Loads the encrypted config file specified as a parameter, using the provided [code]password[/code] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+			</description>
+		</method>
+		<method name="parse">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="data" type="String">
+			</argument>
+			<description>
+				Parses the the passed string as the contents of a config file. The string is parsed and loaded in the ConfigFile object which the method was called on.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="save">
@@ -133,7 +150,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [constant OK], [constant FAILED] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [constant OK].
+				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="save_encrypted">
@@ -141,9 +159,11 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="key" type="PoolByteArray">
+			<argument index="1" name="key" type="PackedByteArray">
 			</argument>
 			<description>
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [code]key[/code] to encrypt it. The output file uses an INI-style structure.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="save_encrypted_pass">
@@ -151,9 +171,11 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="pass" type="String">
+			<argument index="1" name="password" type="String">
 			</argument>
 			<description>
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [code]password[/code] to encrypt it. The output file uses an INI-style structure.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="set_value">
@@ -166,7 +188,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Assigns a value to the specified key of the specified section. If the section and/or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
+				Assigns a value to the specified key of the specified section. If either the section or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
 			</description>
 		</method>
 	</methods>

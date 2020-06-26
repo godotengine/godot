@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@
 //#define THEORA_USE_THREAD_STREAMING
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
 	enum {
@@ -54,7 +53,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	//Image frames[MAX_FRAMES];
 	Image::Format format;
-	PoolVector<uint8_t> frame_data;
+	Vector<uint8_t> frame_data;
 	int frames_pending;
 	FileAccess *file;
 	String file_name;
@@ -63,7 +62,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	int buffer_data();
 	int queue_page(ogg_page *page);
-	void video_write(void);
+	void video_write();
 	float get_time() const;
 
 	bool theora_eos;
@@ -147,7 +146,7 @@ public:
 
 	void set_file(const String &p_file);
 
-	virtual Ref<Texture> get_texture() const;
+	virtual Ref<Texture2D> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
@@ -161,7 +160,6 @@ public:
 };
 
 class VideoStreamTheora : public VideoStream {
-
 	GDCLASS(VideoStreamTheora, VideoStream);
 
 	String file;
@@ -187,7 +185,7 @@ public:
 
 class ResourceFormatLoaderTheora : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

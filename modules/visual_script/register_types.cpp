@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,13 +41,12 @@
 #include "visual_script_nodes.h"
 #include "visual_script_yield_nodes.h"
 
-VisualScriptLanguage *visual_script_language = NULL;
+VisualScriptLanguage *visual_script_language = nullptr;
 #ifdef TOOLS_ENABLED
-static _VisualScriptEditor *vs_editor_singleton = NULL;
+static _VisualScriptEditor *vs_editor_singleton = nullptr;
 #endif
 
 void register_visual_script_types() {
-
 	visual_script_language = memnew(VisualScriptLanguage);
 	//script_language_gd->init();
 	ScriptServer::register_language(visual_script_language);
@@ -125,7 +124,6 @@ void register_visual_script_types() {
 }
 
 void unregister_visual_script_types() {
-
 	unregister_visual_script_nodes();
 
 	ScriptServer::unregister_language(visual_script_language);
@@ -136,6 +134,7 @@ void unregister_visual_script_types() {
 		memdelete(vs_editor_singleton);
 	}
 #endif
-	if (visual_script_language)
+	if (visual_script_language) {
 		memdelete(visual_script_language);
+	}
 }

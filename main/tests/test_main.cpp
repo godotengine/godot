@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,32 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "test_main.h"
+
 #include "core/list.h"
-#include "core/os/main_loop.h"
 
 #ifdef DEBUG_ENABLED
 
 #include "test_astar.h"
+#include "test_basis.h"
+#include "test_class_db.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
-#include "test_physics.h"
 #include "test_physics_2d.h"
+#include "test_physics_3d.h"
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
 
 const char **tests_get_names() {
-
 	static const char *test_names[] = {
 		"string",
 		"math",
-		"physics",
+		"basis",
 		"physics_2d",
+		"physics_3d",
 		"render",
 		"oa_hash_map",
+		"class_db",
 		"gui",
 		"shaderlang",
 		"gd_tokenizer",
@@ -62,104 +66,95 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"ordered_hash_map",
 		"astar",
-		NULL
+		nullptr
 	};
 
 	return test_names;
 }
 
 MainLoop *test_main(String p_test, const List<String> &p_args) {
-
 	if (p_test == "string") {
-
 		return TestString::test();
 	}
 
 	if (p_test == "math") {
-
 		return TestMath::test();
 	}
 
-	if (p_test == "physics") {
-
-		return TestPhysics::test();
+	if (p_test == "basis") {
+		return TestBasis::test();
 	}
 
 	if (p_test == "physics_2d") {
-
 		return TestPhysics2D::test();
 	}
 
-	if (p_test == "render") {
+	if (p_test == "physics_3d") {
+		return TestPhysics3D::test();
+	}
 
+	if (p_test == "render") {
 		return TestRender::test();
 	}
 
 	if (p_test == "oa_hash_map") {
-
 		return TestOAHashMap::test();
+	}
+
+	if (p_test == "class_db") {
+		return TestClassDB::test();
 	}
 
 #ifndef _3D_DISABLED
 	if (p_test == "gui") {
-
 		return TestGUI::test();
 	}
 #endif
 
 	if (p_test == "shaderlang") {
-
 		return TestShaderLang::test();
 	}
 
 	if (p_test == "gd_tokenizer") {
-
 		return TestGDScript::test(TestGDScript::TEST_TOKENIZER);
 	}
 
 	if (p_test == "gd_parser") {
-
 		return TestGDScript::test(TestGDScript::TEST_PARSER);
 	}
 
 	if (p_test == "gd_compiler") {
-
 		return TestGDScript::test(TestGDScript::TEST_COMPILER);
 	}
 
 	if (p_test == "gd_bytecode") {
-
 		return TestGDScript::test(TestGDScript::TEST_BYTECODE);
 	}
 
 	if (p_test == "ordered_hash_map") {
-
 		return TestOrderedHashMap::test();
 	}
 
 	if (p_test == "astar") {
-
 		return TestAStar::test();
 	}
 
 	print_line("Unknown test: " + p_test);
-	return NULL;
+	return nullptr;
 }
 
 #else
 
 const char **tests_get_names() {
-
 	static const char *test_names[] = {
-		NULL
+		nullptr
 	};
 
 	return test_names;
 }
 
 MainLoop *test_main(String p_test, const List<String> &p_args) {
-
-	return NULL;
+	return nullptr;
 }
 
 #endif

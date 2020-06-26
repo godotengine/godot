@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "visual_script.h"
 
 class VisualScriptFunctionCall : public VisualScriptNode {
-
 	GDCLASS(VisualScriptFunctionCall, VisualScriptNode);
 
 public:
@@ -137,7 +136,6 @@ VARIANT_ENUM_CAST(VisualScriptFunctionCall::CallMode);
 VARIANT_ENUM_CAST(VisualScriptFunctionCall::RPCCallMode);
 
 class VisualScriptPropertySet : public VisualScriptNode {
-
 	GDCLASS(VisualScriptPropertySet, VisualScriptNode);
 
 public:
@@ -243,7 +241,6 @@ VARIANT_ENUM_CAST(VisualScriptPropertySet::CallMode);
 VARIANT_ENUM_CAST(VisualScriptPropertySet::AssignOp);
 
 class VisualScriptPropertyGet : public VisualScriptNode {
-
 	GDCLASS(VisualScriptPropertyGet, VisualScriptNode);
 
 public:
@@ -325,7 +322,6 @@ public:
 VARIANT_ENUM_CAST(VisualScriptPropertyGet::CallMode);
 
 class VisualScriptEmitSignal : public VisualScriptNode {
-
 	GDCLASS(VisualScriptEmitSignal, VisualScriptNode);
 
 private:

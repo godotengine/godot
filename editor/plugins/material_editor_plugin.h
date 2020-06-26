@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,22 +36,23 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/material.h"
 
-class MaterialEditor : public Control {
+class SubViewportContainer;
 
+class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	ViewportContainer *vc;
-	Viewport *viewport;
-	MeshInstance *sphere_instance;
-	MeshInstance *box_instance;
-	DirectionalLight *light1;
-	DirectionalLight *light2;
-	Camera *camera;
+	SubViewportContainer *vc;
+	SubViewport *viewport;
+	MeshInstance3D *sphere_instance;
+	MeshInstance3D *box_instance;
+	DirectionalLight3D *light1;
+	DirectionalLight3D *light2;
+	Camera3D *camera;
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<CubeMesh> box_mesh;
@@ -89,7 +90,6 @@ public:
 };
 
 class MaterialEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:
@@ -98,8 +98,8 @@ public:
 	MaterialEditorPlugin(EditorNode *p_node);
 };
 
-class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin);
+class StandardMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(StandardMaterial3DConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const;
@@ -118,6 +118,33 @@ public:
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
+class ProceduralSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ProceduralSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
+class PanoramaSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(PanoramaSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+};
+
+class PhysicalSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(PhysicalSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const;

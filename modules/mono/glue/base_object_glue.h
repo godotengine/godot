@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,11 +44,13 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr);
 
 void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer);
 
-MethodBind *godot_icall_Object_ClassDB_get_method(MonoString *p_type, MonoString *p_method);
+void godot_icall_Object_ConnectEventSignals(Object *p_ptr);
 
-MonoObject *godot_icall_Object_weakref(Object *p_obj);
+MethodBind *godot_icall_Object_ClassDB_get_method(StringName *p_type, MonoString *p_method);
 
-Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, Object *p_target, MonoObject *p_awaiter);
+MonoObject *godot_icall_Object_weakref(Object *p_ptr);
+
+Error godot_icall_SignalAwaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, MonoObject *p_awaiter);
 
 // DynamicGodotObject
 

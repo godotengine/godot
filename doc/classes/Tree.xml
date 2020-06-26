@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tree" inherits="Control" category="Core" version="3.2">
+<class name="Tree" inherits="Control" version="4.0">
 	<brief_description>
 		Control to show a tree of items.
 	</brief_description>
@@ -16,7 +16,7 @@
 		    var subchild1 = tree.create_item(child1)
 		    subchild1.set_text(0, "Subchild1")
 		[/codeblock]
-		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_children] after getting the root through [method get_root].
+		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_children] after getting the root through [method get_root]. You can use [method Object.free] on a [TreeItem] to remove it from the [Tree].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -43,14 +43,18 @@
 			<argument index="1" name="idx" type="int" default="-1">
 			</argument>
 			<description>
-				Create an item in the tree and add it as the last child of [code]parent[/code]. If [code]parent[/code] is [code]null[/code], it will be added as the root's last child, or it'll be the the root itself if the tree is empty.
+				Creates an item in the tree and adds it as a child of [code]parent[/code].
+				If [code]parent[/code] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
+				The new item will be the [code]idx[/code]th child of parent, or it will be the last child if there are not enough siblings.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
 			<return type="void">
 			</return>
 			<description>
-				Makes the currently selected item visible. This will scroll the tree to make sure the selected item is visible.
+				Makes the currently focused cell visible.
+				This will scroll the tree if necessary. In [constant SELECT_ROW] mode, this will not do horizontal scrolling, as all the cells in the selected row is focused logically.
+				[b]Note:[/b] Despite the name of this method, the focus cursor itself is only visible in [constant SELECT_MULTI] mode.
 			</description>
 		</method>
 		<method name="get_column_at_position" qualifiers="const">
@@ -59,7 +63,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Returns the column index under the given point.
+				Returns the column index at [code]position[/code], or -1 if no item is there.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -93,8 +97,9 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				If [member drop_mode_flags] includes [constant DROP_MODE_INBETWEEN], returns -1 if [code]position[/code] is the upper part of a tree item at that position, 1 for the lower part, and additionally 0 for the middle part if [member drop_mode_flags] includes [constant DROP_MODE_ON_ITEM].
-				Otherwise, returns 0. If there are no tree items at [code]position[/code], returns -100.
+				Returns the drop section at [code]position[/code], or -100 if no item is there.
+				Values -1, 0, or 1 will be returned for the "above item", "on item", and "below item" drop sections, respectively. See [enum DropModeFlags] for a description of each drop section.
+				To get the item which the returned drop section is relative to, use [method get_item_at_position].
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
@@ -119,7 +124,7 @@
 			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the rectangle area for the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+				Returns the rectangle area for the specified item. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
@@ -137,7 +142,8 @@
 			<argument index="0" name="from" type="Object">
 			</argument>
 			<description>
-				Returns the next selected item after the given one.
+				Returns the next selected item after the given one, or [code]null[/code] if the end is reached.
+				If [code]from[/code] is [code]null[/code], this returns the first selected item.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
@@ -151,7 +157,7 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the tree's root item.
+				Returns the tree's root item, or [code]null[/code] if the tree is empty.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
@@ -165,14 +171,18 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the currently selected item.
+				Returns the currently focused item, or [code]null[/code] if no item is focused.
+				In [constant SELECT_ROW] and [constant SELECT_SINGLE] modes, the focused item is same as the selected item. In [constant SELECT_MULTI] mode, the focused item is the item under the focus cursor, not necessarily selected.
+				To get the currently selected item(s), use [method get_next_selected].
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the current selection's column.
+				Returns the currently focused column, or -1 if no column is focused.
+				In [constant SELECT_SINGLE] mode, the focused column is the selected column. In [constant SELECT_ROW] mode, the focused column is always 0 if any item is selected. In [constant SELECT_MULTI] mode, the focused column is the column under the focus cursor, and there are not necessarily any column selected.
+				To tell whether a column of an item is selected, use [method TreeItem.is_selected].
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -229,7 +239,8 @@
 			The number of columns.
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags" default="0">
-			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control.can_drop_data] is recommended.
+			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control.can_drop_data] is recommended.
+			This controls the drop sections, i.e. the decision and drawing of possible drop locations based on the mouse position.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden" default="false">
@@ -240,7 +251,7 @@
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode" default="0">
-			Allows single or multiple selection. See the [code]SELECT_*[/code] constants.
+			Allows single or multiple selection. See the [enum SelectMode] constants.
 		</member>
 	</members>
 	<signals>
@@ -278,6 +289,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the right mouse button is pressed in the empty space of the tree.
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
@@ -301,6 +313,7 @@
 		</signal>
 		<signal name="item_custom_button_pressed">
 			<description>
+				Emitted when a custom button is pressed (i.e. in a [constant TreeItem.CELL_MODE_CUSTOM] mode cell).
 			</description>
 		</signal>
 		<signal name="item_double_clicked">
@@ -343,101 +356,144 @@
 		</signal>
 		<signal name="nothing_selected">
 			<description>
+				Emitted when a left mouse button click does not select any item.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
-			Allows selection of a single item at a time.
+			Allows selection of a single cell at a time. From the perspective of items, only a single item is allowed to be selected. And there is only one column selected in the selected item.
+			The focus cursor is always hidden in this mode, but it is positioned at the current selection, making the currently selected item the currently focused item.
 		</constant>
 		<constant name="SELECT_ROW" value="1" enum="SelectMode">
+			Allows selection of a single row at a time. From the perspective of items, only a single items is allowed to be selected. And all the columns are selected in the selected item.
+			The focus cursor is always hidden in this mode, but it is positioned at the first column of the current selection, making the currently selected item the currently focused item.
 		</constant>
 		<constant name="SELECT_MULTI" value="2" enum="SelectMode">
-			Allows selection of multiple items at the same time.
+			Allows selection of multiple cells at the same time. From the perspective of items, multiple items are allowed to be selected. And there can be multiple columns selected in each selected item.
+			The focus cursor is visible in this mode, the item or column under the cursor is not necessarily selected.
 		</constant>
 		<constant name="DROP_MODE_DISABLED" value="0" enum="DropModeFlags">
+			Disables all drop sections, but still allows to detect the "on item" drop section by [method get_drop_section_at_position].
+			[b]Note:[/b] This is the default flag, it has no effect when combined with other flags.
 		</constant>
 		<constant name="DROP_MODE_ON_ITEM" value="1" enum="DropModeFlags">
+			Enables the "on item" drop section. This drop section covers the entire item.
+			When combined with [constant DROP_MODE_INBETWEEN], this drop section halves the height and stays centered vertically.
 		</constant>
 		<constant name="DROP_MODE_INBETWEEN" value="2" enum="DropModeFlags">
+			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, and the "below item" drop section covers the bottom half.
+			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halves the height and stays on top / bottom accordingly.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="arrow" type="Texture">
+		<theme_item name="arrow" type="Texture2D">
+			The arrow icon used when a foldable item is not collapsed.
 		</theme_item>
-		<theme_item name="arrow_collapsed" type="Texture">
+		<theme_item name="arrow_collapsed" type="Texture2D">
+			The arrow icon used when a foldable item is collapsed.
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
+			Default [StyleBox] for the [Tree], i.e. used when the control is not being focused.
 		</theme_item>
 		<theme_item name="bg_focus" type="StyleBox">
+			[StyleBox] used when the [Tree] is being focused.
 		</theme_item>
 		<theme_item name="button_margin" type="int" default="4">
+			The horizontal space between each button in a cell.
 		</theme_item>
 		<theme_item name="button_pressed" type="StyleBox">
+			[StyleBox] used when a button in the tree is pressed.
 		</theme_item>
-		<theme_item name="checked" type="Texture">
+		<theme_item name="checked" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
 		</theme_item>
 		<theme_item name="cursor" type="StyleBox">
-		</theme_item>
-		<theme_item name="cursor_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			[StyleBox] used for the cursor, when the [Tree] is being focused.
 		</theme_item>
 		<theme_item name="cursor_unfocused" type="StyleBox">
+			[StyleBox] used for the cursor, when the [Tree] is not being focused.
 		</theme_item>
 		<theme_item name="custom_button" type="StyleBox">
+			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell.
 		</theme_item>
 		<theme_item name="custom_button_font_highlight" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Text [Color] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
 		</theme_item>
 		<theme_item name="custom_button_hover" type="StyleBox">
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
 		</theme_item>
 		<theme_item name="custom_button_pressed" type="StyleBox">
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
 		</theme_item>
 		<theme_item name="draw_guides" type="int" default="1">
+			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
 		</theme_item>
 		<theme_item name="draw_relationship_lines" type="int" default="0">
+			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
 		</theme_item>
 		<theme_item name="drop_position_color" type="Color" default="Color( 1, 0.3, 0.2, 1 )">
+			[Color] used to draw possible drop locations. See [enum DropModeFlags] constants for further description of drop locations.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			[Font] of the item's text.
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
+			Default text [Color] of the item.
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
+			Text [Color] used when the item is selected.
 		</theme_item>
 		<theme_item name="guide_color" type="Color" default="Color( 0, 0, 0, 0.1 )">
+			[Color] of the guideline.
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
+			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
 		<theme_item name="item_margin" type="int" default="12">
+			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
 		</theme_item>
 		<theme_item name="relationship_line_color" type="Color" default="Color( 0.27, 0.27, 0.27, 1 )">
+			[Color] of the relationship lines.
 		</theme_item>
 		<theme_item name="scroll_border" type="int" default="4">
+			The maximum distance between the mouse cursor and the control's border to trigger border scrolling when dragging.
 		</theme_item>
 		<theme_item name="scroll_speed" type="int" default="12">
+			The speed of border scrolling.
 		</theme_item>
-		<theme_item name="select_arrow" type="Texture">
+		<theme_item name="select_arrow" type="Texture2D">
+			The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
 		<theme_item name="selected" type="StyleBox">
+			[StyleBox] for the selected items, used when the [Tree] is not being focused.
 		</theme_item>
 		<theme_item name="selected_focus" type="StyleBox">
-		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
+			[StyleBox] for the selected items, used when the [Tree] is being focused.
 		</theme_item>
 		<theme_item name="title_button_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			Default text [Color] of the title button.
 		</theme_item>
 		<theme_item name="title_button_font" type="Font">
+			[Font] of the title button's text.
 		</theme_item>
 		<theme_item name="title_button_hover" type="StyleBox">
+			[StyleBox] used when the title button is being hovered.
 		</theme_item>
 		<theme_item name="title_button_normal" type="StyleBox">
+			Default [StyleBox] for the title button.
 		</theme_item>
 		<theme_item name="title_button_pressed" type="StyleBox">
+			[StyleBox] used when the title button is being pressed.
 		</theme_item>
-		<theme_item name="unchecked" type="Texture">
+		<theme_item name="unchecked" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked.
 		</theme_item>
-		<theme_item name="updown" type="Texture">
+		<theme_item name="updown" type="Texture2D">
+			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
 		<theme_item name="vseparation" type="int" default="4">
+			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
 		</theme_item>
 	</theme_items>
 </class>

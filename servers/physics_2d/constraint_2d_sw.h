@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,7 @@
 
 #include "body_2d_sw.h"
 
-class Constraint2DSW : public RID_Data {
-
+class Constraint2DSW {
 	Body2DSW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;
@@ -45,7 +44,7 @@ class Constraint2DSW : public RID_Data {
 	RID self;
 
 protected:
-	Constraint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0) {
+	Constraint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) {
 		_body_ptr = p_body_ptr;
 		_body_count = p_body_count;
 		island_step = 0;

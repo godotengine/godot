@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,28 +33,23 @@
 #include "core/error_macros.h"
 
 Error FileAccessBuffered::set_error(Error p_error) const {
-
 	return (last_error = p_error);
 }
 
 void FileAccessBuffered::set_cache_size(int p_size) {
-
 	cache_size = p_size;
 }
 
 int FileAccessBuffered::get_cache_size() {
-
 	return cache_size;
 }
 
 int FileAccessBuffered::cache_data_left() const {
-
 	if (file.offset >= file.size) {
 		return 0;
 	}
 
 	if (cache.offset == -1 || file.offset < cache.offset || file.offset >= cache.offset + cache.buffer.size()) {
-
 		return read_data_block(file.offset, cache_size);
 	}
 
@@ -62,37 +57,30 @@ int FileAccessBuffered::cache_data_left() const {
 }
 
 void FileAccessBuffered::seek(size_t p_position) {
-
 	file.offset = p_position;
 }
 
 void FileAccessBuffered::seek_end(int64_t p_position) {
-
 	file.offset = file.size + p_position;
 }
 
 size_t FileAccessBuffered::get_position() const {
-
 	return file.offset;
 }
 
 size_t FileAccessBuffered::get_len() const {
-
 	return file.size;
 }
 
 bool FileAccessBuffered::eof_reached() const {
-
 	return file.offset > file.size;
 }
 
 uint8_t FileAccessBuffered::get_8() const {
-
 	ERR_FAIL_COND_V_MSG(!file.open, 0, "Can't get data, when file is not opened.");
 
 	uint8_t byte = 0;
 	if (cache_data_left() >= 1) {
-
 		byte = cache.buffer[file.offset - cache.offset];
 	}
 
@@ -102,18 +90,15 @@ uint8_t FileAccessBuffered::get_8() const {
 }
 
 int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
-
 	ERR_FAIL_COND_V_MSG(!file.open, -1, "Can't get buffer, when file is not opened.");
 
 	if (p_length > cache_size) {
-
 		int total_read = 0;
 
 		if (!(cache.offset == -1 || file.offset < cache.offset || file.offset >= cache.offset + cache.buffer.size())) {
-
 			int size = (cache.buffer.size() - (file.offset - cache.offset));
 			size = size - (size % 4);
-			//PoolVector<uint8_t>::Read read = cache.buffer.read();
+			//const uint8_t* read = cache.buffer.ptr();
 			//memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
 			memcpy(p_dest, cache.buffer.ptr() + (file.offset - cache.offset), size);
 			p_dest += size;
@@ -134,7 +119,6 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 	int to_read = p_length;
 	int total_read = 0;
 	while (to_read > 0) {
-
 		int left = cache_data_left();
 		if (left == 0) {
 			file.offset += to_read;
@@ -145,7 +129,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 		}
 
 		int r = MIN(left, to_read);
-		//PoolVector<uint8_t>::Read read = cache.buffer.read();
+		//const uint8_t* read = cache.buffer.ptr();
 		//memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
 		memcpy(p_dest + total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);
 
@@ -158,19 +142,9 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 }
 
 bool FileAccessBuffered::is_open() const {
-
 	return file.open;
 }
 
 Error FileAccessBuffered::get_error() const {
-
 	return last_error;
-}
-
-FileAccessBuffered::FileAccessBuffered() {
-
-	cache_size = DEFAULT_CACHE_SIZE;
-}
-
-FileAccessBuffered::~FileAccessBuffered() {
 }

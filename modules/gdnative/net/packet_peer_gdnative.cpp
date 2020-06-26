@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "packet_peer_gdnative.h"
 
 PacketPeerGDNative::PacketPeerGDNative() {
-	interface = NULL;
+	interface = nullptr;
 }
 
 PacketPeerGDNative::~PacketPeerGDNative() {
@@ -45,29 +45,28 @@ void PacketPeerGDNative::_bind_methods() {
 }
 
 Error PacketPeerGDNative::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(interface == nullptr, ERR_UNCONFIGURED);
 	return (Error)interface->get_packet(interface->data, r_buffer, &r_buffer_size);
 }
 
 Error PacketPeerGDNative::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(interface == nullptr, ERR_UNCONFIGURED);
 	return (Error)interface->put_packet(interface->data, p_buffer, p_buffer_size);
 }
 
 int PacketPeerGDNative::get_max_packet_size() const {
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 	return interface->get_max_packet_size(interface->data);
 }
 
 int PacketPeerGDNative::get_available_packet_count() const {
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 	return interface->get_available_packet_count(interface->data);
 }
 
 extern "C" {
 
 void GDAPI godot_net_bind_packet_peer(godot_object *p_obj, const godot_net_packet_peer *p_impl) {
-
 	((PacketPeerGDNative *)p_obj)->set_native_packet_peer(p_impl);
 }
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,8 @@
 
 #include "core/math/transform_2d.h"
 #include "core/rid.h"
-#include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
+#include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
@@ -44,7 +44,6 @@ class Label;
 class Panel;
 
 class Control : public CanvasItem {
-
 	GDCLASS(Control, CanvasItem);
 	OBJ_CATEGORY("GUI Nodes");
 
@@ -132,17 +131,16 @@ public:
 
 private:
 	struct CComparator {
-
 		bool operator()(const Control *p_a, const Control *p_b) const {
-			if (p_a->get_canvas_layer() == p_b->get_canvas_layer())
+			if (p_a->get_canvas_layer() == p_b->get_canvas_layer()) {
 				return p_b->is_greater_than(p_a);
+			}
 
 			return p_a->get_canvas_layer() < p_b->get_canvas_layer();
 		}
 	};
 
 	struct Data {
-
 		Point2 pos_cache;
 		Size2 size_cache;
 		Size2 minimum_size_cache;
@@ -168,8 +166,6 @@ private:
 		float expand;
 		Point2 custom_minimum_size;
 
-		bool pass_on_modal_close_click;
-
 		MouseFilter mouse_filter;
 
 		bool clip_contents;
@@ -179,29 +175,24 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal_exclusive;
-		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
 		Control *theme_owner;
+		Window *theme_owner_window;
 		String tooltip;
 		CursorShape default_cursor;
 
-		List<Control *>::Element *MI; //modal item
-		List<Control *>::Element *SI;
 		List<Control *>::Element *RI;
 
 		CanvasItem *parent_canvas_item;
-
-		ObjectID modal_prev_focus_owner;
 
 		NodePath focus_neighbour[4];
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture> > icon_override;
-		HashMap<StringName, Ref<Shader> > shader_override;
-		HashMap<StringName, Ref<StyleBox> > style_override;
-		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Ref<Texture2D>> icon_override;
+		HashMap<StringName, Ref<Shader>> shader_override;
+		HashMap<StringName, Ref<StyleBox>> style_override;
+		HashMap<StringName, Ref<Font>> font_override;
 		HashMap<StringName, Color> color_override;
 		HashMap<StringName, int> constant_override;
 
@@ -218,7 +209,6 @@ private:
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
-	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
 	void _change_notify_margins();
@@ -240,10 +230,29 @@ private:
 	Transform2D _get_internal_transform() const;
 
 	friend class Viewport;
-	void _modal_stack_remove();
-	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 	void _update_minimum_size_cache();
+	friend class Window;
+	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
+
+	template <class T>
+	_FORCE_INLINE_ static bool _find_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, T &, T (Theme::*get_func)(const StringName &, const StringName &) const, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type);
+
+	_FORCE_INLINE_ static bool _has_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type);
+
+	static Ref<Texture2D> get_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Ref<Shader> get_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Ref<StyleBox> get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Ref<Font> get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Color get_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static int get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+
+	static bool has_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
 
 protected:
 	virtual void add_child_notify(Node *p_child);
@@ -272,13 +281,13 @@ public:
 		NOTIFICATION_FOCUS_ENTER = 43,
 		NOTIFICATION_FOCUS_EXIT = 44,
 		NOTIFICATION_THEME_CHANGED = 45,
-		NOTIFICATION_MODAL_CLOSE = 46,
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 
 	};
 
 	/* EDITOR */
+#ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -301,6 +310,7 @@ public:
 	virtual bool _edit_use_pivot() const;
 
 	virtual Size2 _edit_get_minimum_size() const;
+#endif
 
 	void accept_event();
 
@@ -317,9 +327,6 @@ public:
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
-
-	bool is_window_modal_on_top() const;
-	uint64_t get_modal_frame() const; //frame in which this was made modal
 
 	Control *get_parent_control() const;
 
@@ -347,12 +354,14 @@ public:
 	void set_global_position(const Point2 &p_point, bool p_keep_margins = false);
 	Point2 get_position() const;
 	Point2 get_global_position() const;
+	Point2 get_screen_position() const;
 
 	void set_size(const Size2 &p_size, bool p_keep_margins = false);
 	Size2 get_size() const;
 
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
+	Rect2 get_screen_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
 	Rect2 get_anchorable_rect() const;
 
@@ -372,8 +381,6 @@ public:
 
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
-
-	void show_modal(bool p_exclusive = false);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
@@ -413,38 +420,35 @@ public:
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
 
-	void set_pass_on_modal_close_click(bool p_pass_on);
-	bool pass_on_modal_close_click() const;
-
 	/* SKINNING */
 
-	void add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon);
-	void add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
-	void add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
-	void add_font_override(const StringName &p_name, const Ref<Font> &p_font);
-	void add_color_override(const StringName &p_name, const Color &p_color);
-	void add_constant_override(const StringName &p_name, int p_constant);
+	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
+	void add_theme_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
+	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
+	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_color_override(const StringName &p_name, const Color &p_color);
+	void add_theme_constant_override(const StringName &p_name, int p_constant);
 
-	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Color get_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	int get_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Color get_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
+	int get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
-	bool has_icon_override(const StringName &p_name) const;
-	bool has_shader_override(const StringName &p_name) const;
-	bool has_stylebox_override(const StringName &p_name) const;
-	bool has_font_override(const StringName &p_name) const;
-	bool has_color_override(const StringName &p_name) const;
-	bool has_constant_override(const StringName &p_name) const;
+	bool has_theme_icon_override(const StringName &p_name) const;
+	bool has_theme_shader_override(const StringName &p_name) const;
+	bool has_theme_stylebox_override(const StringName &p_name) const;
+	bool has_theme_font_override(const StringName &p_name) const;
+	bool has_theme_color_override(const StringName &p_name) const;
+	bool has_theme_constant_override(const StringName &p_name) const;
 
-	bool has_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	/* TOOLTIP */
 

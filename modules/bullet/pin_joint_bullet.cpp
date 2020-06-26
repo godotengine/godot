@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b) :
 		JointBullet() {
 	if (p_body_b) {
-
 		btVector3 btPivotA;
 		btVector3 btPivotB;
 		G_TO_B(p_pos_a * p_body_a->get_body_scale(), btPivotA);
@@ -62,32 +61,31 @@ PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a
 
 PinJointBullet::~PinJointBullet() {}
 
-void PinJointBullet::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
+void PinJointBullet::set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS:
+		case PhysicsServer3D::PIN_JOINT_BIAS:
 			p2pConstraint->m_setting.m_tau = p_value;
 			break;
-		case PhysicsServer::PIN_JOINT_DAMPING:
+		case PhysicsServer3D::PIN_JOINT_DAMPING:
 			p2pConstraint->m_setting.m_damping = p_value;
 			break;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
 			p2pConstraint->m_setting.m_impulseClamp = p_value;
 			break;
 	}
 }
 
-real_t PinJointBullet::get_param(PhysicsServer::PinJointParam p_param) const {
+real_t PinJointBullet::get_param(PhysicsServer3D::PinJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS:
+		case PhysicsServer3D::PIN_JOINT_BIAS:
 			return p2pConstraint->m_setting.m_tau;
-		case PhysicsServer::PIN_JOINT_DAMPING:
+		case PhysicsServer3D::PIN_JOINT_DAMPING:
 			return p2pConstraint->m_setting.m_damping;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
 			return p2pConstraint->m_setting.m_impulseClamp;
-		default:
-			WARN_DEPRECATED_MSG("The parameter " + itos(p_param) + " is deprecated.");
-			return 0;
 	}
+	// Compiler doesn't seem to notice that all code paths are fulfilled...
+	return 0;
 }
 
 void PinJointBullet::setPivotInA(const Vector3 &p_pos) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCMultiplayer" inherits="NetworkedMultiplayerPeer" category="Core" version="3.2">
+<class name="WebRTCMultiplayer" inherits="NetworkedMultiplayerPeer" version="4.0">
 	<brief_description>
 		A simple interface to create a peer-to-peer mesh network composed of [WebRTCPeerConnection] that is compatible with the [MultiplayerAPI].
 	</brief_description>
@@ -45,7 +45,7 @@
 			<return type="Dictionary">
 			</return>
 			<description>
-				Returns a dictionary which keys are the peer ids and values the peer representation as in [method get_peer]
+				Returns a dictionary which keys are the peer ids and values the peer representation as in [method get_peer].
 			</description>
 		</method>
 		<method name="has_peer">

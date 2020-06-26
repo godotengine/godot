@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlugin" inherits="Reference" category="Core" version="3.2">
+<class name="EditorExportPlugin" inherits="Reference" version="4.0">
 	<brief_description>
+		A script that is executed when exporting projects.
 	</brief_description>
 	<description>
 	</description>
@@ -10,7 +11,7 @@
 		<method name="_export_begin" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="features" type="PoolStringArray">
+			<argument index="0" name="features" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="is_debug" type="bool">
 			</argument>
@@ -19,12 +20,14 @@
 			<argument index="3" name="flags" type="int">
 			</argument>
 			<description>
+				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export.
 			</description>
 		</method>
 		<method name="_export_end" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				Virtual method to be overridden by the user. Called when the export is finished.
 			</description>
 		</method>
 		<method name="_export_file" qualifiers="virtual">
@@ -34,7 +37,7 @@
 			</argument>
 			<argument index="1" name="type" type="String">
 			</argument>
-			<argument index="2" name="features" type="PoolStringArray">
+			<argument index="2" name="features" type="PackedStringArray">
 			</argument>
 			<description>
 			</description>
@@ -44,7 +47,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="file" type="PoolByteArray">
+			<argument index="1" name="file" type="PackedByteArray">
 			</argument>
 			<argument index="2" name="remap" type="bool">
 			</argument>
@@ -91,12 +94,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_ios_project_static_lib">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_shared_object">
 			<return type="void">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="tags" type="PoolStringArray">
+			<argument index="1" name="tags" type="PackedStringArray">
 			</argument>
 			<description>
 			</description>

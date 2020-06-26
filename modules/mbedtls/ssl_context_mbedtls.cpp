@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,57 @@
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
 		const char *str) {
-
 	printf("%s:%04d: %s", file, line, str);
 	fflush(stdout);
 }
+
+void SSLContextMbedTLS::print_mbedtls_error(int p_ret) {
+	printf("mbedtls error: returned -0x%x\n\n", -p_ret);
+	fflush(stdout);
+}
+
+/// CookieContextMbedTLS
+
+Error CookieContextMbedTLS::setup() {
+	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This cookie context is already in use");
+
+	mbedtls_ctr_drbg_init(&ctr_drbg);
+	mbedtls_entropy_init(&entropy);
+	mbedtls_ssl_cookie_init(&cookie_ctx);
+	inited = true;
+
+	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
+	if (ret != 0) {
+		clear(); // Never leave unusable resources around.
+		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
+	}
+
+	ret = mbedtls_ssl_cookie_setup(&cookie_ctx, mbedtls_ctr_drbg_random, &ctr_drbg);
+	if (ret != 0) {
+		clear();
+		ERR_FAIL_V_MSG(FAILED, "mbedtls_ssl_cookie_setup returned an error " + itos(ret));
+	}
+	return OK;
+}
+
+void CookieContextMbedTLS::clear() {
+	if (!inited) {
+		return;
+	}
+	mbedtls_ctr_drbg_free(&ctr_drbg);
+	mbedtls_entropy_free(&entropy);
+	mbedtls_ssl_cookie_free(&cookie_ctx);
+}
+
+CookieContextMbedTLS::CookieContextMbedTLS() {
+	inited = false;
+}
+
+CookieContextMbedTLS::~CookieContextMbedTLS() {
+	clear();
+}
+
+/// SSLContextMbedTLS
 
 Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode) {
 	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This SSL context is already active");
@@ -47,10 +94,10 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	mbedtls_entropy_init(&entropy);
 	inited = true;
 
-	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
 	if (ret != 0) {
 		clear(); // Never leave unusable resources around.
-		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
 	}
 
 	ret = mbedtls_ssl_config_defaults(&conf, p_endpoint, p_transport, MBEDTLS_SSL_PRESET_DEFAULT);
@@ -64,7 +111,7 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	return OK;
 }
 
-Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert) {
+Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies) {
 	ERR_FAIL_COND_V(!p_pkey.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!p_cert.is_valid(), ERR_INVALID_PARAMETER);
 
@@ -74,10 +121,12 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 	// Locking key and certificate(s)
 	pkey = p_pkey;
 	certs = p_cert;
-	if (pkey.is_valid())
+	if (pkey.is_valid()) {
 		pkey->lock();
-	if (certs.is_valid())
+	}
+	if (certs.is_valid()) {
 		certs->lock();
+	}
 
 	// Adding key and certificate
 	int ret = mbedtls_ssl_conf_own_cert(&conf, &(certs->cert), &(pkey->pkey));
@@ -87,7 +136,16 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 	}
 	// Adding CA chain if available.
 	if (certs->cert.next) {
-		mbedtls_ssl_conf_ca_chain(&conf, certs->cert.next, NULL);
+		mbedtls_ssl_conf_ca_chain(&conf, certs->cert.next, nullptr);
+	}
+	// DTLS Cookies
+	if (p_transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
+		if (p_cookies.is_null() || !p_cookies->inited) {
+			clear();
+			ERR_FAIL_V(ERR_BUG);
+		}
+		cookies = p_cookies;
+		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &(cookies->cookie_ctx));
 	}
 	mbedtls_ssl_setup(&ssl, &conf);
 	return OK;
@@ -97,7 +155,7 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, p_authmode);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	X509CertificateMbedTLS *cas = NULL;
+	X509CertificateMbedTLS *cas = nullptr;
 
 	if (p_valid_cas.is_valid()) {
 		// Locking CA certificates
@@ -107,38 +165,42 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 	} else {
 		// Fall back to default certificates (no need to lock those).
 		cas = CryptoMbedTLS::get_default_certificates();
-		if (cas == NULL) {
+		if (cas == nullptr) {
 			clear();
 			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 		}
 	}
 
 	// Set valid CAs
-	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), NULL);
+	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), nullptr);
 	mbedtls_ssl_setup(&ssl, &conf);
 	return OK;
 }
 
 void SSLContextMbedTLS::clear() {
-	if (!inited)
+	if (!inited) {
 		return;
+	}
 	mbedtls_ssl_free(&ssl);
 	mbedtls_ssl_config_free(&conf);
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
 
 	// Unlock and key and certificates
-	if (certs.is_valid())
+	if (certs.is_valid()) {
 		certs->unlock();
+	}
 	certs = Ref<X509Certificate>();
-	if (pkey.is_valid())
+	if (pkey.is_valid()) {
 		pkey->unlock();
+	}
 	pkey = Ref<CryptoKeyMbedTLS>();
+	cookies = Ref<CookieContextMbedTLS>();
 	inited = false;
 }
 
 mbedtls_ssl_context *SSLContextMbedTLS::get_context() {
-	ERR_FAIL_COND_V(!inited, NULL);
+	ERR_FAIL_COND_V(!inited, nullptr);
 	return &ssl;
 }
 

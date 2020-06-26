@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Thread" inherits="Reference" category="Core" version="3.2">
+<class name="Thread" inherits="Reference" version="4.0">
 	<brief_description>
 		A unit of execution in a process.
 	</brief_description>
@@ -29,14 +29,14 @@
 			</return>
 			<argument index="0" name="instance" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="userdata" type="Variant" default="null">
 			</argument>
 			<argument index="3" name="priority" type="int" enum="Thread.Priority" default="1">
 			</argument>
 			<description>
-				Starts a new [Thread] that runs [code]method[/code] on object [code]instance[/code] with [code]userdata[/code] passed as an argument. The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
+				Starts a new [Thread] that runs [code]method[/code] on object [code]instance[/code] with [code]userdata[/code] passed as an argument. Even if no userdata is passed, [code]method[/code] must accept one argument and it will be null. The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
 				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
 			</description>
 		</method>
@@ -50,10 +50,13 @@
 	</methods>
 	<constants>
 		<constant name="PRIORITY_LOW" value="0" enum="Priority">
+			A thread running with lower priority than normally.
 		</constant>
 		<constant name="PRIORITY_NORMAL" value="1" enum="Priority">
+			A thread with a standard priority.
 		</constant>
 		<constant name="PRIORITY_HIGH" value="2" enum="Priority">
+			A thread running with higher priority than normally.
 		</constant>
 	</constants>
 </class>

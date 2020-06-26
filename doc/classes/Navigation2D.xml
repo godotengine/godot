@@ -1,34 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Navigation2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Navigation2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		2D navigation and pathfinding node.
 	</brief_description>
 	<description>
-		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. By default, these are automatically collected from child [NavigationPolygonInstance] nodes, but they can also be added on the fly with [method navpoly_add].
+		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. These are automatically collected from child [NavigationRegion2D] nodes.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_closest_point">
+		<method name="get_closest_point" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="to_point" type="Vector2">
 			</argument>
 			<description>
-				Returns the navigation point closest to the point given. Points are in local coordinate space.
+				Returns the point closest to the provided [code]to_point[/code] on the navigation mesh surface.
 			</description>
 		</method>
-		<method name="get_closest_point_owner">
-			<return type="Object">
+		<method name="get_closest_point_owner" qualifiers="const">
+			<return type="RID">
 			</return>
 			<argument index="0" name="to_point" type="Vector2">
 			</argument>
 			<description>
-				Returns the owner of the [NavigationPolygon] which contains the navigation point closest to the point given. This is usually a [NavigationPolygonInstance]. For polygons added via [method navpoly_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
+				Returns the owner region RID for the point returned by [method get_closest_point].
 			</description>
 		</method>
-		<method name="get_simple_path">
-			<return type="PoolVector2Array">
+		<method name="get_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_simple_path" qualifiers="const">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="start" type="Vector2">
 			</argument>
@@ -40,40 +46,13 @@
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the path is smoothed by merging path segments where possible.
 			</description>
 		</method>
-		<method name="navpoly_add">
-			<return type="int">
-			</return>
-			<argument index="0" name="mesh" type="NavigationPolygon">
-			</argument>
-			<argument index="1" name="xform" type="Transform2D">
-			</argument>
-			<argument index="2" name="owner" type="Object" default="null">
-			</argument>
-			<description>
-				Adds a [NavigationPolygon]. Returns an ID for use with [method navpoly_remove] or [method navpoly_set_transform]. If given, a [Transform2D] is applied to the polygon. The optional [code]owner[/code] is used as return value for [method get_closest_point_owner].
-			</description>
-		</method>
-		<method name="navpoly_remove">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Removes the [NavigationPolygon] with the given ID.
-			</description>
-		</method>
-		<method name="navpoly_set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="xform" type="Transform2D">
-			</argument>
-			<description>
-				Sets the transform applied to the [NavigationPolygon] with the given ID.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="10.0">
+		</member>
+		<member name="edge_connection_margin" type="float" setter="set_edge_connection_margin" getter="get_edge_connection_margin" default="100.0">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

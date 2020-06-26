@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,9 @@
 #ifndef WEBSOCKETMACTOS_H
 #define WEBSOCKETMACTOS_H
 
-#define WSC_IN_BUF "network/limits/websocket_client/max_in_buffer_kb"
-#define WSC_IN_PKT "network/limits/websocket_client/max_in_packets"
-#define WSC_OUT_BUF "network/limits/websocket_client/max_out_buffer_kb"
-#define WSC_OUT_PKT "network/limits/websocket_client/max_out_packets"
-
-#define WSS_IN_BUF "network/limits/websocket_server/max_in_buffer_kb"
-#define WSS_IN_PKT "network/limits/websocket_server/max_in_packets"
-#define WSS_OUT_BUF "network/limits/websocket_server/max_out_buffer_kb"
-#define WSS_OUT_PKT "network/limits/websocket_server/max_out_packets"
+// Defaults per peer buffers, 1024 packets with a shared 65536 bytes payload.
+#define DEF_PKT_SHIFT 10
+#define DEF_BUF_SHIFT 16
 
 /* clang-format off */
 #define GDCICLASS(CNAME) \
@@ -56,13 +50,13 @@ public:\
 	static CNAME *create() {\
 \
 		if (!_create)\
-			return NULL;\
+			return nullptr;\
 		return _create();\
 	}\
 protected:\
 
 #define GDCINULL(CNAME) \
-CNAME *(*CNAME::_create)() = NULL;
+CNAME *(*CNAME::_create)() = nullptr;
 
 #define GDCIIMPL(IMPNAME, CNAME) \
 public:\

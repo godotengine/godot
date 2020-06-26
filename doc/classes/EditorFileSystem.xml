@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystem" inherits="Node" category="Core" version="3.2">
+<class name="EditorFileSystem" inherits="Node" version="4.0">
 	<brief_description>
 		Resource filesystem, as the editor sees it.
 	</brief_description>
 	<description>
 		This object holds information of all resources in the filesystem, their types, etc.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_resource_filesystem].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -75,6 +76,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Scans the script files and updates the list of custom class names.
 			</description>
 		</method>
 	</methods>
@@ -85,14 +87,14 @@
 			</description>
 		</signal>
 		<signal name="resources_reimported">
-			<argument index="0" name="resources" type="PoolStringArray">
+			<argument index="0" name="resources" type="PackedStringArray">
 			</argument>
 			<description>
 				Remitted if a resource is reimported.
 			</description>
 		</signal>
 		<signal name="resources_reload">
-			<argument index="0" name="resources" type="PoolStringArray">
+			<argument index="0" name="resources" type="PackedStringArray">
 			</argument>
 			<description>
 			</description>

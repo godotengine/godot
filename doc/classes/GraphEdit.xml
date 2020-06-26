@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphEdit" inherits="Control" category="Core" version="3.2">
+<class name="GraphEdit" inherits="Control" version="4.0">
 	<brief_description>
 		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
@@ -49,11 +49,11 @@
 		<method name="connect_node">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -64,11 +64,11 @@
 		<method name="disconnect_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -87,16 +87,18 @@
 			<return type="HBoxContainer">
 			</return>
 			<description>
+				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph.
+				Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of it's children use their [member CanvasItem.visible] property instead.
 			</description>
 		</method>
 		<method name="is_node_connected">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -147,17 +149,18 @@
 		<method name="set_connection_activity">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<argument index="4" name="amount" type="float">
 			</argument>
 			<description>
+				Sets the coloration of the connection between [code]from[/code]'s [code]from_port[/code] and [code]to[/code]'s [code]to_port[/code] with the color provided in the [code]activity[/code] theme property.
 			</description>
 		</method>
 		<method name="set_selected">
@@ -192,65 +195,65 @@
 	<signals>
 		<signal name="_begin_node_move">
 			<description>
-				Signal sent at the beginning of a GraphNode movement.
+				Emitted at the beginning of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="_end_node_move">
 			<description>
-				Signal sent at the end of a GraphNode movement.
+				Emitted at the end of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
-			<argument index="0" name="to" type="String">
+			<argument index="0" name="to" type="StringName">
 			</argument>
 			<argument index="1" name="to_slot" type="int">
 			</argument>
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when user dragging connection from input port into empty space of the graph.
+				Emitted when user dragging connection from input port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="connection_request">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_slot" type="int">
 			</argument>
 			<description>
-				Signal sent to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
+				Emitted to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when user dragging connection from output port into empty space of the graph.
+				Emitted when user dragging connection from output port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Signal sent when the user presses [code]Ctrl + C[/code].
+				Emitted when the user presses [kbd]Ctrl + C[/kbd].
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
 			<description>
-				Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
+				Emitted when a GraphNode is attempted to be removed from the GraphEdit.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_slot" type="int">
 			</argument>
@@ -270,9 +273,15 @@
 				Emitted when a GraphNode is selected.
 			</description>
 		</signal>
+		<signal name="node_unselected">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Signal sent when the user presses [code]Ctrl + V[/code].
+				Emitted when the user presses [kbd]Ctrl + V[/kbd].
 			</description>
 		</signal>
 		<signal name="popup_request">
@@ -286,6 +295,7 @@
 			<argument index="0" name="ofs" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the scroll offset is changed by the user. It will not be emitted when changed in code.
 			</description>
 		</signal>
 	</signals>
@@ -299,22 +309,37 @@
 		<theme_item name="bezier_len_pos" type="int" default="80">
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
+			The background drawn under the grid.
 		</theme_item>
 		<theme_item name="grid_major" type="Color" default="Color( 1, 1, 1, 0.2 )">
+			Color of major grid lines.
 		</theme_item>
 		<theme_item name="grid_minor" type="Color" default="Color( 1, 1, 1, 0.05 )">
+			Color of minor grid lines.
 		</theme_item>
-		<theme_item name="minus" type="Texture">
+		<theme_item name="minus" type="Texture2D">
+			The icon for the zoom out button.
 		</theme_item>
-		<theme_item name="more" type="Texture">
+		<theme_item name="more" type="Texture2D">
+			The icon for the zoom in button.
 		</theme_item>
 		<theme_item name="port_grab_distance_horizontal" type="int" default="48">
+			The horizontal range within which a port can be grabbed (on both sides).
 		</theme_item>
 		<theme_item name="port_grab_distance_vertical" type="int" default="6">
+			The vertical range within which a port can be grabbed (on both sides).
 		</theme_item>
-		<theme_item name="reset" type="Texture">
+		<theme_item name="reset" type="Texture2D">
+			The icon for the zoom reset button.
 		</theme_item>
-		<theme_item name="snap" type="Texture">
+		<theme_item name="selection_fill" type="Color" default="Color( 1, 1, 1, 0.3 )">
+			The fill color of the selection rectangle.
+		</theme_item>
+		<theme_item name="selection_stroke" type="Color" default="Color( 1, 1, 1, 0.8 )">
+			The outline color of the selection rectangle.
+		</theme_item>
+		<theme_item name="snap" type="Texture2D">
+			The icon for the snap toggle button.
 		</theme_item>
 	</theme_items>
 </class>

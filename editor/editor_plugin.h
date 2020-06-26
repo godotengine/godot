@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,22 +37,22 @@
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
-#include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
 class EditorNode;
-class Spatial;
-class Camera;
+class Node3D;
+class Camera3D;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
 class EditorImportPlugin;
 class EditorExportPlugin;
-class EditorSpatialGizmoPlugin;
+class EditorNode3DGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
+class FileSystemDock;
 class ScriptEditor;
 
 class EditorInterface : public Node {
@@ -88,6 +88,8 @@ public:
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
+	FileSystemDock *get_file_system_dock();
+
 	Control *get_base_control();
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
@@ -98,24 +100,24 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
 
 	void set_main_screen_editor(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
+	bool is_distraction_free_mode_enabled() const;
 
 	EditorInterface();
 };
 
 class EditorPlugin : public Node {
-
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	UndoRedo *_get_undo_redo() { return undo_redo; }
 
-	bool input_event_forwarding_always_enabled;
-	bool force_draw_over_forwarding_enabled;
+	bool input_event_forwarding_always_enabled = false;
+	bool force_draw_over_forwarding_enabled = false;
 
 	String last_main_screen_name;
 
@@ -123,7 +125,7 @@ protected:
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
-	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
+	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
 
 public:
@@ -158,7 +160,7 @@ public:
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	ToolButton *add_control_to_bottom_panel(Control *p_control, const String &p_title);
+	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title);
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
@@ -182,12 +184,12 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
 
-	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
+	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	virtual void forward_spatial_draw_over_viewport(Control *p_overlay);
 	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 
 	virtual String get_name() const;
-	virtual const Ref<Texture> get_icon() const;
+	virtual const Ref<Texture2D> get_icon() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
@@ -224,8 +226,8 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
-	void add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
-	void remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
+	void add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
+	void remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
@@ -239,8 +241,8 @@ public:
 	void enable_plugin();
 	void disable_plugin();
 
-	EditorPlugin();
-	virtual ~EditorPlugin();
+	EditorPlugin() {}
+	virtual ~EditorPlugin() {}
 };
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
@@ -249,7 +251,6 @@ VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 
 class EditorPlugins {
-
 	enum {
 		MAX_CREATE_FUNCS = 64
 	};
@@ -265,7 +266,7 @@ class EditorPlugins {
 public:
 	static int get_plugin_count() { return creation_func_count; }
 	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
-		ERR_FAIL_INDEX_V(p_idx, creation_func_count, NULL);
+		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx](p_editor);
 	}
 
@@ -275,7 +276,6 @@ public:
 	}
 
 	static void add_create_func(EditorPluginCreateFunc p_func) {
-
 		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
 	}

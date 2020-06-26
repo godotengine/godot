@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,6 +41,10 @@ class VisualShaderNode;
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
+	friend class VisualShaderNodeVersionChecker;
+
+	String version = "";
+
 public:
 	enum Type {
 		TYPE_VERTEX,
@@ -58,13 +62,14 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture> param;
+		Ref<Texture2D> param;
 	};
 
 private:
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
+		List<int> prev_connected_nodes;
 	};
 
 	struct Graph {
@@ -93,7 +98,6 @@ private:
 	void _queue_update();
 
 	union ConnectionKey {
-
 		struct {
 			uint64_t node : 32;
 			uint64_t port : 32;
@@ -117,6 +121,11 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	void set_version(const String &p_version);
+	String get_version() const;
+
+	void update_version(const String &p_new_version);
+
 	enum {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
@@ -135,6 +144,8 @@ public:
 	void remove_node(Type p_type, int p_id);
 
 	bool is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+
+	bool is_nodes_connected_relatively(const Graph *p_graph, int p_node, int p_target) const;
 	bool can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	Error connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
@@ -172,21 +183,22 @@ class VisualShaderNode : public Resource {
 
 	Map<int, Variant> default_input_values;
 
-	Array _get_default_input_values() const;
-	void _set_default_input_values(const Array &p_values);
-
 protected:
+	bool simple_decl;
 	static void _bind_methods();
 
 public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
+		PORT_TYPE_SCALAR_INT,
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
 		PORT_TYPE_SAMPLER,
 		PORT_TYPE_MAX,
 	};
+
+	bool is_simple_decl() const;
 
 	virtual String get_caption() const = 0;
 
@@ -196,6 +208,8 @@ public:
 
 	void set_input_port_default_value(int p_port, const Variant &p_value);
 	Variant get_input_port_default_value(int p_port) const; // if NIL (default if node does not set anything) is returned, it means no default value is wanted if disconnected, thus no input var must be supplied (empty string will be supplied)
+	Array get_default_input_values() const;
+	void set_default_input_values(const Array &p_values);
 
 	virtual int get_output_port_count() const = 0;
 	virtual PortType get_output_port_type(int p_port) const = 0;
@@ -354,18 +368,37 @@ public:
 class VisualShaderNodeUniform : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUniform, VisualShaderNode);
 
+public:
+	enum Qualifier {
+		QUAL_NONE,
+		QUAL_GLOBAL,
+		QUAL_INSTANCE,
+	};
+
 private:
 	String uniform_name;
+	Qualifier qualifier;
 
 protected:
 	static void _bind_methods();
+	String _get_qual_str() const;
 
 public:
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
 
+	void set_qualifier(Qualifier p_qual);
+	Qualifier get_qualifier() const;
+
+	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
+
+	virtual Vector<StringName> get_editable_properties() const;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
 	VisualShaderNodeUniform();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeUniform::Qualifier)
 
 class VisualShaderNodeGroupBase : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNode);
@@ -454,8 +487,6 @@ public:
 
 	void set_expression(const String &p_expression);
 	String get_expression() const;
-
-	void build();
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 

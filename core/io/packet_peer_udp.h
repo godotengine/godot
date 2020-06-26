@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,12 +47,14 @@ protected:
 	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
 	IP_Address packet_ip;
-	int packet_port;
-	int queue_count;
+	int packet_port = 0;
+	int queue_count = 0;
 
 	IP_Address peer_addr;
-	int peer_port;
-	bool blocking;
+	int peer_port = 0;
+	bool connected = false;
+	bool blocking = true;
+	bool broadcast = false;
 	Ref<NetSocket> _sock;
 
 	static void _bind_methods();
@@ -69,6 +71,11 @@ public:
 	void close();
 	Error wait();
 	bool is_listening() const;
+
+	Error connect_socket(Ref<NetSocket> p_sock); // Used by UDPServer
+	Error connect_to_host(const IP_Address &p_host, int p_port);
+	bool is_connected_to_host() const;
+
 	IP_Address get_packet_address() const;
 	int get_packet_port() const;
 	void set_dest_address(const IP_Address &p_address, int p_port);
@@ -77,6 +84,7 @@ public:
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	int get_available_packet_count() const;
 	int get_max_packet_size() const;
+	void set_broadcast_enabled(bool p_enabled);
 	Error join_multicast_group(IP_Address p_multi_address, String p_if_name);
 	Error leave_multicast_group(IP_Address p_multi_address, String p_if_name);
 

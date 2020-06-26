@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" category="Core" version="3.2">
+<class name="Image" inherits="Resource" version="4.0">
 	<brief_description>
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		Native image datatype. Contains image data, which can be converted to a [Texture2D], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -71,6 +72,7 @@
 			<argument index="0" name="bump_scale" type="float" default="1.0">
 			</argument>
 			<description>
+				Converts a bumpmap to a normalmap. A bumpmap provides a height offset per-pixel, while a normalmap provides a normal direction per pixel.
 			</description>
 		</method>
 		<method name="clear_mipmaps">
@@ -85,12 +87,24 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
 			</argument>
-			<argument index="1" name="source" type="int" enum="Image.CompressSource">
+			<argument index="1" name="source" type="int" enum="Image.CompressSource" default="0">
 			</argument>
-			<argument index="2" name="lossy_quality" type="float">
+			<argument index="2" name="lossy_quality" type="float" default="0.7">
 			</argument>
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [code]COMPRESS_*[/code] constants.
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [enum CompressMode] and [enum CompressSource] constants.
+			</description>
+		</method>
+		<method name="compress_from_channels">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
+			</argument>
+			<argument index="1" name="channels" type="int" enum="Image.UsedChannels">
+			</argument>
+			<argument index="2" name="lossy_quality" type="float" default="0.7">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="convert">
@@ -99,7 +113,7 @@
 			<argument index="0" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Converts the image's format. See [code]FORMAT_*[/code] constants.
+				Converts the image's format. See [enum Format] constants.
 			</description>
 		</method>
 		<method name="copy_from">
@@ -123,7 +137,7 @@
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of given size and format. See [enum Format] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data">
@@ -137,10 +151,10 @@
 			</argument>
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
-			<argument index="4" name="data" type="PoolByteArray">
+			<argument index="4" name="data" type="PackedByteArray">
 			</argument>
 			<description>
-				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then loads mipmaps for this image from [code]data[/code]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -165,14 +179,15 @@
 			<return type="int" enum="Image.AlphaMode">
 			</return>
 			<description>
-				Returns ALPHA_BLEND if the image has data for alpha values. Returns ALPHA_BIT if all the alpha values are below a certain threshold or the maximum value. Returns ALPHA_NONE if no data for alpha values is found.
+				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
-		<method name="expand_x2_hq2x">
-			<return type="void">
+		<method name="detect_used_channels">
+			<return type="int" enum="Image.UsedChannels">
 			</return>
+			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0">
+			</argument>
 			<description>
-				Stretches the image and enlarges it by a factor of 2. No interpolation is done.
 			</description>
 		</method>
 		<method name="fill">
@@ -215,7 +230,7 @@
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the image's raw data.
@@ -225,7 +240,7 @@
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Returns the image's format. See [code]FORMAT_*[/code] constants.
+				Returns the image's format. See [enum Format] constants.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -252,7 +267,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code](x, y)[/code] if the image is locked. If the image is unlocked, it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code]. This is the same as [method get_pixelv], but two integer arguments instead of a Vector2 argument.
+				Returns the color of the pixel at [code](x, y)[/code]. This is the same as [method get_pixelv], but with two integer arguments instead of a [Vector2] argument.
 			</description>
 		</method>
 		<method name="get_pixelv" qualifiers="const">
@@ -261,7 +276,7 @@
 			<argument index="0" name="src" type="Vector2">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code]src[/code] if the image is locked. If the image is unlocked, it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code]. This is the same as [method get_pixel], but with a Vector2 argument instead of two integer arguments.
+				Returns the color of the pixel at [code]src[/code]. This is the same as [method get_pixel], but with a [Vector2] argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -284,7 +299,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Returns a [Rect2] enclosing the visible portion of the image.
+				Returns a [Rect2] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
@@ -328,13 +343,13 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads an image from file [code]path[/code].
+				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 			</description>
 		</method>
 		<method name="load_jpg_from_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Loads an image from the binary contents of a JPEG file.
@@ -343,7 +358,7 @@
 		<method name="load_png_from_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Loads an image from the binary contents of a PNG file.
@@ -352,17 +367,10 @@
 		<method name="load_webp_from_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Loads an image from the binary contents of a WebP file.
-			</description>
-		</method>
-		<method name="lock">
-			<return type="void">
-			</return>
-			<description>
-				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
@@ -405,6 +413,7 @@
 			<return type="Image">
 			</return>
 			<description>
+				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">
@@ -427,6 +436,12 @@
 				Saves the image as a PNG file to [code]path[/code].
 			</description>
 		</method>
+		<method name="save_png_to_buffer" qualifiers="const">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_pixel">
 			<return type="void">
 			</return>
@@ -437,14 +452,11 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is locked. Example:
+				Sets the [Color] of the pixel at [code](x, y)[/code]. Example:
 				[codeblock]
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
-				img.lock()
-				img.set_pixel(x, y, color) # Works
-				img.unlock()
-				img.set_pixel(x, y, color) # Does not have an effect
+				img.set_pixel(x, y, color)
 				[/codeblock]
 			</description>
 		</method>
@@ -456,14 +468,11 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code] if the image is locked. Note that the [code]dst[/code] values must be integers. Example:
+				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code]. Note that the [code]dst[/code] values must be integers. Example:
 				[codeblock]
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
-				img.lock()
-				img.set_pixelv(Vector2(x, y), color) # Works
-				img.unlock()
-				img.set_pixelv(Vector2(x, y), color) # Does not have an effect
+				img.set_pixelv(Vector2(x, y), color)
 				[/codeblock]
 			</description>
 		</method>
@@ -481,29 +490,24 @@
 				Converts the raw data from the sRGB colorspace to a linear scale.
 			</description>
 		</method>
-		<method name="unlock">
-			<return type="void">
-			</return>
-			<description>
-				Unlocks the data and prevents changes.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PoolByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
-			Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PackedByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
+			Holds all of the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>
 	<constants>
-		<constant name="MAX_WIDTH" value="16384">
+		<constant name="MAX_WIDTH" value="16777216">
 			The maximal width allowed for [Image] resources.
 		</constant>
-		<constant name="MAX_HEIGHT" value="16384">
+		<constant name="MAX_HEIGHT" value="16777216">
 			The maximal height allowed for [Image] resources.
 		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
+			Texture format with a single 8-bit depth representing luminance.
 		</constant>
 		<constant name="FORMAT_LA8" value="1" enum="Format">
+			OpenGL texture format with two values, luminance and alpha each stored with 8 bits.
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
 			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
@@ -522,8 +526,7 @@
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
 		</constant>
-		<constant name="FORMAT_RGBA5551" value="7" enum="Format">
-			OpenGL texture format [code]GL_RGB5_A1[/code] where 5 bits of depth for each component of RGB and one bit for alpha.
+		<constant name="FORMAT_RGB565" value="7" enum="Format">
 		</constant>
 		<constant name="FORMAT_RF" value="8" enum="Format">
 			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
@@ -620,7 +623,11 @@
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_MAX" value="37" enum="Format">
+		<constant name="FORMAT_ETC2_RA_AS_RG" value="37" enum="Format">
+		</constant>
+		<constant name="FORMAT_DXT5_RA_AS_RG" value="38" enum="Format">
+		</constant>
+		<constant name="FORMAT_MAX" value="39" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -643,26 +650,49 @@
 			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscalng images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
+			Image does not have alpha.
 		</constant>
 		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
+			Image stores alpha in a single bit.
 		</constant>
 		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
+			Image uses alpha.
 		</constant>
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
+			Use S3TC compression.
 		</constant>
 		<constant name="COMPRESS_PVRTC2" value="1" enum="CompressMode">
+			Use PVRTC2 compression.
 		</constant>
 		<constant name="COMPRESS_PVRTC4" value="2" enum="CompressMode">
+			Use PVRTC4 compression.
 		</constant>
 		<constant name="COMPRESS_ETC" value="3" enum="CompressMode">
+			Use ETC compression.
 		</constant>
 		<constant name="COMPRESS_ETC2" value="4" enum="CompressMode">
+			Use ETC2 compression.
+		</constant>
+		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_R" value="2" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_RG" value="3" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_RGB" value="4" enum="UsedChannels">
+		</constant>
+		<constant name="USED_CHANNELS_RGBA" value="5" enum="UsedChannels">
 		</constant>
 		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
+			Source texture (before compression) is a regular texture. Default for all textures.
 		</constant>
 		<constant name="COMPRESS_SOURCE_SRGB" value="1" enum="CompressSource">
+			Source texture (before compression) is in sRGB space.
 		</constant>
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
+			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
 		</constant>
 	</constants>
 </class>

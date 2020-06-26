@@ -8,7 +8,6 @@ layout(location = 4) in vec2 uv_in;
 out vec2 uv_interp;
 
 void main() {
-
 	uv_interp = uv_in;
 	gl_Position = vertex_attrib;
 }
@@ -32,7 +31,6 @@ in vec2 uv2_interp;
 layout(location = 0) out vec4 frag_color;
 
 void main() {
-
 	vec4 specular = texture(source_specular, uv_interp);
 
 #ifdef USE_SSR

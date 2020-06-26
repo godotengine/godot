@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeTransformDecompose" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeTransformDecompose" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Decomposes a [Transform] into four [Vector3]s within the visual shader graph.
 	</brief_description>
 	<description>
+		Takes a 4x4 transform matrix and decomposes it into four [code]vec3[/code] values, one from each row of the matrix.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 ) ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

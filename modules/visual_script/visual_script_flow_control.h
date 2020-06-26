@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "visual_script.h"
 
 class VisualScriptReturn : public VisualScriptNode {
-
 	GDCLASS(VisualScriptReturn, VisualScriptNode);
 
 	Variant::Type type;
@@ -71,7 +70,6 @@ public:
 };
 
 class VisualScriptCondition : public VisualScriptNode {
-
 	GDCLASS(VisualScriptCondition, VisualScriptNode);
 
 protected:
@@ -99,7 +97,6 @@ public:
 };
 
 class VisualScriptWhile : public VisualScriptNode {
-
 	GDCLASS(VisualScriptWhile, VisualScriptNode);
 
 protected:
@@ -127,7 +124,6 @@ public:
 };
 
 class VisualScriptIterator : public VisualScriptNode {
-
 	GDCLASS(VisualScriptIterator, VisualScriptNode);
 
 protected:
@@ -155,7 +151,6 @@ public:
 };
 
 class VisualScriptSequence : public VisualScriptNode {
-
 	GDCLASS(VisualScriptSequence, VisualScriptNode);
 
 	int steps;
@@ -188,7 +183,6 @@ public:
 };
 
 class VisualScriptSwitch : public VisualScriptNode {
-
 	GDCLASS(VisualScriptSwitch, VisualScriptNode);
 
 	struct Case {
@@ -230,7 +224,6 @@ public:
 };
 
 class VisualScriptTypeCast : public VisualScriptNode {
-
 	GDCLASS(VisualScriptTypeCast, VisualScriptNode);
 
 	StringName base_type;

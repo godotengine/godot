@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,19 +33,17 @@
 #include "margin_container.h"
 
 struct _MinSizeCache {
-
 	int min_size;
 	bool will_stretch;
 	int final_size;
 };
 
 void BoxContainer::_resort() {
-
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 	Size2i new_size = get_size();
 
-	int sep = get_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
+	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first = true;
 	int children_count = 0;
@@ -56,10 +54,12 @@ void BoxContainer::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible_in_tree()) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 		_MinSizeCache msc;
@@ -84,8 +84,9 @@ void BoxContainer::_resort() {
 		children_count++;
 	}
 
-	if (children_count == 0)
+	if (children_count == 0) {
 		return;
+	}
 
 	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * sep;
 	int stretch_diff = stretch_max - stretch_min;
@@ -105,12 +106,13 @@ void BoxContainer::_resort() {
 		bool refit_successful = true; //assume refit-test will go well
 
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c || !c->is_visible_in_tree())
+			if (!c || !c->is_visible_in_tree()) {
 				continue;
-			if (c->is_set_as_toplevel())
+			}
+			if (c->is_set_as_toplevel()) {
 				continue;
+			}
 
 			ERR_FAIL_COND(!min_size_cache.has(c));
 			_MinSizeCache &msc = min_size_cache[c];
@@ -134,8 +136,9 @@ void BoxContainer::_resort() {
 			}
 		}
 
-		if (refit_successful) //uf refit went well, break
+		if (refit_successful) { //uf refit went well, break
 			break;
+		}
 	}
 
 	/** Final pass, draw and stretch elements **/
@@ -158,19 +161,21 @@ void BoxContainer::_resort() {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible_in_tree()) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		_MinSizeCache &msc = min_size_cache[c];
 
-		if (first)
+		if (first) {
 			first = false;
-		else
+		} else {
 			ofs += sep;
+		}
 
 		int from = ofs;
 		int to = ofs + msc.final_size;
@@ -187,10 +192,8 @@ void BoxContainer::_resort() {
 		Rect2 rect;
 
 		if (vertical) {
-
 			rect = Rect2(0, from, new_size.width, size);
 		} else {
-
 			rect = Rect2(from, 0, size, new_size.height);
 		}
 
@@ -202,20 +205,21 @@ void BoxContainer::_resort() {
 }
 
 Size2 BoxContainer::get_minimum_size() const {
-
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	int sep = get_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
+	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first = true;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		if (!c->is_visible()) {
 			continue;
@@ -247,15 +251,11 @@ Size2 BoxContainer::get_minimum_size() const {
 }
 
 void BoxContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			_resort();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}
@@ -271,30 +271,27 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 }
 
 void BoxContainer::add_spacer(bool p_begin) {
-
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
-	if (vertical)
+	if (vertical) {
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
-	else
+	} else {
 		c->set_h_size_flags(SIZE_EXPAND_FILL);
+	}
 
 	add_child(c);
-	if (p_begin)
+	if (p_begin) {
 		move_child(c, 0);
+	}
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {
-
 	vertical = p_vertical;
 	align = ALIGN_BEGIN;
-	//set_ignore_mouse(true);
-	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
 void BoxContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_spacer", "begin"), &BoxContainer::add_spacer);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
@@ -307,16 +304,16 @@ void BoxContainer::_bind_methods() {
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
-
 	Label *l = memnew(Label);
 	l->set_text(p_label);
 	add_child(l);
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_constant_override("margin_left", 0);
+	mc->add_theme_constant_override("margin_left", 0);
 	mc->add_child(p_control);
 	add_child(mc);
-	if (p_expand)
+	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	}
 
 	return mc;
 }

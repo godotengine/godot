@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="IP" inherits="Object" category="Core" version="3.2">
+<class name="IP" inherits="Object" version="4.0">
 	<brief_description>
 		Internet protocol (IP) support functions such as DNS resolution.
 	</brief_description>
@@ -65,7 +65,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns a queued hostname's status as a [code]RESOLVER_STATUS_*[/code] constant, given its queue [code]id[/code].
+				Returns a queued hostname's status as a [enum ResolverStatus] constant, given its queue [code]id[/code].
 			</description>
 		</method>
 		<method name="resolve_hostname">
@@ -76,7 +76,7 @@
 			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3">
 			</argument>
 			<description>
-				Returns a given hostname's IPv4 or IPv6 address when resolved (blocking-type method). The address type returned depends on the [code]TYPE_*[/code] constant given as [code]ip_type[/code].
+				Returns a given hostname's IPv4 or IPv6 address when resolved (blocking-type method). The address type returned depends on the [enum Type] constant given as [code]ip_type[/code].
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">
@@ -87,7 +87,7 @@
 			<argument index="1" name="ip_type" type="int" enum="IP.Type" default="3">
 			</argument>
 			<description>
-				Creates a queue item to resolve a hostname to an IPv4 or IPv6 address depending on the [code]TYPE_*[/code] constant given as [code]ip_type[/code]. Returns the queue ID if successful, or [constant RESOLVER_INVALID_ID] on error.
+				Creates a queue item to resolve a hostname to an IPv4 or IPv6 address depending on the [enum Type] constant given as [code]ip_type[/code]. Returns the queue ID if successful, or [constant RESOLVER_INVALID_ID] on error.
 			</description>
 		</method>
 	</methods>

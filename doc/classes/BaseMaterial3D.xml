@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BaseMaterial3D" inherits="Material" version="4.0">
+	<brief_description>
+		Default 3D rendering material.
+	</brief_description>
+	<description>
+		This provides a default material with a wide variety of rendering features and properties without the need to write shader code. See the tutorial below for details.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_feature" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="feature" type="int" enum="BaseMaterial3D.Feature">
+			</argument>
+			<description>
+				Returns [code]true[/code], if the specified [enum Feature] is enabled.
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="BaseMaterial3D.Flags">
+			</argument>
+			<description>
+				Returns [code]true[/code], if the specified flag is enabled. See [enum Flags] enumerator for options.
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture2D">
+			</return>
+			<argument index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam">
+			</argument>
+			<description>
+				Returns the [Texture] associated with the specified [enum TextureParam].
+			</description>
+		</method>
+		<method name="set_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="feature" type="int" enum="BaseMaterial3D.Feature">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], enables the specified [enum Feature]. Many features that are available in [BaseMaterial3D]s need to be enabled before use. This way the cost for using the feature is only incurred when specified. Features can also be enabled by setting the corresponding member to [code]true[/code].
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="BaseMaterial3D.Flags">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code]. See [enum Flags] enumerator for options.
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam">
+			</argument>
+			<argument index="1" name="texture" type="Texture2D">
+			</argument>
+			<description>
+				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color( 1, 1, 1, 1 )">
+			The material's base color.
+		</member>
+		<member name="albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Forces a conversion of the [member albedo_texture] from sRGB space to linear space.
+		</member>
+		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
+		</member>
+		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
+			Threshold at which the alpha scissor will discard values.
+		</member>
+		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy">
+			The strength of the anisotropy effect.
+		</member>
+		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], anisotropy is enabled. Changes the shape of the specular blob and aligns it to tangent space. Mesh tangents are needed for this to work. If the mesh does not contain tangents the anisotropy effect will appear broken.
+		</member>
+		<member name="anisotropy_flowmap" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that offsets the tangent map for anisotropy calculations.
+		</member>
+		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], ambient occlusion is enabled. Ambient occlusion darkens areas based on the [member ao_texture].
+		</member>
+		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect">
+			Amount that ambient occlusion affects lighting from lights. If [code]0[/code], ambient occlusion only affects ambient light. If [code]1[/code], ambient occlusion affects lights just as much as it affects ambient light. This can be used to impact the strength of the ambient occlusion effect, but typically looks unrealistic.
+		</member>
+		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code], use [code]UV2[/code] coordinates to look up from the [member ao_texture].
+		</member>
+		<member name="ao_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that defines the amount of ambient occlusion for a given point on the object.
+		</member>
+		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel">
+			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight">
+			The color used by the backlight effect. Represents the light passing through an object.
+		</member>
+		<member name="backlight_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the backlight effect is enabled.
+		</member>
+		<member name="backlight_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to control the backlight effect per-pixel. Added to [member backlight].
+		</member>
+		<member name="billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
+		</member>
+		<member name="billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
+			Controls how the object faces the camera. See [enum BillboardMode].
+		</member>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
+			The material's blend mode.
+			[b]Note:[/b] Values other than [code]Mix[/code] force the object into the transparent pipeline. See [enum BlendMode].
+		</member>
+		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat">
+			Sets the strength of the clearcoat effect. Setting to [code]0[/code] looks the same as disabling the clearcoat effect.
+		</member>
+		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the lighting calculation resulting in an added specular blob. This makes materials appear as if they have a clear layer on them that can be either glossy or rough.
+		</member>
+		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss">
+			Sets the roughness of the clearcoat pass. A higher value results in a smoother clearcoat while a lower value results in a rougher clearcoat.
+		</member>
+		<member name="clearcoat_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that defines the strength of the clearcoat effect and the glossiness of the clearcoat. Strength is specified in the red channel while glossiness is specified in the green channel.
+		</member>
+		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="BaseMaterial3D.CullMode" default="0">
+			Which side of the object is not drawn when backfaces are rendered. See [enum CullMode].
+		</member>
+		<member name="depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" enum="BaseMaterial3D.DepthDrawMode" default="0">
+			Determines when depth rendering takes place. See [enum DepthDrawMode]. See also [member transparency].
+		</member>
+		<member name="detail_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that specifies the color of the detail overlay.
+		</member>
+		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" enum="BaseMaterial3D.BlendMode">
+			Specifies how the [member detail_albedo] should blend with the current [code]ALBEDO[/code]. See [enum BlendMode] for options.
+		</member>
+		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], enables the detail overlay. Detail is a second texture that gets mixed over the surface of the object based on [member detail_mask]. This can be used to add variation to objects, or to blend between two different albedo/normal textures.
+		</member>
+		<member name="detail_mask" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to specify how the detail textures get blended with the base textures.
+		</member>
+		<member name="detail_normal" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that specifies the per-pixel normal of the detail overlay.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
+		</member>
+		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV">
+			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer. See [enum DetailUV] for options.
+		</member>
+		<member name="diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" enum="BaseMaterial3D.DiffuseMode" default="0">
+			The algorithm used for diffuse light scattering. See [enum DiffuseMode].
+		</member>
+		<member name="disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object receives no ambient light.
+		</member>
+		<member name="disable_receive_shadows" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object receives no shadow that would otherwise be cast onto it.
+		</member>
+		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance">
+			Distance at which the object fades fully and is no longer visible.
+		</member>
+		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance">
+			Distance at which the object starts to fade. If the object is less than this distance away it will appear normal.
+		</member>
+		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="BaseMaterial3D.DistanceFadeMode" default="0">
+			Specifies which type of fade to use. Can be any of the [enum DistanceFadeMode]s.
+		</member>
+		<member name="emission" type="Color" setter="set_emission" getter="get_emission">
+			The emitted light's color. See [member emission_enabled].
+		</member>
+		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [GIProbe] is used and this object is used in baked lighting.
+		</member>
+		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy">
+			The emitted light's strength. See [member emission_enabled].
+		</member>
+		<member name="emission_on_uv2" type="bool" setter="set_flag" getter="get_flag">
+			Use [code]UV2[/code] to read from the [member emission_texture].
+		</member>
+		<member name="emission_operator" type="int" setter="set_emission_operator" getter="get_emission_operator" enum="BaseMaterial3D.EmissionOperator">
+			Sets how [member emission] interacts with [member emission_texture]. Can either add or multiply. See [enum EmissionOperator] for options.
+		</member>
+		<member name="emission_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that specifies how much surface emits light at a given point.
+		</member>
+		<member name="fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the object is rendered at the same size regardless of distance.
+		</member>
+		<member name="grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" default="false">
+			If [code]true[/code], enables the vertex grow setting. See [member grow_amount].
+		</member>
+		<member name="grow_amount" type="float" setter="set_grow" getter="get_grow" default="0.0">
+			Grows object vertices in the direction of their normals.
+		</member>
+		<member name="heightmap_deep_parallax" type="bool" setter="set_heightmap_deep_parallax" getter="is_heightmap_deep_parallax_enabled">
+		</member>
+		<member name="heightmap_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+		</member>
+		<member name="heightmap_flip_binormal" type="bool" setter="set_heightmap_deep_parallax_flip_binormal" getter="get_heightmap_deep_parallax_flip_binormal">
+		</member>
+		<member name="heightmap_flip_tangent" type="bool" setter="set_heightmap_deep_parallax_flip_tangent" getter="get_heightmap_deep_parallax_flip_tangent">
+		</member>
+		<member name="heightmap_flip_texture" type="bool" setter="set_flag" getter="get_flag">
+		</member>
+		<member name="heightmap_max_layers" type="int" setter="set_heightmap_deep_parallax_max_layers" getter="get_heightmap_deep_parallax_max_layers">
+		</member>
+		<member name="heightmap_min_layers" type="int" setter="set_heightmap_deep_parallax_min_layers" getter="get_heightmap_deep_parallax_min_layers">
+		</member>
+		<member name="heightmap_scale" type="float" setter="set_heightmap_scale" getter="get_heightmap_scale">
+		</member>
+		<member name="heightmap_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		</member>
+		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" default="0.0">
+			A high value makes the material appear more like a metal. Non-metals use their albedo as the diffuse color and add diffuse to the specular reflection. With non-metals, the reflection appears on top of the albedo color. Metals use their albedo as a multiplier to the specular reflection and set the diffuse color to black resulting in a tinted reflection. Materials work better when fully metal or fully non-metal, values between [code]0[/code] and [code]1[/code] should only be used for blending between metal and non-metal sections. To alter the amount of reflection use [member roughness].
+		</member>
+		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" default="0.5">
+			Sets the size of the specular lobe. The specular lobe is the bright spot that is reflected from light sources.
+			[b]Note:[/b] unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
+		</member>
+		<member name="metallic_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to specify metallic for an object. This is multiplied by [member metallic].
+		</member>
+		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
+			Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="no_depth_test" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
+		</member>
+		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], normal mapping is enabled.
+		</member>
+		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale">
+			The strength of the normal map's effect.
+		</member>
+		<member name="normal_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to specify the normal at a given pixel. The [code]normal_texture[/code] only uses the red and green channels. The normal read from [code]normal_texture[/code] is oriented around the surface normal provided by the [Mesh].
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
+		</member>
+		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		</member>
+		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
+			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		</member>
+		<member name="particles_anim_loop" type="bool" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
+			If [code]true[/code], particle animations are looped. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		</member>
+		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames">
+			The number of vertical frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		</member>
+		<member name="point_size" type="float" setter="set_point_size" getter="get_point_size" default="1.0">
+			The point size in pixels. See [member use_point_size].
+		</member>
+		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance">
+			Distance over which the fade effect takes place. The larger the distance the longer it takes for an object to fade.
+		</member>
+		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled" default="false">
+			If [code]true[/code], the proximity fade effect is enabled. The proximity fade effect fades out each pixel based on its distance to another object.
+		</member>
+		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
+		</member>
+		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction">
+			The strength of the refraction effect.
+		</member>
+		<member name="refraction_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture that controls the strength of the refraction per-pixel. Multiplied by [member refraction_scale].
+		</member>
+		<member name="refraction_texture_channel" type="int" setter="set_refraction_texture_channel" getter="get_refraction_texture_channel" enum="BaseMaterial3D.TextureChannel">
+			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="rim" type="float" setter="set_rim" getter="get_rim">
+			Sets the strength of the rim lighting effect.
+		</member>
+		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], rim effect is enabled. Rim lighting increases the brightness at glancing angles on an object.
+		</member>
+		<member name="rim_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to set the strength of the rim lighting effect per-pixel. Multiplied by [member rim].
+		</member>
+		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint">
+			The amount of to blend light and albedo color when rendering rim effect. If [code]0[/code] the light color is used, while [code]1[/code] means albedo color is used. An intermediate value generally works best.
+		</member>
+		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" default="1.0">
+			Surface reflection. A value of [code]0[/code] represents a perfect mirror while a value of [code]1[/code] completely blurs the reflection. See also [member metallic].
+		</member>
+		<member name="roughness_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to control the roughness per-pixel. Multiplied by [member roughness].
+		</member>
+		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
+			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
+		</member>
+		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
+			Sets whether the shading takes place per-pixel or per-vertex. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel.
+		</member>
+		<member name="shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
+		</member>
+		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" enum="BaseMaterial3D.SpecularMode" default="0">
+			The method for rendering the specular blob. See [enum SpecularMode].
+		</member>
+		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
+		</member>
+		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin.
+		</member>
+		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength">
+			The strength of the subsurface scattering effect.
+		</member>
+		<member name="subsurf_scatter_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to control the subsurface scattering strength. Stored in the red texture channel. Multiplied by [member subsurf_scatter_strength].
+		</member>
+		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost">
+		</member>
+		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color">
+		</member>
+		<member name="subsurf_scatter_transmittance_curve" type="float" setter="set_transmittance_curve" getter="get_transmittance_curve">
+		</member>
+		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth">
+		</member>
+		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature">
+		</member>
+		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		</member>
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+			Filter flags for the texture. See [enum TextureFilter] for options.
+		</member>
+		<member name="texture_repeat" type="bool" setter="set_flag" getter="get_flag" default="true">
+			Repeat flags for the texture. See [enum TextureFilter] for options.
+		</member>
+		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
+			If [code]true[/code], transparency is enabled on the body. See also [member blend_mode].
+		</member>
+		<member name="use_point_size" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], render point size can be changed.
+			[b]Note:[/b] this is only effective for objects whose geometry is point-based rather than triangle-based. See also [member point_size].
+		</member>
+		<member name="uv1_offset" type="Vector3" setter="set_uv1_offset" getter="get_uv1_offset" default="Vector3( 0, 0, 0 )">
+			How much to offset the [code]UV[/code] coordinates. This amount will be added to [code]UV[/code] in the vertex function. This can be used to offset a texture.
+		</member>
+		<member name="uv1_scale" type="Vector3" setter="set_uv1_scale" getter="get_uv1_scale" default="Vector3( 1, 1, 1 )">
+			How much to scale the [code]UV[/code] coordinates. This is multiplied by [code]UV[/code] in the vertex function.
+		</member>
+		<member name="uv1_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], instead of using [code]UV[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
+		</member>
+		<member name="uv1_triplanar_sharpness" type="float" setter="set_uv1_triplanar_blend_sharpness" getter="get_uv1_triplanar_blend_sharpness" default="1.0">
+			A lower number blends the texture more softly while a higher number blends the texture more sharply.
+		</member>
+		<member name="uv1_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], triplanar mapping for [code]UV[/code] is calculated in world space rather than object local space. See also [member uv1_triplanar].
+		</member>
+		<member name="uv2_offset" type="Vector3" setter="set_uv2_offset" getter="get_uv2_offset" default="Vector3( 0, 0, 0 )">
+			How much to offset the [code]UV2[/code] coordinates. This amount will be added to [code]UV2[/code] in the vertex function. This can be used to offset a texture.
+		</member>
+		<member name="uv2_scale" type="Vector3" setter="set_uv2_scale" getter="get_uv2_scale" default="Vector3( 1, 1, 1 )">
+			How much to scale the [code]UV2[/code] coordinates. This is multiplied by [code]UV2[/code] in the vertex function.
+		</member>
+		<member name="uv2_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], instead of using [code]UV2[/code] textures will use a triplanar texture lookup to determine how to apply textures. Triplanar uses the orientation of the object's surface to blend between texture coordinates. It reads from the source texture 3 times, once for each axis and then blends between the results based on how closely the pixel aligns with each axis. This is often used for natural features to get a realistic blend of materials. Because triplanar texturing requires many more texture reads per-pixel it is much slower than normal UV texturing. Additionally, because it is blending the texture between the three axes, it is unsuitable when you are trying to achieve crisp texturing.
+		</member>
+		<member name="uv2_triplanar_sharpness" type="float" setter="set_uv2_triplanar_blend_sharpness" getter="get_uv2_triplanar_blend_sharpness" default="1.0">
+			A lower number blends the texture more softly while a higher number blends the texture more sharply.
+		</member>
+		<member name="uv2_world_triplanar" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], triplanar mapping for [code]UV2[/code] is calculated in world space rather than object local space. See also [member uv2_triplanar].
+		</member>
+		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the model's vertex colors are processed as sRGB mode.
+		</member>
+		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the vertex color is used as albedo color.
+		</member>
+	</members>
+	<constants>
+		<constant name="TEXTURE_ALBEDO" value="0" enum="TextureParam">
+			Texture specifying per-pixel color.
+		</constant>
+		<constant name="TEXTURE_METALLIC" value="1" enum="TextureParam">
+			Texture specifying per-pixel metallic value.
+		</constant>
+		<constant name="TEXTURE_ROUGHNESS" value="2" enum="TextureParam">
+			Texture specifying per-pixel roughness value.
+		</constant>
+		<constant name="TEXTURE_EMISSION" value="3" enum="TextureParam">
+			Texture specifying per-pixel emission color.
+		</constant>
+		<constant name="TEXTURE_NORMAL" value="4" enum="TextureParam">
+			Texture specifying per-pixel normal vector.
+		</constant>
+		<constant name="TEXTURE_RIM" value="5" enum="TextureParam">
+			Texture specifying per-pixel rim value.
+		</constant>
+		<constant name="TEXTURE_CLEARCOAT" value="6" enum="TextureParam">
+			Texture specifying per-pixel clearcoat value.
+		</constant>
+		<constant name="TEXTURE_FLOWMAP" value="7" enum="TextureParam">
+			Texture specifying per-pixel flowmap direction for use with [member anisotropy].
+		</constant>
+		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8" enum="TextureParam">
+			Texture specifying per-pixel ambient occlusion value.
+		</constant>
+		<constant name="TEXTURE_HEIGHTMAP" value="9" enum="TextureParam">
+			Texture specifying per-pixel height.
+		</constant>
+		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10" enum="TextureParam">
+			Texture specifying per-pixel subsurface scattering.
+		</constant>
+		<constant name="TEXTURE_SUBSURFACE_TRANSMITTANCE" value="11" enum="TextureParam">
+			Texture specifying per-pixel transmittance for subsurface scattering.
+		</constant>
+		<constant name="TEXTURE_BACKLIGHT" value="12" enum="TextureParam">
+			Texture specifying per-pixel backlight color.
+		</constant>
+		<constant name="TEXTURE_REFRACTION" value="13" enum="TextureParam">
+			Texture specifying per-pixel refraction strength.
+		</constant>
+		<constant name="TEXTURE_DETAIL_MASK" value="14" enum="TextureParam">
+			Texture specifying per-pixel detail mask blending value.
+		</constant>
+		<constant name="TEXTURE_DETAIL_ALBEDO" value="15" enum="TextureParam">
+			Texture specifying per-pixel detail color.
+		</constant>
+		<constant name="TEXTURE_DETAIL_NORMAL" value="16" enum="TextureParam">
+			Texture specifying per-pixel detail normal.
+		</constant>
+		<constant name="TEXTURE_ORM" value="17" enum="TextureParam">
+			Texture holding ambient occlusion, roughness, and metallic.
+		</constant>
+		<constant name="TEXTURE_MAX" value="18" enum="TextureParam">
+			Represents the size of the [enum TextureParam] enum.
+		</constant>
+		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
+			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
+		</constant>
+		<constant name="TEXTURE_FILTER_LINEAR" value="1" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
+		</constant>
+		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2" enum="TextureFilter">
+			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
+		</constant>
+		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="3" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps. Use this for most cases as mipmaps are important to smooth out pixels that are far from the camera.
+		</constant>
+		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="4" enum="TextureFilter">
+			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera.
+		</constant>
+		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing.
+		</constant>
+		<constant name="TEXTURE_FILTER_MAX" value="6" enum="TextureFilter">
+			Represents the size of the [enum TextureFilter] enum.
+		</constant>
+		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
+			Use [code]UV[/code] with the detail texture.
+		</constant>
+		<constant name="DETAIL_UV_2" value="1" enum="DetailUV">
+			Use [code]UV2[/code] with the detail texture.
+		</constant>
+		<constant name="TRANSPARENCY_DISABLED" value="0" enum="Transparency">
+			The material will not use transparency.
+		</constant>
+		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
+			The material will use the texture's alpha values for transparency.
+		</constant>
+		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
+			The material will cut off all values below a threshold, the rest will remain opaque.
+		</constant>
+		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="3" enum="Transparency">
+			The material will use the texture's alpha value for transparency, but will still be rendered in the pre-pass.
+		</constant>
+		<constant name="TRANSPARENCY_MAX" value="4" enum="Transparency">
+			Represents the size of the [enum Transparency] enum.
+		</constant>
+		<constant name="SHADING_MODE_UNSHADED" value="0" enum="ShadingMode">
+			The object will not receive shadows.
+		</constant>
+		<constant name="SHADING_MODE_PER_PIXEL" value="1" enum="ShadingMode">
+			The object will be shaded per pixel. Useful for realistic shading effect.
+		</constant>
+		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
+			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
+		</constant>
+		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
+			Represents the size of the [enum ShadingMode] enum.
+		</constant>
+		<constant name="FEATURE_EMISSION" value="0" enum="Feature">
+			Constant for setting [member emission_enabled].
+		</constant>
+		<constant name="FEATURE_NORMAL_MAPPING" value="1" enum="Feature">
+			Constant for setting [member normal_enabled].
+		</constant>
+		<constant name="FEATURE_RIM" value="2" enum="Feature">
+			Constant for setting [member rim_enabled].
+		</constant>
+		<constant name="FEATURE_CLEARCOAT" value="3" enum="Feature">
+			Constant for setting [member clearcoat_enabled].
+		</constant>
+		<constant name="FEATURE_ANISOTROPY" value="4" enum="Feature">
+			Constant for setting [member anisotropy_enabled].
+		</constant>
+		<constant name="FEATURE_AMBIENT_OCCLUSION" value="5" enum="Feature">
+			Constant for setting [member ao_enabled].
+		</constant>
+		<constant name="FEATURE_HEIGHT_MAPPING" value="6" enum="Feature">
+			Constant for setting [member heightmap_enabled].
+		</constant>
+		<constant name="FEATURE_SUBSURFACE_SCATTERING" value="7" enum="Feature">
+			Constant for setting [member subsurf_scatter_enabled].
+		</constant>
+		<constant name="FEATURE_SUBSURFACE_TRANSMITTANCE" value="8" enum="Feature">
+			Constant for setting [member subsurf_scatter_transmittance_enabled].
+		</constant>
+		<constant name="FEATURE_BACKLIGHT" value="9" enum="Feature">
+			Constant for setting [member backlight_enabled].
+		</constant>
+		<constant name="FEATURE_REFRACTION" value="10" enum="Feature">
+			Constant for setting [member refraction_enabled].
+		</constant>
+		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
+			Constant for setting [member detail_enabled].
+		</constant>
+		<constant name="FEATURE_MAX" value="12" enum="Feature">
+			Represents the size of the [enum Feature] enum.
+		</constant>
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
+			Default blend mode. The color of the object is blended over the background based on the object's alpha value.
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
+			The color of the object is added to the background.
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
+			The color of the object is subtracted from the background.
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
+			The color of the object is multiplied by the background.
+		</constant>
+		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
+			Default depth draw mode. Depth is drawn only for opaque objects.
+		</constant>
+		<constant name="DEPTH_DRAW_ALWAYS" value="1" enum="DepthDrawMode">
+			Depth draw is calculated for both opaque and transparent objects.
+		</constant>
+		<constant name="DEPTH_DRAW_DISABLED" value="2" enum="DepthDrawMode">
+			No depth draw.
+		</constant>
+		<constant name="CULL_BACK" value="0" enum="CullMode">
+			Default cull mode. The back of the object is culled when not visible.
+		</constant>
+		<constant name="CULL_FRONT" value="1" enum="CullMode">
+			The front of the object is culled when not visible.
+		</constant>
+		<constant name="CULL_DISABLED" value="2" enum="CullMode">
+			No culling is performed.
+		</constant>
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="0" enum="Flags">
+			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+		</constant>
+		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="1" enum="Flags">
+			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
+		</constant>
+		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
+			Vertex color is in sRGB space and needs to be converted to linear. Only applies in the Vulkan renderer.
+		</constant>
+		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
+			Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use [code]POINT_COORD[/code] instead of [code]UV[/code].
+		</constant>
+		<constant name="FLAG_FIXED_SIZE" value="4" enum="Flags">
+			Object is scaled by depth so that it always appears the same size on screen.
+		</constant>
+		<constant name="FLAG_BILLBOARD_KEEP_SCALE" value="5" enum="Flags">
+			Shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
+		</constant>
+		<constant name="FLAG_UV1_USE_TRIPLANAR" value="6" enum="Flags">
+			Use triplanar texture lookup for all texture lookups that would normally use [code]UV[/code].
+		</constant>
+		<constant name="FLAG_UV2_USE_TRIPLANAR" value="7" enum="Flags">
+			Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
+		</constant>
+		<constant name="FLAG_UV1_USE_WORLD_TRIPLANAR" value="8" enum="Flags">
+			Use triplanar texture lookup for all texture lookups that would normally use [code]UV[/code].
+		</constant>
+		<constant name="FLAG_UV2_USE_WORLD_TRIPLANAR" value="9" enum="Flags">
+			Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
+		</constant>
+		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
+			Use [code]UV2[/code] coordinates to look up from the [member ao_texture].
+		</constant>
+		<constant name="FLAG_EMISSION_ON_UV2" value="11" enum="Flags">
+			Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
+		</constant>
+		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
+			Forces the shader to convert albedo from sRGB space to linear space.
+		</constant>
+		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="13" enum="Flags">
+			Disables receiving shadows from other objects.
+		</constant>
+		<constant name="FLAG_DISABLE_AMBIENT_LIGHT" value="14" enum="Flags">
+			Disables receiving ambient light.
+		</constant>
+		<constant name="FLAG_USE_SHADOW_TO_OPACITY" value="15" enum="Flags">
+			Enables the shadow to opacity feature.
+		</constant>
+		<constant name="FLAG_USE_TEXTURE_REPEAT" value="16" enum="Flags">
+			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
+		</constant>
+		<constant name="FLAG_INVERT_HEIGHTMAP" value="17" enum="Flags">
+			Invert values read from a depth texture to convert them to height values (heightmap).
+		</constant>
+		<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18" enum="Flags">
+			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
+		</constant>
+		<constant name="FLAG_MAX" value="19" enum="Flags">
+			Represents the size of the [enum Flags] enum.
+		</constant>
+		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
+			Default diffuse scattering algorithm.
+		</constant>
+		<constant name="DIFFUSE_LAMBERT" value="1" enum="DiffuseMode">
+			Diffuse scattering ignores roughness.
+		</constant>
+		<constant name="DIFFUSE_LAMBERT_WRAP" value="2" enum="DiffuseMode">
+			Extends Lambert to cover more than 90 degrees when roughness increases.
+		</constant>
+		<constant name="DIFFUSE_OREN_NAYAR" value="3" enum="DiffuseMode">
+			Attempts to use roughness to emulate microsurfacing.
+		</constant>
+		<constant name="DIFFUSE_TOON" value="4" enum="DiffuseMode">
+			Uses a hard cut for lighting, with smoothing affected by roughness.
+		</constant>
+		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
+			Default specular blob.
+		</constant>
+		<constant name="SPECULAR_BLINN" value="1" enum="SpecularMode">
+			Older specular algorithm, included for compatibility.
+		</constant>
+		<constant name="SPECULAR_PHONG" value="2" enum="SpecularMode">
+			Older specular algorithm, included for compatibility.
+		</constant>
+		<constant name="SPECULAR_TOON" value="3" enum="SpecularMode">
+			Toon blob which changes size based on roughness.
+		</constant>
+		<constant name="SPECULAR_DISABLED" value="4" enum="SpecularMode">
+			No specular blob.
+		</constant>
+		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
+			Billboard mode is disabled.
+		</constant>
+		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
+			The object's Z axis will always face the camera.
+		</constant>
+		<constant name="BILLBOARD_FIXED_Y" value="2" enum="BillboardMode">
+			The object's X axis will always face the camera.
+		</constant>
+		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
+			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes. Enables [code]particles_anim_*[/code] properties.
+			The [member ParticlesMaterial.anim_speed] or [member CPUParticles3D.anim_speed] should also be set to a positive value for the animation to play.
+		</constant>
+		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
+			Used to read from the red channel of a texture.
+		</constant>
+		<constant name="TEXTURE_CHANNEL_GREEN" value="1" enum="TextureChannel">
+			Used to read from the green channel of a texture.
+		</constant>
+		<constant name="TEXTURE_CHANNEL_BLUE" value="2" enum="TextureChannel">
+			Used to read from the blue channel of a texture.
+		</constant>
+		<constant name="TEXTURE_CHANNEL_ALPHA" value="3" enum="TextureChannel">
+			Used to read from the alpha channel of a texture.
+		</constant>
+		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4" enum="TextureChannel">
+			Currently unused.
+		</constant>
+		<constant name="EMISSION_OP_ADD" value="0" enum="EmissionOperator">
+			Adds the emission color to the color from the emission texture.
+		</constant>
+		<constant name="EMISSION_OP_MULTIPLY" value="1" enum="EmissionOperator">
+			Multiplies the emission color by the color from the emission texture.
+		</constant>
+		<constant name="DISTANCE_FADE_DISABLED" value="0" enum="DistanceFadeMode">
+			Do not use distance fade.
+		</constant>
+		<constant name="DISTANCE_FADE_PIXEL_ALPHA" value="1" enum="DistanceFadeMode">
+			Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel.
+		</constant>
+		<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2" enum="DistanceFadeMode">
+			Smoothly fades the object out based on each pixel's distance from the camera using a dither approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
+		</constant>
+		<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3" enum="DistanceFadeMode">
+			Smoothly fades the object out based on the object's distance from the camera using a dither approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
+		</constant>
+	</constants>
+</class>

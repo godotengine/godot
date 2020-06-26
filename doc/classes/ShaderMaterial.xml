@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShaderMaterial" inherits="Material" category="Core" version="3.2">
+<class name="ShaderMaterial" inherits="Material" version="4.0">
 	<brief_description>
 		A material that uses a custom [Shader] program.
 	</brief_description>
@@ -7,13 +7,13 @@
 		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/shading/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/shading/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_shader_param" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="param" type="String">
+			<argument index="0" name="param" type="StringName">
 			</argument>
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
@@ -25,6 +25,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
 			</description>
 		</method>
 		<method name="property_get_revert">
@@ -33,17 +34,18 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the default value of the material property with given [code]name[/code].
 			</description>
 		</method>
 		<method name="set_shader_param">
 			<return type="void">
 			</return>
-			<argument index="0" name="param" type="String">
+			<argument index="0" name="param" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Changes the value set for this material of a uniform in the shader.
+				Changes the value set for this material of a uniform in the shader. [b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
 			</description>
 		</method>
 	</methods>

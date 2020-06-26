@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,11 +45,10 @@
 #endif
 
 class NetSocketPosix : public NetSocket {
-
 private:
-	SOCKET_TYPE _sock;
-	IP::Type _ip_type;
-	bool _is_stream;
+	SOCKET_TYPE _sock; // NOLINT - the default value is defined in the .cpp
+	IP::Type _ip_type = IP::TYPE_NONE;
+	bool _is_stream = false;
 
 	enum NetError {
 		ERR_NET_WOULD_BLOCK,
@@ -58,7 +57,7 @@ private:
 		ERR_NET_OTHER
 	};
 
-	NetError _get_socket_error();
+	NetError _get_socket_error() const;
 	void _set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream);
 	_FORCE_INLINE_ Error _change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add);
 	_FORCE_INLINE_ void _set_close_exec_enabled(bool p_enabled);
@@ -81,7 +80,7 @@ public:
 	virtual Error connect_to_host(IP_Address p_host, uint16_t p_port);
 	virtual Error poll(PollType p_type, int timeout) const;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
-	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port);
+	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek = false);
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent);
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port);
 	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port);
@@ -89,7 +88,7 @@ public:
 	virtual bool is_open() const;
 	virtual int get_available_bytes() const;
 
-	virtual void set_broadcasting_enabled(bool p_enabled);
+	virtual Error set_broadcasting_enabled(bool p_enabled);
 	virtual void set_blocking_enabled(bool p_enabled);
 	virtual void set_ipv6_only_enabled(bool p_enabled);
 	virtual void set_tcp_no_delay_enabled(bool p_enabled);

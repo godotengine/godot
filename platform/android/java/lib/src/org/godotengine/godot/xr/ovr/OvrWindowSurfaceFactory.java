@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 package org.godotengine.godot.xr.ovr;
 
 import android.opengl.GLSurfaceView;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
@@ -40,7 +41,6 @@ import javax.microedition.khronos.egl.EGLSurface;
  * EGL window surface factory for the Oculus mobile VR SDK.
  */
 public class OvrWindowSurfaceFactory implements GLSurfaceView.EGLWindowSurfaceFactory {
-
 	private final static int[] SURFACE_ATTRIBS = {
 		EGL10.EGL_WIDTH, 16,
 		EGL10.EGL_HEIGHT, 16,

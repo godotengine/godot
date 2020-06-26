@@ -348,11 +348,18 @@ struct sljit_label {
 struct sljit_jump {
 	struct sljit_jump *next;
 	sljit_uw addr;
-	sljit_sw flags;
+	sljit_uw flags;
 	union {
 		sljit_uw target;
-		struct sljit_label* label;
+		struct sljit_label *label;
 	} u;
+};
+
+struct sljit_put_label {
+	struct sljit_put_label *next;
+	struct sljit_label *label;
+	sljit_uw addr;
+	sljit_uw flags;
 };
 
 struct sljit_const {
@@ -366,10 +373,12 @@ struct sljit_compiler {
 
 	struct sljit_label *labels;
 	struct sljit_jump *jumps;
+	struct sljit_put_label *put_labels;
 	struct sljit_const *consts;
 	struct sljit_label *last_label;
 	struct sljit_jump *last_jump;
 	struct sljit_const *last_const;
+	struct sljit_put_label *last_put_label;
 
 	void *allocator_data;
 	struct sljit_memory_fragment *buf;
@@ -1314,9 +1323,16 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fmem(struct sljit_compiler *compil
    Flags: - (may destroy flags) */
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_get_local_base(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw, sljit_sw offset);
 
-/* The constant can be changed runtime (see: sljit_set_const)
+/* Store a value that can be changed runtime (see: sljit_get_const_addr / sljit_set_const)
    Flags: - (does not modify flags) */
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_const* sljit_emit_const(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw, sljit_sw init_value);
+
+/* Store the value of a label (see: sljit_set_put_label)
+   Flags: - (does not modify flags) */
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_put_label* sljit_emit_put_label(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw);
+
+/* Set the value stored by put_label to this label. */
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_put_label(struct sljit_put_label *put_label, struct sljit_label *label);
 
 /* After the code generation the address for label, jump and const instructions
    are computed. Since these structures are freed by sljit_free_compiler, the

@@ -1,16 +1,25 @@
-os: Visual Studio 2015
+image: Visual Studio 2019
+
+platform: x64
 
 environment:
   HOME: "%HOMEDRIVE%%HOMEPATH%"
-  PYTHON: C:\Python27
+  PYTHON: C:\Python38
   SCONS_CACHE_ROOT: "%HOME%\\scons_cache"
   SCONS_CACHE_LIMIT: 1024
+  OPTIONS: "debug_symbols=no verbose=yes progress=no"
+  EXTRA_ARGS: "warnings=all werror=yes"
   matrix:
-    - VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-      GD_PLATFORM: windows
-      TOOLS: yes
-      TARGET: release_debug
-      ARCH: amd64
+  - GD_PLATFORM: windows
+    TARGET: release_debug
+    TOOLS: yes
+# Disabled for performance reasons until master is more stable.
+#  - GD_PLATFORM: windows
+#    TARGET: release
+#    TOOLS: no
+
+matrix:
+  fast_finish: true
 
 init:
   - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "master") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
@@ -21,15 +30,26 @@ cache:
 install:
   - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - pip install -U wheel  # needed for pip install scons to work, otherwise a flag is missing
-  - pip install scons==3.0.1
+  - pip install scons # use stable scons
   - if defined VS call "%VS%" %ARCH%  # if defined - so we can also use mingw
 
 before_build:
   - echo %GD_PLATFORM%
   - python --version
   - scons --version
-  - cl.exe
   - set "SCONS_CACHE=%SCONS_CACHE_ROOT%\%APPVEYOR_REPO_BRANCH%"
 
 build_script:
-  - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% debug_symbols=no verbose=yes progress=no gdnative_wrapper=yes
+  - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
+
+after_build:
+  - git rev-parse --short=9 HEAD > VERSION_HASH.txt
+  - set /P VERSION_HASH= < VERSION_HASH.txt
+  - cd bin
+  - mv godot.windows.opt.tools.64.exe godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.exe
+  - 7z a -mx9 godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.zip *.exe
+  
+artifacts:
+  - path: bin/godot_${APPVEYOR_REPO_BRANCH}-${VERSION_HASH}_win64.zip
+    name: Win64 release_debug editor build
+    type: zip

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "core/io/stream_peer.h"
 
 class StreamPeerTCP : public StreamPeer {
-
 	GDCLASS(StreamPeerTCP, StreamPeer);
 	OBJ_CATEGORY("Networking");
 
@@ -52,10 +51,10 @@ public:
 
 protected:
 	Ref<NetSocket> _sock;
-	uint64_t timeout;
-	Status status;
+	uint64_t timeout = 0;
+	Status status = STATUS_NONE;
 	IP_Address peer_host;
-	uint16_t peer_port;
+	uint16_t peer_port = 0;
 
 	Error _connect(const String &p_address, int p_port);
 	Error _poll_connection();
@@ -78,6 +77,9 @@ public:
 
 	void set_no_delay(bool p_enabled);
 
+	// Poll functions (wait or check for writable, readable)
+	Error poll(NetSocket::PollType p_type, int timeout = 0);
+
 	// Read/Write from StreamPeer
 	Error put_data(const uint8_t *p_data, int p_bytes);
 	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
@@ -90,4 +92,4 @@ public:
 
 VARIANT_ENUM_CAST(StreamPeerTCP::Status);
 
-#endif
+#endif // STREAM_PEER_TCP_H

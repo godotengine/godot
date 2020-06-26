@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ASTAR_H
-#define ASTAR_H
+#ifndef A_STAR_H
+#define A_STAR_H
 
 #include "core/oa_hash_map.h"
 #include "core/reference.h"
@@ -41,22 +41,19 @@
 */
 
 class AStar : public Reference {
-
 	GDCLASS(AStar, Reference);
+	friend class AStar2D;
 
 	struct Point {
-
-		Point() :
-				neighbours(4u),
-				unlinked_neighbours(4u) {}
+		Point() {}
 
 		int id;
 		Vector3 pos;
 		real_t weight_scale;
 		bool enabled;
 
-		OAHashMap<int, Point *> neighbours;
-		OAHashMap<int, Point *> unlinked_neighbours;
+		OAHashMap<int, Point *> neighbours = 4u;
+		OAHashMap<int, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
 		Point *prev_point;
@@ -84,7 +81,7 @@ class AStar : public Reference {
 				int32_t u;
 				int32_t v;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		enum {
@@ -93,13 +90,11 @@ class AStar : public Reference {
 			BACKWARD = 2,
 			BIDIRECTIONAL = FORWARD | BACKWARD
 		};
-		unsigned char direction;
+		unsigned char direction = NONE;
 
 		bool operator<(const Segment &p_s) const { return key < p_s.key; }
-		Segment() {
-			key = 0;
-			direction = NONE;
-		}
+
+		Segment() {}
 		Segment(int p_from, int p_to) {
 			if (p_from < p_to) {
 				u = p_from;
@@ -113,8 +108,8 @@ class AStar : public Reference {
 		}
 	};
 
-	int last_free_id;
-	uint64_t pass;
+	int last_free_id = 0;
+	uint64_t pass = 1;
 
 	OAHashMap<int, Point *> points;
 	Set<Segment> segments;
@@ -124,8 +119,8 @@ class AStar : public Reference {
 protected:
 	static void _bind_methods();
 
-	virtual float _estimate_cost(int p_from_id, int p_to_id);
-	virtual float _compute_cost(int p_from_id, int p_to_id);
+	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
+	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
 public:
 	int get_available_point_id() const;
@@ -137,7 +132,7 @@ public:
 	void set_point_weight_scale(int p_id, real_t p_weight_scale);
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
-	PoolVector<int> get_point_connections(int p_id);
+	Vector<int> get_point_connections(int p_id);
 	Array get_points();
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
@@ -155,10 +150,10 @@ public:
 	int get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id);
-	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
+	Vector<Vector3> get_point_path(int p_from_id, int p_to_id);
+	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar();
+	AStar() {}
 	~AStar();
 };
 
@@ -166,8 +161,13 @@ class AStar2D : public Reference {
 	GDCLASS(AStar2D, Reference);
 	AStar astar;
 
+	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
+
 protected:
 	static void _bind_methods();
+
+	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
+	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
 public:
 	int get_available_point_id() const;
@@ -179,7 +179,7 @@ public:
 	void set_point_weight_scale(int p_id, real_t p_weight_scale);
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
-	PoolVector<int> get_point_connections(int p_id);
+	Vector<int> get_point_connections(int p_id);
 	Array get_points();
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
@@ -197,11 +197,11 @@ public:
 	int get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
-	PoolVector<Vector2> get_point_path(int p_from_id, int p_to_id);
-	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
+	Vector<Vector2> get_point_path(int p_from_id, int p_to_id);
+	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar2D();
-	~AStar2D();
+	AStar2D() {}
+	~AStar2D() {}
 };
 
-#endif // ASTAR_H
+#endif // A_STAR_H

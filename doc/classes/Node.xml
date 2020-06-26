@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" category="Core" version="3.2">
+<class name="Node" inherits="Object" version="4.0">
 	<brief_description>
 		Base class for all [i]scene[/i] objects.
 	</brief_description>
@@ -33,7 +33,7 @@
 			</return>
 			<description>
 				Called when the node is about to leave the [SceneTree] (e.g. upon freeing, scene changing, or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
-				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
+				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
 		<method name="_get_configuration_warning" qualifiers="virtual">
@@ -53,8 +53,9 @@
 			<description>
 				Called when there is an input event. The input event propagates up through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -66,6 +67,7 @@
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -77,6 +79,7 @@
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -97,8 +100,9 @@
 			<description>
 				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -109,8 +113,9 @@
 			<description>
 				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
-				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="add_child">
@@ -129,26 +134,27 @@
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/codeblock]
+				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
+				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
-		<method name="add_child_below_node">
+		<method name="add_sibling">
 			<return type="void">
 			</return>
-			<argument index="0" name="node" type="Node">
+			<argument index="0" name="sibling" type="Node">
 			</argument>
-			<argument index="1" name="child_node" type="Node">
-			</argument>
-			<argument index="2" name="legible_unique_name" type="bool" default="false">
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a child node. The child is placed below the given node in the list of children.
+				Adds a [code]sibling[/code] node to current's node parent, at the the same level as that node, right below it.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
+				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
 		</method>
 		<method name="add_to_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
@@ -218,7 +224,7 @@
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
-			<return type="Array">
+			<return type="Node[]">
 			</return>
 			<description>
 				Returns an array of references to node's children.
@@ -235,7 +241,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the node's index, i.e. its position among the siblings of its parent.
+				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 			</description>
 		</method>
 		<method name="get_network_master" qualifiers="const">
@@ -251,7 +257,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and attempts to access it will result in an "Attempt to call &lt;method&gt; on a null instance." error.
+				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
 				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
 				[b]Example:[/b] Assume your current node is Character and the following tree:
 				[codeblock]
@@ -295,14 +301,14 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Similar to [method get_node], but does not raise an error if [code]path[/code] does not point to a valid [Node].
+				Similar to [method get_node], but does not log an error if [code]path[/code] does not point to a valid [Node].
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
 			<return type="Node">
 			</return>
 			<description>
-				Returns the parent node of the current node, or an empty [Node] if the node lacks a parent.
+				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -325,14 +331,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.target_fps].
-			</description>
-		</method>
-		<method name="get_position_in_parent" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
+				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">
@@ -409,7 +408,7 @@
 		<method name="is_in_group" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this node is in the specified group. See notes in the description, and the group methods in [SceneTree].
@@ -531,7 +530,7 @@
 		<method name="propagate_call">
 			<return type="void">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<argument index="1" name="args" type="Array" default="[  ]">
 			</argument>
@@ -583,7 +582,7 @@
 		<method name="remove_from_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<description>
 				Removes a node from a group. See notes in the description, and the group methods in [SceneTree].
@@ -610,7 +609,7 @@
 		<method name="rpc" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. See also [method rset] and [method rset_config] for properties. Returns an empty [Variant].
@@ -618,9 +617,9 @@
 			</description>
 		</method>
 		<method name="rpc_config">
-			<return type="void">
+			<return type="int">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
@@ -633,7 +632,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
@@ -642,7 +641,7 @@
 		<method name="rpc_unreliable" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a [method rpc] using an unreliable protocol. Returns an empty [Variant].
@@ -653,7 +652,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] using an unreliable protocol (see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty [Variant].
@@ -662,7 +661,7 @@
 		<method name="rset">
 			<return type="void">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -671,9 +670,9 @@
 			</description>
 		</method>
 		<method name="rset_config">
-			<return type="void">
+			<return type="int">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
@@ -686,7 +685,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -697,7 +696,7 @@
 		<method name="rset_unreliable">
 			<return type="void">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -710,7 +709,7 @@
 			</return>
 			<argument index="0" name="peer_id" type="int">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -744,7 +743,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a [constant NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine.target_fps] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
+				Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a [constant NOTIFICATION_PHYSICS_PROCESS] at a fixed (usually 60 FPS, see [member Engine.iterations_per_second] to change) interval (and the [method _physics_process] callback will be called if exists). Enabled automatically if [method _physics_process] is overridden. Any calls to this before [method _ready] will be ignored.
 			</description>
 		</method>
 		<method name="set_physics_process_internal">
@@ -829,7 +828,7 @@
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
 		</member>
-		<member name="name" type="String" setter="set_name" getter="get_name">
+		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
@@ -839,7 +838,7 @@
 			Pause mode. How the node will behave if the [SceneTree] is paused.
 		</member>
 		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
-			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes with a higher process priority will have their processing callbacks executed first.
+			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes whose process priority value is [i]lower[/i] will have their processing callbacks executed first.
 		</member>
 	</members>
 	<signals>
@@ -935,42 +934,40 @@
 			Notification received from the OS when the game window is unfocused.
 			Implemented on all platforms.
 		</constant>
-		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
-			Notification received from the OS when a quit request is sent (e.g. closing the window with a "Close" button or Alt+F4).
+		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
+			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
 			Implemented on desktop platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
-			Notification received from the OS when an unfocus request is sent (e.g. another OS window wants to take the focus).
-			No supported platforms currently send this notification.
+		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 		</constant>
-		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
 			Specific to the iOS platform.
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="2010">
 			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
 		</constant>
-		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
+		<constant name="NOTIFICATION_WM_ABOUT" value="2011">
 			Notification received from the OS when a request for "About" information is sent.
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_CRASH" value="1012">
+		<constant name="NOTIFICATION_CRASH" value="2012">
 			Notification received from Godot's crash handler when the engine is about to crash.
 			Implemented on desktop platforms if the crash handler is enabled.
 		</constant>
-		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_RESUMED" value="1014">
+		<constant name="NOTIFICATION_APP_RESUMED" value="2014">
 			Notification received from the OS when the app is resumed.
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_PAUSED" value="1015">
+		<constant name="NOTIFICATION_APP_PAUSED" value="2015">
 			Notification received from the OS when the app is paused.
 			Specific to the Android platform.
 		</constant>
@@ -994,6 +991,7 @@
 		</constant>
 		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 			Duplicate using instancing.
+			An instance stays linked to the original so when the original changes, the instance changes too.
 		</constant>
 	</constants>
 </class>

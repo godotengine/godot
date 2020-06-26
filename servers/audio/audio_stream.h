@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "servers/audio_server.h"
 
 class AudioStreamPlayback : public Reference {
-
 	GDCLASS(AudioStreamPlayback, Reference);
 
 public:
@@ -54,7 +53,6 @@ public:
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackResampled, AudioStreamPlayback);
 
 	enum {
@@ -80,9 +78,8 @@ public:
 };
 
 class AudioStream : public Resource {
-
 	GDCLASS(AudioStream, Resource);
-	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
+	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 
 protected:
 	static void _bind_methods();
@@ -99,7 +96,6 @@ public:
 class AudioStreamPlaybackMicrophone;
 
 class AudioStreamMicrophone : public AudioStream {
-
 	GDCLASS(AudioStreamMicrophone, AudioStream);
 	friend class AudioStreamPlaybackMicrophone;
 
@@ -118,12 +114,11 @@ public:
 };
 
 class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
-
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
 	bool active;
-	unsigned int capture_ofs;
+	unsigned int input_ofs;
 
 	Ref<AudioStreamMicrophone> microphone;
 
@@ -152,7 +147,6 @@ public:
 class AudioStreamPlaybackRandomPitch;
 
 class AudioStreamRandomPitch : public AudioStream {
-
 	GDCLASS(AudioStreamRandomPitch, AudioStream);
 	friend class AudioStreamPlaybackRandomPitch;
 
@@ -179,7 +173,6 @@ public:
 };
 
 class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackRandomPitch, AudioStreamPlayback);
 	friend class AudioStreamRandomPitch;
 

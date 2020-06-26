@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar2D" inherits="Reference" category="Core" version="3.2">
+<class name="AStar2D" inherits="Reference" version="4.0">
 	<brief_description>
-		AStar class representation that uses 2d-vectors as edges.
+		AStar class representation that uses 2D vectors as edges.
 	</brief_description>
 	<description>
 		This is a wrapper for the [AStar] class which uses 2D vectors instead of 3D vectors.
@@ -9,6 +9,30 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_compute_cost" qualifiers="virtual">
+			<return type="float">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+				Called when computing the cost between two connected points.
+				Note that this function is hidden in the default [code]AStar2D[/code] class.
+			</description>
+		</method>
+		<method name="_estimate_cost" qualifiers="virtual">
+			<return type="float">
+			</return>
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+				Called when estimating the cost between a point and the path's ending point.
+				Note that this function is hidden in the default [code]AStar2D[/code] class.
+			</description>
+		</method>
 		<method name="add_point">
 			<return type="void">
 			</return>
@@ -90,7 +114,8 @@
 			<argument index="1" name="include_disabled" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the ID of the closest point to [code]to_position[/code], optionally taking disabled points into account. Returns -1 if there are no points in the points pool.
+				Returns the ID of the closest point to [code]to_position[/code], optionally taking disabled points into account. Returns [code]-1[/code] if there are no points in the points pool.
+				[b]Note:[/b] If several points are the closest to [code]to_position[/code], the one with the smallest ID will be returned, ensuring a deterministic result.
 			</description>
 		</method>
 		<method name="get_closest_position_in_segment" qualifiers="const">
@@ -111,7 +136,7 @@
 			</description>
 		</method>
 		<method name="get_id_path">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="from_id" type="int">
 			</argument>
@@ -144,7 +169,7 @@
 			</description>
 		</method>
 		<method name="get_point_connections">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -172,7 +197,7 @@
 			</description>
 		</method>
 		<method name="get_point_path">
-			<return type="PoolVector2Array">
+			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="from_id" type="int">
 			</argument>

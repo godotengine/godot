@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,10 +38,9 @@
 #include <CoreServices/CoreServices.h>
 
 bool osx_is_app_bundle_installed(const String &p_bundle_id) {
-
-	CFURLRef app_url = NULL;
-	CFStringRef bundle_id = CFStringCreateWithCString(NULL, p_bundle_id.utf8(), kCFStringEncodingUTF8);
-	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, NULL, NULL, &app_url);
+	CFURLRef app_url = nullptr;
+	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8(), kCFStringEncodingUTF8);
+	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, nullptr, nullptr, &app_url);
 	CFRelease(bundle_id);
 
 	if (app_url)

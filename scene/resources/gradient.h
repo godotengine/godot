@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@ class Gradient : public Resource {
 
 public:
 	struct Point {
-
 		float offset;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
@@ -77,9 +76,9 @@ public:
 	Vector<Color> get_colors() const;
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
-
-		if (points.empty())
+		if (points.empty()) {
 			return Color(0, 0, 0, 1);
+		}
 
 		if (!is_sorted) {
 			points.sort();
@@ -92,8 +91,9 @@ public:
 		int middle = 0;
 
 #ifdef DEBUG_ENABLED
-		if (low > high)
+		if (low > high) {
 			ERR_PRINT("low > high, this may be a bug");
+		}
 #endif
 
 		while (low <= high) {
@@ -114,13 +114,15 @@ public:
 		}
 		int first = middle;
 		int second = middle + 1;
-		if (second >= points.size())
+		if (second >= points.size()) {
 			return points[points.size() - 1].color;
-		if (first < 0)
+		}
+		if (first < 0) {
 			return points[0].color;
+		}
 		const Point &pointFirst = points[first];
 		const Point &pointSecond = points[second];
-		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
+		return pointFirst.color.lerp(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
 	}
 
 	int get_points_count() const;

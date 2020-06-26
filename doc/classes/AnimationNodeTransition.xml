@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeTransition" inherits="AnimationNode" category="Core" version="3.2">
+<class name="AnimationNodeTransition" inherits="AnimationNode" version="4.0">
 	<brief_description>
+		A generic animation transition node for [AnimationTree].
 	</brief_description>
 	<description>
+		Simple state machine for cases which don't require a more advanced [AnimationNodeStateMachine]. Animations can be connected to the inputs and transition times can be specified.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_input_caption" qualifiers="const">
@@ -45,137 +48,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="input_0/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_0/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_1/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_1/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_10/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_10/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_11/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_11/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_12/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_12/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_13/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_13/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_14/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_14/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_15/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_15/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_16/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_16/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_17/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_17/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_18/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_18/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_19/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_19/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_2/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_2/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_20/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_20/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_21/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_21/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_22/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_22/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_23/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_23/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_24/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_24/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_25/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_25/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_26/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_26/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_27/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_27/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_28/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_28/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_29/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_29/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_3/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_3/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_30/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_30/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_31/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_31/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_4/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_4/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_5/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_5/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_6/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_6/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_7/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_7/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_8/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_8/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
-		<member name="input_9/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
-		</member>
-		<member name="input_9/name" type="String" setter="set_input_caption" getter="get_input_caption">
-		</member>
 		<member name="input_count" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
+			The number of available input ports for this node.
 		</member>
 		<member name="xfade_time" type="float" setter="set_cross_fade_time" getter="get_cross_fade_time" default="0.0">
+			Cross-fading time (in seconds) between each animation connected to the inputs.
 		</member>
 	</members>
 	<constants>

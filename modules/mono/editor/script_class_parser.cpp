@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,13 +54,11 @@ const char *ScriptClassParser::token_names[ScriptClassParser::TK_MAX] = {
 };
 
 String ScriptClassParser::get_token_name(ScriptClassParser::Token p_token) {
-
 	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
 	return token_names[p_token];
 }
 
 ScriptClassParser::Token ScriptClassParser::get_token() {
-
 	while (true) {
 		switch (code[idx]) {
 			case '\n': {
@@ -181,14 +179,24 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						CharType res = 0;
 
 						switch (next) {
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'f': res = 12; break;
+							case 'b':
+								res = 8;
+								break;
+							case 't':
+								res = 9;
+								break;
+							case 'n':
+								res = 10;
+								break;
+							case 'f':
+								res = 12;
+								break;
 							case 'r':
 								res = 13;
 								break;
-							case '\"': res = '\"'; break;
+							case '\"':
+								res = '\"';
+								break;
 							case '\\':
 								res = '\\';
 								break;
@@ -258,7 +266,6 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 }
 
 Error ScriptClassParser::_skip_generic_type_params() {
-
 	Token tk;
 
 	while (true) {
@@ -302,8 +309,10 @@ Error ScriptClassParser::_skip_generic_type_params() {
 				Error err = _skip_generic_type_params();
 				if (err)
 					return err;
-				continue;
-			} else if (tk == TK_OP_GREATER) {
+				tk = get_token();
+			}
+
+			if (tk == TK_OP_GREATER) {
 				return OK;
 			} else if (tk != TK_COMMA) {
 				error_str = "Unexpected token: " + get_token_name(tk);
@@ -325,7 +334,6 @@ Error ScriptClassParser::_skip_generic_type_params() {
 }
 
 Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
-
 	Token tk = get_token();
 
 	if (tk != TK_IDENTIFIER) {
@@ -358,7 +366,6 @@ Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
 }
 
 Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
-
 	String name;
 
 	Error err = _parse_type_full_name(name);
@@ -458,7 +465,6 @@ Error ScriptClassParser::_parse_type_constraints() {
 }
 
 Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stack) {
-
 	Token tk = get_token();
 
 	if (tk == TK_IDENTIFIER) {
@@ -485,7 +491,6 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 }
 
 Error ScriptClassParser::parse(const String &p_code) {
-
 	code = p_code;
 	idx = 0;
 	line = 0;
@@ -501,12 +506,15 @@ Error ScriptClassParser::parse(const String &p_code) {
 	int type_curly_stack = 0;
 
 	while (!error && tk != TK_EOF) {
-		if (tk == TK_IDENTIFIER && String(value) == "class") {
+		String identifier = value;
+		if (tk == TK_IDENTIFIER && (identifier == "class" || identifier == "struct")) {
+			bool is_class = identifier == "class";
+
 			tk = get_token();
 
 			if (tk == TK_IDENTIFIER) {
 				String name = value;
-				int at_level = type_curly_stack;
+				int at_level = curly_stack;
 
 				ClassDecl class_decl;
 
@@ -568,48 +576,22 @@ Error ScriptClassParser::parse(const String &p_code) {
 
 				NameDecl name_decl;
 				name_decl.name = name;
-				name_decl.type = NameDecl::CLASS_DECL;
+				name_decl.type = is_class ? NameDecl::CLASS_DECL : NameDecl::STRUCT_DECL;
 				name_stack[at_level] = name_decl;
 
-				if (!generic) { // no generics, thanks
-					classes.push_back(class_decl);
-				} else if (OS::get_singleton()->is_stdout_verbose()) {
-					String full_name = class_decl.namespace_;
-					if (full_name.length())
-						full_name += ".";
-					full_name += class_decl.name;
-					OS::get_singleton()->print("Ignoring generic class declaration: %s\n", class_decl.name.utf8().get_data());
-				}
-			}
-		} else if (tk == TK_IDENTIFIER && String(value) == "struct") {
-			String name;
-			int at_level = type_curly_stack;
-			while (true) {
-				tk = get_token();
-				if (tk == TK_IDENTIFIER && name.empty()) {
-					name = String(value);
-				} else if (tk == TK_CURLY_BRACKET_OPEN) {
-					if (name.empty()) {
-						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword 'struct', found " + get_token_name(TK_CURLY_BRACKET_OPEN);
-						error = true;
-						return ERR_PARSE_ERROR;
+				if (is_class) {
+					if (!generic) { // no generics, thanks
+						classes.push_back(class_decl);
+					} else if (OS::get_singleton()->is_stdout_verbose()) {
+						String full_name = class_decl.namespace_;
+						if (full_name.length())
+							full_name += ".";
+						full_name += class_decl.name;
+						OS::get_singleton()->print("Ignoring generic class declaration: %s\n", full_name.utf8().get_data());
 					}
-
-					curly_stack++;
-					type_curly_stack++;
-					break;
-				} else if (tk == TK_EOF) {
-					error_str = "Expected " + get_token_name(TK_CURLY_BRACKET_OPEN) + " after struct decl, found " + get_token_name(TK_EOF);
-					error = true;
-					return ERR_PARSE_ERROR;
 				}
 			}
-
-			NameDecl name_decl;
-			name_decl.name = name;
-			name_decl.type = NameDecl::STRUCT_DECL;
-			name_stack[at_level] = name_decl;
-		} else if (tk == TK_IDENTIFIER && String(value) == "namespace") {
+		} else if (tk == TK_IDENTIFIER && identifier == "namespace") {
 			if (type_curly_stack > 0) {
 				error_str = "Found namespace nested inside type.";
 				error = true;
@@ -652,8 +634,84 @@ Error ScriptClassParser::parse(const String &p_code) {
 	return OK;
 }
 
-Error ScriptClassParser::parse_file(const String &p_filepath) {
+static String get_preprocessor_directive(const String &p_line, int p_from) {
+	CRASH_COND(p_line[p_from] != '#');
+	p_from++;
+	int i = p_from;
+	while (i < p_line.length() && (p_line[i] == '_' || (p_line[i] >= 'A' && p_line[i] <= 'Z') ||
+										  (p_line[i] >= 'a' && p_line[i] <= 'z') || p_line[i] > 127)) {
+		i++;
+	}
+	return p_line.substr(p_from, i - p_from);
+}
 
+static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
+	Vector<String> lines = r_source.split("\n", /* p_allow_empty: */ true);
+
+	bool *include_lines = memnew_arr(bool, lines.size());
+
+	int if_level = -1;
+	Vector<bool> is_branch_being_compiled;
+
+	for (int i = 0; i < lines.size(); i++) {
+		const String &line = lines[i];
+
+		const int line_len = line.length();
+
+		int j;
+		for (j = 0; j < line_len; j++) {
+			if (line[j] != ' ' && line[j] != '\t') {
+				if (line[j] == '#') {
+					// First non-whitespace char of the line is '#'
+					include_lines[i] = false;
+
+					String directive = get_preprocessor_directive(line, j);
+
+					if (directive == "if") {
+						if_level++;
+						is_branch_being_compiled.push_back(if_level == 0 || is_branch_being_compiled[if_level - 1]);
+					} else if (directive == "elif") {
+						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#elif' directive. File: '" + p_filepath + "'.");
+						is_branch_being_compiled.write[if_level] = false;
+					} else if (directive == "else") {
+						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#else' directive. File: '" + p_filepath + "'.");
+						is_branch_being_compiled.write[if_level] = false;
+					} else if (directive == "endif") {
+						ERR_CONTINUE_MSG(if_level == -1, "Found unexpected '#endif' directive. File: '" + p_filepath + "'.");
+						is_branch_being_compiled.remove(if_level);
+						if_level--;
+					}
+
+					break;
+				} else {
+					// First non-whitespace char of the line is not '#'
+					include_lines[i] = if_level == -1 || is_branch_being_compiled[if_level];
+					break;
+				}
+			}
+		}
+
+		if (j == line_len) {
+			// Loop ended without finding a non-whitespace character.
+			// Either the line was empty or it only contained whitespaces.
+			include_lines[i] = if_level == -1 || is_branch_being_compiled[if_level];
+		}
+	}
+
+	r_source.clear();
+
+	// Custom join ignoring lines removed by the preprocessor
+	for (int i = 0; i < lines.size(); i++) {
+		if (i > 0 && include_lines[i - 1])
+			r_source += '\n';
+
+		if (include_lines[i]) {
+			r_source += lines[i];
+		}
+	}
+}
+
+Error ScriptClassParser::parse_file(const String &p_filepath) {
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);
@@ -663,6 +721,8 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 					"File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
 											" Please ensure that scripts are saved in valid UTF-8 unicode." :
 					"Failed to read file: '" + p_filepath + "'.");
+
+	run_dummy_preprocessor(source, p_filepath);
 
 	return parse(source);
 }

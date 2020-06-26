@@ -10,6 +10,12 @@ precision highp float;
 precision highp int;
 #endif
 
+#ifndef USE_GLES_OVER_GL
+#extension GL_OES_texture_3D : enable
+#else
+#extension GL_EXT_texture_array : enable
+#endif
+
 uniform highp mat4 projection_matrix;
 /* clang-format on */
 
@@ -105,7 +111,6 @@ vec2 select(vec2 a, vec2 b, bvec2 c) {
 }
 
 void main() {
-
 	vec4 color = color_attrib;
 	vec2 uv;
 
@@ -149,6 +154,8 @@ void main() {
 	uv = uv_attrib;
 #endif
 
+	float point_size = 1.0;
+
 	{
 		vec2 src_vtx = outvec.xy;
 		/* clang-format off */
@@ -157,6 +164,8 @@ VERTEX_SHADER_CODE
 
 		/* clang-format on */
 	}
+
+	gl_PointSize = point_size;
 
 #if !defined(SKIP_TRANSFORM_USED)
 	outvec = extra_matrix_instance * outvec;
@@ -176,7 +185,6 @@ VERTEX_SHADER_CODE
 
 	// look up transform from the "pose texture"
 	if (bone_weights != vec4(0.0)) {
-
 		highp mat4 bone_transform = mat4(0.0);
 
 		for (int i = 0; i < 4; i++) {
@@ -224,6 +232,12 @@ VERTEX_SHADER_CODE
 
 /* clang-format off */
 [fragment]
+
+#ifndef USE_GLES_OVER_GL
+#extension GL_OES_texture_3D : enable
+#else
+#extension GL_EXT_texture_array : enable
+#endif
 
 // texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
 // Do not copy these defines in the vertex section.
@@ -351,7 +365,6 @@ LIGHT_SHADER_CODE
 }
 
 void main() {
-
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 #ifdef USE_FORCE_REPEAT
@@ -483,11 +496,9 @@ FRAGMENT_SHADER_CODE
 			point = -shadow_vec;
 			sh = 0.5 + (1.0 / 8.0);
 		} else if (angle_to_light > 0.0) {
-
 			point = vec2(shadow_vec.y, -shadow_vec.x);
 			sh = 0.25 + (1.0 / 8.0);
 		} else {
-
 			point = vec2(-shadow_vec.y, shadow_vec.x);
 			sh = 0.75 + (1.0 / 8.0);
 		}

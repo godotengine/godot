@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer" inherits="Node" category="Core" version="3.2">
+<class name="AudioStreamPlayer" inherits="Node" version="4.0">
 	<brief_description>
 		Plays back audio non-positionally.
 	</brief_description>
@@ -21,6 +21,7 @@
 			<return type="AudioStreamPlayback">
 			</return>
 			<description>
+				Returns the [AudioStreamPlayback] object associated with this [AudioStreamPlayer].
 			</description>
 		</method>
 		<method name="play">
@@ -53,14 +54,14 @@
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
 			If [code]true[/code], audio plays when added to scene tree.
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
 			Bus on which this audio is playing.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
-			If the audio configuration has more than two speakers, this sets the target channels. See [code]MIX_TARGET_*[/code] constants.
+			If the audio configuration has more than two speakers, this sets the target channels. See [enum MixTarget] constants.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
-			Changes the pitch and the tempo of the audio.
+			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
 			If [code]true[/code], audio is playing.
@@ -69,6 +70,7 @@
 			The [AudioStream] object to be played.
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
+			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
 			Volume of sound, in dB.

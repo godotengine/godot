@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.2">
+<class name="@GlobalScope" version="4.0">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
 	<description>
-		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, scancodes, property hints, etc.
+		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
 	</description>
 	<tutorials>
@@ -12,9 +12,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
-			The [ARVRServer] singleton.
-		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			The [AudioServer] singleton.
 		</member>
@@ -24,11 +21,20 @@
 		<member name="ClassDB" type="ClassDB" setter="" getter="">
 			The [ClassDB] singleton.
 		</member>
+		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
+			The [DisplayServer] singleton.
+		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>
-		<member name="Geometry" type="Geometry" setter="" getter="">
-			The [Geometry] singleton.
+		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
+			The [Geometry2D] singleton.
+		</member>
+		<member name="Geometry3D" type="Geometry3D" setter="" getter="">
+			The [Geometry3D] singleton.
+		</member>
+		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			The [GodotSharp] singleton.
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
@@ -42,14 +48,25 @@
 		<member name="JSON" type="JSON" setter="" getter="">
 			The [JSON] singleton.
 		</member>
+		<member name="JavaClassWrapper" type="JavaClassWrapper" setter="" getter="">
+			The [JavaClassWrapper] singleton.
+			[b]Note:[/b] Only implemented on Android.
+		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
 			The [JavaScript] singleton.
+			[b]Note:[/b] Only implemented on HTML5.
 		</member>
-		<member name="Marshalls" type="Reference" setter="" getter="">
+		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
-			The [EditorNavigationMeshGenerator] singleton.
+		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
+			The [NavigationMeshGenerator] singleton.
+		</member>
+		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
+			The [NavigationServer2D] singleton.
+		</member>
+		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
+			The [NavigationServer2D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -57,14 +74,17 @@
 		<member name="Performance" type="Performance" setter="" getter="">
 			The [Performance] singleton.
 		</member>
-		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="">
-			The [Physics2DServer] singleton.
+		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
+			The [PhysicsServer2D] singleton.
 		</member>
-		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="">
-			The [PhysicsServer] singleton.
+		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
+			The [PhysicsServer3D] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.
+		</member>
+		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
+			The [RenderingServer] singleton.
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="">
 			The [ResourceLoader] singleton.
@@ -78,8 +98,8 @@
 		<member name="VisualScriptEditor" type="VisualScriptEditor" setter="" getter="">
 			The [VisualScriptEditor] singleton.
 		</member>
-		<member name="VisualServer" type="VisualServer" setter="" getter="">
-			The [VisualServer] singleton.
+		<member name="XRServer" type="XRServer" setter="" getter="">
+			The [XRServer] singleton.
 		</member>
 	</members>
 	<constants>
@@ -132,7 +152,7 @@
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
 		<constant name="SPKEY" value="16777216">
-			Scancodes with this bit applied are non-printable.
+			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="KeyList">
 			Escape key.
@@ -141,7 +161,7 @@
 			Tab key.
 		</constant>
 		<constant name="KEY_BACKTAB" value="16777219" enum="KeyList">
-			Shift+Tab key.
+			Shift + Tab key.
 		</constant>
 		<constant name="KEY_BACKSPACE" value="16777220" enum="KeyList">
 			Backspace key.
@@ -879,7 +899,7 @@
 			Ctrl key mask.
 		</constant>
 		<constant name="KEY_MASK_CMD" value="268435456" enum="KeyModifierMask">
-			Cmd key mask.
+			Command key mask. On macOS, this is equivalent to [constant KEY_MASK_META]. On other platforms, this is equivalent to [constant KEY_MASK_CTRL]. This mask should be preferred to [constant KEY_MASK_META] or [constant KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly.
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
 			Keypad key mask.
@@ -929,212 +949,185 @@
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 			Extra mouse button 2 mask.
 		</constant>
-		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
-			Gamepad button 0.
+		<constant name="JOY_INVALID_BUTTON" value="-1" enum="JoyButtonList">
+			An invalid game controller button.
 		</constant>
-		<constant name="JOY_BUTTON_1" value="1" enum="JoystickList">
-			Gamepad button 1.
+		<constant name="JOY_BUTTON_A" value="0" enum="JoyButtonList">
+			Game controller SDL button A.
 		</constant>
-		<constant name="JOY_BUTTON_2" value="2" enum="JoystickList">
-			Gamepad button 2.
+		<constant name="JOY_BUTTON_B" value="1" enum="JoyButtonList">
+			Game controller SDL button B.
 		</constant>
-		<constant name="JOY_BUTTON_3" value="3" enum="JoystickList">
-			Gamepad button 3.
+		<constant name="JOY_BUTTON_X" value="2" enum="JoyButtonList">
+			Game controller SDL button X.
 		</constant>
-		<constant name="JOY_BUTTON_4" value="4" enum="JoystickList">
-			Gamepad button 4.
+		<constant name="JOY_BUTTON_Y" value="3" enum="JoyButtonList">
+			Game controller SDL button Y.
 		</constant>
-		<constant name="JOY_BUTTON_5" value="5" enum="JoystickList">
-			Gamepad button 5.
+		<constant name="JOY_BUTTON_BACK" value="4" enum="JoyButtonList">
+			Game controller SDL back button.
 		</constant>
-		<constant name="JOY_BUTTON_6" value="6" enum="JoystickList">
-			Gamepad button 6.
+		<constant name="JOY_BUTTON_GUIDE" value="5" enum="JoyButtonList">
+			Game controller SDL guide button.
 		</constant>
-		<constant name="JOY_BUTTON_7" value="7" enum="JoystickList">
-			Gamepad button 7.
+		<constant name="JOY_BUTTON_START" value="6" enum="JoyButtonList">
+			Game controller SDL start button.
 		</constant>
-		<constant name="JOY_BUTTON_8" value="8" enum="JoystickList">
-			Gamepad button 8.
+		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButtonList">
+			Game controller SDL left stick button.
 		</constant>
-		<constant name="JOY_BUTTON_9" value="9" enum="JoystickList">
-			Gamepad button 9.
+		<constant name="JOY_BUTTON_RIGHT_STICK" value="8" enum="JoyButtonList">
+			Game controller SDL right stick button.
 		</constant>
-		<constant name="JOY_BUTTON_10" value="10" enum="JoystickList">
-			Gamepad button 10.
+		<constant name="JOY_BUTTON_LEFT_SHOULDER" value="9" enum="JoyButtonList">
+			Game controller SDL left shoulder button.
 		</constant>
-		<constant name="JOY_BUTTON_11" value="11" enum="JoystickList">
-			Gamepad button 11.
+		<constant name="JOY_BUTTON_RIGHT_SHOULDER" value="10" enum="JoyButtonList">
+			Game controller SDL right shoulder button.
 		</constant>
-		<constant name="JOY_BUTTON_12" value="12" enum="JoystickList">
-			Gamepad button 12.
+		<constant name="JOY_BUTTON_DPAD_UP" value="11" enum="JoyButtonList">
+			Game controller SDL D-pad up button.
 		</constant>
-		<constant name="JOY_BUTTON_13" value="13" enum="JoystickList">
-			Gamepad button 13.
+		<constant name="JOY_BUTTON_DPAD_DOWN" value="12" enum="JoyButtonList">
+			Game controller SDL D-pad down button.
 		</constant>
-		<constant name="JOY_BUTTON_14" value="14" enum="JoystickList">
-			Gamepad button 14.
+		<constant name="JOY_BUTTON_DPAD_LEFT" value="13" enum="JoyButtonList">
+			Game controller SDL D-pad left button.
 		</constant>
-		<constant name="JOY_BUTTON_15" value="15" enum="JoystickList">
-			Gamepad button 15.
+		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButtonList">
+			Game controller SDL D-pad right button.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="16" enum="JoystickList">
-			Represents the maximum number of joystick buttons supported.
+		<constant name="JOY_SDL_BUTTONS" value="15" enum="JoyButtonList">
+			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoystickList">
-			DualShock circle button.
+		<constant name="JOY_SONY_X" value="0" enum="JoyButtonList">
+			Sony DualShock controller X button maps to SDL button A.
 		</constant>
-		<constant name="JOY_SONY_X" value="0" enum="JoystickList">
-			DualShock X button.
+		<constant name="JOY_SONY_CROSS" value="0" enum="JoyButtonList">
+			Sony DualShock controller cross button maps to SDL button A.
 		</constant>
-		<constant name="JOY_SONY_SQUARE" value="2" enum="JoystickList">
-			DualShock square button.
+		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoyButtonList">
+			Sony DualShock controller circle button maps to SDL button B.
 		</constant>
-		<constant name="JOY_SONY_TRIANGLE" value="3" enum="JoystickList">
-			DualShock triangle button.
+		<constant name="JOY_SONY_SQUARE" value="2" enum="JoyButtonList">
+			Sony DualShock controller square button maps to SDL button X.
 		</constant>
-		<constant name="JOY_XBOX_B" value="1" enum="JoystickList">
-			Xbox controller B button.
+		<constant name="JOY_SONY_TRIANGLE" value="3" enum="JoyButtonList">
+			Sony DualShock controller triangle button maps to SDL button Y.
 		</constant>
-		<constant name="JOY_XBOX_A" value="0" enum="JoystickList">
-			Xbox controller A button.
+		<constant name="JOY_SONY_SELECT" value="4" enum="JoyButtonList">
+			Sony DualShock controller select button maps to SDL back button.
 		</constant>
-		<constant name="JOY_XBOX_X" value="2" enum="JoystickList">
-			Xbox controller X button.
+		<constant name="JOY_SONY_START" value="6" enum="JoyButtonList">
+			Sony DualShock controller start button maps to SDL start button.
 		</constant>
-		<constant name="JOY_XBOX_Y" value="3" enum="JoystickList">
-			Xbox controller Y button.
+		<constant name="JOY_SONY_PS" value="5" enum="JoyButtonList">
+			Sony DualShock controller PS button maps to SDL guide button.
 		</constant>
-		<constant name="JOY_DS_A" value="1" enum="JoystickList">
-			Nintendo controller A button.
+		<constant name="JOY_SONY_L1" value="9" enum="JoyButtonList">
+			Sony DualShock controller L1 button maps to SDL left shoulder button.
 		</constant>
-		<constant name="JOY_DS_B" value="0" enum="JoystickList">
-			Nintendo controller B button.
+		<constant name="JOY_SONY_R1" value="10" enum="JoyButtonList">
+			Sony DualShock controller R1 button maps to SDL right shoulder button.
 		</constant>
-		<constant name="JOY_DS_X" value="3" enum="JoystickList">
-			Nintendo controller X button.
+		<constant name="JOY_SONY_L3" value="7" enum="JoyButtonList">
+			Sony DualShock controller L3 button maps to SDL left stick button.
 		</constant>
-		<constant name="JOY_DS_Y" value="2" enum="JoystickList">
-			Nintendo controller Y button.
+		<constant name="JOY_SONY_R3" value="8" enum="JoyButtonList">
+			Sony DualShock controller R3 button maps to SDL right stick button.
 		</constant>
-		<constant name="JOY_VR_GRIP" value="2" enum="JoystickList">
-			Grip (side) buttons on a VR controller.
+		<constant name="JOY_XBOX_A" value="0" enum="JoyButtonList">
+			Xbox game controller A button maps to SDL button A.
 		</constant>
-		<constant name="JOY_VR_PAD" value="14" enum="JoystickList">
-			Push down on the touchpad or main joystick on a VR controller.
+		<constant name="JOY_XBOX_B" value="1" enum="JoyButtonList">
+			Xbox game controller B button maps to SDL button B.
 		</constant>
-		<constant name="JOY_VR_TRIGGER" value="15" enum="JoystickList">
-			Trigger on a VR controller.
+		<constant name="JOY_XBOX_X" value="2" enum="JoyButtonList">
+			Xbox game controller X button maps to SDL button X.
 		</constant>
-		<constant name="JOY_OCULUS_AX" value="7" enum="JoystickList">
-			A button on the right Oculus Touch controller, X button on the left controller (also when used in OpenVR).
+		<constant name="JOY_XBOX_Y" value="3" enum="JoyButtonList">
+			Xbox game controller Y button maps to SDL button Y.
 		</constant>
-		<constant name="JOY_OCULUS_BY" value="1" enum="JoystickList">
-			B button on the right Oculus Touch controller, Y button on the left controller (also when used in OpenVR).
+		<constant name="JOY_XBOX_BACK" value="4" enum="JoyButtonList">
+			Xbox game controller back button maps to SDL back button.
 		</constant>
-		<constant name="JOY_OCULUS_MENU" value="3" enum="JoystickList">
-			Menu button on either Oculus Touch controller.
+		<constant name="JOY_XBOX_START" value="6" enum="JoyButtonList">
+			Xbox game controller start button maps to SDL start button.
 		</constant>
-		<constant name="JOY_OPENVR_MENU" value="1" enum="JoystickList">
-			Menu button in OpenVR (Except when Oculus Touch controllers are used).
+		<constant name="JOY_XBOX_HOME" value="5" enum="JoyButtonList">
+			Xbox game controller home button maps to SDL guide button.
 		</constant>
-		<constant name="JOY_SELECT" value="10" enum="JoystickList">
-			Gamepad button Select.
+		<constant name="JOY_XBOX_LS" value="7" enum="JoyButtonList">
+			Xbox game controller left stick button maps to SDL left stick button.
 		</constant>
-		<constant name="JOY_START" value="11" enum="JoystickList">
-			Gamepad button Start.
+		<constant name="JOY_XBOX_RS" value="8" enum="JoyButtonList">
+			Xbox game controller right stick button maps to SDL right stick button.
 		</constant>
-		<constant name="JOY_DPAD_UP" value="12" enum="JoystickList">
-			Gamepad DPad up.
+		<constant name="JOY_XBOX_LB" value="9" enum="JoyButtonList">
+			Xbox game controller left bumper button maps to SDL left shoulder button.
 		</constant>
-		<constant name="JOY_DPAD_DOWN" value="13" enum="JoystickList">
-			Gamepad DPad down.
+		<constant name="JOY_XBOX_RB" value="10" enum="JoyButtonList">
+			Xbox game controller right bumper button maps to SDL right shoulder button.
 		</constant>
-		<constant name="JOY_DPAD_LEFT" value="14" enum="JoystickList">
-			Gamepad DPad left.
+		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButtonList">
+			The maximum number of game controller buttons.
 		</constant>
-		<constant name="JOY_DPAD_RIGHT" value="15" enum="JoystickList">
-			Gamepad DPad right.
+		<constant name="JOY_INVALID_AXIS" value="-1" enum="JoyAxisList">
+			An invalid game controller axis.
 		</constant>
-		<constant name="JOY_L" value="4" enum="JoystickList">
-			Gamepad left Shoulder button.
+		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxisList">
+			Game controller left joystick x-axis.
 		</constant>
-		<constant name="JOY_L2" value="6" enum="JoystickList">
-			Gamepad left trigger.
+		<constant name="JOY_AXIS_LEFT_Y" value="1" enum="JoyAxisList">
+			Game controller left joystick y-axis.
 		</constant>
-		<constant name="JOY_L3" value="8" enum="JoystickList">
-			Gamepad left stick click.
+		<constant name="JOY_AXIS_RIGHT_X" value="2" enum="JoyAxisList">
+			Game controller right joystick x-axis.
 		</constant>
-		<constant name="JOY_R" value="5" enum="JoystickList">
-			Gamepad right Shoulder button.
+		<constant name="JOY_AXIS_RIGHT_Y" value="3" enum="JoyAxisList">
+			Game controller right joystick y-axis.
 		</constant>
-		<constant name="JOY_R2" value="7" enum="JoystickList">
-			Gamepad right trigger.
+		<constant name="JOY_AXIS_TRIGGER_LEFT" value="4" enum="JoyAxisList">
+			Game controller left trigger axis.
 		</constant>
-		<constant name="JOY_R3" value="9" enum="JoystickList">
-			Gamepad right stick click.
+		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxisList">
+			Game controller right trigger axis.
 		</constant>
-		<constant name="JOY_AXIS_0" value="0" enum="JoystickList">
-			Gamepad left stick horizontal axis.
+		<constant name="JOY_SDL_AXES" value="6" enum="JoyAxisList">
+			The number of SDL game controller axes.
 		</constant>
-		<constant name="JOY_AXIS_1" value="1" enum="JoystickList">
-			Gamepad left stick vertical axis.
+		<constant name="JOY_AXIS_0_X" value="0" enum="JoyAxisList">
+			Game controller joystick 0 x-axis.
 		</constant>
-		<constant name="JOY_AXIS_2" value="2" enum="JoystickList">
-			Gamepad right stick horizontal axis.
+		<constant name="JOY_AXIS_0_Y" value="1" enum="JoyAxisList">
+			Game controller joystick 0 y-axis.
 		</constant>
-		<constant name="JOY_AXIS_3" value="3" enum="JoystickList">
-			Gamepad right stick vertical axis.
+		<constant name="JOY_AXIS_1_X" value="2" enum="JoyAxisList">
+			Game controller joystick 1 x-axis.
 		</constant>
-		<constant name="JOY_AXIS_4" value="4" enum="JoystickList">
-			Generic gamepad axis 4.
+		<constant name="JOY_AXIS_1_Y" value="3" enum="JoyAxisList">
+			Game controller joystick 1 y-axis.
 		</constant>
-		<constant name="JOY_AXIS_5" value="5" enum="JoystickList">
-			Generic gamepad axis 5.
+		<constant name="JOY_AXIS_2_X" value="4" enum="JoyAxisList">
+			Game controller joystick 2 x-axis.
 		</constant>
-		<constant name="JOY_AXIS_6" value="6" enum="JoystickList">
-			Gamepad left trigger analog axis.
+		<constant name="JOY_AXIS_2_Y" value="5" enum="JoyAxisList">
+			Game controller joystick 2 y-axis.
 		</constant>
-		<constant name="JOY_AXIS_7" value="7" enum="JoystickList">
-			Gamepad right trigger analog axis.
+		<constant name="JOY_AXIS_3_X" value="6" enum="JoyAxisList">
+			Game controller joystick 3 x-axis.
 		</constant>
-		<constant name="JOY_AXIS_8" value="8" enum="JoystickList">
-			Generic gamepad axis 8.
+		<constant name="JOY_AXIS_3_Y" value="7" enum="JoyAxisList">
+			Game controller joystick 3 y-axis.
 		</constant>
-		<constant name="JOY_AXIS_9" value="9" enum="JoystickList">
-			Generic gamepad axis 9.
+		<constant name="JOY_AXIS_4_X" value="8" enum="JoyAxisList">
+			Game controller joystick 4 x-axis.
 		</constant>
-		<constant name="JOY_AXIS_MAX" value="10" enum="JoystickList">
-			Represents the maximum number of joystick axes supported.
+		<constant name="JOY_AXIS_4_Y" value="9" enum="JoyAxisList">
+			Game controller joystick 4 y-axis.
 		</constant>
-		<constant name="JOY_ANALOG_LX" value="0" enum="JoystickList">
-			Gamepad left stick horizontal axis.
-		</constant>
-		<constant name="JOY_ANALOG_LY" value="1" enum="JoystickList">
-			Gamepad left stick vertical axis.
-		</constant>
-		<constant name="JOY_ANALOG_RX" value="2" enum="JoystickList">
-			Gamepad right stick horizontal axis.
-		</constant>
-		<constant name="JOY_ANALOG_RY" value="3" enum="JoystickList">
-			Gamepad right stick vertical axis.
-		</constant>
-		<constant name="JOY_ANALOG_L2" value="6" enum="JoystickList">
-			Gamepad left analog trigger.
-		</constant>
-		<constant name="JOY_ANALOG_R2" value="7" enum="JoystickList">
-			Gamepad right analog trigger.
-		</constant>
-		<constant name="JOY_VR_ANALOG_TRIGGER" value="2" enum="JoystickList">
-			VR Controller analog trigger.
-		</constant>
-		<constant name="JOY_VR_ANALOG_GRIP" value="4" enum="JoystickList">
-			VR Controller analog grip (side buttons).
-		</constant>
-		<constant name="JOY_OPENVR_TOUCHPADX" value="0" enum="JoystickList">
-			OpenVR touchpad X axis (Joystick axis on Oculus Touch and Windows MR controllers).
-		</constant>
-		<constant name="JOY_OPENVR_TOUCHPADY" value="1" enum="JoystickList">
-			OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR controllers).
+		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxisList">
+			The maximum number of game controller axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
 			MIDI note OFF message.
@@ -1162,11 +1155,11 @@
 			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
 			[codeblock]
 			var err = method_that_returns_error()
-			if (err != OK):
-			    print("Failure!)
+			if err != OK:
+			    print("Failure!")
 			# Or, equivalent:
-			if (err):
-			    print("Still failing!)
+			if err:
+			    print("Still failing!")
 			[/codeblock]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
@@ -1331,52 +1324,52 @@
 		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_KEY_ACCEL" value="6" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="8" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS" value="7" enum="PropertyHint">
 			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="8" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="9" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE" value="12" enum="PropertyHint">
 			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="13" enum="PropertyHint">
 			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="14" enum="PropertyHint">
 			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="15" enum="PropertyHint">
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
-			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="16" enum="PropertyHint">
+			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="17" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="18" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="19" enum="PropertyHint">
 			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="20" enum="PropertyHint">
 			Hints that an image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
@@ -1405,6 +1398,9 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.
+		</constant>
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="512" enum="PropertyUsageFlags">
+			Used to group properties together in the editor in a subgroup (under a group).
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
 			The property does not save its state in [PackedScene].
@@ -1449,7 +1445,7 @@
 			Default method flags.
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
-			Variable is of type [Nil] (only applied for [code]null[/code]).
+			Variable is [code]null[/code].
 		</constant>
 		<constant name="TYPE_BOOL" value="1" enum="Variant.Type">
 			Variable is of type [bool].
@@ -1466,70 +1462,94 @@
 		<constant name="TYPE_VECTOR2" value="5" enum="Variant.Type">
 			Variable is of type [Vector2].
 		</constant>
-		<constant name="TYPE_RECT2" value="6" enum="Variant.Type">
+		<constant name="TYPE_VECTOR2I" value="6" enum="Variant.Type">
+			Variable is of type [Vector2i].
+		</constant>
+		<constant name="TYPE_RECT2" value="7" enum="Variant.Type">
 			Variable is of type [Rect2].
 		</constant>
-		<constant name="TYPE_VECTOR3" value="7" enum="Variant.Type">
+		<constant name="TYPE_RECT2I" value="8" enum="Variant.Type">
+			Variable is of type [Rect2i].
+		</constant>
+		<constant name="TYPE_VECTOR3" value="9" enum="Variant.Type">
 			Variable is of type [Vector3].
 		</constant>
-		<constant name="TYPE_TRANSFORM2D" value="8" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3I" value="10" enum="Variant.Type">
+			Variable is of type [Vector3i].
+		</constant>
+		<constant name="TYPE_TRANSFORM2D" value="11" enum="Variant.Type">
 			Variable is of type [Transform2D].
 		</constant>
-		<constant name="TYPE_PLANE" value="9" enum="Variant.Type">
+		<constant name="TYPE_PLANE" value="12" enum="Variant.Type">
 			Variable is of type [Plane].
 		</constant>
-		<constant name="TYPE_QUAT" value="10" enum="Variant.Type">
+		<constant name="TYPE_QUAT" value="13" enum="Variant.Type">
 			Variable is of type [Quat].
 		</constant>
-		<constant name="TYPE_AABB" value="11" enum="Variant.Type">
+		<constant name="TYPE_AABB" value="14" enum="Variant.Type">
 			Variable is of type [AABB].
 		</constant>
-		<constant name="TYPE_BASIS" value="12" enum="Variant.Type">
+		<constant name="TYPE_BASIS" value="15" enum="Variant.Type">
 			Variable is of type [Basis].
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="13" enum="Variant.Type">
+		<constant name="TYPE_TRANSFORM" value="16" enum="Variant.Type">
 			Variable is of type [Transform].
 		</constant>
-		<constant name="TYPE_COLOR" value="14" enum="Variant.Type">
+		<constant name="TYPE_COLOR" value="17" enum="Variant.Type">
 			Variable is of type [Color].
 		</constant>
-		<constant name="TYPE_NODE_PATH" value="15" enum="Variant.Type">
+		<constant name="TYPE_STRING_NAME" value="18" enum="Variant.Type">
+			Variable is of type [StringName].
+		</constant>
+		<constant name="TYPE_NODE_PATH" value="19" enum="Variant.Type">
 			Variable is of type [NodePath].
 		</constant>
-		<constant name="TYPE_RID" value="16" enum="Variant.Type">
+		<constant name="TYPE_RID" value="20" enum="Variant.Type">
 			Variable is of type [RID].
 		</constant>
-		<constant name="TYPE_OBJECT" value="17" enum="Variant.Type">
+		<constant name="TYPE_OBJECT" value="21" enum="Variant.Type">
 			Variable is of type [Object].
 		</constant>
-		<constant name="TYPE_DICTIONARY" value="18" enum="Variant.Type">
+		<constant name="TYPE_CALLABLE" value="22" enum="Variant.Type">
+			Variable is of type [Callable].
+		</constant>
+		<constant name="TYPE_SIGNAL" value="23" enum="Variant.Type">
+			Variable is of type [Signal].
+		</constant>
+		<constant name="TYPE_DICTIONARY" value="24" enum="Variant.Type">
 			Variable is of type [Dictionary].
 		</constant>
-		<constant name="TYPE_ARRAY" value="19" enum="Variant.Type">
+		<constant name="TYPE_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="20" enum="Variant.Type">
-			Variable is of type [PoolByteArray].
+		<constant name="TYPE_RAW_ARRAY" value="26" enum="Variant.Type">
+			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT_ARRAY" value="21" enum="Variant.Type">
-			Variable is of type [PoolIntArray].
+		<constant name="TYPE_INT32_ARRAY" value="27" enum="Variant.Type">
+			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_REAL_ARRAY" value="22" enum="Variant.Type">
-			Variable is of type [PoolRealArray].
+		<constant name="TYPE_INT64_ARRAY" value="28" enum="Variant.Type">
+			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="23" enum="Variant.Type">
-			Variable is of type [PoolStringArray].
+		<constant name="TYPE_FLOAT32_ARRAY" value="29" enum="Variant.Type">
+			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="24" enum="Variant.Type">
-			Variable is of type [PoolVector2Array].
+		<constant name="TYPE_FLOAT64_ARRAY" value="30" enum="Variant.Type">
+			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="25" enum="Variant.Type">
-			Variable is of type [PoolVector3Array].
+		<constant name="TYPE_STRING_ARRAY" value="31" enum="Variant.Type">
+			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="26" enum="Variant.Type">
-			Variable is of type [PoolColorArray].
+		<constant name="TYPE_VECTOR2_ARRAY" value="32" enum="Variant.Type">
+			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_MAX" value="27" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3_ARRAY" value="33" enum="Variant.Type">
+			Variable is of type [PackedVector3Array].
+		</constant>
+		<constant name="TYPE_COLOR_ARRAY" value="34" enum="Variant.Type">
+			Variable is of type [PackedColorArray].
+		</constant>
+		<constant name="TYPE_MAX" value="35" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"is_nan",
 	"is_inf",
 	"ease",
-	"decimals",
+	"step_decimals",
 	"stepify",
 	"lerp",
 	"inverse_lerp",
@@ -110,30 +110,26 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 };
 
 VisualScriptBuiltinFunc::BuiltinFunc VisualScriptBuiltinFunc::find_function(const String &p_string) {
-
 	for (int i = 0; i < FUNC_MAX; i++) {
-		if (p_string == func_name[i])
+		if (p_string == func_name[i]) {
 			return BuiltinFunc(i);
+		}
 	}
 
 	return FUNC_MAX;
 }
 
 String VisualScriptBuiltinFunc::get_func_name(BuiltinFunc p_func) {
-
 	ERR_FAIL_INDEX_V(p_func, FUNC_MAX, String());
 	return func_name[p_func];
 }
 
 int VisualScriptBuiltinFunc::get_output_sequence_port_count() const {
-
 	return has_input_sequence_port() ? 1 : 0;
 }
 
 bool VisualScriptBuiltinFunc::has_input_sequence_port() const {
-
 	switch (func) {
-
 		case MATH_RANDOMIZE:
 		case TEXT_PRINT:
 		case TEXT_PRINTERR:
@@ -145,9 +141,7 @@ bool VisualScriptBuiltinFunc::has_input_sequence_port() const {
 }
 
 int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
-
 	switch (p_func) {
-
 		case MATH_RANDOMIZE:
 		case MATH_RAND:
 		case MATH_RANDF:
@@ -171,7 +165,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_EXP:
 		case MATH_ISNAN:
 		case MATH_ISINF:
-		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_SEED:
 		case MATH_RANDSEED:
 		case MATH_DEG2RAD:
@@ -228,11 +222,10 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 }
 
 int VisualScriptBuiltinFunc::get_input_value_port_count() const {
-
 	return get_func_argument_count(func);
 }
-int VisualScriptBuiltinFunc::get_output_value_port_count() const {
 
+int VisualScriptBuiltinFunc::get_output_value_port_count() const {
 	switch (func) {
 		case MATH_RANDOMIZE:
 		case TEXT_PRINT:
@@ -250,14 +243,11 @@ int VisualScriptBuiltinFunc::get_output_value_port_count() const {
 }
 
 String VisualScriptBuiltinFunc::get_output_sequence_port_text(int p_port) const {
-
 	return String();
 }
 
 PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const {
-
 	switch (func) {
-
 		case MATH_SIN:
 		case MATH_COS:
 		case MATH_TAN:
@@ -277,144 +267,158 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_EXP:
 		case MATH_ISNAN:
 		case MATH_ISINF: {
-			return PropertyInfo(Variant::REAL, "s");
+			return PropertyInfo(Variant::FLOAT, "s");
 		} break;
 		case MATH_ATAN2: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "y");
-			else
-				return PropertyInfo(Variant::REAL, "x");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "y");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "x");
+			}
 		} break;
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
 		case LOGIC_MAX:
 		case LOGIC_MIN: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "a");
-			else
-				return PropertyInfo(Variant::REAL, "b");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "a");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "b");
+			}
 		} break;
 		case MATH_POSMOD: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "a");
-			else
+			} else {
 				return PropertyInfo(Variant::INT, "b");
+			}
 		} break;
 		case MATH_POW: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "base");
-			else
-				return PropertyInfo(Variant::REAL, "exp");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "base");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "exp");
+			}
 		} break;
 		case MATH_EASE: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "s");
-			else
-				return PropertyInfo(Variant::REAL, "curve");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "s");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "curve");
+			}
 		} break;
-		case MATH_DECIMALS: {
-			return PropertyInfo(Variant::REAL, "step");
+		case MATH_STEP_DECIMALS: {
+			return PropertyInfo(Variant::FLOAT, "step");
 		} break;
 		case MATH_STEPIFY: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "s");
-			else
-				return PropertyInfo(Variant::REAL, "steps");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "s");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "steps");
+			}
 		} break;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "from");
-			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "to");
-			else
-				return PropertyInfo(Variant::REAL, "weight");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "from");
+			} else if (p_idx == 1) {
+				return PropertyInfo(Variant::FLOAT, "to");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "weight");
+			}
 		} break;
 		case MATH_RANGE_LERP: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "value");
-			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "istart");
-			else if (p_idx == 2)
-				return PropertyInfo(Variant::REAL, "istop");
-			else if (p_idx == 3)
-				return PropertyInfo(Variant::REAL, "ostart");
-			else
-				return PropertyInfo(Variant::REAL, "ostop");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "value");
+			} else if (p_idx == 1) {
+				return PropertyInfo(Variant::FLOAT, "istart");
+			} else if (p_idx == 2) {
+				return PropertyInfo(Variant::FLOAT, "istop");
+			} else if (p_idx == 3) {
+				return PropertyInfo(Variant::FLOAT, "ostart");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "ostop");
+			}
 		} break;
 		case MATH_MOVE_TOWARD: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "from");
-			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "to");
-			else
-				return PropertyInfo(Variant::REAL, "delta");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "from");
+			} else if (p_idx == 1) {
+				return PropertyInfo(Variant::FLOAT, "to");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "delta");
+			}
 		} break;
 		case MATH_DECTIME: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "value");
-			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "amount");
-			else
-				return PropertyInfo(Variant::REAL, "step");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "value");
+			} else if (p_idx == 1) {
+				return PropertyInfo(Variant::FLOAT, "amount");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "step");
+			}
 		} break;
 		case MATH_RANDOMIZE:
 		case MATH_RAND:
 		case MATH_RANDF: {
-
 		} break;
 		case MATH_RANDOM: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "from");
-			else
-				return PropertyInfo(Variant::REAL, "to");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "from");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "to");
+			}
 		} break;
 		case MATH_SEED:
 		case MATH_RANDSEED: {
 			return PropertyInfo(Variant::INT, "seed");
 		} break;
 		case MATH_DEG2RAD: {
-			return PropertyInfo(Variant::REAL, "deg");
+			return PropertyInfo(Variant::FLOAT, "deg");
 		} break;
 		case MATH_RAD2DEG: {
-			return PropertyInfo(Variant::REAL, "rad");
+			return PropertyInfo(Variant::FLOAT, "rad");
 		} break;
 		case MATH_LINEAR2DB: {
-			return PropertyInfo(Variant::REAL, "nrg");
+			return PropertyInfo(Variant::FLOAT, "nrg");
 		} break;
 		case MATH_DB2LINEAR: {
-			return PropertyInfo(Variant::REAL, "db");
+			return PropertyInfo(Variant::FLOAT, "db");
 		} break;
 		case MATH_POLAR2CARTESIAN: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "r");
-			else
-				return PropertyInfo(Variant::REAL, "th");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "r");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "th");
+			}
 		} break;
 		case MATH_CARTESIAN2POLAR: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "x");
-			else
-				return PropertyInfo(Variant::REAL, "y");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "x");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "y");
+			}
 		} break;
 		case MATH_WRAP: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "value");
-			else if (p_idx == 1)
+			} else if (p_idx == 1) {
 				return PropertyInfo(Variant::INT, "min");
-			else
+			} else {
 				return PropertyInfo(Variant::INT, "max");
+			}
 		} break;
 		case MATH_WRAPF:
 		case LOGIC_CLAMP: {
-			if (p_idx == 0)
-				return PropertyInfo(Variant::REAL, "value");
-			else if (p_idx == 1)
-				return PropertyInfo(Variant::REAL, "min");
-			else
-				return PropertyInfo(Variant::REAL, "max");
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::FLOAT, "value");
+			} else if (p_idx == 1) {
+				return PropertyInfo(Variant::FLOAT, "min");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "max");
+			}
 		} break;
 		case LOGIC_NEAREST_PO2: {
 			return PropertyInfo(Variant::INT, "value");
@@ -423,16 +427,18 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::OBJECT, "source");
 		} break;
 		case FUNC_FUNCREF: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::OBJECT, "instance");
-			else
+			} else {
 				return PropertyInfo(Variant::STRING, "funcname");
+			}
 		} break;
 		case TYPE_CONVERT: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::NIL, "what");
-			else
+			} else {
 				return PropertyInfo(Variant::STRING, "type");
+			}
 		} break;
 		case TYPE_OF: {
 			return PropertyInfo(Variant::NIL, "what");
@@ -453,29 +459,30 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::NIL, "value");
 		} break;
 		case STR_TO_VAR: {
-
 			return PropertyInfo(Variant::STRING, "string");
 		} break;
 		case VAR_TO_STR:
 		case VAR_TO_BYTES: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::NIL, "var");
-			else
+			} else {
 				return PropertyInfo(Variant::BOOL, "full_objects");
+			}
 
 		} break;
 		case BYTES_TO_VAR: {
-
-			if (p_idx == 0)
-				return PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes");
-			else
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes");
+			} else {
 				return PropertyInfo(Variant::BOOL, "allow_objects");
+			}
 		} break;
 		case COLORN: {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::STRING, "name");
-			else
-				return PropertyInfo(Variant::REAL, "alpha");
+			} else {
+				return PropertyInfo(Variant::FLOAT, "alpha");
+			}
 		} break;
 		case FUNC_MAX: {
 		}
@@ -485,10 +492,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 }
 
 PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) const {
-
 	Variant::Type t = Variant::NIL;
 	switch (func) {
-
 		case MATH_SIN:
 		case MATH_COS:
 		case MATH_TAN:
@@ -504,11 +509,13 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_FPOSMOD:
 		case MATH_FLOOR:
 		case MATH_CEIL: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
-		case MATH_POSMOD:
-		case MATH_ROUND: {
+		case MATH_POSMOD: {
 			t = Variant::INT;
+		} break;
+		case MATH_ROUND: {
+			t = Variant::FLOAT;
 		} break;
 		case MATH_ABS: {
 			t = Variant::NIL;
@@ -519,16 +526,16 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_POW:
 		case MATH_LOG:
 		case MATH_EXP: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_ISNAN:
 		case MATH_ISINF: {
 			t = Variant::BOOL;
 		} break;
 		case MATH_EASE: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
-		case MATH_DECIMALS: {
+		case MATH_STEP_DECIMALS: {
 			t = Variant::INT;
 		} break;
 		case MATH_STEPIFY:
@@ -539,36 +546,33 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_SMOOTHSTEP:
 		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 
 		} break;
 		case MATH_RANDOMIZE: {
-
 		} break;
 		case MATH_RAND: {
-
 			t = Variant::INT;
 		} break;
 		case MATH_RANDF:
 		case MATH_RANDOM: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_SEED: {
-
 		} break;
 		case MATH_RANDSEED: {
-
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				return PropertyInfo(Variant::INT, "rnd");
-			else
+			} else {
 				return PropertyInfo(Variant::INT, "seed");
+			}
 		} break;
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_WRAPF:
 		case MATH_DB2LINEAR: {
-			t = Variant::REAL;
+			t = Variant::FLOAT;
 		} break;
 		case MATH_POLAR2CARTESIAN:
 		case MATH_CARTESIAN2POLAR: {
@@ -580,24 +584,20 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP: {
-
 		} break;
 
 		case LOGIC_NEAREST_PO2: {
 			t = Variant::NIL;
 		} break;
 		case OBJ_WEAKREF: {
-
 			t = Variant::OBJECT;
 
 		} break;
 		case FUNC_FUNCREF: {
-
 			t = Variant::OBJECT;
 
 		} break;
 		case TYPE_CONVERT: {
-
 		} break;
 		case TEXT_ORD:
 		case TYPE_OF: {
@@ -605,41 +605,37 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 
 		} break;
 		case TYPE_EXISTS: {
-
 			t = Variant::BOOL;
 
 		} break;
 		case TEXT_CHAR:
 		case TEXT_STR: {
-
 			t = Variant::STRING;
 
 		} break;
 		case TEXT_PRINT: {
-
 		} break;
 		case TEXT_PRINTERR: {
-
 		} break;
 		case TEXT_PRINTRAW: {
-
 		} break;
 		case VAR_TO_STR: {
 			t = Variant::STRING;
 		} break;
 		case STR_TO_VAR: {
-
 		} break;
 		case VAR_TO_BYTES: {
-			if (p_idx == 0)
-				t = Variant::POOL_BYTE_ARRAY;
-			else
+			if (p_idx == 0) {
+				t = Variant::PACKED_BYTE_ARRAY;
+			} else {
 				t = Variant::BOOL;
+			}
 
 		} break;
 		case BYTES_TO_VAR: {
-			if (p_idx == 1)
+			if (p_idx == 1) {
 				t = Variant::BOOL;
+			}
 		} break;
 		case COLORN: {
 			t = Variant::COLOR;
@@ -656,15 +652,14 @@ String VisualScriptBuiltinFunc::get_caption() const {
 
 	return "BuiltinFunc";
 }
+
 */
 
 String VisualScriptBuiltinFunc::get_caption() const {
-
 	return func_name[func];
 }
 
 void VisualScriptBuiltinFunc::set_func(BuiltinFunc p_which) {
-
 	ERR_FAIL_INDEX(p_which, FUNC_MAX);
 	func = p_which;
 	_change_notify();
@@ -675,206 +670,168 @@ VisualScriptBuiltinFunc::BuiltinFunc VisualScriptBuiltinFunc::get_func() {
 	return func;
 }
 
-#define VALIDATE_ARG_NUM(m_arg)                                          \
-	if (!p_inputs[m_arg]->is_num()) {                                    \
-		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; \
-		r_error.argument = m_arg;                                        \
-		r_error.expected = Variant::REAL;                                \
-		return;                                                          \
+#define VALIDATE_ARG_NUM(m_arg)                                           \
+	if (!p_inputs[m_arg]->is_num()) {                                     \
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
+		r_error.argument = m_arg;                                         \
+		r_error.expected = Variant::FLOAT;                                \
+		return;                                                           \
 	}
 
-void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str) {
-
+void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Callable::CallError &r_error, String &r_error_str) {
 	switch (p_func) {
 		case VisualScriptBuiltinFunc::MATH_SIN: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::sin((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_COS: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::cos((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_TAN: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::tan((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SINH: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::sinh((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_COSH: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::cosh((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_TANH: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::tanh((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ASIN: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::asin((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ACOS: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::acos((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ATAN: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::atan((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ATAN2: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::atan2((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SQRT: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::sqrt((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FMOD: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::fmod((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FPOSMOD: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::fposmod((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_POSMOD: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::posmod((int)*p_inputs[0], (int)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FLOOR: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::floor((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_CEIL: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::ceil((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ROUND: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::round((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ABS: {
-
 			if (p_inputs[0]->get_type() == Variant::INT) {
-
 				int64_t i = *p_inputs[0];
 				*r_return = ABS(i);
-			} else if (p_inputs[0]->get_type() == Variant::REAL) {
-
+			} else if (p_inputs[0]->get_type() == Variant::FLOAT) {
 				real_t r = *p_inputs[0];
 				*r_return = Math::abs(r);
 			} else {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::REAL;
+				r_error.expected = Variant::FLOAT;
 			}
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SIGN: {
-
 			if (p_inputs[0]->get_type() == Variant::INT) {
-
 				int64_t i = *p_inputs[0];
 				*r_return = i < 0 ? -1 : (i > 0 ? +1 : 0);
-			} else if (p_inputs[0]->get_type() == Variant::REAL) {
-
+			} else if (p_inputs[0]->get_type() == Variant::FLOAT) {
 				real_t r = *p_inputs[0];
 				*r_return = r < 0.0 ? -1.0 : (r > 0.0 ? +1.0 : 0.0);
 			} else {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::REAL;
+				r_error.expected = Variant::FLOAT;
 			}
 		} break;
 		case VisualScriptBuiltinFunc::MATH_POW: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::pow((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LOG: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::log((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_EXP: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::exp((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ISNAN: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::is_nan((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ISINF: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::is_inf((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_EASE: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::ease((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
-		case VisualScriptBuiltinFunc::MATH_DECIMALS: {
-
+		case VisualScriptBuiltinFunc::MATH_STEP_DECIMALS: {
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_STEPIFY: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::stepify((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP_ANGLE: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_INVERSE_LERP: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::inverse_lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANGE_LERP: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
@@ -889,14 +846,12 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = Math::smoothstep((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_MOVE_TOWARD: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::move_toward((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DECTIME: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
@@ -913,20 +868,17 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = Math::randf();
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDOM: {
-
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::random((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SEED: {
-
 			VALIDATE_ARG_NUM(0);
 			uint64_t seed = *p_inputs[0];
 			Math::seed(seed);
 
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDSEED: {
-
 			VALIDATE_ARG_NUM(0);
 			uint64_t seed = *p_inputs[0];
 			int ret = Math::rand_from_seed(&seed);
@@ -937,22 +889,18 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DEG2RAD: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::deg2rad((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RAD2DEG: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::rad2deg((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LINEAR2DB: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::linear2db((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DB2LINEAR: {
-
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::db2linear((double)*p_inputs[0]);
 		} break;
@@ -983,9 +931,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = Math::wrapf((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::LOGIC_MAX: {
-
 			if (p_inputs[0]->get_type() == Variant::INT && p_inputs[1]->get_type() == Variant::INT) {
-
 				int64_t a = *p_inputs[0];
 				int64_t b = *p_inputs[1];
 				*r_return = MAX(a, b);
@@ -1001,9 +947,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::LOGIC_MIN: {
-
 			if (p_inputs[0]->get_type() == Variant::INT && p_inputs[1]->get_type() == Variant::INT) {
-
 				int64_t a = *p_inputs[0];
 				int64_t b = *p_inputs[1];
 				*r_return = MIN(a, b);
@@ -1018,9 +962,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			}
 		} break;
 		case VisualScriptBuiltinFunc::LOGIC_CLAMP: {
-
 			if (p_inputs[0]->get_type() == Variant::INT && p_inputs[1]->get_type() == Variant::INT && p_inputs[2]->get_type() == Variant::INT) {
-
 				int64_t a = *p_inputs[0];
 				int64_t b = *p_inputs[1];
 				int64_t c = *p_inputs[2];
@@ -1038,16 +980,13 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			}
 		} break;
 		case VisualScriptBuiltinFunc::LOGIC_NEAREST_PO2: {
-
 			VALIDATE_ARG_NUM(0);
 			int64_t num = *p_inputs[0];
 			*r_return = next_power_of_2(num);
 		} break;
 		case VisualScriptBuiltinFunc::OBJ_WEAKREF: {
-
 			if (p_inputs[0]->get_type() != Variant::OBJECT) {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::OBJECT;
 
@@ -1055,10 +994,8 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			}
 
 			if (p_inputs[0]->is_ref()) {
-
 				REF r = *p_inputs[0];
 				if (!r.is_valid()) {
-
 					return;
 				}
 
@@ -1068,7 +1005,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			} else {
 				Object *obj = *p_inputs[0];
 				if (!obj) {
-
 					return;
 				}
 				Ref<WeakRef> wref = memnew(WeakRef);
@@ -1078,18 +1014,15 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::FUNC_FUNCREF: {
-
 			if (p_inputs[0]->get_type() != Variant::OBJECT) {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::OBJECT;
 
 				return;
 			}
 			if (p_inputs[1]->get_type() != Variant::STRING && p_inputs[1]->get_type() != Variant::NODE_PATH) {
-
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
 				r_error.expected = Variant::STRING;
 
@@ -1105,43 +1038,36 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::TYPE_CONVERT: {
-
 			VALIDATE_ARG_NUM(1);
 			int type = *p_inputs[1];
 			if (type < 0 || type >= Variant::VARIANT_MAX) {
-
 				r_error_str = RTR("Invalid type argument to convert(), use TYPE_* constants.");
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::INT;
 				return;
 
 			} else {
-
 				*r_return = Variant::construct(Variant::Type(type), p_inputs, 1, r_error);
 			}
 		} break;
 		case VisualScriptBuiltinFunc::TYPE_OF: {
-
 			*r_return = p_inputs[0]->get_type();
 
 		} break;
 		case VisualScriptBuiltinFunc::TYPE_EXISTS: {
-
 			*r_return = ClassDB::class_exists(*p_inputs[0]);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_CHAR: {
-
 			CharType result[2] = { *p_inputs[0], 0 };
 
 			*r_return = String(result);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_ORD: {
-
 			if (p_inputs[0]->get_type() != Variant::STRING) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::STRING;
 
@@ -1151,7 +1077,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			String str = p_inputs[0]->operator String();
 
 			if (str.length() != 1) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::STRING;
 				*r_return = "Expected a string of length 1 (a character).";
@@ -1163,41 +1089,35 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_STR: {
-
 			String str = *p_inputs[0];
 
 			*r_return = str;
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_PRINT: {
-
 			String str = *p_inputs[0];
 			print_line(str);
 
 		} break;
 
 		case VisualScriptBuiltinFunc::TEXT_PRINTERR: {
-
 			String str = *p_inputs[0];
 			print_error(str);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_PRINTRAW: {
-
 			String str = *p_inputs[0];
 			OS::get_singleton()->print("%s", str.utf8().get_data());
 
 		} break;
 		case VisualScriptBuiltinFunc::VAR_TO_STR: {
-
 			String vars;
 			VariantWriter::write_to_string(*p_inputs[0], vars);
 			*r_return = vars;
 		} break;
 		case VisualScriptBuiltinFunc::STR_TO_VAR: {
-
 			if (p_inputs[0]->get_type() != Variant::STRING) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::STRING;
 
@@ -1212,7 +1132,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			Error err = VariantParser::parse(&ss, *r_return, errs, line);
 
 			if (err != OK) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::STRING;
 				*r_return = "Parse error at line " + itos(line) + ": " + errs;
@@ -1221,19 +1141,18 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::VAR_TO_BYTES: {
-
 			if (p_inputs[1]->get_type() != Variant::BOOL) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
 				r_error.expected = Variant::BOOL;
 				return;
 			}
-			PoolByteArray barr;
+			PackedByteArray barr;
 			int len;
 			bool full_objects = *p_inputs[1];
-			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
+			Error err = encode_variant(*p_inputs[0], nullptr, len, full_objects);
 			if (err) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::NIL;
 				r_error_str = "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).";
@@ -1242,37 +1161,36 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 			barr.resize(len);
 			{
-				PoolByteArray::Write w = barr.write();
-				encode_variant(*p_inputs[0], w.ptr(), len, full_objects);
+				uint8_t *w = barr.ptrw();
+				encode_variant(*p_inputs[0], w, len, full_objects);
 			}
 			*r_return = barr;
 		} break;
 		case VisualScriptBuiltinFunc::BYTES_TO_VAR: {
-
-			if (p_inputs[0]->get_type() != Variant::POOL_BYTE_ARRAY) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			if (p_inputs[0]->get_type() != Variant::PACKED_BYTE_ARRAY) {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
-				r_error.expected = Variant::POOL_BYTE_ARRAY;
+				r_error.expected = Variant::PACKED_BYTE_ARRAY;
 				return;
 			}
 			if (p_inputs[1]->get_type() != Variant::BOOL) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
 				r_error.expected = Variant::BOOL;
 				return;
 			}
 
-			PoolByteArray varr = *p_inputs[0];
+			PackedByteArray varr = *p_inputs[0];
 			bool allow_objects = *p_inputs[1];
 			Variant ret;
 			{
-				PoolByteArray::Read r = varr.read();
-				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, allow_objects);
+				const uint8_t *r = varr.ptr();
+				Error err = decode_variant(ret, r, varr.size(), nullptr, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
-					r_error.expected = Variant::POOL_BYTE_ARRAY;
+					r_error.expected = Variant::PACKED_BYTE_ARRAY;
 					return;
 				}
 			}
@@ -1281,7 +1199,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::COLORN: {
-
 			VALIDATE_ARG_NUM(1);
 
 			Color color = Color::named(*p_inputs[0]);
@@ -1306,15 +1223,13 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
-
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		VisualScriptBuiltinFunc::exec_func(func, p_inputs, p_outputs[0], r_error, r_error_str);
 		return 0;
 	}
 };
 
 VisualScriptNodeInstance *VisualScriptBuiltinFunc::instance(VisualScriptInstance *p_instance) {
-
 	VisualScriptNodeInstanceBuiltinFunc *instance = memnew(VisualScriptNodeInstanceBuiltinFunc);
 	instance->node = this;
 	instance->instance = p_instance;
@@ -1323,16 +1238,15 @@ VisualScriptNodeInstance *VisualScriptBuiltinFunc::instance(VisualScriptInstance
 }
 
 void VisualScriptBuiltinFunc::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_func", "which"), &VisualScriptBuiltinFunc::set_func);
 	ClassDB::bind_method(D_METHOD("get_func"), &VisualScriptBuiltinFunc::get_func);
 
 	String cc;
 
 	for (int i = 0; i < FUNC_MAX; i++) {
-
-		if (i > 0)
+		if (i > 0) {
 			cc += ",";
+		}
 		cc += func_name[i];
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, cc), "set_func", "get_func");
@@ -1361,7 +1275,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_ISNAN);
 	BIND_ENUM_CONSTANT(MATH_ISINF);
 	BIND_ENUM_CONSTANT(MATH_EASE);
-	BIND_ENUM_CONSTANT(MATH_DECIMALS);
+	BIND_ENUM_CONSTANT(MATH_STEP_DECIMALS);
 	BIND_ENUM_CONSTANT(MATH_STEPIFY);
 	BIND_ENUM_CONSTANT(MATH_LERP);
 	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
@@ -1409,24 +1323,20 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 }
 
 VisualScriptBuiltinFunc::VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::BuiltinFunc func) {
-
 	this->func = func;
 }
 
 VisualScriptBuiltinFunc::VisualScriptBuiltinFunc() {
-
 	func = MATH_SIN;
 }
 
 template <VisualScriptBuiltinFunc::BuiltinFunc func>
 static Ref<VisualScriptNode> create_builtin_func_node(const String &p_name) {
-
 	Ref<VisualScriptBuiltinFunc> node = memnew(VisualScriptBuiltinFunc(func));
 	return node;
 }
 
 void register_visual_script_builtin_func_node() {
-
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/sin", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SIN>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/cos", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_COS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/tan", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_TAN>);
@@ -1455,7 +1365,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/isinf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_ISINF>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/ease", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_EASE>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECIMALS>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/step_decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEP_DECIMALS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);

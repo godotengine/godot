@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,19 +38,6 @@
 #include "shaders/effect_blur.glsl.gen.h"
 #include "shaders/scene.glsl.gen.h"
 #include "shaders/tonemap.glsl.gen.h"
-/*
-
-
-#include "drivers/gles3/shaders/exposure.glsl.gen.h"
-#include "drivers/gles3/shaders/resolve.glsl.gen.h"
-#include "drivers/gles3/shaders/scene.glsl.gen.h"
-#include "drivers/gles3/shaders/screen_space_reflection.glsl.gen.h"
-#include "drivers/gles3/shaders/ssao.glsl.gen.h"
-#include "drivers/gles3/shaders/ssao_blur.glsl.gen.h"
-#include "drivers/gles3/shaders/ssao_minify.glsl.gen.h"
-#include "drivers/gles3/shaders/subsurf_scattering.glsl.gen.h"
-
-*/
 
 class RasterizerSceneGLES2 : public RasterizerScene {
 public:
@@ -90,7 +77,6 @@ public:
 
 	RasterizerStorageGLES2 *storage;
 	struct State {
-
 		bool texscreen_copied;
 		int current_blend_mode;
 		float current_line_width;
@@ -108,103 +94,6 @@ public:
 		GLuint immediate_buffer;
 		Color default_ambient;
 		Color default_bg;
-
-		// ResolveShaderGLES3 resolve_shader;
-		// ScreenSpaceReflectionShaderGLES3 ssr_shader;
-		// EffectBlurShaderGLES3 effect_blur_shader;
-		// SubsurfScatteringShaderGLES3 sss_shader;
-		// SsaoMinifyShaderGLES3 ssao_minify_shader;
-		// SsaoShaderGLES3 ssao_shader;
-		// SsaoBlurShaderGLES3 ssao_blur_shader;
-		// ExposureShaderGLES3 exposure_shader;
-
-		/*
-		struct SceneDataUBO {
-			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
-			float camera_inverse_matrix[16];
-			float camera_matrix[16];
-			float ambient_light_color[4];
-			float bg_color[4];
-			float fog_color_enabled[4];
-			float fog_sun_color_amount[4];
-
-			float ambient_energy;
-			float bg_energy;
-			float z_offset;
-			float z_slope_scale;
-			float shadow_dual_paraboloid_render_zfar;
-			float shadow_dual_paraboloid_render_side;
-			float viewport_size[2];
-			float screen_pixel_size[2];
-			float shadow_atlas_pixel_size[2];
-			float shadow_directional_pixel_size[2];
-
-			float time;
-			float z_far;
-			float reflection_multiplier;
-			float subsurface_scatter_width;
-			float ambient_occlusion_affect_light;
-
-			uint32_t fog_depth_enabled;
-			float fog_depth_begin;
-			float fog_depth_curve;
-			uint32_t fog_transmit_enabled;
-			float fog_transmit_curve;
-			uint32_t fog_height_enabled;
-			float fog_height_min;
-			float fog_height_max;
-			float fog_height_curve;
-			// make sure this struct is padded to be a multiple of 16 bytes for webgl
-
-		} ubo_data;
-
-		GLuint scene_ubo;
-
-		struct EnvironmentRadianceUBO {
-
-			float transform[16];
-			float ambient_contribution;
-			uint8_t padding[12];
-
-		} env_radiance_data;
-
-		GLuint env_radiance_ubo;
-
-		GLuint sky_array;
-
-		GLuint directional_ubo;
-
-		GLuint spot_array_ubo;
-		GLuint omni_array_ubo;
-		GLuint reflection_array_ubo;
-
-		GLuint immediate_buffer;
-		GLuint immediate_array;
-
-		uint32_t ubo_light_size;
-		uint8_t *spot_array_tmp;
-		uint8_t *omni_array_tmp;
-		uint8_t *reflection_array_tmp;
-
-		int max_ubo_lights;
-		int max_forward_lights_per_object;
-		int max_ubo_reflections;
-		int max_skeleton_bones;
-
-		bool used_contact_shadows;
-
-		int spot_light_count;
-		int omni_light_count;
-		int directional_light_count;
-		int reflection_probe_count;
-
-		bool used_sss;
-		bool using_contact_shadows;
-
-		VS::ViewportDebugDraw debug_draw;
-		*/
 
 		bool cull_front;
 		bool cull_disabled;
@@ -225,7 +114,7 @@ public:
 
 	uint64_t shadow_atlas_realloc_tolerance_msec;
 
-	struct ShadowAtlas : public RID_Data {
+	struct ShadowAtlas {
 		enum {
 			QUADRANT_SHIFT = 27,
 			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
@@ -273,7 +162,7 @@ public:
 
 	Vector<ShadowCubeMap> shadow_cubemaps;
 
-	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+	RID_PtrOwner<ShadowAtlas> shadow_atlas_owner;
 
 	RID shadow_atlas_create();
 	void shadow_atlas_set_size(RID p_atlas, int p_size);
@@ -304,8 +193,7 @@ public:
 
 	/* REFLECTION PROBE INSTANCE */
 
-	struct ReflectionProbeInstance : public RID_Data {
-
+	struct ReflectionProbeInstance {
 		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
 		RID probe;
 		RID self;
@@ -330,7 +218,7 @@ public:
 		Transform transform;
 	};
 
-	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
+	mutable RID_PtrOwner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	ReflectionProbeInstance **reflection_probe_instances;
 	int reflection_probe_count;
@@ -345,8 +233,8 @@ public:
 
 	/* ENVIRONMENT API */
 
-	struct Environment : public RID_Data {
-		VS::EnvironmentBG bg_mode;
+	struct Environment {
+		RS::EnvironmentBG bg_mode;
 
 		RID sky;
 		float sky_custom_fov;
@@ -369,7 +257,7 @@ public:
 		float glow_intensity;
 		float glow_strength;
 		float glow_bloom;
-		VS::EnvironmentGlowBlendMode glow_blend_mode;
+		RS::EnvironmentGlowBlendMode glow_blend_mode;
 		float glow_hdr_bleed_threshold;
 		float glow_hdr_bleed_scale;
 		float glow_hdr_luminance_cap;
@@ -379,13 +267,13 @@ public:
 		float dof_blur_far_distance;
 		float dof_blur_far_transition;
 		float dof_blur_far_amount;
-		VS::EnvironmentDOFBlurQuality dof_blur_far_quality;
+		RS::EnvironmentDOFBlurQuality dof_blur_far_quality;
 
 		bool dof_blur_near_enabled;
 		float dof_blur_near_distance;
 		float dof_blur_near_transition;
 		float dof_blur_near_amount;
-		VS::EnvironmentDOFBlurQuality dof_blur_near_quality;
+		RS::EnvironmentDOFBlurQuality dof_blur_near_quality;
 
 		bool adjustments_enabled;
 		float adjustments_brightness;
@@ -410,7 +298,7 @@ public:
 		float fog_height_curve;
 
 		Environment() :
-				bg_mode(VS::ENV_BG_CLEAR_COLOR),
+				bg_mode(RS::ENV_BG_CLEAR_COLOR),
 				sky_custom_fov(0.0),
 				bg_energy(1.0),
 				sky_ambient(0),
@@ -423,7 +311,7 @@ public:
 				glow_intensity(0.8),
 				glow_strength(1.0),
 				glow_bloom(0.0),
-				glow_blend_mode(VS::GLOW_BLEND_MODE_SOFTLIGHT),
+				glow_blend_mode(RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT),
 				glow_hdr_bleed_threshold(1.0),
 				glow_hdr_bleed_scale(2.0),
 				glow_hdr_luminance_cap(12.0),
@@ -432,12 +320,12 @@ public:
 				dof_blur_far_distance(10),
 				dof_blur_far_transition(5),
 				dof_blur_far_amount(0.1),
-				dof_blur_far_quality(VS::ENV_DOF_BLUR_QUALITY_MEDIUM),
+				dof_blur_far_quality(RS::ENV_DOF_BLUR_QUALITY_MEDIUM),
 				dof_blur_near_enabled(false),
 				dof_blur_near_distance(2),
 				dof_blur_near_transition(1),
 				dof_blur_near_amount(0.1),
-				dof_blur_near_quality(VS::ENV_DOF_BLUR_QUALITY_MEDIUM),
+				dof_blur_near_quality(RS::ENV_DOF_BLUR_QUALITY_MEDIUM),
 				adjustments_enabled(false),
 				adjustments_brightness(1.0),
 				adjustments_contrast(1.0),
@@ -459,11 +347,11 @@ public:
 		}
 	};
 
-	mutable RID_Owner<Environment> environment_owner;
+	mutable RID_PtrOwner<Environment> environment_owner;
 
 	virtual RID environment_create();
 
-	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
+	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg);
 	virtual void environment_set_sky(RID p_env, RID p_sky);
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale);
 	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
@@ -473,15 +361,15 @@ public:
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0);
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id);
 
-	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
+	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, RS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, RS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
 
-	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp);
 
@@ -491,13 +379,12 @@ public:
 
 	virtual bool is_environment(RID p_env);
 
-	virtual VS::EnvironmentBG environment_get_background(RID p_env);
+	virtual RS::EnvironmentBG environment_get_background(RID p_env);
 	virtual int environment_get_canvas_max_layer(RID p_env);
 
 	/* LIGHT INSTANCE */
 
-	struct LightInstance : public RID_Data {
-
+	struct LightInstance {
 		struct ShadowTransform {
 			CameraMatrix camera;
 			Transform transform;
@@ -530,7 +417,7 @@ public:
 		Set<RID> shadow_atlases; // atlases where this light is registered
 	};
 
-	mutable RID_Owner<LightInstance> light_instance_owner;
+	mutable RID_PtrOwner<LightInstance> light_instance_owner;
 
 	virtual RID light_instance_create(RID p_light);
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
@@ -559,7 +446,6 @@ public:
 	};
 
 	struct RenderList {
-
 		enum {
 			MAX_LIGHTS = 255,
 			MAX_REFLECTION_PROBES = 255,
@@ -644,7 +530,6 @@ public:
 		}
 
 		struct SortByDepth {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth < B->instance->depth;
 			}
@@ -661,7 +546,6 @@ public:
 		}
 
 		struct SortByReverseDepthAndPriority {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				if (A->priority == B->priority) {
 					return A->instance->depth > B->instance->depth;
@@ -685,7 +569,7 @@ public:
 
 		_FORCE_INLINE_ Element *add_element() {
 			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+				return nullptr;
 
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
@@ -693,7 +577,7 @@ public:
 
 		_FORCE_INLINE_ Element *add_alpha_element() {
 			if (element_count + alpha_element_count >= max_elements) {
-				return NULL;
+				return nullptr;
 			}
 
 			int idx = max_elements - alpha_element_count - 1;
@@ -760,7 +644,7 @@ public:
 	virtual bool free(RID p_rid);
 
 	virtual void set_scene_pass(uint64_t p_pass);
-	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
+	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw);
 
 	void iteration();
 	void initialize();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class LineEdit : public Control {
-
 	GDCLASS(LineEdit, Control);
 
 public:
@@ -91,10 +90,9 @@ private:
 
 	bool shortcut_keys_enabled;
 
-	Ref<Texture> right_icon;
+	Ref<Texture2D> right_icon;
 
 	struct Selection {
-
 		int begin;
 		int end;
 		int cursor_start;
@@ -106,6 +104,8 @@ private:
 
 	struct TextOperation {
 		int cursor_pos;
+		int window_pos;
+		int cached_width;
 		String text;
 	};
 	List<TextOperation> undo_stack;
@@ -130,6 +130,7 @@ private:
 	void _emit_text_change();
 	bool expand_to_text_length;
 
+	void update_cached_width();
 	void update_placeholder_width();
 
 	bool caret_blink_enabled;
@@ -229,8 +230,8 @@ public:
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
-	void set_right_icon(const Ref<Texture> &p_icon);
-	Ref<Texture> get_right_icon();
+	void set_right_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_right_icon();
 
 	virtual bool is_text_field() const;
 	LineEdit();

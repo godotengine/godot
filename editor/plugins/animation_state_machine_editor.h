@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,20 +42,20 @@
 #include "scene/gui/tree.h"
 
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
-	ToolButton *tool_select;
-	ToolButton *tool_create;
-	ToolButton *tool_connect;
+	Button *tool_select;
+	Button *tool_create;
+	Button *tool_connect;
+	Popup *name_edit_popup;
 	LineEdit *name_edit;
 
 	HBoxContainer *tool_erase_hb;
-	ToolButton *tool_erase;
-	ToolButton *tool_autoplay;
-	ToolButton *tool_end;
+	Button *tool_erase;
+	Button *tool_autoplay;
+	Button *tool_end;
 
 	OptionButton *transition_mode;
 	OptionButton *play_mode;

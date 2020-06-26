@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,17 +37,17 @@
 	@author AndreaCatania
 */
 
-class BulletPhysicsServer;
+class BulletPhysicsServer3D;
 
-class RIDBullet : public RID_Data {
+class RIDBullet {
 	RID self;
-	BulletPhysicsServer *physicsServer;
+	BulletPhysicsServer3D *physicsServer;
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
 
-	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer *p_physicsServer) { physicsServer = p_physicsServer; }
-	_FORCE_INLINE_ BulletPhysicsServer *get_physics_server() const { return physicsServer; }
+	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer3D *p_physicsServer) { physicsServer = p_physicsServer; }
+	_FORCE_INLINE_ BulletPhysicsServer3D *get_physics_server() const { return physicsServer; }
 };
 #endif

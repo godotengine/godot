@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class Position2D : public Node2D {
-
 	GDCLASS(Position2D, Node2D);
 
 	void _draw_cross();
@@ -44,8 +43,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+#endif
 
 	void set_gizmo_extents(float p_extents);
 	float get_gizmo_extents() const;

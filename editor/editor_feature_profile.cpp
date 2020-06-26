@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_feature_profile.h"
+
 #include "core/io/json.h"
 #include "core/os/dir_access.h"
 #include "editor/editor_settings.h"
@@ -64,7 +65,10 @@ void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_d
 }
 
 bool EditorFeatureProfile::is_class_disabled(const StringName &p_class) const {
-	return disabled_classes.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_classes.has(p_class) || is_class_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, bool p_disabled) {
@@ -76,11 +80,13 @@ void EditorFeatureProfile::set_disable_class_editor(const StringName &p_class, b
 }
 
 bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) const {
-	return disabled_editors.has(p_class);
+	if (p_class == StringName()) {
+		return false;
+	}
+	return disabled_editors.has(p_class) || is_class_editor_disabled(ClassDB::get_parent_class_nocheck(p_class));
 }
 
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
-
 	if (p_disabled) {
 		if (!disabled_properties.has(p_class)) {
 			disabled_properties[p_class] = Set<StringName>();
@@ -95,8 +101,8 @@ void EditorFeatureProfile::set_disable_class_property(const StringName &p_class,
 		}
 	}
 }
-bool EditorFeatureProfile::is_class_property_disabled(const StringName &p_class, const StringName &p_property) const {
 
+bool EditorFeatureProfile::is_class_property_disabled(const StringName &p_class, const StringName &p_property) const {
 	if (!disabled_properties.has(p_class)) {
 		return false;
 	}
@@ -113,10 +119,10 @@ bool EditorFeatureProfile::has_class_properties_disabled(const StringName &p_cla
 }
 
 void EditorFeatureProfile::set_disable_feature(Feature p_feature, bool p_disable) {
-
 	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
 	features_disabled[p_feature] = p_disable;
 }
+
 bool EditorFeatureProfile::is_feature_disabled(Feature p_feature) const {
 	ERR_FAIL_INDEX_V(p_feature, FEATURE_MAX, false);
 	return features_disabled[p_feature];
@@ -128,7 +134,6 @@ String EditorFeatureProfile::get_feature_name(Feature p_feature) {
 }
 
 Error EditorFeatureProfile::save_to_file(const String &p_path) {
-
 	Dictionary json;
 	json["type"] = "feature_profile";
 	Array dis_classes;
@@ -147,7 +152,7 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 
 	Array dis_props;
 
-	for (Map<StringName, Set<StringName> >::Element *E = disabled_properties.front(); E; E = E->next()) {
+	for (Map<StringName, Set<StringName>>::Element *E = disabled_properties.front(); E; E = E->next()) {
 		for (Set<StringName>::Element *F = E->get().front(); F; F = F->next()) {
 			dis_props.push_back(String(E->key()) + ":" + String(F->get()));
 		}
@@ -174,7 +179,6 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 }
 
 Error EditorFeatureProfile::load_from_file(const String &p_path) {
-
 	Error err;
 	String text = FileAccess::get_file_as_string(p_path, &err);
 	if (err != OK) {
@@ -186,14 +190,14 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 	Variant v;
 	err = JSON::parse(text, v, err_str, err_line);
 	if (err != OK) {
-		ERR_PRINTS("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
+		ERR_PRINT("Error parsing '" + p_path + "' on line " + itos(err_line) + ": " + err_str);
 		return ERR_PARSE_ERROR;
 	}
 
 	Dictionary json = v;
 
 	if (!json.has("type") || String(json["type"]) != "feature_profile") {
-		ERR_PRINTS("Error parsing '" + p_path + "', it's not a feature profile.");
+		ERR_PRINT("Error parsing '" + p_path + "', it's not a feature profile.");
 		return ERR_PARSE_ERROR;
 	}
 
@@ -226,7 +230,6 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 	}
 
 	if (json.has("disabled_features")) {
-
 		Array disabled_features_arr = json["disabled_features"];
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			bool found = false;
@@ -247,7 +250,6 @@ Error EditorFeatureProfile::load_from_file(const String &p_path) {
 }
 
 void EditorFeatureProfile::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_disable_class", "class_name", "disable"), &EditorFeatureProfile::set_disable_class);
 	ClassDB::bind_method(D_METHOD("is_class_disabled", "class_name"), &EditorFeatureProfile::is_class_disabled);
 
@@ -276,7 +278,6 @@ void EditorFeatureProfile::_bind_methods() {
 }
 
 EditorFeatureProfile::EditorFeatureProfile() {
-
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features_disabled[i] = false;
 	}
@@ -286,13 +287,12 @@ EditorFeatureProfile::EditorFeatureProfile() {
 
 void EditorFeatureProfileManager::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-
 		current_profile = EDITOR_GET("_default_feature_profile");
 		if (current_profile != String()) {
 			current.instance();
 			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
 			if (err != OK) {
-				ERR_PRINTS("Error loading default feature profile: " + current_profile);
+				ERR_PRINT("Error loading default feature profile: " + current_profile);
 				current_profile = String();
 				current.unref();
 			}
@@ -311,7 +311,6 @@ String EditorFeatureProfileManager::_get_selected_profile() {
 }
 
 void EditorFeatureProfileManager::_update_profile_list(const String &p_select_profile) {
-
 	String selected_profile;
 	if (p_select_profile == String()) { //default, keep
 		if (profile_list->get_selected() >= 0) {
@@ -355,7 +354,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 
 		if (name == current_profile) {
-			name += " (current)";
+			name += " " + TTR("(current)");
 		}
 		profile_list->add_item(name);
 		int index = profile_list->get_item_count() - 1;
@@ -365,21 +364,22 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 	}
 
+	class_list_vbc->set_visible(selected_profile != String());
+	property_list_vbc->set_visible(selected_profile != String());
+	no_profile_selected_help->set_visible(selected_profile == String());
 	profile_actions[PROFILE_CLEAR]->set_disabled(current_profile == String());
 	profile_actions[PROFILE_ERASE]->set_disabled(selected_profile == String());
 	profile_actions[PROFILE_EXPORT]->set_disabled(selected_profile == String());
 	profile_actions[PROFILE_SET]->set_disabled(selected_profile == String());
 
-	current_profile_name->set_text(current_profile);
+	current_profile_name->set_text(current_profile != String() ? current_profile : TTR("(none)"));
 
 	_update_selected_profile();
 }
 
 void EditorFeatureProfileManager::_profile_action(int p_action) {
-
 	switch (p_action) {
 		case PROFILE_CLEAR: {
-
 			EditorSettings::get_singleton()->set("_default_feature_profile", "");
 			EditorSettings::get_singleton()->save();
 			current_profile = "";
@@ -389,7 +389,6 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			_emit_current_profile_changed();
 		} break;
 		case PROFILE_SET: {
-
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 			if (selected == current_profile) {
@@ -404,33 +403,28 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			_emit_current_profile_changed();
 		} break;
 		case PROFILE_IMPORT: {
-
 			import_profiles->popup_centered_ratio();
 		} break;
 		case PROFILE_EXPORT: {
-
 			export_profile->popup_centered_ratio();
 			export_profile->set_current_file(_get_selected_profile() + ".profile");
 		} break;
 		case PROFILE_NEW: {
-
-			new_profile_dialog->popup_centered_minsize();
+			new_profile_dialog->popup_centered();
 			new_profile_name->clear();
 			new_profile_name->grab_focus();
 		} break;
 		case PROFILE_ERASE: {
-
 			String selected = _get_selected_profile();
 			ERR_FAIL_COND(selected == String());
 
 			erase_profile_dialog->set_text(vformat(TTR("Erase profile '%s'? (no undo)"), selected));
-			erase_profile_dialog->popup_centered_minsize();
+			erase_profile_dialog->popup_centered();
 		} break;
 	}
 }
 
 void EditorFeatureProfileManager::_erase_selected_profile() {
-
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected == String());
 	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
@@ -461,15 +455,17 @@ void EditorFeatureProfileManager::_create_new_profile() {
 	new_profile->save_to_file(file);
 
 	_update_profile_list(name);
+	// The newly created profile is the first one, make it the current profile automatically.
+	if (profile_list->get_item_count() == 1) {
+		_profile_action(PROFILE_SET);
+	}
 }
 
 void EditorFeatureProfileManager::_profile_selected(int p_what) {
-
 	_update_selected_profile();
 }
 
 void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
-
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
@@ -479,7 +475,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	bool disabled_editor = edited->is_class_editor_disabled(p_class);
 	bool disabled_properties = edited->has_class_properties_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		class_item->set_custom_color(0, class_list->get_theme_color("disabled_font_color", "Editor"));
 	} else if (disabled_editor && disabled_properties) {
 		text += " " + TTR("(Editor Disabled, Properties Disabled)");
 	} else if (disabled_properties) {
@@ -516,9 +512,9 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 }
 
 void EditorFeatureProfileManager::_class_list_item_selected() {
-
-	if (updating_features)
+	if (updating_features) {
 		return;
+	}
 
 	property_list->clear();
 
@@ -528,7 +524,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING) {
+	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
 		return;
 	}
 
@@ -561,10 +557,10 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	ClassDB::get_property_list(class_name, &props, true);
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-
 		String name = E->get().name;
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+		if (!(E->get().usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
+		}
 		TreeItem *property = property_list->create_item(properties);
 		property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		property->set_editable(0, true);
@@ -580,9 +576,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 }
 
 void EditorFeatureProfileManager::_class_list_item_edited() {
-
-	if (updating_features)
+	if (updating_features) {
 		return;
+	}
 
 	TreeItem *item = class_list->get_edited();
 	if (!item) {
@@ -592,7 +588,7 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING) {
+	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_save_and_update();
@@ -605,8 +601,9 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 }
 
 void EditorFeatureProfileManager::_property_item_edited() {
-	if (updating_features)
+	if (updating_features) {
 		return;
+	}
 
 	TreeItem *class_item = class_list->get_selected();
 	if (!class_item) {
@@ -614,7 +611,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 	}
 
 	Variant md = class_item->get_metadata(0);
-	if (md.get_type() != Variant::STRING) {
+	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
 		return;
 	}
 
@@ -627,7 +624,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 	bool checked = item->is_checked(0);
 
 	md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING) {
+	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
 		String property_selected = md;
 		edited->set_disable_class_property(class_name, property_selected, !checked);
 		_save_and_update();
@@ -645,13 +642,12 @@ void EditorFeatureProfileManager::_property_item_edited() {
 }
 
 void EditorFeatureProfileManager::_update_selected_profile() {
-
 	String class_selected;
 	int feature_selected = -1;
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING) {
+		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
 			class_selected = md;
 		} else if (md.get_type() == Variant::INT) {
 			feature_selected = md;
@@ -684,7 +680,6 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	TreeItem *features = class_list->create_item(root);
 	features->set_text(0, TTR("Enabled Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
-
 		TreeItem *feature = class_list->create_item(features);
 		feature->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		feature->set_text(0, TTRGET(EditorFeatureProfile::get_feature_name(EditorFeatureProfile::Feature(i))));
@@ -712,7 +707,6 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 }
 
 void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths) {
-
 	//test it first
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
@@ -744,10 +738,13 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 	}
 
 	_update_profile_list();
+	// The newly imported profile is the first one, make it the current profile automatically.
+	if (profile_list->get_item_count() == 1) {
+		_profile_action(PROFILE_SET);
+	}
 }
 
 void EditorFeatureProfileManager::_export_profile(const String &p_path) {
-
 	ERR_FAIL_COND(edited.is_null());
 	Error err = edited->save_to_file(p_path);
 	if (err != OK) {
@@ -756,7 +753,6 @@ void EditorFeatureProfileManager::_export_profile(const String &p_path) {
 }
 
 void EditorFeatureProfileManager::_save_and_update() {
-
 	String edited_path = _get_selected_profile();
 	ERR_FAIL_COND(edited_path == String());
 	ERR_FAIL_COND(edited.is_null());
@@ -769,7 +765,6 @@ void EditorFeatureProfileManager::_save_and_update() {
 }
 
 void EditorFeatureProfileManager::_emit_current_profile_changed() {
-
 	emit_signal("current_feature_profile_changed");
 }
 
@@ -781,102 +776,104 @@ Ref<EditorFeatureProfile> EditorFeatureProfileManager::get_current_profile() {
 	return current;
 }
 
-EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = NULL;
+EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
 
 void EditorFeatureProfileManager::_bind_methods() {
-
 	ClassDB::bind_method("_update_selected_profile", &EditorFeatureProfileManager::_update_selected_profile);
-	ClassDB::bind_method("_profile_action", &EditorFeatureProfileManager::_profile_action);
-	ClassDB::bind_method("_create_new_profile", &EditorFeatureProfileManager::_create_new_profile);
-	ClassDB::bind_method("_profile_selected", &EditorFeatureProfileManager::_profile_selected);
-	ClassDB::bind_method("_erase_selected_profile", &EditorFeatureProfileManager::_erase_selected_profile);
-	ClassDB::bind_method("_import_profiles", &EditorFeatureProfileManager::_import_profiles);
-	ClassDB::bind_method("_export_profile", &EditorFeatureProfileManager::_export_profile);
-	ClassDB::bind_method("_class_list_item_selected", &EditorFeatureProfileManager::_class_list_item_selected);
-	ClassDB::bind_method("_class_list_item_edited", &EditorFeatureProfileManager::_class_list_item_edited);
-	ClassDB::bind_method("_property_item_edited", &EditorFeatureProfileManager::_property_item_edited);
-	ClassDB::bind_method("_emit_current_profile_changed", &EditorFeatureProfileManager::_emit_current_profile_changed);
 
 	ADD_SIGNAL(MethodInfo("current_feature_profile_changed"));
 }
 
 EditorFeatureProfileManager::EditorFeatureProfileManager() {
-
 	VBoxContainer *main_vbc = memnew(VBoxContainer);
 	add_child(main_vbc);
 
 	HBoxContainer *name_hbc = memnew(HBoxContainer);
 	current_profile_name = memnew(LineEdit);
 	name_hbc->add_child(current_profile_name);
+	current_profile_name->set_text(TTR("(none)"));
 	current_profile_name->set_editable(false);
-	current_profile_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	current_profile_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Unset")));
 	name_hbc->add_child(profile_actions[PROFILE_CLEAR]);
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
-	profile_actions[PROFILE_CLEAR]->connect("pressed", this, "_profile_action", varray(PROFILE_CLEAR));
+	profile_actions[PROFILE_CLEAR]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_CLEAR));
 
 	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
 
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 	profile_list = memnew(OptionButton);
-	profile_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	profile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	profiles_hbc->add_child(profile_list);
-	profile_list->connect("item_selected", this, "_profile_selected");
+	profile_list->connect("item_selected", callable_mp(this, &EditorFeatureProfileManager::_profile_selected));
 
 	profile_actions[PROFILE_SET] = memnew(Button(TTR("Make Current")));
 	profiles_hbc->add_child(profile_actions[PROFILE_SET]);
 	profile_actions[PROFILE_SET]->set_disabled(true);
-	profile_actions[PROFILE_SET]->connect("pressed", this, "_profile_action", varray(PROFILE_SET));
+	profile_actions[PROFILE_SET]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_SET));
 
 	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove")));
 	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
 	profile_actions[PROFILE_ERASE]->set_disabled(true);
-	profile_actions[PROFILE_ERASE]->connect("pressed", this, "_profile_action", varray(PROFILE_ERASE));
+	profile_actions[PROFILE_ERASE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_ERASE));
 
 	profiles_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_NEW] = memnew(Button(TTR("New")));
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
-	profile_actions[PROFILE_NEW]->connect("pressed", this, "_profile_action", varray(PROFILE_NEW));
+	profile_actions[PROFILE_NEW]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_NEW));
 
 	profiles_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_IMPORT] = memnew(Button(TTR("Import")));
 	profiles_hbc->add_child(profile_actions[PROFILE_IMPORT]);
-	profile_actions[PROFILE_IMPORT]->connect("pressed", this, "_profile_action", varray(PROFILE_IMPORT));
+	profile_actions[PROFILE_IMPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_IMPORT));
 
 	profile_actions[PROFILE_EXPORT] = memnew(Button(TTR("Export")));
 	profiles_hbc->add_child(profile_actions[PROFILE_EXPORT]);
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
-	profile_actions[PROFILE_EXPORT]->connect("pressed", this, "_profile_action", varray(PROFILE_EXPORT));
+	profile_actions[PROFILE_EXPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_EXPORT));
 
 	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 
 	h_split = memnew(HSplitContainer);
-	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	h_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vbc->add_child(h_split);
 
-	VBoxContainer *class_list_vbc = memnew(VBoxContainer);
+	class_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(class_list_vbc);
-	class_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	class_list_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	class_list = memnew(Tree);
 	class_list_vbc->add_margin_child(TTR("Enabled Classes:"), class_list, true);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	class_list->connect("cell_selected", this, "_class_list_item_selected");
-	class_list->connect("item_edited", this, "_class_list_item_edited", varray(), CONNECT_DEFERRED);
+	class_list->connect("cell_selected", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_selected));
+	class_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_edited), varray(), CONNECT_DEFERRED);
+	// It will be displayed once the user creates or chooses a profile.
+	class_list_vbc->hide();
 
-	VBoxContainer *property_list_vbc = memnew(VBoxContainer);
+	property_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(property_list_vbc);
-	property_list_vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	property_list_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	property_list = memnew(Tree);
-	property_list_vbc->add_margin_child(TTR("Class Options"), property_list, true);
+	property_list_vbc->add_margin_child(TTR("Class Options:"), property_list, true);
 	property_list->set_hide_root(true);
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	property_list->connect("item_edited", this, "_property_item_edited", varray(), CONNECT_DEFERRED);
+	property_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_property_item_edited), varray(), CONNECT_DEFERRED);
+	// It will be displayed once the user creates or chooses a profile.
+	property_list_vbc->hide();
+
+	no_profile_selected_help = memnew(Label(TTR("Create or import a profile to edit available classes and properties.")));
+	// Add some spacing above the help label.
+	Ref<StyleBoxEmpty> sb = memnew(StyleBoxEmpty);
+	sb->set_default_margin(MARGIN_TOP, 20 * EDSCALE);
+	no_profile_selected_help->add_theme_style_override("normal", sb);
+	no_profile_selected_help->set_align(Label::ALIGN_CENTER);
+	no_profile_selected_help->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	h_split->add_child(no_profile_selected_help);
 
 	new_profile_dialog = memnew(ConfirmationDialog);
 	new_profile_dialog->set_title(TTR("New profile name:"));
@@ -884,28 +881,28 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	new_profile_dialog->add_child(new_profile_name);
 	new_profile_name->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	add_child(new_profile_dialog);
-	new_profile_dialog->connect("confirmed", this, "_create_new_profile");
+	new_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);
 	new_profile_dialog->get_ok()->set_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);
 	erase_profile_dialog->set_title(TTR("Erase Profile"));
-	erase_profile_dialog->connect("confirmed", this, "_erase_selected_profile");
+	erase_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_erase_selected_profile));
 
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
-	import_profiles->set_mode(EditorFileDialog::MODE_OPEN_FILES);
-	import_profiles->add_filter("*.profile; Godot Feature Profile");
-	import_profiles->connect("files_selected", this, "_import_profiles");
+	import_profiles->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+	import_profiles->add_filter("*.profile; " + TTR("Godot Feature Profile"));
+	import_profiles->connect("files_selected", callable_mp(this, &EditorFeatureProfileManager::_import_profiles));
 	import_profiles->set_title(TTR("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
-	export_profile->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	export_profile->add_filter("*.profile; Godot Feature Profile");
-	export_profile->connect("file_selected", this, "_export_profile");
+	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	export_profile->add_filter("*.profile; " + TTR("Godot Feature Profile"));
+	export_profile->connect("file_selected", callable_mp(this, &EditorFeatureProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
@@ -915,7 +912,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	update_timer = memnew(Timer);
 	update_timer->set_wait_time(1); //wait a second before updating editor
 	add_child(update_timer);
-	update_timer->connect("timeout", this, "_emit_current_profile_changed");
+	update_timer->connect("timeout", callable_mp(this, &EditorFeatureProfileManager::_emit_current_profile_changed));
 	update_timer->set_one_shot(true);
 
 	updating_features = false;

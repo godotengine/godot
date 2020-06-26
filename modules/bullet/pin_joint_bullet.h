@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,10 +46,10 @@ public:
 	PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a, RigidBodyBullet *p_body_b, const Vector3 &p_pos_b);
 	~PinJointBullet();
 
-	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_PIN; }
+	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_PIN; }
 
-	void set_param(PhysicsServer::PinJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer::PinJointParam p_param) const;
+	void set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer3D::PinJointParam p_param) const;
 
 	void setPivotInA(const Vector3 &p_pos);
 	void setPivotInB(const Vector3 &p_pos);

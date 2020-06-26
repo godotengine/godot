@@ -1,133 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Texture" inherits="Resource" category="Core" version="3.2">
+<class name="Texture" inherits="Resource" version="4.0">
 	<brief_description>
-		Texture for 2D and 3D.
 	</brief_description>
 	<description>
-		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite] or GUI [Control].
-		Textures are often created by loading them from a file. See [method @GDScript.load].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="draw" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
-			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="3" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="4" name="normal_map" type="Texture" default="null">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="draw_rect" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="tile" type="bool">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="draw_rect_region" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
-			<argument index="2" name="src_rect" type="Rect2">
-			</argument>
-			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture" default="null">
-			</argument>
-			<argument index="6" name="clip_uv" type="bool" default="true">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_data" qualifiers="const">
-			<return type="Image">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_height" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the texture height.
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the texture size.
-			</description>
-		</method>
-		<method name="get_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the texture width.
-			</description>
-		</method>
-		<method name="has_alpha" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
-	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
-			The texture's flags.
-		</member>
-	</members>
 	<constants>
-		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
-			Default flags. [constant FLAG_MIPMAPS], [constant FLAG_REPEAT] and [constant FLAG_FILTER] are enabled.
-		</constant>
-		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
-			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
-		</constant>
-		<constant name="FLAG_REPEAT" value="2" enum="Flags">
-			Repeats the texture (instead of clamp to edge).
-		</constant>
-		<constant name="FLAG_FILTER" value="4" enum="Flags">
-			Uses a magnifying filter, to enable smooth zooming in of the texture.
-		</constant>
-		<constant name="FLAG_ANISOTROPIC_FILTER" value="8" enum="Flags">
-			Uses anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
-			This results in better-looking textures when viewed from oblique angles.
-		</constant>
-		<constant name="FLAG_CONVERT_TO_LINEAR" value="16" enum="Flags">
-			Converts the texture to the sRGB color space.
-		</constant>
-		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
-			Repeats the texture with alternate sections mirrored.
-		</constant>
-		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
-			Texture is a video surface.
-		</constant>
 	</constants>
 </class>

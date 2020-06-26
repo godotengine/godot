@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 */
 
 class XMLParser : public Reference {
-
 	GDCLASS(XMLParser, Reference);
 
 public:
@@ -66,15 +65,15 @@ public:
 	};
 
 private:
-	char *data;
-	char *P;
-	uint64_t length;
+	char *data = nullptr;
+	char *P = nullptr;
+	uint64_t length = 0;
 	void unescape(String &p_str);
 	Vector<String> special_characters;
 	String node_name;
-	bool node_empty;
-	NodeType node_type;
-	uint64_t node_offset;
+	bool node_empty = false;
+	NodeType node_type = NODE_NONE;
+	uint64_t node_offset = 0;
 
 	struct Attribute {
 		String name;
@@ -121,4 +120,4 @@ public:
 	~XMLParser();
 };
 
-#endif
+#endif // XML_PARSER_H

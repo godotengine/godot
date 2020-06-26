@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeSwitch" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeSwitch" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		A boolean/vector function for use within the visual shader graph.
 	</brief_description>
 	<description>
+		Returns an associated vector if the provided boolean value is [code]true[/code] or [code]false[/code].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, false, 1, Vector3( 1, 1, 1 ), 2, Vector3( 0, 0, 0 ) ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

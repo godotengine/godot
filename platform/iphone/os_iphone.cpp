@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,18 @@
 
 #include "os_iphone.h"
 
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+// #import <QuartzCore/CAMetalLayer.h>
+#include <vulkan/vulkan_metal.h>
+#endif
+
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include "main/main.h"
 
@@ -50,30 +58,24 @@
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
-
 	return 2;
 };
 
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
-
 	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
-
 	return (OSIPhone *)OS::get_singleton();
 };
 
 extern int gl_view_base_fb; // from gl_view.mm
 
 void OSIPhone::set_data_dir(String p_dir) {
-
 	DirAccess *da = DirAccess::open(p_dir);
 
 	data_dir = da->get_current_dir();
@@ -82,19 +84,15 @@ void OSIPhone::set_data_dir(String p_dir) {
 };
 
 void OSIPhone::set_unique_id(String p_id) {
-
 	unique_id = p_id;
 };
 
 String OSIPhone::get_unique_id() const {
-
 	return unique_id;
 };
 
 void OSIPhone::initialize_core() {
-
 	OS_Unix::initialize_core();
-	SemaphoreIphone::make_default();
 
 	set_data_dir(data_dir);
 };
@@ -103,68 +101,48 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-extern bool gles3_available; // from gl_view.mm
-
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	video_driver_index = p_video_driver;
 
-	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
+#if defined(OPENGL_ENABLED)
 	bool gl_initialization_error = false;
 
-	while (true) {
-		if (use_gl3) {
-			if (RasterizerGLES3::is_viable() == OK && gles3_available) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					use_gl3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
+
+	if (RasterizerGLES2::is_viable() == OK) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		gl_initialization_error = true;
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
+#endif
 
-	video_driver_index = p_video_driver;
-	visual_server = memnew(VisualServerRaster);
+#if defined(VULKAN_ENABLED)
+	RasterizerRD::make_current();
+#endif
+
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
+	rendering_server->init();
+	//rendering_server->cursor_set_visible(false, 0);
 
-	visual_server->init();
-	//visual_server->cursor_set_visible(false, 0);
-
-	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	if (use_gl3)
-		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
-	else
-		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+#if defined(OPENGL_ENABLED)
+	// reset this to what it should be, it will have been set to 0 after rendering_server->init() is called
+	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+#endif
 
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-
-	camera_server = memnew(CameraIOS);
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -189,12 +167,10 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
-
 	return main_loop;
 };
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
-
 	main_loop = p_main_loop;
 
 	if (main_loop) {
@@ -204,13 +180,11 @@ void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 };
 
 bool OSIPhone::iterate() {
-
 	if (!main_loop)
 		return true;
 
 	if (main_loop) {
 		for (int i = 0; i < event_count; i++) {
-
 			input->parse_input_event(event_queue[i]);
 		};
 	};
@@ -220,18 +194,17 @@ bool OSIPhone::iterate() {
 };
 
 void OSIPhone::key(uint32_t p_key, bool p_pressed) {
-
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_scancode(p_key);
+	ev->set_keycode(p_key);
+	ev->set_physical_keycode(p_key);
 	ev->set_unicode(p_key);
 	queue_event(ev);
 };
 
 void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
-
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
 		ev.instance();
@@ -246,9 +219,7 @@ void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_d
 };
 
 void OSIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
-
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
-
 		Ref<InputEventScreenDrag> ev;
 		ev.instance();
 		ev->set_index(p_idx);
@@ -259,18 +230,14 @@ void OSIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 };
 
 void OSIPhone::queue_event(const Ref<InputEvent> &p_event) {
-
 	ERR_FAIL_INDEX(event_count, MAX_EVENTS);
 
 	event_queue[event_count++] = p_event;
 };
 
 void OSIPhone::touches_cancelled() {
-
 	for (int i = 0; i < MAX_MOUSE_COUNT; i++) {
-
 		if (touch_list.pressed[i]) {
-
 			// send a mouse_up outside the screen
 			touch_press(i, -1, -1, false, false);
 		};
@@ -284,7 +251,6 @@ void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
 };
 
 void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
-
 	// Found out the Z should not be negated! Pass as is!
 	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
 
@@ -347,54 +313,61 @@ void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p
 };
 
 void OSIPhone::delete_main_loop() {
-
 	if (main_loop) {
 		main_loop->finish();
 		memdelete(main_loop);
 	};
 
-	main_loop = NULL;
+	main_loop = nullptr;
 };
 
 void OSIPhone::finalize() {
-
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
-
-	if (camera_server) {
-		memdelete(camera_server);
-		camera_server = NULL;
-	}
-
-	visual_server->finish();
-	memdelete(visual_server);
-	//	memdelete(rasterizer);
+	delete_main_loop();
 
 	memdelete(input);
+	memdelete(ios);
+
+#ifdef GAME_CENTER_ENABLED
+	memdelete(game_center);
+#endif
+
+#ifdef STOREKIT_ENABLED
+	memdelete(store_kit);
+#endif
+
+#ifdef ICLOUD_ENABLED
+	memdelete(icloud);
+#endif
+
+	rendering_server->finish();
+	memdelete(rendering_server);
+	//	memdelete(rasterizer);
+
+	// Free unhandled events before close
+	for (int i = 0; i < MAX_EVENTS; i++) {
+		event_queue[i].unref();
+	};
+	event_count = 0;
 };
 
-void OSIPhone::set_mouse_show(bool p_show){};
-void OSIPhone::set_mouse_grab(bool p_grab){};
+void OSIPhone::set_mouse_show(bool p_show) {}
+void OSIPhone::set_mouse_grab(bool p_grab) {}
 
 bool OSIPhone::is_mouse_grab_enabled() const {
-
 	return true;
 };
 
 Point2 OSIPhone::get_mouse_position() const {
-
 	return Point2();
 };
 
 int OSIPhone::get_mouse_button_state() const {
-
 	return 0;
 };
 
-void OSIPhone::set_window_title(const String &p_title){};
+void OSIPhone::set_window_title(const String &p_title) {}
 
 void OSIPhone::alert(const String &p_alert, const String &p_title) {
-
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
@@ -432,31 +405,28 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 }
 
 void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
-
 	video_mode = p_video_mode;
 };
 
 OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
-
 	return video_mode;
 };
 
 void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-
 	p_list->push_back(video_mode);
 };
 
 bool OSIPhone::can_draw() const {
-
 	if (native_video_is_playing())
 		return false;
 	return true;
 };
 
 int OSIPhone::set_base_framebuffer(int p_fb) {
-
+#if defined(OPENGL_ENABLED)
 	// gl_view_base_fb has not been updated yet
-	RasterizerStorageGLES3::system_fbo = p_fb;
+	RasterizerStorageGLES2::system_fbo = p_fb;
+#endif
 
 	return 0;
 };
@@ -471,7 +441,7 @@ extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
 
-void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 	_show_keyboard(p_existing_text);
 };
 
@@ -497,17 +467,14 @@ void OSIPhone::set_keep_screen_on(bool p_enabled) {
 };
 
 String OSIPhone::get_user_data_dir() const {
-
 	return data_dir;
 };
 
 String OSIPhone::get_name() const {
-
 	return "iOS";
 };
 
 String OSIPhone::get_model_name() const {
-
 	String model = ios->get_model();
 	if (model != "")
 		return model;
@@ -516,7 +483,6 @@ String OSIPhone::get_model_name() const {
 }
 
 Size2 OSIPhone::get_window_size() const {
-
 	return Vector2(video_mode.width, video_mode.height);
 }
 
@@ -527,7 +493,6 @@ Rect2 OSIPhone::get_window_safe_area() const {
 }
 
 bool OSIPhone::has_touchscreen_ui_hint() const {
-
 	return true;
 }
 
@@ -600,7 +565,6 @@ void OSIPhone::vibrate_handheld(int p_duration_ms) {
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
-
 	return p_feature == "mobile";
 }
 
@@ -608,7 +572,7 @@ bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 // so we use this as a hack to ensure certain code is called before
 // everything else, but after all units are initialized.
 typedef void (*init_callback)();
-static init_callback *ios_init_callbacks = NULL;
+static init_callback *ios_init_callbacks = nullptr;
 static int ios_init_callbacks_count = 0;
 static int ios_init_callbacks_capacity = 0;
 
@@ -631,12 +595,12 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 		ios_init_callbacks[i]();
 	}
 	free(ios_init_callbacks);
-	ios_init_callbacks = NULL;
+	ios_init_callbacks = nullptr;
 	ios_init_callbacks_count = 0;
 	ios_init_callbacks_capacity = 0;
 
-	main_loop = NULL;
-	visual_server = NULL;
+	main_loop = nullptr;
+	rendering_server = nullptr;
 
 	VideoMode vm;
 	vm.fullscreen = true;

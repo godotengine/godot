@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "core/reference.h"
 
 class HTTPClient : public Reference {
-
 	GDCLASS(HTTPClient, Reference);
 
 public:
@@ -158,31 +157,32 @@ private:
 	};
 
 #ifndef JAVASCRIPT_ENABLED
-	Status status;
-	IP::ResolverID resolving;
-	int conn_port;
+	Status status = STATUS_DISCONNECTED;
+	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;
+	int conn_port = -1;
 	String conn_host;
-	bool ssl;
-	bool ssl_verify_host;
-	bool blocking;
-	bool handshaking;
+	bool ssl = false;
+	bool ssl_verify_host = false;
+	bool blocking = false;
+	bool handshaking = false;
+	bool head_request = false;
 
 	Vector<uint8_t> response_str;
 
-	bool chunked;
+	bool chunked = false;
 	Vector<uint8_t> chunk;
-	int chunk_left;
-	bool chunk_trailer_part;
-	int body_size;
-	int body_left;
-	bool read_until_eof;
+	int chunk_left = 0;
+	bool chunk_trailer_part = false;
+	int body_size = -1;
+	int body_left = 0;
+	bool read_until_eof = false;
 
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;
 
-	int response_num;
+	int response_num = 0;
 	Vector<String> response_headers;
-	int read_chunk_size;
+	int read_chunk_size = 4096;
 
 	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
@@ -190,7 +190,7 @@ private:
 #include "platform/javascript/http_client.h.inc"
 #endif
 
-	PoolStringArray _get_response_headers();
+	PackedStringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
 
 	static void _bind_methods();
@@ -201,7 +201,7 @@ public:
 	void set_connection(const Ref<StreamPeer> &p_connection);
 	Ref<StreamPeer> get_connection() const;
 
-	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body);
+	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body);
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
 
 	void close();
@@ -214,12 +214,13 @@ public:
 	Error get_response_headers(List<String> *r_response);
 	int get_response_body_length() const;
 
-	PoolByteArray read_response_body_chunk(); // Can't get body as partial text because of most encodings UTF8, gzip, etc.
+	PackedByteArray read_response_body_chunk(); // Can't get body as partial text because of most encodings UTF8, gzip, etc.
 
 	void set_blocking_mode(bool p_enable); // Useful mostly if running in a thread
 	bool is_blocking_mode_enabled() const;
 
 	void set_read_chunk_size(int p_size);
+	int get_read_chunk_size() const;
 
 	Error poll();
 

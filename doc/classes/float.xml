@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="float" category="Built-In Types" version="3.2">
+<class name="float" version="4.0">
 	<brief_description>
-		Float built-in type
+		Float built-in type.
 	</brief_description>
 	<description>
 		Float built-in type.
@@ -33,7 +33,7 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Cast a [String] value to a floating-point value. This method accepts float value strings like [code]"1.23"[/code] and exponential notation strings for its parameter so calling [code]float("1e3")[/code] will return 1000.0 and calling [code]float("1e-3")[/code] will return 0.001.
+				Cast a [String] value to a floating-point value. This method accepts float value strings like [code]"1.23"[/code] and exponential notation strings for its parameter so calling [code]float("1e3")[/code] will return 1000.0 and calling [code]float("1e-3")[/code] will return 0.001. Calling this method with an invalid float string will return 0. This method stops parsing at the first invalid character and will return the parsed result so far, so calling [code]float("1a3")[/code] will return 1 while calling [code]float("1e3a2")[/code] will return 1000.0.
 			</description>
 		</method>
 	</methods>

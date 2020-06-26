@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamTexture2D" inherits="Texture2D" version="4.0">
+	<brief_description>
+		A [code].stex[/code] texture.
+	</brief_description>
+	<description>
+		A texture that is loaded from a [code].stex[/code] file.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Loads the texture from the given path.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
+			The StreamTexture's file path to a [code].stex[/code] file.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -641,7 +641,7 @@ static void HistogramAnalyzeEntropyBin(VP8LHistogramSet* const image_histo,
 // Merges some histograms with same bin_id together if it's advantageous.
 // Sets the remaining histograms to NULL.
 static void HistogramCombineEntropyBin(VP8LHistogramSet* const image_histo,
-                                       int *num_used,
+                                       int* num_used,
                                        const uint16_t* const clusters,
                                        uint16_t* const cluster_mappings,
                                        VP8LHistogram* cur_combo,

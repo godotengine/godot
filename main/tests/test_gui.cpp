@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "core/io/image_loader.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
@@ -53,20 +53,17 @@
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
 
-#include "scene/3d/camera.h"
-#include "scene/main/viewport.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/main/window.h"
 
 namespace TestGUI {
 
 class TestMainLoop : public SceneTree {
-
 public:
 	virtual void request_quit() {
-
 		quit();
 	}
 	virtual void init() {
-
 		SceneTree::init();
 
 		Panel *frame = memnew(Panel);
@@ -220,7 +217,7 @@ public:
 		richtext->add_text("faeries.\n");
 		richtext->pop();
 		richtext->add_text("In this new episode, we will attempt to ");
-		richtext->push_font(richtext->get_font("mono_font", "Fonts"));
+		richtext->push_font(richtext->get_theme_font("mono_font", "Fonts"));
 		richtext->push_color(Color(0.7, 0.5, 1.0));
 		richtext->add_text("deliver something nice");
 		richtext->pop();
@@ -266,9 +263,9 @@ public:
 };
 
 MainLoop *test() {
-
 	return memnew(TestMainLoop);
 }
+
 } // namespace TestGUI
 
 #endif

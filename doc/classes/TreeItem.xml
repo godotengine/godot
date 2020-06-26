@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TreeItem" inherits="Object" category="Core" version="3.2">
+<class name="TreeItem" inherits="Object" version="4.0">
 	<brief_description>
 		Control for a single item inside a [Tree].
 	</brief_description>
 	<description>
 		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
+		You can remove a [TreeItem] by using [method Object.free].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,7 +15,7 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="button" type="Texture">
+			<argument index="1" name="button" type="Texture2D">
 			</argument>
 			<argument index="2" name="button_idx" type="int" default="-1">
 			</argument>
@@ -23,13 +24,13 @@
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+				Adds a button with [Texture2D] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="method" type="String">
+			<argument index="0" name="method" type="StringName">
 			</argument>
 			<description>
 				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
@@ -74,14 +75,14 @@
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
 			<argument index="1" name="button_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] of the button at index [code]button_idx[/code] in column [code]column[/code].
+				Returns the [Texture2D] of the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -148,12 +149,12 @@
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Returns the given column's icon [Texture]. Error if no icon is set.
+				Returns the given column's icon [Texture2D]. Error if no icon is set.
 			</description>
 		</method>
 		<method name="get_icon_max_width" qualifiers="const">
@@ -180,7 +181,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Returns the icon [Texture] region as [Rect2].
+				Returns the icon [Texture2D] region as [Rect2].
 			</description>
 		</method>
 		<method name="get_metadata" qualifiers="const">
@@ -242,6 +243,14 @@
 		</method>
 		<method name="get_range_config">
 			<return type="Dictionary">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_suffix" qualifiers="const">
+			<return type="String">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
@@ -350,7 +359,7 @@
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
-				Removes the given child TreeItem.
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>
 		</method>
 		<method name="select">
@@ -369,10 +378,10 @@
 			</argument>
 			<argument index="1" name="button_idx" type="int">
 			</argument>
-			<argument index="2" name="button" type="Texture">
+			<argument index="2" name="button" type="Texture2D">
 			</argument>
 			<description>
-				Sets the given column's button [Texture] at index [code]button_idx[/code] to [code]button[/code].
+				Sets the given column's button [Texture2D] at index [code]button_idx[/code] to [code]button[/code].
 			</description>
 		</method>
 		<method name="set_button_disabled">
@@ -396,7 +405,7 @@
 			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode">
 			</argument>
 			<description>
-				Sets the given column's cell mode to [code]mode[/code]. See [code]CELL_MODE_*[/code] constants.
+				Sets the given column's cell mode to [code]mode[/code]. See [enum TreeCellMode] constants.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -451,7 +460,7 @@
 			</argument>
 			<argument index="1" name="object" type="Object">
 			</argument>
-			<argument index="2" name="callback" type="String">
+			<argument index="2" name="callback" type="StringName">
 			</argument>
 			<description>
 				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
@@ -485,10 +494,10 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the given column's icon [Texture].
+				Sets the given column's icon [Texture2D].
 			</description>
 		</method>
 		<method name="set_icon_max_width">
@@ -569,6 +578,16 @@
 			</argument>
 			<description>
 				If [code]true[/code], the given column is selectable.
+			</description>
+		</method>
+		<method name="set_suffix">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_text">

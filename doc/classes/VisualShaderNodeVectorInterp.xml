@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVectorInterp" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeVectorInterp" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Linearly interpolates between two vectors within the visual shader graph.
 	</brief_description>
 	<description>
+		Translates to [code]mix(a, b, weight)[/code] in the shader language, where [code]weight[/code] is a [Vector3] with weights for each component.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, Vector3( 0, 0, 0 ), 1, Vector3( 1, 1, 1 ), 2, Vector3( 0.5, 0.5, 0.5 ) ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

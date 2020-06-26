@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,9 +39,10 @@ ResourceFormatLoaderPluginScript::ResourceFormatLoaderPluginScript(PluginScriptL
 	_language = language;
 }
 
-RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	if (r_error)
+RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
+	}
 
 	PluginScript *script = memnew(PluginScript);
 	script->init(_language);
@@ -55,8 +56,9 @@ RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p
 
 	script->reload();
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return scriptres;
 }
@@ -71,8 +73,9 @@ bool ResourceFormatLoaderPluginScript::handles_type(const String &p_type) const 
 
 String ResourceFormatLoaderPluginScript::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == _language->get_extension())
+	if (el == _language->get_extension()) {
 		return _language->get_type();
+	}
 	return "";
 }
 
@@ -101,13 +104,11 @@ Error ResourceFormatSaverPluginScript::save(const String &p_path, const RES &p_r
 }
 
 void ResourceFormatSaverPluginScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-
 	if (Object::cast_to<PluginScript>(*p_resource)) {
 		p_extensions->push_back(_language->get_extension());
 	}
 }
 
 bool ResourceFormatSaverPluginScript::recognize(const RES &p_resource) const {
-
-	return Object::cast_to<PluginScript>(*p_resource) != NULL;
+	return Object::cast_to<PluginScript>(*p_resource) != nullptr;
 }

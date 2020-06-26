@@ -415,8 +415,7 @@ if (caseless)
   else
 #endif
 
-    /* Not in UTF mode */
-
+  /* Not in UTF mode */
     {
     for (; length > 0; length--)
       {
@@ -491,26 +490,31 @@ heap is used for a larger vector.
 *************************************************/
 
 /* These macros pack up tests that are used for partial matching several times
-in the code. We set the "hit end" flag if the pointer is at the end of the
-subject and also past the earliest inspected character (i.e. something has been
-matched, even if not part of the actual matched string). For hard partial
-matching, we then return immediately. The second one is used when we already
-know we are past the end of the subject. */
+in the code. The second one is used when we already know we are past the end of
+the subject. We set the "hit end" flag if the pointer is at the end of the
+subject and either (a) the pointer is past the earliest inspected character
+(i.e. something has been matched, even if not part of the actual matched
+string), or (b) the pattern contains a lookbehind. These are the conditions for
+which adding more characters may allow the current match to continue.
+
+For hard partial matching, we immediately return a partial match. Otherwise,
+carrying on means that a complete match on the current subject will be sought.
+A partial match is returned only if no complete match can be found. */
 
 #define CHECK_PARTIAL()\
-  if (mb->partial != 0 && Feptr >= mb->end_subject && \
-      Feptr > mb->start_used_ptr) \
+  if (Feptr >= mb->end_subject) \
     { \
-    mb->hitend = TRUE; \
-    if (mb->partial > 1) return PCRE2_ERROR_PARTIAL; \
+    SCHECK_PARTIAL(); \
     }
 
 #define SCHECK_PARTIAL()\
-  if (mb->partial != 0 && Feptr > mb->start_used_ptr) \
+  if (mb->partial != 0 && \
+      (Feptr > mb->start_used_ptr || mb->allowemptypartial)) \
     { \
     mb->hitend = TRUE; \
     if (mb->partial > 1) return PCRE2_ERROR_PARTIAL; \
     }
+
 
 /* These macros are used to implement backtracking. They simulate a recursive
 call to the match() function by means of a local vector of frames which
@@ -5127,6 +5131,8 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
     case OP_ASSERT:
     case OP_ASSERTBACK:
+    case OP_ASSERT_NA:
+    case OP_ASSERTBACK_NA:
     Lframe_type = GF_NOCAPTURE | Fop;
     for (;;)
       {
@@ -5412,7 +5418,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       {
       while (number-- > 0)
         {
-        if (Feptr <= mb->start_subject) RRETURN(MATCH_NOMATCH);
+        if (Feptr <= mb->check_subject) RRETURN(MATCH_NOMATCH);
         Feptr--;
         BACKCHAR(Feptr);
         }
@@ -5420,7 +5426,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
     else
 #endif
 
-    /* No UTF-8 support, or not in UTF-8 mode: count is byte count */
+    /* No UTF-8 support, or not in UTF-8 mode: count is code unit count */
 
       {
       if ((ptrdiff_t)number > Feptr - mb->start_subject) RRETURN(MATCH_NOMATCH);
@@ -5472,15 +5478,16 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
       /* If we are at the end of an assertion that is a condition, return a
       match, discarding any intermediate backtracking points. Copy back the
-      captures into the frame before N so that they are set on return. Doing
-      this for all assertions, both positive and negative, seems to match what
-      Perl does. */
+      mark setting and the captures into the frame before N so that they are
+      set on return. Doing this for all assertions, both positive and negative,
+      seems to match what Perl does. */
 
       if (GF_IDMASK(N->group_frame_type) == GF_CONDASSERT)
         {
         memcpy((char *)P + offsetof(heapframe, ovector), Fovector,
           Foffset_top * sizeof(PCRE2_SIZE));
         P->offset_top = Foffset_top;
+        P->mark = Fmark;
         Fback_frame = (char *)F - (char *)P;
         RRETURN(MATCH_MATCH);
         }
@@ -5496,8 +5503,18 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
       case OP_SCOND:
       break;
 
-      /* Positive assertions are like OP_ONCE, except that in addition the
+      /* Non-atomic positive assertions are like OP_BRA, except that the
       subject pointer must be put back to where it was at the start of the
+      assertion. */
+
+      case OP_ASSERT_NA:
+      case OP_ASSERTBACK_NA:
+      if (Feptr > mb->last_used_ptr) mb->last_used_ptr = Feptr;
+      Feptr = P->eptr;
+      break;
+
+      /* Atomic positive assertions are like OP_ONCE, except that in addition
+      the subject pointer must be put back to where it was at the start of the
       assertion. */
 
       case OP_ASSERT:
@@ -5640,7 +5657,11 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
     case OP_EOD:
     if (Feptr < mb->end_subject) RRETURN(MATCH_NOMATCH);
-    SCHECK_PARTIAL();
+    if (mb->partial != 0)
+      {
+      mb->hitend = TRUE;
+      if (mb->partial > 1) return PCRE2_ERROR_PARTIAL;
+      }
     Fecode++;
     break;
 
@@ -5665,7 +5686,11 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
     /* Either at end of string or \n before end. */
 
-    SCHECK_PARTIAL();
+    if (mb->partial != 0)
+      {
+      mb->hitend = TRUE;
+      if (mb->partial > 1) return PCRE2_ERROR_PARTIAL;
+      }
     Fecode++;
     break;
 
@@ -5743,7 +5768,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
 
     case OP_NOT_WORD_BOUNDARY:
     case OP_WORD_BOUNDARY:
-    if (Feptr == mb->start_subject) prev_is_word = FALSE; else
+    if (Feptr == mb->check_subject) prev_is_word = FALSE; else
       {
       PCRE2_SPTR lastptr = Feptr - 1;
 #ifdef SUPPORT_UNICODE
@@ -5946,6 +5971,7 @@ in rrc. */
 #define LBL(val) case val: goto L_RM##val;
 
 RETURN_SWITCH:
+if (Feptr > mb->last_used_ptr) mb->last_used_ptr = Feptr;
 if (Frdepth == 0) return rrc;                     /* Exit from the top level */
 F = (heapframe *)((char *)F - Fback_frame);       /* Backtrack */
 mb->cb->callout_flags |= PCRE2_CALLOUT_BACKTRACK; /* Note for callouts */
@@ -5999,9 +6025,9 @@ Arguments:
 
 Returns:          > 0 => success; value is the number of ovector pairs filled
                   = 0 => success, but ovector is not big enough
-                   -1 => failed to match (PCRE2_ERROR_NOMATCH)
-                   -2 => partial match (PCRE2_ERROR_PARTIAL)
-                 < -2 => some kind of unexpected problem
+                  = -1 => failed to match (PCRE2_ERROR_NOMATCH)
+                  = -2 => partial match (PCRE2_ERROR_PARTIAL)
+                  < -2 => some kind of unexpected problem
 */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
@@ -6014,13 +6040,17 @@ int was_zero_terminated = 0;
 const uint8_t *start_bits = NULL;
 const pcre2_real_code *re = (const pcre2_real_code *)code;
 
-
 BOOL anchored;
 BOOL firstline;
 BOOL has_first_cu = FALSE;
 BOOL has_req_cu = FALSE;
 BOOL startline;
 BOOL utf;
+
+#if PCRE2_CODE_UNIT_WIDTH == 8
+BOOL memchr_not_found_first_cu = FALSE;
+BOOL memchr_not_found_first_cu2 = FALSE;
+#endif
 
 PCRE2_UCHAR first_cu = 0;
 PCRE2_UCHAR first_cu2 = 0;
@@ -6029,10 +6059,23 @@ PCRE2_UCHAR req_cu2 = 0;
 
 PCRE2_SPTR bumpalong_limit;
 PCRE2_SPTR end_subject;
+PCRE2_SPTR true_end_subject;
 PCRE2_SPTR start_match = subject + start_offset;
 PCRE2_SPTR req_cu_ptr = start_match - 1;
-PCRE2_SPTR start_partial = NULL;
-PCRE2_SPTR match_partial = NULL;
+PCRE2_SPTR start_partial;
+PCRE2_SPTR match_partial;
+
+#ifdef SUPPORT_JIT
+BOOL use_jit;
+#endif
+
+#ifdef SUPPORT_UNICODE
+BOOL allow_invalid;
+uint32_t fragment_options = 0;
+#ifdef SUPPORT_JIT
+BOOL jit_checked_utf = FALSE;
+#endif
+#endif
 
 PCRE2_SIZE frame_size;
 
@@ -6059,7 +6102,7 @@ if (length == PCRE2_ZERO_TERMINATED)
   length = PRIV(strlen)(subject);
   was_zero_terminated = 1;
   }
-end_subject = subject + length;
+true_end_subject = end_subject = subject + length;
 
 /* Plausibility checks */
 
@@ -6095,12 +6138,24 @@ options |= (re->flags & FF) / ((FF & (~FF+1)) / (OO & (~OO+1)));
 #undef FF
 #undef OO
 
-/* These two settings are used in the code for checking a UTF string that
-follows immediately afterwards. Other values in the mb block are used only
-during interpretive processing, not when the JIT support is in use, so they are
-set up later. */
+/* If the pattern was successfully studied with JIT support, we will run the
+JIT executable instead of the rest of this function. Most options must be set
+at compile time for the JIT code to be usable. */
+
+#ifdef SUPPORT_JIT
+use_jit = (re->executable_jit != NULL &&
+          (options & ~PUBLIC_JIT_MATCH_OPTIONS) == 0);
+#endif
+
+/* Initialize UTF parameters. */
 
 utf = (re->overall_options & PCRE2_UTF) != 0;
+#ifdef SUPPORT_UNICODE
+allow_invalid = (re->overall_options & PCRE2_MATCH_INVALID_UTF) != 0;
+#endif
+
+/* Convert the partial matching flags into an integer. */
+
 mb->partial = ((options & PCRE2_PARTIAL_HARD) != 0)? 2 :
               ((options & PCRE2_PARTIAL_SOFT) != 0)? 1 : 0;
 
@@ -6110,61 +6165,6 @@ time. */
 if (mb->partial != 0 &&
    ((re->overall_options | options) & PCRE2_ENDANCHORED) != 0)
   return PCRE2_ERROR_BADOPTION;
-
-/* Check a UTF string for validity if required. For 8-bit and 16-bit strings,
-we must also check that a starting offset does not point into the middle of a
-multiunit character. We check only the portion of the subject that is going to
-be inspected during matching - from the offset minus the maximum back reference
-to the given length. This saves time when a small part of a large subject is
-being matched by the use of a starting offset. Note that the maximum lookbehind
-is a number of characters, not code units. */
-
-#ifdef SUPPORT_UNICODE
-if (utf && (options & PCRE2_NO_UTF_CHECK) == 0)
-  {
-  PCRE2_SPTR check_subject = start_match;  /* start_match includes offset */
-
-  if (start_offset > 0)
-    {
-#if PCRE2_CODE_UNIT_WIDTH != 32
-    unsigned int i;
-    if (start_match < end_subject && NOT_FIRSTCU(*start_match))
-      return PCRE2_ERROR_BADUTFOFFSET;
-    for (i = re->max_lookbehind; i > 0 && check_subject > subject; i--)
-      {
-      check_subject--;
-      while (check_subject > subject &&
-#if PCRE2_CODE_UNIT_WIDTH == 8
-      (*check_subject & 0xc0) == 0x80)
-#else  /* 16-bit */
-      (*check_subject & 0xfc00) == 0xdc00)
-#endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
-        check_subject--;
-      }
-#else
-    /* In the 32-bit library, one code unit equals one character. However,
-    we cannot just subtract the lookbehind and then compare pointers, because
-    a very large lookbehind could create an invalid pointer. */
-
-    if (start_offset >= re->max_lookbehind)
-      check_subject -= re->max_lookbehind;
-    else
-      check_subject = subject;
-#endif  /* PCRE2_CODE_UNIT_WIDTH != 32 */
-    }
-
-  /* Validate the relevant portion of the subject. After an error, adjust the
-  offset to be an absolute offset in the whole string. */
-
-  match_data->rc = PRIV(valid_utf)(check_subject,
-    length - (check_subject - subject), &(match_data->startchar));
-  if (match_data->rc != 0)
-    {
-    match_data->startchar += check_subject - subject;
-    return match_data->rc;
-    }
-  }
-#endif  /* SUPPORT_UNICODE */
 
 /* It is an error to set an offset limit without setting the flag at compile
 time. */
@@ -6184,15 +6184,89 @@ if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
   }
 match_data->subject = NULL;
 
-/* If the pattern was successfully studied with JIT support, run the JIT
-executable instead of the rest of this function. Most options must be set at
-compile time for the JIT code to be usable. Fallback to the normal code path if
-an unsupported option is set or if JIT returns BADOPTION (which means that the
-selected normal or partial matching mode was not compiled). */
+/* Zero the error offset in case the first code unit is invalid UTF. */
+
+match_data->startchar = 0;
+
+
+/* ============================= JIT matching ============================== */
+
+/* Prepare for JIT matching. Check a UTF string for validity unless no check is
+requested or invalid UTF can be handled. We check only the portion of the
+subject that might be be inspected during matching - from the offset minus the
+maximum lookbehind to the given length. This saves time when a small part of a
+large subject is being matched by the use of a starting offset. Note that the
+maximum lookbehind is a number of characters, not code units. */
 
 #ifdef SUPPORT_JIT
-if (re->executable_jit != NULL && (options & ~PUBLIC_JIT_MATCH_OPTIONS) == 0)
+if (use_jit)
   {
+#ifdef SUPPORT_UNICODE
+  if (utf && (options & PCRE2_NO_UTF_CHECK) == 0 && !allow_invalid)
+    {
+#if PCRE2_CODE_UNIT_WIDTH != 32
+    unsigned int i;
+#endif
+
+    /* For 8-bit and 16-bit UTF, check that the first code unit is a valid
+    character start. */
+
+#if PCRE2_CODE_UNIT_WIDTH != 32
+    if (start_match < end_subject && NOT_FIRSTCU(*start_match))
+      {
+      if (start_offset > 0) return PCRE2_ERROR_BADUTFOFFSET;
+#if PCRE2_CODE_UNIT_WIDTH == 8
+      return PCRE2_ERROR_UTF8_ERR20;  /* Isolated 0x80 byte */
+#else
+      return PCRE2_ERROR_UTF16_ERR3;  /* Isolated low surrogate */
+#endif
+      }
+#endif  /* WIDTH != 32 */
+
+    /* Move back by the maximum lookbehind, just in case it happens at the very
+    start of matching. */
+
+#if PCRE2_CODE_UNIT_WIDTH != 32
+    for (i = re->max_lookbehind; i > 0 && start_match > subject; i--)
+      {
+      start_match--;
+      while (start_match > subject &&
+#if PCRE2_CODE_UNIT_WIDTH == 8
+      (*start_match & 0xc0) == 0x80)
+#else  /* 16-bit */
+      (*start_match & 0xfc00) == 0xdc00)
+#endif
+        start_match--;
+      }
+#else  /* PCRE2_CODE_UNIT_WIDTH != 32 */
+
+    /* In the 32-bit library, one code unit equals one character. However,
+    we cannot just subtract the lookbehind and then compare pointers, because
+    a very large lookbehind could create an invalid pointer. */
+
+    if (start_offset >= re->max_lookbehind)
+      start_match -= re->max_lookbehind;
+    else
+      start_match = subject;
+#endif  /* PCRE2_CODE_UNIT_WIDTH != 32 */
+
+    /* Validate the relevant portion of the subject. Adjust the offset of an
+    invalid code point to be an absolute offset in the whole string. */
+
+    match_data->rc = PRIV(valid_utf)(start_match,
+      length - (start_match - subject), &(match_data->startchar));
+    if (match_data->rc != 0)
+      {
+      match_data->startchar += start_match - subject;
+      return match_data->rc;
+      }
+    jit_checked_utf = TRUE;
+    }
+#endif  /* SUPPORT_UNICODE */
+
+  /* If JIT returns BADOPTION, which means that the selected complete or
+  partial matching mode was not compiled, fall through to the interpreter. */
+
   rc = pcre2_jit_match(code, subject, length, start_offset, options,
     match_data, mcontext);
   if (rc != PCRE2_ERROR_JIT_BADOPTION)
@@ -6209,10 +6283,152 @@ if (re->executable_jit != NULL && (options & ~PUBLIC_JIT_MATCH_OPTIONS) == 0)
     return rc;
     }
   }
+#endif  /* SUPPORT_JIT */
+
+/* ========================= End of JIT matching ========================== */
+
+
+/* Proceed with non-JIT matching. The default is to allow lookbehinds to the
+start of the subject. A UTF check when there is a non-zero offset may change
+this. */
+
+mb->check_subject = subject;
+
+/* If a UTF subject string was not checked for validity in the JIT code above,
+check it here, and handle support for invalid UTF strings. The check above
+happens only when invalid UTF is not supported and PCRE2_NO_CHECK_UTF is unset.
+If we get here in those circumstances, it means the subject string is valid,
+but for some reason JIT matching was not successful. There is no need to check
+the subject again.
+
+We check only the portion of the subject that might be be inspected during
+matching - from the offset minus the maximum lookbehind to the given length.
+This saves time when a small part of a large subject is being matched by the
+use of a starting offset. Note that the maximum lookbehind is a number of
+characters, not code units.
+
+Note also that support for invalid UTF forces a check, overriding the setting
+of PCRE2_NO_CHECK_UTF. */
+
+#ifdef SUPPORT_UNICODE
+if (utf &&
+#ifdef SUPPORT_JIT
+    !jit_checked_utf &&
+#endif
+    ((options & PCRE2_NO_UTF_CHECK) == 0 || allow_invalid))
+  {
+#if PCRE2_CODE_UNIT_WIDTH != 32
+  BOOL skipped_bad_start = FALSE;
 #endif
 
-/* Carry on with non-JIT matching. A NULL match context means "use a default
-context", but we take the memory control functions from the pattern. */
+  /* For 8-bit and 16-bit UTF, check that the first code unit is a valid
+  character start. If we are handling invalid UTF, just skip over such code
+  units. Otherwise, give an appropriate error. */
+
+#if PCRE2_CODE_UNIT_WIDTH != 32
+  if (allow_invalid)
+    {
+    while (start_match < end_subject && NOT_FIRSTCU(*start_match))
+      {
+      start_match++;
+      skipped_bad_start = TRUE;
+      }
+    }
+  else if (start_match < end_subject && NOT_FIRSTCU(*start_match))
+    {
+    if (start_offset > 0) return PCRE2_ERROR_BADUTFOFFSET;
+#if PCRE2_CODE_UNIT_WIDTH == 8
+    return PCRE2_ERROR_UTF8_ERR20;  /* Isolated 0x80 byte */
+#else
+    return PCRE2_ERROR_UTF16_ERR3;  /* Isolated low surrogate */
+#endif
+    }
+#endif  /* WIDTH != 32 */
+
+  /* The mb->check_subject field points to the start of UTF checking;
+  lookbehinds can go back no further than this. */
+
+  mb->check_subject = start_match;
+
+  /* Move back by the maximum lookbehind, just in case it happens at the very
+  start of matching, but don't do this if we skipped bad 8-bit or 16-bit code
+  units above. */
+
+#if PCRE2_CODE_UNIT_WIDTH != 32
+  if (!skipped_bad_start)
+    {
+    unsigned int i;
+    for (i = re->max_lookbehind; i > 0 && mb->check_subject > subject; i--)
+      {
+      mb->check_subject--;
+      while (mb->check_subject > subject &&
+#if PCRE2_CODE_UNIT_WIDTH == 8
+      (*mb->check_subject & 0xc0) == 0x80)
+#else  /* 16-bit */
+      (*mb->check_subject & 0xfc00) == 0xdc00)
+#endif
+        mb->check_subject--;
+      }
+    }
+#else  /* PCRE2_CODE_UNIT_WIDTH != 32 */
+
+  /* In the 32-bit library, one code unit equals one character. However,
+  we cannot just subtract the lookbehind and then compare pointers, because
+  a very large lookbehind could create an invalid pointer. */
+
+  if (start_offset >= re->max_lookbehind)
+    mb->check_subject -= re->max_lookbehind;
+  else
+    mb->check_subject = subject;
+#endif  /* PCRE2_CODE_UNIT_WIDTH != 32 */
+
+  /* Validate the relevant portion of the subject. There's a loop in case we
+  encounter bad UTF in the characters preceding start_match which we are
+  scanning because of a lookbehind. */
+
+  for (;;)
+    {
+    match_data->rc = PRIV(valid_utf)(mb->check_subject,
+      length - (mb->check_subject - subject), &(match_data->startchar));
+
+    if (match_data->rc == 0) break;   /* Valid UTF string */
+
+    /* Invalid UTF string. Adjust the offset to be an absolute offset in the
+    whole string. If we are handling invalid UTF strings, set end_subject to
+    stop before the bad code unit, and set the options to "not end of line".
+    Otherwise return the error. */
+
+    match_data->startchar += mb->check_subject - subject;
+    if (!allow_invalid || match_data->rc > 0) return match_data->rc;
+    end_subject = subject + match_data->startchar;
+
+    /* If the end precedes start_match, it means there is invalid UTF in the
+    extra code units we reversed over because of a lookbehind. Advance past the
+    first bad code unit, and then skip invalid character starting code units in
+    8-bit and 16-bit modes, and try again. */
+
+    if (end_subject < start_match)
+      {
+      mb->check_subject = end_subject + 1;
+#if PCRE2_CODE_UNIT_WIDTH != 32
+      while (mb->check_subject < start_match && NOT_FIRSTCU(*mb->check_subject))
+        mb->check_subject++;
+#endif
+      }
+
+    /* Otherwise, set the not end of line option, and do the match. */
+
+    else
+      {
+      fragment_options = PCRE2_NOTEOL;
+      break;
+      }
+    }
+  }
+#endif  /* SUPPORT_UNICODE */
+
+/* A NULL match context means "use a default context", but we take the memory
+control functions from the pattern. */
 
 if (mcontext == NULL)
   {
@@ -6224,8 +6440,8 @@ else mb->memctl = mcontext->memctl;
 anchored = ((re->overall_options | options) & PCRE2_ANCHORED) != 0;
 firstline = (re->overall_options & PCRE2_FIRSTLINE) != 0;
 startline = (re->flags & PCRE2_STARTLINE) != 0;
-bumpalong_limit =  (mcontext->offset_limit == PCRE2_UNSET)?
-  end_subject : subject + mcontext->offset_limit;
+bumpalong_limit = (mcontext->offset_limit == PCRE2_UNSET)?
+  true_end_subject : subject + mcontext->offset_limit;
 
 /* Initialize and set up the fixed fields in the callout block, with a pointer
 in the match block. */
@@ -6236,7 +6452,8 @@ cb.subject = subject;
 cb.subject_length = (PCRE2_SIZE)(end_subject - subject);
 cb.callout_flags = 0;
 
-/* Fill in the remaining fields in the match block. */
+/* Fill in the remaining fields in the match block, except for moptions, which
+gets set later. */
 
 mb->callout = mcontext->callout;
 mb->callout_data = mcontext->callout_data;
@@ -6245,13 +6462,11 @@ mb->start_subject = subject;
 mb->start_offset = start_offset;
 mb->end_subject = end_subject;
 mb->hasthen = (re->flags & PCRE2_HASTHEN) != 0;
-
-mb->moptions = options;                 /* Match options */
-mb->poptions = re->overall_options;     /* Pattern options */
-
+mb->allowemptypartial = (re->max_lookbehind > 0) ||
+    (re->flags & PCRE2_MATCH_EMPTY) != 0;
+mb->poptions = re->overall_options;          /* Pattern options */
 mb->ignore_skip_arg = 0;
-mb->mark = mb->nomatch_mark = NULL;     /* In case never set */
-mb->hitend = FALSE;
+mb->mark = mb->nomatch_mark = NULL;          /* In case never set */
 
 /* The name table is needed for finding all the numbers associated with a
 given name, for condition testing. The code follows the name table. */
@@ -6404,6 +6619,13 @@ if ((re->flags & PCRE2_LASTSET) != 0)
 /* Loop for handling unanchored repeated matching attempts; for anchored regexs
 the loop runs just once. */
 
+#ifdef SUPPORT_UNICODE
+FRAGMENT_RESTART:
+#endif
+
+start_partial = match_partial = NULL;
+mb->hitend = FALSE;
+
 for(;;)
   {
   PCRE2_SPTR new_start_match;
@@ -6473,7 +6695,10 @@ for(;;)
     /* Not anchored. Advance to a unique first code unit if there is one. In
     8-bit mode, the use of memchr() gives a big speed up, even though we have
     to call it twice in caseless mode, in order to find the earliest occurrence
-    of the character in either of its cases. */
+    of the character in either of its cases. If a call to memchr() that
+    searches the rest of the subject fails to find one case, remember that in
+    order not to keep on repeating the search. This can make a huge difference
+    when the strings are very long and only one case is present. */
 
     else
       {
@@ -6487,11 +6712,29 @@ for(;;)
                 (smc = UCHAR21TEST(start_match)) != first_cu &&
                   smc != first_cu2)
             start_match++;
+
 #else  /* 8-bit code units */
-          PCRE2_SPTR pp1 =
-            memchr(start_match, first_cu, end_subject-start_match);
-          PCRE2_SPTR pp2 =
-            memchr(start_match, first_cu2, end_subject-start_match);
+          PCRE2_SPTR pp1 = NULL;
+          PCRE2_SPTR pp2 = NULL;
+          PCRE2_SIZE cu2size = end_subject - start_match;
+
+          if (!memchr_not_found_first_cu)
+            {
+            pp1 = memchr(start_match, first_cu, end_subject - start_match);
+            if (pp1 == NULL) memchr_not_found_first_cu = TRUE;
+              else cu2size = pp1 - start_match;
+            }
+
+          /* If pp1 is not NULL, we have arranged to search only as far as pp1,
+          to see if the other case is earlier, so we can set "not found" only
+          when both searches have returned NULL. */
+
+          if (!memchr_not_found_first_cu2)
+            {
+            pp2 = memchr(start_match, first_cu2, cu2size);
+            memchr_not_found_first_cu2 = (pp2 == NULL && pp1 == NULL);
+            }
+
           if (pp1 == NULL)
             start_match = (pp2 == NULL)? end_subject : pp2;
           else
@@ -6523,7 +6766,7 @@ for(;;)
         we also let the cycle run, because the matching string is legitimately
         allowed to start with the first code unit of a newline. */
 
-        if (!mb->partial && start_match >= mb->end_subject)
+        if (mb->partial == 0 && start_match >= mb->end_subject)
           {
           rc = MATCH_NOMATCH;
           break;
@@ -6582,7 +6825,7 @@ for(;;)
 
         /* See comment above in first_cu checking about the next few lines. */
 
-        if (!mb->partial && start_match >= mb->end_subject)
+        if (mb->partial == 0 && start_match >= mb->end_subject)
           {
           rc = MATCH_NOMATCH;
           break;
@@ -6596,8 +6839,10 @@ for(;;)
 
     /* The following two optimizations must be disabled for partial matching. */
 
-    if (!mb->partial)
+    if (mb->partial == 0)
       {
+      PCRE2_SPTR p;
+
       /* The minimum matching length is a lower bound; no string of that length
       may actually match the pattern. Although the value is, strictly, in
       characters, we treat it as code units to avoid spending too much time in
@@ -6621,60 +6866,57 @@ for(;;)
       memchr() twice in the caseless case because we only need to check for the
       presence of the character in either case, not find the first occurrence.
 
+      The search can be skipped if the code unit was found later than the
+      current starting point in a previous iteration of the bumpalong loop.
+
       HOWEVER: when the subject string is very, very long, searching to its end
       can take a long time, and give bad performance on quite ordinary
-      patterns. This showed up when somebody was matching something like
-      /^\d+C/ on a 32-megabyte string... so we don't do this when the string is
-      sufficiently long. */
+      anchored patterns. This showed up when somebody was matching something
+      like /^\d+C/ on a 32-megabyte string... so we don't do this when the
+      string is sufficiently long, but it's worth searching a lot more for
+      unanchored patterns. */
 
-      if (has_req_cu && end_subject - start_match < REQ_CU_MAX)
+      p = start_match + (has_first_cu? 1:0);
+      if (has_req_cu && p > req_cu_ptr)
         {
-        PCRE2_SPTR p = start_match + (has_first_cu? 1:0);
+        PCRE2_SIZE check_length = end_subject - start_match;
 
-        /* We don't need to repeat the search if we haven't yet reached the
-        place we found it last time round the bumpalong loop. */
-
-        if (p > req_cu_ptr)
+        if (check_length < REQ_CU_MAX ||
+              (!anchored && check_length < REQ_CU_MAX * 1000))
           {
-          if (p < end_subject)
+          if (req_cu != req_cu2)  /* Caseless */
             {
-            if (req_cu != req_cu2)  /* Caseless */
-              {
 #if PCRE2_CODE_UNIT_WIDTH != 8
-              do
-                {
-                uint32_t pp = UCHAR21INCTEST(p);
-                if (pp == req_cu || pp == req_cu2) { p--; break; }
-                }
-              while (p < end_subject);
-
-#else  /* 8-bit code units */
-              PCRE2_SPTR pp = p;
-              p = memchr(pp, req_cu, end_subject - pp);
-              if (p == NULL)
-                {
-                p = memchr(pp, req_cu2, end_subject - pp);
-                if (p == NULL) p = end_subject;
-                }
-#endif /* PCRE2_CODE_UNIT_WIDTH != 8 */
+            while (p < end_subject)
+              {
+              uint32_t pp = UCHAR21INCTEST(p);
+              if (pp == req_cu || pp == req_cu2) { p--; break; }
               }
-
-            /* The caseful case */
-
-            else
-              {
-#if PCRE2_CODE_UNIT_WIDTH != 8
-              do
-                {
-                if (UCHAR21INCTEST(p) == req_cu) { p--; break; }
-                }
-              while (p < end_subject);
-
 #else  /* 8-bit code units */
-              p = memchr(p, req_cu, end_subject - p);
+            PCRE2_SPTR pp = p;
+            p = memchr(pp, req_cu, end_subject - pp);
+            if (p == NULL)
+              {
+              p = memchr(pp, req_cu2, end_subject - pp);
               if (p == NULL) p = end_subject;
-#endif
               }
+#endif /* PCRE2_CODE_UNIT_WIDTH != 8 */
+            }
+
+          /* The caseful case */
+
+          else
+            {
+#if PCRE2_CODE_UNIT_WIDTH != 8
+            while (p < end_subject)
+              {
+              if (UCHAR21INCTEST(p) == req_cu) { p--; break; }
+              }
+
+#else  /* 8-bit code units */
+            p = memchr(p, req_cu, end_subject - p);
+            if (p == NULL) p = end_subject;
+#endif
             }
 
           /* If we can't find the required code unit, break the bumpalong loop,
@@ -6714,6 +6956,11 @@ for(;;)
 
   mb->start_used_ptr = start_match;
   mb->last_used_ptr = start_match;
+#ifdef SUPPORT_UNICODE
+  mb->moptions = options | fragment_options;
+#else
+  mb->moptions = options;
+#endif
   mb->match_call_count = 0;
   mb->end_offset_top = 0;
   mb->skip_arg_count = 0;
@@ -6838,6 +7085,68 @@ for(;;)
 */
 
 ENDLOOP:
+
+/* If end_subject != true_end_subject, it means we are handling invalid UTF,
+and have just processed a non-terminal fragment. If this resulted in no match
+or a partial match we must carry on to the next fragment (a partial match is
+returned to the caller only at the very end of the subject). A loop is used to
+avoid trying to match against empty fragments; if the pattern can match an
+empty string it would have done so already. */
+
+#ifdef SUPPORT_UNICODE
+if (utf && end_subject != true_end_subject &&
+    (rc == MATCH_NOMATCH || rc == PCRE2_ERROR_PARTIAL))
+  {
+  for (;;)
+    {
+    /* Advance past the first bad code unit, and then skip invalid character
+    starting code units in 8-bit and 16-bit modes. */
+
+    start_match = end_subject + 1;
+#if PCRE2_CODE_UNIT_WIDTH != 32
+    while (start_match < true_end_subject && NOT_FIRSTCU(*start_match))
+      start_match++;
+#endif
+
+    /* If we have hit the end of the subject, there isn't another non-empty
+    fragment, so give up. */
+
+    if (start_match >= true_end_subject)
+      {
+      rc = MATCH_NOMATCH;  /* In case it was partial */
+      break;
+      }
+
+    /* Check the rest of the subject */
+
+    mb->check_subject = start_match;
+    rc = PRIV(valid_utf)(start_match, length - (start_match - subject),
+      &(match_data->startchar));
+
+    /* The rest of the subject is valid UTF. */
+
+    if (rc == 0)
+      {
+      mb->end_subject = end_subject = true_end_subject;
+      fragment_options = PCRE2_NOTBOL;
+      goto FRAGMENT_RESTART;
+      }
+
+    /* A subsequent UTF error has been found; if the next fragment is
+    non-empty, set up to process it. Otherwise, let the loop advance. */
+
+    else if (rc < 0)
+      {
+      mb->end_subject = end_subject = start_match + match_data->startchar;
+      if (end_subject > start_match)
+        {
+        fragment_options = PCRE2_NOTBOL|PCRE2_NOTEOL;
+        goto FRAGMENT_RESTART;
+        }
+      }
+    }
+  }
+#endif  /* SUPPORT_UNICODE */
 
 /* Release an enlarged frame vector that is on the heap. */
 

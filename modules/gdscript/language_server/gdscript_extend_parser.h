@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,6 @@
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
 
 class ExtendGDScriptParser : public GDScriptParser {
-
 	String path;
 	Vector<String> lines;
 
@@ -82,6 +81,8 @@ public:
 	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
+
+	Error get_left_function_call(const lsp::Position &p_position, lsp::Position &r_func_pos, int &r_arg_index) const;
 
 	String get_text_for_completion(const lsp::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_requred = false) const;

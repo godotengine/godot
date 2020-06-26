@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Base class for a family of nodes with variable amount of input and output ports within the visual shader graph.
 	</brief_description>
 	<description>
+		Currently, has no direct usage, use the derived classes instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,6 +19,7 @@
 			<argument index="2" name="name" type="String">
 			</argument>
 			<description>
+				Adds an input port with the specified [code]type[/code] (see [enum VisualShaderNode.PortType]) and [code]name[/code].
 			</description>
 		</method>
 		<method name="add_output_port">
@@ -29,68 +32,63 @@
 			<argument index="2" name="name" type="String">
 			</argument>
 			<description>
+				Adds an output port with the specified [code]type[/code] (see [enum VisualShaderNode.PortType]) and [code]name[/code].
 			</description>
 		</method>
 		<method name="clear_input_ports">
 			<return type="void">
 			</return>
 			<description>
+				Removes all previously specified input ports.
 			</description>
 		</method>
 		<method name="clear_output_ports">
 			<return type="void">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="get_control">
-			<return type="Control">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
+				Removes all previously specified output ports.
 			</description>
 		</method>
 		<method name="get_free_input_port_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns a free input port ID which can be used in [method add_input_port].
 			</description>
 		</method>
 		<method name="get_free_output_port_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns a free output port ID which can be used in [method add_output_port].
 			</description>
 		</method>
 		<method name="get_input_port_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of input ports in use. Alternative for [method get_free_input_port_id].
 			</description>
 		</method>
 		<method name="get_inputs" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns a [String] description of the input ports as as colon-separated list using the format [code]id,type,name;[/code] (see [method add_input_port]).
 			</description>
 		</method>
 		<method name="get_output_port_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of output ports in use. Alternative for [method get_free_output_port_id].
 			</description>
 		</method>
 		<method name="get_outputs" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
+				Returns a [String] description of the output ports as as colon-separated list using the format [code]id,type,name;[/code] (see [method add_output_port]).
 			</description>
 		</method>
 		<method name="has_input_port" qualifiers="const">
@@ -99,6 +97,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified input port exists.
 			</description>
 		</method>
 		<method name="has_output_port" qualifiers="const">
@@ -107,6 +106,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified output port exists.
 			</description>
 		</method>
 		<method name="is_valid_port_name" qualifiers="const">
@@ -115,6 +115,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the specified port name does not override an existed port name and is valid within the shader.
 			</description>
 		</method>
 		<method name="remove_input_port">
@@ -123,6 +124,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Removes the specified input port.
 			</description>
 		</method>
 		<method name="remove_output_port">
@@ -131,16 +133,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_control">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
-			<argument index="1" name="index" type="int">
-			</argument>
-			<description>
+				Removes the specified output port.
 			</description>
 		</method>
 		<method name="set_input_port_name">
@@ -151,6 +144,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
+				Renames the specified input port.
 			</description>
 		</method>
 		<method name="set_input_port_type">
@@ -161,6 +155,7 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
+				Sets the specified input port's type (see [enum VisualShaderNode.PortType]).
 			</description>
 		</method>
 		<method name="set_inputs">
@@ -169,6 +164,7 @@
 			<argument index="0" name="inputs" type="String">
 			</argument>
 			<description>
+				Defines all input ports using a [String] formatted as a colon-separated list: [code]id,type,name;[/code] (see [method add_input_port]).
 			</description>
 		</method>
 		<method name="set_output_port_name">
@@ -179,6 +175,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
+				Renames the specified output port.
 			</description>
 		</method>
 		<method name="set_output_port_type">
@@ -189,6 +186,7 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
+				Sets the specified output port's type (see [enum VisualShaderNode.PortType]).
 			</description>
 		</method>
 		<method name="set_outputs">
@@ -197,20 +195,13 @@
 			<argument index="0" name="outputs" type="String">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
+				Defines all output ports using a [String] formatted as a colon-separated list: [code]id,type,name;[/code] (see [method add_output_port]).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="false">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
+			The size of the node in the visual shader graph.
 		</member>
 	</members>
 	<constants>

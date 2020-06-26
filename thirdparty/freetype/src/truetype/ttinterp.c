@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -3718,7 +3718,7 @@
     /* We will then parse the current table.                       */
 
     rec   = exc->FDefs;
-    limit = rec + exc->numFDefs;
+    limit = FT_OFFSET( rec, exc->numFDefs );
     n     = (FT_ULong)args[0];
 
     for ( ; rec < limit; rec++ )
@@ -3965,6 +3965,9 @@
     if ( BOUNDSL( F, exc->maxFunc + 1 ) )
       goto Fail;
 
+    if ( !exc->FDefs )
+      goto Fail;
+
     /* Except for some old Apple fonts, all functions in a TrueType */
     /* font are defined in increasing order, starting from 0.  This */
     /* means that we normally have                                  */
@@ -4062,7 +4065,7 @@
     /*                                                              */
     /* If this isn't true, we need to look up the function table.   */
 
-    def = exc->FDefs + F;
+    def = FT_OFFSET( exc->FDefs, F );
     if ( exc->maxFunc + 1 != exc->numFDefs || def->opc != F )
     {
       /* look up the FDefs table */
@@ -4070,7 +4073,7 @@
 
 
       def   = exc->FDefs;
-      limit = def + exc->numFDefs;
+      limit = FT_OFFSET( def, exc->numFDefs );
 
       while ( def < limit && def->opc != F )
         def++;
@@ -4150,7 +4153,7 @@
     /*  First of all, look for the same function in our table */
 
     def   = exc->IDefs;
-    limit = def + exc->numIDefs;
+    limit = FT_OFFSET( def, exc->numIDefs );
 
     for ( ; def < limit; def++ )
       if ( def->opc == (FT_ULong)args[0] )
@@ -6346,12 +6349,14 @@
     /* twilight points (confirmed by Greg Hitchcock)   */
     if ( exc->GS.gep1 == 0 )
     {
-      exc->zp1.org[point].x = exc->zp0.org[exc->GS.rp0].x +
-                              TT_MulFix14( cvt_dist,
-                                           exc->GS.freeVector.x );
-      exc->zp1.org[point].y = exc->zp0.org[exc->GS.rp0].y +
-                              TT_MulFix14( cvt_dist,
-                                           exc->GS.freeVector.y );
+      exc->zp1.org[point].x = ADD_LONG(
+                                exc->zp0.org[exc->GS.rp0].x,
+                                TT_MulFix14( cvt_dist,
+                                             exc->GS.freeVector.x ) );
+      exc->zp1.org[point].y = ADD_LONG(
+                                exc->zp0.org[exc->GS.rp0].y,
+                                TT_MulFix14( cvt_dist,
+                                             exc->GS.freeVector.y ) );
       exc->zp1.cur[point]   = exc->zp1.org[point];
     }
 
@@ -7715,7 +7720,7 @@
   Ins_UNKNOWN( TT_ExecContext  exc )
   {
     TT_DefRecord*  def   = exc->IDefs;
-    TT_DefRecord*  limit = def + exc->numIDefs;
+    TT_DefRecord*  limit = FT_OFFSET( def, exc->numIDefs );
 
 
     for ( ; def < limit; def++ )
@@ -7867,7 +7872,7 @@
                                   FT_MAX( 50,
                                           exc->cvtSize / 10 );
     else
-      exc->loopcall_counter_max = 300 + 8 * exc->cvtSize;
+      exc->loopcall_counter_max = 300 + 22 * exc->cvtSize;
 
     /* as a protection against an unreasonable number of CVT entries  */
     /* we assume at most 100 control values per glyph for the counter */
@@ -8567,7 +8572,7 @@
         case FT_ERR( Invalid_Opcode ):
           {
             TT_DefRecord*  def   = exc->IDefs;
-            TT_DefRecord*  limit = def + exc->numIDefs;
+            TT_DefRecord*  limit = FT_OFFSET( def, exc->numIDefs );
 
 
             for ( ; def < limit; def++ )

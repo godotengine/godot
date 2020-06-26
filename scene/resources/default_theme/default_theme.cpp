@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,38 +38,25 @@
 #include "font_hidpi.inc"
 #include "font_lodpi.inc"
 
-typedef Map<const void *, Ref<ImageTexture> > TexCacheMap;
+typedef Map<const void *, Ref<ImageTexture>> TexCacheMap;
 
 static TexCacheMap *tex_cache;
 static float scale = 1;
 
 template <class T>
 static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
-
 	Ref<ImageTexture> texture;
 
 	if (tex_cache->has(p_src)) {
 		texture = (*tex_cache)[p_src];
 	} else {
-
 		texture = Ref<ImageTexture>(memnew(ImageTexture));
 		Ref<Image> img = memnew(Image(p_src));
+		const Size2 orig_size = Size2(img->get_width(), img->get_height());
+		img->convert(Image::FORMAT_RGBA8);
+		img->resize(orig_size.x * scale, orig_size.y * scale);
 
-		if (scale > 1) {
-			Size2 orig_size = Size2(img->get_width(), img->get_height());
-
-			img->convert(Image::FORMAT_RGBA8);
-			img->expand_x2_hq2x();
-			if (scale != 2.0) {
-				img->resize(orig_size.x * scale, orig_size.y * scale);
-			}
-		} else if (scale < 1) {
-			Size2 orig_size = Size2(img->get_width(), img->get_height());
-			img->convert(Image::FORMAT_RGBA8);
-			img->resize(orig_size.x * scale, orig_size.y * scale);
-		}
-
-		texture->create_from_image(img, ImageTexture::FLAG_FILTER);
+		texture->create_from_image(img);
 		(*tex_cache)[p_src] = texture;
 	}
 
@@ -89,7 +76,6 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 }
 
 static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left, float p_top, float p_right, float p_botton) {
-
 	p_sbox->set_expand_margin_size(MARGIN_LEFT, p_left * scale);
 	p_sbox->set_expand_margin_size(MARGIN_TOP, p_top * scale);
 	p_sbox->set_expand_margin_size(MARGIN_RIGHT, p_right * scale);
@@ -98,30 +84,18 @@ static Ref<StyleBoxTexture> sb_expand(Ref<StyleBoxTexture> p_sbox, float p_left,
 }
 
 template <class T>
-static Ref<Texture> make_icon(T p_src) {
-
+static Ref<Texture2D> make_icon(T p_src) {
 	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(p_src));
-	if (scale > 1) {
-		Size2 orig_size = Size2(img->get_width(), img->get_height());
-
-		img->convert(Image::FORMAT_RGBA8);
-		img->expand_x2_hq2x();
-		if (scale != 2.0) {
-			img->resize(orig_size.x * scale, orig_size.y * scale);
-		}
-	} else if (scale < 1) {
-		Size2 orig_size = Size2(img->get_width(), img->get_height());
-		img->convert(Image::FORMAT_RGBA8);
-		img->resize(orig_size.x * scale, orig_size.y * scale);
-	}
-	texture->create_from_image(img, ImageTexture::FLAG_FILTER);
+	const Size2 orig_size = Size2(img->get_width(), img->get_height());
+	img->convert(Image::FORMAT_RGBA8);
+	img->resize(orig_size.x * scale, orig_size.y * scale);
+	texture->create_from_image(img);
 
 	return texture;
 }
 
 static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_charcount, const int *p_char_rects, int p_kerning_count, const int *p_kernings, int p_w, int p_h, const unsigned char *p_img) {
-
 	Ref<BitmapFont> font(memnew(BitmapFont));
 
 	Ref<Image> image = memnew(Image(p_img));
@@ -131,7 +105,6 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_charcount, co
 	font->add_texture(tex);
 
 	for (int i = 0; i < p_charcount; i++) {
-
 		const int *c = &p_char_rects[i * 8];
 
 		int chr = c[0];
@@ -147,7 +120,6 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_charcount, co
 	}
 
 	for (int i = 0; i < p_kerning_count; i++) {
-
 		font->add_kerning_pair(p_kernings[i * 3 + 0], p_kernings[i * 3 + 1], p_kernings[i * 3 + 2]);
 	}
 
@@ -158,7 +130,6 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_charcount, co
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1) {
-
 	Ref<StyleBox> style(memnew(StyleBoxEmpty));
 
 	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
@@ -169,8 +140,7 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margi
 	return style;
 }
 
-void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &large_font, Ref<Texture> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
-
+void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &large_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
 	scale = p_scale;
 
 	tex_cache = memnew(TexCacheMap);
@@ -188,6 +158,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Panel
 
 	theme->set_stylebox("panel", "Panel", make_stylebox(panel_bg_png, 0, 0, 0, 0));
+	theme->set_stylebox("panel_fg", "Panel", make_stylebox(panel_bg_png, 0, 0, 0, 0));
 
 	// Focus
 
@@ -248,28 +219,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("hseparation", "ColorPickerButton", 2 * scale);
 
-	// ToolButton
-
-	theme->set_stylebox("normal", "ToolButton", make_empty_stylebox(6, 4, 6, 4));
-	theme->set_stylebox("pressed", "ToolButton", make_stylebox(button_pressed_png, 4, 4, 4, 4, 6, 4, 6, 4));
-	theme->set_stylebox("hover", "ToolButton", make_stylebox(button_normal_png, 4, 4, 4, 4, 6, 4, 6, 4));
-	theme->set_stylebox("disabled", "ToolButton", make_empty_stylebox(6, 4, 6, 4));
-	theme->set_stylebox("focus", "ToolButton", focus);
-	theme->set_font("font", "ToolButton", default_font);
-
-	theme->set_color("font_color", "ToolButton", control_font_color);
-	theme->set_color("font_color_pressed", "ToolButton", control_font_color_pressed);
-	theme->set_color("font_color_hover", "ToolButton", control_font_color_hover);
-	theme->set_color("font_color_disabled", "ToolButton", Color(0.9, 0.95, 1, 0.3));
-
-	theme->set_constant("hseparation", "ToolButton", 3);
-
 	// OptionButton
 
-	Ref<StyleBox> sb_optbutton_normal = sb_expand(make_stylebox(option_button_normal_png, 4, 4, 21, 4, 6, 3, 21, 3), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_pressed = sb_expand(make_stylebox(option_button_pressed_png, 4, 4, 21, 4, 6, 3, 21, 3), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_hover = sb_expand(make_stylebox(option_button_hover_png, 4, 4, 21, 4, 6, 2, 21, 2), 2, 2, 2, 2);
-	Ref<StyleBox> sb_optbutton_disabled = sb_expand(make_stylebox(option_button_disabled_png, 4, 4, 21, 4, 6, 2, 21, 2), 2, 2, 2, 2);
+	Ref<StyleBox> sb_optbutton_normal = sb_expand(make_stylebox(option_button_normal_png, 4, 4, 21, 4, 6, 3, 9, 3), 2, 2, 2, 2);
+	Ref<StyleBox> sb_optbutton_pressed = sb_expand(make_stylebox(option_button_pressed_png, 4, 4, 21, 4, 6, 3, 9, 3), 2, 2, 2, 2);
+	Ref<StyleBox> sb_optbutton_hover = sb_expand(make_stylebox(option_button_hover_png, 4, 4, 21, 4, 6, 2, 9, 2), 2, 2, 2, 2);
+	Ref<StyleBox> sb_optbutton_disabled = sb_expand(make_stylebox(option_button_disabled_png, 4, 4, 21, 4, 6, 2, 9, 2), 2, 2, 2, 2);
 	Ref<StyleBox> sb_optbutton_focus = sb_expand(make_stylebox(button_focus_png, 4, 4, 4, 4, 6, 2, 6, 2), 2, 2, 2, 2);
 
 	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
@@ -464,7 +419,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("completion_scroll_width", "TextEdit", 3);
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
 
-	Ref<Texture> empty_icon = memnew(ImageTexture);
+	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 	// HScrollBar
 
@@ -496,9 +451,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("slider", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_area", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
-	theme->set_stylebox("grabber_highlight", "HSlider", make_stylebox(hslider_grabber_hl_png, 6, 6, 6, 6));
-	theme->set_stylebox("grabber_disabled", "HSlider", make_stylebox(hslider_grabber_disabled_png, 6, 6, 6, 6));
-	theme->set_stylebox("focus", "HSlider", focus);
+	theme->set_stylebox("grabber_area_highlight", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 
 	theme->set_icon("grabber", "HSlider", make_icon(hslider_grabber_png));
 	theme->set_icon("grabber_highlight", "HSlider", make_icon(hslider_grabber_hl_png));
@@ -509,9 +462,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("slider", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_area", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
-	theme->set_stylebox("grabber_highlight", "VSlider", make_stylebox(vslider_grabber_hl_png, 6, 6, 6, 6));
-	theme->set_stylebox("grabber_disabled", "VSlider", make_stylebox(vslider_grabber_disabled_png, 6, 6, 6, 6));
-	theme->set_stylebox("focus", "VSlider", focus);
+	theme->set_stylebox("grabber_area_highlight", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 
 	theme->set_icon("grabber", "VSlider", make_icon(vslider_grabber_png));
 	theme->set_icon("grabber_highlight", "VSlider", make_icon(vslider_grabber_hl_png));
@@ -529,17 +480,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// WindowDialog
 
-	theme->set_stylebox("panel", "WindowDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
-	theme->set_constant("scaleborder_size", "WindowDialog", 4 * scale);
+	theme->set_stylebox("panel", "Window", default_style);
+	theme->set_stylebox("window_panel", "Window", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
+	theme->set_constant("scaleborder_size", "Window", 4 * scale);
 
-	theme->set_font("title_font", "WindowDialog", large_font);
-	theme->set_color("title_color", "WindowDialog", Color(0, 0, 0));
-	theme->set_constant("title_height", "WindowDialog", 20 * scale);
+	theme->set_font("title_font", "Window", large_font);
+	theme->set_color("title_color", "Window", Color(0, 0, 0));
+	theme->set_constant("title_height", "Window", 20 * scale);
+	theme->set_constant("resize_margin", "Window", 4 * scale);
 
-	theme->set_icon("close", "WindowDialog", make_icon(close_png));
-	theme->set_icon("close_highlight", "WindowDialog", make_icon(close_hl_png));
-	theme->set_constant("close_h_ofs", "WindowDialog", 18 * scale);
-	theme->set_constant("close_v_ofs", "WindowDialog", 18 * scale);
+	theme->set_icon("close", "Window", make_icon(close_png));
+	theme->set_icon("close_highlight", "Window", make_icon(close_hl_png));
+	theme->set_constant("close_h_ofs", "Window", 18 * scale);
+	theme->set_constant("close_v_ofs", "Window", 18 * scale);
 
 	// File Dialog
 
@@ -653,8 +606,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color("font_color", "Tree", control_font_color_low);
 	theme->set_color("font_color_selected", "Tree", control_font_color_pressed);
-	theme->set_color("selection_color", "Tree", Color(0.1, 0.1, 1, 0.8));
-	theme->set_color("cursor_color", "Tree", Color(0, 0, 0));
 	theme->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
@@ -714,10 +665,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
-	theme->set_constant("top_margin", "TabContainer", 24 * scale);
-	theme->set_constant("label_valign_fg", "TabContainer", 0 * scale);
-	theme->set_constant("label_valign_bg", "TabContainer", 2 * scale);
-	theme->set_constant("hseparation", "TabContainer", 4 * scale);
+	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
 
 	// Tabs
 
@@ -740,9 +688,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_bg", "Tabs", control_font_color_low);
 	theme->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
 
-	theme->set_constant("top_margin", "Tabs", 24 * scale);
-	theme->set_constant("label_valign_fg", "Tabs", 0 * scale);
-	theme->set_constant("label_valign_bg", "Tabs", 2 * scale);
 	theme->set_constant("hseparation", "Tabs", 4 * scale);
 
 	// Separators
@@ -765,7 +710,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// FileDialog
 
 	theme->set_icon("folder", "FileDialog", make_icon(icon_folder_png));
+	theme->set_icon("file", "FileDialog", make_icon(icon_file_png));
 	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
+	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
 	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
 
 	// ColorPicker
@@ -788,8 +735,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// TooltipPanel
 
 	Ref<StyleBoxTexture> style_tt = make_stylebox(tooltip_bg_png, 4, 4, 4, 4);
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		style_tt->set_expand_margin_size((Margin)i, 4 * scale);
+	}
 
 	theme->set_stylebox("panel", "TooltipPanel", style_tt);
 
@@ -857,6 +805,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
+	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
+	theme->set_color("selection_stroke", "GraphEdit", Color(1, 1, 1, 0.8));
 	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
@@ -874,12 +824,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 }
 
 void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
-
 	Ref<Theme> t;
 	t.instance();
 
 	Ref<StyleBox> default_style;
-	Ref<Texture> default_icon;
+	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
 	if (p_font.is_valid()) {
 		default_font = p_font;
@@ -898,10 +847,9 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 }
 
 void clear_default_theme() {
-
-	Theme::set_project_default(NULL);
-	Theme::set_default(NULL);
-	Theme::set_default_icon(NULL);
-	Theme::set_default_style(NULL);
-	Theme::set_default_font(NULL);
+	Theme::set_project_default(nullptr);
+	Theme::set_default(nullptr);
+	Theme::set_default_icon(nullptr);
+	Theme::set_default_style(nullptr);
+	Theme::set_default_font(nullptr);
 }

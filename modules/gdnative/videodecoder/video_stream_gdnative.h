@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,13 +37,11 @@
 #include "scene/resources/video_stream.h"
 
 struct VideoDecoderGDNative {
-	const godot_videodecoder_interface_gdnative *interface;
-	String plugin_name;
+	const godot_videodecoder_interface_gdnative *interface = nullptr;
+	String plugin_name = "none";
 	Vector<String> supported_extensions;
 
-	VideoDecoderGDNative() :
-			interface(NULL),
-			plugin_name("none") {}
+	VideoDecoderGDNative() {}
 
 	VideoDecoderGDNative(const godot_videodecoder_interface_gdnative *p_interface) :
 			interface(p_interface),
@@ -88,8 +86,9 @@ public:
 	}
 
 	VideoDecoderGDNative *get_decoder(const String &extension) {
-		if (extensions.size() == 0 || !extensions.has(extension))
-			return NULL;
+		if (extensions.size() == 0 || !extensions.has(extension)) {
+			return nullptr;
+		}
 		return decoders[extensions[extension]];
 	}
 
@@ -102,32 +101,31 @@ public:
 			memdelete(decoders[i]);
 		}
 		decoders.clear();
-		instance = NULL;
+		instance = nullptr;
 	}
 };
 
 class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackGDNative, VideoStreamPlayback);
 
 	Ref<ImageTexture> texture;
-	bool playing;
-	bool paused;
+	bool playing = false;
+	bool paused = false;
 
 	Vector2 texture_size;
 
-	void *mix_udata;
-	AudioMixCallback mix_callback;
+	void *mix_udata = nullptr;
+	AudioMixCallback mix_callback = nullptr;
 
-	int num_channels;
-	float time;
-	bool seek_backward;
-	int mix_rate;
-	double delay_compensation;
+	int num_channels = -1;
+	float time = 0;
+	bool seek_backward = false;
+	int mix_rate = 0;
+	double delay_compensation = 0;
 
-	float *pcm;
-	int pcm_write_idx;
-	int samples_decoded;
+	float *pcm = nullptr;
+	int pcm_write_idx = 0;
+	int samples_decoded = 0;
 
 	void cleanup();
 	void update_texture();
@@ -135,10 +133,10 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 protected:
 	String file_name;
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 
-	const godot_videodecoder_interface_gdnative *interface;
-	void *data_struct;
+	const godot_videodecoder_interface_gdnative *interface = nullptr;
+	void *data_struct = nullptr;
 
 public:
 	VideoStreamPlaybackGDNative();
@@ -168,7 +166,7 @@ public:
 
 	//virtual int mix(int16_t* p_buffer,int p_frames)=0;
 
-	virtual Ref<Texture> get_texture() const;
+	virtual Ref<Texture2D> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
@@ -177,11 +175,10 @@ public:
 };
 
 class VideoStreamGDNative : public VideoStream {
-
 	GDCLASS(VideoStreamGDNative, VideoStream);
 
 	String file;
-	int audio_track;
+	int audio_track = 0;
 
 protected:
 	static void
@@ -199,7 +196,7 @@ public:
 
 class ResourceFormatLoaderVideoStreamGDNative : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

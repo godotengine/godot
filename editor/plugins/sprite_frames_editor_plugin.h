@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/2d/animated_sprite.h"
+#include "scene/2d/animated_sprite_2d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/split_container.h"
@@ -41,25 +41,24 @@
 #include "scene/gui/tree.h"
 
 class SpriteFramesEditor : public HSplitContainer {
-
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
-	ToolButton *load;
-	ToolButton *load_sheet;
-	ToolButton *_delete;
-	ToolButton *copy;
-	ToolButton *paste;
-	ToolButton *empty;
-	ToolButton *empty2;
-	ToolButton *move_up;
-	ToolButton *move_down;
+	Button *load;
+	Button *load_sheet;
+	Button *_delete;
+	Button *copy;
+	Button *paste;
+	Button *empty;
+	Button *empty2;
+	Button *move_up;
+	Button *move_down;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
 	HSplitContainer *split;
-	ToolButton *new_anim;
-	ToolButton *remove_anim;
+	Button *new_anim;
+	Button *remove_anim;
 
 	Tree *animations;
 	SpinBox *anim_speed;
@@ -86,7 +85,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
+	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 	void _copy_pressed();
 	void _paste_pressed();
 	void _empty_pressed();
@@ -134,7 +133,6 @@ public:
 };
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor;

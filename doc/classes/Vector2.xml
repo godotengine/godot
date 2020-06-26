@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector2" category="Built-In Types" version="3.2">
+<class name="Vector2" version="4.0">
 	<brief_description>
-		Vector used for 2D math.
+		Vector used for 2D math using floating point coordinates.
 	</brief_description>
 	<description>
 		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+		It uses floating-point coordinates. See [Vector2i] for its integer counterpart.
+		[b]Note:[/b] In a boolean context, a Vector2 will evaluate to [code]false[/code] if it's equal to [code]Vector2(0, 0)[/code]. Otherwise, a Vector2 will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
@@ -13,12 +15,21 @@
 		<method name="Vector2">
 			<return type="Vector2">
 			</return>
+			<argument index="0" name="from" type="Vector2i">
+			</argument>
+			<description>
+				Constructs a new [Vector2] from [Vector2i].
+			</description>
+		</method>
+		<method name="Vector2">
+			<return type="Vector2">
+			</return>
 			<argument index="0" name="x" type="float">
 			</argument>
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Constructs a new Vector2 from the given [code]x[/code] and [code]y[/code].
+				Constructs a new [Vector2] from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
 		<method name="abs">
@@ -159,6 +170,7 @@
 			<argument index="0" name="v" type="Vector2">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
 			</description>
 		</method>
 		<method name="is_normalized">
@@ -182,7 +194,7 @@
 				Returns the vector's length squared. Prefer this method over [method length] if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
-		<method name="linear_interpolate">
+		<method name="lerp">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="b" type="Vector2">

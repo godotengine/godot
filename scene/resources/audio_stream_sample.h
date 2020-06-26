@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOSTREAMSAMPLE_H
-#define AUDIOSTREAMSAMPLE_H
+#ifndef AUDIO_STREAM_SAMPLE_H
+#define AUDIO_STREAM_SAMPLE_H
 
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamSample;
 
 class AudioStreamPlaybackSample : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback);
 	enum {
 		MIX_FRAC_BITS = 13,
@@ -45,7 +44,6 @@ class AudioStreamPlaybackSample : public AudioStreamPlayback {
 	};
 
 	struct IMA_ADPCM_State {
-
 		int16_t step_index;
 		int32_t predictor;
 		/* values at loop point */
@@ -138,8 +136,8 @@ public:
 
 	virtual float get_length() const; //if supported, otherwise return 0
 
-	void set_data(const PoolVector<uint8_t> &p_data);
-	PoolVector<uint8_t> get_data() const;
+	void set_data(const Vector<uint8_t> &p_data);
+	Vector<uint8_t> get_data() const;
 
 	Error save_to_wav(const String &p_path);
 
@@ -153,4 +151,4 @@ public:
 VARIANT_ENUM_CAST(AudioStreamSample::Format)
 VARIANT_ENUM_CAST(AudioStreamSample::LoopMode)
 
-#endif // AUDIOSTREAMSample_H
+#endif // AUDIO_STREAM_SAMPLE_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,24 +33,24 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/material.h"
 
-class MeshEditor : public ViewportContainer {
-
-	GDCLASS(MeshEditor, ViewportContainer);
+class MeshEditor : public SubViewportContainer {
+	GDCLASS(MeshEditor, SubViewportContainer);
 
 	float rot_x;
 	float rot_y;
 
-	Viewport *viewport;
-	MeshInstance *mesh_instance;
-	Spatial *rotation;
-	DirectionalLight *light1;
-	DirectionalLight *light2;
-	Camera *camera;
+	SubViewport *viewport;
+	MeshInstance3D *mesh_instance;
+	Node3D *rotation;
+	DirectionalLight3D *light1;
+	DirectionalLight3D *light2;
+	Camera3D *camera;
 
 	Ref<Mesh> mesh;
 
@@ -81,7 +81,6 @@ public:
 };
 
 class MeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshEditorPlugin, EditorPlugin);
 
 public:

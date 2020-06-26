@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,32 +55,9 @@ public:
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color);
 	virtual Rect2 get_rect() const;
+	virtual real_t get_enclosing_radius() const;
 
 	SegmentShape2D();
-};
-
-class RayShape2D : public Shape2D {
-	GDCLASS(RayShape2D, Shape2D);
-
-	real_t length;
-	bool slips_on_slope;
-
-	void _update_shape();
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_length(real_t p_length);
-	real_t get_length() const;
-
-	void set_slips_on_slope(bool p_active);
-	bool get_slips_on_slope() const;
-
-	virtual void draw(const RID &p_to_rid, const Color &p_color);
-	virtual Rect2 get_rect() const;
-
-	RayShape2D();
 };
 
 #endif // SEGMENT_SHAPE_2D_H

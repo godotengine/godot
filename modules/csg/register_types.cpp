@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,18 +34,17 @@
 #include "csg_shape.h"
 
 void register_csg_types() {
-
 #ifndef _3D_DISABLED
 
-	ClassDB::register_virtual_class<CSGShape>();
-	ClassDB::register_virtual_class<CSGPrimitive>();
-	ClassDB::register_class<CSGMesh>();
-	ClassDB::register_class<CSGSphere>();
-	ClassDB::register_class<CSGBox>();
-	ClassDB::register_class<CSGCylinder>();
-	ClassDB::register_class<CSGTorus>();
-	ClassDB::register_class<CSGPolygon>();
-	ClassDB::register_class<CSGCombiner>();
+	ClassDB::register_virtual_class<CSGShape3D>();
+	ClassDB::register_virtual_class<CSGPrimitive3D>();
+	ClassDB::register_class<CSGMesh3D>();
+	ClassDB::register_class<CSGSphere3D>();
+	ClassDB::register_class<CSGBox3D>();
+	ClassDB::register_class<CSGCylinder3D>();
+	ClassDB::register_class<CSGTorus3D>();
+	ClassDB::register_class<CSGPolygon3D>();
+	ClassDB::register_class<CSGCombiner3D>();
 
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<EditorPluginCSG>();

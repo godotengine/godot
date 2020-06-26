@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" category="Core" version="3.2">
+<class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" version="4.0">
 	<brief_description>
 		A Visual Script node representing a constant from the base types.
 	</brief_description>
@@ -14,7 +14,7 @@
 		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" enum="Variant.Type" default="0">
 			The type to get the constant from.
 		</member>
-		<member name="constant" type="String" setter="set_basic_type_constant" getter="get_basic_type_constant">
+		<member name="constant" type="StringName" setter="set_basic_type_constant" getter="get_basic_type_constant">
 			The name of the constant to return.
 		</member>
 	</members>

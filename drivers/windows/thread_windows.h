@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,11 +39,10 @@
 #include <windows.h>
 
 class ThreadWindows : public Thread {
-
 	ThreadCreateCallback callback;
 	void *user;
 	ID id;
-	HANDLE handle;
+	HANDLE handle = nullptr;
 
 	static Thread *create_thread_windows();
 
@@ -53,14 +52,14 @@ class ThreadWindows : public Thread {
 	static ID get_thread_id_func_windows();
 	static void wait_to_finish_func_windows(Thread *p_thread);
 
-	ThreadWindows();
+	ThreadWindows() {}
 
 public:
 	virtual ID get_id() const;
 
 	static void make_default();
 
-	~ThreadWindows();
+	~ThreadWindows() {}
 };
 
 #endif

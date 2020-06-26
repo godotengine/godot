@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="Container" category="Core" version="3.2">
+<class name="GraphNode" inherits="Container" version="4.0">
 	<brief_description>
-		A GraphNode is a container with several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
+		A GraphNode is a container with potentially several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
 	<description>
-		A GraphNode is a container defined by a title. It can have one or more input and output slots, which can be enabled (shown) or disabled (not shown) and have different (incompatible) types. Colors can also be assigned to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input and output connections are left and right slots, but only enabled slots are counted as connections.
+		A GraphNode is a container. Each GraphNode can have several input and output slots, sometimes referred to as ports, allowing connections between GraphNodes. To add a slot to GraphNode, add any [Control]-derived child node to it.
+		After adding at least one child to GraphNode new sections will be automatically created in the Inspector called 'Slot'. When 'Slot' is expanded you will see list with index number for each slot. You can click on each of them to expand further.
+		In the Inspector you can enable (show) or disable (hide) slots. By default all slots are disabled so you may not see any slots on your GraphNode initially. You can assign a type to each slot. Only slots of the same type will be able to connect to each other. You can also assign colors to slots. A tuple of input and output slots is defined for each GUI element included in the GraphNode. Input connections are on the left and output connections are on the right side of GraphNode. Only enabled slots are counted as connections.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -164,11 +166,17 @@
 			</argument>
 			<argument index="6" name="color_right" type="Color">
 			</argument>
-			<argument index="7" name="custom_left" type="Texture" default="null">
+			<argument index="7" name="custom_left" type="Texture2D" default="null">
 			</argument>
-			<argument index="8" name="custom_right" type="Texture" default="null">
+			<argument index="8" name="custom_right" type="Texture2D" default="null">
 			</argument>
 			<description>
+				Sets properties of the slot with ID [code]idx[/code].
+				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
+				[code]type_left[/code]/[code]right[/code] is an arbitrary type of the port. Only ports with the same type values can be connected.
+				[code]color_left[/code]/[code]right[/code] is the tint of the port's icon on this side.
+				[code]custom_left[/code]/[code]right[/code] is a custom texture for this side's port.
+				[b]Note:[/b] This method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
 			</description>
 		</method>
 	</methods>
@@ -176,25 +184,33 @@
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
 			If [code]true[/code], the GraphNode is a comment node.
 		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
 			[b]Note:[/b] You cannot use position directly, as [GraphEdit] is a [Container].
 		</member>
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
+			Sets the overlay shown above the GraphNode. See [enum Overlay].
 		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
+			If [code]true[/code], the user can resize the GraphNode.
+			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] signal, the GraphNode needs to be resized manually.
 		</member>
 		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
+			If [code]true[/code], the GraphNode is selected.
 		</member>
 		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" default="false">
+			If [code]true[/code], the close button will be visible.
+			[b]Note:[/b] Pressing it will only emit the [signal close_request] signal, the GraphNode needs to be removed manually.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The text displayed in the GraphNode's title bar.
 		</member>
 	</members>
 	<signals>
 		<signal name="close_request">
 			<description>
-				Signal sent on closing the GraphNode.
+				Emitted when the GraphNode is requested to be closed. Happens on clicking the close button (see [member show_close]).
 			</description>
 		</signal>
 		<signal name="dragged">
@@ -203,72 +219,93 @@
 			<argument index="1" name="to" type="Vector2">
 			</argument>
 			<description>
-				Signal sent when the GraphNode is dragged.
+				Emitted when the GraphNode is dragged.
 			</description>
 		</signal>
 		<signal name="offset_changed">
 			<description>
-				Signal sent when the GraphNode is moved.
+				Emitted when the GraphNode is moved.
 			</description>
 		</signal>
 		<signal name="raise_request">
 			<description>
-				Signal sent when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
+				Emitted when the GraphNode is requested to be displayed over other ones. Happens on focusing (clicking into) the GraphNode.
 			</description>
 		</signal>
 		<signal name="resize_request">
 			<argument index="0" name="new_minsize" type="Vector2">
 			</argument>
 			<description>
+				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="OVERLAY_DISABLED" value="0" enum="Overlay">
+			No overlay is shown.
 		</constant>
 		<constant name="OVERLAY_BREAKPOINT" value="1" enum="Overlay">
+			Show overlay set in the [code]breakpoint[/code] theme property.
 		</constant>
 		<constant name="OVERLAY_POSITION" value="2" enum="Overlay">
+			Show overlay set in the [code]position[/code] theme property.
 		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="breakpoint" type="StyleBox">
+			The background used when [member overlay] is set to [constant OVERLAY_BREAKPOINT].
 		</theme_item>
-		<theme_item name="close" type="Texture">
+		<theme_item name="close" type="Texture2D">
+			The icon for the close button, visible when [member show_close] is enabled.
 		</theme_item>
 		<theme_item name="close_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			The color modulation applied to the close button icon.
 		</theme_item>
 		<theme_item name="close_offset" type="int" default="18">
+			The vertical offset of the close button.
 		</theme_item>
 		<theme_item name="comment" type="StyleBox">
+			The [StyleBox] used when [member comment] is enabled.
 		</theme_item>
 		<theme_item name="commentfocus" type="StyleBox">
+			The [StyleBox] used when [member comment] is enabled and the [GraphNode] is focused.
 		</theme_item>
 		<theme_item name="defaultfocus" type="StyleBox">
 		</theme_item>
 		<theme_item name="defaultframe" type="StyleBox">
 		</theme_item>
 		<theme_item name="frame" type="StyleBox">
+			The default background for [GraphNode].
 		</theme_item>
-		<theme_item name="port" type="Texture">
+		<theme_item name="port" type="Texture2D">
+			The icon used for representing ports.
 		</theme_item>
 		<theme_item name="port_offset" type="int" default="3">
+			Horizontal offset for the ports.
 		</theme_item>
 		<theme_item name="position" type="StyleBox">
+			The background used when [member overlay] is set to [constant OVERLAY_POSITION].
 		</theme_item>
-		<theme_item name="resizer" type="Texture">
+		<theme_item name="resizer" type="Texture2D">
+			The icon used for resizer, visible when [member resizable] is enabled.
 		</theme_item>
 		<theme_item name="resizer_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			The color modulation applied to the resizer icon.
 		</theme_item>
 		<theme_item name="selectedframe" type="StyleBox">
+			The background used when the [GraphNode] is selected.
 		</theme_item>
 		<theme_item name="separation" type="int" default="1">
+			The vertical distance between ports.
 		</theme_item>
 		<theme_item name="title_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			Color of the title text.
 		</theme_item>
 		<theme_item name="title_font" type="Font">
+			Font used for the title text.
 		</theme_item>
 		<theme_item name="title_offset" type="int" default="20">
+			Vertical offset of the title text.
 		</theme_item>
 	</theme_items>
 </class>

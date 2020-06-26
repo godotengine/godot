@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,17 +34,14 @@
 #include "scene/gui/text_edit.h"
 
 inline bool _is_symbol(CharType c) {
-
 	return is_symbol(c);
 }
 
 static bool _is_text_char(CharType c) {
-
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
 static bool _is_char(CharType c) {
-
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
@@ -180,10 +177,10 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		}
 
 		if (in_region == -1 && !in_keyword && is_char && !prev_is_char) {
-
 			int to = j;
-			while (to < str.length() && _is_text_char(str[to]))
+			while (to < str.length() && _is_text_char(str[to])) {
 				to++;
+			}
 
 			String word = str.substr(j, to - j);
 			Color col = Color();
@@ -208,7 +205,6 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		}
 
 		if (!in_function_name && in_word && !in_keyword) {
-
 			int k = j;
 			while (k < str.length() && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
 				k++;
@@ -238,7 +234,6 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		}
 
 		if (is_symbol) {
-
 			if (in_function_name) {
 				in_function_args = true;
 			}
@@ -358,11 +353,11 @@ List<String> GDScriptSyntaxHighlighter::get_supported_languages() {
 }
 
 void GDScriptSyntaxHighlighter::_update_cache() {
-	font_color = text_editor->get_color("font_color");
-	symbol_color = text_editor->get_color("symbol_color");
-	function_color = text_editor->get_color("function_color");
-	number_color = text_editor->get_color("number_color");
-	member_color = text_editor->get_color("member_variable_color");
+	font_color = text_editor->get_theme_color("font_color");
+	symbol_color = text_editor->get_theme_color("symbol_color");
+	function_color = text_editor->get_theme_color("function_color");
+	number_color = text_editor->get_theme_color("number_color");
+	member_color = text_editor->get_theme_color("member_variable_color");
 
 	const String text_editor_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
 	const bool default_theme = text_editor_color_theme == "Default";

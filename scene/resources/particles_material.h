@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #define PARTICLES_MATERIAL_H
 
 class ParticlesMaterial : public Material {
-
 	GDCLASS(ParticlesMaterial, Material);
 
 public:
@@ -69,11 +68,11 @@ public:
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_MAX
 	};
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
@@ -102,7 +101,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		for (int i = 0; i < PARAM_MAX; i++) {
@@ -125,7 +123,7 @@ private:
 		return mk;
 	}
 
-	static Mutex *material_mutex;
+	static Mutex material_mutex;
 	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
@@ -204,18 +202,18 @@ private:
 	float parameters[PARAM_MAX];
 	float randomness[PARAM_MAX];
 
-	Ref<Texture> tex_parameters[PARAM_MAX];
+	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
-	Ref<Texture> color_ramp;
+	Ref<Texture2D> color_ramp;
 
 	bool flags[FLAG_MAX];
 
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
 	Vector3 emission_box_extents;
-	Ref<Texture> emission_point_texture;
-	Ref<Texture> emission_normal_texture;
-	Ref<Texture> emission_color_texture;
+	Ref<Texture2D> emission_point_texture;
+	Ref<Texture2D> emission_normal_texture;
+	Ref<Texture2D> emission_color_texture;
 	int emission_point_count;
 
 	bool anim_loop;
@@ -251,14 +249,14 @@ public:
 	void set_param_randomness(Parameter p_param, float p_value);
 	float get_param_randomness(Parameter p_param) const;
 
-	void set_param_texture(Parameter p_param, const Ref<Texture> &p_texture);
-	Ref<Texture> get_param_texture(Parameter p_param) const;
+	void set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_param_texture(Parameter p_param) const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_color_ramp(const Ref<Texture> &p_texture);
-	Ref<Texture> get_color_ramp() const;
+	void set_color_ramp(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_color_ramp() const;
 
 	void set_flag(Flags p_flag, bool p_enable);
 	bool get_flag(Flags p_flag) const;
@@ -266,17 +264,17 @@ public:
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
 	void set_emission_box_extents(Vector3 p_extents);
-	void set_emission_point_texture(const Ref<Texture> &p_points);
-	void set_emission_normal_texture(const Ref<Texture> &p_normals);
-	void set_emission_color_texture(const Ref<Texture> &p_colors);
+	void set_emission_point_texture(const Ref<Texture2D> &p_points);
+	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
+	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
 	Vector3 get_emission_box_extents() const;
-	Ref<Texture> get_emission_point_texture() const;
-	Ref<Texture> get_emission_normal_texture() const;
-	Ref<Texture> get_emission_color_texture() const;
+	Ref<Texture2D> get_emission_point_texture() const;
+	Ref<Texture2D> get_emission_normal_texture() const;
+	Ref<Texture2D> get_emission_color_texture() const;
 	int get_emission_point_count() const;
 
 	void set_trail_divisor(int p_divisor);

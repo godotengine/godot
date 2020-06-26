@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeTransformUniform" inherits="VisualShaderNodeUniform" category="Core" version="3.2">
+<class name="VisualShaderNodeTransformUniform" inherits="VisualShaderNodeUniform" version="4.0">
 	<brief_description>
+		A [Transform] uniform for use within the visual shader graph.
 	</brief_description>
 	<description>
+		Translated to [code]uniform mat4[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>

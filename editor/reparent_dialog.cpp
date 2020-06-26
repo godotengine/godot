@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,53 +35,38 @@
 #include "scene/gui/label.h"
 
 void ReparentDialog::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
-		connect("confirmed", this, "_reparent");
+		connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
-		disconnect("confirmed", this, "_reparent");
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-
-		//RID ci = get_canvas_item();
-		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+		disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
 	}
 }
 
 void ReparentDialog::_cancel() {
-
 	hide();
 }
+
 void ReparentDialog::_reparent() {
-
 	if (tree->get_selected()) {
-
 		emit_signal("reparent", tree->get_selected()->get_path(), keep_transform->is_pressed());
 		hide();
 	}
 }
 
 void ReparentDialog::set_current(const Set<Node *> &p_selection) {
-
 	tree->set_marked(p_selection, false, false);
 	//tree->set_selected(p_node->get_parent());
 }
 
 void ReparentDialog::_bind_methods() {
-
-	ClassDB::bind_method("_reparent", &ReparentDialog::_reparent);
 	ClassDB::bind_method("_cancel", &ReparentDialog::_cancel);
 
 	ADD_SIGNAL(MethodInfo("reparent", PropertyInfo(Variant::NODE_PATH, "path"), PropertyInfo(Variant::BOOL, "keep_global_xform")));
 }
 
 ReparentDialog::ReparentDialog() {
-
 	set_title(TTR("Reparent Node"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -93,7 +78,7 @@ ReparentDialog::ReparentDialog() {
 
 	vbc->add_margin_child(TTR("Reparent Location (Select new Parent):"), tree, true);
 
-	tree->get_scene_tree()->connect("item_activated", this, "_reparent");
+	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
 
 	//Label *label = memnew( Label );
 	//label->set_position( Point2( 15,8) );

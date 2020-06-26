@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/print_string.h"
 
 Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	String header = f->get_token();
 
 	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
@@ -42,12 +41,13 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	while (true) {
 		String line = f->get_line();
 		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
-		if (line == "") // empty line indicates end of header
+		if (line == "") { // empty line indicates end of header
 			break;
+		}
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
 			ERR_FAIL_COND_V_MSG(line != "FORMAT=32-bit_rle_rgbe", ERR_FILE_UNRECOGNIZED, "Only 32-bit_rle_rgbe is supported for HDR files.");
 		} else if (!line.begins_with("#")) { // not comment
-			WARN_PRINTS("Ignoring unsupported header information in HDR: " + line + ".");
+			WARN_PRINT("Ignoring unsupported header information in HDR: " + line + ".");
 		}
 	}
 
@@ -63,15 +63,14 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	int width = f->get_line().to_int();
 
-	PoolVector<uint8_t> imgdata;
+	Vector<uint8_t> imgdata;
 
 	imgdata.resize(height * width * sizeof(uint32_t));
 
 	{
+		uint8_t *w = imgdata.ptrw();
 
-		PoolVector<uint8_t>::Write w = imgdata.write();
-
-		uint8_t *ptr = (uint8_t *)w.ptr();
+		uint8_t *ptr = (uint8_t *)w;
 
 		if (width < 8 || width >= 32768) {
 			// Read flat data
@@ -109,12 +108,14 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 							// Run
 							int value = f->get_8();
 							count -= 128;
-							for (int z = 0; z < count; ++z)
+							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = uint8_t(value);
+							}
 						} else {
 							// Dump
-							for (int z = 0; z < count; ++z)
+							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = f->get_8();
+							}
 						}
 					}
 				}
@@ -123,7 +124,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 		//convert
 		for (int i = 0; i < width * height; i++) {
-
 			float exp = pow(2.0f, ptr[3] - 128.0f);
 
 			Color c(
@@ -146,7 +146,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderHDR::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("hdr");
 }
 

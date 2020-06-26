@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@
 #include "gd_mono_utils.h"
 
 class GDMonoAssembly {
-
 	struct ClassKey {
 		struct Hasher {
 			static _FORCE_INLINE_ uint32_t hash(const ClassKey &p_key) {
@@ -68,24 +67,20 @@ class GDMonoAssembly {
 		StringName class_name;
 	};
 
-	MonoAssembly *assembly;
-	MonoImage *image;
-
-	bool refonly;
-	bool loaded;
-
 	String name;
-	String path;
-	uint64_t modified_time;
+	MonoImage *image;
+	MonoAssembly *assembly;
+
+#ifdef GD_MONO_HOT_RELOAD
+	uint64_t modified_time = 0;
+#endif
+
+	bool gdobject_class_cache_updated = false;
+	Map<StringName, GDMonoClass *> gdobject_class_cache;
 
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
 	Map<MonoClass *, GDMonoClass *> cached_raw;
 
-	bool gdobject_class_cache_updated;
-	Map<StringName, GDMonoClass *> gdobject_class_cache;
-
-	static bool no_search;
-	static bool in_preload;
 	static Vector<String> search_dirs;
 
 	static void assembly_load_hook(MonoAssembly *assembly, void *user_data);
@@ -97,36 +92,43 @@ class GDMonoAssembly {
 	static MonoAssembly *_search_hook(MonoAssemblyName *aname, void *user_data, bool refonly);
 	static MonoAssembly *_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data, bool refonly);
 
-	static GDMonoAssembly *_load_assembly_from(const String &p_name, const String &p_path, bool p_refonly);
-	static GDMonoAssembly *_load_assembly_search(const String &p_name, const Vector<String> &p_search_dirs, bool p_refonly);
-	static void _wrap_mono_assembly(MonoAssembly *assembly);
+	static MonoAssembly *_real_load_assembly_from(const String &p_path, bool p_refonly, MonoAssemblyName *p_aname = nullptr);
+	static MonoAssembly *_load_assembly_search(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 
 	friend class GDMono;
 	static void initialize();
 
 public:
-	Error load(bool p_refonly);
-	Error wrapper_for_image(MonoImage *p_image);
 	void unload();
 
-	_FORCE_INLINE_ bool is_refonly() const { return refonly; }
-	_FORCE_INLINE_ bool is_loaded() const { return loaded; }
 	_FORCE_INLINE_ MonoImage *get_image() const { return image; }
 	_FORCE_INLINE_ MonoAssembly *get_assembly() const { return assembly; }
 	_FORCE_INLINE_ String get_name() const { return name; }
-	_FORCE_INLINE_ String get_path() const { return path; }
+
+#ifdef GD_MONO_HOT_RELOAD
 	_FORCE_INLINE_ uint64_t get_modified_time() const { return modified_time; }
+#endif
+
+	String get_path() const;
 
 	GDMonoClass *get_class(const StringName &p_namespace, const StringName &p_name);
 	GDMonoClass *get_class(MonoClass *p_mono_class);
 
 	GDMonoClass *get_object_derived_class(const StringName &p_class);
 
-	static void fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config = String(), const String &p_custom_bcl_dir = String());
+	static String find_assembly(const String &p_name);
 
+	static void fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config = String(), const String &p_custom_bcl_dir = String());
+	static const Vector<String> &get_default_search_dirs() { return search_dirs; }
+
+	static GDMonoAssembly *load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);
 
-	GDMonoAssembly(const String &p_name, const String &p_path = String());
+	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly) :
+			name(p_name),
+			image(p_image),
+			assembly(p_assembly) {
+	}
 	~GDMonoAssembly();
 };
 

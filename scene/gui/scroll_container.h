@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "scroll_bar.h"
 
 class ScrollContainer : public Container {
-
 	GDCLASS(ScrollContainer, Container);
 
 	HScrollBar *h_scroll;
@@ -62,6 +61,7 @@ class ScrollContainer : public Container {
 	bool scroll_v;
 
 	int deadzone;
+	bool follow_focus;
 
 	void _cancel_drag();
 
@@ -75,6 +75,7 @@ protected:
 	static void _bind_methods();
 
 	void _update_scrollbar_position();
+	void _ensure_focused_visible(Control *p_node);
 
 public:
 	int get_v_scroll() const;
@@ -91,6 +92,9 @@ public:
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
+
+	bool is_following_focus() const;
+	void set_follow_focus(bool p_follow);
 
 	HScrollBar *get_h_scrollbar();
 	VScrollBar *get_v_scrollbar();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,31 +40,30 @@ class VPXDecoder;
 class OpusVorbisDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback);
 
 	String file_name;
-	int audio_track;
+	int audio_track = 0;
 
-	WebMDemuxer *webm;
-	VPXDecoder *video;
-	OpusVorbisDecoder *audio;
+	WebMDemuxer *webm = nullptr;
+	VPXDecoder *video = nullptr;
+	OpusVorbisDecoder *audio = nullptr;
 
-	WebMFrame **video_frames, *audio_frame;
-	int video_frames_pos, video_frames_capacity;
+	WebMFrame **video_frames = nullptr, *audio_frame = nullptr;
+	int video_frames_pos = 0, video_frames_capacity = 0;
 
-	int num_decoded_samples, samples_offset;
-	AudioMixCallback mix_callback;
-	void *mix_udata;
+	int num_decoded_samples = 0, samples_offset = -1;
+	AudioMixCallback mix_callback = nullptr;
+	void *mix_udata = nullptr;
 
-	bool playing, paused;
-	double delay_compensation;
-	double time, video_frame_delay, video_pos;
+	bool playing = false, paused = false;
+	double delay_compensation = 0.0;
+	double time = 0.0, video_frame_delay = 0.0, video_pos = 0.0;
 
-	PoolVector<uint8_t> frame_data;
+	Vector<uint8_t> frame_data;
 	Ref<ImageTexture> texture;
 
-	float *pcm;
+	float *pcm = nullptr;
 
 public:
 	VideoStreamPlaybackWebm();
@@ -90,7 +89,7 @@ public:
 
 	virtual void set_audio_track(int p_idx);
 
-	virtual Ref<Texture> get_texture() const;
+	virtual Ref<Texture2D> get_texture() const;
 	virtual void update(float p_delta);
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
@@ -107,11 +106,10 @@ private:
 /**/
 
 class VideoStreamWebm : public VideoStream {
-
 	GDCLASS(VideoStreamWebm, VideoStream);
 
 	String file;
-	int audio_track;
+	int audio_track = 0;
 
 protected:
 	static void _bind_methods();
@@ -128,7 +126,7 @@ public:
 
 class ResourceFormatLoaderWebm : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

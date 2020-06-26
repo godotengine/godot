@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,23 +36,21 @@
 #include "gdscript_parser.h"
 
 class GDScriptCompiler {
-
 	const GDScriptParser *parser;
 	Set<GDScript *> parsed_classes;
 	Set<GDScript *> parsing_classes;
 	GDScript *main_script;
 	struct CodeGen {
-
 		GDScript *script;
 		const GDScriptParser::ClassNode *class_node;
 		const GDScriptParser::FunctionNode *function_node;
 		bool debug_stack;
 
-		List<Map<StringName, int> > stack_id_stack;
+		List<Map<StringName, int>> stack_id_stack;
 		Map<StringName, int> stack_identifiers;
 
 		List<GDScriptFunction::StackDebug> stack_debug;
-		List<Map<StringName, int> > block_identifier_stack;
+		List<Map<StringName, int>> block_identifier_stack;
 		Map<StringName, int> block_identifiers;
 
 		void add_stack_identifier(const StringName &p_id, int p_stackpos) {
@@ -71,7 +69,6 @@ class GDScriptCompiler {
 		void push_stack_identifiers() {
 			stack_id_stack.push_back(stack_identifiers);
 			if (debug_stack) {
-
 				block_identifier_stack.push_back(block_identifiers);
 				block_identifiers.clear();
 			}
@@ -83,7 +80,6 @@ class GDScriptCompiler {
 
 			if (debug_stack) {
 				for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
-
 					GDScriptFunction::StackDebug sd;
 					sd.added = false;
 					sd.identifier = E->key();
@@ -114,8 +110,9 @@ class GDScriptCompiler {
 		}
 
 		int get_constant_pos(const Variant &p_constant) {
-			if (constant_map.has(p_constant))
+			if (constant_map.has(p_constant)) {
 				return constant_map[p_constant];
+			}
 			int pos = constant_map.size();
 			constant_map[p_constant] = pos;
 			return pos;
@@ -123,10 +120,14 @@ class GDScriptCompiler {
 
 		Vector<int> opcodes;
 		void alloc_stack(int p_level) {
-			if (p_level >= stack_max) stack_max = p_level + 1;
+			if (p_level >= stack_max) {
+				stack_max = p_level + 1;
+			}
 		}
 		void alloc_call(int p_params) {
-			if (p_params >= call_max) call_max = p_params;
+			if (p_params >= call_max) {
+				call_max = p_params;
+			}
 		}
 
 		int current_line;
@@ -140,12 +141,12 @@ class GDScriptCompiler {
 	void _set_error(const String &p_error, const GDScriptParser::Node *p_node);
 
 	bool _create_unary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level);
-	bool _create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer = false);
+	bool _create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer = false, int p_index_addr = 0);
 
 	GDScriptDataType _gdtype_from_datatype(const GDScriptParser::DataType &p_datatype) const;
 
-	int _parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level);
-	int _parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root = false, bool p_initializer = false);
+	int _parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level, int p_index_addr = 0);
+	int _parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root = false, bool p_initializer = false, int p_index_addr = 0);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level = 0, int p_break_addr = -1, int p_continue_addr = -1);
 	Error _parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false);
 	Error _parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);

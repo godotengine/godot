@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,15 +35,10 @@
 #include "scene/gui/menu_button.h"
 
 class EditorRunNative : public HBoxContainer {
-
 	GDCLASS(EditorRunNative, HBoxContainer);
 
 	Map<int, MenuButton *> menus;
 	bool first;
-	bool deploy_dumb;
-	bool deploy_debug_remote;
-	bool debug_collisions;
-	bool debug_navigation;
 
 	int resume_idx;
 	int resume_platform;
@@ -55,17 +50,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_deploy_dumb(bool p_enabled);
-	bool is_deploy_dumb_enabled() const;
-
-	void set_deploy_debug_remote(bool p_enabled);
 	bool is_deploy_debug_remote_enabled() const;
-
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
 
 	void resume_run_native();
 

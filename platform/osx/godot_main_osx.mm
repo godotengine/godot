@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,11 @@
 #include <unistd.h>
 
 int main(int argc, char **argv) {
+#if defined(VULKAN_ENABLED)
+	//MoltenVK - enable full component swizzling support
+	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#endif
+
 	int first_arg = 1;
 	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
 	printf("arguments\n");
@@ -44,35 +49,6 @@ int main(int argc, char **argv) {
 			first_arg = i + 2;
 		printf("%i: %s\n", i, argv[i]);
 	};
-
-	if (argc >= 1 && argv[0][0] == '/') {
-		//potentially launched from finder
-		int len = strlen(argv[0]);
-		while (len--) {
-			if (argv[0][len] == '/') break;
-		}
-		if (len >= 0) {
-			char *path = (char *)malloc(len + 1);
-			memcpy(path, argv[0], len);
-			path[len] = 0;
-
-			char *pathinfo = (char *)malloc(strlen(path) + strlen("/../Info.plist") + 1);
-			//in real code you would check for errors in malloc here
-			strcpy(pathinfo, path);
-			strcat(pathinfo, "/../Info.plist");
-
-			FILE *f = fopen(pathinfo, "rb");
-			if (f) {
-				//running from app bundle, as Info.plist was found
-				fclose(f);
-				chdir(path);
-				chdir("../Resources"); //data.pck, or just the files are here
-			}
-
-			free(path);
-			free(pathinfo);
-		}
-	}
 
 #ifdef DEBUG_ENABLED
 	// lets report the path we made current after all that

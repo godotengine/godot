@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,19 +35,19 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "editor_scale.h"
-void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
+#include "servers/display_server.h"
 
+void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 	updating = true;
 
 	String path = p_dir->get_path();
 
 	p_item->set_metadata(0, p_dir->get_path());
-	p_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+	p_item->set_icon(0, tree->get_theme_icon("Folder", "EditorIcons"));
 
 	if (!p_item->get_parent()) {
 		p_item->set_text(0, "res://");
 	} else {
-
 		if (!opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
 			p_item->set_collapsed(true);
 		}
@@ -59,15 +59,13 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	//bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-
 		TreeItem *ti = tree->create_item(p_item);
 		_update_dir(ti, p_dir->get_subdir(i));
 	}
 }
 
 void EditorDirDialog::reload(const String &p_path) {
-
-	if (!is_visible_in_tree()) {
+	if (!is_visible()) {
 		must_reload = true;
 		return;
 	}
@@ -80,51 +78,55 @@ void EditorDirDialog::reload(const String &p_path) {
 }
 
 void EditorDirDialog::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "reload");
+		EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
 		reload();
 
-		if (!tree->is_connected("item_collapsed", this, "_item_collapsed")) {
-			tree->connect("item_collapsed", this, "_item_collapsed", varray(), CONNECT_DEFERRED);
+		if (!tree->is_connected("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed))) {
+			tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), varray(), CONNECT_DEFERRED);
 		}
 
-		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "reload")) {
-			EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "reload");
+		if (!EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
 		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", this, "reload")) {
-			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", this, "reload");
+		if (EditorFileSystem::get_singleton()->is_connected("filesystem_changed", callable_mp(this, &EditorDirDialog::reload))) {
+			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
 		}
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible_in_tree()) {
+		if (must_reload && is_visible()) {
 			reload();
 		}
 	}
 }
 
 void EditorDirDialog::_item_collapsed(Object *p_item) {
-
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
-	if (updating)
+	if (updating) {
 		return;
+	}
 
-	if (item->is_collapsed())
+	if (item->is_collapsed()) {
 		opened_paths.erase(item->get_metadata(0));
-	else
+	} else {
 		opened_paths.insert(item->get_metadata(0));
+	}
+}
+
+void EditorDirDialog::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
 }
 
 void EditorDirDialog::ok_pressed() {
-
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String dir = ti->get_metadata(0);
 	emit_signal("dir_selected", dir);
@@ -132,23 +134,22 @@ void EditorDirDialog::ok_pressed() {
 }
 
 void EditorDirDialog::_make_dir() {
-
 	TreeItem *ti = tree->get_selected();
 	if (!ti) {
 		mkdirerr->set_text(TTR("Please select a base directory first."));
-		mkdirerr->popup_centered_minsize();
+		mkdirerr->popup_centered();
 		return;
 	}
 
-	makedialog->popup_centered_minsize(Size2(250, 80));
+	makedialog->popup_centered(Size2(250, 80));
 	makedirname->grab_focus();
 }
 
 void EditorDirDialog::_make_dir_confirm() {
-
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String dir = ti->get_metadata(0);
 
@@ -157,7 +158,7 @@ void EditorDirDialog::_make_dir_confirm() {
 	Error err = d->make_dir(makedirname->get_text());
 
 	if (err != OK) {
-		mkdirerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
 	} else {
 		opened_paths.insert(dir);
 		//reload(dir.plus_file(makedirname->get_text()));
@@ -167,17 +168,10 @@ void EditorDirDialog::_make_dir_confirm() {
 }
 
 void EditorDirDialog::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_item_collapsed"), &EditorDirDialog::_item_collapsed);
-	ClassDB::bind_method(D_METHOD("_make_dir"), &EditorDirDialog::_make_dir);
-	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &EditorDirDialog::_make_dir_confirm);
-	ClassDB::bind_method(D_METHOD("reload"), &EditorDirDialog::reload, DEFVAL(""));
-
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
 }
 
 EditorDirDialog::EditorDirDialog() {
-
 	updating = false;
 
 	set_title(TTR("Choose a Directory"));
@@ -186,10 +180,10 @@ EditorDirDialog::EditorDirDialog() {
 	tree = memnew(Tree);
 	add_child(tree);
 
-	tree->connect("item_activated", this, "_ok");
+	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 
-	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
-	makedir->connect("pressed", this, "_make_dir");
+	makedir = add_button(TTR("Create Folder"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "makedir");
+	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));
 
 	makedialog = memnew(ConfirmationDialog);
 	makedialog->set_title(TTR("Create Folder"));
@@ -202,7 +196,7 @@ EditorDirDialog::EditorDirDialog() {
 	makedirname = memnew(LineEdit);
 	makevb->add_margin_child(TTR("Name:"), makedirname);
 	makedialog->register_text_enter(makedirname);
-	makedialog->connect("confirmed", this, "_make_dir_confirm");
+	makedialog->connect("confirmed", callable_mp(this, &EditorDirDialog::_make_dir_confirm));
 
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTR("Could not create folder."));

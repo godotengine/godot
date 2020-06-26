@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 #include "scene/main/timer.h"
 
 class HTTPRequest : public Node {
-
 	GDCLASS(HTTPRequest, Node);
 
 public:
@@ -73,12 +72,12 @@ private:
 
 	bool request_sent;
 	Ref<HTTPClient> client;
-	PoolByteArray body;
+	PackedByteArray body;
 	volatile bool use_threads;
 
 	bool got_response;
 	int response_code;
-	PoolVector<String> response_headers;
+	Vector<String> response_headers;
 
 	String download_to_file;
 
@@ -108,7 +107,7 @@ private:
 
 	Thread *thread;
 
-	void _request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
+	void _request_done(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:
@@ -125,6 +124,9 @@ public:
 
 	void set_download_file(const String &p_file);
 	String get_download_file() const;
+
+	void set_download_chunk_size(int p_chunk_size);
+	int get_download_chunk_size() const;
 
 	void set_body_size_limit(int p_bytes);
 	int get_body_size_limit() const;

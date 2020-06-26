@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_bar.h"
 
 class RichTextLabel : public Control {
-
 	GDCLASS(RichTextLabel, Control);
 
 public:
@@ -84,7 +83,6 @@ private:
 	struct Item;
 
 	struct Line {
-
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
@@ -98,7 +96,7 @@ private:
 		int maximum_width;
 
 		Line() {
-			from = NULL;
+			from = nullptr;
 			char_count = 0;
 		}
 	};
@@ -119,9 +117,11 @@ private:
 		}
 
 		Item() {
-			parent = NULL;
-			E = NULL;
+			parent = nullptr;
+			E = nullptr;
 			line = 0;
+			index = 0;
+			type = ITEM_FRAME;
 		}
 		virtual ~Item() { _clear_children(); }
 	};
@@ -135,7 +135,7 @@ private:
 
 		ItemFrame() {
 			type = ITEM_FRAME;
-			parent_frame = NULL;
+			parent_frame = nullptr;
 			cell = false;
 			parent_line = 0;
 		}
@@ -147,8 +147,9 @@ private:
 	};
 
 	struct ItemImage : public Item {
-		Ref<Texture> image;
+		Ref<Texture2D> image;
 		Size2 size;
+		Color color;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
@@ -330,7 +331,7 @@ private:
 	ItemMeta *meta_hovering;
 	Variant current_meta;
 
-	Vector<Ref<RichTextEffect> > custom_effects;
+	Vector<Ref<RichTextEffect>> custom_effects;
 
 	void _invalidate_current_line(ItemFrame *p_frame);
 	void _validate_line_caches(ItemFrame *p_frame);
@@ -350,7 +351,6 @@ private:
 	};
 
 	struct Selection {
-
 		Item *click;
 		int click_char;
 
@@ -368,8 +368,8 @@ private:
 	int visible_characters;
 	float percent_visible;
 
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
-	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
+	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
+	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
 	Ref<Font> _find_font(Item *p_item);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
@@ -377,10 +377,12 @@ private:
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
-	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
+	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
+
+	static Color _get_color_from_string(const String &p_color_str, const Color &p_default_color);
 
 	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, float p_delta_time);
@@ -401,13 +403,15 @@ private:
 
 	int fixed_width;
 
+	bool fit_content_height;
+
 protected:
 	void _notification(int p_what);
 
 public:
 	String get_text();
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture> &p_image, const int p_width = 0, const int p_height = 0);
+	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0));
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_font(const Ref<Font> &p_font);
@@ -454,13 +458,16 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_fit_content_height(bool p_enabled);
+	bool is_fit_content_height_enabled() const;
+
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	int get_content_height();
+	int get_content_height() const;
 
 	VScrollBar *get_v_scroll() { return vscroll; }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "core/io/http_client.h"
+
 #include "http_request.h"
 
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
-
 	close();
 	if (p_ssl && !p_verify_host) {
 		WARN_PRINT("Disabling HTTPClient's host verification is not supported for the HTML5 platform, host will be verified");
@@ -67,17 +67,14 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 }
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
-
 	ERR_FAIL_MSG("Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Ref<StreamPeer> HTTPClient::get_connection() const {
-
 	ERR_FAIL_V_MSG(REF(), "Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers) {
-
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE, "HTTP methods TRACE and CONNECT are not supported for the HTML5 platform.");
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
@@ -88,8 +85,8 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + p_url;
 	godot_xhr_reset(xhr_id);
 	godot_xhr_open(xhr_id, _methods[p_method], url.utf8().get_data(),
-			username.empty() ? NULL : username.utf8().get_data(),
-			password.empty() ? NULL : password.utf8().get_data());
+			username.empty() ? nullptr : username.utf8().get_data(),
+			password.empty() ? nullptr : password.utf8().get_data());
 
 	for (int i = 0; i < p_headers.size(); i++) {
 		int header_separator = p_headers[i].find(": ");
@@ -103,18 +100,15 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	return OK;
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
-
+Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)
 		return err;
-	PoolByteArray::Read read = p_body.read();
-	godot_xhr_send_data(xhr_id, read.ptr(), p_body.size());
+	godot_xhr_send_data(xhr_id, p_body.ptr(), p_body.size());
 	return OK;
 }
 
 Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)
 		return err;
@@ -123,7 +117,6 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 }
 
 void HTTPClient::close() {
-
 	host = "";
 	port = -1;
 	use_tls = false;
@@ -135,28 +128,23 @@ void HTTPClient::close() {
 }
 
 HTTPClient::Status HTTPClient::get_status() const {
-
 	return status;
 }
 
 bool HTTPClient::has_response() const {
-
 	return !polled_response_header.empty();
 }
 
 bool HTTPClient::is_response_chunked() const {
-
 	// TODO evaluate using moz-chunked-arraybuffer, fetch & ReadableStream
 	return false;
 }
 
 int HTTPClient::get_response_code() const {
-
 	return polled_response_code;
 }
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
-
 	if (polled_response_header.empty())
 		return ERR_INVALID_PARAMETER;
 
@@ -169,22 +157,16 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 }
 
 int HTTPClient::get_response_body_length() const {
-
 	return polled_response.size();
 }
 
-PoolByteArray HTTPClient::read_response_body_chunk() {
-
-	ERR_FAIL_COND_V(status != STATUS_BODY, PoolByteArray());
+PackedByteArray HTTPClient::read_response_body_chunk() {
+	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 
 	int to_read = MIN(read_limit, polled_response.size() - response_read_offset);
-	PoolByteArray chunk;
+	PackedByteArray chunk;
 	chunk.resize(to_read);
-	PoolByteArray::Write write = chunk.write();
-	PoolByteArray::Read read = polled_response.read();
-	memcpy(write.ptr(), read.ptr() + response_read_offset, to_read);
-	write = PoolByteArray::Write();
-	read = PoolByteArray::Read();
+	memcpy(chunk.ptrw(), polled_response.ptr() + response_read_offset, to_read);
 	response_read_offset += to_read;
 
 	if (response_read_offset == polled_response.size()) {
@@ -197,24 +179,23 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 }
 
 void HTTPClient::set_blocking_mode(bool p_enable) {
-
 	ERR_FAIL_COND_MSG(p_enable, "HTTPClient blocking mode is not supported for the HTML5 platform.");
 }
 
 bool HTTPClient::is_blocking_mode_enabled() const {
-
 	return false;
 }
 
 void HTTPClient::set_read_chunk_size(int p_size) {
-
 	read_limit = p_size;
 }
 
+int HTTPClient::get_read_chunk_size() const {
+	return read_limit;
+}
+
 Error HTTPClient::poll() {
-
 	switch (status) {
-
 		case STATUS_DISCONNECTED:
 			return ERR_UNCONFIGURED;
 
@@ -234,7 +215,6 @@ Error HTTPClient::poll() {
 			return ERR_CONNECTION_ERROR;
 
 		case STATUS_REQUESTING: {
-
 #ifdef DEBUG_ENABLED
 			if (!has_polled) {
 				has_polled = true;
@@ -259,23 +239,17 @@ Error HTTPClient::poll() {
 
 			status = STATUS_BODY;
 
-			PoolByteArray bytes;
+			PackedByteArray bytes;
 			int len = godot_xhr_get_response_headers_length(xhr_id);
 			bytes.resize(len + 1);
 
-			PoolByteArray::Write write = bytes.write();
-			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(write.ptr()), len);
-			write[len] = 0;
-			write = PoolByteArray::Write();
+			godot_xhr_get_response_headers(xhr_id, reinterpret_cast<char *>(bytes.ptrw()), len);
+			bytes.ptrw()[len] = 0;
 
-			PoolByteArray::Read read = bytes.read();
-			polled_response_header = String::utf8(reinterpret_cast<const char *>(read.ptr()));
-			read = PoolByteArray::Read();
+			polled_response_header = String::utf8(reinterpret_cast<const char *>(bytes.ptr()));
 
 			polled_response.resize(godot_xhr_get_response_length(xhr_id));
-			write = polled_response.write();
-			godot_xhr_get_response(xhr_id, write.ptr(), polled_response.size());
-			write = PoolByteArray::Write();
+			godot_xhr_get_response(xhr_id, polled_response.ptrw(), polled_response.size());
 			break;
 		}
 
@@ -286,20 +260,9 @@ Error HTTPClient::poll() {
 }
 
 HTTPClient::HTTPClient() {
-
 	xhr_id = godot_xhr_new();
-	read_limit = 4096;
-	status = STATUS_DISCONNECTED;
-	port = -1;
-	use_tls = false;
-	polled_response_code = 0;
-#ifdef DEBUG_ENABLED
-	has_polled = false;
-	last_polling_frame = 0;
-#endif
 }
 
 HTTPClient::~HTTPClient() {
-
 	godot_xhr_free(xhr_id);
 }

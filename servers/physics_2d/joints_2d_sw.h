@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "constraint_2d_sw.h"
 
 class Joint2DSW : public Constraint2DSW {
-
 	real_t max_force;
 	real_t bias;
 	real_t max_bias;
@@ -50,8 +49,8 @@ public:
 	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias = p_bias; }
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
-	virtual Physics2DServer::JointType get_type() const = 0;
-	Joint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0) :
+	virtual PhysicsServer2D::JointType get_type() const = 0;
+	Joint2DSW(Body2DSW **p_body_ptr = nullptr, int p_body_count = 0) :
 			Constraint2DSW(p_body_ptr, p_body_count) {
 		bias = 0;
 		max_force = max_bias = 3.40282e+38;
@@ -59,7 +58,6 @@ public:
 };
 
 class PinJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -78,20 +76,19 @@ class PinJoint2DSW : public Joint2DSW {
 	real_t softness;
 
 public:
-	virtual Physics2DServer::JointType get_type() const { return Physics2DServer::JOINT_PIN; }
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_PIN; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
 
-	void set_param(Physics2DServer::PinJointParam p_param, real_t p_value);
-	real_t get_param(Physics2DServer::PinJointParam p_param) const;
+	void set_param(PhysicsServer2D::PinJointParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer2D::PinJointParam p_param) const;
 
-	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = NULL);
+	PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p_body_b = nullptr);
 	~PinJoint2DSW();
 };
 
 class GrooveJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -116,7 +113,7 @@ class GrooveJoint2DSW : public Joint2DSW {
 	bool correct;
 
 public:
-	virtual Physics2DServer::JointType get_type() const { return Physics2DServer::JOINT_GROOVE; }
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_GROOVE; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
@@ -126,7 +123,6 @@ public:
 };
 
 class DampedSpringJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -150,13 +146,13 @@ class DampedSpringJoint2DSW : public Joint2DSW {
 	real_t v_coef;
 
 public:
-	virtual Physics2DServer::JointType get_type() const { return Physics2DServer::JOINT_DAMPED_SPRING; }
+	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_DAMPED_SPRING; }
 
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
 
-	void set_param(Physics2DServer::DampedStringParam p_param, real_t p_value);
-	real_t get_param(Physics2DServer::DampedStringParam p_param) const;
+	void set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer2D::DampedSpringParam p_param) const;
 
 	DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, Body2DSW *p_body_a, Body2DSW *p_body_b);
 	~DampedSpringJoint2DSW();

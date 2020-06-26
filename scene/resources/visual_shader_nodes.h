@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,8 @@
 /// CONSTANTS
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarConstant : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeScalarConstant, VisualShaderNode);
+class VisualShaderNodeFloatConstant : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeFloatConstant, VisualShaderNode);
 	float constant;
 
 protected:
@@ -62,7 +62,37 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const;
 
-	VisualShaderNodeScalarConstant();
+	VisualShaderNodeFloatConstant();
+};
+
+///////////////////////////////////////
+
+class VisualShaderNodeIntConstant : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeIntConstant, VisualShaderNode);
+	int constant;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_constant(int p_value);
+	int get_constant() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeIntConstant();
 };
 
 ///////////////////////////////////////
@@ -191,7 +221,7 @@ public:
 
 class VisualShaderNodeTexture : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTexture, VisualShaderNode);
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 
 public:
 	enum Source {
@@ -206,7 +236,7 @@ public:
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
-		TYPE_NORMALMAP
+		TYPE_NORMALMAP,
 	};
 
 private:
@@ -236,8 +266,8 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_texture(Ref<Texture> p_value);
-	Ref<Texture> get_texture() const;
+	void set_texture(Ref<Texture2D> p_value);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_type(TextureType p_type);
 	TextureType get_texture_type() const;
@@ -254,9 +284,71 @@ VARIANT_ENUM_CAST(VisualShaderNodeTexture::Source)
 
 ///////////////////////////////////////
 
-class VisualShaderNodeCubeMap : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeCubeMap, VisualShaderNode);
-	Ref<CubeMap> cube_map;
+class VisualShaderNodeSample3D : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeSample3D, VisualShaderNode);
+
+public:
+	enum Source {
+		SOURCE_TEXTURE,
+		SOURCE_PORT,
+	};
+
+protected:
+	Source source;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const = 0;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const = 0;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_source(Source p_source);
+	Source get_source() const;
+
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
+	VisualShaderNodeSample3D();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source)
+
+class VisualShaderNodeTexture2DArray : public VisualShaderNodeSample3D {
+	GDCLASS(VisualShaderNodeTexture2DArray, VisualShaderNodeSample3D);
+	Ref<Texture2DArray> texture;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+
+	void set_texture_array(Ref<Texture2DArray> p_value);
+	Ref<Texture2DArray> get_texture_array() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeTexture2DArray();
+};
+
+class VisualShaderNodeCubemap : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeCubemap, VisualShaderNode);
+	Ref<Cubemap> cube_map;
 
 public:
 	enum Source {
@@ -296,26 +388,26 @@ public:
 	void set_source(Source p_source);
 	Source get_source() const;
 
-	void set_cube_map(Ref<CubeMap> p_value);
-	Ref<CubeMap> get_cube_map() const;
+	void set_cube_map(Ref<Cubemap> p_value);
+	Ref<Cubemap> get_cube_map() const;
 
 	void set_texture_type(TextureType p_type);
 	TextureType get_texture_type() const;
 
 	virtual Vector<StringName> get_editable_properties() const;
 
-	VisualShaderNodeCubeMap();
+	VisualShaderNodeCubemap();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::TextureType)
-VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::Source)
+VARIANT_ENUM_CAST(VisualShaderNodeCubemap::TextureType)
+VARIANT_ENUM_CAST(VisualShaderNodeCubemap::Source)
 
 ///////////////////////////////////////
 /// OPS
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarOp : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeScalarOp, VisualShaderNode);
+class VisualShaderNodeFloatOp : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeFloatOp, VisualShaderNode);
 
 public:
 	enum Operator {
@@ -354,10 +446,52 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const;
 
-	VisualShaderNodeScalarOp();
+	VisualShaderNodeFloatOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeScalarOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeFloatOp::Operator)
+
+class VisualShaderNodeIntOp : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeIntOp, VisualShaderNode);
+
+public:
+	enum Operator {
+		OP_ADD,
+		OP_SUB,
+		OP_MUL,
+		OP_DIV,
+		OP_MOD,
+		OP_MAX,
+		OP_MIN,
+	};
+
+protected:
+	Operator op;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_operator(Operator p_op);
+	Operator get_operator() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeIntOp();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeIntOp::Operator)
 
 class VisualShaderNodeVectorOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorOp, VisualShaderNode);
@@ -539,11 +673,11 @@ public:
 VARIANT_ENUM_CAST(VisualShaderNodeTransformVecMult::Operator)
 
 ///////////////////////////////////////
-/// SCALAR FUNC
+/// FLOAT FUNC
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarFunc : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeScalarFunc, VisualShaderNode);
+class VisualShaderNodeFloatFunc : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeFloatFunc, VisualShaderNode);
 
 public:
 	enum Function {
@@ -604,10 +738,53 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const;
 
-	VisualShaderNodeScalarFunc();
+	VisualShaderNodeFloatFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeScalarFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeFloatFunc::Function)
+
+///////////////////////////////////////
+/// INT FUNC
+///////////////////////////////////////
+
+class VisualShaderNodeIntFunc : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeIntFunc, VisualShaderNode);
+
+public:
+	enum Function {
+		FUNC_ABS,
+		FUNC_CLAMP,
+		FUNC_NEGATE,
+		FUNC_SIGN,
+	};
+
+protected:
+	Function func;
+
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_function(Function p_func);
+	Function get_function() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeIntFunc();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeIntFunc::Function)
 
 ///////////////////////////////////////
 /// VECTOR FUNC
@@ -1297,8 +1474,24 @@ public:
 /// UNIFORMS
 ///////////////////////////////////////
 
-class VisualShaderNodeScalarUniform : public VisualShaderNodeUniform {
-	GDCLASS(VisualShaderNodeScalarUniform, VisualShaderNodeUniform);
+class VisualShaderNodeFloatUniform : public VisualShaderNodeUniform {
+	GDCLASS(VisualShaderNodeFloatUniform, VisualShaderNodeUniform);
+
+public:
+	enum Hint {
+		HINT_NONE,
+		HINT_RANGE,
+		HINT_RANGE_STEP,
+	};
+
+private:
+	Hint hint;
+	float hint_range_min;
+	float hint_range_max;
+	float hint_range_step;
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual String get_caption() const;
@@ -1314,8 +1507,80 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeScalarUniform();
+	void set_hint(Hint p_hint);
+	Hint get_hint() const;
+
+	void set_min(float p_value);
+	float get_min() const;
+
+	void set_max(float p_value);
+	float get_max() const;
+
+	void set_step(float p_value);
+	float get_step() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeFloatUniform();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeFloatUniform::Hint)
+
+class VisualShaderNodeIntUniform : public VisualShaderNodeUniform {
+	GDCLASS(VisualShaderNodeIntUniform, VisualShaderNodeUniform);
+
+public:
+	enum Hint {
+		HINT_NONE,
+		HINT_RANGE,
+		HINT_RANGE_STEP,
+	};
+
+private:
+	Hint hint;
+	int hint_range_min;
+	int hint_range_max;
+	int hint_range_step;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_hint(Hint p_hint);
+	Hint get_hint() const;
+
+	void set_min(int p_value);
+	int get_min() const;
+
+	void set_max(int p_value);
+	int get_max() const;
+
+	void set_step(int p_value);
+	int get_step() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeIntUniform();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeIntUniform::Hint)
 
 ///////////////////////////////////////
 
@@ -1335,6 +1600,8 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
 
 	VisualShaderNodeBooleanUniform();
 };
@@ -1358,6 +1625,8 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	VisualShaderNodeColorUniform();
 };
 
@@ -1380,6 +1649,8 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	VisualShaderNodeVec3Uniform();
 };
 
@@ -1401,6 +1672,8 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
 
 	VisualShaderNodeTransformUniform();
 };
@@ -1453,6 +1726,8 @@ public:
 	void set_color_default(ColorDefault p_default);
 	ColorDefault get_color_default() const;
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	VisualShaderNodeTextureUniform();
 };
 
@@ -1482,8 +1757,8 @@ public:
 
 ///////////////////////////////////////
 
-class VisualShaderNodeCubeMapUniform : public VisualShaderNodeTextureUniform {
-	GDCLASS(VisualShaderNodeCubeMapUniform, VisualShaderNodeTextureUniform);
+class VisualShaderNodeTexture2DArrayUniform : public VisualShaderNodeTextureUniform {
+	GDCLASS(VisualShaderNodeTexture2DArrayUniform, VisualShaderNodeTextureUniform);
 
 public:
 	virtual String get_caption() const;
@@ -1500,7 +1775,30 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	VisualShaderNodeCubeMapUniform();
+	VisualShaderNodeTexture2DArrayUniform();
+};
+
+///////////////////////////////////////
+
+class VisualShaderNodeCubemapUniform : public VisualShaderNodeTextureUniform {
+	GDCLASS(VisualShaderNodeCubemapUniform, VisualShaderNodeTextureUniform);
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String get_input_port_default_hint(int p_port) const;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	VisualShaderNodeCubemapUniform();
 };
 
 ///////////////////////////////////////
@@ -1579,6 +1877,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
+	virtual String get_input_port_default_hint(int p_port) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeFresnel();
@@ -1634,11 +1933,12 @@ class VisualShaderNodeCompare : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCompare, VisualShaderNode);
 
 public:
-	enum ComparsionType {
+	enum ComparisonType {
 		CTYPE_SCALAR,
+		CTYPE_SCALAR_INT,
 		CTYPE_VECTOR,
 		CTYPE_BOOLEAN,
-		CTYPE_TRANSFORM
+		CTYPE_TRANSFORM,
 	};
 
 	enum Function {
@@ -1656,7 +1956,7 @@ public:
 	};
 
 protected:
-	ComparsionType ctype;
+	ComparisonType ctype;
 	Function func;
 	Condition condition;
 
@@ -1676,8 +1976,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	void set_comparsion_type(ComparsionType p_type);
-	ComparsionType get_comparsion_type() const;
+	void set_comparison_type(ComparisonType p_type);
+	ComparisonType get_comparison_type() const;
 
 	void set_function(Function p_func);
 	Function get_function() const;
@@ -1691,7 +1991,7 @@ public:
 	VisualShaderNodeCompare();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparsionType)
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparisonType)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
 VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
 

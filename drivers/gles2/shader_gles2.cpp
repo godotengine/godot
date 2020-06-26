@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,7 @@
 
 #endif
 
-ShaderGLES2 *ShaderGLES2::active = NULL;
+ShaderGLES2 *ShaderGLES2::active = nullptr;
 
 //#define DEBUG_SHADER
 
@@ -70,14 +70,12 @@ ShaderGLES2 *ShaderGLES2::active = NULL;
 #endif
 
 GLint ShaderGLES2::get_uniform_location(int p_index) const {
-
 	ERR_FAIL_COND_V(!version, -1);
 
 	return version->uniform_location[p_index];
 }
 
 bool ShaderGLES2::bind() {
-
 	if (active != this || !version || new_conditional_version.key != conditional_version.key) {
 		conditional_version = new_conditional_version;
 		version = get_current_version();
@@ -103,14 +101,13 @@ bool ShaderGLES2::bind() {
 }
 
 void ShaderGLES2::unbind() {
-	version = NULL;
+	version = nullptr;
 	glUseProgram(0);
 	uniforms_dirty = true;
-	active = NULL;
+	active = nullptr;
 }
 
 static void _display_error_with_code(const String &p_error, const Vector<const char *> &p_code) {
-
 	int line = 1;
 	String total_code;
 
@@ -121,22 +118,19 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 	Vector<String> lines = String(total_code).split("\n");
 
 	for (int j = 0; j < lines.size(); j++) {
-
 		print_line(itos(line) + ": " + lines[j]);
 		line++;
 	}
 
-	ERR_PRINTS(p_error);
+	ERR_PRINT(p_error);
 }
 
 static String _mkid(const String &p_id) {
-
 	String id = "m_" + p_id;
 	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
 ShaderGLES2::Version *ShaderGLES2::get_current_version() {
-
 	Version *_v = version_map.getptr(conditional_version);
 
 	if (_v) {
@@ -196,19 +190,19 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	CharString code_string2;
 	CharString code_globals;
 
-	CustomCode *cc = NULL;
+	CustomCode *cc = nullptr;
 
 	if (conditional_version.code_version > 0) {
 		cc = custom_code_map.getptr(conditional_version.code_version);
 
-		ERR_FAIL_COND_V(!cc, NULL);
+		ERR_FAIL_COND_V(!cc, nullptr);
 		v.code_version = cc->version;
 	}
 
 	// program
 
 	v.id = glCreateProgram();
-	ERR_FAIL_COND_V(v.id == 0, NULL);
+	ERR_FAIL_COND_V(v.id == 0, nullptr);
 
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
@@ -244,7 +238,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 #endif
 
 	v.vert_id = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(v.vert_id, strings.size(), &strings[0], NULL);
+	glShaderSource(v.vert_id, strings.size(), &strings[0], nullptr);
 	glCompileShader(v.vert_id);
 
 	GLint status;
@@ -281,7 +275,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			v.id = 0;
 		}
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	strings.resize(string_base_size);
@@ -320,7 +314,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 #endif
 
 	v.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(v.frag_id, strings.size(), &strings[0], NULL);
+	glShaderSource(v.frag_id, strings.size(), &strings[0], nullptr);
 	glCompileShader(v.frag_id);
 
 	glGetShaderiv(v.frag_id, GL_COMPILE_STATUS, &status);
@@ -357,7 +351,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			v.id = 0;
 		}
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	glAttachShader(v.id, v.frag_id);
@@ -384,7 +378,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			v.id = 0;
 
 			ERR_PRINT("No OpenGL program link log. What the frick?");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V(nullptr);
 		}
 
 		if (iloglen == 0) {
@@ -407,7 +401,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		glDeleteProgram(v.id);
 		v.id = 0;
 
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	// get uniform locations
@@ -457,7 +451,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 }
 
 GLint ShaderGLES2::get_uniform_location(const String &p_name) const {
-
 	ERR_FAIL_COND_V(!version, -1);
 	return glGetUniformLocation(version->id, p_name.ascii().get_data());
 }
@@ -475,7 +468,6 @@ void ShaderGLES2::setup(
 		const char *p_fragment_code,
 		int p_vertex_code_start,
 		int p_fragment_code_start) {
-
 	ERR_FAIL_COND(version);
 
 	conditional_version.key = 0;
@@ -532,7 +524,6 @@ void ShaderGLES2::setup(
 			String code2;
 
 			if (cpos != -1) {
-
 				fragment_code1 = code.substr(0, cpos).ascii();
 				code2 = code.substr(cpos + light_code_tag.length(), code.length());
 			} else {
@@ -553,7 +544,7 @@ void ShaderGLES2::setup(
 }
 
 void ShaderGLES2::finish() {
-	const VersionKey *V = NULL;
+	const VersionKey *V = nullptr;
 
 	while ((V = version_map.next(V))) {
 		Version &v = version_map[*V];
@@ -565,7 +556,7 @@ void ShaderGLES2::finish() {
 }
 
 void ShaderGLES2::clear_caches() {
-	const VersionKey *V = NULL;
+	const VersionKey *V = nullptr;
 
 	while ((V = version_map.next(V))) {
 		Version &v = version_map[*V];
@@ -578,7 +569,7 @@ void ShaderGLES2::clear_caches() {
 	version_map.clear();
 
 	custom_code_map.clear();
-	version = NULL;
+	version = nullptr;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 }
@@ -617,7 +608,6 @@ void ShaderGLES2::set_custom_shader(uint32_t p_code_id) {
 }
 
 void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
-
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	if (conditional_version.code_version == p_code_id) {
 		conditional_version.code_version = 0; //do not keep using a version that is going away
@@ -658,7 +648,6 @@ void ShaderGLES2::use_material(void *p_material) {
 
 	// bind uniforms
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
-
 		if (E->get().texture_order >= 0)
 			continue; // this is a texture, doesn't go here
 
@@ -673,7 +662,6 @@ void ShaderGLES2::use_material(void *p_material) {
 		if (V) {
 			switch (E->get().type) {
 				case ShaderLanguage::TYPE_BOOL: {
-
 					bool boolean = V->get();
 					glUniform1i(location, boolean ? 1 : 0);
 				} break;
@@ -684,7 +672,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_BVEC3: {
-
 					int flags = V->get();
 					glUniform3i(location, (flags & 1) ? 1 : 0, (flags & 2) ? 1 : 0, (flags & 4) ? 1 : 0);
 
@@ -704,7 +691,6 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				case ShaderLanguage::TYPE_IVEC2:
 				case ShaderLanguage::TYPE_UVEC2: {
-
 					Array r = V->get();
 					const int count = 2;
 					if (r.size() == count) {
@@ -776,7 +762,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_MAT2: {
-
 					Transform2D tr = V->get();
 					GLfloat matrix[4] = {
 						/* build a 16x16 matrix */
@@ -809,7 +794,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_MAT4: {
-
 					Transform2D tr = V->get();
 					GLfloat matrix[16] = { /* build a 16x16 matrix */
 						tr.elements[0][0],
@@ -938,19 +922,15 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLER2D: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER2D: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_USAMPLER2D: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLERCUBE: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY:
@@ -1057,19 +1037,15 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLER2D: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER2D: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_USAMPLER2D: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLERCUBE: {
-
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY:
@@ -1093,7 +1069,7 @@ void ShaderGLES2::use_material(void *p_material) {
 }
 
 ShaderGLES2::ShaderGLES2() {
-	version = NULL;
+	version = nullptr;
 	last_custom_code = 1;
 	uniforms_dirty = true;
 }

@@ -26,7 +26,7 @@ extern "C" {
 
 // Main color cache struct.
 typedef struct {
-  uint32_t *colors_;  // color entries
+  uint32_t* colors_;  // color entries
   int hash_shift_;    // Hash shift: 32 - hash_bits_.
   int hash_bits_;
 } VP8LColorCache;

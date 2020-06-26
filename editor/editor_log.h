@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,20 +31,18 @@
 #ifndef EDITOR_LOG_H
 #define EDITOR_LOG_H
 
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/texture_button.h"
-//#include "scene/gui/empty_control.h"
 #include "core/os/thread.h"
 #include "pane_drag.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 
 class EditorLog : public VBoxContainer {
-
 	GDCLASS(EditorLog, VBoxContainer);
 
 	Button *clearbutton;
@@ -53,7 +51,7 @@ class EditorLog : public VBoxContainer {
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
 	//PaneDrag *pd;
-	ToolButton *tool_button;
+	Button *tool_button;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
 
@@ -79,7 +77,7 @@ public:
 	};
 
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
-	void set_tool_button(ToolButton *p_tool_button);
+	void set_tool_button(Button *p_tool_button);
 	void deinit();
 
 	void clear();

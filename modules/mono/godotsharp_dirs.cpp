@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "mono_gd/gd_mono_android.h"
+#include "mono_gd/support/android_support.h"
 #endif
 
 #include "mono_gd/gd_mono.h"
@@ -49,13 +49,13 @@ namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
 #ifdef TOOLS_ENABLED
-	return "Tools";
+	return "Debug";
 #else
 
 #ifdef DEBUG_ENABLED
-	return "Debug";
+	return "ExportDebug";
 #else
-	return "Release";
+	return "ExportRelease";
 #endif
 
 #endif
@@ -86,7 +86,6 @@ String _get_mono_user_dir() {
 }
 
 class _GodotSharpDirs {
-
 public:
 	String res_data_dir;
 	String res_metadata_dir;
@@ -108,6 +107,10 @@ public:
 
 	String data_editor_tools_dir;
 	String data_editor_prebuilt_api_dir;
+#else
+	// Equivalent of res_assemblies_dir, but in the data directory rather than in 'res://'.
+	// Only defined on export templates. Used when exporting assemblies outside of PCKs.
+	String data_game_assemblies_dir;
 #endif
 
 	String data_mono_etc_dir;
@@ -165,7 +168,7 @@ private:
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
 #ifdef ANDROID_ENABLED
-		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
+		data_mono_lib_dir = gdmono::android::support::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 #endif
@@ -202,9 +205,10 @@ private:
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
 #ifdef ANDROID_ENABLED
-		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
+		data_mono_lib_dir = gdmono::android::support::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
+		data_game_assemblies_dir = data_dir_root.plus_file("Assemblies");
 #endif
 
 #ifdef WINDOWS_ENABLED
@@ -215,6 +219,10 @@ private:
 		if (!DirAccess::exists(data_mono_root_dir)) {
 			data_mono_etc_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/etc");
 			data_mono_lib_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Mono/lib");
+		}
+
+		if (!DirAccess::exists(data_game_assemblies_dir)) {
+			data_game_assemblies_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Assemblies");
 		}
 #endif
 
@@ -294,6 +302,10 @@ String get_data_editor_tools_dir() {
 
 String get_data_editor_prebuilt_api_dir() {
 	return _GodotSharpDirs::get_singleton().data_editor_prebuilt_api_dir;
+}
+#else
+String get_data_game_assemblies_dir() {
+	return _GodotSharpDirs::get_singleton().data_game_assemblies_dir;
 }
 #endif
 

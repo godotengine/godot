@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,15 @@
 #include "resource_preloader.h"
 
 void ResourcePreloader::_set_resources(const Array &p_data) {
-
 	resources.clear();
 
 	ERR_FAIL_COND(p_data.size() != 2);
-	PoolVector<String> names = p_data[0];
+	Vector<String> names = p_data[0];
 	Array resdata = p_data[1];
 
 	ERR_FAIL_COND(names.size() != resdata.size());
 
 	for (int i = 0; i < resdata.size(); i++) {
-
 		String name = names[i];
 		RES resource = resdata[i];
 		ERR_CONTINUE(!resource.is_valid());
@@ -52,8 +50,7 @@ void ResourcePreloader::_set_resources(const Array &p_data) {
 }
 
 Array ResourcePreloader::_get_resources() const {
-
-	PoolVector<String> names;
+	Vector<String> names;
 	Array arr;
 	arr.resize(resources.size());
 	names.resize(resources.size());
@@ -66,7 +63,6 @@ Array ResourcePreloader::_get_resources() const {
 
 	int i = 0;
 	for (Set<String>::Element *E = sorted_names.front(); E; E = E->next()) {
-
 		names.set(i, E->get());
 		arr[i] = resources[E->get()];
 		i++;
@@ -79,15 +75,12 @@ Array ResourcePreloader::_get_resources() const {
 }
 
 void ResourcePreloader::add_resource(const StringName &p_name, const RES &p_resource) {
-
 	ERR_FAIL_COND(p_resource.is_null());
 	if (resources.has(p_name)) {
-
 		StringName new_name;
 		int idx = 2;
 
 		while (true) {
-
 			new_name = p_name.operator String() + " " + itos(idx);
 			if (resources.has(new_name)) {
 				idx++;
@@ -99,18 +92,16 @@ void ResourcePreloader::add_resource(const StringName &p_name, const RES &p_reso
 
 		add_resource(new_name, p_resource);
 	} else {
-
 		resources[p_name] = p_resource;
 	}
 }
 
 void ResourcePreloader::remove_resource(const StringName &p_name) {
-
 	ERR_FAIL_COND(!resources.has(p_name));
 	resources.erase(p_name);
 }
-void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
 
+void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
 	ERR_FAIL_COND(!resources.has(p_from_name));
 
 	RES res = resources[p_from_name];
@@ -120,18 +111,16 @@ void ResourcePreloader::rename_resource(const StringName &p_from_name, const Str
 }
 
 bool ResourcePreloader::has_resource(const StringName &p_name) const {
-
 	return resources.has(p_name);
 }
-RES ResourcePreloader::get_resource(const StringName &p_name) const {
 
+RES ResourcePreloader::get_resource(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!resources.has(p_name), RES());
 	return resources[p_name];
 }
 
-PoolVector<String> ResourcePreloader::_get_resource_list() const {
-
-	PoolVector<String> res;
+Vector<String> ResourcePreloader::_get_resource_list() const {
+	Vector<String> res;
 	res.resize(resources.size());
 	int i = 0;
 	for (Map<StringName, RES>::Element *E = resources.front(); E; E = E->next(), i++) {
@@ -142,15 +131,12 @@ PoolVector<String> ResourcePreloader::_get_resource_list() const {
 }
 
 void ResourcePreloader::get_resource_list(List<StringName> *p_list) {
-
 	for (Map<StringName, RES>::Element *E = resources.front(); E; E = E->next()) {
-
 		p_list->push_back(E->key());
 	}
 }
 
 void ResourcePreloader::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_set_resources"), &ResourcePreloader::_set_resources);
 	ClassDB::bind_method(D_METHOD("_get_resources"), &ResourcePreloader::_get_resources);
 

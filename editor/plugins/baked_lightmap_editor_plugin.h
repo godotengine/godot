@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,19 +37,19 @@
 #include "scene/resources/material.h"
 
 class BakedLightmapEditorPlugin : public EditorPlugin {
-
 	GDCLASS(BakedLightmapEditorPlugin, EditorPlugin);
 
 	BakedLightmap *lightmap;
 
-	ToolButton *bake;
+	Button *bake;
 	EditorNode *editor;
 
+	EditorFileDialog *file_dialog;
 	static EditorProgress *tmp_progress;
-	static void bake_func_begin(int p_steps);
-	static bool bake_func_step(int p_step, const String &p_description);
+	static bool bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh);
 	static void bake_func_end();
 
+	void _bake_select_file(const String &p_file);
 	void _bake();
 
 protected:
@@ -66,4 +66,4 @@ public:
 	~BakedLightmapEditorPlugin();
 };
 
-#endif // BAKED_LIGHTMAP_EDITOR_PLUGIN_H
+#endif

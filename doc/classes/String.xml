@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="String" category="Built-In Types" version="3.2">
+<class name="String" version="4.0">
 	<brief_description>
 		Built-in string class.
 	</brief_description>
@@ -49,6 +49,15 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="Vector2i">
+			</argument>
+			<description>
+				Constructs a new String from the given [Vector2i].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="Rect2">
 			</argument>
 			<description>
@@ -58,10 +67,28 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="Rect2i">
+			</argument>
+			<description>
+				Constructs a new String from the given [Rect2i].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="Vector3">
 			</argument>
 			<description>
 				Constructs a new String from the given [Vector3].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector3i">
+			</argument>
+			<description>
+				Constructs a new String from the given [Vector3i].
 			</description>
 		</method>
 		<method name="String">
@@ -130,6 +157,15 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="StringName">
+			</argument>
+			<description>
+				Constructs a new String from the given [StringName].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="NodePath">
 			</argument>
 			<description>
@@ -143,6 +179,24 @@
 			</argument>
 			<description>
 				Constructs a new String from the given [RID].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Callable">
+			</argument>
+			<description>
+				Constructs a new String from the given [Callable].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Signal">
+			</argument>
+			<description>
+				Constructs a new String from the given [Signal].
 			</description>
 		</method>
 		<method name="String">
@@ -166,64 +220,82 @@
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolByteArray">
+			<argument index="0" name="from" type="PackedByteArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolByteArray].
+				Constructs a new String from the given [PackedByteArray].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolIntArray">
+			<argument index="0" name="from" type="PackedInt32Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolIntArray].
+				Constructs a new String from the given [PackedInt32Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolRealArray">
+			<argument index="0" name="from" type="PackedInt64Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolRealArray].
+				Constructs a new String from the given [PackedInt64Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolStringArray">
+			<argument index="0" name="from" type="PackedFloat32Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolStringArray].
+				Constructs a new String from the given [PackedFloat32Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolVector2Array">
+			<argument index="0" name="from" type="PackedFloat64Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolVector2Array].
+				Constructs a new String from the given [PackedFloat64Array].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolVector3Array">
+			<argument index="0" name="from" type="PackedStringArray">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolVector3Array].
+				Constructs a new String from the given [PackedStringArray].
 			</description>
 		</method>
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="PoolColorArray">
+			<argument index="0" name="from" type="PackedVector2Array">
 			</argument>
 			<description>
-				Constructs a new String from the given [PoolColorArray].
+				Constructs a new String from the given [PackedVector2Array].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="PackedVector3Array">
+			</argument>
+			<description>
+				Constructs a new String from the given [PackedVector3Array].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="PackedColorArray">
+			</argument>
+			<description>
+				Constructs a new String from the given [PackedColorArray].
 			</description>
 		</method>
 		<method name="begins_with">
@@ -236,7 +308,7 @@
 			</description>
 		</method>
 		<method name="bigrams">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the bigrams (pairs of consecutive letters) of this string.
@@ -309,7 +381,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the string is empty.
+				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
 		<method name="ends_with">
@@ -322,6 +394,8 @@
 			</description>
 		</method>
 		<method name="erase">
+			<return type="void">
+			</return>
 			<argument index="0" name="position" type="int">
 			</argument>
 			<argument index="1" name="chars" type="int">
@@ -338,7 +412,13 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+				Finds the first occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
+				[codeblock]
+				# Will evaluate to `false`.
+				if "i" in "team":
+				    pass
+				[/codeblock]
 			</description>
 		</method>
 		<method name="find_last">
@@ -347,7 +427,7 @@
 			<argument index="0" name="what" type="String">
 			</argument>
 			<description>
-				Finds the last occurrence of a substring. Returns the starting position of the substring or -1 if not found.
+				Finds the last occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="findn">
@@ -358,7 +438,7 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
 		<method name="format">
@@ -366,7 +446,7 @@
 			</return>
 			<argument index="0" name="values" type="Variant">
 			</argument>
-			<argument index="1" name="placeholder" type="String" default="{_}">
+			<argument index="1" name="placeholder" type="String" default="&quot;{_}&quot;">
 			</argument>
 			<description>
 				Formats the string by replacing all occurrences of [code]placeholder[/code] with [code]values[/code].
@@ -512,7 +592,7 @@
 		<method name="is_valid_hex_number">
 			<return type="bool">
 			</return>
-			<argument index="0" name="with_prefix" type="bool" default="False">
+			<argument index="0" name="with_prefix" type="bool" default="false">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
@@ -544,6 +624,19 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if this string contains a valid IP address.
+			</description>
+		</method>
+		<method name="join">
+			<return type="String">
+			</return>
+			<argument index="0" name="parts" type="PackedStringArray">
+			</argument>
+			<description>
+				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Example:
+				[codeblock]
+				print(", ".join(["One", "Two", "Three", "Four"]))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="json_escape">
@@ -597,7 +690,7 @@
 			</description>
 		</method>
 		<method name="md5_buffer">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the MD5 hash of the string as an array of bytes.
@@ -732,11 +825,11 @@
 			</description>
 		</method>
 		<method name="rsplit">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="True">
+			<argument index="1" name="allow_empty" type="bool" default="true">
 			</argument>
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
@@ -764,7 +857,7 @@
 			</description>
 		</method>
 		<method name="sha1_buffer">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the SHA-1 hash of the string as an array of bytes.
@@ -778,7 +871,7 @@
 			</description>
 		</method>
 		<method name="sha256_buffer">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Returns the SHA-256 hash of the string as an array of bytes.
@@ -801,11 +894,11 @@
 			</description>
 		</method>
 		<method name="split">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="True">
+			<argument index="1" name="allow_empty" type="bool" default="true">
 			</argument>
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
@@ -823,11 +916,11 @@
 			</description>
 		</method>
 		<method name="split_floats">
-			<return type="PoolRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="delimiter" type="String">
 			</argument>
-			<argument index="1" name="allow_empty" type="bool" default="True">
+			<argument index="1" name="allow_empty" type="bool" default="true">
 			</argument>
 			<description>
 				Splits the string in floats by using a delimiter string and returns an array of the substrings.
@@ -837,9 +930,9 @@
 		<method name="strip_edges">
 			<return type="String">
 			</return>
-			<argument index="0" name="left" type="bool" default="True">
+			<argument index="0" name="left" type="bool" default="true">
 			</argument>
-			<argument index="1" name="right" type="bool" default="True">
+			<argument index="1" name="right" type="bool" default="true">
 			</argument>
 			<description>
 				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
@@ -860,14 +953,14 @@
 			<argument index="1" name="len" type="int" default="-1">
 			</argument>
 			<description>
-				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using -1 will return remaining characters from given position.
+				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
+				Converts the String (which is a character array) to [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -899,10 +992,10 @@
 			</description>
 		</method>
 		<method name="to_utf8">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
+				Converts the String (which is an array of characters) to [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="trim_prefix">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 #include "core/math/camera_matrix.h"
 #include "core/pair.h"
 #include "core/variant.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 #include <stdio.h>
 
@@ -53,20 +53,17 @@ class RasterizerStorageGLES2;
 class ShaderGLES2 {
 protected:
 	struct Enum {
-
 		uint64_t mask;
 		uint64_t shift;
 		const char *defines[16];
 	};
 
 	struct EnumValue {
-
 		uint64_t set_mask;
 		uint64_t clear_mask;
 	};
 
 	struct AttributePair {
-
 		const char *name;
 		int index;
 	};
@@ -77,7 +74,6 @@ protected:
 	};
 
 	struct TexUnitPair {
-
 		const char *name;
 		int index;
 	};
@@ -94,7 +90,6 @@ private:
 	int attribute_pair_count;
 
 	struct CustomCode {
-
 		String vertex;
 		String vertex_globals;
 		String fragment;
@@ -108,7 +103,6 @@ private:
 	};
 
 	struct Version {
-
 		GLuint id;
 		GLuint vert_id;
 		GLuint frag_id;
@@ -118,17 +112,18 @@ private:
 		uint32_t code_version;
 		bool ok;
 		Version() {
-			code_version = 0;
+			id = 0;
+			vert_id = 0;
 			frag_id = 0;
+			uniform_location = nullptr;
+			code_version = 0;
 			ok = false;
-			uniform_location = NULL;
 		}
 	};
 
 	Version *version;
 
 	union VersionKey {
-
 		struct {
 			uint32_t version;
 			uint32_t code_version;
@@ -139,7 +134,6 @@ private:
 	};
 
 	struct VersionKeyHash {
-
 		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return HashMapHasherDefault::hash(p_key.key); }
 	};
 
@@ -177,7 +171,7 @@ private:
 
 	int max_image_units;
 
-	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > > uniform_values;
+	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value>>> uniform_values;
 
 protected:
 	_FORCE_INLINE_ int _get_uniform(int p_which) const;
@@ -250,14 +244,12 @@ public:
 // called a lot, made inline
 
 int ShaderGLES2::_get_uniform(int p_which) const {
-
 	ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
 	ERR_FAIL_COND_V(!version, -1);
 	return version->uniform_location[p_which];
 }
 
 void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
-
 	ERR_FAIL_INDEX(p_which, conditional_count);
 	if (p_value)
 		new_conditional_version.version |= (1 << p_which);

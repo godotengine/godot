@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,19 +38,18 @@ const char *AudioDriverXAudio2::get_name() const {
 }
 
 Error AudioDriverXAudio2::init() {
-
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 	pcm_open = false;
-	samples_in = NULL;
+	samples_in = nullptr;
 
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_GET("audio/mix_rate");
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int latency = GLOBAL_GET("audio/output_latency");
 	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
@@ -79,26 +78,21 @@ Error AudioDriverXAudio2::init() {
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
 
-	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
 
 	return OK;
 }
 
 void AudioDriverXAudio2::thread_func(void *p_udata) {
-
 	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
 
 	while (!ad->exit_thread) {
-
 		if (!ad->active) {
-
 			for (int i = 0; i < AUDIO_BUFFERS; i++) {
 				ad->xaudio_buffer[i].Flags = XAUDIO2_END_OF_STREAM;
 			}
 
 		} else {
-
 			ad->lock();
 
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
@@ -106,7 +100,6 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 			ad->unlock();
 
 			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
-
 				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
 			}
 
@@ -129,24 +122,20 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 }
 
 void AudioDriverXAudio2::start() {
-
 	active = true;
 	HRESULT hr = source_voice->Start(0);
 	ERR_FAIL_COND_MSG(hr != S_OK, "Error starting XAudio2 driver. Error code: " + itos(hr) + ".");
 }
 
 int AudioDriverXAudio2::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverXAudio2::get_speaker_mode() const {
-
 	return speaker_mode;
 }
 
 float AudioDriverXAudio2::get_latency() {
-
 	XAUDIO2_PERFORMANCE_DATA perf_data;
 	xaudio->GetPerformanceData(&perf_data);
 	if (perf_data.CurrentLatencyInSamples) {
@@ -157,20 +146,18 @@ float AudioDriverXAudio2::get_latency() {
 }
 
 void AudioDriverXAudio2::lock() {
-
-	if (!thread || !mutex)
+	if (!thread)
 		return;
-	mutex->lock();
+	mutex.lock();
 }
-void AudioDriverXAudio2::unlock() {
 
-	if (!thread || !mutex)
+void AudioDriverXAudio2::unlock() {
+	if (!thread)
 		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverXAudio2::finish() {
-
 	if (!thread)
 		return;
 
@@ -194,21 +181,12 @@ void AudioDriverXAudio2::finish() {
 	mastering_voice->DestroyVoice();
 
 	memdelete(thread);
-	if (mutex)
-		memdelete(mutex);
-	thread = NULL;
+	thread = nullptr;
 }
 
-AudioDriverXAudio2::AudioDriverXAudio2() :
-		thread(NULL),
-		mutex(NULL),
-		current_buffer(0) {
-	wave_format = { 0 };
+AudioDriverXAudio2::AudioDriverXAudio2() {
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
 		xaudio_buffer[i] = { 0 };
 		samples_out[i] = 0;
 	}
-}
-
-AudioDriverXAudio2::~AudioDriverXAudio2() {
 }

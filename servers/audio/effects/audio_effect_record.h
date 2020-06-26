@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 
 	bool is_recording;
 	Thread *io_thread;
-	bool thread_active;
+	bool thread_active = false;
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
@@ -71,8 +71,7 @@ public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
 
-	AudioEffectRecordInstance() :
-			thread_active(false) {}
+	AudioEffectRecordInstance() {}
 	~AudioEffectRecordInstance();
 };
 

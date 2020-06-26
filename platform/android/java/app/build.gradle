@@ -1,7 +1,4 @@
 // Gradle build config for Godot Engine's Android port.
-//
-// Do not remove/modify comments ending with BEGIN/END, they are used to inject
-// addon-specific configuration.
 apply from: 'config.gradle'
 
 buildscript {
@@ -10,13 +7,10 @@ buildscript {
     repositories {
         google()
         jcenter()
-//CHUNK_BUILDSCRIPT_REPOSITORIES_BEGIN
-//CHUNK_BUILDSCRIPT_REPOSITORIES_END
     }
     dependencies {
         classpath libraries.androidGradlePlugin
-//CHUNK_BUILDSCRIPT_DEPENDENCIES_BEGIN
-//CHUNK_BUILDSCRIPT_DEPENDENCIES_END
+        classpath libraries.kotlinGradlePlugin
     }
 }
 
@@ -27,35 +21,69 @@ allprojects {
         mavenCentral()
         google()
         jcenter()
-//CHUNK_ALLPROJECTS_REPOSITORIES_BEGIN
-//CHUNK_ALLPROJECTS_REPOSITORIES_END
+
+        // Godot user plugins custom maven repos
+        String[] mavenRepos = getGodotPluginsMavenRepos()
+        if (mavenRepos != null && mavenRepos.size() > 0) {
+            for (String repoUrl : mavenRepos) {
+                maven {
+                    url repoUrl
+                }
+            }
+        }
     }
 }
 
 dependencies {
+    implementation libraries.supportCoreUtils
+    implementation libraries.kotlinStdLib
+    implementation libraries.v4Support
+
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
+    } else if (rootProject.findProject(":godot:lib")) {
+        implementation project(":godot:lib")
     } else {
         // Custom build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
         debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
         releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
     }
-//CHUNK_DEPENDENCIES_BEGIN
-//CHUNK_DEPENDENCIES_END
+
+    // Godot user plugins remote dependencies
+    String[] remoteDeps = getGodotPluginsRemoteBinaries()
+    if (remoteDeps != null && remoteDeps.size() > 0) {
+        for (String dep : remoteDeps) {
+            implementation dep
+        }
+    }
+
+    // Godot user plugins local dependencies
+    String[] pluginsBinaries = getGodotPluginsLocalBinaries()
+    if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
+        implementation files(pluginsBinaries)
+    }
 }
 
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
     defaultConfig {
+        // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
+        aaptOptions {
+            ignoreAssetsPattern "!.svn:!.git:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+        }
+
         // Feel free to modify the application id to your own.
-        applicationId "com.godot.game"
+        applicationId getExportPackageName()
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
-//CHUNK_ANDROID_DEFAULTCONFIG_BEGIN
-//CHUNK_ANDROID_DEFAULTCONFIG_END
     }
 
     lintOptions {
@@ -66,6 +94,9 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+
+        // Should be uncommented for development purpose within Android Studio
+        // doNotStrip '**/*.so'
     }
 
     // Both signing and zip-aligning will be done at export time
@@ -77,37 +108,13 @@ android {
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = [
-                    'src'
-//DIR_SRC_BEGIN
-//DIR_SRC_END
-            ]
-            res.srcDirs = [
-                    'res'
-//DIR_RES_BEGIN
-//DIR_RES_END
-            ]
-            aidl.srcDirs = [
-                    'aidl'
-//DIR_AIDL_BEGIN
-//DIR_AIDL_END
-            ]
-            assets.srcDirs = [
-                    'assets'
-//DIR_ASSETS_BEGIN
-//DIR_ASSETS_END
-            ]
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+            aidl.srcDirs = ['aidl']
+            assets.srcDirs = ['assets']
         }
-        debug.jniLibs.srcDirs = [
-                'libs/debug'
-//DIR_JNI_DEBUG_BEGIN
-//DIR_JNI_DEBUG_END
-        ]
-        release.jniLibs.srcDirs = [
-                'libs/release'
-//DIR_JNI_RELEASE_BEGIN
-//DIR_JNI_RELEASE_END
-        ]
+        debug.jniLibs.srcDirs = ['libs/debug']
+        release.jniLibs.srcDirs = ['libs/release']
     }
 
     applicationVariants.all { variant ->
@@ -116,6 +123,3 @@ android {
         }
     }
 }
-
-//CHUNK_GLOBAL_BEGIN
-//CHUNK_GLOBAL_END

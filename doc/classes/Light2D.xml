@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Light2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Light2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		Casts light in a 2D environment.
 	</brief_description>
@@ -8,7 +8,7 @@
 		[b]Note:[/b] Light2D can also be used as a mask.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
 	</tutorials>
 	<methods>
 	</methods>
@@ -26,7 +26,7 @@
 			The Light2D's energy value. The larger the value, the stronger the light.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Light2D.Mode" default="0">
-			The Light2D's mode. See [code]MODE_*[/code] constants for values.
+			The Light2D's mode. See [enum Mode] constants for values.
 		</member>
 		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2( 0, 0 )">
 			The offset of the Light2D's [code]texture[/code].
@@ -64,14 +64,11 @@
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth" default="0.0">
 			Smoothing value for shadows.
 		</member>
-		<member name="shadow_gradient_length" type="float" setter="set_shadow_gradient_length" getter="get_shadow_gradient_length" default="0.0">
-			Smooth shadow gradient length.
-		</member>
 		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" default="1">
-			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching shadow mask will cast shadows.
+			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching light mask will cast shadows.
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
-			[Texture] used for the Light2D's appearance.
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] used for the Light2D's appearance.
 		</member>
 		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale" default="1.0">
 			The [code]texture[/code]'s scale factor.
@@ -93,19 +90,10 @@
 		<constant name="SHADOW_FILTER_NONE" value="0" enum="ShadowFilter">
 			No filter applies to the shadow map. See [member shadow_filter].
 		</constant>
-		<constant name="SHADOW_FILTER_PCF3" value="1" enum="ShadowFilter">
-			Percentage closer filtering (3 samples) applies to the shadow map. See [member shadow_filter].
-		</constant>
-		<constant name="SHADOW_FILTER_PCF5" value="2" enum="ShadowFilter">
+		<constant name="SHADOW_FILTER_PCF5" value="1" enum="ShadowFilter">
 			Percentage closer filtering (5 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
-		<constant name="SHADOW_FILTER_PCF7" value="3" enum="ShadowFilter">
-			Percentage closer filtering (7 samples) applies to the shadow map. See [member shadow_filter].
-		</constant>
-		<constant name="SHADOW_FILTER_PCF9" value="4" enum="ShadowFilter">
-			Percentage closer filtering (9 samples) applies to the shadow map. See [member shadow_filter].
-		</constant>
-		<constant name="SHADOW_FILTER_PCF13" value="5" enum="ShadowFilter">
+		<constant name="SHADOW_FILTER_PCF13" value="2" enum="ShadowFilter">
 			Percentage closer filtering (13 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
 	</constants>

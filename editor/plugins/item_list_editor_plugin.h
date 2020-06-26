@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@
 #include "scene/gui/popup_menu.h"
 
 class ItemListPlugin : public Object {
-
 	GDCLASS(ItemListPlugin, Object);
 
 protected:
@@ -66,8 +65,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) {}
 	virtual String get_item_text(int p_idx) const { return ""; };
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) {}
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return Ref<Texture>(); };
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) {}
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return Ref<Texture2D>(); };
 
 	virtual void set_item_checkable(int p_idx, bool p_check) {}
 	virtual void set_item_radio_checkable(int p_idx, bool p_check) {}
@@ -96,7 +95,6 @@ public:
 ///////////////////////////////////////////////////////////////
 
 class ItemListOptionButtonPlugin : public ItemListPlugin {
-
 	GDCLASS(ItemListOptionButtonPlugin, ItemListPlugin);
 
 	OptionButton *ob;
@@ -109,8 +107,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) { ob->set_item_text(p_idx, p_text); }
 	virtual String get_item_text(int p_idx) const { return ob->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) { ob->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return ob->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) { ob->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return ob->get_item_icon(p_idx); }
 
 	virtual void set_item_enabled(int p_idx, int p_enabled) { ob->set_item_disabled(p_idx, !p_enabled); }
 	virtual bool is_item_enabled(int p_idx) const { return !ob->is_item_disabled(p_idx); }
@@ -126,7 +124,6 @@ public:
 };
 
 class ItemListPopupMenuPlugin : public ItemListPlugin {
-
 	GDCLASS(ItemListPopupMenuPlugin, ItemListPlugin);
 
 	PopupMenu *pp;
@@ -139,8 +136,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) { pp->set_item_text(p_idx, p_text); }
 	virtual String get_item_text(int p_idx) const { return pp->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
 
 	virtual void set_item_checkable(int p_idx, bool p_check) { pp->set_item_as_checkable(p_idx, p_check); }
 	virtual void set_item_radio_checkable(int p_idx, bool p_check) { pp->set_item_as_radio_checkable(p_idx, p_check); }
@@ -169,7 +166,6 @@ public:
 ///////////////////////////////////////////////////////////////
 
 class ItemListItemListPlugin : public ItemListPlugin {
-
 	GDCLASS(ItemListItemListPlugin, ItemListPlugin);
 
 	ItemList *pp;
@@ -182,8 +178,8 @@ public:
 	virtual void set_item_text(int p_idx, const String &p_text) { pp->set_item_text(p_idx, p_text); }
 	virtual String get_item_text(int p_idx) const { return pp->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) { pp->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const { return pp->get_item_icon(p_idx); }
 
 	virtual void set_item_enabled(int p_idx, int p_enabled) { pp->set_item_disabled(p_idx, !p_enabled); }
 	virtual bool is_item_enabled(int p_idx) const { return !pp->is_item_disabled(p_idx); }
@@ -198,12 +194,11 @@ public:
 ///////////////////////////////////////////////////////////////
 
 class ItemListEditor : public HBoxContainer {
-
 	GDCLASS(ItemListEditor, HBoxContainer);
 
 	Node *item_list;
 
-	ToolButton *toolbar_button;
+	Button *toolbar_button;
 
 	AcceptDialog *dialog;
 	EditorInspector *property_editor;
@@ -235,7 +230,6 @@ public:
 };
 
 class ItemListEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ItemListEditorPlugin, EditorPlugin);
 
 	ItemListEditor *item_list_editor;

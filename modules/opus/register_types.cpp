@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,23 +30,8 @@
 
 #include "register_types.h"
 
-#include "audio_stream_opus.h"
+// Dummy module as libvorbis is needed by other modules (theora ...)
 
-static Ref<ResourceFormatLoaderAudioStreamOpus> opus_stream_loader;
+void register_opus_types() {}
 
-void register_opus_types() {
-	// Sorry guys, do not enable this unless you can figure out a way
-	// to get Opus to not do any memory allocation or system calls
-	// in the audio thread.
-	// Currently the implementation even reads files from the audio thread,
-	// and this is not how audio programming works.
-
-	//opus_stream_loader = memnew(ResourceFormatLoaderAudioStreamOpus);
-	//ResourceLoader::add_resource_format_loader(opus_stream_loader);
-	//ClassDB::register_class<AudioStreamOpus>();
-}
-
-void unregister_opus_types() {
-
-	//memdelete(opus_stream_loader);
-}
+void unregister_opus_types() {}

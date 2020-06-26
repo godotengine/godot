@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerAPI" inherits="Reference" category="Core" version="3.2">
+<class name="MultiplayerAPI" inherits="Reference" version="4.0">
 	<brief_description>
 		High-level multiplayer API.
 	</brief_description>
@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].
@@ -65,7 +65,7 @@
 		<method name="send_bytes">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="bytes" type="PoolByteArray">
+			<argument index="0" name="bytes" type="PackedByteArray">
 			</argument>
 			<argument index="1" name="id" type="int" default="0">
 			</argument>
@@ -88,11 +88,11 @@
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
-			If [code]true[/code] (or if the [member network_peer] has [member PacketPeer.allow_object_decoding] set to [code]true[/code]), the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
+			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see [code]NETWORK_MODE_*[/code] constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master, or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the MultiplayerAPI's [member network_peer] refuses new incoming connections.
@@ -126,7 +126,7 @@
 		<signal name="network_peer_packet">
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="packet" type="PoolByteArray">
+			<argument index="1" name="packet" type="PackedByteArray">
 			</argument>
 			<description>
 				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
@@ -151,14 +151,8 @@
 		<constant name="RPC_MODE_PUPPET" value="3" enum="RPCMode">
 			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
 		</constant>
-		<constant name="RPC_MODE_SLAVE" value="3" enum="RPCMode">
-			[i]Deprecated.[/i] Use [constant RPC_MODE_PUPPET] instead. Analogous to the [code]slave[/code] keyword.
-		</constant>
 		<constant name="RPC_MODE_REMOTESYNC" value="4" enum="RPCMode">
 			Behave like [constant RPC_MODE_REMOTE] but also make the call or property change locally. Analogous to the [code]remotesync[/code] keyword.
-		</constant>
-		<constant name="RPC_MODE_SYNC" value="4" enum="RPCMode">
-			[i]Deprecated.[/i] Use [constant RPC_MODE_REMOTESYNC] instead. Analogous to the [code]sync[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_MASTERSYNC" value="5" enum="RPCMode">
 			Behave like [constant RPC_MODE_MASTER] but also make the call or property change locally. Analogous to the [code]mastersync[/code] keyword.

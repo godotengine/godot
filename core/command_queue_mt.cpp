@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,32 +33,24 @@
 #include "core/os/os.h"
 
 void CommandQueueMT::lock() {
-
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void CommandQueueMT::unlock() {
-
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void CommandQueueMT::wait_for_flush() {
-
 	// wait one millisecond for a flush to happen
 	OS::get_singleton()->delay_usec(1000);
 }
 
 CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
-
 	int idx = -1;
 
 	while (true) {
-
 		lock();
 		for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
 			if (!sync_sems[i].in_use) {
 				sync_sems[i].in_use = true;
 				idx = i;
@@ -102,32 +94,14 @@ tryagain:
 }
 
 CommandQueueMT::CommandQueueMT(bool p_sync) {
-
-	read_ptr = 0;
-	write_ptr = 0;
-	dealloc_ptr = 0;
-	mutex = Mutex::create();
-	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
-
-	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
-		sync_sems[i].sem = Semaphore::create();
-		sync_sems[i].in_use = false;
+	if (p_sync) {
+		sync = memnew(Semaphore);
 	}
-	if (p_sync)
-		sync = Semaphore::create();
-	else
-		sync = NULL;
 }
 
 CommandQueueMT::~CommandQueueMT() {
-
-	if (sync)
+	if (sync) {
 		memdelete(sync);
-	memdelete(mutex);
-	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
-		memdelete(sync_sems[i].sem);
 	}
 	memfree(command_mem);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_container.h"
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
 	enum Mode {
@@ -61,16 +60,16 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_MAX
 	};
 
-	ToolButton *uv_edit_mode[4];
+	Button *uv_edit_mode[4];
 	Ref<ButtonGroup> uv_edit_group;
 
 	Polygon2D *node;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
-	ToolButton *uv_button[UV_MODE_MAX];
-	ToolButton *b_snap_enable;
-	ToolButton *b_snap_grid;
+	Button *uv_button[UV_MODE_MAX];
+	Button *b_snap_enable;
+	Button *b_snap_grid;
 	Panel *uv_edit_draw;
 	HSlider *uv_zoom;
 	SpinBox *uv_zoom_value;
@@ -88,7 +87,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Label *bone_paint_radius_label;
 	bool bone_painting;
 	int bone_painting_bone;
-	PoolVector<float> prev_weights;
+	Vector<float> prev_weights;
 	Vector2 bone_paint_pos;
 	AcceptDialog *grid_settings;
 
@@ -97,10 +96,10 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;
-	PoolVector<Vector2> points_prev;
-	PoolVector<Vector2> uv_create_uv_prev;
-	PoolVector<Vector2> uv_create_poly_prev;
-	PoolVector<Color> uv_create_colors_prev;
+	Vector<Vector2> points_prev;
+	Vector<Vector2> uv_create_uv_prev;
+	Vector<Vector2> uv_create_poly_prev;
+	Vector<Color> uv_create_colors_prev;
 	int uv_create_prev_internal_vertices;
 	Array uv_create_bones_prev;
 	Array polygons_prev;
@@ -116,7 +115,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	AcceptDialog *error;
 
-	ToolButton *button_uv;
+	Button *button_uv;
 
 	bool use_snap;
 	bool snap_show_grid;
@@ -165,7 +164,6 @@ public:
 };
 
 class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

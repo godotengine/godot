@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedScene" inherits="Resource" category="Core" version="3.2">
+<class name="PackedScene" inherits="Resource" version="4.0">
 	<brief_description>
 		An abstraction of a serialized scene.
 	</brief_description>
@@ -9,23 +9,25 @@
 		[b]Note:[/b] The node doesn't need to own itself.
 		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblock]
-		# Create the objects
+		# Create the objects.
 		var node = Node2D.new()
 		var rigid = RigidBody2D.new()
 		var collision = CollisionShape2D.new()
 
-		# Create the object hierarchy
+		# Create the object hierarchy.
 		rigid.add_child(collision)
 		node.add_child(rigid)
 
-		# Change owner of rigid, but not of collision
+		# Change owner of `rigid`, but not of `collision`.
 		rigid.owner = node
 
 		var scene = PackedScene.new()
-		# Only node and rigid are now packed
+		# Only `node` and `rigid` are now packed.
 		var result = scene.pack(node)
 		if result == OK:
-		    ResourceSaver.save("res://path/name.scn", scene) # Or "user://..."
+		    var error = ResourceSaver.save("res://path/name.scn", scene)  # Or "user://..."
+		    if error != OK:
+		        push_error("An error occurred while saving the scene to disk.")
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -65,7 +67,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PoolIntArray(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PoolStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PoolIntArray(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PackedStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PackedInt32Array(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}">
 			A dictionary representation of the scene contents.
 			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #include <ForceFeedback/ForceFeedbackConstants.h>
 #include <IOKit/hid/IOHIDLib.h>
 
-#include "main/input_default.h"
+#include "core/input/input.h"
 
 struct rec_element {
 	IOHIDElementRef ref;
@@ -88,13 +88,12 @@ struct joypad {
 };
 
 class JoypadOSX {
-
 	enum {
 		JOYPADS_MAX = 16,
 	};
 
 private:
-	InputDefault *input;
+	Input *input;
 	IOHIDManagerRef hid_manager;
 
 	Vector<joypad> device_list;
@@ -103,6 +102,7 @@ private:
 	bool configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy);
 
 	int get_joy_index(int p_id) const;
+	int get_joy_ref(IOHIDDeviceRef p_device) const;
 
 	void poll_joypads() const;
 	void setup_joypad_objects();
@@ -115,9 +115,9 @@ public:
 	void process_joypads();
 
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
-	void _device_removed(int p_id);
+	void _device_removed(IOReturn p_res, IOHIDDeviceRef p_device);
 
-	JoypadOSX();
+	JoypadOSX(Input *in);
 	~JoypadOSX();
 };
 

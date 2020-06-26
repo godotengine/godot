@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,11 +54,12 @@ class EditorHelpSearch : public ConfirmationDialog {
 	};
 
 	LineEdit *search_box;
-	ToolButton *case_sensitive_button;
-	ToolButton *hierarchy_button;
+	Button *case_sensitive_button;
+	Button *hierarchy_button;
 	OptionButton *filter_combo;
 	Tree *results_tree;
 	bool old_search;
+	String old_term;
 
 	class Runner;
 	Ref<Runner> search;
@@ -83,7 +84,6 @@ public:
 };
 
 class EditorHelpSearch::Runner : public Reference {
-
 	enum Phase {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
@@ -94,7 +94,7 @@ class EditorHelpSearch::Runner : public Reference {
 		PHASE_SELECT_MATCH,
 		PHASE_MAX
 	};
-	int phase;
+	int phase = 0;
 
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
@@ -115,7 +115,7 @@ class EditorHelpSearch::Runner : public Reference {
 	String term;
 	int search_flags;
 
-	Ref<Texture> empty_icon;
+	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
 	Map<String, DocData::ClassDoc>::Element *iterator_doc;

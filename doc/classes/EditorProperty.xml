@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorProperty" inherits="Container" category="Core" version="3.2">
+<class name="EditorProperty" inherits="Container" version="4.0">
 	<brief_description>
 		Custom control to edit properties for adding into the inspector.
 	</brief_description>
@@ -21,11 +21,11 @@
 		<method name="emit_changed">
 			<return type="void">
 			</return>
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
-			<argument index="2" name="field" type="String" default="&quot;&quot;">
+			<argument index="2" name="field" type="StringName" default="@&quot;&quot;">
 			</argument>
 			<argument index="3" name="changing" type="bool" default="false">
 			</argument>
@@ -41,7 +41,7 @@
 			</description>
 		</method>
 		<method name="get_edited_property">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin.parse_property]), then this will return the property.
@@ -78,6 +78,8 @@
 		<member name="checked" type="bool" setter="set_checked" getter="is_checked" default="false">
 			Used by the inspector, when the property is checked.
 		</member>
+		<member name="deletable" type="bool" setter="set_deletable" getter="is_deletable" default="false">
+		</member>
 		<member name="draw_red" type="bool" setter="set_draw_red" getter="is_draw_red" default="false">
 			Used by the inspector, when the property must draw with error color.
 		</member>
@@ -93,7 +95,7 @@
 	</members>
 	<signals>
 		<signal name="multiple_properties_changed">
-			<argument index="0" name="properties" type="PoolStringArray">
+			<argument index="0" name="properties" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="value" type="Array">
 			</argument>
@@ -102,7 +104,7 @@
 			</description>
 		</signal>
 		<signal name="object_id_selected">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="id" type="int">
 			</argument>
@@ -111,16 +113,16 @@
 			</description>
 		</signal>
 		<signal name="property_changed">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
-			<argument index="1" name="value" type="Nil">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 				Do not emit this manually, use the [method emit_changed] method instead.
 			</description>
 		</signal>
 		<signal name="property_checked">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<argument index="1" name="bool" type="String">
 			</argument>
@@ -128,17 +130,23 @@
 				Emitted when a property was checked. Used internally.
 			</description>
 		</signal>
+		<signal name="property_deleted">
+			<argument index="0" name="property" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="property_keyed">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
 			<description>
 				Emit it if you want to add this value as an animation key (check for keying being enabled first).
 			</description>
 		</signal>
 		<signal name="property_keyed_with_value">
-			<argument index="0" name="property" type="String">
+			<argument index="0" name="property" type="StringName">
 			</argument>
-			<argument index="1" name="value" type="Nil">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
 				Emit it if you want to key a property with a single value.

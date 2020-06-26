@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,11 +41,10 @@
 #include "core/project_settings.h"
 #include "core/typedefs.h"
 
-class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {
+class PhysicsDirectSpaceState2DSW : public PhysicsDirectSpaceState2D {
+	GDCLASS(PhysicsDirectSpaceState2DSW, PhysicsDirectSpaceState2D);
 
-	GDCLASS(Physics2DDirectSpaceStateSW, Physics2DDirectSpaceState);
-
-	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = 0);
+	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
 
 public:
 	Space2DSW *space;
@@ -58,11 +57,10 @@ public:
 	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 	virtual bool rest_info(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
 
-	Physics2DDirectSpaceStateSW();
+	PhysicsDirectSpaceState2DSW();
 };
 
-class Space2DSW : public RID_Data {
-
+class Space2DSW {
 public:
 	enum ElapsedTime {
 		ELAPSED_TIME_INTEGRATE_FORCES,
@@ -83,7 +81,7 @@ private:
 
 	uint64_t elapsed_time[ELAPSED_TIME_MAX];
 
-	Physics2DDirectSpaceStateSW *direct_access;
+	PhysicsDirectSpaceState2DSW *direct_access;
 	RID self;
 
 	BroadPhase2DSW *broadphase;
@@ -129,7 +127,7 @@ private:
 	Vector<Vector2> contact_debug;
 	int contact_debug_count;
 
-	friend class Physics2DDirectSpaceStateSW;
+	friend class PhysicsDirectSpaceState2DSW;
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
@@ -175,8 +173,8 @@ public:
 	void lock();
 	void unlock();
 
-	void set_param(Physics2DServer::SpaceParameter p_param, real_t p_value);
-	real_t get_param(Physics2DServer::SpaceParameter p_param) const;
+	void set_param(PhysicsServer2D::SpaceParameter p_param, real_t p_value);
+	real_t get_param(PhysicsServer2D::SpaceParameter p_param) const;
 
 	void set_island_count(int p_island_count) { island_count = p_island_count; }
 	int get_island_count() const { return island_count; }
@@ -186,18 +184,20 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, Physics2DServer::MotionResult *r_result, bool p_exclude_raycast_shapes = true);
-	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, Physics2DServer::SeparationResult *r_results, int p_result_max, real_t p_margin);
+	bool test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer2D::MotionResult *r_result, bool p_exclude_raycast_shapes = true);
+	int test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, PhysicsServer2D::SeparationResult *r_results, int p_result_max, real_t p_margin);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.empty(); }
 	_FORCE_INLINE_ void add_debug_contact(const Vector2 &p_contact) {
-		if (contact_debug_count < contact_debug.size()) contact_debug.write[contact_debug_count++] = p_contact;
+		if (contact_debug_count < contact_debug.size()) {
+			contact_debug.write[contact_debug_count++] = p_contact;
+		}
 	}
 	_FORCE_INLINE_ Vector<Vector2> get_debug_contacts() { return contact_debug; }
 	_FORCE_INLINE_ int get_debug_contact_count() { return contact_debug_count; }
 
-	Physics2DDirectSpaceStateSW *get_direct_state();
+	PhysicsDirectSpaceState2DSW *get_direct_state();
 
 	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) { elapsed_time[p_time] = p_msec; }
 	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }

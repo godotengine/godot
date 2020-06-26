@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+Copyright: 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -71,16 +71,6 @@ Comment: The Android Open Source Project
 Copyright: 2002, Google Inc.
 License: Apache-2.0
 
-Files: ./platform/android/power_android.cpp
- ./platform/osx/power_osx.cpp
- ./platform/windows/power_windows.cpp
- ./platform/x11/power_x11.cpp
-Comment: Simple DirectMedia Layer
-Copyright: 1997-2017, Sam Lantinga
- 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
-License: Expat and Zlib
-
 Files: ./scene/animation/tween_interpolaters.cpp
 Comment: Penner Easing
 Copyright: 2001, Robert Penner
@@ -98,16 +88,16 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/slider_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2019, Juan Linietsky, Ariel Manzur.
- 2014-2019, Godot Engine contributors.
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/assimp/
@@ -115,11 +105,10 @@ Comment: Open Asset Import Library (assimp)
 Copyright: 2006-2016, assimp team
 License: BSD-3-clause
 
-Files: ./thirdparty/b2d_convexdecomp/
-Comment: Box2D (ConvexDecomp)
-Copyright: 2007, Eric Jordan
- 2006-2009, Erin Catto
-License: Zlib
+Files: ./thirdparty/basis_universal/
+Comment: Basis Universal
+Copyright: 2019, Binomial LLC.
+License: Apache-2.0
 
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
@@ -139,7 +128,7 @@ License: Expat
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2016, Lee Salzman
+Copyright: 2002-2020, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etc2comp/
@@ -165,13 +154,19 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2019, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
 Comment: glad
 Copyright: 2013-2019, David Herberth
 License: Expat
+
+Files: ./thirdparty/glslang/
+Comment: glslang
+Copyright: 2015-2018 Google, Inc.
+  2002, NVIDIA Corporation.
+License: glslang
 
 Files: ./thirdparty/jpeg_compressor/
 Comment: jpeg-compressor
@@ -251,12 +246,6 @@ Comment: Clipper
 Copyright: 2010-2017, Angus Johnson
 License: BSL-1.0
 
-Files: ./thirdparty/misc/curl_hostcheck.c
- ./thirdparty/misc/curl_hostcheck.h
-Comment: curl
-Copyright: 1998-2012, Daniel Stenberg et al.
-License: curl
-
 Files: ./thirdparty/misc/easing_equations.cpp
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
@@ -265,14 +254,8 @@ License: BSD-3-clause
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
-Copyright: 2005-2007, Ariya Hidayat
+Copyright: 2005-2020, Ariya Hidayat
 License: Expat
-
-Files: ./thirdparty/misc/hq2x.cpp
- ./thirdparty/misc/hq2x.h
-Comment: hq2x implementation
-Copyright: 2016, Bruno Ribeiro
-License: Apache-2.0
 
 Files: ./thirdparty/misc/ifaddrs-android.cc
  ./thirdparty/misc/ifaddrs-android.h
@@ -314,6 +297,11 @@ Comment: NanoSVG
 Copyright: 2013-2014, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/oidn/
+Comment: Intel Open Image Denoise
+Copyright: 2009-2019, Intel Corporation
+License: Apache-2.0
+
 Files: ./thirdparty/opus/
 Comment: Opus
 Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
@@ -338,6 +326,11 @@ Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/rvo2/
+Comment: RVO2
+Copyright: 2016, University of North Carolina at Chapel Hill
+License: Apache 2.0
+
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
@@ -355,6 +348,19 @@ Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
+Files: ./thirdparty/vulkan/
+Comment: Vulkan Ecosystem Components (Vulkan ICD loader and headers)
+Copyright: 2014-2019, The Khronos Group Inc.
+  2014-2019, Valve Corporation
+  2014-2019, LunarG, Inc.
+  2015-2019, Google Inc.
+License: Apache-2.0
+
+Files: ./thirdparty/vulkan/vk_mem_alloc.h
+Comment: Vulkan Memory Allocator
+Copyright: 2017-2019, Advanced Micro Devices, Inc.
+License: Expat
+
 Files: ./thirdparty/wslay/
 Comment: Wslay
 Copyright: 2011-2015, Tatsuhiro Tsujikawa
@@ -362,7 +368,7 @@ License: Expat
 
 Files: ./thirdparty/xatlas/
 Comment: xatlas
-Copyright: 2018, Jonathan Young
+Copyright: 2018-2020, Jonathan Young
   2013, Thekla, Inc
   2006, NVIDIA Corporation, Ignacio Castano
 License: Expat
@@ -844,25 +850,6 @@ License: CC-BY-3.0
  .
  Creative Commons may be contacted at http://creativecommons.org/.
 
-License: curl
- All rights reserved.
- .
- Permission to use, copy, modify, and distribute this software for any purpose
- with or without fee is hereby granted, provided that the above copyright
- notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN
- NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
- OR OTHER DEALINGS IN THE SOFTWARE.
- .
- Except as contained in this notice, the name of a copyright holder shall not
- be used in advertising or otherwise to promote the sale, use or other dealings
- in this Software without prior written authorization of the copyright holder.
-
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
@@ -882,6 +869,112 @@ License: Expat
  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: glslang
+ Here, glslang proper means core GLSL parsing, HLSL parsing, and SPIR-V code
+ generation. Glslang proper requires use of two licenses, one that covers
+ non-preprocessing and an additional one that covers preprocessing.
+ .
+ Bison was removed long ago. You can build glslang from the source grammar,
+ using tools of your choice, without using bison or any bison files.
+ .
+ Other parts, outside of glslang proper, include:
+ .
+ - gl_types.h, only needed for OpenGL-like reflection, and can be left out of
+   a parse and codegen project.  See it for its license.
+ .
+ - update_glslang_sources.py, which is not part of the project proper and does
+   not need to be used.
+ .
+ - the SPIR-V "remapper", which is optional, but has the same license as
+   glslang proper
+ .
+ - Google tests and SPIR-V tools, and anything in the external subdirectory
+   are external and optional; see them for their respective licenses.
+ .
+ --------------------------------------------------------------------------------
+ .
+ The core of glslang-proper, minus the preprocessor is licenced as follows:
+ .
+ Copyright (C) 2015-2018 Google, Inc.
+ Copyright (C) <various other dates and companies>
+ .
+ All rights reserved.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+    Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+    Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.
+ .
+    Neither the name of 3Dlabs Inc. Ltd. nor the names of its
+    contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+ .
+ --------------------------------------------------------------------------------
+ .
+ The preprocessor has the core license stated above, plus an additional licence:
+ .
+ Copyright (c) 2002, NVIDIA Corporation.
+ .
+ NVIDIA Corporation("NVIDIA") supplies this software to you in
+ consideration of your agreement to the following terms, and your use,
+ installation, modification or redistribution of this NVIDIA software
+ constitutes acceptance of these terms.  If you do not agree with these
+ terms, please do not use, install, modify or redistribute this NVIDIA
+ software.
+ .
+ In consideration of your agreement to abide by the following terms, and
+ subject to these terms, NVIDIA grants you a personal, non-exclusive
+ license, under NVIDIA's copyrights in this original NVIDIA software (the
+ "NVIDIA Software"), to use, reproduce, modify and redistribute the
+ NVIDIA Software, with or without modifications, in source and/or binary
+ forms; provided that if you redistribute the NVIDIA Software, you must
+ retain the copyright notice of NVIDIA, this notice and the following
+ text and disclaimers in all such redistributions of the NVIDIA Software.
+ Neither the name, trademarks, service marks nor logos of NVIDIA
+ Corporation may be used to endorse or promote products derived from the
+ NVIDIA Software without specific prior written permission from NVIDIA.
+ Except as expressly stated in this notice, no other rights or licenses
+ express or implied, are granted by NVIDIA herein, including but not
+ limited to any patent rights that may be infringed by your derivative
+ works or by other works in which the NVIDIA Software may be
+ incorporated. No hardware is licensed hereunder.
+ .
+ THE NVIDIA SOFTWARE IS BEING PROVIDED ON AN "AS IS" BASIS, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ INCLUDING WITHOUT LIMITATION, WARRANTIES OR CONDITIONS OF TITLE,
+ NON-INFRINGEMENT, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
+ ITS USE AND OPERATION EITHER ALONE OR IN COMBINATION WITH OTHER
+ PRODUCTS.
+ .
+ IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT,
+ INCIDENTAL, EXEMPLARY, CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, LOST PROFITS; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) OR ARISING IN ANY WAY
+ OUT OF THE USE, REPRODUCTION, MODIFICATION AND/OR DISTRIBUTION OF THE
+ NVIDIA SOFTWARE, HOWEVER CAUSED AND WHETHER UNDER THEORY OF CONTRACT,
+ TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, EVEN IF
+ NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: FTL
                     The FreeType Project LICENSE

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,11 @@ class CreateDialog;
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
+	GridContainer *gc;
 	LineEdit *class_name;
 	Label *error_label;
 	Label *path_error_label;
+	Label *builtin_warning_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
@@ -58,7 +60,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
-	Label *internal_label;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
 	CreateDialog *select_class;
@@ -75,6 +76,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_class_name_valid;
 	bool is_built_in;
 	bool built_in_enabled;
+	bool load_enabled;
 	int current_language;
 	int default_language;
 	bool re_check_path;
@@ -93,7 +95,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 
 	String script_template;
 	Vector<ScriptTemplateInfo> template_list;
-	Map<String, Vector<int> > template_overrides; // name : indices
+	Map<String, Vector<int>> template_overrides; // name : indices
 
 	void _update_script_templates(const String &p_extension);
 
@@ -123,11 +125,12 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _update_dialog();
 
 protected:
+	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true);
+	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
 };

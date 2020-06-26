@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,24 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "servers/audio_server.h"
-
 #ifdef ALSA_ENABLED
+
+#ifndef AUDIO_DRIVER_ALSA_H
+#define AUDIO_DRIVER_ALSA_H
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "servers/audio_server.h"
 
 #include <alsa/asoundlib.h>
 
 class AudioDriverALSA : public AudioDriver {
+	Thread *thread = nullptr;
+	Mutex mutex;
 
-	Thread *thread;
-	Mutex *mutex;
+	snd_pcm_t *pcm_handle = nullptr;
 
-	snd_pcm_t *pcm_handle;
-
-	String device_name;
-	String new_device;
+	String device_name = "Default";
+	String new_device = "Default";
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
@@ -83,8 +84,10 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
-	AudioDriverALSA();
-	~AudioDriverALSA();
+	AudioDriverALSA() {}
+	~AudioDriverALSA() {}
 };
 
-#endif
+#endif // AUDIO_DRIVER_ALSA_H
+
+#endif // ALSA_ENABLED

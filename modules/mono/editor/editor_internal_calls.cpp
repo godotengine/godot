@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,16 @@
 
 #include "editor_internal_calls.h"
 
+#ifdef UNIX_ENABLED
+#include <unistd.h> // access
+#endif
+
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/script_editor_debugger.h"
 #include "main/main.h"
 
 #include "../csharp_script.h"
@@ -43,6 +48,7 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/osx_utils.h"
 #include "bindings_generator.h"
+#include "code_completion.h"
 #include "godotsharp_export.h"
 #include "script_class_parser.h"
 
@@ -90,7 +96,7 @@ MonoString *godot_icall_GodotSharpDirs_MonoSolutionsDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_mono_solutions_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -98,7 +104,7 @@ MonoString *godot_icall_GodotSharpDirs_BuildLogsDirs() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_build_logs_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -106,7 +112,7 @@ MonoString *godot_icall_GodotSharpDirs_ProjectSlnPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_sln_path());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -114,7 +120,7 @@ MonoString *godot_icall_GodotSharpDirs_ProjectCsProjPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_csproj_path());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -122,7 +128,7 @@ MonoString *godot_icall_GodotSharpDirs_DataEditorToolsDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_editor_tools_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -130,7 +136,7 @@ MonoString *godot_icall_GodotSharpDirs_DataEditorPrebuiltApiDir() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_editor_prebuilt_api_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -146,7 +152,7 @@ MonoString *godot_icall_GodotSharpDirs_DataMonoBinDir() {
 #ifdef WINDOWS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_data_mono_bin_dir());
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -196,7 +202,9 @@ uint32_t godot_icall_BindingsGenerator_CsGlueVersion() {
 	return CS_GLUE_VERSION;
 }
 
-int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes) {
+int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObject *p_classes, MonoString **r_error_str) {
+	*r_error_str = nullptr;
+
 	String filepath = GDMonoMarshal::mono_string_to_godot(p_filepath);
 
 	ScriptClassParser scp;
@@ -215,19 +223,23 @@ int32_t godot_icall_ScriptClassParser_ParseFile(MonoString *p_filepath, MonoObje
 			classDeclDict["base_count"] = classDecl.base.size();
 			classes.push_back(classDeclDict);
 		}
+	} else {
+		String error_str = scp.get_error();
+		if (!error_str.empty()) {
+			*r_error_str = GDMonoMarshal::mono_string_from_godot(error_str);
+		}
 	}
 	return err;
 }
 
-uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(MonoString *p_project_dll_name, MonoString *p_project_dll_src_path,
-		MonoString *p_build_config, MonoString *p_custom_bcl_dir, MonoObject *r_dependencies) {
-	String project_dll_name = GDMonoMarshal::mono_string_to_godot(p_project_dll_name);
-	String project_dll_src_path = GDMonoMarshal::mono_string_to_godot(p_project_dll_src_path);
+uint32_t godot_icall_ExportPlugin_GetExportedAssemblyDependencies(MonoObject *p_initial_assemblies,
+		MonoString *p_build_config, MonoString *p_custom_bcl_dir, MonoObject *r_assembly_dependencies) {
+	Dictionary initial_dependencies = GDMonoMarshal::mono_object_to_variant(p_initial_assemblies);
 	String build_config = GDMonoMarshal::mono_string_to_godot(p_build_config);
 	String custom_bcl_dir = GDMonoMarshal::mono_string_to_godot(p_custom_bcl_dir);
-	Dictionary dependencies = GDMonoMarshal::mono_object_to_variant(r_dependencies);
+	Dictionary assembly_dependencies = GDMonoMarshal::mono_object_to_variant(r_assembly_dependencies);
 
-	return GodotSharpExport::get_exported_assembly_dependencies(project_dll_name, project_dll_src_path, build_config, custom_bcl_dir, dependencies);
+	return GodotSharpExport::get_exported_assembly_dependencies(initial_dependencies, build_config, custom_bcl_dir, assembly_dependencies);
 }
 
 MonoString *godot_icall_Internal_UpdateApiAssembliesFromPrebuilt(MonoString *p_config) {
@@ -294,8 +306,8 @@ void godot_icall_Internal_ReloadAssemblies(MonoBoolean p_soft_reload) {
 #endif
 }
 
-void godot_icall_Internal_ScriptEditorDebuggerReloadScripts() {
-	ScriptEditor::get_singleton()->get_debugger()->reload_scripts();
+void godot_icall_Internal_EditorDebuggerNodeReloadScripts() {
+	EditorDebuggerNode::get_singleton()->reload_scripts();
 }
 
 MonoBoolean godot_icall_Internal_ScriptEditorEdit(MonoObject *p_resource, int32_t p_line, int32_t p_col, MonoBoolean p_grab_focus) {
@@ -324,7 +336,7 @@ MonoString *godot_icall_Internal_MonoWindowsInstallRoot() {
 	String install_root_dir = GDMono::get_singleton()->get_mono_reg_info().install_root_dir;
 	return GDMonoMarshal::mono_string_from_godot(install_root_dir);
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -337,10 +349,16 @@ void godot_icall_Internal_EditorRunStop() {
 }
 
 void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
-	ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-	if (sed) {
-		sed->reload_scripts();
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	if (ed) {
+		ed->reload_scripts();
 	}
+}
+
+MonoArray *godot_icall_Internal_CodeCompletionRequest(int32_t p_kind, MonoString *p_script_file) {
+	String script_file = GDMonoMarshal::mono_string_to_godot(p_script_file);
+	PackedStringArray suggestions = gdmono::get_code_completion((gdmono::CompletionKind)p_kind, script_file);
+	return GDMonoMarshal::PackedStringArray_to_mono_array(suggestions);
 }
 
 float godot_icall_Globals_EditorScale() {
@@ -371,8 +389,16 @@ MonoString *godot_icall_Utils_OS_GetPlatformName() {
 	return GDMonoMarshal::mono_string_from_godot(os_name);
 }
 
-void register_editor_internal_calls() {
+MonoBoolean godot_icall_Utils_OS_UnixFileHasExecutableAccess(MonoString *p_file_path) {
+#ifdef UNIX_ENABLED
+	String file_path = GDMonoMarshal::mono_string_to_godot(p_file_path);
+	return access(file_path.utf8().get_data(), X_OK) == 0;
+#else
+	ERR_FAIL_V(false);
+#endif
+}
 
+void register_editor_internal_calls() {
 	// GodotSharpDirs
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResDataDir", (void *)godot_icall_GodotSharpDirs_ResDataDir);
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResMetadataDir", (void *)godot_icall_GodotSharpDirs_ResMetadataDir);
@@ -426,7 +452,7 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetEditorApiHash", (void *)godot_icall_Internal_GetEditorApiHash);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_IsAssembliesReloadingNeeded", (void *)godot_icall_Internal_IsAssembliesReloadingNeeded);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ReloadAssemblies", (void *)godot_icall_Internal_ReloadAssemblies);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebuggerReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebuggerReloadScripts);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorDebuggerNodeReloadScripts", (void *)godot_icall_Internal_EditorDebuggerNodeReloadScripts);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorEdit", (void *)godot_icall_Internal_ScriptEditorEdit);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", (void *)godot_icall_Internal_EditorNodeShowScriptScreen);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetScriptsMetadataOrNothing", (void *)godot_icall_Internal_GetScriptsMetadataOrNothing);
@@ -434,6 +460,7 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", (void *)godot_icall_Internal_EditorRunPlay);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", (void *)godot_icall_Internal_EditorRunStop);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebugger_ReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_CodeCompletionRequest", (void *)godot_icall_Internal_CodeCompletionRequest);
 
 	// Globals
 	mono_add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", (void *)godot_icall_Globals_EditorScale);
@@ -443,4 +470,5 @@ void register_editor_internal_calls() {
 
 	// Utils.OS
 	mono_add_internal_call("GodotTools.Utils.OS::GetPlatformName", (void *)godot_icall_Utils_OS_GetPlatformName);
+	mono_add_internal_call("GodotTools.Utils.OS::UnixFileHasExecutableAccess", (void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess);
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,11 @@
 #include "core/os/file_access.h"
 #include "core/print_string.h"
 
+// Godot's packed file magic header ("GDPC" in ASCII).
+#define PACK_HEADER_MAGIC 0x43504447
+// The current packed file format version number.
+#define PACK_FORMAT_VERSION 1
+
 class PackSource;
 
 class PackedData {
@@ -46,7 +51,6 @@ class PackedData {
 
 public:
 	struct PackedFile {
-
 		String pack;
 		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
@@ -56,17 +60,16 @@ public:
 
 private:
 	struct PackedDir {
-		PackedDir *parent;
+		PackedDir *parent = nullptr;
 		String name;
 		Map<String, PackedDir *> subdirs;
 		Set<String> files;
 	};
 
 	struct PathMD5 {
-		uint64_t a;
-		uint64_t b;
+		uint64_t a = 0;
+		uint64_t b = 0;
 		bool operator<(const PathMD5 &p_md5) const {
-
 			if (p_md5.a == a) {
 				return b < p_md5.b;
 			} else {
@@ -76,16 +79,14 @@ private:
 
 		bool operator==(const PathMD5 &p_md5) const {
 			return a == p_md5.a && b == p_md5.b;
-		};
+		}
 
-		PathMD5() {
-			a = b = 0;
-		};
+		PathMD5() {}
 
 		PathMD5(const Vector<uint8_t> p_buf) {
 			a = *((uint64_t *)&p_buf[0]);
 			b = *((uint64_t *)&p_buf[8]);
-		};
+		}
 	};
 
 	Map<PathMD5, PackedFile> files;
@@ -93,10 +94,9 @@ private:
 	Vector<PackSource *> sources;
 
 	PackedDir *root;
-	//Map<String,PackedDir*> dirs;
 
 	static PackedData *singleton;
-	bool disabled;
+	bool disabled = false;
 
 	void _free_packed_dirs(PackedDir *p_dir);
 
@@ -118,7 +118,6 @@ public:
 };
 
 class PackSource {
-
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
@@ -126,14 +125,12 @@ public:
 };
 
 class PackedSourcePCK : public PackSource {
-
 public:
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
 class FileAccessPack : public FileAccess {
-
 	PackedData::PackedFile pf;
 
 	mutable size_t pos;
@@ -176,29 +173,28 @@ public:
 };
 
 FileAccess *PackedData::try_open_path(const String &p_path) {
-
 	PathMD5 pmd5(p_path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
-	if (!E)
-		return NULL; //not found
-	if (E->get().offset == 0)
-		return NULL; //was erased
+	if (!E) {
+		return nullptr; //not found
+	}
+	if (E->get().offset == 0) {
+		return nullptr; //was erased
+	}
 
 	return E->get().src->get_file(p_path, &E->get());
 }
 
 bool PackedData::has_path(const String &p_path) {
-
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
 class DirAccessPack : public DirAccess {
-
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;
 	List<String> list_files;
-	bool cdir;
+	bool cdir = false;
 
 public:
 	virtual Error list_dir_begin();
@@ -211,7 +207,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir);
-	virtual String get_current_dir();
+	virtual String get_current_dir(bool p_include_drive = true);
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
@@ -226,7 +222,7 @@ public:
 	virtual String get_filesystem_type() const;
 
 	DirAccessPack();
-	~DirAccessPack();
+	~DirAccessPack() {}
 };
 
 #endif // FILE_ACCESS_PACK_H

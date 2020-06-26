@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,16 @@
 #ifndef GRID_MAP_H
 #define GRID_MAP_H
 
-#include "scene/3d/navigation.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/navigation_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
-class GridMap : public Spatial {
-
-	GDCLASS(GridMap, Spatial);
+class GridMap : public Node3D {
+	GDCLASS(GridMap, Node3D);
 
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
@@ -49,7 +48,6 @@ class GridMap : public Spatial {
 	};
 
 	union IndexKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -58,7 +56,6 @@ class GridMap : public Spatial {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -69,7 +66,6 @@ class GridMap : public Spatial {
 	 * @brief A Cell is a single cell in the cube map space; it is defined by its coordinates and the populating Item, identified by int id.
 	 */
 	union Cell {
-
 		struct {
 			unsigned int item : 16;
 			unsigned int rot : 5;
@@ -89,9 +85,8 @@ class GridMap : public Spatial {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
-
 		struct NavMesh {
-			int id;
+			RID region;
 			Transform xform;
 		};
 
@@ -118,7 +113,6 @@ class GridMap : public Spatial {
 	};
 
 	union OctantKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -129,7 +123,6 @@ class GridMap : public Spatial {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -147,7 +140,7 @@ class GridMap : public Spatial {
 	int octant_size;
 	bool center_x, center_y, center_z;
 	float cell_scale;
-	Navigation *navigation;
+	Navigation3D *navigation;
 
 	bool clip;
 	bool clip_above;
@@ -165,15 +158,13 @@ class GridMap : public Spatial {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-
-		VS::LightType type;
+		RS::LightType type;
 		Vector3 pos;
 		Vector3 dir;
-		float param[VS::LIGHT_PARAM_MAX];
+		float param[RS::LIGHT_PARAM_MAX];
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
-
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
@@ -226,11 +217,6 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
-
-#ifndef DISABLE_DEPRECATED
-	void set_theme(const Ref<MeshLibrary> &p_theme);
-	Ref<MeshLibrary> get_theme() const;
-#endif // DISABLE_DEPRECATED
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

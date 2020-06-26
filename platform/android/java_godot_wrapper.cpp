@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +66,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
 	_vibrate = p_env->GetMethodID(cls, "vibrate", "(I)V");
 	_get_input_fallback_mapping = p_env->GetMethodID(cls, "getInputFallbackMapping", "()Ljava/lang/String;");
+	_on_godot_main_loop_started = p_env->GetMethodID(cls, "onGodotMainLoopStarted", "()V");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -79,13 +80,13 @@ jobject GodotJavaWrapper::get_activity() {
 
 jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_class, JNIEnv *p_env) {
 	if (cls) {
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 		jfieldID fid = p_env->GetStaticFieldID(cls, p_name, p_class);
 		return p_env->GetStaticObjectField(cls, fid);
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -95,28 +96,30 @@ jobject GodotJavaWrapper::get_class_loader() {
 		jmethodID getClassLoader = env->GetMethodID(cls, "getClassLoader", "()Ljava/lang/ClassLoader;");
 		return env->CallObjectMethod(godot_instance, getClassLoader);
 	} else {
-		return NULL;
+		return nullptr;
 	}
-}
-
-void GodotJavaWrapper::gfx_init(bool gl2) {
-	// beats me what this once did, there was no code,
-	// but we're getting false if our GLES3 driver is initialised
-	// and true for our GLES2 driver
-	// Maybe we're supposed to communicate this back or store it?
 }
 
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init)
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _on_video_init);
 }
 
+void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
+	if (_on_godot_main_loop_started) {
+		if (p_env == nullptr) {
+			p_env = ThreadAndroid::get_env();
+		}
+	}
+	p_env->CallVoidMethod(godot_instance, _on_godot_main_loop_started);
+}
+
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	if (_restart)
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _restart);
@@ -124,7 +127,7 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 
 void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
 	if (_finish)
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _finish);
@@ -241,7 +244,7 @@ jobject GodotJavaWrapper::get_surface() {
 		JNIEnv *env = ThreadAndroid::get_env();
 		return env->CallObjectMethod(godot_instance, _get_surface);
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 

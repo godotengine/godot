@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
-
 	enum {
 		MAX_DRIVES = 26
 	};
@@ -69,7 +68,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(); ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);

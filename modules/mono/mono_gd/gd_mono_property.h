@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "i_mono_class_member.h"
 
 class GDMonoProperty : public IMonoClassMember {
-
 	GDMonoClass *owner;
 	MonoProperty *mono_property;
 
@@ -47,17 +46,17 @@ class GDMonoProperty : public IMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual GDMonoClass *get_enclosing_class() const GD_FINAL { return owner; }
+	virtual GDMonoClass *get_enclosing_class() const final { return owner; }
 
-	virtual MemberType get_member_type() const GD_FINAL { return MEMBER_TYPE_PROPERTY; }
+	virtual MemberType get_member_type() const final { return MEMBER_TYPE_PROPERTY; }
 
-	virtual StringName get_name() const GD_FINAL { return name; }
+	virtual StringName get_name() const final { return name; }
 
-	virtual bool is_static() GD_FINAL;
-	virtual Visibility get_visibility() GD_FINAL;
+	virtual bool is_static() final;
+	virtual Visibility get_visibility() final;
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
+	virtual bool has_attribute(GDMonoClass *p_attr_class) final;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) final;
 	void fetch_attributes();
 
 	bool has_getter();
@@ -65,9 +64,9 @@ public:
 
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }
 
-	void set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc = NULL);
-	void set_value(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
-	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = NULL);
+	void set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc = nullptr);
+	void set_value(MonoObject *p_object, void **p_params, MonoException **r_exc = nullptr);
+	MonoObject *get_value(MonoObject *p_object, MonoException **r_exc = nullptr);
 
 	bool get_bool_value(MonoObject *p_object);
 	int get_int_value(MonoObject *p_object);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,17 +35,14 @@
 #include "core/os/memory.h"
 
 Thread::ID ThreadWindows::get_id() const {
-
 	return id;
 }
 
 Thread *ThreadWindows::create_thread_windows() {
-
 	return memnew(ThreadWindows);
 }
 
 DWORD ThreadWindows::thread_callback(LPVOID userdata) {
-
 	ThreadWindows *t = reinterpret_cast<ThreadWindows *>(userdata);
 
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
@@ -60,22 +57,21 @@ DWORD ThreadWindows::thread_callback(LPVOID userdata) {
 }
 
 Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
-
 	ThreadWindows *tr = memnew(ThreadWindows);
 	tr->callback = p_callback;
 	tr->user = p_user;
-	tr->handle = CreateEvent(NULL, TRUE, FALSE, NULL);
+	tr->handle = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	QueueUserWorkItem(thread_callback, tr, WT_EXECUTELONGFUNCTION);
 
 	return tr;
 }
-Thread::ID ThreadWindows::get_thread_id_func_windows() {
 
+Thread::ID ThreadWindows::get_thread_id_func_windows() {
 	return (ID)GetCurrentThreadId(); //must implement
 }
-void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 
+void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 	ThreadWindows *tp = static_cast<ThreadWindows *>(p_thread);
 	ERR_FAIL_COND(!tp);
 	WaitForSingleObject(tp->handle, INFINITE);
@@ -84,17 +80,9 @@ void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 }
 
 void ThreadWindows::make_default() {
-
 	create_func = create_func_windows;
 	get_thread_id_func = get_thread_id_func_windows;
 	wait_to_finish_func = wait_to_finish_func_windows;
-}
-
-ThreadWindows::ThreadWindows() :
-		handle(NULL) {
-}
-
-ThreadWindows::~ThreadWindows() {
 }
 
 #endif

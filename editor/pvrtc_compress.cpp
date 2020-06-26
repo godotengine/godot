@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,25 +38,25 @@
 #include "editor_settings.h"
 #include "scene/resources/texture.h"
 
-static void (*_base_image_compress_pvrtc2_func)(Image *) = NULL;
-static void (*_base_image_compress_pvrtc4_func)(Image *) = NULL;
+static void (*_base_image_compress_pvrtc2_func)(Image *) = nullptr;
+static void (*_base_image_compress_pvrtc4_func)(Image *) = nullptr;
 
 static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
-
 	String ttpath = EditorSettings::get_singleton()->get("filesystem/import/pvrtc_texture_tool");
 
 	if (ttpath.strip_edges() == "" || !FileAccess::exists(ttpath)) {
 		switch (p_mode) {
-
 			case Image::COMPRESS_PVRTC2:
-				if (_base_image_compress_pvrtc2_func)
+				if (_base_image_compress_pvrtc2_func) {
 					_base_image_compress_pvrtc2_func(p_image);
-				else if (_base_image_compress_pvrtc4_func)
+				} else if (_base_image_compress_pvrtc4_func) {
 					_base_image_compress_pvrtc4_func(p_image);
+				}
 				break;
 			case Image::COMPRESS_PVRTC4:
-				if (_base_image_compress_pvrtc4_func)
+				if (_base_image_compress_pvrtc4_func) {
 					_base_image_compress_pvrtc4_func(p_image);
+				}
 				break;
 			default:
 				ERR_FAIL_MSG("Unsupported Image compress mode used in PVRTC module.");
@@ -98,7 +98,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 
 	// Save source PNG.
 	Ref<ImageTexture> t = memnew(ImageTexture);
-	t->create_from_image(Ref<Image>(p_image), 0);
+	t->create_from_image(Ref<Image>(p_image));
 	ResourceSaver::save(src_img, t);
 
 	Error err = OS::get_singleton()->execute(ttpath, args, true);
@@ -109,7 +109,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 		ERR_FAIL_MSG("Could not execute PVRTC tool: " + ttpath);
 	}
 
-	t = ResourceLoader::load(dst_img, "Texture");
+	t = ResourceLoader::load(dst_img, "Texture2D");
 	if (t.is_null()) {
 		// Clean up generated files.
 		DirAccess::remove_file_or_error(src_img);
@@ -125,17 +125,14 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 }
 
 static void _compress_pvrtc2(Image *p_image) {
-
 	_compress_image(Image::COMPRESS_PVRTC2, p_image);
 }
 
 static void _compress_pvrtc4(Image *p_image) {
-
 	_compress_image(Image::COMPRESS_PVRTC4, p_image);
 }
 
 void _pvrtc_register_compressors() {
-
 	_base_image_compress_pvrtc2_func = Image::_image_compress_pvrtc2_func;
 	_base_image_compress_pvrtc4_func = Image::_image_compress_pvrtc4_func;
 

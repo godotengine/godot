@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,11 +45,10 @@ class SpaceBullet;
 class btTypedConstraint;
 
 class ConstraintBullet : public RIDBullet {
-
 protected:
-	SpaceBullet *space;
-	btTypedConstraint *constraint;
-	bool disabled_collisions_between_bodies;
+	SpaceBullet *space = nullptr;
+	btTypedConstraint *constraint = nullptr;
+	bool disabled_collisions_between_bodies = true;
 
 public:
 	ConstraintBullet();
@@ -64,7 +63,7 @@ public:
 public:
 	virtual ~ConstraintBullet() {
 		bulletdelete(constraint);
-		constraint = NULL;
+		constraint = nullptr;
 	}
 
 	_FORCE_INLINE_ btTypedConstraint *get_bt_constraint() { return constraint; }

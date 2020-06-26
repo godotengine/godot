@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,13 +53,12 @@ public:
 };
 
 class ImageLoader {
-
 	static Vector<ImageFormatLoader *> loader;
 	friend class ResourceFormatLoaderImage;
 
 protected:
 public:
-	static Error load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom = NULL, bool p_force_linear = false, float p_scale = 1.0);
+	static Error load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom = nullptr, bool p_force_linear = false, float p_scale = 1.0);
 	static void get_recognized_extensions(List<String> *p_extensions);
 	static ImageFormatLoader *recognize(const String &p_extension);
 
@@ -73,10 +72,10 @@ public:
 
 class ResourceFormatLoaderImage : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+#endif // IMAGE_LOADER_H

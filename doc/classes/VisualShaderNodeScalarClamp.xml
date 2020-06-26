@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeScalarClamp" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeScalarClamp" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Clamps a scalar value within the visual shader graph.
 	</brief_description>
 	<description>
+		Constrains a value to lie between [code]min[/code] and [code]max[/code] values.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, 0.0, 1, 0.0, 2, 1.0 ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

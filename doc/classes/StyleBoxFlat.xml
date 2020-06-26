@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxFlat" inherits="StyleBox" category="Core" version="3.2">
+<class name="StyleBoxFlat" inherits="StyleBox" version="4.0">
 	<brief_description>
-		Customizable Stylebox with a given set of parameters. (no texture required)
+		Customizable [StyleBox] with a given set of parameters (no texture required).
 	</brief_description>
 	<description>
-		This stylebox can be used to achieve all kinds of looks without the need of a texture. Those properties are customizable:
+		This [StyleBox] can be used to achieve all kinds of looks without the need of a texture. Those properties are customizable:
 		- Color
 		- Border width (individual width for each border)
 		- Rounded corners (individual radius for each corner)
-		- Shadow
+		- Shadow (with blur and offset)
 		Setting corner radius to high values is allowed. As soon as corners would overlap, the stylebox will switch to a relative system. Example:
 		[codeblock]
 		height = 30
@@ -30,12 +30,14 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the given [code]margin[/code]'s border width. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="get_border_width_min" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the smallest border width out of all four borders.
 			</description>
 		</method>
 		<method name="get_corner_radius" qualifiers="const">
@@ -44,6 +46,7 @@
 			<argument index="0" name="corner" type="int" enum="Corner">
 			</argument>
 			<description>
+				Returns the given [code]corner[/code]'s radius. See [enum Corner] for possible values.
 			</description>
 		</method>
 		<method name="get_expand_margin" qualifiers="const">
@@ -52,6 +55,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the size of the given [code]margin[/code]'s expand margin. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_border_width">
@@ -62,6 +66,7 @@
 			<argument index="1" name="width" type="int">
 			</argument>
 			<description>
+				Sets the border width to [code]width[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_border_width_all">
@@ -70,6 +75,7 @@
 			<argument index="0" name="width" type="int">
 			</argument>
 			<description>
+				Sets the border width to [code]width[/code] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_corner_radius">
@@ -80,6 +86,7 @@
 			<argument index="1" name="radius" type="int">
 			</argument>
 			<description>
+				Sets the corner radius to [code]radius[/code] pixels for the given [code]corner[/code]. See [enum Corner] for possible values.
 			</description>
 		</method>
 		<method name="set_corner_radius_all">
@@ -88,6 +95,7 @@
 			<argument index="0" name="radius" type="int">
 			</argument>
 			<description>
+				Sets the corner radius to [code]radius[/code] pixels for all corners.
 			</description>
 		</method>
 		<method name="set_corner_radius_individual">
@@ -102,6 +110,7 @@
 			<argument index="3" name="radius_bottom_left" type="int">
 			</argument>
 			<description>
+				Sets the corner radius for each corner to [code]radius_top_left[/code], [code]radius_top_right[/code], [code]radius_bottom_right[/code], and [code]radius_bottom_left[/code] pixels.
 			</description>
 		</method>
 		<method name="set_expand_margin">
@@ -112,6 +121,7 @@
 			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
+				Sets the expand margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
@@ -120,6 +130,7 @@
 			<argument index="0" name="size" type="float">
 			</argument>
 			<description>
+				Sets the expand margin to [code]size[/code] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_expand_margin_individual">
@@ -134,6 +145,7 @@
 			<argument index="3" name="size_bottom" type="float">
 			</argument>
 			<description>
+				Sets the expand margin for each margin to [code]size_left[/code], [code]size_top[/code], [code]size_right[/code], and [code]size_bottom[/code] pixels.
 			</description>
 		</method>
 	</methods>
@@ -167,7 +179,8 @@
 		</member>
 		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail" default="8">
 			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
-			For corner radii smaller than 10, 4-5 should be enough. For corner radii smaller than 30, 8-12 should be enough.
+			For corner radii smaller than 10, [code]4[/code] or [code]5[/code] should be enough. For corner radii smaller than 30, values between [code]8[/code] and [code]12[/code] should be enough.
+			A corner detail of [code]1[/code] will result in chamfered corners instead of rounded corners, which is useful for some artistic effects.
 		</member>
 		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
 			The bottom-left corner's radius. If [code]0[/code], the corner is not rounded.

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tween" inherits="Node" category="Core" version="3.2">
+<class name="Tween" inherits="Node" version="4.0">
 	<brief_description>
 		Smoothly animates a node's properties over time.
 	</brief_description>
 	<description>
 		Tweens are useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them.
-		Here is a brief usage example that causes a 2D node to move smoothly between two positions:
+		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween] node; it would be difficult to do the same thing with an [AnimationPlayer] node.
+		Here is a brief usage example that makes a 2D node move smoothly between two positions:
 		[codeblock]
 		var tween = get_node("Tween")
 		tween.interpolate_property($Node2D, "position",
@@ -14,29 +15,30 @@
 		tween.start()
 		[/codeblock]
 		Many methods require a property name, such as [code]"position"[/code] above. You can find the correct property name by hovering over the property in the Inspector. You can also provide the components of a property directly by using [code]"property:component"[/code] (eg. [code]position:x[/code]), where it would only apply to that particular component.
-		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [code]http://easings.net/[/code] for some examples). The second accepts an [enum EaseType] constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
+		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
+		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="follow_method">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="initial_val" type="Variant">
 			</argument>
 			<argument index="3" name="target" type="Object">
 			</argument>
-			<argument index="4" name="target_method" type="String">
+			<argument index="4" name="target_method" type="StringName">
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -46,7 +48,7 @@
 			</description>
 		</method>
 		<method name="follow_property">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -60,9 +62,9 @@
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -79,7 +81,7 @@
 			</description>
 		</method>
 		<method name="interpolate_callback">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -102,7 +104,7 @@
 			</description>
 		</method>
 		<method name="interpolate_deferred_callback">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -125,11 +127,11 @@
 			</description>
 		</method>
 		<method name="interpolate_method">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="initial_val" type="Variant">
 			</argument>
@@ -137,9 +139,9 @@
 			</argument>
 			<argument index="4" name="duration" type="float">
 			</argument>
-			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
@@ -149,7 +151,7 @@
 			</description>
 		</method>
 		<method name="interpolate_property">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -161,9 +163,9 @@
 			</argument>
 			<argument index="4" name="duration" type="float">
 			</argument>
-			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="6" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
@@ -181,61 +183,61 @@
 			</description>
 		</method>
 		<method name="remove">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stops animation and removes a tween, given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="remove_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Stops animation and removes all tweens.
 			</description>
 		</method>
 		<method name="reset">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Resets a tween to its initial value (the one given, not the one before the tween), given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="reset_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Resets all tweens to their initial values (the ones given, not those before the tween).
 			</description>
 		</method>
 		<method name="resume">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Continues animating a stopped tween, given its object and property/method pair. By default, all tweens are resumed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="resume_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Continues animating all stopped tweens.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="time" type="float">
 			</argument>
@@ -253,48 +255,48 @@
 			</description>
 		</method>
 		<method name="start">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Starts the tween. You can define animations both before and after this.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stops a tween, given its object and property/method pair. By default, all tweens are stopped, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="stop_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Stops animating all tweens.
 			</description>
 		</method>
 		<method name="targeting_method">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="initial" type="Object">
 			</argument>
-			<argument index="3" name="initial_method" type="String">
+			<argument index="3" name="initial_method" type="StringName">
 			</argument>
 			<argument index="4" name="final_val" type="Variant">
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -304,7 +306,7 @@
 			</description>
 		</method>
 		<method name="targeting_property">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -318,9 +320,9 @@
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
-			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType">
+			<argument index="6" name="trans_type" type="int" enum="Tween.TransitionType" default="0">
 			</argument>
-			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType">
+			<argument index="7" name="ease_type" type="int" enum="Tween.EaseType" default="2">
 			</argument>
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
@@ -433,10 +435,10 @@
 			The interpolation starts quickly and slows down towards the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
-			A combination of EASE_IN and EASE_OUT. The interpolation is slowest at both ends.
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is slowest at both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
-			A combination of EASE_IN and EASE_OUT. The interpolation is fastest at both ends.
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is fastest at both ends.
 		</constant>
 	</constants>
 </class>

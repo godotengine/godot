@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorResourcePreview" inherits="Node" category="Core" version="3.2">
+<class name="EditorResourcePreview" inherits="Node" version="4.0">
 	<brief_description>
 		Helper to generate previews of resources or files.
 	</brief_description>
 	<description>
 		This object is used to generate previews for resources of files.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_resource_previewer].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,7 +35,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="receiver_func" type="String">
+			<argument index="2" name="receiver_func" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant">
 			</argument>
@@ -49,7 +50,7 @@
 			</argument>
 			<argument index="1" name="receiver" type="Object">
 			</argument>
-			<argument index="2" name="receiver_func" type="String">
+			<argument index="2" name="receiver_func" type="StringName">
 			</argument>
 			<argument index="3" name="userdata" type="Variant">
 			</argument>

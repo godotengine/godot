@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,15 +32,13 @@
 
 #include "image_loader_hdr.h"
 
-static ImageLoaderHDR *image_loader_hdr = NULL;
+static ImageLoaderHDR *image_loader_hdr = nullptr;
 
 void register_hdr_types() {
-
 	image_loader_hdr = memnew(ImageLoaderHDR);
 	ImageLoader::add_image_format_loader(image_loader_hdr);
 }
 
 void unregister_hdr_types() {
-
 	memdelete(image_loader_hdr);
 }

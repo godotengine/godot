@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Mesh" inherits="Resource" category="Core" version="3.2">
+<class name="Mesh" inherits="Resource" version="4.0">
 	<brief_description>
 		A [Resource] that contains vertex array-based geometry.
 	</brief_description>
@@ -10,10 +10,10 @@
 	</tutorials>
 	<methods>
 		<method name="create_convex_shape" qualifiers="const">
-			<return type="Shape">
+			<return type="Shape3D">
 			</return>
 			<description>
-				Calculate a [ConvexPolygonShape] from the mesh.
+				Calculate a [ConvexPolygonShape3D] from the mesh.
 			</description>
 		</method>
 		<method name="create_outline" qualifiers="const">
@@ -27,10 +27,10 @@
 			</description>
 		</method>
 		<method name="create_trimesh_shape" qualifiers="const">
-			<return type="Shape">
+			<return type="Shape3D">
 			</return>
 			<description>
-				Calculate a [ConcavePolygonShape] from the mesh.
+				Calculate a [ConcavePolygonShape3D] from the mesh.
 			</description>
 		</method>
 		<method name="generate_triangle_mesh" qualifiers="const">
@@ -40,8 +40,16 @@
 				Generate a [TriangleMesh] from the mesh.
 			</description>
 		</method>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+				Returns the smallest [AABB] enclosing this mesh. Not affected by [code]custom_aabb[/code].
+				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
+			</description>
+		</method>
 		<method name="get_faces" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
 				Returns all the vertices that make up the faces of the mesh. Each three vertices represent one triangle.
@@ -94,7 +102,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
+		<member name="lightmap_size_hint" type="Vector2i" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2i( 0, 0 )">
+			Sets a hint to be used for lightmap resolution.
 		</member>
 	</members>
 	<constants>
@@ -107,65 +116,68 @@
 		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
 			Render array as line strip.
 		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3" enum="PrimitiveType">
-			Render array as line loop (like line strip, but closed).
-		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4" enum="PrimitiveType">
+		<constant name="PRIMITIVE_TRIANGLES" value="3" enum="PrimitiveType">
 			Render array as triangles (every three vertices a triangle is created).
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="4" enum="PrimitiveType">
 			Render array as triangle strips.
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
-			Render array as triangle fans.
-		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
+			Blend shapes are normalized.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
+			Blend shapes are relative to base weight.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
+			Mesh array contains vertices. All meshes require a vertex array so this should always be present.
 		</constant>
 		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
+			Mesh array contains normals.
 		</constant>
 		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
+			Mesh array contains tangents.
 		</constant>
 		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
+			Mesh array contains colors.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
+			Mesh array contains UVs.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
+			Mesh array contains second UV.
 		</constant>
 		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
+			Mesh array contains bones.
 		</constant>
 		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
+			Mesh array contains bone weights.
 		</constant>
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_BASE" value="9" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
+			Mesh array uses indices.
 		</constant>
 		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) normal array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) tangent array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) color array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) UV coordinates array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
+			Flag used to mark a compressed index array.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
+			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array of vertices.

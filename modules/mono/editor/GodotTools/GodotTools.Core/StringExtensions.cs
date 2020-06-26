@@ -25,37 +25,28 @@ namespace GodotTools.Core
             bool rooted = path.IsAbsolutePath();
 
             path = path.Replace('\\', '/');
+            path = path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
 
             string[] parts = path.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
-            return rooted ? Path.DirectorySeparatorChar.ToString() + path : path;
+            return rooted ? Path.DirectorySeparatorChar + path : path;
         }
 
-        private static readonly string driveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
+        private static readonly string DriveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
 
         public static bool IsAbsolutePath(this string path)
         {
             return path.StartsWith("/", StringComparison.Ordinal) ||
                    path.StartsWith("\\", StringComparison.Ordinal) ||
-                   path.StartsWith(driveRoot, StringComparison.Ordinal);
-        }
-
-        public static string CsvEscape(this string value, char delimiter = ',')
-        {
-            bool hasSpecialChar = value.IndexOfAny(new char[] {'\"', '\n', '\r', delimiter}) != -1;
-
-            if (hasSpecialChar)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
-
-            return value;
+                   path.StartsWith(DriveRoot, StringComparison.Ordinal);
         }
 
         public static string ToSafeDirName(this string dirName, bool allowDirSeparator)
         {
-            var invalidChars = new List<string> {":", "*", "?", "\"", "<", ">", "|"};
-            
+            var invalidChars = new List<string> { ":", "*", "?", "\"", "<", ">", "|" };
+
             if (allowDirSeparator)
             {
                 // Directory separators are allowed, but disallow ".." to avoid going up the filesystem

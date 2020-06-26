@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,18 +34,22 @@
 #include "core/class_db.h"
 #include "core/compressed_translation.h"
 #include "core/core_string_names.h"
+#include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
 #include "core/engine.h"
 #include "core/func_ref.h"
-#include "core/input_map.h"
+#include "core/input/input.h"
+#include "core/input/input_map.h"
 #include "core/io/config_file.h"
+#include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/io/packet_peer.h"
+#include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
@@ -53,16 +57,16 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
+#include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/expression.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
-#include "core/os/input.h"
 #include "core/os/main_loop.h"
 #include "core/packed_data_container.h"
-#include "core/path_remap.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/undo_redo.h"
@@ -75,19 +79,20 @@ static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 
-static _ResourceLoader *_resource_loader = NULL;
-static _ResourceSaver *_resource_saver = NULL;
-static _OS *_os = NULL;
-static _Engine *_engine = NULL;
-static _ClassDB *_classdb = NULL;
-static _Marshalls *_marshalls = NULL;
-static _JSON *_json = NULL;
+static _ResourceLoader *_resource_loader = nullptr;
+static _ResourceSaver *_resource_saver = nullptr;
+static _OS *_os = nullptr;
+static _Engine *_engine = nullptr;
+static _ClassDB *_classdb = nullptr;
+static _Marshalls *_marshalls = nullptr;
+static _JSON *_json = nullptr;
 
-static IP *ip = NULL;
+static IP *ip = nullptr;
 
-static _Geometry *_geometry = NULL;
+static _Geometry2D *_geometry_2d = nullptr;
+static _Geometry3D *_geometry_3d = nullptr;
 
-extern Mutex *_global_mutex;
+extern Mutex _global_mutex;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -95,12 +100,11 @@ extern void register_variant_methods();
 extern void unregister_variant_methods();
 
 void register_core_types() {
+	//consistency check
+	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
 	ResourceCache::setup();
-	MemoryPool::setup();
-
-	_global_mutex = Mutex::create();
 
 	StringName::setup();
 	ResourceLoader::initialize();
@@ -135,6 +139,7 @@ void register_core_types() {
 
 	ClassDB::register_virtual_class<InputEvent>();
 	ClassDB::register_virtual_class<InputEventWithModifiers>();
+	ClassDB::register_virtual_class<InputEventFromWindow>();
 	ClassDB::register_class<InputEventKey>();
 	ClassDB::register_virtual_class<InputEventMouse>();
 	ClassDB::register_class<InputEventMouseButton>();
@@ -155,9 +160,13 @@ void register_core_types() {
 	ClassDB::register_class<StreamPeerTCP>();
 	ClassDB::register_class<TCP_Server>();
 	ClassDB::register_class<PacketPeerUDP>();
+	ClassDB::register_class<UDPServer>();
+	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
+	ClassDB::register_custom_instance_class<DTLSServer>();
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();
+	ClassDB::register_class<AESContext>();
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
 	ClassDB::register_custom_instance_class<Crypto>();
@@ -179,8 +188,6 @@ void register_core_types() {
 	ClassDB::register_class<UndoRedo>();
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();
-
-	ClassDB::register_virtual_class<ResourceInteractiveLoader>();
 
 	ClassDB::register_class<ResourceFormatLoader>();
 	ClassDB::register_class<ResourceFormatSaver>();
@@ -210,7 +217,8 @@ void register_core_types() {
 
 	ip = IP::create();
 
-	_geometry = memnew(_Geometry);
+	_geometry_2d = memnew(_Geometry2D);
+	_geometry_3d = memnew(_Geometry3D);
 
 	_resource_loader = memnew(_ResourceLoader);
 	_resource_saver = memnew(_ResourceSaver);
@@ -228,15 +236,15 @@ void register_core_settings() {
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
 
-	GLOBAL_DEF("network/ssl/certificates", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificates", PropertyInfo(Variant::STRING, "network/ssl/certificates", PROPERTY_HINT_FILE, "*.crt"));
+	GLOBAL_DEF("network/ssl/certificate_bundle_override", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/ssl/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
 }
 
 void register_core_singletons() {
-
 	ClassDB::register_class<ProjectSettings>();
 	ClassDB::register_virtual_class<IP>();
-	ClassDB::register_class<_Geometry>();
+	ClassDB::register_class<_Geometry2D>();
+	ClassDB::register_class<_Geometry3D>();
 	ClassDB::register_class<_ResourceLoader>();
 	ClassDB::register_class<_ResourceSaver>();
 	ClassDB::register_class<_OS>();
@@ -251,7 +259,8 @@ void register_core_singletons() {
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry", _Geometry::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry2D", _Geometry2D::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", _Geometry3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
@@ -265,7 +274,6 @@ void register_core_singletons() {
 }
 
 void unregister_core_types() {
-
 	memdelete(_resource_loader);
 	memdelete(_resource_saver);
 	memdelete(_os);
@@ -274,7 +282,8 @@ void unregister_core_types() {
 	memdelete(_marshalls);
 	memdelete(_json);
 
-	memdelete(_geometry);
+	memdelete(_geometry_2d);
+	memdelete(_geometry_3d);
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();
@@ -296,8 +305,9 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
 	resource_format_loader_crypto.unref();
 
-	if (ip)
+	if (ip) {
 		memdelete(ip);
+	}
 
 	ResourceLoader::finalize();
 
@@ -311,11 +321,4 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	if (_global_mutex) {
-		memdelete(_global_mutex);
-		_global_mutex = NULL; //still needed at a few places
-	};
-
-	MemoryPool::cleanup();
 }

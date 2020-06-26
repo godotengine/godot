@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,6 @@ public:
 };
 
 class EditorProperty : public Container {
-
 	GDCLASS(EditorProperty, Container);
 
 private:
@@ -64,6 +63,7 @@ private:
 	bool checked;
 	bool draw_red;
 	bool keying;
+	bool deletable;
 
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
@@ -74,6 +74,8 @@ private:
 	bool revert_hover;
 	Rect2 check_rect;
 	bool check_hover;
+	Rect2 delete_rect;
+	bool delete_hover;
 
 	bool can_revert;
 
@@ -133,6 +135,8 @@ public:
 	void set_keying(bool p_keying);
 	bool is_keying() const;
 
+	void set_deletable(bool p_enable);
+	bool is_deletable() const;
 	void add_focusable(Control *p_control);
 	void select(int p_focusable = -1);
 	void deselect();
@@ -190,7 +194,7 @@ public:
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
 	virtual void parse_category(Object *p_object, const String &p_parse_category);
-	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
+	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false);
 	virtual void parse_end();
 };
 
@@ -198,7 +202,7 @@ class EditorInspectorCategory : public Control {
 	GDCLASS(EditorInspectorCategory, Control);
 
 	friend class EditorInspector;
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
 	String label;
 	Color bg_color;
 	mutable String tooltip_text;
@@ -261,7 +265,7 @@ class EditorInspector : public ScrollContainer {
 	VBoxContainer *main_vbox;
 
 	//map use to cache the instanced editors
-	Map<StringName, List<EditorProperty *> > editor_property_map;
+	Map<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
 	Set<StringName> pending;
 
@@ -283,6 +287,8 @@ class EditorInspector : public ScrollContainer {
 	bool read_only;
 	bool keying;
 	bool sub_inspector;
+	bool wide_editors;
+	bool deletable_properties;
 
 	float refresh_countdown;
 	bool update_tree_pending;
@@ -291,7 +297,7 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String> > descr_cache;
+	Map<StringName, Map<StringName, String>> descr_cache;
 	Map<StringName, String> class_descr_cache;
 	Set<StringName> restart_request_props;
 
@@ -302,11 +308,12 @@ class EditorInspector : public ScrollContainer {
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
-	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool changing = false);
+	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _property_changed_update_all(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
+	void _property_deleted(const String &p_path);
 
 	void _property_checked(const String &p_path, bool p_checked);
 
@@ -337,7 +344,7 @@ public:
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
 
-	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
+	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false);
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 
@@ -380,7 +387,10 @@ public:
 	void set_object_class(const String &p_class);
 	String get_object_class() const;
 
+	void set_use_wide_editors(bool p_enable);
 	void set_sub_inspector(bool p_enable);
+
+	void set_use_deletable_properties(bool p_enabled);
 
 	EditorInspector();
 };

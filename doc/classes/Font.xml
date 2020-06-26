@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Font" inherits="Resource" category="Core" version="3.2">
+<class name="Font" inherits="Resource" version="4.0">
 	<brief_description>
 		Internationalized font and text drawing support.
 	</brief_description>
@@ -54,6 +54,17 @@
 				Returns the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
+		<method name="get_char_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<argument index="1" name="next" type="int" default="0">
+			</argument>
+			<description>
+				Returns the size of a character, optionally taking kerning into account if the next character is provided.
+			</description>
+		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float">
 			</return>
@@ -85,12 +96,14 @@
 			<argument index="1" name="width" type="float">
 			</argument>
 			<description>
+				Returns the size that the string would have with word wrapping enabled with a fixed [code]width[/code].
 			</description>
 		</method>
 		<method name="has_outline" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the font has an outline.
 			</description>
 		</method>
 		<method name="is_distance_field_hint" qualifiers="const">

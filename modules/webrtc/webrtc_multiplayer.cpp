@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,12 +65,13 @@ bool WebRTCMultiplayer::is_server() const {
 }
 
 void WebRTCMultiplayer::poll() {
-	if (peer_map.size() == 0)
+	if (peer_map.size() == 0) {
 		return;
+	}
 
 	List<int> remove;
 	List<int> add;
-	for (Map<int, Ref<ConnectedPeer> >::Element *E = peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.front(); E; E = E->next()) {
 		Ref<ConnectedPeer> peer = E->get();
 		peer->connection->poll();
 		// Check peer state
@@ -89,7 +90,7 @@ void WebRTCMultiplayer::poll() {
 		}
 		// Check channels state
 		int ready = 0;
-		for (List<Ref<WebRTCDataChannel> >::Element *C = peer->channels.front(); C && C->get().is_valid(); C = C->next()) {
+		for (List<Ref<WebRTCDataChannel>>::Element *C = peer->channels.front(); C && C->get().is_valid(); C = C->next()) {
 			Ref<WebRTCDataChannel> ch = C->get();
 			switch (ch->get_ready_state()) {
 				case WebRTCDataChannel::STATE_CONNECTING:
@@ -113,15 +114,17 @@ void WebRTCMultiplayer::poll() {
 	// Remove disconnected peers
 	for (List<int>::Element *E = remove.front(); E; E = E->next()) {
 		remove_peer(E->get());
-		if (next_packet_peer == E->get())
+		if (next_packet_peer == E->get()) {
 			next_packet_peer = 0;
+		}
 	}
 	// Signal newly connected peers
 	for (List<int>::Element *E = add.front(); E; E = E->next()) {
 		// Already connected to server: simply notify new peer.
 		// NOTE: Mesh is always connected.
-		if (connection_status == CONNECTION_CONNECTED)
+		if (connection_status == CONNECTION_CONNECTED) {
 			emit_signal("peer_connected", E->get());
+		}
 
 		// Server emulation mode suppresses peer_conencted until server connects.
 		if (server_compat && E->get() == TARGET_PEER_SERVER) {
@@ -130,24 +133,28 @@ void WebRTCMultiplayer::poll() {
 			emit_signal("peer_connected", TARGET_PEER_SERVER);
 			emit_signal("connection_succeeded");
 			// Notify of all previously connected peers
-			for (Map<int, Ref<ConnectedPeer> >::Element *F = peer_map.front(); F; F = F->next()) {
-				if (F->key() != 1 && F->get()->connected)
+			for (Map<int, Ref<ConnectedPeer>>::Element *F = peer_map.front(); F; F = F->next()) {
+				if (F->key() != 1 && F->get()->connected) {
 					emit_signal("peer_connected", F->key());
+				}
 			}
 			break; // Because we already notified of all newly added peers.
 		}
 	}
 	// Fetch next packet
-	if (next_packet_peer == 0)
+	if (next_packet_peer == 0) {
 		_find_next_peer();
+	}
 }
 
 void WebRTCMultiplayer::_find_next_peer() {
-	Map<int, Ref<ConnectedPeer> >::Element *E = peer_map.find(next_packet_peer);
-	if (E) E = E->next();
+	Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.find(next_packet_peer);
+	if (E) {
+		E = E->next();
+	}
 	// After last.
 	while (E) {
-		for (List<Ref<WebRTCDataChannel> >::Element *F = E->get()->channels.front(); F; F = F->next()) {
+		for (List<Ref<WebRTCDataChannel>>::Element *F = E->get()->channels.front(); F; F = F->next()) {
 			if (F->get()->get_available_packet_count()) {
 				next_packet_peer = E->key();
 				return;
@@ -158,14 +165,15 @@ void WebRTCMultiplayer::_find_next_peer() {
 	E = peer_map.front();
 	// Before last
 	while (E) {
-		for (List<Ref<WebRTCDataChannel> >::Element *F = E->get()->channels.front(); F; F = F->next()) {
+		for (List<Ref<WebRTCDataChannel>>::Element *F = E->get()->channels.front(); F; F = F->next()) {
 			if (F->get()->get_available_packet_count()) {
 				next_packet_peer = E->key();
 				return;
 			}
 		}
-		if (E->key() == (int)next_packet_peer)
+		if (E->key() == (int)next_packet_peer) {
 			break;
+		}
 		E = E->next();
 	}
 	// No packet found
@@ -190,10 +198,11 @@ Error WebRTCMultiplayer::initialize(int p_self_id, bool p_server_compat) {
 	server_compat = p_server_compat;
 
 	// Mesh and server are always connected
-	if (!server_compat || p_self_id == 1)
+	if (!server_compat || p_self_id == 1) {
 		connection_status = CONNECTION_CONNECTED;
-	else
+	} else {
 		connection_status = CONNECTION_CONNECTING;
+	}
 	return OK;
 }
 
@@ -204,7 +213,7 @@ int WebRTCMultiplayer::get_unique_id() const {
 
 void WebRTCMultiplayer::_peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict) {
 	Array channels;
-	for (List<Ref<WebRTCDataChannel> >::Element *F = p_connected_peer->channels.front(); F; F = F->next()) {
+	for (List<Ref<WebRTCDataChannel>>::Element *F = p_connected_peer->channels.front(); F; F = F->next()) {
 		channels.push_back(F->get());
 	}
 	r_dict["connection"] = p_connected_peer->connection;
@@ -225,7 +234,7 @@ Dictionary WebRTCMultiplayer::get_peer(int p_peer_id) {
 
 Dictionary WebRTCMultiplayer::get_peers() {
 	Dictionary out;
-	for (Map<int, Ref<ConnectedPeer> >::Element *E = peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.front(); E; E = E->next()) {
 		Dictionary d;
 		_peer_to_dict(E->get(), d);
 		out[E->key()] = d;
@@ -288,7 +297,7 @@ Error WebRTCMultiplayer::get_packet(const uint8_t **r_buffer, int &r_buffer_size
 		_find_next_peer();
 		ERR_FAIL_V(ERR_UNAVAILABLE);
 	}
-	for (List<Ref<WebRTCDataChannel> >::Element *E = peer_map[next_packet_peer]->channels.front(); E; E = E->next()) {
+	for (List<Ref<WebRTCDataChannel>>::Element *E = peer_map[next_packet_peer]->channels.front(); E; E = E->next()) {
 		if (E->get()->get_available_packet_count()) {
 			Error err = E->get()->get_packet(r_buffer, r_buffer_size);
 			_find_next_peer();
@@ -316,10 +325,9 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 			break;
 	}
 
-	Map<int, Ref<ConnectedPeer> >::Element *E = NULL;
+	Map<int, Ref<ConnectedPeer>>::Element *E = nullptr;
 
 	if (target_peer > 0) {
-
 		E = peer_map.find(target_peer);
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
@@ -330,11 +338,11 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 	} else {
 		int exclude = -target_peer;
 
-		for (Map<int, Ref<ConnectedPeer> >::Element *F = peer_map.front(); F; F = F->next()) {
-
+		for (Map<int, Ref<ConnectedPeer>>::Element *F = peer_map.front(); F; F = F->next()) {
 			// Exclude packet. If target_peer == 0 then don't exclude any packets
-			if (target_peer != 0 && F->key() == exclude)
+			if (target_peer != 0 && F->key() == exclude) {
 				continue;
+			}
 
 			ERR_CONTINUE(F->value()->channels.size() <= ch || !F->value()->channels[ch].is_valid());
 			F->value()->channels[ch]->put_packet(p_buffer, p_buffer_size);
@@ -344,11 +352,12 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 }
 
 int WebRTCMultiplayer::get_available_packet_count() const {
-	if (next_packet_peer == 0)
+	if (next_packet_peer == 0) {
 		return 0; // To be sure next call to get_packet works if size > 0 .
+	}
 	int size = 0;
-	for (Map<int, Ref<ConnectedPeer> >::Element *E = peer_map.front(); E; E = E->next()) {
-		for (List<Ref<WebRTCDataChannel> >::Element *F = E->get()->channels.front(); F; F = F->next()) {
+	for (Map<int, Ref<ConnectedPeer>>::Element *E = peer_map.front(); E; E = E->next()) {
+		for (List<Ref<WebRTCDataChannel>>::Element *F = E->get()->channels.front(); F; F = F->next()) {
 			size += F->get()->get_available_packet_count();
 		}
 	}
@@ -371,6 +380,7 @@ WebRTCMultiplayer::WebRTCMultiplayer() {
 	unique_id = 0;
 	next_packet_peer = 0;
 	target_peer = 0;
+	client_count = 0;
 	transfer_mode = TRANSFER_MODE_RELIABLE;
 	refuse_connections = false;
 	connection_status = CONNECTION_DISCONNECTED;

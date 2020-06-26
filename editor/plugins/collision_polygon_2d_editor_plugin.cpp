@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,16 @@
 #include "collision_polygon_2d_editor_plugin.h"
 
 Node2D *CollisionPolygon2DEditor::_get_node() const {
-
 	return node;
 }
 
 void CollisionPolygon2DEditor::_set_node(Node *p_polygon) {
-
 	node = Object::cast_to<CollisionPolygon2D>(p_polygon);
 }
 
 CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
-	node = NULL;
+	node = nullptr;
 }
 
 CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node) :

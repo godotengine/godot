@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,6 @@
 class SyntaxHighlighter;
 
 class TextEdit : public Control {
-
 	GDCLASS(TextEdit, Control);
 
 public:
@@ -48,7 +47,6 @@ public:
 	};
 
 	struct ColorRegion {
-
 		Color color;
 		String begin_key;
 		String end_key;
@@ -66,9 +64,12 @@ public:
 	class Text {
 	public:
 		struct ColorRegionInfo {
-
 			int region;
 			bool end;
+			ColorRegionInfo() {
+				region = 0;
+				end = false;
+			}
 		};
 
 		struct Line {
@@ -81,9 +82,19 @@ public:
 			bool has_info : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
-			Ref<Texture> info_icon;
+			Ref<Texture2D> info_icon;
 			String info;
 			String data;
+			Line() {
+				width_cache = 0;
+				marked = false;
+				breakpoint = false;
+				bookmark = false;
+				hidden = false;
+				safe = false;
+				has_info = false;
+				wrap_amount_cache = 0;
+			}
 		};
 
 	private:
@@ -115,7 +126,7 @@ public:
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
-		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+		void set_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
 			if (p_icon.is_null()) {
 				text.write[p_line].has_info = false;
 				return;
@@ -125,7 +136,7 @@ public:
 			text.write[p_line].has_info = true;
 		}
 		bool has_info_icon(int p_line) const { return text[p_line].has_info; }
-		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
+		const Ref<Texture2D> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
 		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
@@ -143,10 +154,17 @@ private:
 		int last_fit_x;
 		int line, column; ///< cursor
 		int x_ofs, line_ofs, wrap_ofs;
+		Cursor() {
+			last_fit_x = 0;
+			line = 0;
+			column = 0; ///< cursor
+			x_ofs = 0;
+			line_ofs = 0;
+			wrap_ofs = 0;
+		}
 	} cursor;
 
 	struct Selection {
-
 		enum Mode {
 
 			MODE_NONE,
@@ -167,17 +185,30 @@ private:
 		int to_line, to_column;
 
 		bool shiftclick_left;
-
+		Selection() {
+			selecting_mode = MODE_NONE;
+			selecting_line = 0;
+			selecting_column = 0;
+			selected_word_beg = 0;
+			selected_word_end = 0;
+			selected_word_origin = 0;
+			selecting_text = false;
+			active = false;
+			from_line = 0;
+			from_column = 0;
+			to_line = 0;
+			to_column = 0;
+			shiftclick_left = false;
+		}
 	} selection;
 
 	struct Cache {
-
-		Ref<Texture> tab_icon;
-		Ref<Texture> space_icon;
-		Ref<Texture> can_fold_icon;
-		Ref<Texture> folded_icon;
-		Ref<Texture> folded_eol_icon;
-		Ref<Texture> executing_icon;
+		Ref<Texture2D> tab_icon;
+		Ref<Texture2D> space_icon;
+		Ref<Texture2D> can_fold_icon;
+		Ref<Texture2D> folded_icon;
+		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> executing_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
@@ -219,13 +250,21 @@ private:
 		int fold_gutter_width;
 		int info_gutter_width;
 		int minimap_width;
+		Cache() {
+			row_height = 0;
+			line_spacing = 0;
+			line_number_w = 0;
+			breakpoint_gutter_width = 0;
+			fold_gutter_width = 0;
+			info_gutter_width = 0;
+			minimap_width = 0;
+		}
 	} cache;
 
 	Map<int, int> color_region_cache;
-	Map<int, Map<int, HighlighterInfo> > syntax_highlighting_cache;
+	Map<int, Map<int, HighlighterInfo>> syntax_highlighting_cache;
 
 	struct TextOperation {
-
 		enum Type {
 			TYPE_NONE,
 			TYPE_INSERT,
@@ -240,6 +279,17 @@ private:
 		uint32_t version;
 		bool chain_forward;
 		bool chain_backward;
+		TextOperation() {
+			type = TYPE_NONE;
+			from_line = 0;
+			from_column = 0;
+			to_line = 0;
+			to_column = 0;
+			prev_version = 0;
+			version = 0;
+			chain_forward = false;
+			chain_backward = false;
+		}
 	};
 
 	String ime_text;
@@ -249,6 +299,7 @@ private:
 
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos;
+	int undo_stack_max_size;
 
 	void _clear_redo();
 	void _do_text_op(const TextOperation &p_op, bool p_reverse);
@@ -312,8 +363,9 @@ private:
 	bool undo_enabled;
 	bool line_numbers;
 	bool line_numbers_zero_padded;
-	bool line_length_guideline;
-	int line_length_guideline_col;
+	bool line_length_guidelines;
+	int line_length_guideline_soft_col;
+	int line_length_guideline_hard_col;
 	bool draw_bookmark_gutter;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
@@ -456,7 +508,7 @@ private:
 
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column);
 
-	PoolVector<int> _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
+	Dictionary _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
 
 	PopupMenu *menu;
 
@@ -472,7 +524,7 @@ private:
 protected:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
-	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = NULL, int *r_end_char = NULL);
+	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void _insert_text_at_cursor(const String &p_text);
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
@@ -509,11 +561,6 @@ public:
 		SEARCH_BACKWARDS = 4
 	};
 
-	enum SearchResult {
-		SEARCH_RESULT_COLUMN,
-		SEARCH_RESULT_LINE,
-	};
-
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
@@ -527,6 +574,7 @@ public:
 
 	bool is_insert_text_operation();
 
+	void set_highlighted_word(const String &new_word);
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
@@ -546,7 +594,7 @@ public:
 	Array get_breakpoints_array() const;
 	void remove_breakpoints();
 
-	void set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info = "");
+	void set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info = "");
 	void clear_info_icons();
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
@@ -708,8 +756,9 @@ public:
 
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 
-	void set_show_line_length_guideline(bool p_show);
-	void set_line_length_guideline_column(int p_column);
+	void set_show_line_length_guidelines(bool p_show);
+	void set_line_length_guideline_soft_column(int p_column);
+	void set_line_length_guideline_hard_column(int p_column);
 
 	void set_bookmark_gutter_enabled(bool p_draw);
 	bool is_bookmark_gutter_enabled() const;
@@ -772,7 +821,6 @@ public:
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
-VARIANT_ENUM_CAST(TextEdit::SearchResult);
 
 class SyntaxHighlighter {
 protected:

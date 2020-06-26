@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class Light2D : public Node2D {
-
 	GDCLASS(Light2D, Node2D);
 
 public:
@@ -47,11 +46,9 @@ public:
 
 	enum ShadowFilter {
 		SHADOW_FILTER_NONE,
-		SHADOW_FILTER_PCF3,
 		SHADOW_FILTER_PCF5,
-		SHADOW_FILTER_PCF7,
-		SHADOW_FILTER_PCF9,
 		SHADOW_FILTER_PCF13,
+		SHADOW_FILTER_MAX
 	};
 
 private:
@@ -72,9 +69,8 @@ private:
 	int item_shadow_mask;
 	int shadow_buffer_size;
 	float shadow_smooth;
-	float shadow_gradient_length;
 	Mode mode;
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 	Vector2 texture_offset;
 	ShadowFilter shadow_filter;
 
@@ -85,6 +81,7 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -93,6 +90,7 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+#endif
 
 	virtual Rect2 get_anchorable_rect() const;
 
@@ -102,8 +100,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;
@@ -146,9 +144,6 @@ public:
 
 	void set_shadow_buffer_size(int p_size);
 	int get_shadow_buffer_size() const;
-
-	void set_shadow_gradient_length(float p_multiplier);
-	float get_shadow_gradient_length() const;
 
 	void set_shadow_filter(ShadowFilter p_filter);
 	ShadowFilter get_shadow_filter() const;

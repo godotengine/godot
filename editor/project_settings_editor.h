@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,23 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_SETTINGS_H
-#define PROJECT_SETTINGS_H
+#ifndef PROJECT_SETTINGS_EDITOR_H
+#define PROJECT_SETTINGS_EDITOR_H
 
 #include "core/undo_redo.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/shader_globals_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
-
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	enum InputType {
 		INPUT_KEY,
+		INPUT_KEY_PHYSICAL,
 		INPUT_JOY_BUTTON,
 		INPUT_JOY_MOTION,
 		INPUT_MOUSE_BUTTON
@@ -77,12 +78,14 @@ class ProjectSettingsEditor : public AcceptDialog {
 	OptionButton *type;
 	PopupMenu *popup_add;
 	ConfirmationDialog *press_a_key;
+	bool press_a_key_physical;
 	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
 	OptionButton *device_id;
 	OptionButton *device_index;
 	Label *device_index_label;
 	MenuButton *popup_copy_to_feature;
+	ShaderGlobalsEditor *shaders_global_variables_editor;
 
 	LineEdit *action_name;
 	Button *action_add;
@@ -117,7 +120,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _item_del();
 	void _update_actions();
 	void _save();
-	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = NULL);
+	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = Ref<InputEvent>());
 	void _edit_item(Ref<InputEvent> p_exiting_event);
 
 	void _action_check(String p_action);
@@ -171,7 +174,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Label *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
-	ToolButton *restart_close_button;
+	Button *restart_close_button;
 
 	void _editor_restart_request();
 	void _editor_restart();
@@ -202,4 +205,4 @@ public:
 	ProjectSettingsEditor(EditorData *p_data);
 };
 
-#endif // PROJECT_SETTINGS_H
+#endif // PROJECT_SETTINGS_EDITOR_H

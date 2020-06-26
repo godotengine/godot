@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 		len = BUFFER_SIZE; // Output is too big, will be truncated
 	buf[len] = 0;
 
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
+	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
 	if (wlen < 0)
 		return;
 
@@ -81,70 +81,73 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 #ifndef UWP_ENABLED
 	} else {
-
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
 
-		WORD current_fg = sbi.wAttributes & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 		WORD current_bg = sbi.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
 
 		uint32_t basecol = 0;
 		switch (p_type) {
-			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
-			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
+			case ERR_ERROR:
+				basecol = FOREGROUND_RED;
+				break;
+			case ERR_WARNING:
+				basecol = FOREGROUND_RED | FOREGROUND_GREEN;
+				break;
+			case ERR_SCRIPT:
+				basecol = FOREGROUND_RED | FOREGROUND_BLUE;
+				break;
+			case ERR_SHADER:
+				basecol = FOREGROUND_GREEN | FOREGROUND_BLUE;
+				break;
 		}
 
 		basecol |= current_bg;
 
+		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
+		switch (p_type) {
+			case ERR_ERROR:
+				logf("ERROR:");
+				break;
+			case ERR_WARNING:
+				logf("WARNING:");
+				break;
+			case ERR_SCRIPT:
+				logf("SCRIPT ERROR:");
+				break;
+			case ERR_SHADER:
+				logf("SHADER ERROR:");
+				break;
+		}
+
+		SetConsoleTextAttribute(hCon, basecol);
 		if (p_rationale && p_rationale[0]) {
-
-			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-			switch (p_type) {
-				case ERR_ERROR: logf("ERROR: "); break;
-				case ERR_WARNING: logf("WARNING: "); break;
-				case ERR_SCRIPT: logf("SCRIPT ERROR: "); break;
-				case ERR_SHADER: logf("SHADER ERROR: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
-			logf("%s\n", p_rationale);
-
-			SetConsoleTextAttribute(hCon, basecol);
-			switch (p_type) {
-				case ERR_ERROR: logf("   At: "); break;
-				case ERR_WARNING: logf("     At: "); break;
-				case ERR_SCRIPT: logf("          At: "); break;
-				case ERR_SHADER: logf("          At: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg);
-			logf("%s:%i\n", p_file, p_line);
-
+			logf(" %s\n", p_rationale);
 		} else {
+			logf(" %s\n", p_code);
+		}
 
-			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-			switch (p_type) {
-				case ERR_ERROR: logf("ERROR: %s: ", p_function); break;
-				case ERR_WARNING: logf("WARNING: %s: ", p_function); break;
-				case ERR_SCRIPT: logf("SCRIPT ERROR: %s: ", p_function); break;
-				case ERR_SHADER: logf("SCRIPT ERROR: %s: ", p_function); break;
-			}
+		// `FOREGROUND_INTENSITY` alone results in gray text.
+		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
+		switch (p_type) {
+			case ERR_ERROR:
+				logf("   at: ");
+				break;
+			case ERR_WARNING:
+				logf("     at: ");
+				break;
+			case ERR_SCRIPT:
+				logf("          at: ");
+				break;
+			case ERR_SHADER:
+				logf("          at: ");
+				break;
+		}
 
-			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
-			logf("%s\n", p_code);
-
-			SetConsoleTextAttribute(hCon, basecol);
-			switch (p_type) {
-				case ERR_ERROR: logf("   At: "); break;
-				case ERR_WARNING: logf("     At: "); break;
-				case ERR_SCRIPT: logf("          At: "); break;
-				case ERR_SHADER: logf("          At: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg);
-			logf("%s:%i\n", p_file, p_line);
+		if (p_rationale && p_rationale[0]) {
+			logf("(%s:%i)\n", p_file, p_line);
+		} else {
+			logf("%s (%s:%i)\n", p_function, p_file, p_line);
 		}
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);

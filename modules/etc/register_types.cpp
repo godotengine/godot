@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 static Ref<ResourceFormatPKM> resource_loader_pkm;
 
 void register_etc_types() {
-
 	resource_loader_pkm.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_pkm);
 
@@ -44,7 +43,6 @@ void register_etc_types() {
 }
 
 void unregister_etc_types() {
-
 	ResourceLoader::remove_resource_format_loader(resource_loader_pkm);
 	resource_loader_pkm.unref();
 }

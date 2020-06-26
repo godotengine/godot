@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputMap" inherits="Object" category="Core" version="3.2">
+<class name="InputMap" inherits="Object" version="4.0">
 	<brief_description>
 		Singleton that manages [InputEventAction].
 	</brief_description>
@@ -13,7 +13,7 @@
 		<method name="action_add_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -24,7 +24,7 @@
 		<method name="action_erase_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -35,16 +35,25 @@
 		<method name="action_erase_events">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Removes all events from an action.
 			</description>
 		</method>
+		<method name="action_get_events">
+			<return type="Array">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns an array of [InputEvent]s associated with a given action.
+			</description>
+		</method>
 		<method name="action_has_event">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -55,17 +64,18 @@
 		<method name="action_set_deadzone">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="deadzone" type="float">
 			</argument>
 			<description>
+				Sets a deadzone value for the action.
 			</description>
 		</method>
 		<method name="add_action">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="deadzone" type="float" default="0.5">
 			</argument>
@@ -77,7 +87,7 @@
 		<method name="erase_action">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Removes an action from the [InputMap].
@@ -88,19 +98,10 @@
 			</return>
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
-			<argument index="1" name="action" type="String">
+			<argument index="1" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
-			</description>
-		</method>
-		<method name="get_action_list">
-			<return type="Array">
-			</return>
-			<argument index="0" name="action" type="String">
-			</argument>
-			<description>
-				Returns an array of [InputEvent]s associated with a given action.
 			</description>
 		</method>
 		<method name="get_actions">
@@ -113,7 +114,7 @@
 		<method name="has_action" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.

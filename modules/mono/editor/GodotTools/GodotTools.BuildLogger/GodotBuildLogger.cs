@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Security;
 using Microsoft.Build.Framework;
-using GodotTools.Core;
 
 namespace GodotTools.BuildLogger
 {
@@ -18,7 +17,7 @@ namespace GodotTools.BuildLogger
             if (null == Parameters)
                 throw new LoggerException("Log directory was not set.");
 
-            var parameters = Parameters.Split(new[] {';'});
+            var parameters = Parameters.Split(new[] { ';' });
 
             string logDir = parameters[0];
 
@@ -182,5 +181,18 @@ namespace GodotTools.BuildLogger
         private StreamWriter logStreamWriter;
         private StreamWriter issuesStreamWriter;
         private int indent;
+    }
+
+    internal static class StringExtensions
+    {
+        public static string CsvEscape(this string value, char delimiter = ',')
+        {
+            bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
+
+            if (hasSpecialChar)
+                return "\"" + value.Replace("\"", "\"\"") + "\"";
+
+            return value;
+        }
     }
 }

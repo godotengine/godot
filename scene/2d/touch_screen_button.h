@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,6 @@
 #include "scene/resources/texture.h"
 
 class TouchScreenButton : public Node2D {
-
 	GDCLASS(TouchScreenButton, Node2D);
 
 public:
@@ -47,8 +46,8 @@ public:
 	};
 
 private:
-	Ref<Texture> texture;
-	Ref<Texture> texture_pressed;
+	Ref<Texture2D> texture;
+	Ref<Texture2D> texture_pressed;
 	Ref<BitMap> bitmask;
 	Ref<Shape2D> shape;
 	bool shape_centered;
@@ -74,11 +73,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
+#endif
 
-	void set_texture_pressed(const Ref<Texture> &p_texture_pressed);
-	Ref<Texture> get_texture_pressed() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
+
+	void set_texture_pressed(const Ref<Texture2D> &p_texture_pressed);
+	Ref<Texture2D> get_texture_pressed() const;
 
 	void set_bitmask(const Ref<BitMap> &p_bitmask);
 	Ref<BitMap> get_bitmask() const;
@@ -103,8 +107,6 @@ public:
 
 	bool is_pressed() const;
 
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
 	virtual Rect2 get_anchorable_rect() const;
 
 	TouchScreenButton();

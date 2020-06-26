@@ -13,9 +13,9 @@ namespace GodotTools.Internals
             public string Name { get; }
             public string Namespace { get; }
             public bool Nested { get; }
-            public int BaseCount { get; }
+            public long BaseCount { get; }
 
-            public ClassDecl(string name, string @namespace, bool nested, int baseCount)
+            public ClassDecl(string name, string @namespace, bool nested, long baseCount)
             {
                 Name = name;
                 Namespace = @namespace;
@@ -25,28 +25,33 @@ namespace GodotTools.Internals
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern Error internal_ParseFile(string filePath, Array<Dictionary> classes);
+        private static extern Error internal_ParseFile(string filePath, Array<Dictionary> classes, out string errorStr);
 
-        public static void ParseFileOrThrow(string filePath, out IEnumerable<ClassDecl> classes)
+        public static Error ParseFile(string filePath, out IEnumerable<ClassDecl> classes, out string errorStr)
         {
             var classesArray = new Array<Dictionary>();
-            var error = internal_ParseFile(filePath, classesArray);
+            var error = internal_ParseFile(filePath, classesArray, out errorStr);
             if (error != Error.Ok)
-                throw new Exception($"Failed to determine namespace and class for script: {filePath}. Parse error: {error}");
+            {
+                classes = null;
+                return error;
+            }
 
             var classesList = new List<ClassDecl>();
 
             foreach (var classDeclDict in classesArray)
             {
                 classesList.Add(new ClassDecl(
-                    (string) classDeclDict["name"],
-                    (string) classDeclDict["namespace"],
-                    (bool) classDeclDict["nested"],
-                    (int) classDeclDict["base_count"]
+                    (string)classDeclDict["name"],
+                    (string)classDeclDict["namespace"],
+                    (bool)classDeclDict["nested"],
+                    (long)classDeclDict["base_count"]
                 ));
             }
 
             classes = classesList;
+
+            return Error.Ok;
         }
     }
 }

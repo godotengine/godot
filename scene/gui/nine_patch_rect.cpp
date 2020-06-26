@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,13 @@
 
 #include "nine_patch_rect.h"
 
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 void NinePatchRect::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
-
-		if (texture.is_null())
+		if (texture.is_null()) {
 			return;
+		}
 
 		Rect2 rect = Rect2(Point2(), get_size());
 		Rect2 src_rect = region_rect;
@@ -45,16 +44,15 @@ void NinePatchRect::_notification(int p_what) {
 		texture->get_rect_region(rect, src_rect, rect, src_rect);
 
 		RID ci = get_canvas_item();
-		VS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center);
+		RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
 	}
 }
 
 Size2 NinePatchRect::get_minimum_size() const {
-
 	return Size2(margin[MARGIN_LEFT] + margin[MARGIN_RIGHT], margin[MARGIN_TOP] + margin[MARGIN_BOTTOM]);
 }
-void NinePatchRect::_bind_methods() {
 
+void NinePatchRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &NinePatchRect::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &NinePatchRect::get_texture);
 	ClassDB::bind_method(D_METHOD("set_patch_margin", "margin", "value"), &NinePatchRect::set_patch_margin);
@@ -70,7 +68,7 @@ void NinePatchRect::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
@@ -88,10 +86,10 @@ void NinePatchRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
-void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
-
-	if (texture == p_tex)
+void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
+	if (texture == p_tex) {
 		return;
+	}
 	texture = p_tex;
 	update();
 	/*
@@ -103,13 +101,11 @@ void NinePatchRect::set_texture(const Ref<Texture> &p_tex) {
 	_change_notify("texture");
 }
 
-Ref<Texture> NinePatchRect::get_texture() const {
-
+Ref<Texture2D> NinePatchRect::get_texture() const {
 	return texture;
 }
 
 void NinePatchRect::set_patch_margin(Margin p_margin, int p_size) {
-
 	ERR_FAIL_INDEX((int)p_margin, 4);
 	margin[p_margin] = p_size;
 	update();
@@ -131,15 +127,14 @@ void NinePatchRect::set_patch_margin(Margin p_margin, int p_size) {
 }
 
 int NinePatchRect::get_patch_margin(Margin p_margin) const {
-
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 	return margin[p_margin];
 }
 
 void NinePatchRect::set_region_rect(const Rect2 &p_region_rect) {
-
-	if (region_rect == p_region_rect)
+	if (region_rect == p_region_rect) {
 		return;
+	}
 
 	region_rect = p_region_rect;
 
@@ -148,18 +143,15 @@ void NinePatchRect::set_region_rect(const Rect2 &p_region_rect) {
 }
 
 Rect2 NinePatchRect::get_region_rect() const {
-
 	return region_rect;
 }
 
 void NinePatchRect::set_draw_center(bool p_enabled) {
-
 	draw_center = p_enabled;
 	update();
 }
 
 bool NinePatchRect::is_draw_center_enabled() const {
-
 	return draw_center;
 }
 
@@ -173,18 +165,15 @@ NinePatchRect::AxisStretchMode NinePatchRect::get_h_axis_stretch_mode() const {
 }
 
 void NinePatchRect::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
-
 	axis_v = p_mode;
 	update();
 }
 
 NinePatchRect::AxisStretchMode NinePatchRect::get_v_axis_stretch_mode() const {
-
 	return axis_v;
 }
 
 NinePatchRect::NinePatchRect() {
-
 	margin[MARGIN_LEFT] = 0;
 	margin[MARGIN_RIGHT] = 0;
 	margin[MARGIN_BOTTOM] = 0;

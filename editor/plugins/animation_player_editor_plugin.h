@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@ class AnimationTrackEditor;
 class AnimationPlayerEditorPlugin;
 
 class AnimationPlayerEditor : public VBoxContainer {
-
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
 	EditorNode *editor;
@@ -97,25 +96,23 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *autoplay;
 
 	MenuButton *tool_anim;
-	ToolButton *onion_toggle;
+	Button *onion_toggle;
 	MenuButton *onion_skinning;
-	ToolButton *pin;
+	Button *pin;
 	SpinBox *frame;
 	LineEdit *scale;
 	LineEdit *name;
 	Label *name_title;
 	UndoRedo *undo_redo;
-	Ref<Texture> autoplay_icon;
+	Ref<Texture2D> autoplay_icon;
 	bool last_active;
 	float timeline_position;
 
 	EditorFileDialog *file;
-	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
 	int current_option;
 
 	struct BlendEditor {
-
 		AcceptDialog *dialog;
 		Tree *tree;
 		OptionButton *next;
@@ -210,6 +207,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _allocate_onion_layers();
 	void _free_onion_layers();
 	void _prepare_onion_layers_1();
+	void _prepare_onion_layers_1_deferred();
 	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
@@ -244,7 +242,6 @@ public:
 };
 
 class AnimationPlayerEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AnimationPlayerEditorPlugin, EditorPlugin);
 
 	AnimationPlayerEditor *anim_editor;

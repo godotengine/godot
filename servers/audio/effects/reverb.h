@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,48 +57,35 @@ private:
 	static const float allpass_tunings[MAX_ALLPASS];
 
 	struct Comb {
+		int size = 0;
+		float *buffer = nullptr;
+		float feedback = 0;
+		float damp = 0; //lowpass
+		float damp_h = 0; //history
+		int pos = 0;
+		int extra_spread_frames = 0;
 
-		int size;
-		float *buffer;
-		float feedback;
-		float damp; //lowpass
-		float damp_h; //history
-		int pos;
-		int extra_spread_frames;
-
-		Comb() {
-			size = 0;
-			buffer = 0;
-			feedback = 0;
-			damp_h = 0;
-			pos = 0;
-		}
+		Comb() {}
 	};
 
 	struct AllPass {
-
-		int size;
-		float *buffer;
-		int pos;
-		int extra_spread_frames;
-		AllPass() {
-			size = 0;
-			buffer = 0;
-			pos = 0;
-		}
+		int size = 0;
+		float *buffer = nullptr;
+		int pos = 0;
+		int extra_spread_frames = 0;
+		AllPass() {}
 	};
 
 	Comb comb[MAX_COMBS];
 	AllPass allpass[MAX_ALLPASS];
 	float *input_buffer;
-	float *echo_buffer;
+	float *echo_buffer = nullptr;
 	int echo_buffer_size;
 	int echo_buffer_pos;
 
-	float hpf_h1, hpf_h2;
+	float hpf_h1, hpf_h2 = 0;
 
 	struct Parameters {
-
 		float room_size;
 		float damp;
 		float wet;

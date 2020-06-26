@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,14 @@
 
 #include "os_iphone.h"
 
+#include "core/project_settings.h"
+
 extern "C" {
 
 int add_path(int, char **);
 int add_cmdline(int, char **);
 
 int add_path(int p_argc, char **p_args) {
-
 	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
 	if (!str)
 		return p_argc;
@@ -52,13 +53,11 @@ int add_path(int p_argc, char **p_args) {
 };
 
 int add_cmdline(int p_argc, char **p_args) {
-
 	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
 	if (!arr)
 		return p_argc;
 
 	for (int i = 0; i < [arr count]; i++) {
-
 		NSString *str = [arr objectAtIndex:i];
 		if (!str)
 			continue;
@@ -79,7 +78,6 @@ int add_cmdline(int p_argc, char **p_args) {
 @implementation ViewController
 
 - (void)didReceiveMemoryWarning {
-
 	printf("*********** did receive memory warning!\n");
 };
 
@@ -127,6 +125,14 @@ int add_cmdline(int p_argc, char **p_args) {
 
 - (BOOL)prefersStatusBarHidden {
 	return YES;
+}
+
+- (BOOL)prefersHomeIndicatorAutoHidden {
+	if (GLOBAL_GET("display/window/ios/hide_home_indicator")) {
+		return YES;
+	} else {
+		return NO;
+	}
 }
 
 #ifdef GAME_CENTER_ENABLED

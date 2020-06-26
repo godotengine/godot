@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.2">
+<class name="StyleBoxTexture" inherits="StyleBox" version="4.0">
 	<brief_description>
 		Texture-based nine-patch [StyleBox].
 	</brief_description>
@@ -15,6 +15,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the size of the given [code]margin[/code]'s expand margin. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="get_margin_size" qualifiers="const">
@@ -23,6 +24,7 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
+				Returns the size of the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_expand_margin_all">
@@ -31,6 +33,7 @@
 			<argument index="0" name="size" type="float">
 			</argument>
 			<description>
+				Sets the expand margin to [code]size[/code] pixels for all margins.
 			</description>
 		</method>
 		<method name="set_expand_margin_individual">
@@ -45,6 +48,7 @@
 			<argument index="3" name="size_bottom" type="float">
 			</argument>
 			<description>
+				Sets the expand margin for each margin to [code]size_left[/code], [code]size_top[/code], [code]size_right[/code], and [code]size_bottom[/code] pixels.
 			</description>
 		</method>
 		<method name="set_expand_margin_size">
@@ -55,6 +59,7 @@
 			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
+				Sets the expand margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 		<method name="set_margin_size">
@@ -65,15 +70,19 @@
 			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
+				Sets the margin to [code]size[/code] pixels for the given [code]margin[/code]. See [enum Margin] for possible values.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">
+			Controls how the stylebox's texture will be stretched or tiled horizontally. See [enum AxisStretchMode] for possible values.
 		</member>
 		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">
+			Controls how the stylebox's texture will be stretched or tiled vertically. See [enum AxisStretchMode] for possible values.
 		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
+			If [code]true[/code], the nine-patch texture's center tile will be drawn.
 		</member>
 		<member name="expand_margin_bottom" type="float" setter="set_expand_margin_size" getter="get_expand_margin_size" default="0.0">
 			Expands the bottom margin of this style box when drawing, causing it to be drawn larger than requested.
@@ -110,29 +119,34 @@
 		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
 			Modulates the color of the texture when this style box is drawn.
 		</member>
-		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
+		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
 			The normal map to use when drawing this style box.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
-			Species a sub region of the texture to use.
+			Species a sub-region of the texture to use.
 			This is equivalent to first wrapping the texture in an [AtlasTexture] with the same region.
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The texture to use when drawing this style box.
 		</member>
 	</members>
 	<signals>
 		<signal name="texture_changed">
 			<description>
+				Emitted when the stylebox's texture is changed.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
+			Stretch the stylebox's texture. This results in visible distortion unless the texture size matches the stylebox's size perfectly.
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
+			Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system.
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
+			Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system. Unlike [constant AXIS_STRETCH_MODE_TILE], the texture may be slightly stretched to make the nine-patch texture tile seamlessly.
 		</constant>
 	</constants>
 </class>

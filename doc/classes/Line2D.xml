@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Line2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		A 2D line.
 	</brief_description>
@@ -66,14 +66,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
-			Controls the style of the line's first point. Use [code]LINE_CAP_*[/code] constants.
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
+			If [code]true[/code], the line's border will be anti-aliased.
 		</member>
-		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color" default="Color( 0.4, 0.5, 1, 1 )">
+		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
+			Controls the style of the line's first point. Use [enum LineCapMode] constants.
+		</member>
+		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color" default="Color( 1, 1, 1, 1 )">
 			The line's color. Will not be used if a gradient is set.
 		</member>
 		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="Line2D.LineCapMode" default="0">
-			Controls the style of the line's last point. Use [code]LINE_CAP_*[/code] constants.
+			Controls the style of the line's last point. Use [enum LineCapMode] constants.
 		</member>
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 			The gradient is drawn through the whole line from start to finish. The default color will not be used if a gradient is set.
@@ -81,7 +84,7 @@
 		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode" default="0">
 			The style for the points between the start and the end.
 		</member>
-		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array(  )">
+		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array(  )">
 			The points that form the lines. The line is drawn between every point set in this array.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">
@@ -90,11 +93,11 @@
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit" default="2.0">
 			The direction difference in radians between vector points. This value is only used if [code]joint mode[/code] is set to [constant LINE_JOINT_SHARP].
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The texture used for the line's texture. Uses [code]texture_mode[/code] for drawing style.
 		</member>
 		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode" default="0">
-			The style to render the [code]texture[/code] on the line. Use [code]LINE_TEXTURE_*[/code] constants.
+			The style to render the [code]texture[/code] on the line. Use [enum LineTextureMode] constants.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="10.0">
 			The line's width.

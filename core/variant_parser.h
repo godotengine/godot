@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,46 +38,41 @@
 class VariantParser {
 public:
 	struct Stream {
-
 		virtual CharType get_char() = 0;
 		virtual bool is_utf8() const = 0;
 		virtual bool is_eof() const = 0;
 
-		CharType saved;
+		CharType saved = 0;
 
-		Stream() :
-				saved(0) {}
+		Stream() {}
 		virtual ~Stream() {}
 	};
 
 	struct StreamFile : public Stream {
-
-		FileAccess *f;
+		FileAccess *f = nullptr;
 
 		virtual CharType get_char();
 		virtual bool is_utf8() const;
 		virtual bool is_eof() const;
 
-		StreamFile() { f = NULL; }
+		StreamFile() {}
 	};
 
 	struct StreamString : public Stream {
-
 		String s;
-		int pos;
+		int pos = 0;
 
 		virtual CharType get_char();
 		virtual bool is_utf8() const;
 		virtual bool is_eof() const;
 
-		StreamString() { pos = 0; }
+		StreamString() {}
 	};
 
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 
 	struct ResourceParser {
-
-		void *userdata;
+		void *userdata = nullptr;
 		ParseResourceFunc func;
 		ParseResourceFunc ext_func;
 		ParseResourceFunc sub_func;
@@ -92,6 +87,7 @@ public:
 		TK_PARENTHESIS_CLOSE,
 		TK_IDENTIFIER,
 		TK_STRING,
+		TK_STRING_NAME,
 		TK_NUMBER,
 		TK_COLOR,
 		TK_COLON,
@@ -112,13 +108,11 @@ public:
 	};
 
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
 	struct Tag {
-
 		String name;
 		Map<String, Variant> fields;
 	};
@@ -129,17 +123,17 @@ private:
 	template <class T>
 	static Error _parse_construct(Stream *p_stream, Vector<T> &r_construct, int &line, String &r_err_str);
 	static Error _parse_enginecfg(Stream *p_stream, Vector<String> &strings, int &line, String &r_err_str);
-	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = NULL);
-	static Error _parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = NULL);
-	static Error _parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = NULL, bool p_simple_tag = false);
+	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
+	static Error _parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
+	static Error _parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
 
 public:
-	static Error parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = NULL, bool p_simple_tag = false);
-	static Error parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser = NULL, bool p_simple_tag = false);
+	static Error parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
+	static Error parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
 
-	static Error parse_value(Token &token, Variant &value, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = NULL);
+	static Error parse_value(Token &token, Variant &value, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
 	static Error get_token(Stream *p_stream, Token &r_token, int &line, String &r_err_str);
-	static Error parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser = NULL);
+	static Error parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser = nullptr);
 };
 
 class VariantWriter {
@@ -148,7 +142,7 @@ public:
 	typedef String (*EncodeResourceFunc)(void *ud, const RES &p_resource);
 
 	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud);
-	static Error write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func = NULL, void *p_encode_res_ud = NULL);
+	static Error write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr);
 };
 
 #endif // VARIANT_PARSER_H

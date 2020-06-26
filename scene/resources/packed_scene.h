@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "scene/main/node.h"
 
 class SceneState : public Reference {
-
 	GDCLASS(SceneState, Reference);
 
 	Vector<StringName> names;
@@ -54,7 +53,6 @@ class SceneState : public Reference {
 	};
 
 	struct NodeData {
-
 		int parent;
 		int owner;
 		int type;
@@ -63,7 +61,6 @@ class SceneState : public Reference {
 		int index;
 
 		struct Property {
-
 			int name;
 			int value;
 		};
@@ -81,7 +78,6 @@ class SceneState : public Reference {
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
-
 		int from;
 		int to;
 		int signal;
@@ -103,7 +99,7 @@ class SceneState : public Reference {
 
 	static bool disable_placeholders;
 
-	PoolVector<String> _get_node_groups(int p_idx) const;
+	Vector<String> _get_node_groups(int p_idx) const;
 
 	int _find_base_scene_node_remap_key(int p_idx) const;
 
@@ -195,7 +191,6 @@ public:
 VARIANT_ENUM_CAST(SceneState::GenEditState)
 
 class PackedScene : public Resource {
-
 	GDCLASS(PackedScene, Resource);
 	RES_BASE_EXTENSION("scn");
 

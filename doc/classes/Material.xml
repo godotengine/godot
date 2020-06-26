@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Material" inherits="Resource" category="Core" version="3.2">
+<class name="Material" inherits="Resource" version="4.0">
 	<brief_description>
 		Abstract base [Resource] for coloring and shading geometry.
 	</brief_description>
 	<description>
-		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
+		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,8 +12,12 @@
 	</methods>
 	<members>
 		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
+			Sets the [Material] to be used for the next pass. This renders the object again using a different material.
+			[b]Note:[/b] only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
+			Sets the render priority for transparent objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects.
+			[b]Note:[/b] this only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 	</members>
 	<constants>

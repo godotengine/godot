@@ -29,6 +29,7 @@ name is available.
 
     Aaron Franke (aaronfranke)
     Alexander Holland (AlexHolly)
+    Alexey Khoroshavin (allkhor)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
@@ -45,6 +46,7 @@ name is available.
     Bernard Liebl (poke1024)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
+    Bruno Lourenço (MadEqua)
     bruvzg
     Cameron Reikes (creikey)
     Camille Mohr-Daurat (pouleyKetchoupp)
@@ -55,13 +57,17 @@ name is available.
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
+    dankan1890
     David Sichma (DavidSichma)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
+    Dominik Jasiński (dreamsComeTrue)
     DualMatrix
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
+    Eoin O'Neill (Eoin-ONeill-Yokai)
     Eric Lasota (elasota)
+    Eric Rybicki (ericrybick)
     Erik Selecký (rxlecky)
     est31
     Fabian Mathews (supagu)
@@ -76,6 +82,7 @@ name is available.
     Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
     Hanif Bin Ariffin (hbina)
+    Haoyu Qiu (timothyqiu)
     Hein-Pieter van Braam-Stewart (hpvb)
     Hiroshi Ogawa (hi-ogawa)
     homer666
@@ -88,6 +95,7 @@ name is available.
     Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
+    James Buck (jbuck3)
     Jérôme Gully (Nutriz)
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
@@ -98,9 +106,11 @@ name is available.
     Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
     K. S. Ernest (iFire) Lee (fire)
+    lawnjelly
     Leon Krause (eska014)
     Lucien Menassol (Kanabenki)
     m4nu3lf
+    Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
@@ -111,12 +121,14 @@ name is available.
     Martin Sjursen (binbitten)
     marynate
     Masoud BH (masoudbh3)
+    Mateo Kuruk Miccino (kuruk-mm)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     merumelu
     Michael Alexsander (YeldhamDev)
     MichiRecRoom (LikeLakers2)
     mrezai
+    muiroc
     Nathan Warden (NathanWarden)
     Nils André-Chang (NilsIrl)
     Nuno Donato (nunodonato)
@@ -149,6 +161,7 @@ name is available.
     Shiqing (kawa-yoiko)
     Simon Wenner (swenner)
     Swarnim Arun (minraws)
+    Thakee Nathees (ThakeeNathees)
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo Schwarzer (timoschwarzer)
@@ -164,5 +177,6 @@ name is available.
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
     Yuri Roubinsky (Chaosus)
+    Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe

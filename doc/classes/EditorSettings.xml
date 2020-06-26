@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSettings" inherits="Resource" category="Core" version="3.2">
+<class name="EditorSettings" inherits="Resource" version="4.0">
 	<brief_description>
 		Object that holds the project-independent editor settings.
 	</brief_description>
@@ -11,6 +11,7 @@
 		settings.get(prop)
 		list_of_settings = settings.get_property_list()
 		[/codeblock]
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_settings].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +22,10 @@
 			<argument index="0" name="info" type="Dictionary">
 			</argument>
 			<description>
-				Adds a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see [code]TYPE_*[/code] in [@GlobalScope]), and optionally hint:[int](see [code]PROPERTY_HINT_*[/code] in [@GlobalScope]), hint_string:[String].
+				Adds a custom property info to a property. The dictionary must contain:
+				- [code]name[/code]: [String] (the name of the property)
+				- [code]type[/code]: [int] (see [enum Variant.Type])
+				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
 				[b]Example:[/b]
 				[codeblock]
 				editor_settings.set("category/property_name", 0)
@@ -47,7 +51,7 @@
 			</description>
 		</method>
 		<method name="get_favorites" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Gets the list of favorite files and directories for this project.
@@ -73,7 +77,7 @@
 			</description>
 		</method>
 		<method name="get_recent_dirs" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Gets the list of recently visited folders in the file dialog for this project.
@@ -123,7 +127,7 @@
 		<method name="set_favorites">
 			<return type="void">
 			</return>
-			<argument index="0" name="dirs" type="PoolStringArray">
+			<argument index="0" name="dirs" type="PackedStringArray">
 			</argument>
 			<description>
 				Sets the list of favorite files and directories for this project.
@@ -132,7 +136,7 @@
 		<method name="set_initial_value">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -156,7 +160,7 @@
 		<method name="set_recent_dirs">
 			<return type="void">
 			</return>
-			<argument index="0" name="dirs" type="PoolStringArray">
+			<argument index="0" name="dirs" type="PackedStringArray">
 			</argument>
 			<description>
 				Sets the list of recently visited folders in the file dialog for this project.

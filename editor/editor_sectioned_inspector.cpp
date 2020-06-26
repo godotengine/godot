@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "editor_sectioned_inspector.h"
-#include "editor_scale.h"
-class SectionedInspectorFilter : public Object {
 
+#include "editor_scale.h"
+
+class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
 	Object *edited;
@@ -39,9 +40,9 @@ class SectionedInspectorFilter : public Object {
 	bool allow_sub;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-
-		if (!edited)
+		if (!edited) {
 			return false;
+		}
 
 		String name = p_name;
 		if (section != "") {
@@ -54,9 +55,9 @@ class SectionedInspectorFilter : public Object {
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-
-		if (!edited)
+		if (!edited) {
 			return false;
+		}
 
 		String name = p_name;
 		if (section != "") {
@@ -69,19 +70,19 @@ class SectionedInspectorFilter : public Object {
 		return valid;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-
-		if (!edited)
+		if (!edited) {
 			return;
+		}
 
 		List<PropertyInfo> pinfo;
 		edited->get_property_list(&pinfo);
 		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
 			PropertyInfo pi = E->get();
 			int sp = pi.name.find("/");
 
-			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) //skip resource stuff
+			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
 				continue;
+			}
 
 			if (sp == -1) {
 				pi.name = "global/" + pi.name;
@@ -89,33 +90,30 @@ class SectionedInspectorFilter : public Object {
 
 			if (pi.name.begins_with(section + "/")) {
 				pi.name = pi.name.replace_first(section + "/", "");
-				if (!allow_sub && pi.name.find("/") != -1)
+				if (!allow_sub && pi.name.find("/") != -1) {
 					continue;
+				}
 				p_list->push_back(pi);
 			}
 		}
 	}
 
 	bool property_can_revert(const String &p_name) {
-
 		return edited->call("property_can_revert", section + "/" + p_name);
 	}
 
 	Variant property_get_revert(const String &p_name) {
-
 		return edited->call("property_get_revert", section + "/" + p_name);
 	}
 
 protected:
 	static void _bind_methods() {
-
 		ClassDB::bind_method("property_can_revert", &SectionedInspectorFilter::property_can_revert);
 		ClassDB::bind_method("property_get_revert", &SectionedInspectorFilter::property_get_revert);
 	}
 
 public:
 	void set_section(const String &p_section, bool p_allow_sub) {
-
 		section = p_section;
 		allow_sub = p_allow_sub;
 		_change_notify();
@@ -127,61 +125,55 @@ public:
 	}
 
 	SectionedInspectorFilter() {
-		edited = NULL;
+		edited = nullptr;
 	}
 };
 
 void SectionedInspector::_bind_methods() {
-
-	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
-	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
-
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
 }
 
 void SectionedInspector::_section_selected() {
-
-	if (!sections->get_selected())
+	if (!sections->get_selected()) {
 		return;
+	}
 
 	selected_category = sections->get_selected()->get_metadata(0);
-	filter->set_section(selected_category, sections->get_selected()->get_children() == NULL);
+	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
 }
 
 void SectionedInspector::set_current_section(const String &p_section) {
-
 	if (section_map.has(p_section)) {
 		section_map[p_section]->select(0);
 	}
 }
 
 String SectionedInspector::get_current_section() const {
-
-	if (sections->get_selected())
+	if (sections->get_selected()) {
 		return sections->get_selected()->get_metadata(0);
-	else
+	} else {
 		return "";
+	}
 }
 
 String SectionedInspector::get_full_item_path(const String &p_item) {
-
 	String base = get_current_section();
 
-	if (base != "")
+	if (base != "") {
 		return base + "/" + p_item;
-	else
+	} else {
 		return p_item;
+	}
 }
 
 void SectionedInspector::edit(Object *p_object) {
-
 	if (!p_object) {
-		obj = 0;
+		obj = ObjectID();
 		sections->clear();
 
-		filter->set_edited(NULL);
-		inspector->edit(NULL);
+		filter->set_edited(nullptr);
+		inspector->edit(nullptr);
 
 		return;
 	}
@@ -191,7 +183,6 @@ void SectionedInspector::edit(Object *p_object) {
 	inspector->set_object_class(p_object->get_class());
 
 	if (obj != id) {
-
 		obj = id;
 		update_category_list();
 
@@ -200,26 +191,26 @@ void SectionedInspector::edit(Object *p_object) {
 
 		TreeItem *first_item = sections->get_root();
 		if (first_item) {
-			while (first_item->get_children())
+			while (first_item->get_children()) {
 				first_item = first_item->get_children();
+			}
 
 			first_item->select(0);
 			selected_category = first_item->get_metadata(0);
 		}
 	} else {
-
 		update_category_list();
 	}
 }
 
 void SectionedInspector::update_category_list() {
-
 	sections->clear();
 
 	Object *o = ObjectDB::get_instance(obj);
 
-	if (!o)
+	if (!o) {
 		return;
+	}
 
 	List<PropertyInfo> pinfo;
 	o->get_property_list(&pinfo);
@@ -230,37 +221,40 @@ void SectionedInspector::update_category_list() {
 	section_map[""] = root;
 
 	String filter;
-	if (search_box)
+	if (search_box) {
 		filter = search_box->get_text();
+	}
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
 		PropertyInfo pi = E->get();
 
-		if (pi.usage & PROPERTY_USAGE_CATEGORY)
+		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		else if (!(pi.usage & PROPERTY_USAGE_EDITOR))
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
+		}
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
+		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
 			continue;
+		}
+
+		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize())) {
+			continue;
+		}
 
 		int sp = pi.name.find("/");
-		if (sp == -1)
+		if (sp == -1) {
 			pi.name = "global/" + pi.name;
+		}
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(sectionarr[sectionarr.size() - 1].capitalize()))
-			continue;
-
 		int sc = MIN(2, sectionarr.size() - 1);
 
 		for (int i = 0; i < sc; i++) {
-
 			TreeItem *parent = section_map[metasection];
-			parent->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -291,29 +285,24 @@ void SectionedInspector::update_category_list() {
 }
 
 void SectionedInspector::register_search_box(LineEdit *p_box) {
-
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect("text_changed", this, "_search_changed");
+	search_box->connect("text_changed", callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::_search_changed(const String &p_what) {
-
 	update_category_list();
 }
 
 EditorInspector *SectionedInspector::get_inspector() {
-
 	return inspector;
 }
 
 SectionedInspector::SectionedInspector() :
-		obj(0),
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
-		inspector(memnew(EditorInspector)),
-		search_box(NULL) {
-	add_constant_override("autohide", 1); // Fixes the dragger always showing up
+		inspector(memnew(EditorInspector)) {
+	add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);
@@ -333,10 +322,9 @@ SectionedInspector::SectionedInspector() :
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
 
-	sections->connect("cell_selected", this, "_section_selected");
+	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }
 
 SectionedInspector::~SectionedInspector() {
-
 	memdelete(filter);
 }

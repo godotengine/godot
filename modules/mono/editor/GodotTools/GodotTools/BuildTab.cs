@@ -41,17 +41,17 @@ namespace GodotTools
         public bool ErrorsVisible { get; set; } = true;
         public bool WarningsVisible { get; set; } = true;
 
-        public Texture IconTexture
+        public Texture2D IconTexture
         {
             get
             {
                 if (!BuildExited)
-                    return GetIcon("Stop", "EditorIcons");
+                    return GetThemeIcon("Stop", "EditorIcons");
 
                 if (BuildResult == BuildResults.Error)
-                    return GetIcon("StatusError", "EditorIcons");
+                    return GetThemeIcon("StatusError", "EditorIcons");
 
-                return GetIcon("StatusSuccess", "EditorIcons");
+                return GetThemeIcon("StatusSuccess", "EditorIcons");
             }
         }
 
@@ -72,7 +72,7 @@ namespace GodotTools
                     {
                         string[] csvColumns = file.GetCsvLine();
 
-                        if (csvColumns.Length == 1 && csvColumns[0].Empty())
+                        if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
                             return;
 
                         if (csvColumns.Length != 7)
@@ -113,14 +113,14 @@ namespace GodotTools
                 throw new IndexOutOfRangeException("Item list index out of range");
 
             // Get correct issue idx from issue list
-            int issueIndex = (int) issuesList.GetItemMetadata(idx);
+            int issueIndex = (int)(long)issuesList.GetItemMetadata(idx);
 
-            if (idx < 0 || idx >= issues.Count)
+            if (issueIndex < 0 || issueIndex >= issues.Count)
                 throw new IndexOutOfRangeException("Issue index out of range");
 
             BuildIssue issue = issues[issueIndex];
 
-            if (issue.ProjectFile.Empty() && issue.File.Empty())
+            if (string.IsNullOrEmpty(issue.ProjectFile) && string.IsNullOrEmpty(issue.File))
                 return;
 
             string projectDir = issue.ProjectFile.Length > 0 ? issue.ProjectFile.GetBaseDir() : BuildInfo.Solution.GetBaseDir();
@@ -134,7 +134,7 @@ namespace GodotTools
 
             if (file.StartsWith("res://"))
             {
-                var script = (Script) ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
+                var script = (Script)ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
 
                 if (script != null && Internal.ScriptEditorEdit(script, issue.Line, issue.Column))
                     Internal.EditorNodeShowScriptScreen();
@@ -145,8 +145,8 @@ namespace GodotTools
         {
             issuesList.Clear();
 
-            using (var warningIcon = GetIcon("Warning", "EditorIcons"))
-            using (var errorIcon = GetIcon("Error", "EditorIcons"))
+            using (var warningIcon = GetThemeIcon("Warning", "EditorIcons"))
+            using (var errorIcon = GetThemeIcon("Error", "EditorIcons"))
             {
                 for (int i = 0; i < issues.Count; i++)
                 {
@@ -158,14 +158,14 @@ namespace GodotTools
                     string tooltip = string.Empty;
                     tooltip += $"Message: {issue.Message}";
 
-                    if (!issue.Code.Empty())
+                    if (!string.IsNullOrEmpty(issue.Code))
                         tooltip += $"\nCode: {issue.Code}";
 
                     tooltip += $"\nType: {(issue.Warning ? "warning" : "error")}";
 
                     string text = string.Empty;
 
-                    if (!issue.File.Empty())
+                    if (!string.IsNullOrEmpty(issue.File))
                     {
                         text += $"{issue.File}({issue.Line},{issue.Column}): ";
 
@@ -174,7 +174,7 @@ namespace GodotTools
                         tooltip += $"\nColumn: {issue.Column}";
                     }
 
-                    if (!issue.ProjectFile.Empty())
+                    if (!string.IsNullOrEmpty(issue.ProjectFile))
                         tooltip += $"\nProject: {issue.ProjectFile}";
 
                     text += issue.Message;
@@ -220,7 +220,7 @@ namespace GodotTools
 
             issuesList.Clear();
 
-            var issue = new BuildIssue {Message = cause, Warning = false};
+            var issue = new BuildIssue { Message = cause, Warning = false };
 
             ErrorCount += 1;
             issues.Add(issue);
@@ -250,8 +250,8 @@ namespace GodotTools
         {
             base._Ready();
 
-            issuesList = new ItemList {SizeFlagsVertical = (int) SizeFlags.ExpandFill};
-            issuesList.Connect("item_activated", this, nameof(_IssueActivated));
+            issuesList = new ItemList { SizeFlagsVertical = (int)SizeFlags.ExpandFill };
+            issuesList.ItemActivated += _IssueActivated;
             AddChild(issuesList);
         }
 

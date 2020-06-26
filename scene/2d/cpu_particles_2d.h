@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,6 +75,7 @@ public:
 		EMISSION_SHAPE_RECTANGLE,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
+		EMISSION_SHAPE_MAX
 	};
 
 private:
@@ -107,9 +108,9 @@ private:
 	RID mesh;
 	RID multimesh;
 
-	PoolVector<Particle> particles;
-	PoolVector<float> particle_data;
-	PoolVector<int> particle_order;
+	Vector<Particle> particles;
+	Vector<float> particle_data;
+	Vector<int> particle_order;
 
 	struct SortLifetime {
 		const Particle *particles;
@@ -123,7 +124,6 @@ private:
 		const Particle *particles;
 		Vector2 axis;
 		bool operator()(int p_a, int p_b) const {
-
 			return axis.dot(particles[p_a].transform[2]) < axis.dot(particles[p_b].transform[2]);
 		}
 	};
@@ -146,14 +146,13 @@ private:
 
 	DrawOrder draw_order;
 
-	Ref<Texture> texture;
-	Ref<Texture> normalmap;
+	Ref<Texture2D> texture;
+	Ref<Texture2D> normalmap;
 
 	////////
 
 	Vector2 direction;
 	float spread;
-	float flatness;
 
 	float parameters[PARAM_MAX];
 	float randomness[PARAM_MAX];
@@ -167,9 +166,9 @@ private:
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
 	Vector2 emission_rect_extents;
-	PoolVector<Vector2> emission_points;
-	PoolVector<Vector2> emission_normals;
-	PoolVector<Color> emission_colors;
+	Vector<Vector2> emission_points;
+	Vector<Vector2> emission_normals;
+	Vector<Color> emission_colors;
 	int emission_point_count;
 
 	Vector2 gravity;
@@ -178,13 +177,15 @@ private:
 	void _particles_process(float p_delta);
 	void _update_particle_data_buffer();
 
-	Mutex *update_mutex;
+	Mutex update_mutex;
 
 	void _update_render_thread();
 
 	void _update_mesh_texture();
 
 	void _set_redraw(bool p_redraw);
+
+	void _texture_changed();
 
 protected:
 	static void _bind_methods();
@@ -228,11 +229,11 @@ public:
 	void set_draw_passes(int p_count);
 	int get_draw_passes() const;
 
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
-	void set_normalmap(const Ref<Texture> &p_normalmap);
-	Ref<Texture> get_normalmap() const;
+	void set_normalmap(const Ref<Texture2D> &p_normalmap);
+	Ref<Texture2D> get_normalmap() const;
 
 	///////////////////
 
@@ -241,9 +242,6 @@ public:
 
 	void set_spread(float p_spread);
 	float get_spread() const;
-
-	void set_flatness(float p_flatness);
-	float get_flatness() const;
 
 	void set_param(Parameter p_param, float p_value);
 	float get_param(Parameter p_param) const;
@@ -266,17 +264,17 @@ public:
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
 	void set_emission_rect_extents(Vector2 p_extents);
-	void set_emission_points(const PoolVector<Vector2> &p_points);
-	void set_emission_normals(const PoolVector<Vector2> &p_normals);
-	void set_emission_colors(const PoolVector<Color> &p_colors);
+	void set_emission_points(const Vector<Vector2> &p_points);
+	void set_emission_normals(const Vector<Vector2> &p_normals);
+	void set_emission_colors(const Vector<Color> &p_colors);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
 	Vector2 get_emission_rect_extents() const;
-	PoolVector<Vector2> get_emission_points() const;
-	PoolVector<Vector2> get_emission_normals() const;
-	PoolVector<Color> get_emission_colors() const;
+	Vector<Vector2> get_emission_points() const;
+	Vector<Vector2> get_emission_normals() const;
+	Vector<Color> get_emission_colors() const;
 	int get_emission_point_count() const;
 
 	void set_gravity(const Vector2 &p_gravity);

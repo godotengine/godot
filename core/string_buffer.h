@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,9 @@
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {
-
 	CharType short_buffer[SHORT_BUFFER_SIZE];
 	String buffer;
-	int string_length;
+	int string_length = 0;
 
 	_FORCE_INLINE_ CharType *current_buffer_ptr() {
 		return static_cast<String &>(buffer).empty() ? short_buffer : buffer.ptrw();
@@ -77,10 +76,6 @@ public:
 
 	_FORCE_INLINE_ operator String() {
 		return as_string();
-	}
-
-	StringBuffer() {
-		string_length = 0;
 	}
 };
 
@@ -123,8 +118,9 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const C
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_size) {
-	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size())
+	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size()) {
 		return *this;
+	}
 
 	bool need_copy = string_length > 0 && buffer.empty();
 	buffer.resize(next_power_of_2(p_size));
@@ -163,4 +159,4 @@ int64_t StringBuffer<SHORT_BUFFER_SIZE>::as_int() {
 	return String::to_int(current_buffer_ptr());
 }
 
-#endif
+#endif // STRING_BUFFER_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,12 @@
 #define NAVIGATIONPOLYGONEDITORPLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/2d/navigation_polygon.h"
+#include "scene/2d/navigation_region_2d.h"
 
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
-	NavigationPolygonInstance *node;
+	NavigationRegion2D *node;
 
 	Ref<NavigationPolygon> _ensure_navpoly() const;
 
@@ -62,7 +61,6 @@ public:
 };
 
 class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

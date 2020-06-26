@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "animation_track_editor.h"
 
 class AnimationBezierTrackEdit : public Control {
-
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
 	enum HandleMode {
@@ -63,9 +62,9 @@ class AnimationBezierTrackEdit : public Control {
 
 	Vector<Rect2> view_rects;
 
-	Ref<Texture> bezier_icon;
-	Ref<Texture> bezier_handle_icon;
-	Ref<Texture> selected_icon;
+	Ref<Texture2D> bezier_icon;
+	Ref<Texture2D> bezier_handle_icon;
+	Ref<Texture2D> selected_icon;
 
 	Rect2 close_icon_rect;
 
@@ -112,7 +111,6 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-
 		int track;
 		float time;
 		Variant key;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shape2D" inherits="Resource" category="Core" version="3.2">
+<class name="Shape2D" inherits="Resource" version="4.0">
 	<brief_description>
 		Base class for all 2D shapes.
 	</brief_description>
@@ -74,9 +74,21 @@
 				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
+		<method name="draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Draws a solid shape onto a [CanvasItem] with the [RenderingServer] API filled with the specified [code]color[/code]. The exact drawing method is specific for each shape and cannot be configured.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">
+			The shape's custom solver bias.
 		</member>
 	</members>
 	<constants>
