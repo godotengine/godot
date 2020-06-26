@@ -199,8 +199,8 @@ void TileMapEditor::_menu_option(int p_option) {
 
 void TileMapEditor::_palette_changed(int id) {
 	print_line("Palette selected" + id);
-	// current_palette = palettes[id];
-	// current_manual_palette = manual_palettes[id];
+	current_palette = palettes[id];
+	current_manual_palette = manual_palettes[id];
 }
 
 void TileMapEditor::_palette_selected(int index) {
@@ -410,17 +410,18 @@ struct _PaletteEntry {
 void TileMapEditor::_create_palettes() {
 	if (!node)
 		return;
-	for (int i = 0; i < node->get_child_count(); i++) {
-		node->remove_child(node->get_child(i));
+	for (int i = 0; i < palette_tabs->get_child_count(); i++) {
+		palette_tabs->remove_child(palette_tabs->get_child(i));
 	}
-	// palettes.clear();
-	// manual_palettes.clear();
+	palettes.clear();
+	manual_palettes.clear();
 
-	palette_tabs->add_child(&_create_palette_container("All"));
+	palette_tabs->add_child(_create_palette_container(TTR("All")));
 	_palette_changed(0);
 
-	Ref<TileSet> tileset = node->get_tileset();
 	List<int> tiles;
+	Ref<TileSet> tileset = node->get_tileset();
+	tileset->get_tile_list(&tiles);
 	TypedArray<String> texture_names;
 	for (int i = 0; i < tiles.size(); i++) {
 		Ref<Texture2D> tile_texture = tileset->tile_get_texture(tiles[i]);
@@ -429,59 +430,58 @@ void TileMapEditor::_create_palettes() {
 
 		// Create tab for unknown texture
 		if (!texture_names.has(name)) {
-
 			texture_names.push_back(name);
-			palette_tabs->add_child(&_create_palette_container(name));
+			palette_tabs->add_child(_create_palette_container(name));
 		}
 	}
 	// current_palette = &palettes.get(0);
 	// current_manual_palette = &manual_palettes.get(0);
 }
 
-VSplitContainer TileMapEditor::_create_palette_container(String name) {
+VSplitContainer *TileMapEditor::_create_palette_container(const String &name) {
 	int mw = EDITOR_DEF("editors/tile_map/palette_min_width", 80);
-	VSplitContainer palette_container = VSplitContainer();
-	palette_container.set_name(name);
-	palette_container.set_v_size_flags(SIZE_EXPAND_FILL);
-	palette_container.set_custom_minimum_size(Size2(mw, 0));
+	VSplitContainer *palette_container = memnew(VSplitContainer);
+	palette_container->set_name(name);
+	palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	palette_container->set_custom_minimum_size(Size2(mw, 0));
 
-	ItemList palette_tab = _create_palette();
-	palette_container.add_child(&palette_tab);
-	// current_palette = &palette_tab;
-	// palettes.push_back(&palette_tab);
+	ItemList *palette_tab = _create_palette();
+	palette_container->add_child(palette_tab);
+	palettes.push_back(palette_tab);
 
-	ItemList manual_palette = _create_manual_palette();
-	palette_container.add_child(&manual_palette);
-	// current_manual_palette = &manual_palette;
-	// manual_palettes.push_back(&manual_palette);
+	ItemList *manual_palette = _create_manual_palette();
+	palette_container->add_child(manual_palette);
+	manual_palettes.push_back(manual_palette);
 
 	return palette_container;
 }
 
-ItemList TileMapEditor::_create_palette() {
-	ItemList palette = ItemList();
-	palette.set_h_size_flags(SIZE_EXPAND_FILL);
-	palette.set_v_size_flags(SIZE_EXPAND_FILL);
-	palette.set_max_columns(0);
-	palette.set_icon_mode(ItemList::ICON_MODE_TOP);
-	palette.set_max_text_lines(2);
-	palette.set_select_mode(ItemList::SELECT_MULTI);
-	palette.add_theme_constant_override("vseparation", 8 * EDSCALE);
-	palette.connect("item_selected", callable_mp(this, &TileMapEditor::_palette_selected));
-	palette.connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
-	palette.connect("gui_input", callable_mp(this, &TileMapEditor::_palette_input));
+ItemList *TileMapEditor::_create_palette() {
+	ItemList *palette = memnew(ItemList);
+	palette->set_h_size_flags(SIZE_EXPAND_FILL);
+	palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	palette->set_max_columns(0);
+	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
+	palette->set_max_text_lines(2);
+	palette->set_select_mode(ItemList::SELECT_MULTI);
+	palette->add_theme_constant_override("vseparation", 8 * EDSCALE);
+	palette->connect("item_selected", callable_mp(this, &TileMapEditor::_palette_selected));
+	palette->connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
+	palette->connect("gui_input", callable_mp(this, &TileMapEditor::_palette_input));
 	return palette;
+	// return ItemList();
 }
 
-ItemList TileMapEditor::_create_manual_palette() {
-	ItemList manual_palette = ItemList();
-	manual_palette.set_h_size_flags(SIZE_EXPAND_FILL);
-	manual_palette.set_v_size_flags(SIZE_EXPAND_FILL);
-	manual_palette.set_max_columns(0);
-	manual_palette.set_icon_mode(ItemList::ICON_MODE_TOP);
-	manual_palette.set_max_text_lines(2);
-	manual_palette.hide();
+ItemList *TileMapEditor::_create_manual_palette() {
+	ItemList *manual_palette = memnew(ItemList);
+	manual_palette->set_h_size_flags(SIZE_EXPAND_FILL);
+	manual_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	manual_palette->set_max_columns(0);
+	manual_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
+	manual_palette->set_max_text_lines(2);
+	// manual_palette->hide();
 	return manual_palette;
+	// return ItemList();
 }
 
 void TileMapEditor::_update_palette() {
@@ -592,9 +592,9 @@ void TileMapEditor::_update_palette() {
 			}
 
 			// Set region.
-			// if (region.size != Size2()) {
-			// palette->set_item_icon_region(palette->get_item_count() - 1, region);
-			// }
+			if (region.size != Size2()) {
+				current_palette->set_item_icon_region(current_palette->get_item_count() - 1, region);
+			}
 
 			// Set icon.
 			current_palette->set_item_icon(current_palette->get_item_count() - 1, tex);
@@ -2010,6 +2010,12 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	size_slider->connect("value_changed", callable_mp(this, &TileMapEditor::_icon_size_changed));
 	add_child(size_slider);
 
+	palette_tabs = memnew(TabContainer);
+	palette_tabs->connect("tab_changed", callable_mp(this, &TileMapEditor::_palette_changed));
+	palette_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
+	palette_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(palette_tabs);
+
 	// VSplitContainer *palette_container = memnew(VSplitContainer);
 	// palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
 	// palette_container->set_custom_minimum_size(Size2(mw, 0));
@@ -2048,9 +2054,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	// manual_palette->set_max_text_lines(2);
 	// manual_palette->hide();
 	// palette_container->add_child(manual_palette);
-
-	palette_tabs = memnew(TabContainer);
-	// palette_tabs->connect("tab_changed", callable_mp(this, &TileMapEditor::_palette_changed));
 
 	// Add menu items.
 	toolbar = memnew(HBoxContainer);
