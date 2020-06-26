@@ -168,6 +168,21 @@ namespace GodotTools.ProjectEditor
             return result.ToArray();
         }
 
+        public static void EnsureHasProjectTypeGuids(MSBuildProject project)
+        {
+            var root = project.Root;
+
+            bool found = root.PropertyGroups.Any(pg =>
+                string.IsNullOrEmpty(pg.Condition) && pg.Properties.Any(p => p.Name == "ProjectTypeGuids"));
+
+            if (found)
+                return;
+
+            root.AddProperty("ProjectTypeGuids", ProjectGenerator.GodotDefaultProjectTypeGuids);
+
+            project.HasUnsavedChanges = true;
+        }
+
         ///  Simple function to make sure the Api assembly references are configured correctly
         public static void FixApiHintPath(MSBuildProject project)
         {

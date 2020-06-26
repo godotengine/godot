@@ -77,7 +77,6 @@ LONG _RegKeyQueryString(HKEY hKey, const String &p_value_name, String &r_value) 
 
 	if (res == ERROR_MORE_DATA) {
 		// dwBufferSize now contains the actual size
-		Vector<WCHAR> buffer;
 		buffer.resize(dwBufferSize);
 		res = RegQueryValueExW(hKey, p_value_name.c_str(), 0, NULL, (LPBYTE)buffer.ptr(), &dwBufferSize);
 	}
