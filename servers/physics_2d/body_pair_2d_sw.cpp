@@ -264,9 +264,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	if (B->get_continuous_collision_detection_mode() == Physics2DServer::CCD_MODE_CAST_SHAPE) {
 		motion_B = B->get_motion();
 	}
-	//faster to set than to check..
 
-	//bool prev_collided=collided;
+	bool prev_collided = collided;
 
 	collided = CollisionSolver2DSW::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
@@ -292,9 +291,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	if (oneway_disabled)
 		return false;
 
-	//if (!prev_collided) {
-	{
-
+	if (!prev_collided) {
 		if (A->is_shape_set_as_one_way_collision(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
