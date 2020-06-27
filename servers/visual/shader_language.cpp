@@ -4620,6 +4620,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			//check return type
 			BlockNode *b = p_block;
+
+			if (b && b->parent_function && (b->parent_function->name == "vertex" || b->parent_function->name == "fragment" || b->parent_function->name == "light")) {
+				_set_error(vformat("Using 'return' in '%s' processor function results in undefined behavior!", b->parent_function->name));
+				return ERR_PARSE_ERROR;
+			}
+
 			while (b && !b->parent_function) {
 				b = b->parent_block;
 			}
