@@ -2497,7 +2497,7 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 		_dispose_bindings();
 		//anything remains?
 		if (bindings.texture_bindings.size()) {
-			ERR_PRINT("Some texture bindings were not properly freed (leaked canvasitems?");
+			ERR_PRINT("Some texture bindings were not properly freed (leaked CanvasItems?)");
 			const TextureBindingID *key = nullptr;
 			while ((key = bindings.texture_bindings.next(key))) {
 				TextureBinding *tb = bindings.texture_bindings[*key];

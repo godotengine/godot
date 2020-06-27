@@ -1612,6 +1612,7 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
 	filter.shader.version_free(filter.shader_version);
 	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
+	resolve.shader.version_free(resolve.shader_version);
 	roughness.shader.version_free(roughness.shader_version);
 	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
 	specular_merge.shader.version_free(specular_merge.shader_version);
