@@ -77,8 +77,8 @@ class TileMapEditor : public VBoxContainer {
 	LineEdit *search_box;
 	HSlider *size_slider;
 	TabContainer *palette_tabs;
-	Vector<ItemList*> palettes;
-	Vector<ItemList*> manual_palettes;
+	Vector<ItemList *> palettes;
+	Vector<ItemList *> manual_palettes;
 	ItemList *current_palette;
 	ItemList *current_manual_palette;
 
@@ -179,9 +179,9 @@ class TileMapEditor : public VBoxContainer {
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _create_palettes();
-	VSplitContainer* _create_palette_container(const String& name);
-	ItemList* _create_palette();
-	ItemList* _create_manual_palette();
+	VSplitContainer *_create_palette_container(const String &name);
+	ItemList *_create_palette();
+	ItemList *_create_manual_palette();
 	String _get_texture_name(Ref<Texture2D> tex);
 	void _update_palette();
 	void _update_button_tool();

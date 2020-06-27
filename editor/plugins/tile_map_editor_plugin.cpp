@@ -51,11 +51,11 @@ void TileMapEditor::_notification(int p_what) {
 				CanvasItemEditor::get_singleton()->update_viewport();
 			}
 
-		}
-		break;
+		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));[[fallthrough]];
+			get_tree()->connect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
+			[[fallthrough]];
 		}
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -82,13 +82,11 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_COPY), get_theme_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_theme_icon("Remove", "EditorIcons"));
 
-		}
-		break;
+		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
-		}
-		break;
+		} break;
 	}
 }
 
@@ -104,20 +102,16 @@ void TileMapEditor::_update_button_tool() {
 		case TOOL_NONE:
 		case TOOL_PAINTING: {
 			paint_button->set_pressed(true);
-		}
-			break;
+		} break;
 		case TOOL_BUCKET: {
 			bucket_fill_button->set_pressed(true);
-		}
-		break;
+		} break;
 		case TOOL_PICKING: {
 			picker_button->set_pressed(true);
-		}
-		break;
+		} break;
 		case TOOL_SELECTING: {
 			select_button->set_pressed(true);
-		}
-		break;
+		} break;
 		default:
 			break;
 	}
@@ -133,8 +127,7 @@ void TileMapEditor::_button_tool_select(int p_tool) {
 	switch (tool) {
 		case TOOL_SELECTING: {
 			selection_active = false;
-		}
-		break;
+		} break;
 		default:
 			break;
 	}
@@ -151,8 +144,7 @@ void TileMapEditor::_menu_option(int p_option) {
 
 				CanvasItemEditor::get_singleton()->update_viewport();
 			}
-		}
-		break;
+		} break;
 		case OPTION_ERASE_SELECTION: {
 			if (!selection_active) {
 				return;
@@ -166,8 +158,7 @@ void TileMapEditor::_menu_option(int p_option) {
 			copydata.clear();
 
 			CanvasItemEditor::get_singleton()->update_viewport();
-		}
-		break;
+		} break;
 		case OPTION_FIX_INVALID: {
 			undo_redo->create_action(TTR("Fix Invalid Tiles"));
 			undo_redo->add_undo_method(node, "set", "tile_data", node->get("tile_data"));
@@ -175,8 +166,7 @@ void TileMapEditor::_menu_option(int p_option) {
 			undo_redo->add_do_method(node, "set", "tile_data", node->get("tile_data"));
 			undo_redo->commit_action();
 
-		}
-		break;
+		} break;
 		case OPTION_CUT: {
 			if (selection_active) {
 				_update_copydata();
@@ -191,8 +181,7 @@ void TileMapEditor::_menu_option(int p_option) {
 
 				CanvasItemEditor::get_singleton()->update_viewport();
 			}
-		}
-		break;
+		} break;
 	}
 	_update_button_tool();
 }
@@ -388,9 +377,9 @@ void TileMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 
 	if (k.is_valid() && (k->get_keycode() == KEY_UP ||
-	                     k->get_keycode() == KEY_DOWN ||
-	                     k->get_keycode() == KEY_PAGEUP ||
-	                     k->get_keycode() == KEY_PAGEDOWN)) {
+								k->get_keycode() == KEY_DOWN ||
+								k->get_keycode() == KEY_PAGEUP ||
+								k->get_keycode() == KEY_PAGEDOWN)) {
 		current_palette->call("_gui_input", k);
 		search_box->accept_event();
 	}
@@ -489,7 +478,6 @@ String TileMapEditor::_get_texture_name(Ref<Texture2D> tex) {
 	return name;
 }
 
-
 void TileMapEditor::_update_palette() {
 	if (!node) {
 		return;
@@ -573,7 +561,7 @@ void TileMapEditor::_update_palette() {
 		Ref<Texture2D> tex = tileset->tile_get_texture(entries[i].id);
 		String tex_name = _get_texture_name(tex);
 		String palette_name = current_palette->get_parent()->get_name();
-		if(palette_name == tex_name || palette_name == TTR("All")) {
+		if (palette_name == tex_name || palette_name == TTR("All")) {
 			// if(tex == current_palette->)
 			if (show_tile_names) {
 				current_palette->add_item(entries[i].name);
@@ -1915,8 +1903,8 @@ void TileMapEditor::_rotate(int steps) {
 		// Odd number of flags activated = mirrored rotation
 		for (int i = 0; i < 4; i++) {
 			if (transpose == mirrored_rotation_matrix[i][0] &&
-			    flip_h == mirrored_rotation_matrix[i][1] &&
-			    flip_v == mirrored_rotation_matrix[i][2]) {
+					flip_h == mirrored_rotation_matrix[i][1] &&
+					flip_v == mirrored_rotation_matrix[i][2]) {
 				int new_id = Math::wrapi(i + steps, 0, 4);
 				transpose = mirrored_rotation_matrix[new_id][0];
 				flip_h = mirrored_rotation_matrix[new_id][1];
@@ -1928,8 +1916,8 @@ void TileMapEditor::_rotate(int steps) {
 		// Even number of flags activated = normal rotation
 		for (int i = 0; i < 4; i++) {
 			if (transpose == normal_rotation_matrix[i][0] &&
-			    flip_h == normal_rotation_matrix[i][1] &&
-			    flip_v == normal_rotation_matrix[i][2]) {
+					flip_h == normal_rotation_matrix[i][1] &&
+					flip_v == normal_rotation_matrix[i][2]) {
 				int new_id = Math::wrapi(i + steps, 0, 4);
 				transpose = normal_rotation_matrix[new_id][0];
 				flip_h = normal_rotation_matrix[new_id][1];
@@ -2190,13 +2178,11 @@ void TileMapEditorPlugin::_notification(int p_what) {
 			case 0: {
 				// Left.
 				CanvasItemEditor::get_singleton()->get_palette_split()->move_child(tile_map_editor, 0);
-			}
-			break;
+			} break;
 			case 1: {
 				// Right.
 				CanvasItemEditor::get_singleton()->get_palette_split()->move_child(tile_map_editor, 1);
-			}
-			break;
+			} break;
 		}
 	}
 }
@@ -2244,13 +2230,11 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 		case 0: {
 			// Left.
 			add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_LEFT, tile_map_editor);
-		}
-		break;
+		} break;
 		case 1: {
 			// Right.
 			add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT, tile_map_editor);
-		}
-		break;
+		} break;
 	}
 	tile_map_editor->hide();
 }
