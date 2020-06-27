@@ -32,21 +32,18 @@
 
 #include "core/os/keyboard.h"
 
-void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
-	add_directories = p_add_dirs;
-	popup_centered_ratio(0.6);
+void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_dontclear) {
+	base_type = p_base;
+	search_options->set_select_mode(p_enable_multi ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
+	popup_centered_ratio(0.4);
+
 	if (p_dontclear) {
 		search_box->select_all();
 	} else {
 		search_box->clear();
 	}
-	if (p_enable_multi) {
-		search_options->set_select_mode(Tree::SELECT_MULTI);
-	} else {
-		search_options->set_select_mode(Tree::SELECT_SINGLE);
-	}
+
 	search_box->grab_focus();
-	base_type = p_base;
 	_update_search();
 }
 
@@ -101,7 +98,6 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				}
 
 				current->select(0);
-
 			} break;
 		}
 	}
@@ -124,59 +120,23 @@ float EditorQuickOpen::_path_cmp(String search, String path) const {
 }
 
 void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture2D>>> &list) {
-	if (!add_directories) {
-		for (int i = 0; i < efsd->get_subdir_count(); i++) {
-			_parse_fs(efsd->get_subdir(i), list);
-		}
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_parse_fs(efsd->get_subdir(i), list);
 	}
 
 	String search_text = search_box->get_text();
 
-	if (add_directories) {
-		String path = efsd->get_path();
-		if (!path.ends_with("/")) {
-			path += "/";
-		}
-		if (path != "res://") {
-			path = path.substr(6, path.length());
-			if (search_text.is_subsequence_ofi(path)) {
-				Pair<String, Ref<Texture2D>> pair;
-				pair.first = path;
-				pair.second = search_options->get_theme_icon("folder", "FileDialog");
-
-				if (search_text != String() && list.size() > 0) {
-					float this_sim = _path_cmp(search_text, path);
-					float other_sim = _path_cmp(list[0].first, path);
-					int pos = 1;
-
-					while (pos < list.size() && this_sim <= other_sim) {
-						other_sim = _path_cmp(list[pos++].first, path);
-					}
-
-					pos = this_sim >= other_sim ? pos - 1 : pos;
-					list.insert(pos, pair);
-
-				} else {
-					list.push_back(pair);
-				}
-			}
-		}
-	}
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		String file = efsd->get_file_path(i);
 		file = file.substr(6, file.length());
 
-		if (ClassDB::is_parent_class(efsd->get_file_type(i), base_type) && (search_text.is_subsequence_ofi(file))) {
+		StringName file_type = efsd->get_file_type(i);
+		if (ClassDB::is_parent_class(file_type, base_type) && search_text.is_subsequence_ofi(file)) {
 			Pair<String, Ref<Texture2D>> pair;
 			pair.first = file;
-			pair.second = search_options->get_theme_icon((search_options->has_theme_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
+			StringName icon_name = search_options->has_theme_icon(file_type, ei) ? file_type : ot;
+			pair.second = search_options->get_theme_icon(icon_name, ei);
 			list.push_back(pair);
-		}
-	}
-
-	if (add_directories) {
-		for (int i = 0; i < efsd->get_subdir_count(); i++) {
-			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
 }
@@ -250,7 +210,7 @@ void EditorQuickOpen::_confirmed() {
 }
 
 void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(search_options->get_theme_icon("Search", ei));
 }
 
 void EditorQuickOpen::_notification(int p_what) {
@@ -277,23 +237,25 @@ void EditorQuickOpen::_bind_methods() {
 EditorQuickOpen::EditorQuickOpen() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
-
 	add_child(vbc);
+
 	search_box = memnew(LineEdit);
-	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect("text_changed", callable_mp(this, &EditorQuickOpen::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &EditorQuickOpen::_sbox_input));
+	vbc->add_margin_child(TTR("Search:"), search_box);
+
 	search_options = memnew(Tree);
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
-	register_text_enter(search_box);
-	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_theme_constant_override("draw_guides", 1);
+	vbc->add_margin_child(TTR("Matches:"), search_options, true);
+
+	get_ok()->set_text(TTR("Open"));
+	get_ok()->set_disabled(true);
+	register_text_enter(search_box);
+	set_hide_on_ok(false);
+
 	ei = "EditorIcons";
 	ot = "Object";
-	add_directories = false;
 }
