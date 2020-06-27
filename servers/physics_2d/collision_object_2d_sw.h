@@ -169,10 +169,16 @@ public:
 		return shapes[p_idx].one_way_collision_margin;
 	}
 
-	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
+	void set_collision_mask(uint32_t p_mask) {
+		collision_mask = p_mask;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
-	void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
+	void set_collision_layer(uint32_t p_layer) {
+		collision_layer = p_layer;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
 
 	void remove_shape(Shape2DSW *p_shape);

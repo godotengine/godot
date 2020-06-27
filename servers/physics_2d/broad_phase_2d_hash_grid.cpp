@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "broad_phase_2d_hash_grid.h"
+#include "collision_object_2d_sw.h"
 #include "core/project_settings.h"
 
 #define LARGE_ELEMENT_FI 1.01239812
@@ -76,23 +77,22 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 
 	for (Map<Element *, PairData *>::Element *E = p_elem->paired.front(); E; E = E->next()) {
 
-		bool pairing = p_elem->aabb.intersects(E->key()->aabb);
+		bool physical_collision = p_elem->aabb.intersects(E->key()->aabb);
+		bool logical_collision = p_elem->owner->test_collision_mask(E->key()->owner);
 
-		if (pairing != E->get()->colliding) {
-
-			if (pairing) {
-
-				if (pair_callback) {
-					E->get()->ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, pair_userdata);
-				}
-			} else {
-
-				if (unpair_callback) {
-					unpair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, E->get()->ud, unpair_userdata);
-				}
+		if (physical_collision) {
+			if (!E->get()->colliding || (logical_collision && !E->get()->ud && pair_callback)) {
+				E->get()->ud = pair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, pair_userdata);
+			} else if (E->get()->colliding && !logical_collision && E->get()->ud && unpair_callback) {
+				unpair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, E->get()->ud, unpair_userdata);
+				E->get()->ud = nullptr;
 			}
-
-			E->get()->colliding = pairing;
+			E->get()->colliding = true;
+		} else { // No physcial_collision
+			if (E->get()->colliding && unpair_callback) {
+				unpair_callback(p_elem->owner, p_elem->subindex, E->key()->owner, E->key()->subindex, E->get()->ud, unpair_userdata);
+			}
+			E->get()->colliding = false;
 		}
 	}
 }
@@ -339,25 +339,24 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 
 	Element &e = E->get();
 
-	if (p_aabb == e.aabb)
-		return;
+	if (p_aabb != e.aabb) {
 
-	if (p_aabb != Rect2()) {
+		if (p_aabb != Rect2()) {
 
-		_enter_grid(&e, p_aabb, e._static);
+			_enter_grid(&e, p_aabb, e._static);
+		}
+
+		if (e.aabb != Rect2()) {
+
+			_exit_grid(&e, e.aabb, e._static);
+		}
+
+		e.aabb = p_aabb;
 	}
-
-	if (e.aabb != Rect2()) {
-
-		_exit_grid(&e, e.aabb, e._static);
-	}
-
-	e.aabb = p_aabb;
 
 	_check_motion(&e);
-
-	e.aabb = p_aabb;
 }
+
 void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
 
 	Map<ID, Element>::Element *E = element_map.find(p_id);
