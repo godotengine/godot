@@ -41,6 +41,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	LineEdit *search_box;
 	Tree *search_options;
+
 	StringName base_type;
 	StringName ei;
 	StringName ot;
@@ -50,7 +51,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture2D>>> &list);
 	Vector<Pair<String, Ref<Texture2D>>> _sort_fs(Vector<Pair<String, Ref<Texture2D>>> &list);
-	float _path_cmp(String search, String path) const;
+	float _score_path(String search, String path) const;
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);

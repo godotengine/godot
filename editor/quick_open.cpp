@@ -62,7 +62,6 @@ Vector<String> EditorQuickOpen::get_selected_files() const {
 	TreeItem *item = search_options->get_next_selected(search_options->get_root());
 	while (item) {
 		files.push_back("res://" + item->get_text(0));
-
 		item = search_options->get_next_selected(item);
 	}
 
@@ -90,7 +89,6 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				}
 
 				TreeItem *current = search_options->get_selected();
-
 				TreeItem *item = search_options->get_next_selected(root);
 				while (item) {
 					item->deselect(0);
@@ -98,25 +96,29 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				}
 
 				current->select(0);
+				current->set_as_cursor(0);
 			} break;
 		}
 	}
 }
 
-float EditorQuickOpen::_path_cmp(String search, String path) const {
-	// Exact match.
-	if (search == path) {
-		return 1.2f;
-	}
-
-	// Substring match, with positive bias for matches close to the end of the path.
-	int pos = path.rfindn(search);
+float EditorQuickOpen::_score_path(String search, String path) const {
+	// Positive bias for matches close to the _beginning of the file name_.
+	String file = path.get_file();
+	int pos = file.findn(search);
 	if (pos != -1) {
-		return 1.1f + 0.09 / (path.length() - pos + 1);
+		return 1.0f - 0.1f * (float(pos) / file.length());
 	}
 
-	// Similarity.
-	return path.to_lower().similarity(search.to_lower());
+	// Positive bias for matches close to the _end of the path_.
+	String base = path.get_base_dir();
+	pos = base.rfindn(search);
+	if (pos != -1) {
+		return 0.9f - 0.1f * (float(base.length() - pos) / base.length());
+	}
+
+	// Results that contain all characters but not the string.
+	return path.similarity(search) * 0.8f;
 }
 
 void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture2D>>> &list) {
@@ -124,25 +126,25 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 		_parse_fs(efsd->get_subdir(i), list);
 	}
 
-	String search_text = search_box->get_text();
-
 	for (int i = 0; i < efsd->get_file_count(); i++) {
-		String file = efsd->get_file_path(i);
-		file = file.substr(6, file.length());
-
 		StringName file_type = efsd->get_file_type(i);
-		if (ClassDB::is_parent_class(file_type, base_type) && search_text.is_subsequence_ofi(file)) {
-			Pair<String, Ref<Texture2D>> pair;
-			pair.first = file;
-			StringName icon_name = search_options->has_theme_icon(file_type, ei) ? file_type : ot;
-			pair.second = search_options->get_theme_icon(icon_name, ei);
-			list.push_back(pair);
+
+		if (ClassDB::is_parent_class(file_type, base_type)) {
+			String file = efsd->get_file_path(i);
+			file = file.substr(6, file.length());
+
+			if (search_box->get_text().is_subsequence_ofi(file)) {
+				Pair<String, Ref<Texture2D>> pair;
+				pair.first = file;
+				pair.second = search_options->get_theme_icon(search_options->has_theme_icon(file_type, ei) ? file_type : ot, ei);
+				list.push_back(pair);
+			}
 		}
 	}
 }
 
 Vector<Pair<String, Ref<Texture2D>>> EditorQuickOpen::_sort_fs(Vector<Pair<String, Ref<Texture2D>>> &list) {
-	String search_text = search_box->get_text();
+	String search_text = search_box->get_text().to_lower();
 	Vector<Pair<String, Ref<Texture2D>>> sorted_list;
 
 	if (search_text == String() || list.size() == 0) {
@@ -152,7 +154,7 @@ Vector<Pair<String, Ref<Texture2D>>> EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 	Vector<float> scores;
 	scores.resize(list.size());
 	for (int i = 0; i < list.size(); i++) {
-		scores.write[i] = _path_cmp(search_text, list[i].first);
+		scores.write[i] = _score_path(search_text, list[i].first.to_lower());
 	}
 
 	while (list.size() > 0) {
@@ -190,19 +192,17 @@ void EditorQuickOpen::_update_search() {
 		ti->set_icon(0, list[i].second);
 	}
 
-	if (root->get_children()) {
-		TreeItem *ti = root->get_children();
-
-		ti->select(0);
-		ti->set_as_cursor(0);
+	TreeItem *result = root->get_children();
+	if (result) {
+		result->select(0);
+		result->set_as_cursor(0);
 	}
 
-	get_ok()->set_disabled(root->get_children() == nullptr);
+	get_ok()->set_disabled(!result);
 }
 
 void EditorQuickOpen::_confirmed() {
-	TreeItem *ti = search_options->get_selected();
-	if (!ti) {
+	if (!search_options->get_selected()) {
 		return;
 	}
 	emit_signal("quick_open");
@@ -252,7 +252,6 @@ EditorQuickOpen::EditorQuickOpen() {
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	get_ok()->set_text(TTR("Open"));
-	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 
