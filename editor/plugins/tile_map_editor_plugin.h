@@ -184,7 +184,6 @@ class TileMapEditor : public VBoxContainer {
 	ItemList* _create_manual_palette();
 	String _get_texture_name(Ref<Texture2D> tex);
 	void _update_palette();
-	void _add_tile(int tile_id, ItemList& palette);
 	void _update_button_tool();
 	void _button_tool_select(int p_tool);
 	void _menu_option(int p_option);

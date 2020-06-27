@@ -38,8 +38,6 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
 
-#include <thirdparty/glslang/glslang/Include/Common.h>
-
 void TileMapEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
@@ -682,10 +680,6 @@ void TileMapEditor::_update_palette() {
 		manual_button->hide();
 		priority_button->show();
 	}
-}
-
-void TileMapEditor::_add_tile(int tile_id, ItemList &palette) {
-
 }
 
 void TileMapEditor::_pick_tile(const Point2 &p_pos) {
