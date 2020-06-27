@@ -457,7 +457,6 @@ ItemList *TileMapEditor::_create_palette() {
 	palette->connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
 	palette->connect("gui_input", callable_mp(this, &TileMapEditor::_palette_input));
 	return palette;
-	// return ItemList();
 }
 
 ItemList *TileMapEditor::_create_manual_palette() {
@@ -467,9 +466,8 @@ ItemList *TileMapEditor::_create_manual_palette() {
 	manual_palette->set_max_columns(0);
 	manual_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	manual_palette->set_max_text_lines(2);
-	// manual_palette->hide();
+	manual_palette->hide();
 	return manual_palette;
-	// return ItemList();
 }
 
 String TileMapEditor::_get_texture_name(Ref<Texture2D> tex) {
@@ -562,7 +560,6 @@ void TileMapEditor::_update_palette() {
 		String tex_name = _get_texture_name(tex);
 		String palette_name = current_palette->get_parent()->get_name();
 		if (palette_name == tex_name || palette_name == TTR("All")) {
-			// if(tex == current_palette->)
 			if (show_tile_names) {
 				current_palette->add_item(entries[i].name);
 			} else {
@@ -2011,24 +2008,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	add_child(palette_tabs);
 
 	_create_palettes();
-	// VSplitContainer *palette_container = memnew(VSplitContainer);
-	// palette_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	// palette_container->set_custom_minimum_size(Size2(mw, 0));
-	// add_child(palette_container);
-
-	// Add tile palette.
-	// palette = memnew(ItemList);
-	// palette->set_h_size_flags(SIZE_EXPAND_FILL);
-	// palette->set_v_size_flags(SIZE_EXPAND_FILL);
-	// palette->set_max_columns(0);
-	// palette->set_icon_mode(ItemList::ICON_MODE_TOP);
-	// palette->set_max_text_lines(2);
-	// palette->set_select_mode(ItemList::SELECT_MULTI);
-	// palette->add_theme_constant_override("vseparation", 8 * EDSCALE);
-	// palette->connect("item_selected", callable_mp(this, &TileMapEditor::_palette_selected));
-	// palette->connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
-	// palette->connect("gui_input", callable_mp(this, &TileMapEditor::_palette_input));
-	// palette_container->add_child(palette);
 
 	// Add message for when no texture is selected.
 	info_message = memnew(Label);
@@ -2038,17 +2017,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
-	// palette->add_child(info_message);
-
-	// Add autotile override palette.
-	// manual_palette = memnew(ItemList);
-	// manual_palette->set_h_size_flags(SIZE_EXPAND_FILL);
-	// manual_palette->set_v_size_flags(SIZE_EXPAND_FILL);
-	// manual_palette->set_max_columns(0);
-	// manual_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
-	// manual_palette->set_max_text_lines(2);
-	// manual_palette->hide();
-	// palette_container->add_child(manual_palette);
 
 	// Add menu items.
 	toolbar = memnew(HBoxContainer);
