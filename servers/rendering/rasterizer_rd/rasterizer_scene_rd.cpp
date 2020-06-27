@@ -6802,10 +6802,18 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 	}
 
 	RD::get_singleton()->free(default_giprobe_buffer);
-
 	RD::get_singleton()->free(gi_probe_lights_uniform);
+	RD::get_singleton()->free(gi.sdfgi_ubo);
+
 	giprobe_debug_shader.version_free(giprobe_debug_shader_version);
 	giprobe_shader.version_free(giprobe_lighting_shader_version);
+	gi.shader.version_free(gi.shader_version);
+	sdfgi_shader.debug_probes.version_free(sdfgi_shader.debug_probes_shader);
+	sdfgi_shader.debug.version_free(sdfgi_shader.debug_shader);
+	sdfgi_shader.direct_light.version_free(sdfgi_shader.direct_light_shader);
+	sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
+	sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
+
 	memdelete_arr(gi_probe_lights);
 	SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 	sky_shader.shader.version_free(md->shader_data->version);
