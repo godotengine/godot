@@ -35,6 +35,7 @@
 #include "editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
 class EditorQuickOpen : public ConfirmationDialog {
 
 	GDCLASS(EditorQuickOpen, ConfirmationDialog);
@@ -44,7 +45,6 @@ class EditorQuickOpen : public ConfirmationDialog {
 	StringName base_type;
 	StringName ei;
 	StringName ot;
-	bool add_directories;
 
 	void _update_search();
 
@@ -66,7 +66,7 @@ public:
 	String get_selected() const;
 	Vector<String> get_selected_files() const;
 
-	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_add_dirs = false, bool p_dontclear = false);
+	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_dontclear = false);
 	EditorQuickOpen();
 };
 
