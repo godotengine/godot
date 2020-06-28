@@ -40,8 +40,9 @@
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/skin.h"
 
-class Material;
 class AnimationPlayer;
+class CollisionObject3D;
+class Material;
 
 class ImporterMesh;
 class EditorSceneFormatImporter : public RefCounted {
@@ -206,6 +207,15 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_CAPSULE,
 	};
 
+	enum class ColliderImportMode {
+		NONE,
+		STATIC,
+		ANIMATABLE,
+		RIGID,
+		AREA,
+	};
+
+	CollisionObject3D *_create_collision_object(ColliderImportMode p_collider_import_mode);
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	void _generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
@@ -267,7 +277,7 @@ public:
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
-	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
+	Node *_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames, ColliderImportMode p_collider_import_mode = ColliderImportMode::STATIC);
 	Node *_post_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, Set<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
