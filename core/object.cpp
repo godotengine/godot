@@ -1996,7 +1996,7 @@ Object::~Object() {
 	ObjectRC *rc = _rc.load(std::memory_order_acquire);
 	if (rc) {
 		if (rc->invalidate()) {
-			memfree(rc);
+			memdelete(rc);
 		}
 	}
 #endif
