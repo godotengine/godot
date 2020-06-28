@@ -881,6 +881,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					String tname = string_table[name];
 					uint32_t attrcount = decode_uint32(&p_manifest[iofs + 20]);
 					iofs += 28;
+					bool is_focus_aware_metadata = false;
 
 					for (uint32_t i = 0; i < attrcount; i++) {
 						uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
@@ -958,9 +959,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "oculus_focus_aware_value") {
+						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
 							// Update the focus awareness meta-data value
-							string_table.write[attr_value] = xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? "true" : "false";
+							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 						}
 
 						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
@@ -968,6 +969,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							string_table.write[attr_value] = plugins_names;
 						}
 
+						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
 						iofs += 20;
 					}
 
