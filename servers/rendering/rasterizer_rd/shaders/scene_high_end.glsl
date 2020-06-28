@@ -2519,11 +2519,15 @@ FRAGMENT_SHADER_CODE
 				vec3(0, -1, 0),
 				vec3(0, 0, -1));
 
-		vec3 cam_normal = mat3(scene_data.camera_matrix) * normal;
+		vec3 cam_normal = mat3(scene_data.camera_matrix) * normalize(normal_interp);
+
+		float closest_dist = -1e20;
 
 		for (uint i = 0; i < 6; i++) {
-			if (dot(cam_normal, aniso_dir[i]) > 0.001) {
-				facing_bits |= (1 << i);
+			float d = dot(cam_normal, aniso_dir[i]);
+			if (d > closest_dist) {
+				closest_dist = d;
+				facing_bits = (1 << i);
 			}
 		}
 
