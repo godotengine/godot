@@ -46,12 +46,12 @@ bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
 		switch ((int)p_value) {
 			case 0:
-			case 1:
+			case 1: {
 				set_item_checkable(idx, p_value);
-				break;
-			case 2:
+			} break;
+			case 2: {
 				set_item_radio_checkable(idx, true);
-				break;
+			} break;
 		}
 	} else if (what == "checked") {
 		set_item_checked(idx, p_value);
@@ -103,18 +103,18 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_item_count(); i++) {
 		String base = itos(i) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
+		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
 
 		int flags = get_flags();
+
+		if (flags & FLAG_ID) {
+			p_list->push_back(PropertyInfo(Variant::INT, base + "id", PROPERTY_HINT_RANGE, "-1,4096"));
+		}
 
 		if (flags & FLAG_CHECKABLE) {
 			p_list->push_back(PropertyInfo(Variant::INT, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
-		}
-
-		if (flags & FLAG_ID) {
-			p_list->push_back(PropertyInfo(Variant::INT, base + "id", PROPERTY_HINT_RANGE, "-1,4096"));
 		}
 
 		if (flags & FLAG_ENABLE) {
@@ -200,7 +200,7 @@ ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
 ///////////////////////////////////////////////////////////////
 
 void ItemListItemListPlugin::set_object(Object *p_object) {
-	pp = Object::cast_to<ItemList>(p_object);
+	il = Object::cast_to<ItemList>(p_object);
 }
 
 bool ItemListItemListPlugin::handles(Object *p_object) const {
@@ -212,21 +212,21 @@ int ItemListItemListPlugin::get_flags() const {
 }
 
 void ItemListItemListPlugin::add_item() {
-	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
+	il->add_item(vformat(TTR("Item %d"), il->get_item_count()));
 	_change_notify();
 }
 
 int ItemListItemListPlugin::get_item_count() const {
-	return pp->get_item_count();
+	return il->get_item_count();
 }
 
 void ItemListItemListPlugin::erase(int p_idx) {
-	pp->remove_item(p_idx);
+	il->remove_item(p_idx);
 	_change_notify();
 }
 
 ItemListItemListPlugin::ItemListItemListPlugin() {
-	pp = nullptr;
+	il = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -237,7 +237,6 @@ void ItemListEditor::_node_removed(Node *p_node) {
 	if (p_node == item_list) {
 		item_list = nullptr;
 		hide();
-		dialog->hide();
 	}
 }
 
@@ -251,43 +250,41 @@ void ItemListEditor::_notification(int p_notification) {
 }
 
 void ItemListEditor::_add_pressed() {
-	if (selected_idx == -1) {
+	if (plugin_idx == -1) {
 		return;
 	}
 
-	item_plugins[selected_idx]->add_item();
+	item_plugins[plugin_idx]->add_item();
 }
 
 void ItemListEditor::_delete_pressed() {
-	if (selected_idx == -1) {
+	if (plugin_idx == -1) {
 		return;
 	}
 
-	String current_selected = (String)property_editor->get_selected_path();
-
-	if (current_selected == "") {
-		return;
-	}
+	String current_selected = property_editor->get_selected_path();
+	ERR_FAIL_COND_MSG(current_selected == "", "Trying to delete item from ItemList while nothing was selected.");
 
 	// FIXME: Currently relying on selecting a *property* to derive what item to delete
 	// e.g. you select "1/enabled" to delete item 1.
 	// This should be fixed so that you can delete by selecting the item section header,
 	// or a delete button on that header.
-
 	int idx = current_selected.get_slice("/", 0).to_int();
+	item_plugins[plugin_idx]->erase(idx);
 
-	item_plugins[selected_idx]->erase(idx);
+	// If we remove the last item, no item will be selected so the delete button is disabled.
+	del_button->set_disabled(idx == item_plugins[plugin_idx]->get_item_count());
 }
 
-void ItemListEditor::_edit_items() {
-	dialog->popup_centered_clamped(Vector2(425, 1200) * EDSCALE, 0.8);
+void ItemListEditor::_update_del_button(const String &p_path) {
+	del_button->set_disabled(p_path == "");
 }
 
 void ItemListEditor::edit(Node *p_item_list) {
 	item_list = p_item_list;
 
 	if (!item_list) {
-		selected_idx = -1;
+		plugin_idx = -1;
 		property_editor->edit(nullptr);
 		return;
 	}
@@ -296,15 +293,13 @@ void ItemListEditor::edit(Node *p_item_list) {
 		if (item_plugins[i]->handles(p_item_list)) {
 			item_plugins[i]->set_object(p_item_list);
 			property_editor->edit(item_plugins[i]);
-
-			toolbar_button->set_icon(EditorNode::get_singleton()->get_object_icon(item_list, ""));
-
-			selected_idx = i;
+			plugin_idx = i;
+			_update_del_button(property_editor->get_selected_path());
 			return;
 		}
 	}
 
-	selected_idx = -1;
+	plugin_idx = -1;
 	property_editor->edit(nullptr);
 }
 
@@ -322,42 +317,37 @@ void ItemListEditor::_bind_methods() {
 }
 
 ItemListEditor::ItemListEditor() {
-	selected_idx = -1;
+	plugin_idx = -1;
 	item_list = nullptr;
 
-	toolbar_button = memnew(Button);
-	toolbar_button->set_flat(true);
-	toolbar_button->set_text(TTR("Items"));
-	add_child(toolbar_button);
-	toolbar_button->connect("pressed", callable_mp(this, &ItemListEditor::_edit_items));
+	set_custom_minimum_size(Size2(220 * EDSCALE, 0));
 
-	dialog = memnew(AcceptDialog);
-	dialog->set_title(TTR("Item List Editor"));
-	add_child(dialog);
+	Label *title = memnew(Label);
+	title->set_text(TTR("ItemList Editor"));
+	title->set_align(Label::ALIGN_CENTER);
+	add_child(title);
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	dialog->add_child(vbc);
-	//dialog->set_child_rect(vbc);
-
-	HBoxContainer *hbc = memnew(HBoxContainer);
-	hbc->set_h_size_flags(SIZE_EXPAND_FILL);
-	vbc->add_child(hbc);
+	HBoxContainer *tools = memnew(HBoxContainer);
+	tools->set_alignment(AlignMode::ALIGN_CENTER);
+	tools->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(tools);
 
 	add_button = memnew(Button);
-	add_button->set_text(TTR("Add"));
-	hbc->add_child(add_button);
 	add_button->connect("pressed", callable_mp(this, &ItemListEditor::_add_pressed));
-
-	hbc->add_spacer();
+	add_button->set_tooltip(TTR("Add a new item at the end of the list."));
+	tools->add_child(add_button);
 
 	del_button = memnew(Button);
-	del_button->set_text(TTR("Delete"));
-	hbc->add_child(del_button);
 	del_button->connect("pressed", callable_mp(this, &ItemListEditor::_delete_pressed));
+	del_button->set_tooltip(TTR("Remove selected item."));
+	tools->add_child(del_button);
+
+	add_child(memnew(HSeparator));
 
 	property_editor = memnew(EditorInspector);
-	vbc->add_child(property_editor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	property_editor->connect("property_selected", callable_mp(this, &ItemListEditor::_update_del_button));
+	add_child(property_editor);
 }
 
 ItemListEditor::~ItemListEditor() {
@@ -384,14 +374,13 @@ void ItemListEditorPlugin::make_visible(bool p_visible) {
 }
 
 ItemListEditorPlugin::ItemListEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
 	item_list_editor = memnew(ItemListEditor);
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(item_list_editor);
-
-	item_list_editor->hide();
 	item_list_editor->add_plugin(memnew(ItemListOptionButtonPlugin));
 	item_list_editor->add_plugin(memnew(ItemListPopupMenuPlugin));
 	item_list_editor->add_plugin(memnew(ItemListItemListPlugin));
+
+	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT, item_list_editor);
+	item_list_editor->hide();
 }
 
 ItemListEditorPlugin::~ItemListEditorPlugin() {

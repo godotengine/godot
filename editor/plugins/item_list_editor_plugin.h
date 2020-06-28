@@ -49,7 +49,6 @@ protected:
 
 public:
 	enum Flags {
-
 		FLAG_ICON = 1,
 		FLAG_CHECKABLE = 2,
 		FLAG_ID = 4,
@@ -168,21 +167,21 @@ public:
 class ItemListItemListPlugin : public ItemListPlugin {
 	GDCLASS(ItemListItemListPlugin, ItemListPlugin);
 
-	ItemList *pp;
+	ItemList *il;
 
 public:
 	virtual void set_object(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual int get_flags() const override;
 
-	virtual void set_item_text(int p_idx, const String &p_text) override { pp->set_item_text(p_idx, p_text); }
-	virtual String get_item_text(int p_idx) const override { return pp->get_item_text(p_idx); }
+	virtual void set_item_text(int p_idx, const String &p_text) override { il->set_item_text(p_idx, p_text); }
+	virtual String get_item_text(int p_idx) const override { return il->get_item_text(p_idx); }
 
-	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) override { pp->set_item_icon(p_idx, p_tex); }
-	virtual Ref<Texture2D> get_item_icon(int p_idx) const override { return pp->get_item_icon(p_idx); }
+	virtual void set_item_icon(int p_idx, const Ref<Texture2D> &p_tex) override { il->set_item_icon(p_idx, p_tex); }
+	virtual Ref<Texture2D> get_item_icon(int p_idx) const override { return il->get_item_icon(p_idx); }
 
-	virtual void set_item_enabled(int p_idx, int p_enabled) override { pp->set_item_disabled(p_idx, !p_enabled); }
-	virtual bool is_item_enabled(int p_idx) const override { return !pp->is_item_disabled(p_idx); }
+	virtual void set_item_enabled(int p_idx, int p_enabled) override { il->set_item_disabled(p_idx, !p_enabled); }
+	virtual bool is_item_enabled(int p_idx) const override { return !il->is_item_disabled(p_idx); }
 
 	virtual void add_item() override;
 	virtual int get_item_count() const override;
@@ -193,28 +192,23 @@ public:
 
 ///////////////////////////////////////////////////////////////
 
-class ItemListEditor : public HBoxContainer {
-	GDCLASS(ItemListEditor, HBoxContainer);
+class ItemListEditor : public VBoxContainer {
+	GDCLASS(ItemListEditor, VBoxContainer);
 
 	Node *item_list;
 
-	Button *toolbar_button;
-
-	AcceptDialog *dialog;
 	EditorInspector *property_editor;
-	Tree *tree;
 	Button *add_button;
 	Button *del_button;
 
-	int selected_idx;
+	int plugin_idx;
 
 	Vector<ItemListPlugin *> item_plugins;
-
-	void _edit_items();
 
 	void _add_pressed();
 	void _delete_pressed();
 
+	void _update_del_button(const String &p_path);
 	void _node_removed(Node *p_node);
 
 protected:
@@ -233,7 +227,6 @@ class ItemListEditorPlugin : public EditorPlugin {
 	GDCLASS(ItemListEditorPlugin, EditorPlugin);
 
 	ItemListEditor *item_list_editor;
-	EditorNode *editor;
 
 public:
 	virtual String get_name() const override { return "ItemList"; }
