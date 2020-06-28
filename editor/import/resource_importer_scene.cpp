@@ -263,10 +263,10 @@ static void _pre_gen_shape_list(const Ref<EditorSceneImporterMesh> &mesh, List<R
 	}
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map) {
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> &collision_map, ColliderImportMode p_collider_import_mode) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map);
+		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map, p_collider_import_mode);
 		if (!r) {
 			i--; //was erased
 		}
@@ -371,45 +371,69 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
 
 				if (shapes.size()) {
-					StaticBody3D *col = memnew(StaticBody3D);
-					col->set_transform(mi->get_transform());
-					col->set_name(fixed_name);
-					p_node->replace_by(col);
-					memdelete(p_node);
-					p_node = col;
+					if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_NONE) {
+						memdelete(p_node);
+						p_node = nullptr;
+					} else {
+						CollisionObject3D *col;
+						if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_STATIC) {
+							col = memnew(StaticBody3D);
+						} else if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_RIGID) {
+							col = memnew(RigidBody3D);
+						} else { // if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_AREA)
+							col = memnew(Area3D);
+						}
+						col->set_transform(mi->get_transform());
+						col->set_name(fixed_name);
+						p_node->replace_by(col);
+						memdelete(p_node);
+						p_node = col;
 
-					_add_shapes(col, shapes);
+						_add_shapes(col, shapes);
+					}
 				}
 			}
 
 		} else if (p_node->has_meta("empty_draw_type")) {
-			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			StaticBody3D *sb = memnew(StaticBody3D);
-			sb->set_name(_fixstr(name, "colonly"));
-			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
-			p_node->replace_by(sb);
-			memdelete(p_node);
-			p_node = nullptr;
-			CollisionShape3D *colshape = memnew(CollisionShape3D);
-			if (empty_draw_type == "CUBE") {
-				BoxShape3D *boxShape = memnew(BoxShape3D);
-				boxShape->set_size(Vector3(2, 2, 2));
-				colshape->set_shape(boxShape);
-			} else if (empty_draw_type == "SINGLE_ARROW") {
-				RayShape3D *rayShape = memnew(RayShape3D);
-				rayShape->set_length(1);
-				colshape->set_shape(rayShape);
-				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
-			} else if (empty_draw_type == "IMAGE") {
-				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
-				colshape->set_shape(world_margin_shape);
+			if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_NONE) {
+				memdelete(p_node);
+				p_node = nullptr;
 			} else {
-				SphereShape3D *sphereShape = memnew(SphereShape3D);
-				sphereShape->set_radius(1);
-				colshape->set_shape(sphereShape);
+				CollisionObject3D *col;
+				if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_STATIC) {
+					col = memnew(StaticBody3D);
+				} else if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_RIGID) {
+					col = memnew(RigidBody3D);
+				} else { // if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_AREA)
+					col = memnew(Area3D);
+				}
+				String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
+				col->set_name(_fixstr(name, "Collision"));
+				col->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
+				p_node->replace_by(col);
+				memdelete(p_node);
+				p_node = nullptr;
+				CollisionShape3D *colshape = memnew(CollisionShape3D);
+				if (empty_draw_type == "CUBE") {
+					BoxShape3D *boxShape = memnew(BoxShape3D);
+					boxShape->set_size(Vector3(2, 2, 2));
+					colshape->set_shape(boxShape);
+				} else if (empty_draw_type == "SINGLE_ARROW") {
+					RayShape3D *rayShape = memnew(RayShape3D);
+					rayShape->set_length(1);
+					colshape->set_shape(rayShape);
+					col->rotate_x(Math_PI / 2);
+				} else if (empty_draw_type == "IMAGE") {
+					WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
+					colshape->set_shape(world_margin_shape);
+				} else {
+					SphereShape3D *sphereShape = memnew(SphereShape3D);
+					sphereShape->set_radius(1);
+					colshape->set_shape(sphereShape);
+				}
+				col->add_child(colshape);
+				colshape->set_owner(col->get_owner());
 			}
-			sb->add_child(colshape);
-			colshape->set_owner(sb->get_owner());
 		}
 
 	} else if (_teststr(name, "rigid") && Object::cast_to<EditorSceneImporterMeshNode3D>(p_node)) {
@@ -470,8 +494,15 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				}
 			}
 
-			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
+			if (shapes.size() && p_collider_import_mode != ColliderImportMode::COLLIDER_IMPORT_NONE) {
+				CollisionObject3D *col;
+				if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_STATIC) {
+					col = memnew(StaticBody3D);
+				} else if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_RIGID) {
+					col = memnew(RigidBody3D);
+				} else { // if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_AREA)
+					col = memnew(Area3D);
+				}
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
@@ -518,8 +549,15 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 				mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
 			}
 
-			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
+			if (shapes.size() && p_collider_import_mode != ColliderImportMode::COLLIDER_IMPORT_NONE) {
+				CollisionObject3D *col;
+				if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_STATIC) {
+					col = memnew(StaticBody3D);
+				} else if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_RIGID) {
+					col = memnew(RigidBody3D);
+				} else { // if (p_collider_import_mode == ColliderImportMode::COLLIDER_IMPORT_AREA)
+					col = memnew(Area3D);
+				}
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
@@ -1059,6 +1097,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Dynamic,Static,Static Lightmaps", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 2));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/collider_import", PROPERTY_HINT_ENUM, "None,Static,Rigid,Area"), ColliderImportMode::COLLIDER_IMPORT_STATIC));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
@@ -1382,6 +1421,8 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		import_flags |= EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 	}
 
+	ColliderImportMode collider_import_mode = ColliderImportMode(int(p_options["physics/collider_import"]));
+
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
 	Node *scene = importer->import_scene(src_path, import_flags, fps, &missing_deps, &err);
@@ -1409,7 +1450,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Set<Ref<EditorSceneImporterMesh>> scanned_meshes;
 	Map<Ref<EditorSceneImporterMesh>, List<Ref<Shape3D>>> collision_map;
 
-	_pre_fix_node(scene, scene, collision_map);
+	_pre_fix_node(scene, scene, collision_map, collider_import_mode);
 	_post_fix_node(scene, scene, collision_map, scanned_meshes, node_data, material_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
