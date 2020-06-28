@@ -3705,10 +3705,14 @@ void EditorNode::_quick_opened() {
 
 	Vector<String> files = quick_open->get_selected_files();
 
+	bool open_scene_dialog = quick_open->get_base_type() == "PackedScene";
 	for (int i = 0; i < files.size(); i++) {
 		String res_path = files[i];
 
-		if (quick_open->get_base_type() == "PackedScene") {
+		List<String> scene_extensions;
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+
+		if (open_scene_dialog || scene_extensions.find(files[i].get_extension())) {
 			open_request(res_path);
 		} else {
 			load_resource(res_path);
