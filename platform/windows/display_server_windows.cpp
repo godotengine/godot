@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "display_server_windows.h"
+
 #include "core/io/marshalls.h"
+#include "core/math/geometry_2d.h"
 #include "main/main.h"
 #include "os_windows.h"
 #include "scene/resources/texture.h"
@@ -597,6 +599,36 @@ void DisplayServerWindows::window_set_title(const String &p_title, WindowID p_wi
 	SetWindowTextW(windows[p_window].hWnd, (LPCWSTR)(p_title.utf16().get_data()));
 }
 
+void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mpath = p_region;
+	_update_window_mouse_passthrough(p_window);
+}
+
+void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
+	if (windows[p_window].mpath.size() == 0) {
+		SetWindowRgn(windows[p_window].hWnd, nullptr, TRUE);
+	} else {
+		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
+		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
+			if (windows[p_window].borderless) {
+				points[i].x = windows[p_window].mpath[i].x;
+				points[i].y = windows[p_window].mpath[i].y;
+			} else {
+				points[i].x = windows[p_window].mpath[i].x + GetSystemMetrics(SM_CXSIZEFRAME);
+				points[i].y = windows[p_window].mpath[i].y + GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
+			}
+		}
+
+		HRGN region = CreatePolygonRgn(points, windows[p_window].mpath.size(), ALTERNATE);
+		SetWindowRgn(windows[p_window].hWnd, region, TRUE);
+		DeleteObject(region);
+		memfree(points);
+	}
+}
+
 int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1010,6 +1042,7 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		case WINDOW_FLAG_BORDERLESS: {
 			wd.borderless = p_enabled;
 			_update_window_style(p_window);
+			_update_window_mouse_passthrough(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top");
