@@ -2008,7 +2008,6 @@ bool Main::start() {
  */
 
 uint64_t Main::last_ticks = 0;
-uint64_t Main::target_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
@@ -2163,38 +2162,7 @@ bool Main::iteration() {
 	if (fixed_fps != -1)
 		return exit;
 
-	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
-	if (frame_delay) {
-		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
-		// the actual frame time into account.
-		// Due to the high fluctuation of the actual sleep duration, it's not recommended
-		// to use this as a FPS limiter.
-		OS::get_singleton()->delay_usec(frame_delay * 1000);
-	}
-
-	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
-	// previous frame time into account for a smoother result.
-	uint64_t dynamic_delay = 0;
-	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw()) {
-		dynamic_delay = OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
-	}
-	const int target_fps = Engine::get_singleton()->get_target_fps();
-	if (target_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
-		// Override the low processor usage mode sleep delay if the target FPS is lower.
-		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / target_fps));
-	}
-
-	if (dynamic_delay > 0) {
-		target_ticks += dynamic_delay;
-		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
-
-		if (current_ticks < target_ticks) {
-			OS::get_singleton()->delay_usec(target_ticks - current_ticks);
-		}
-
-		current_ticks = OS::get_singleton()->get_ticks_usec();
-		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
-	}
+	OS::get_singleton()->add_frame_delay(OS::get_singleton()->can_draw());
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
