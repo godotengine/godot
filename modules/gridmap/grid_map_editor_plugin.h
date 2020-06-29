@@ -84,7 +84,7 @@ class GridMapEditor : public VBoxContainer {
 	Label *spin_box_label;
 
 	struct SetItem {
-		Vector3 pos;
+		Vector3i position;
 		int new_value;
 		int new_orientation;
 		int old_value;
