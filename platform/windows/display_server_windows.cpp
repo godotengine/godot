@@ -1790,6 +1790,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// Restore mouse mode
 			_set_mouse_mode_impl(mouse_mode);
 
+			if (!app_focused) {
+				if (OS::get_singleton()->get_main_loop()) {
+					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+				}
+				app_focused = true;
+			}
 			break;
 		}
 		case WM_KILLFOCUS: {
@@ -1804,6 +1810,19 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				_touch_event(window_id, false, E->get().x, E->get().y, E->key());
 			}
 			touch_state.clear();
+
+			bool self_steal = false;
+			HWND new_hwnd = (HWND)wParam;
+			if (IsWindow(new_hwnd)) {
+				self_steal = true;
+			}
+
+			if (!self_steal) {
+				if (OS::get_singleton()->get_main_loop()) {
+					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+				}
+				app_focused = false;
+			}
 
 			break;
 		}
