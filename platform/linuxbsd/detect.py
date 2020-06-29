@@ -35,6 +35,11 @@ def can_build():
         print("xinerama not found.. x11 disabled.")
         return False
 
+    x11_error = os.system("pkg-config xext --modversion > /dev/null ")
+    if x11_error:
+        print("xext not found.. x11 disabled.")
+        return False
+
     x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
     if x11_error:
         print("xrandr not found.. x11 disabled.")
@@ -194,6 +199,7 @@ def configure(env):
     env.ParseConfig("pkg-config x11 --cflags --libs")
     env.ParseConfig("pkg-config xcursor --cflags --libs")
     env.ParseConfig("pkg-config xinerama --cflags --libs")
+    env.ParseConfig("pkg-config xext --cflags --libs")
     env.ParseConfig("pkg-config xrandr --cflags --libs")
     env.ParseConfig("pkg-config xrender --cflags --libs")
     env.ParseConfig("pkg-config xi --cflags --libs")

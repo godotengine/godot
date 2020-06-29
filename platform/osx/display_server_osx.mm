@@ -33,6 +33,7 @@
 #include "os_osx.h"
 
 #include "core/io/marshalls.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
@@ -2404,6 +2405,15 @@ void DisplayServerOSX::window_set_title(const String &p_title, WindowID p_window
 	[wd.window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
+void DisplayServerOSX::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.mpath = p_region;
+}
+
 void DisplayServerOSX::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3354,6 +3364,26 @@ void DisplayServerOSX::process_events() {
 	if (!drop_events) {
 		_process_key_events();
 		Input::get_singleton()->flush_accumulated_events();
+	}
+
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		WindowData &wd = E->get();
+		if (wd.mpath.size() > 0) {
+			const Vector2 mpos = _get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+			if (Geometry2D::is_point_in_polygon(mpos, wd.mpath)) {
+				if ([wd.window_object ignoresMouseEvents]) {
+					[wd.window_object setIgnoresMouseEvents:NO];
+				}
+			} else {
+				if (![wd.window_object ignoresMouseEvents]) {
+					[wd.window_object setIgnoresMouseEvents:YES];
+				}
+			}
+		} else {
+			if ([wd.window_object ignoresMouseEvents]) {
+				[wd.window_object setIgnoresMouseEvents:NO];
+			}
+		}
 	}
 
 	[autoreleasePool drain];
