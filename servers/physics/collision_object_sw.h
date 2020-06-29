@@ -141,10 +141,16 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
+	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
+		collision_layer = p_layer;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
 
-	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
+	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
+		collision_mask = p_mask;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
 	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectSW *p_other) const {
