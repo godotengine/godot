@@ -68,6 +68,20 @@ bool DisplayServerJavaScript::is_canvas_focused() {
 	/* clang-format on */
 }
 
+bool DisplayServerJavaScript::check_size_force_redraw() {
+	int canvas_width;
+	int canvas_height;
+	emscripten_get_canvas_element_size(DisplayServerJavaScript::canvas_id, &canvas_width, &canvas_height);
+	if (last_width != canvas_width || last_height != canvas_height) {
+		last_width = canvas_width;
+		last_height = canvas_height;
+		// Update the framebuffer size and for redraw.
+		emscripten_set_canvas_element_size(DisplayServerJavaScript::canvas_id, canvas_width, canvas_height);
+		return true;
+	}
+	return false;
+}
+
 Point2 DisplayServerJavaScript::compute_position_in_canvas(int p_x, int p_y) {
 	int canvas_x = EM_ASM_INT({
 		return Module['canvas'].getBoundingClientRect().x;
@@ -1080,6 +1094,8 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
+	last_width = p_size.x;
+	last_height = p_size.y;
 	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
 }
 
