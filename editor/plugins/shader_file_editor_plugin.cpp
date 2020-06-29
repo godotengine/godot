@@ -200,7 +200,7 @@ void ShaderFileEditor::_update_options() {
 }
 
 void ShaderFileEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
+	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
 		if (is_visible_in_tree() && shader_file.is_valid()) {
 			_update_options();
 		}
