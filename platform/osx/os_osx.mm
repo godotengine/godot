@@ -444,7 +444,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 @end
 
-@interface GodotContentView : NSView <NSTextInputClient> {
+@interface GodotContentView : NSOpenGLView <NSTextInputClient> {
 	NSTrackingArea *trackingArea;
 	NSMutableAttributedString *markedText;
 	bool imeInputEventInProgress;
@@ -475,7 +475,11 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	trackingArea = nil;
 	imeInputEventInProgress = false;
 	[self updateTrackingAreas];
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
+	[self registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeFileURL]];
+#else
 	[self registerForDraggedTypes:[NSArray arrayWithObject:NSFilenamesPboardType]];
+#endif
 	markedText = [[NSMutableAttributedString alloc] init];
 	return self;
 }
@@ -619,11 +623,19 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
 
 	NSPasteboard *pboard = [sender draggingPasteboard];
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
+	NSArray<NSURL *> *filenames = [pboard propertyListForType:NSPasteboardTypeFileURL];
+#else
 	NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
+#endif
 
 	Vector<String> files;
 	for (NSUInteger i = 0; i < filenames.count; i++) {
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101400
+		NSString *ns = [[filenames objectAtIndex:i] path];
+#else
 		NSString *ns = [filenames objectAtIndex:i];
+#endif
 		char *utfs = strdup([ns UTF8String]);
 		String ret;
 		ret.parse_utf8(utfs);
@@ -712,7 +724,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
 	mm->set_pressure([event pressure]);
-	if ([event subtype] == NSTabletPointEventSubtype) {
+	if ([event subtype] == NSEventSubtypeTabletPoint) {
 		const NSPoint p = [event tilt];
 		mm->set_tilt(Vector2(p.x, p.y));
 	}
@@ -1600,7 +1612,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	ERR_FAIL_COND_V(context == nil, ERR_UNAVAILABLE);
 
-	[context setView:window_view];
+	[window_view setOpenGLContext:context];
 
 	[context makeCurrentContext];
 
@@ -1800,7 +1812,7 @@ void OS_OSX::alert(const String &p_alert, const String &p_title) {
 	[window addButtonWithTitle:@"OK"];
 	[window setMessageText:ns_title];
 	[window setInformativeText:ns_alert];
-	[window setAlertStyle:NSWarningAlertStyle];
+	[window setAlertStyle:NSAlertStyleWarning];
 
 	// Display it, then release
 	[window runModal];
@@ -2686,14 +2698,14 @@ void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 			[window_object setBackgroundColor:[NSColor clearColor]];
 			[window_object setOpaque:NO];
 			[window_object setHasShadow:NO];
-			[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+			[context setValues:&opacity forParameter:NSOpenGLContextParameterSurfaceOpacity];
 			layered_window = true;
 		} else {
 			GLint opacity = 1;
 			[window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
 			[window_object setOpaque:YES];
 			[window_object setHasShadow:YES];
-			[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+			[context setValues:&opacity forParameter:NSOpenGLContextParameterSurfaceOpacity];
 			layered_window = false;
 		}
 		[context update];
