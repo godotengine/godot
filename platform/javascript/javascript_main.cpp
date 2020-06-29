@@ -59,6 +59,10 @@ void exit_callback() {
 
 void main_loop_callback() {
 
+	bool force_draw = os->check_size_force_redraw();
+	if (force_draw) {
+		Main::force_redraw();
+	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
 		EM_ASM({
@@ -106,7 +110,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	EM_ASM({
 		stringToUTF8(Module['locale'], $0, 16);
 	}, locale_ptr);
-
 	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
 

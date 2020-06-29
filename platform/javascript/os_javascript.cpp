@@ -94,17 +94,21 @@ static Point2 compute_position_in_canvas(int x, int y) {
 			(int)(canvas_height / element_height * (y - canvas_y)));
 }
 
-static bool cursor_inside_canvas = true;
-
-extern "C" EMSCRIPTEN_KEEPALIVE void _canvas_resize_callback() {
-	OS_JavaScript *os = OS_JavaScript::get_singleton();
+bool OS_JavaScript::check_size_force_redraw() {
 	int canvas_width;
 	int canvas_height;
-	// Update the framebuffer size.
-	emscripten_get_canvas_element_size(os->canvas_id.utf8().get_data(), &canvas_width, &canvas_height);
-	emscripten_set_canvas_element_size(os->canvas_id.utf8().get_data(), canvas_width, canvas_height);
-	Main::force_redraw();
+	emscripten_get_canvas_element_size(canvas_id.utf8().get_data(), &canvas_width, &canvas_height);
+	if (last_width != canvas_width || last_height != canvas_height) {
+		last_width = canvas_width;
+		last_height = canvas_height;
+		// Update the framebuffer size and for redraw.
+		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), canvas_width, canvas_height);
+		return true;
+	}
+	return false;
 }
+
+static bool cursor_inside_canvas = true;
 
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 
@@ -1062,12 +1066,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
 		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
 		canvas.addEventListener('drop', Module.listeners['drop'], false);
-		// Resize
-		const resize_callback = cwrap('_canvas_resize_callback', null, []);
-		Module.resize_observer = new window['ResizeObserver'](function(elements) {
-			resize_callback();
-		});
-		Module.resize_observer.observe(canvas);
 		// Quit request
 		Module['request_quit'] = function() {
 			send_notification(notifications[notifications.length - 1]);
@@ -1167,8 +1165,6 @@ void OS_JavaScript::finalize_async() {
 			}
 		});
 		Module.listeners = {};
-		Module.resize_observer.unobserve(canvas);
-		delete Module.resize_observer;
 	});
 	audio_driver_javascript.finish_async();
 }
@@ -1408,6 +1404,9 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	last_click_button_index = -1;
 	last_click_ms = 0;
 	last_click_pos = Point2(-100, -100);
+
+	last_width = 0;
+	last_height = 0;
 
 	window_maximized = false;
 	entering_fullscreen = false;

@@ -61,6 +61,9 @@ class OS_JavaScript : public OS_Unix {
 	double last_click_ms;
 	int last_click_button_index;
 
+	int last_width;
+	int last_height;
+
 	MainLoop *main_loop;
 	int video_driver_index;
 	AudioDriverJavaScript audio_driver_javascript;
@@ -105,6 +108,7 @@ protected:
 public:
 	String canvas_id;
 	void finalize_async();
+	bool check_size_force_redraw();
 
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
