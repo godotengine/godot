@@ -47,6 +47,10 @@ void exit_callback() {
 }
 
 void main_loop_callback() {
+	bool force_draw = DisplayServerJavaScript::get_singleton()->check_size_force_redraw();
+	if (force_draw) {
+		Main::force_redraw();
+	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
 		EM_ASM({

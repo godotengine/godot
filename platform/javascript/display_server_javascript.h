@@ -53,6 +53,9 @@ class DisplayServerJavaScript : public DisplayServer {
 	double last_click_ms = 0;
 	int last_click_button_index = -1;
 
+	int last_width = 0;
+	int last_height = 0;
+
 	// utilities
 	static Point2 compute_position_in_canvas(int p_x, int p_y);
 	static void focus_canvas();
@@ -103,6 +106,9 @@ public:
 	Callable input_event_callback;
 	Callable input_text_callback;
 	Callable drop_files_callback;
+
+	// utilities
+	bool check_size_force_redraw();
 
 	// from DisplayServer
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
