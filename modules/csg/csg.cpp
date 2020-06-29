@@ -523,7 +523,7 @@ void CSGBrushOperation::MeshMerge::_add_distance(List<real_t> &r_intersectionsA,
 
 	// Check if distance exists.
 	for (const List<real_t>::Element *E = intersections.front(); E; E = E->next()) {
-		if (Math::abs(**E - p_distance) < vertex_snap) {
+		if (Math::is_equal_approx(**E, p_distance)) {
 			return;
 		}
 	}
