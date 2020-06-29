@@ -745,6 +745,135 @@ bool Environment::_set(const StringName &p_name, const Variant &p_value) {
 }
 #endif
 
+void Environment::set_sdfgi_enabled(bool p_enabled) {
+	sdfgi_enabled = p_enabled;
+	_update_sdfgi();
+}
+
+bool Environment::is_sdfgi_enabled() const {
+	return sdfgi_enabled;
+}
+
+void Environment::set_sdfgi_cascades(SDFGICascades p_cascades) {
+	sdfgi_cascades = p_cascades;
+	_update_sdfgi();
+}
+Environment::SDFGICascades Environment::get_sdfgi_cascades() const {
+	return sdfgi_cascades;
+}
+
+void Environment::set_sdfgi_min_cell_size(float p_size) {
+	sdfgi_min_cell_size = p_size;
+	_change_notify("sdfgi_max_distance");
+	_change_notify("sdfgi_cascade0_distance");
+	_update_sdfgi();
+}
+float Environment::get_sdfgi_min_cell_size() const {
+	return sdfgi_min_cell_size;
+}
+
+void Environment::set_sdfgi_max_distance(float p_size) {
+	p_size /= 64.0;
+	int cc[3] = { 4, 6, 8 };
+	int cascades = cc[sdfgi_cascades];
+	for (int i = 0; i < cascades; i++) {
+		p_size *= 0.5; //halve for each cascade
+	}
+	sdfgi_min_cell_size = p_size;
+	_change_notify("sdfgi_min_cell_size");
+	_change_notify("sdfgi_cascade0_distance");
+	_update_sdfgi();
+}
+float Environment::get_sdfgi_max_distance() const {
+	float md = sdfgi_min_cell_size;
+	md *= 64.0;
+	int cc[3] = { 4, 6, 8 };
+	int cascades = cc[sdfgi_cascades];
+	for (int i = 0; i < cascades; i++) {
+		md *= 2.0;
+	}
+	return md;
+}
+
+void Environment::set_sdfgi_cascade0_distance(float p_size) {
+	sdfgi_min_cell_size = p_size / 64.0;
+	_change_notify("sdfgi_min_cell_size");
+	_change_notify("sdfgi_max_distance");
+	_update_sdfgi();
+}
+float Environment::get_sdfgi_cascade0_distance() const {
+	return sdfgi_min_cell_size * 64.0;
+}
+
+void Environment::set_sdfgi_use_occlusion(bool p_enable) {
+	sdfgi_use_occlusion = p_enable;
+	_update_sdfgi();
+}
+
+bool Environment::is_sdfgi_using_occlusion() const {
+	return sdfgi_use_occlusion;
+}
+
+void Environment::set_sdfgi_use_multi_bounce(bool p_enable) {
+	sdfgi_use_multibounce = p_enable;
+	_update_sdfgi();
+}
+bool Environment::is_sdfgi_using_multi_bounce() const {
+	return sdfgi_use_multibounce;
+}
+
+void Environment::set_sdfgi_use_enhance_ssr(bool p_enable) {
+	sdfgi_enhance_ssr = p_enable;
+	_update_sdfgi();
+}
+bool Environment::is_sdfgi_using_enhance_ssr() const {
+	return sdfgi_enhance_ssr;
+}
+
+void Environment::set_sdfgi_read_sky_light(bool p_enable) {
+	sdfgi_read_sky_light = p_enable;
+	_update_sdfgi();
+}
+
+bool Environment::is_sdfgi_reading_sky_light() const {
+	return sdfgi_read_sky_light;
+}
+
+void Environment::set_sdfgi_energy(float p_energy) {
+	sdfgi_energy = p_energy;
+	_update_sdfgi();
+}
+float Environment::get_sdfgi_energy() const {
+	return sdfgi_energy;
+}
+
+void Environment::set_sdfgi_normal_bias(float p_bias) {
+	sdfgi_normal_bias = p_bias;
+	_update_sdfgi();
+}
+float Environment::get_sdfgi_normal_bias() const {
+	return sdfgi_normal_bias;
+}
+
+void Environment::set_sdfgi_probe_bias(float p_bias) {
+	sdfgi_probe_bias = p_bias;
+	_update_sdfgi();
+}
+float Environment::get_sdfgi_probe_bias() const {
+	return sdfgi_probe_bias;
+}
+
+void Environment::set_sdfgi_y_scale(SDFGIYScale p_y_scale) {
+	sdfgi_y_scale = p_y_scale;
+	_update_sdfgi();
+}
+Environment::SDFGIYScale Environment::get_sdfgi_y_scale() const {
+	return sdfgi_y_scale;
+}
+void Environment::_update_sdfgi() {
+	RS::get_singleton()->environment_set_sdfgi(environment, sdfgi_enabled, RS::EnvironmentSDFGICascades(sdfgi_cascades), sdfgi_min_cell_size, RS::EnvironmentSDFGIYScale(sdfgi_y_scale), sdfgi_use_occlusion, sdfgi_use_multibounce, sdfgi_read_sky_light, sdfgi_enhance_ssr, sdfgi_energy, sdfgi_normal_bias, sdfgi_probe_bias);
+}
+
 void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);
 	ClassDB::bind_method(D_METHOD("set_sky", "sky"), &Environment::set_sky);
@@ -944,6 +1073,56 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_blur", PROPERTY_HINT_ENUM, "Disabled,1x1,2x2,3x3"), "set_ssao_blur", "get_ssao_blur");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_edge_sharpness", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_ssao_edge_sharpness", "get_ssao_edge_sharpness");
 
+	ClassDB::bind_method(D_METHOD("set_sdfgi_enabled", "enabled"), &Environment::set_sdfgi_enabled);
+	ClassDB::bind_method(D_METHOD("is_sdfgi_enabled"), &Environment::is_sdfgi_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_cascades", "amount"), &Environment::set_sdfgi_cascades);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_cascades"), &Environment::get_sdfgi_cascades);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_min_cell_size", "strength"), &Environment::set_sdfgi_min_cell_size);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_min_cell_size"), &Environment::get_sdfgi_min_cell_size);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_max_distance", "strength"), &Environment::set_sdfgi_max_distance);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_max_distance"), &Environment::get_sdfgi_max_distance);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_cascade0_distance", "strength"), &Environment::set_sdfgi_cascade0_distance);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_cascade0_distance"), &Environment::get_sdfgi_cascade0_distance);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_use_occlusion", "enable"), &Environment::set_sdfgi_use_occlusion);
+	ClassDB::bind_method(D_METHOD("is_sdfgi_using_occlusion"), &Environment::is_sdfgi_using_occlusion);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_use_multi_bounce", "enable"), &Environment::set_sdfgi_use_multi_bounce);
+	ClassDB::bind_method(D_METHOD("is_sdfgi_using_multi_bounce"), &Environment::is_sdfgi_using_multi_bounce);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_read_sky_light", "enable"), &Environment::set_sdfgi_read_sky_light);
+	ClassDB::bind_method(D_METHOD("is_sdfgi_reading_sky_light"), &Environment::is_sdfgi_reading_sky_light);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_energy", "amount"), &Environment::set_sdfgi_energy);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_energy"), &Environment::get_sdfgi_energy);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_normal_bias", "bias"), &Environment::set_sdfgi_normal_bias);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_normal_bias"), &Environment::get_sdfgi_normal_bias);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_probe_bias", "bias"), &Environment::set_sdfgi_probe_bias);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_probe_bias"), &Environment::get_sdfgi_probe_bias);
+
+	ClassDB::bind_method(D_METHOD("set_sdfgi_y_scale", "scale"), &Environment::set_sdfgi_y_scale);
+	ClassDB::bind_method(D_METHOD("get_sdfgi_y_scale"), &Environment::get_sdfgi_y_scale);
+
+	ADD_GROUP("SDFGI", "sdfgi_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_enabled"), "set_sdfgi_enabled", "is_sdfgi_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_multi_bounce"), "set_sdfgi_use_multi_bounce", "is_sdfgi_using_multi_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_occlusion"), "set_sdfgi_use_occlusion", "is_sdfgi_using_occlusion");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_read_sky_light"), "set_sdfgi_read_sky_light", "is_sdfgi_reading_sky_light");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_ENUM, "4 Cascades,6 Cascades,8 Cascades"), "set_sdfgi_cascades", "get_sdfgi_cascades");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_y_scale", PROPERTY_HINT_ENUM, "Disable,75%,50%"), "set_sdfgi_y_scale", "get_sdfgi_y_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_energy"), "set_sdfgi_energy", "get_sdfgi_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_normal_bias"), "set_sdfgi_normal_bias", "get_sdfgi_normal_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_probe_bias"), "set_sdfgi_probe_bias", "get_sdfgi_probe_bias");
+
 	ClassDB::bind_method(D_METHOD("set_glow_enabled", "enabled"), &Environment::set_glow_enabled);
 	ClassDB::bind_method(D_METHOD("is_glow_enabled"), &Environment::is_glow_enabled);
 
@@ -1128,6 +1307,19 @@ Environment::Environment() {
 
 	set_fog_color(Color(0.5, 0.6, 0.7));
 	set_fog_sun_color(Color(1.0, 0.9, 0.7));
+
+	sdfgi_enabled = false;
+	sdfgi_cascades = SDFGI_CASCADES_6;
+	sdfgi_min_cell_size = 0.2;
+	sdfgi_use_occlusion = false;
+	sdfgi_use_multibounce = false;
+	sdfgi_read_sky_light = false;
+	sdfgi_enhance_ssr = false;
+	sdfgi_energy = 1.0;
+	sdfgi_normal_bias = 1.1;
+	sdfgi_probe_bias = 1.1;
+	sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
+	_update_sdfgi();
 }
 
 Environment::~Environment() {

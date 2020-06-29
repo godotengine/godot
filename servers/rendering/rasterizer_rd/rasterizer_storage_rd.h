@@ -92,6 +92,7 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_2D_UINT,
 		DEFAULT_RD_TEXTURE_MAX
 	};
 
@@ -420,7 +421,8 @@ private:
 		bool shadow = false;
 		bool negative = false;
 		bool reverse_cull = false;
-		bool use_gi = true;
+		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
+		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
@@ -439,9 +441,9 @@ private:
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
 		int resolution = 256;
 		float intensity = 1.0;
-		Color interior_ambient;
-		float interior_ambient_energy = 1.0;
-		float interior_ambient_probe_contrib = 0.0;
+		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
+		Color ambient_color;
+		float ambient_color_energy = 1.0;
 		float max_distance = 0;
 		Vector3 extents = Vector3(1, 1, 1);
 		Vector3 origin_offset;
@@ -1041,7 +1043,8 @@ public:
 	void light_set_negative(RID p_light, bool p_enable);
 	void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
-	void light_set_use_gi(RID p_light, bool p_enabled);
+	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode);
+	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade);
 
 	void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode);
 
@@ -1118,7 +1121,8 @@ public:
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 	}
 
-	bool light_get_use_gi(RID p_light);
+	RS::LightBakeMode light_get_bake_mode(RID p_light);
+	uint32_t light_get_max_sdfgi_cascade(RID p_light);
 	uint64_t light_get_version(RID p_light) const;
 
 	/* PROBE API */
@@ -1127,9 +1131,9 @@ public:
 
 	void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode);
 	void reflection_probe_set_intensity(RID p_probe, float p_intensity);
-	void reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient);
-	void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy);
-	void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib);
+	void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode);
+	void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color);
+	void reflection_probe_set_ambient_energy(RID p_probe, float p_energy);
 	void reflection_probe_set_max_distance(RID p_probe, float p_distance);
 	void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents);
 	void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset);
@@ -1151,9 +1155,9 @@ public:
 	float reflection_probe_get_intensity(RID p_probe) const;
 	bool reflection_probe_is_interior(RID p_probe) const;
 	bool reflection_probe_is_box_projection(RID p_probe) const;
-	Color reflection_probe_get_interior_ambient(RID p_probe) const;
-	float reflection_probe_get_interior_ambient_energy(RID p_probe) const;
-	float reflection_probe_get_interior_ambient_probe_contribution(RID p_probe) const;
+	RS::ReflectionProbeAmbientMode reflection_probe_get_ambient_mode(RID p_probe) const;
+	Color reflection_probe_get_ambient_color(RID p_probe) const;
+	float reflection_probe_get_ambient_color_energy(RID p_probe) const;
 
 	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance);
 	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance);

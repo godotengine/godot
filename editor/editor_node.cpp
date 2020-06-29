@@ -360,7 +360,7 @@ void EditorNode::_notification(int p_what) {
 				bool dof_jitter = GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter");
 				RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
 				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
-				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_curve"));
+				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enable"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit"));
 				bool glow_bicubic = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
 				RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
@@ -376,6 +376,12 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
 				float probe_update_speed = GLOBAL_GET("rendering/lightmapper/probe_capture_update_speed");
 				RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
+				RS::EnvironmentSDFGIFramesToConverge frames_to_converge = RS::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/sdfgi/frames_to_converge")));
+				RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
+				RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/sdfgi/probe_ray_count")));
+				RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
+				RS::GIProbeQuality gi_probe_quality = RS::GIProbeQuality(int(GLOBAL_GET("rendering/quality/gi_probes/quality")));
+				RS::get_singleton()->gi_probe_set_quality(gi_probe_quality);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();
@@ -3637,16 +3643,13 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
 	ERR_FAIL_COND_V_MSG(p_class.empty(), nullptr, "Class name cannot be empty.");
 
-	if (gui_base->has_theme_icon(p_class, "EditorIcons")) {
-		return gui_base->get_theme_icon(p_class, "EditorIcons");
-	}
-
 	if (ScriptServer::is_global_class(p_class)) {
 		Ref<ImageTexture> icon;
 		Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_class);
+		StringName name = p_class;
 
 		while (script.is_valid()) {
-			StringName name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+			name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
 			String current_icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
 			icon = _load_custom_class_icon(current_icon_path);
 			if (icon.is_valid()) {
@@ -3656,7 +3659,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 
 		if (icon.is_null()) {
-			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
+			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
 		}
 
 		return icon;
@@ -3672,6 +3675,10 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 				}
 			}
 		}
+	}
+
+	if (gui_base->has_theme_icon(p_class, "EditorIcons")) {
+		return gui_base->get_theme_icon(p_class, "EditorIcons");
 	}
 
 	if (p_fallback.length() && gui_base->has_theme_icon(p_fallback, "EditorIcons")) {
@@ -4152,7 +4159,6 @@ void EditorNode::_update_dock_slots_visibility() {
 		}
 
 		right_hsplit->hide();
-		bottom_panel->hide();
 	} else {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 			int tabs_visible = 0;
@@ -4182,7 +4188,6 @@ void EditorNode::_update_dock_slots_visibility() {
 				dock_slot[i]->set_current_tab(0);
 			}
 		}
-		bottom_panel->show();
 
 		if (right_l_vsplit->is_visible() || right_r_vsplit->is_visible()) {
 			right_hsplit->show();
@@ -6483,6 +6488,7 @@ EditorNode::EditorNode() {
 	}
 
 	resource_preview->add_preview_generator(Ref<EditorTexturePreviewPlugin>(memnew(EditorTexturePreviewPlugin)));
+	resource_preview->add_preview_generator(Ref<EditorImagePreviewPlugin>(memnew(EditorImagePreviewPlugin)));
 	resource_preview->add_preview_generator(Ref<EditorPackedScenePreviewPlugin>(memnew(EditorPackedScenePreviewPlugin)));
 	resource_preview->add_preview_generator(Ref<EditorMaterialPreviewPlugin>(memnew(EditorMaterialPreviewPlugin)));
 	resource_preview->add_preview_generator(Ref<EditorScriptPreviewPlugin>(memnew(EditorScriptPreviewPlugin)));

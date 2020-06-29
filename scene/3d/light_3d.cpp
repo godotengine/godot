@@ -144,7 +144,7 @@ Vector<Face3> Light3D::get_faces(uint32_t p_usage_flags) const {
 
 void Light3D::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
-	RS::get_singleton()->light_set_use_gi(light, p_mode != BAKE_DISABLED);
+	RS::get_singleton()->light_set_bake_mode(light, RS::LightBakeMode(p_mode));
 }
 
 Light3D::BakeMode Light3D::get_bake_mode() const {
@@ -261,7 +261,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disabled,Dynamic,Static"), "set_bake_mode", "get_bake_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow", "has_shadow");
@@ -296,8 +296,8 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
-	BIND_ENUM_CONSTANT(BAKE_INDIRECT);
-	BIND_ENUM_CONSTANT(BAKE_ALL);
+	BIND_ENUM_CONSTANT(BAKE_DYNAMIC);
+	BIND_ENUM_CONSTANT(BAKE_STATIC);
 }
 
 Light3D::Light3D(RenderingServer::LightType p_type) {
@@ -319,7 +319,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	RS::get_singleton()->instance_set_base(get_instance(), light);
 
 	reverse_cull = false;
-	bake_mode = BAKE_INDIRECT;
+	bake_mode = BAKE_DYNAMIC;
 
 	editor_only = false;
 	set_color(Color(1, 1, 1, 1));
