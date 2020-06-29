@@ -244,26 +244,26 @@ bool GridMap::get_center_z() const {
 	return center_z;
 }
 
-void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
+void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	if (baked_meshes.size() && !recreating_octants) {
 		//if you set a cell item, baked meshes go good bye
 		clear_baked_meshes();
 		_recreate_octant_data();
 	}
 
-	ERR_FAIL_INDEX(ABS(p_x), 1 << 20);
-	ERR_FAIL_INDEX(ABS(p_y), 1 << 20);
-	ERR_FAIL_INDEX(ABS(p_z), 1 << 20);
+	ERR_FAIL_INDEX(ABS(p_position.x), 1 << 20);
+	ERR_FAIL_INDEX(ABS(p_position.y), 1 << 20);
+	ERR_FAIL_INDEX(ABS(p_position.z), 1 << 20);
 
 	IndexKey key;
-	key.x = p_x;
-	key.y = p_y;
-	key.z = p_z;
+	key.x = p_position.x;
+	key.y = p_position.y;
+	key.z = p_position.z;
 
 	OctantKey ok;
-	ok.x = p_x / octant_size;
-	ok.y = p_y / octant_size;
-	ok.z = p_z / octant_size;
+	ok.x = p_position.x / octant_size;
+	ok.y = p_position.y / octant_size;
+	ok.z = p_position.z / octant_size;
 
 	if (p_item < 0) {
 		//erase
@@ -318,15 +318,15 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	cell_map[key] = c;
 }
 
-int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
-	ERR_FAIL_INDEX_V(ABS(p_x), 1 << 20, INVALID_CELL_ITEM);
-	ERR_FAIL_INDEX_V(ABS(p_y), 1 << 20, INVALID_CELL_ITEM);
-	ERR_FAIL_INDEX_V(ABS(p_z), 1 << 20, INVALID_CELL_ITEM);
+int GridMap::get_cell_item(const Vector3i &p_position) const {
+	ERR_FAIL_INDEX_V(ABS(p_position.x), 1 << 20, INVALID_CELL_ITEM);
+	ERR_FAIL_INDEX_V(ABS(p_position.y), 1 << 20, INVALID_CELL_ITEM);
+	ERR_FAIL_INDEX_V(ABS(p_position.z), 1 << 20, INVALID_CELL_ITEM);
 
 	IndexKey key;
-	key.x = p_x;
-	key.y = p_y;
-	key.z = p_z;
+	key.x = p_position.x;
+	key.y = p_position.y;
+	key.z = p_position.z;
 
 	if (!cell_map.has(key)) {
 		return INVALID_CELL_ITEM;
@@ -334,15 +334,15 @@ int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
 	return cell_map[key].item;
 }
 
-int GridMap::get_cell_item_orientation(int p_x, int p_y, int p_z) const {
-	ERR_FAIL_INDEX_V(ABS(p_x), 1 << 20, -1);
-	ERR_FAIL_INDEX_V(ABS(p_y), 1 << 20, -1);
-	ERR_FAIL_INDEX_V(ABS(p_z), 1 << 20, -1);
+int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
+	ERR_FAIL_INDEX_V(ABS(p_position.x), 1 << 20, -1);
+	ERR_FAIL_INDEX_V(ABS(p_position.y), 1 << 20, -1);
+	ERR_FAIL_INDEX_V(ABS(p_position.z), 1 << 20, -1);
 
 	IndexKey key;
-	key.x = p_x;
-	key.y = p_y;
-	key.z = p_z;
+	key.x = p_position.x;
+	key.y = p_position.y;
+	key.z = p_position.z;
 
 	if (!cell_map.has(key)) {
 		return -1;
@@ -350,20 +350,20 @@ int GridMap::get_cell_item_orientation(int p_x, int p_y, int p_z) const {
 	return cell_map[key].rot;
 }
 
-Vector3 GridMap::world_to_map(const Vector3 &p_world_pos) const {
-	Vector3 map_pos = p_world_pos / cell_size;
-	map_pos.x = floor(map_pos.x);
-	map_pos.y = floor(map_pos.y);
-	map_pos.z = floor(map_pos.z);
-	return map_pos;
+Vector3i GridMap::world_to_map(const Vector3 &p_world_position) const {
+	Vector3 map_position = p_world_position / cell_size;
+	map_position.x = floor(map_position.x);
+	map_position.y = floor(map_position.y);
+	map_position.z = floor(map_position.z);
+	return Vector3i(map_position);
 }
 
-Vector3 GridMap::map_to_world(int p_x, int p_y, int p_z) const {
+Vector3 GridMap::map_to_world(const Vector3i &p_map_position) const {
 	Vector3 offset = _get_offset();
 	Vector3 world_pos(
-			p_x * cell_size.x + offset.x,
-			p_y * cell_size.y + offset.y,
-			p_z * cell_size.z + offset.z);
+			p_map_position.x * cell_size.x + offset.x,
+			p_map_position.y * cell_size.y + offset.y,
+			p_map_position.z * cell_size.z + offset.z);
 	return world_pos;
 }
 
@@ -725,7 +725,7 @@ void GridMap::_recreate_octant_data() {
 	Map<IndexKey, Cell> cell_copy = cell_map;
 	_clear_internal();
 	for (Map<IndexKey, Cell>::Element *E = cell_copy.front(); E; E = E->next()) {
-		set_cell_item(E->key().x, E->key().y, E->key().z, E->get().item, E->get().rot);
+		set_cell_item(Vector3i(E->key()), E->get().item, E->get().rot);
 	}
 	recreating_octants = false;
 }
@@ -799,12 +799,12 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_octant_size", "size"), &GridMap::set_octant_size);
 	ClassDB::bind_method(D_METHOD("get_octant_size"), &GridMap::get_octant_size);
 
-	ClassDB::bind_method(D_METHOD("set_cell_item", "x", "y", "z", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_cell_item", "x", "y", "z"), &GridMap::get_cell_item);
-	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "x", "y", "z"), &GridMap::get_cell_item_orientation);
+	ClassDB::bind_method(D_METHOD("set_cell_item", "position", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_cell_item", "position"), &GridMap::get_cell_item);
+	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "position"), &GridMap::get_cell_item_orientation);
 
-	ClassDB::bind_method(D_METHOD("world_to_map", "pos"), &GridMap::world_to_map);
-	ClassDB::bind_method(D_METHOD("map_to_world", "x", "y", "z"), &GridMap::map_to_world);
+	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &GridMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_world", "map_position"), &GridMap::map_to_world);
 
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
