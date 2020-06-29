@@ -1066,15 +1066,6 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 					break;
 				}
 
-				// Don't create degenerate triangles.
-				Vector2 split_edge1[2] = { vertices[new_vertex_idx].point, edge_points[0] };
-				Vector2 split_edge2[2] = { vertices[new_vertex_idx].point, edge_points[1] };
-				Vector2 new_edge[2] = { vertices[new_vertex_idx].point, vertices[opposite_vertex_idx].point };
-				if (are_segements_parallel(split_edge1, new_edge, vertex_snap2) &&
-						are_segements_parallel(split_edge2, new_edge, vertex_snap2)) {
-					break;
-				}
-
 				// If opposite point is on the segemnt, add its index to segment indices too.
 				Vector2 closest_point = Geometry::get_closest_point_to_segment_2d(vertices[opposite_vertex_idx].point, p_segment_points);
 				if ((closest_point - vertices[opposite_vertex_idx].point).length_squared() < vertex_snap2)
