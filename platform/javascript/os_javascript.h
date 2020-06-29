@@ -66,7 +66,7 @@ class OS_JavaScript : public OS_Unix {
 
 	MainLoop *main_loop;
 	int video_driver_index;
-	AudioDriverJavaScript audio_driver_javascript;
+	AudioDriverJavaScript *audio_driver_javascript;
 	VisualServer *visual_server;
 
 	bool idb_available;
@@ -93,6 +93,8 @@ class OS_JavaScript : public OS_Unix {
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
 protected:
+	void resume_audio();
+
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();

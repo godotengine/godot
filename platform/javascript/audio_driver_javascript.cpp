@@ -36,6 +36,15 @@
 
 AudioDriverJavaScript *AudioDriverJavaScript::singleton = NULL;
 
+bool AudioDriverJavaScript::is_available() {
+	return EM_ASM_INT({
+		if (!(window.AudioContext || window.webkitAudioContext)) {
+			return 0;
+		}
+		return 1;
+	}) != 0;
+}
+
 const char *AudioDriverJavaScript::get_name() const {
 	return "JavaScript";
 }
@@ -207,12 +216,14 @@ void AudioDriverJavaScript::finish_async() {
 
 	/* clang-format off */
 	EM_ASM({
-		var ref = Module.IDHandler.get($0);
+		const id = $0;
+		var ref = Module.IDHandler.get(id);
 		Module.async_finish.push(new Promise(function(accept, reject) {
 			if (!ref) {
-				console.log("Ref not found!", $0, Module.IDHandler);
+				console.log("Ref not found!", id, Module.IDHandler);
 				setTimeout(accept, 0);
 			} else {
+				Module.IDHandler.remove(id);
 				const context = ref['context'];
 				// Disconnect script and input.
 				ref['script'].disconnect();
@@ -226,7 +237,6 @@ void AudioDriverJavaScript::finish_async() {
 				});
 			}
 		}));
-		Module.IDHandler.remove($0);
 	}, id);
 	/* clang-format on */
 }

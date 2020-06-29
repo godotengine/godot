@@ -297,7 +297,7 @@ EM_BOOL OS_JavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboa
 	}
 	os->input->parse_input_event(ev);
 	// Resume audio context after input in case autoplay was denied.
-	os->audio_driver_javascript.resume();
+	os->resume_audio();
 	return true;
 }
 
@@ -390,7 +390,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 
 	os->input->parse_input_event(ev);
 	// Resume audio context after input in case autoplay was denied.
-	os->audio_driver_javascript.resume();
+	os->resume_audio();
 	// Prevent multi-click text selection and wheel-click scrolling anchor.
 	// Context menu is prevented through contextmenu event.
 	return true;
@@ -742,7 +742,7 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 		os->input->parse_input_event(ev);
 	}
 	// Resume audio context after input in case autoplay was denied.
-	os->audio_driver_javascript.resume();
+	os->resume_audio();
 	return true;
 }
 
@@ -1099,6 +1099,12 @@ MainLoop *OS_JavaScript::get_main_loop() const {
 	return main_loop;
 }
 
+void OS_JavaScript::resume_audio() {
+	if (audio_driver_javascript) {
+		audio_driver_javascript->resume();
+	}
+}
+
 bool OS_JavaScript::main_loop_iterate() {
 
 	if (is_userfs_persistent() && sync_wait_time >= 0) {
@@ -1166,7 +1172,9 @@ void OS_JavaScript::finalize_async() {
 		});
 		Module.listeners = {};
 	});
-	audio_driver_javascript.finish_async();
+	if (audio_driver_javascript) {
+		audio_driver_javascript->finish_async();
+	}
 }
 
 void OS_JavaScript::finalize() {
@@ -1176,6 +1184,9 @@ void OS_JavaScript::finalize() {
 	emscripten_webgl_commit_frame();
 	memdelete(visual_server);
 	emscripten_webgl_destroy_context(webgl_ctx);
+	if (audio_driver_javascript) {
+		memdelete(audio_driver_javascript);
+	}
 }
 
 // Miscellaneous
@@ -1415,11 +1426,15 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 
 	main_loop = NULL;
 	visual_server = NULL;
+	audio_driver_javascript = NULL;
 
 	idb_available = false;
 	sync_wait_time = -1;
 
-	AudioDriverManager::add_driver(&audio_driver_javascript);
+	if (AudioDriverJavaScript::is_available()) {
+		audio_driver_javascript = memnew(AudioDriverJavaScript);
+		AudioDriverManager::add_driver(audio_driver_javascript);
+	}
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

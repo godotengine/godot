@@ -74,10 +74,17 @@ void main_loop_callback() {
 	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
+		/* clang-format off */
 		EM_ASM({
 			// This will contain the list of operations that need to complete before cleanup.
-			Module.async_finish = [];
+			Module.async_finish = [
+				// Always contains at least one async promise, to avoid firing immediately if nothing is added.
+				new Promise(function(accept, reject) {
+					setTimeout(accept, 0);
+				})
+			];
 		});
+		/* clang-format on */
 		os->get_main_loop()->finish();
 		os->finalize_async(); // Will add all the async finish functions.
 		EM_ASM({
