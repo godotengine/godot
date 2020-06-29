@@ -77,7 +77,9 @@ void OS_JavaScript::initialize() {
 }
 
 void OS_JavaScript::resume_audio() {
-	audio_driver_javascript.resume();
+	if (audio_driver_javascript) {
+		audio_driver_javascript->resume();
+	}
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
@@ -125,11 +127,17 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize_async() {
 	finalizing = true;
-	audio_driver_javascript.finish_async();
+	if (audio_driver_javascript) {
+		audio_driver_javascript->finish_async();
+	}
 }
 
 void OS_JavaScript::finalize() {
 	delete_main_loop();
+	if (audio_driver_javascript) {
+		memdelete(audio_driver_javascript);
+		audio_driver_javascript = nullptr;
+	}
 }
 
 // Miscellaneous
@@ -238,7 +246,10 @@ void OS_JavaScript::initialize_joypads() {
 }
 
 OS_JavaScript::OS_JavaScript() {
-	AudioDriverManager::add_driver(&audio_driver_javascript);
+	if (AudioDriverJavaScript::is_available()) {
+		audio_driver_javascript = memnew(AudioDriverJavaScript);
+		AudioDriverManager::add_driver(audio_driver_javascript);
+	}
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
