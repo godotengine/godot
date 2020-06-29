@@ -603,12 +603,12 @@ void TextEdit::_notification(int p_what) {
 			_update_wrap_at();
 			syntax_highlighting_cache.clear();
 		} break;
-		case NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();

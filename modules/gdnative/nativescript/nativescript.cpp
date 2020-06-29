@@ -1853,7 +1853,7 @@ void NativeReloadNode::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 
 	switch (p_what) {
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			if (unloaded) {
 				break;
 			}
@@ -1887,7 +1887,7 @@ void NativeReloadNode::_notification(int p_what) {
 
 		} break;
 
-		case NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			if (!unloaded) {
 				break;
 			}

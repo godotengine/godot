@@ -457,7 +457,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 		return;
 
 	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APP_RESUMED);
+		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
 }
 
@@ -466,7 +466,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 		return;
 
 	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APP_PAUSED);
+		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
 }
 }

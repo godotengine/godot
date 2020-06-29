@@ -317,6 +317,7 @@ private:
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
+	bool app_focused = false;
 
 	struct WindowData {
 		HWND hWnd;
