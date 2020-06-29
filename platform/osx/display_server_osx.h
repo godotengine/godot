@@ -102,6 +102,8 @@ public:
 		id window_object;
 		id window_view;
 
+		Vector<Vector2> mpath;
+
 #if defined(OPENGL_ENABLED)
 		ContextGL_OSX *context_gles2 = nullptr;
 #endif
@@ -240,6 +242,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
