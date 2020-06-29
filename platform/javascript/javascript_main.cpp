@@ -30,11 +30,12 @@
 
 #include "core/io/resource_loader.h"
 #include "main/main.h"
-#include "os_javascript.h"
+#include "platform/javascript/os_javascript.h"
 
 #include <emscripten/emscripten.h>
 
 static OS_JavaScript *os = NULL;
+static uint64_t target_ticks = 0;
 
 // Files drop (implemented in JS for now).
 extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p_filec) {
@@ -58,10 +59,18 @@ void exit_callback() {
 }
 
 void main_loop_callback() {
+	uint64_t current_ticks = os->get_ticks_usec();
 
 	bool force_draw = os->check_size_force_redraw();
 	if (force_draw) {
 		Main::force_redraw();
+	} else if (current_ticks < target_ticks && !force_draw) {
+		return; // Skip frame.
+	}
+
+	int target_fps = Engine::get_singleton()->get_target_fps();
+	if (target_fps > 0) {
+		target_ticks += (uint64_t)(1000000 / target_fps);
 	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
@@ -85,9 +94,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void cleanup_after_sync() {
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
-
-	OS_JavaScript *os = OS_JavaScript::get_singleton();
-
 	// Set IDBFS status
 	String idbfs_err = String::utf8(p_idbfs_err);
 	if (!idbfs_err.empty()) {
@@ -118,6 +124,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->get_main_loop()->init();
+	// Immediately run the first iteration.
+	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
 	emscripten_resume_main_loop();
 }
