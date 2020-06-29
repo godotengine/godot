@@ -50,6 +50,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xinerama.h>
+#include <X11/extensions/shape.h>
 
 // ICCCM
 #define WM_NormalState 1L // window normal state
@@ -780,6 +781,38 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
 	Atom utf8_string = XInternAtom(x11_display, "UTF8_STRING", false);
 	XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
+}
+
+void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	const WindowData &wd = windows[p_window];
+
+	int event_base, error_base;
+	const Bool ext_okay = XShapeQueryExtension(x11_display, &event_base, &error_base);
+	if (ext_okay) {
+		Region region;
+		if (p_region.size() == 0) {
+			region = XCreateRegion();
+			XRectangle rect;
+			rect.x = 0;
+			rect.y = 0;
+			rect.width = window_get_real_size(p_window).x;
+			rect.height = window_get_real_size(p_window).y;
+			XUnionRectWithRegion(&rect, region, region);
+		} else {
+			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
+			for (int i = 0; i < p_region.size(); i++) {
+				points[i].x = p_region[i].x;
+				points[i].y = p_region[i].y;
+			}
+			region = XPolygonRegion(points, p_region.size(), EvenOddRule);
+			memfree(points);
+		}
+		XShapeCombineRegion(x11_display, wd.x11_window, ShapeInput, 0, 0, region, ShapeSet);
+		XDestroyRegion(region);
+	}
 }
 
 void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
