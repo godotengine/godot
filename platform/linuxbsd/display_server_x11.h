@@ -36,7 +36,6 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
-
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
@@ -231,6 +230,7 @@ class DisplayServerX11 : public DisplayServer {
 	static Property _read_property(Display *p_display, Window p_window, Atom p_property);
 
 	void _update_real_mouse_position(const WindowData &wd);
+	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 

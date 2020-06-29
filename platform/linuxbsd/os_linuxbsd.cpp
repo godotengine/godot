@@ -31,8 +31,11 @@
 #include "os_linuxbsd.h"
 
 #include "core/os/dir_access.h"
-#include "core/print_string.h"
-#include "errno.h"
+#include "main/main.h"
+
+#ifdef X11_ENABLED
+#include "display_server_x11.h"
+#endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
@@ -47,12 +50,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include "main/main.h"
-
-#ifdef X11_ENABLED
-#include "display_server_x11.h"
-#endif
 
 void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
