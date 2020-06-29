@@ -36,6 +36,7 @@
 #include <emscripten/emscripten.h>
 
 static OS_JavaScript *os = nullptr;
+static uint64_t target_ticks = 0;
 
 void exit_callback() {
 	emscripten_cancel_main_loop(); // After this, we can exit!
@@ -47,9 +48,18 @@ void exit_callback() {
 }
 
 void main_loop_callback() {
+	uint64_t current_ticks = os->get_ticks_usec();
+
 	bool force_draw = DisplayServerJavaScript::get_singleton()->check_size_force_redraw();
 	if (force_draw) {
 		Main::force_redraw();
+	} else if (current_ticks < target_ticks) {
+		return; // Skip frame.
+	}
+
+	int target_fps = Engine::get_singleton()->get_target_fps();
+	if (target_fps > 0) {
+		target_ticks += (uint64_t)(1000000 / target_fps);
 	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
