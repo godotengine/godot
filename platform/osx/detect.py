@@ -81,8 +81,15 @@ def configure(env):
         env["osxcross"] = True
 
     if not "osxcross" in env:  # regular native build
-        env.Append(CCFLAGS=["-arch", "x86_64"])
-        env.Append(LINKFLAGS=["-arch", "x86_64"])
+        if env["arch"] == "arm64":
+            print("Building for macOS 10.15+, platform arm64.")
+            env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+            env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+        else:
+            print("Building for macOS 10.9+, platform x86-64.")
+            env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
+            env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
+
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -142,7 +149,8 @@ def configure(env):
     ## Dependencies
 
     if env["builtin_libtheora"]:
-        env["x86_libtheora_opt_gcc"] = True
+        if env["arch"] != "arm64":
+            env["x86_libtheora_opt_gcc"] = True
 
     ## Flags
 
@@ -155,6 +163,7 @@ def configure(env):
             "APPLE_STYLE_KEYS",
             "COREAUDIO_ENABLED",
             "COREMIDI_ENABLED",
+            "GL_SILENCE_DEPRECATION",
         ]
     )
     env.Append(
@@ -187,6 +196,3 @@ def configure(env):
         ]
     )
     env.Append(LIBS=["pthread"])
-
-    env.Append(CCFLAGS=["-mmacosx-version-min=10.9"])
-    env.Append(LINKFLAGS=["-mmacosx-version-min=10.9"])
