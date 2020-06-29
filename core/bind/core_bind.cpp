@@ -868,7 +868,7 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 	} else {
 		dayno = (unix_time_val - SECS_DAY + 1) / SECS_DAY;
 		dayclock = unix_time_val - dayno * SECS_DAY;
-		date.weekday = static_cast<OS::Weekday>((dayno - 3) % 7 + 7);
+		date.weekday = static_cast<OS::Weekday>(((dayno % 7) + 11) % 7);
 		do {
 			year--;
 			dayno += YEARSIZE(year);
