@@ -894,7 +894,7 @@ int TileMap::get_cellv(const Vector2 &p_pos) const {
 	return get_cell(p_pos.x, p_pos.y);
 }
 
-void TileMap::set_cell_region(const Rect2i & p_region, const Vector<int>& p_ids) {
+void TileMap::set_cell_region(const Rect2i &p_region, const Vector<int> &p_ids) {
 	ERR_FAIL_COND_MSG(p_region.size.width <= 0 || p_region.size.height <= 0, "The region's dimensions must be positive, nonzero numbers");
 
 	for (int x = 0; x < p_region.size.width; x++) {
