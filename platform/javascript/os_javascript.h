@@ -40,7 +40,7 @@
 
 class OS_JavaScript : public OS_Unix {
 	MainLoop *main_loop = nullptr;
-	AudioDriverJavaScript audio_driver_javascript;
+	AudioDriverJavaScript *audio_driver_javascript = nullptr;
 
 	bool finalizing = false;
 	bool idb_available = false;

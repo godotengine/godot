@@ -34,12 +34,13 @@
 #include "servers/audio_server.h"
 
 class AudioDriverJavaScript : public AudioDriver {
-	float *internal_buffer;
+	float *internal_buffer = nullptr;
 
-	int _driver_id;
-	int buffer_length;
+	int _driver_id = 0;
+	int buffer_length = 0;
 
 public:
+	static bool is_available();
 	void mix_to_js();
 	void process_capture(float sample);
 
