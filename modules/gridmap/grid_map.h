@@ -59,6 +59,15 @@ class GridMap : public Node3D {
 			return key < p_key.key;
 		}
 
+		_FORCE_INLINE_ operator Vector3i() const {
+			return Vector3i(x, y, z);
+		}
+
+		IndexKey(Vector3i p_vector) {
+			x = (int16_t)p_vector.x;
+			y = (int16_t)p_vector.y;
+			z = (int16_t)p_vector.z;
+		}
 		IndexKey() { key = 0; }
 	};
 
@@ -234,12 +243,12 @@ public:
 	void set_center_z(bool p_enable);
 	bool get_center_z() const;
 
-	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0);
-	int get_cell_item(int p_x, int p_y, int p_z) const;
-	int get_cell_item_orientation(int p_x, int p_y, int p_z) const;
+	void set_cell_item(const Vector3i &p_position, int p_item, int p_rot = 0);
+	int get_cell_item(const Vector3i &p_position) const;
+	int get_cell_item_orientation(const Vector3i &p_position) const;
 
-	Vector3 world_to_map(const Vector3 &p_world_pos) const;
-	Vector3 map_to_world(int p_x, int p_y, int p_z) const;
+	Vector3i world_to_map(const Vector3 &p_world_position) const;
+	Vector3 map_to_world(const Vector3i &p_map_position) const;
 
 	void set_clip(bool p_enabled, bool p_clip_above = true, int p_floor = 0, Vector3::Axis p_axis = Vector3::AXIS_X);
 
