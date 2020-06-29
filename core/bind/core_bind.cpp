@@ -215,6 +215,11 @@ void _OS::set_window_title(const String &p_title) {
 	OS::get_singleton()->set_window_title(p_title);
 }
 
+void _OS::set_window_mouse_passthrough(const PoolVector2Array &p_region) {
+
+	OS::get_singleton()->set_window_mouse_passthrough(p_region);
+}
+
 int _OS::get_mouse_button_state() const {
 
 	return OS::get_singleton()->get_mouse_button_state();
@@ -1307,6 +1312,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_touchscreen_ui_hint"), &_OS::has_touchscreen_ui_hint);
 
 	ClassDB::bind_method(D_METHOD("set_window_title", "title"), &_OS::set_window_title);
+	ClassDB::bind_method(D_METHOD("set_window_mouse_passthrough", "region"), &_OS::set_window_mouse_passthrough);
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);

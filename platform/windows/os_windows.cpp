@@ -34,6 +34,7 @@
 #include "os_windows.h"
 
 #include "core/io/marshalls.h"
+#include "core/math/geometry.h"
 #include "core/version_generated.gen.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -1952,6 +1953,36 @@ void OS_Windows::set_window_title(const String &p_title) {
 	SetWindowTextW(hWnd, p_title.c_str());
 }
 
+void OS_Windows::set_window_mouse_passthrough(const PoolVector2Array &p_region) {
+	mpath.clear();
+	for (int i = 0; i < p_region.size(); i++) {
+		mpath.push_back(p_region[i]);
+	}
+	_update_window_mouse_passthrough();
+}
+
+void OS_Windows::_update_window_mouse_passthrough() {
+	if (mpath.size() == 0) {
+		SetWindowRgn(hWnd, NULL, TRUE);
+	} else {
+		POINT *points = (POINT *)memalloc(sizeof(POINT) * mpath.size());
+		for (int i = 0; i < mpath.size(); i++) {
+			if (video_mode.borderless_window) {
+				points[i].x = mpath[i].x;
+				points[i].y = mpath[i].y;
+			} else {
+				points[i].x = mpath[i].x + GetSystemMetrics(SM_CXSIZEFRAME);
+				points[i].y = mpath[i].y + GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
+			}
+		}
+
+		HRGN region = CreatePolygonRgn(points, mpath.size(), ALTERNATE);
+		SetWindowRgn(hWnd, region, TRUE);
+		DeleteObject(region);
+		memfree(points);
+	}
+}
+
 void OS_Windows::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
@@ -2339,6 +2370,7 @@ void OS_Windows::set_borderless_window(bool p_borderless) {
 
 	preserve_window_size = true;
 	_update_window_style();
+	_update_window_mouse_passthrough();
 }
 
 bool OS_Windows::get_borderless_window() {
