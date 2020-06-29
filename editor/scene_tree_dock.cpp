@@ -362,17 +362,26 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!profile_allow_editing) {
 				break;
 			}
-			String preferred = "";
+
+			// Prefer nodes that inherit from the current scene root.
 			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
-
 			if (current_edited_scene_root) {
+				String root_class = current_edited_scene_root->get_class_name();
+				static Vector<String> preferred_types;
+				if (preferred_types.empty()) {
+					preferred_types.push_back("Control");
+					preferred_types.push_back("Node2D");
+					preferred_types.push_back("Node3D");
+				}
 
-				if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Node2D"))
-					preferred = "Node2D";
-				else if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Spatial"))
-					preferred = "Spatial";
+				for (int i = 0; i < preferred_types.size(); i++) {
+					if (ClassDB::is_parent_class(root_class, preferred_types[i])) {
+						create_dialog->set_preferred_search_result_type(preferred_types[i]);
+						break;
+					}
+				}
 			}
-			create_dialog->set_preferred_search_result_type(preferred);
+
 			create_dialog->popup_create(true);
 		} break;
 		case TOOL_INSTANCE: {
