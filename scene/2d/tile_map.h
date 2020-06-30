@@ -264,7 +264,7 @@ public:
 
 	void update_dirty_quadrants();
 
-	Vector2 map_to_world(const Vector2 &p_pos) const;
+	Vector2 map_to_world(const Vector2i &p_pos) const;
 	Vector2i world_to_map(const Vector2 &p_pos) const;
 
 	bool is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const;
