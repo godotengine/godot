@@ -86,6 +86,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 }
 
 int main(int argc, char *argv[]) {
+	// Create and mount userfs immediately.
+	EM_ASM({
+		FS.mkdir('/userfs');
+		FS.mount(IDBFS, {}, '/userfs');
+	});
 	os = new OS_JavaScript();
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);
@@ -95,8 +100,6 @@ int main(int argc, char *argv[]) {
 	// run the 'main_after_fs_sync' function.
 	/* clang-format off */
 	EM_ASM({
-		FS.mkdir('/userfs');
-		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
 			requestAnimationFrame(function() {
 				ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""]);
