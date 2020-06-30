@@ -53,6 +53,7 @@ class DisplayServerJavaScript : public DisplayServer {
 	double last_click_ms = 0;
 	int last_click_button_index = -1;
 
+	static Point2 compute_position_in_canvas(int p_x, int p_y);
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 
 	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
@@ -81,11 +82,11 @@ protected:
 public:
 	// Override return type to make writing static callbacks less tedious.
 	static DisplayServerJavaScript *get_singleton();
+	static char canvas_id[256];
 
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 
 	String clipboard;
-	String canvas_id;
 
 	Callable window_event_callback;
 	Callable input_event_callback;
