@@ -3410,7 +3410,7 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 
 	const Rect2 r = get_item_rect(p_item);
 
-	if (r.position.y < v_scroll->get_value()) {
+	if (r.position.y <= v_scroll->get_value()) {
 		v_scroll->set_value(r.position.y);
 	} else if (r.position.y + r.size.y + 2 * cache.vseparation > v_scroll->get_value() + get_size().y) {
 		v_scroll->set_value(r.position.y + r.size.y + 2 * cache.vseparation - get_size().y);
