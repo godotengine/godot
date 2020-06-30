@@ -46,6 +46,8 @@ public:
 	void affine_invert();
 	Transform affine_inverse() const;
 
+	_FORCE_INLINE_ bool is_invertible() const;
+
 	Transform rotated(const Vector3 &p_axis, real_t p_phi) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_phi);
@@ -110,6 +112,10 @@ public:
 	Transform(const Basis &p_basis, const Vector3 &p_origin = Vector3());
 	Transform() {}
 };
+
+bool Transform::is_invertible() const {
+	return basis.is_invertible();
+}
 
 _FORCE_INLINE_ Vector3 Transform::xform(const Vector3 &p_vector) const {
 	return Vector3(

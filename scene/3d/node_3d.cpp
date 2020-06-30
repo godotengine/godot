@@ -224,6 +224,10 @@ void Node3D::_notification(int p_what) {
 }
 
 void Node3D::set_transform(const Transform &p_transform) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(!p_transform.is_invertible());
+#endif
+
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
 	_change_notify("translation");
@@ -334,6 +338,10 @@ void Node3D::set_rotation_degrees(const Vector3 &p_euler_deg) {
 }
 
 void Node3D::set_scale(const Vector3 &p_scale) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_scale.x == 0 || p_scale.y == 0 || p_scale.z == 0, "Scale must not be 0");
+#endif
+
 	if (data.dirty & DIRTY_VECTORS) {
 		data.rotation = data.local_transform.basis.get_rotation();
 		data.dirty &= ~DIRTY_VECTORS;

@@ -63,6 +63,10 @@ Transform2D Transform2D::affine_inverse() const {
 	return inv;
 }
 
+bool Transform2D::is_invertible() const {
+	return basis_determinant() != 0;
+}
+
 void Transform2D::rotate(real_t p_phi) {
 	*this = Transform2D(p_phi, Vector2()) * (*this);
 }

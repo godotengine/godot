@@ -51,6 +51,8 @@ public:
 	Basis inverse() const;
 	Basis transposed() const;
 
+	_FORCE_INLINE_ bool is_invertible() const;
+
 	_FORCE_INLINE_ real_t determinant() const;
 
 	void from_z(const Vector3 &p_z);
@@ -329,6 +331,10 @@ Vector3 Basis::xform_inv(const Vector3 &p_vector) const {
 			(elements[0][0] * p_vector.x) + (elements[1][0] * p_vector.y) + (elements[2][0] * p_vector.z),
 			(elements[0][1] * p_vector.x) + (elements[1][1] * p_vector.y) + (elements[2][1] * p_vector.z),
 			(elements[0][2] * p_vector.x) + (elements[1][2] * p_vector.y) + (elements[2][2] * p_vector.z));
+}
+
+bool Basis::is_invertible() const {
+	return determinant() != 0;
 }
 
 real_t Basis::determinant() const {

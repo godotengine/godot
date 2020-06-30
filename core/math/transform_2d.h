@@ -68,6 +68,8 @@ struct Transform2D {
 	void affine_invert();
 	Transform2D affine_inverse() const;
 
+	bool is_invertible() const;
+
 	void set_rotation(real_t p_rot);
 	real_t get_rotation() const;
 	real_t get_skew() const;
