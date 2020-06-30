@@ -197,6 +197,18 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 }
 
+- (void)applicationDidResignActive:(NSNotification *)notification {
+	if (OS_OSX::get_singleton()->get_main_loop()) {
+		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+	}
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+	if (OS_OSX::get_singleton()->get_main_loop()) {
+		OS_OSX::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	}
+}
+
 - (void)globalMenuCallback:(id)sender {
 	if (![sender representedObject])
 		return;
