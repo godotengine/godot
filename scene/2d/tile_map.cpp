@@ -902,7 +902,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(p);
 }
 
-Vector2 TileMap::map_to_world(const Vector2 &p_pos) const {
+Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
 	// SHOULD RETURN THE CENTER OF THE TILE
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2());
 
@@ -980,7 +980,7 @@ Vector2 TileMap::map_to_world(const Vector2 &p_pos) const {
 }
 
 Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2());
+	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2i());
 
 	Vector2 ret = p_pos;
 	ret /= tile_set->get_tile_size();
@@ -1143,7 +1143,7 @@ Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
 	} else {
 		ret = (ret + Vector2(0.00005, 0.00005)).floor();
 	}
-	return ret;
+	return Vector2i(ret);
 }
 
 bool TileMap::is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const {
