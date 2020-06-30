@@ -30,7 +30,8 @@
 
 #include "core/io/resource_loader.h"
 #include "main/main.h"
-#include "os_javascript.h"
+#include "platform/javascript/display_server_javascript.h"
+#include "platform/javascript/os_javascript.h"
 
 #include <emscripten/emscripten.h>
 
@@ -79,10 +80,10 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->get_main_loop()->init();
-	emscripten_resume_main_loop();
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
+	emscripten_resume_main_loop();
 }
 
 int main(int argc, char *argv[]) {
@@ -91,6 +92,23 @@ int main(int argc, char *argv[]) {
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 	});
+
+	// Configure locale.
+	char locale_ptr[16];
+	/* clang-format off */
+	EM_ASM({
+		stringToUTF8(Module['locale'], $0, 16);
+	}, locale_ptr);
+	/* clang-format on */
+	setenv("LANG", locale_ptr, true);
+
+	// Ensure the canvas ID.
+	/* clang-format off */
+	EM_ASM({
+		stringToUTF8("#" + Module['canvas'].id, $0, 255);
+	}, DisplayServerJavaScript::canvas_id);
+	/* clang-format on */
+
 	os = new OS_JavaScript();
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);
