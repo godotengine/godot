@@ -435,14 +435,14 @@ void EditorNode::_notification(int p_what) {
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
-		case NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			// Restore the original FPS cap after focusing back on the editor
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 
 			EditorFileSystem::get_singleton()->scan_changes();
 		} break;
 
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
 		} break;
