@@ -51,7 +51,9 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void AcceptDialog::_parent_focused() {
-	_cancel_pressed();
+	if (!is_exclusive()) {
+		_cancel_pressed();
+	}
 }
 
 void AcceptDialog::_notification(int p_what) {
@@ -295,6 +297,7 @@ AcceptDialog::AcceptDialog() {
 	set_wrap_controls(true);
 	set_visible(false);
 	set_transient(true);
+	set_exclusive(true);
 
 	bg = memnew(Panel);
 	add_child(bg);
