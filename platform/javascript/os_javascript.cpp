@@ -74,14 +74,6 @@ void OS_JavaScript::initialize() {
 	EngineDebugger::register_uri_handler("ws://", RemoteDebuggerPeerWebSocket::create);
 	EngineDebugger::register_uri_handler("wss://", RemoteDebuggerPeerWebSocket::create);
 #endif
-
-	char locale_ptr[16];
-	/* clang-format off */
-	EM_ASM({
-		stringToUTF8(Module['locale'], $0, 16);
-	}, locale_ptr);
-	/* clang-format on */
-	setenv("LANG", locale_ptr, true);
 }
 
 void OS_JavaScript::resume_audio() {
