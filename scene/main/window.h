@@ -92,6 +92,7 @@ private:
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
+	bool clamp_to_embedder = false;
 
 	void _update_child_controls();
 
@@ -195,6 +196,9 @@ public:
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
+
+	void set_clamp_to_embedder(bool p_enable);
+	bool is_clamped_to_embedder() const;
 
 	bool can_draw() const;
 
