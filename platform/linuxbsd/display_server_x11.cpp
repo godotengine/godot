@@ -2349,11 +2349,17 @@ void DisplayServerX11::process_events() {
 		}
 
 		if (!focus_found) {
-			if (OS::get_singleton()->get_main_loop()) {
-				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
-			}
+			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_no_focus;
 
-			app_focused = false;
+			if (delta > 250) {
+				//X11 can go between windows and have no focus for a while, when creating them or something else. Use this as safety to avoid unnecesary focus in/outs.
+				if (OS::get_singleton()->get_main_loop()) {
+					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+				}
+				app_focused = false;
+			}
+		} else {
+			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
 		}
 	}
 
