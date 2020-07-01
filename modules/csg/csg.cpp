@@ -524,7 +524,7 @@ void CSGBrushOperation::MeshMerge::_add_distance(List<real_t> &r_intersectionsA,
 
 	// Check if distance exists.
 	for (const List<real_t>::Element *E = intersections.front(); E; E = E->next())
-		if (Math::abs(**E - p_distance) < vertex_snap) return;
+		if (Math::is_equal_approx(**E, p_distance)) return;
 
 	intersections.push_back(p_distance);
 }
@@ -1063,15 +1063,6 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 					faces.remove(face_idx);
 					// Update index.
 					--face_idx;
-					break;
-				}
-
-				// Don't create degenerate triangles.
-				Vector2 split_edge1[2] = { vertices[new_vertex_idx].point, edge_points[0] };
-				Vector2 split_edge2[2] = { vertices[new_vertex_idx].point, edge_points[1] };
-				Vector2 new_edge[2] = { vertices[new_vertex_idx].point, vertices[opposite_vertex_idx].point };
-				if (are_segements_parallel(split_edge1, new_edge, vertex_snap2) &&
-						are_segements_parallel(split_edge2, new_edge, vertex_snap2)) {
 					break;
 				}
 
