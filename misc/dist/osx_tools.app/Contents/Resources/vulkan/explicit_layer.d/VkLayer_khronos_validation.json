@@ -1,0 +1,55 @@
+{
+    "file_format_version": "1.1.0",
+    "layer": {
+        "instance_extensions": [
+            {
+                "spec_version": "9",
+                "name": "VK_EXT_debug_report"
+            },
+            {
+                "spec_version": "1",
+                "name": "VK_EXT_debug_utils"
+            },
+            {
+                "spec_version": "2",
+                "name": "VK_EXT_validation_features"
+            }
+        ],
+        "description": "Khronos Validation Layer",
+        "device_extensions": [
+            {
+                "entrypoints": [
+                    "vkDebugMarkerSetObjectTagEXT",
+                    "vkDebugMarkerSetObjectNameEXT",
+                    "vkCmdDebugMarkerBeginEXT",
+                    "vkCmdDebugMarkerEndEXT",
+                    "vkCmdDebugMarkerInsertEXT"
+                ],
+                "spec_version": "4",
+                "name": "VK_EXT_debug_marker"
+            },
+            {
+                "entrypoints": [
+                    "vkCreateValidationCacheEXT",
+                    "vkDestroyValidationCacheEXT",
+                    "vkGetValidationCacheDataEXT",
+                    "vkMergeValidationCachesEXT"
+                ],
+                "spec_version": "1",
+                "name": "VK_EXT_validation_cache"
+            },
+            {
+                "entrypoints": [
+                    "vkGetPhysicalDeviceToolPropertiesEXT"
+                ],
+                "spec_version": "1",
+                "name": "VK_EXT_tooling_info"
+            }
+        ],
+        "library_path": "../../../Frameworks/libVkLayer_khronos_validation.dylib",
+        "implementation_version": "1",
+        "type": "GLOBAL",
+        "api_version": "1.2.141",
+        "name": "VK_LAYER_KHRONOS_validation"
+    }
+}
