@@ -2339,6 +2339,24 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 void DisplayServerX11::process_events() {
 	_THREAD_SAFE_METHOD_
 
+	if (app_focused) {
+		//verify that one of the windows has focus, else send focus out notification
+		bool focus_found = false;
+		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+			if (E->get().focused) {
+				focus_found = true;
+			}
+		}
+
+		if (!focus_found) {
+			if (OS::get_singleton()->get_main_loop()) {
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+			}
+
+			app_focused = false;
+		}
+	}
+
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
@@ -2533,12 +2551,12 @@ void DisplayServerX11::process_events() {
 				break;
 
 			case NoExpose:
-				minimized = true;
+				windows[window_id].minimized = true;
 				break;
 
 			case VisibilityNotify: {
 				XVisibilityEvent *visibility = (XVisibilityEvent *)&event;
-				minimized = (visibility->state == VisibilityFullyObscured);
+				windows[window_id].minimized = (visibility->state == VisibilityFullyObscured);
 			} break;
 			case LeaveNotify: {
 				if (!mouse_mode_grab) {
@@ -2552,10 +2570,8 @@ void DisplayServerX11::process_events() {
 				}
 			} break;
 			case FocusIn:
-				minimized = false;
-				window_has_focus = true;
+				windows[window_id].focused = true;
 				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
-				window_focused = true;
 
 				if (mouse_mode_grab) {
 					// Show and update the cursor if confined and the window regained focus.
@@ -2582,13 +2598,19 @@ void DisplayServerX11::process_events() {
 				if (windows[window_id].xic) {
 					XSetICFocus(windows[window_id].xic);
 				}
+
+				if (!app_focused) {
+					if (OS::get_singleton()->get_main_loop()) {
+						OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+					}
+					app_focused = true;
+				}
 				break;
 
 			case FocusOut:
-				window_has_focus = false;
+				windows[window_id].focused = false;
 				Input::get_singleton()->release_pressed_events();
 				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
-				window_focused = false;
 
 				if (mouse_mode_grab) {
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -2727,7 +2749,7 @@ void DisplayServerX11::process_events() {
 					Point2i new_center = pos;
 					pos = last_mouse_pos + xi.relative_motion;
 					center = new_center;
-					do_mouse_warp = window_has_focus; // warp the cursor if we're focused in
+					do_mouse_warp = windows[window_id].focused; // warp the cursor if we're focused in
 				}
 
 				if (!last_mouse_pos_valid) {
@@ -2787,7 +2809,7 @@ void DisplayServerX11::process_events() {
 				// Don't propagate the motion event unless we have focus
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
-				if (window_has_focus || !mouse_mode_grab) {
+				if (windows[window_id].focused || !mouse_mode_grab) {
 					Input::get_singleton()->accumulate_input_event(mm);
 				}
 
@@ -3763,8 +3785,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	cursor_set_shape(CURSOR_BUSY);
 
 	requested = None;
-
-	window_has_focus = true; // Set focus to true at init
 
 	/*if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
