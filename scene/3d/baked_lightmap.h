@@ -31,6 +31,7 @@
 #ifndef BAKED_INDIRECT_LIGHT_H
 #define BAKED_INDIRECT_LIGHT_H
 
+#include "modules/raytrace/raytrace.h"
 #include "multimesh_instance.h"
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
@@ -94,12 +95,8 @@ public:
 	enum BakeQuality {
 		BAKE_QUALITY_LOW,
 		BAKE_QUALITY_MEDIUM,
-		BAKE_QUALITY_HIGH
-	};
-
-	enum BakeMode {
-		BAKE_MODE_CONE_TRACE,
-		BAKE_MODE_RAY_TRACE,
+		BAKE_QUALITY_HIGH,
+		BAKE_QUALITY_ULTRA
 	};
 
 	enum BakeError {
@@ -111,67 +108,57 @@ public:
 
 	};
 
+	enum EnvironmentMode {
+		ENVIRONMENT_MODE_DISABLED,
+		ENVIRONMENT_MODE_SCENE,
+		ENVIRONMENT_MODE_CUSTOM_SKY,
+		ENVIRONMENT_MODE_CUSTOM_COLOR,
+	};
+
 	typedef void (*BakeBeginFunc)(int);
 	typedef bool (*BakeStepFunc)(int, const String &);
 	typedef void (*BakeEndFunc)();
 
 private:
-	float bake_cell_size;
-	float capture_cell_size;
 	Vector3 extents;
-	float bake_default_texels_per_unit;
-	float propagation;
-	float energy;
+	float default_texels_per_unit;
+	float bias;
 	BakeQuality bake_quality;
-	BakeMode bake_mode;
-	bool hdr;
+	bool capture_enabled;
+	int bounces;
+	bool use_denoiser;
+
+	EnvironmentMode environment_mode;
+	Ref<Sky> environment_custom_sky;
+	Color environment_custom_color;
+	float environment_custom_energy;
+
+	BakeQuality capture_quality;
+	float capture_propagation;
+	float capture_cell_size;
+
 	String image_path;
 
 	Ref<BakedLightmapData> light_data;
 
-	struct PlotMesh {
-		Ref<Material> override_material;
-		Vector<Ref<Material> > instance_materials;
-		Ref<Mesh> mesh;
-		Transform local_xform;
-		NodePath path;
-		int instance_idx;
-	};
-
-	struct PlotLight {
-		Light *light;
-		Transform local_xform;
-	};
-
-	void _find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plot_meshes, List<PlotLight> &plot_lights);
-
-	void _debug_bake();
-
 	void _assign_lightmaps();
 	void _clear_lightmaps();
-
-	static bool _bake_time(void *ud, float p_secs, float p_progress);
-
-	struct BakeTimeData {
-		String text;
-		int pass;
-		uint64_t last_step;
-	};
+	Vector<Color> _get_irradiance_map(Ref<Environment> p_env, Vector2i &r_size);
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 	void _notification(int p_what);
 
 public:
 	static BakeBeginFunc bake_begin_function;
 	static BakeStepFunc bake_step_function;
 	static BakeEndFunc bake_end_function;
+	static BakeStepFunc bake_substep_function;
+	static BakeEndFunc bake_end_substep_function;
 
 	void set_light_data(const Ref<BakedLightmapData> &p_data);
 	Ref<BakedLightmapData> get_light_data() const;
-
-	void set_bake_cell_size(float p_cell_size);
-	float get_bake_cell_size() const;
 
 	void set_capture_cell_size(float p_cell_size);
 	float get_capture_cell_size() const;
@@ -179,26 +166,44 @@ public:
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
 
-	void set_bake_default_texels_per_unit(const float &p_bake_texels_per_unit);
-	float get_bake_default_texels_per_unit() const;
+	void set_default_texels_per_unit(const float &p_extents);
+	float get_default_texels_per_unit() const;
 
-	void set_propagation(float p_propagation);
-	float get_propagation() const;
+	void set_capture_propagation(float p_propagation);
+	float get_capture_propagation() const;
 
-	void set_energy(float p_energy);
-	float get_energy() const;
+	void set_capture_quality(BakeQuality p_quality);
+	BakeQuality get_capture_quality() const;
 
 	void set_bake_quality(BakeQuality p_quality);
 	BakeQuality get_bake_quality() const;
 
-	void set_bake_mode(BakeMode p_mode);
-	BakeMode get_bake_mode() const;
-
-	void set_hdr(bool p_enable);
-	bool is_hdr() const;
+	void set_capture_enabled(bool p_enable);
+	bool get_capture_enabled() const;
 
 	void set_image_path(const String &p_path);
 	String get_image_path() const;
+
+	void set_environment_mode(EnvironmentMode p_mode);
+	EnvironmentMode get_environment_mode() const;
+
+	void set_environment_custom_sky(const Ref<Sky> &p_sky);
+	Ref<Sky> get_environment_custom_sky() const;
+
+	void set_environment_custom_color(const Color &p_color);
+	Color get_environment_custom_color() const;
+
+	void set_environment_custom_energy(float p_energy);
+	float get_environment_custom_energy() const;
+
+	void set_use_denoiser(bool p_enable);
+	bool is_using_denoiser() const;
+
+	void set_bounces(int p_bounces);
+	int get_bounces() const;
+
+	void set_bias(float p_bias);
+	float get_bias() const;
 
 	AABB get_aabb() const;
 	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
@@ -207,8 +212,94 @@ public:
 	BakedLightmap();
 };
 
+#ifdef TOOLS_ENABLED
+class RaytraceLightBaker {
+	struct LightMapElement {
+
+		Vector3 emission;
+		Vector3 direct_light;
+		Vector3 output;
+
+		Vector3 albedo;
+		float alpha;
+
+		Vector3 pos;
+		Vector3 normal;
+	};
+
+	struct PlotMesh {
+		Ref<Material> override_material;
+		Vector<Ref<Material> > instance_materials;
+		Ref<Mesh> mesh;
+		Vector2 size_hint;
+		Transform local_xform;
+		Node *node;
+		int instance_idx;
+		bool cast_shadows;
+		bool save_lightmap;
+	};
+
+	struct PlotLight {
+		Light *light;
+		Transform global_xform;
+	};
+
+	List<PlotMesh> mesh_list;
+	List<PlotLight> light_list;
+	Set<String> used_mesh_names;
+	Set<int> no_shadow_meshes;
+
+	Vector<Vector<LightMapElement> > scene_lightmaps;
+	Vector<Vector<int> > scene_lightmap_indices;
+	Vector<Vector2i> scene_lightmap_sizes;
+
+	void _find_meshes_and_lights(Node *p_at_node);
+
+	void _init_sky(Ref<World> p_world);
+	Vector2 _compute_lightmap_size(const PlotMesh &p_plot_mesh);
+	Vector<Color> _get_bake_texture(Ref<Image> p_image, const Vector2 &p_bake_size, const Color &p_color_mul, const Color &p_color_add);
+	Vector3 _fix_sample_position(const Vector3 &p_position, const Vector3 &p_normal, const Vector3 &p_tangent, const Vector3 &p_bitangent, const Vector2 &p_texel_size);
+	void _plot_triangle(Vector2 *p_vertices, Vector3 *p_positions, Vector3 *p_normals, Vector2 *p_uvs, const Vector<Color> &p_albedo_texture, const Vector<Color> &p_emission_texture, int p_width, int p_height, Vector<LightMapElement> &r_texels, int *r_lightmap_indices);
+	void _make_lightmap(const PlotMesh &p_plot_mesh, int p_idx);
+
+	bool _cast_shadow_ray(RaytraceEngine::Ray &r_ray);
+	void _compute_direct_light(const PlotLight &p_plot_light, LightMapElement *r_lightmap, int p_size);
+
+	Error _compute_indirect_light(unsigned int mesh_id);
+	void _compute_ray_trace(uint32_t p_idx, LightMapElement *r_texels);
+
+	void _fix_seams(const PlotMesh &p_plot_mesh, Vector3 *r_lightmap, const Vector2i &p_size);
+	void _fix_seam(const Vector2 &p_uv0, const Vector2 &p_uv1, const Vector2 &p_uv3, const Vector2 &p_uv4, Vector3 *r_lightmap, const Vector2i &p_size);
+
+	static bool _bake_time(float p_secs, float p_progress);
+
+public:
+	float default_texels_per_unit;
+	BakedLightmap::BakeQuality bake_quality;
+	bool capture_enabled;
+	int bounces;
+	bool use_denoiser;
+	Vector<Color> sky_data;
+	Basis sky_orientation;
+	Vector2i sky_size;
+	float bias;
+
+	BakedLightmap::BakeQuality capture_quality;
+	float capture_propagation;
+
+	AABB global_bounds;
+	AABB local_bounds;
+	AABB bake_bounds;
+	int capture_subdiv;
+
+	BakedLightmap::BakeError bake(Node *p_base_node, Node *p_from_node, String p_save_path, Ref<BakedLightmapData> r_lightmap_data);
+
+	RaytraceLightBaker();
+};
+#endif
+
 VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
-VARIANT_ENUM_CAST(BakedLightmap::BakeMode);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
+VARIANT_ENUM_CAST(BakedLightmap::EnvironmentMode);
 
 #endif // BAKED_INDIRECT_LIGHT_H

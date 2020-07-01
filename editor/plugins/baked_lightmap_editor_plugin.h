@@ -46,9 +46,12 @@ class BakedLightmapEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 	static EditorProgress *tmp_progress;
+	static EditorProgress *tmp_subprogress;
 	static void bake_func_begin(int p_steps);
 	static bool bake_func_step(int p_step, const String &p_description);
 	static void bake_func_end();
+	static bool bake_func_substep(int p_step, const String &p_description);
+	static void bake_func_end_substep();
 
 	void _bake();
 

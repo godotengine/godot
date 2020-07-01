@@ -196,6 +196,23 @@ NodePath MeshInstance::get_skeleton_path() {
 	return skeleton_path;
 }
 
+void MeshInstance::set_lightmap_size_scale(float p_lightmap_scale) {
+	// Rounded to 0.5 increments
+	lightmap_size_scale = Math::round(p_lightmap_scale * 2.0) / 2.0;
+}
+
+float MeshInstance::get_lightmap_size_scale() {
+	return lightmap_size_scale;
+}
+
+Vector2 MeshInstance::get_lightmap_size_hint() {
+	if (mesh.is_valid()) {
+		return mesh->get_lightmap_size_hint() * lightmap_size_scale;
+	}
+
+	return Vector2();
+}
+
 AABB MeshInstance::get_aabb() const {
 
 	if (!mesh.is_null())
@@ -394,6 +411,9 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance::get_skeleton_path);
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance::get_skin);
+	ClassDB::bind_method(D_METHOD("set_lightmap_size_scale"), &MeshInstance::set_lightmap_size_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_size_scale"), &MeshInstance::get_lightmap_size_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &MeshInstance::get_lightmap_size_hint);
 
 	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
@@ -411,10 +431,12 @@ void MeshInstance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton"), "set_skeleton_path", "get_skeleton_path");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lightmap_size_scale", PROPERTY_HINT_RANGE, "0.5,2.0,0.5"), "set_lightmap_size_scale", "get_lightmap_size_scale");
 }
 
 MeshInstance::MeshInstance() {
 	skeleton_path = NodePath("..");
+	lightmap_size_scale = 1.0;
 }
 
 MeshInstance::~MeshInstance() {

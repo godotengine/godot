@@ -81,6 +81,7 @@ void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
 }
 
 EditorProgress *BakedLightmapEditorPlugin::tmp_progress = NULL;
+EditorProgress *BakedLightmapEditorPlugin::tmp_subprogress = NULL;
 
 void BakedLightmapEditorPlugin::bake_func_begin(int p_steps) {
 
@@ -96,9 +97,25 @@ bool BakedLightmapEditorPlugin::bake_func_step(int p_step, const String &p_descr
 }
 
 void BakedLightmapEditorPlugin::bake_func_end() {
+
 	ERR_FAIL_COND(tmp_progress == NULL);
 	memdelete(tmp_progress);
 	tmp_progress = NULL;
+}
+
+bool BakedLightmapEditorPlugin::bake_func_substep(int p_step, const String &p_description) {
+
+	if (tmp_subprogress == NULL) {
+		tmp_subprogress = memnew(EditorProgress("compute_indirect_lighting", TTR("Compute Indirect Lighting"), 100, true));
+	}
+	return tmp_subprogress->step(p_description, p_step, false);
+}
+
+void BakedLightmapEditorPlugin::bake_func_end_substep() {
+
+	ERR_FAIL_COND(tmp_subprogress == NULL);
+	memdelete(tmp_subprogress);
+	tmp_subprogress = NULL;
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
@@ -120,6 +137,8 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	BakedLightmap::bake_begin_function = bake_func_begin;
 	BakedLightmap::bake_step_function = bake_func_step;
 	BakedLightmap::bake_end_function = bake_func_end;
+	BakedLightmap::bake_substep_function = bake_func_substep;
+	BakedLightmap::bake_end_substep_function = bake_func_end_substep;
 }
 
 BakedLightmapEditorPlugin::~BakedLightmapEditorPlugin() {

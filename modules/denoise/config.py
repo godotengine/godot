@@ -4,7 +4,7 @@ def can_build(env, platform):
     # It's also only relevant for tools build and desktop platforms,
     # as doing lightmap generation and denoising on Android or HTML5
     # would be a bit far-fetched.
-    desktop_platforms = ["linuxbsd", "osx", "windows"]
+    desktop_platforms = ["x11", "osx", "windows"]
     return env["tools"] and platform in desktop_platforms and env["bits"] == "64"
 
 

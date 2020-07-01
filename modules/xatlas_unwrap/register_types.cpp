@@ -32,6 +32,9 @@
 
 #include "core/error_macros.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "thirdparty/xatlas/xatlas.h"
 
 #include <stdio.h>
@@ -41,7 +44,7 @@ extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const flo
 
 bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) {
 
-	//set up input mesh
+	// set up input mesh
 	xatlas::MeshDecl input_mesh;
 	input_mesh.indexData = p_indices;
 	input_mesh.indexCount = p_index_count;
@@ -60,6 +63,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	pack_options.maxChartSize = 4096;
 	pack_options.blockAlign = true;
+	pack_options.padding = 1;
 	pack_options.texelsPerUnit = 1.0 / p_texel_size;
 
 	xatlas::Atlas *atlas = xatlas::Create();
@@ -106,7 +110,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	*r_index_count = output.indexCount;
 
 	xatlas::Destroy(atlas);
-	printf("Done\n");
+
 	return true;
 }
 
