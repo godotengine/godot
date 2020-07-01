@@ -1,0 +1,13 @@
+{
+global:
+  rtc*;
+  _ZN?rtc*;
+  _ZN??rtc*;
+  _ZN???rtc*;
+  _ZN????rtc*;
+  _ZN?????rtc*;
+  _ZN6embree13TaskScheduler*;
+  _ZN6embree713TaskScheduler*;
+local: 
+  *;
+};
