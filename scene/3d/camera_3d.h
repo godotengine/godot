@@ -34,6 +34,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/main/window.h"
+#include "scene/resources/camera_effects.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {

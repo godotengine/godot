@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  world_3d.h                                                           */
+/*  camera_effects.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,65 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#ifndef CAMERA_EFFECTS_H
+#define CAMERA_EFFECTS_H
 
 #include "core/resource.h"
-#include "scene/resources/camera_effects.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+#include "core/rid.h"
 
-class Camera3D;
-class VisibilityNotifier3D;
-struct SpatialIndexer;
-
-class World3D : public Resource {
-	GDCLASS(World3D, Resource);
+class CameraEffects : public Resource {
+	GDCLASS(CameraEffects, Resource);
 
 private:
-	RID space;
-	RID scenario;
-	SpatialIndexer *indexer;
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-	Ref<CameraEffects> camera_effects;
+	RID camera_effects;
+
+	// DOF blur
+	bool dof_blur_far_enabled = false;
+	float dof_blur_far_distance = 10;
+	float dof_blur_far_transition = 5;
+
+	bool dof_blur_near_enabled = false;
+	float dof_blur_near_distance = 2;
+	float dof_blur_near_transition = 1;
+
+	float dof_blur_amount = 0.1;
+	void _update_dof_blur();
+
+	// Override exposure
+	bool override_exposure_enabled = false;
+	float override_exposure = 1.0;
+	void _update_override_exposure();
 
 protected:
 	static void _bind_methods();
 
-	friend class Camera3D;
-	friend class VisibilityNotifier3D;
-
-	void _register_camera(Camera3D *p_camera);
-	void _update_camera(Camera3D *p_camera);
-	void _remove_camera(Camera3D *p_camera);
-
-	void _register_notifier(VisibilityNotifier3D *p_notifier, const AABB &p_rect);
-	void _update_notifier(VisibilityNotifier3D *p_notifier, const AABB &p_rect);
-	void _remove_notifier(VisibilityNotifier3D *p_notifier);
-	friend class Viewport;
-	void _update(uint64_t p_frame);
-
 public:
-	RID get_space() const;
-	RID get_scenario() const;
+	virtual RID get_rid() const;
 
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
+	// DOF blur
+	void set_dof_blur_far_enabled(bool p_enabled);
+	bool is_dof_blur_far_enabled() const;
+	void set_dof_blur_far_distance(float p_distance);
+	float get_dof_blur_far_distance() const;
+	void set_dof_blur_far_transition(float p_distance);
+	float get_dof_blur_far_transition() const;
 
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
+	void set_dof_blur_near_enabled(bool p_enabled);
+	bool is_dof_blur_near_enabled() const;
+	void set_dof_blur_near_distance(float p_distance);
+	float get_dof_blur_near_distance() const;
+	void set_dof_blur_near_transition(float p_distance);
+	float get_dof_blur_near_transition() const;
 
-	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
-	Ref<CameraEffects> get_camera_effects() const;
+	void set_dof_blur_amount(float p_amount);
+	float get_dof_blur_amount() const;
 
-	void get_camera_list(List<Camera3D *> *r_cameras);
+	// Override exposure
+	void set_override_exposure_enabled(bool p_enabled);
+	bool is_override_exposure_enabled() const;
+	void set_override_exposure(float p_exposure);
+	float get_override_exposure() const;
 
-	PhysicsDirectSpaceState3D *get_direct_space_state();
-
-	World3D();
-	~World3D();
+	CameraEffects();
+	~CameraEffects();
 };
 
-#endif // WORLD_3D_H
+#endif // CAMERA_EFFECTS_H
