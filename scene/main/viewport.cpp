@@ -2913,6 +2913,10 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		return;
 	}
 
+	if (!_can_consume_input_events()) {
+		return;
+	}
+
 	if (!is_input_handled()) {
 		get_tree()->_call_input_pause(input_group, "_input", ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
 	}
@@ -2926,7 +2930,7 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (disable_input) {
+	if (disable_input || !_can_consume_input_events()) {
 		return;
 	}
 

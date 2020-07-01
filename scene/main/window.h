@@ -130,6 +130,7 @@ private:
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
+	virtual bool _can_consume_input_events() const;
 
 protected:
 	Viewport *_get_embedder() const;
