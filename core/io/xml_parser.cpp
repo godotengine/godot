@@ -200,22 +200,63 @@ bool XMLParser::_parse_cdata() {
 }
 
 void XMLParser::_parse_comment() {
+	// Comment	   ::=   	'<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
 	node_type = NODE_COMMENT;
-	P += 1;
 
+	// Check 2nd car
+	ERR_FAIL_COND_MSG(*P != '!', "parser XML comment: Open comment, missing '!'");
+
+	// Check 3rd car
+	++P;
+	ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
 	char *pCommentBegin = P;
+	ERR_FAIL_COND_MSG(*P != '-', "parser XML comment: Open comment, missing 1st '-'");
 
-	int count = 1;
+	// Check 4th car
+	++P;
+	ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+	ERR_FAIL_COND_MSG(*P != '-', "parser XML comment: Open comment, missing 2nd '-'");
+
+	// Check 5th car
+	++P;
+	ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+	if (*P == '-') {
+		// Check 6th car (permitted '<!---', not permitted '<!----')
+		++P;
+		ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+		ERR_FAIL_COND_MSG(*P == '-', "parser XML comment: '<!----' not permitted");
+	}
 
 	// move until end of comment reached
-	while (count) {
-		if (*P == '>') {
-			--count;
-		} else if (*P == '<') {
-			++count;
-		}
-
+	while (true) {
 		++P;
+		ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+		if (*P == '<') { // check if it is a new open comment [Nested comments are not permitted]
+			++P;
+			ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+			if (*P != '!') { // continue if not '<!--'
+				continue;
+			}
+			++P;
+			ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+			if (*P != '-') { // continue if not '<!--'
+				continue;
+			}
+			++P;
+			ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+			ERR_FAIL_COND_MSG(*P == '-', "parser XML comment: Nested comments are not permitted");
+		} else if (*P == '-') { // check if end comment
+			++P;
+			ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+			if (*P != '-') {
+				continue;
+			}
+			++P;
+			ERR_FAIL_COND_MSG(*P == '\0', "parser XML comment: Comment not terminated");
+			ERR_FAIL_COND_MSG(*P == '-', "parser XML comment: Double hyphen must not occur within comments [and '--->' not allow]");
+			ERR_FAIL_COND_MSG(*P != '>', "parser XML comment: Double hyphen must not occur within comments");
+			break; // End comment detected, break loop
+		}
 	}
 
 	P -= 3;
