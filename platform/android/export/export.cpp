@@ -43,6 +43,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "platform/android/export/gradle_export_util.h"
 #include "platform/android/logo.gen.h"
 #include "platform/android/plugin/godot_plugin_config.h"
 #include "platform/android/run_icon.gen.h"
@@ -2003,9 +2004,10 @@ public:
 
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
-		if (bool(p_preset->get("custom_template/use_custom_build"))) { //custom build
-			//re-generate build.gradle and AndroidManifest.xml
+		bool use_custom_build = bool(p_preset->get("custom_template/use_custom_build"));
 
+		if (use_custom_build) {
+			//re-generate build.gradle and AndroidManifest.xml
 			{ //test that installed build version is alright
 				FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
 				if (!f) {
@@ -2017,6 +2019,14 @@ public:
 					EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
 					return ERR_UNCONFIGURED;
 				}
+			}
+
+			// TODO: should we use "package/name" or "application/config/name"?
+			String project_name = get_project_name(p_preset->get("package/name"));
+			// instead of calling _fix_resources
+			Error err = _create_project_name_strings_files(p_preset, project_name);
+			if (err != OK) {
+				EditorNode::add_io_error("Unable to overwrite res://android/build/res/*.xml files with project name");
 			}
 			//build project if custom build is enabled
 			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
@@ -2202,7 +2212,9 @@ public:
 			}
 
 			if (file == "resources.arsc") {
-				_fix_resources(p_preset, data);
+				if (!use_custom_build) {
+					_fix_resources(p_preset, data);
+				}
 			}
 
 			for (int i = 0; i < icon_densities_count; ++i) {
