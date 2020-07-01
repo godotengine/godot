@@ -468,7 +468,7 @@ public:
 
 	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
-	FUNC12(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, bool, float, float, float)
+	FUNC11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	FUNC1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
 

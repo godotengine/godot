@@ -1995,6 +1995,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
 
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_DISABLED);
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_DYNAMIC);
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_STATIC);
+
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_CUBE);
 
@@ -2007,6 +2011,10 @@ void RenderingServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ALWAYS);
+
+	BIND_ENUM_CONSTANT(REFLECTION_PROBE_AMBIENT_DISABLED);
+	BIND_ENUM_CONSTANT(REFLECTION_PROBE_AMBIENT_ENVIRONMENT);
+	BIND_ENUM_CONSTANT(REFLECTION_PROBE_AMBIENT_COLOR);
 
 	BIND_ENUM_CONSTANT(DECAL_TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(DECAL_TEXTURE_NORMAL);
@@ -2374,7 +2382,7 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow),Ultra (Slower)"));
 	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
 
-	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_enable", true);
+	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled", true);
 	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", 0.25);
 	GLOBAL_DEF("rendering/quality/screen_filters/screen_space_roughness_limiter_limit", 0.18);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_roughness_limiter_amount", PropertyInfo(Variant::FLOAT, "rendering/quality/screen_filters/screen_space_roughness_limiter_amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));

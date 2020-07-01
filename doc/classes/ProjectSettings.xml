@@ -1078,13 +1078,13 @@
 		</member>
 		<member name="rendering/quality/screen_filters/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
-			Another way to combat specular aliasing is to enable [member rendering/quality/screen_filters/screen_space_roughness_limiter].
+			Another way to combat specular aliasing is to enable [member rendering/quality/screen_filters/screen_space_roughness_limiter_enabled].
 		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter" type="int" setter="" getter="" default="0">
-			Enables the screen-space roughness limiter which increases material roughness in areas with a high normal frequency (i.e. when normals change a lot from pixel to pixel). This helps to reduce the amount of specular aliasing in a scene. Specular aliasing looks like random bright pixels that occur in reflections.
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_amount" type="float" setter="" getter="" default="0.25">
 		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_curve" type="float" setter="" getter="" default="1.0">
-			Curves the amount of the roughness limited effect. A higher value limits the effect to very sharply curved surfaces, while a lower threshold extends the effect to smoother surfaces.
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_enabled" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_limit" type="float" setter="" getter="" default="0.18">
 		</member>
 		<member name="rendering/quality/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
 			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
@@ -1151,6 +1151,10 @@
 		</member>
 		<member name="rendering/quality/texture_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
+		</member>
+		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.

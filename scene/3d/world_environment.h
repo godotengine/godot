@@ -32,6 +32,8 @@
 #define SCENARIO_FX_H
 
 #include "scene/3d/node_3d.h"
+#include "scene/resources/camera_effects.h"
+#include "scene/resources/environment.h"
 
 class WorldEnvironment : public Node {
 	GDCLASS(WorldEnvironment, Node);

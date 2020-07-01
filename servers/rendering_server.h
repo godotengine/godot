@@ -428,7 +428,7 @@ public:
 	enum LightDirectionalShadowMode {
 		LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL,
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS,
-		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS
+		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS,
 	};
 
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
@@ -437,7 +437,6 @@ public:
 	enum LightDirectionalShadowDepthRangeMode {
 		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
 		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
-
 	};
 
 	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, LightDirectionalShadowDepthRangeMode p_range_mode) = 0;
@@ -457,7 +456,7 @@ public:
 	enum ReflectionProbeAmbientMode {
 		REFLECTION_PROBE_AMBIENT_DISABLED,
 		REFLECTION_PROBE_AMBIENT_ENVIRONMENT,
-		REFLECTION_PROBE_AMBIENT_COLOR
+		REFLECTION_PROBE_AMBIENT_COLOR,
 	};
 
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, ReflectionProbeAmbientMode p_mode) = 0;
@@ -607,16 +606,6 @@ public:
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
-
-	/*
-	enum ParticlesCollisionMode {
-		PARTICLES_COLLISION_NONE,
-		PARTICLES_COLLISION_TEXTURE,
-		PARTICLES_COLLISION_CUBEMAP,
-	};
-
-	virtual void particles_set_collision(RID p_particles,ParticlesCollisionMode p_mode,const Transform&, p_xform,const RID p_depth_tex,const RID p_normal_tex)=0;
-	*/
 
 	/* VIEWPORT TARGET API */
 
@@ -844,7 +833,7 @@ public:
 		ENV_SDFGI_Y_SCALE_50_PERCENT
 	};
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, EnvironmentSDFGICascades p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, bool p_enhance_ssr, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, EnvironmentSDFGICascades p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
 	enum EnvironmentSDFGIRayCount {
 		ENV_SDFGI_RAY_COUNT_8,

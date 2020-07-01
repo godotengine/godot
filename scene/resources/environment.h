@@ -41,7 +41,6 @@ class Environment : public Resource {
 
 public:
 	enum BGMode {
-
 		BG_CLEAR_COLOR,
 		BG_COLOR,
 		BG_SKY,
@@ -68,22 +67,14 @@ public:
 		TONE_MAPPER_LINEAR,
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
-		TONE_MAPPER_ACES
-	};
-
-	enum GlowBlendMode {
-		GLOW_BLEND_MODE_ADDITIVE,
-		GLOW_BLEND_MODE_SCREEN,
-		GLOW_BLEND_MODE_SOFTLIGHT,
-		GLOW_BLEND_MODE_REPLACE,
-		GLOW_BLEND_MODE_MIX,
+		TONE_MAPPER_ACES,
 	};
 
 	enum SSAOBlur {
 		SSAO_BLUR_DISABLED,
 		SSAO_BLUR_1x1,
 		SSAO_BLUR_2x2,
-		SSAO_BLUR_3x3
+		SSAO_BLUR_3x3,
 	};
 
 	enum SDFGICascades {
@@ -98,96 +89,120 @@ public:
 		SDFGI_Y_SCALE_50_PERCENT,
 	};
 
+	enum GlowBlendMode {
+		GLOW_BLEND_MODE_ADDITIVE,
+		GLOW_BLEND_MODE_SCREEN,
+		GLOW_BLEND_MODE_SOFTLIGHT,
+		GLOW_BLEND_MODE_REPLACE,
+		GLOW_BLEND_MODE_MIX,
+	};
+
 private:
 	RID environment;
 
+	// Background
 	BGMode bg_mode = BG_CLEAR_COLOR;
 	Ref<Sky> bg_sky;
-	float bg_sky_custom_fov;
-	Vector3 sky_rotation;
+	float bg_sky_custom_fov = 0;
+	Vector3 bg_sky_rotation;
 	Color bg_color;
-	float bg_energy;
-	int bg_canvas_max_layer;
+	float bg_energy = 1.0;
+	int bg_canvas_max_layer = 0;
+	int bg_camera_feed_id = 1;
+
+	// Ambient light
 	Color ambient_color;
-	float ambient_energy;
+	AmbientSource ambient_source = AMBIENT_SOURCE_BG;
+	float ambient_energy = 1.0;
+	float ambient_sky_contribution = 1.0;
+	ReflectionSource reflection_source = REFLECTION_SOURCE_BG;
 	Color ao_color;
-	float ambient_sky_contribution;
-	int camera_feed_id;
-	AmbientSource ambient_source;
-	ReflectionSource reflection_source;
+	void _update_ambient_light();
 
+	// Tonemap
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
-	float tonemap_exposure;
-	float tonemap_white;
-	bool tonemap_auto_exposure;
-	float tonemap_auto_exposure_max;
-	float tonemap_auto_exposure_min;
-	float tonemap_auto_exposure_speed;
-	float tonemap_auto_exposure_grey;
+	float tonemap_exposure = 1.0;
+	float tonemap_white = 1.0;
+	bool tonemap_auto_exposure_enabled = false;
+	float tonemap_auto_exposure_min = 0.05;
+	float tonemap_auto_exposure_max = 8;
+	float tonemap_auto_exposure_speed = 0.5;
+	float tonemap_auto_exposure_grey = 0.4;
+	void _update_tonemap();
 
-	bool adjustment_enabled;
-	float adjustment_contrast;
-	float adjustment_saturation;
-	float adjustment_brightness;
-	Ref<Texture2D> adjustment_color_correction;
+	// SSR
+	bool ssr_enabled = false;
+	int ssr_max_steps = 64;
+	float ssr_fade_in = 0.15;
+	float ssr_fade_out = 2.0;
+	float ssr_depth_tolerance = 0.2;
+	void _update_ssr();
 
-	bool ssr_enabled;
-	int ssr_max_steps;
-	float ssr_fade_in;
-	float ssr_fade_out;
-	float ssr_depth_tolerance;
-
-	bool ssao_enabled;
-	float ssao_radius;
-	float ssao_intensity;
-	float ssao_bias;
-	float ssao_direct_light_affect;
-	float ssao_ao_channel_affect;
+	// SSAO
+	bool ssao_enabled = false;
+	float ssao_radius = 1.0;
+	float ssao_intensity = 1.0;
+	float ssao_bias = 0.01;
+	float ssao_direct_light_affect = 0.0;
+	float ssao_ao_channel_affect = 0.0;
 	SSAOBlur ssao_blur = SSAO_BLUR_3x3;
-	float ssao_edge_sharpness;
+	float ssao_edge_sharpness = 4.0;
+	void _update_ssao();
 
-	bool glow_enabled;
-	int glow_levels;
-	float glow_intensity;
-	float glow_strength;
-	float glow_mix;
-	float glow_bloom;
-	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_ADDITIVE;
-	float glow_hdr_bleed_threshold;
-	float glow_hdr_bleed_scale;
-	float glow_hdr_luminance_cap;
-
-	bool fog_enabled;
-	Color fog_color;
-	Color fog_sun_color;
-	float fog_sun_amount;
-
-	bool fog_depth_enabled;
-	float fog_depth_begin;
-	float fog_depth_end;
-	float fog_depth_curve;
-
-	bool fog_transmit_enabled;
-	float fog_transmit_curve;
-
-	bool fog_height_enabled;
-	float fog_height_min;
-	float fog_height_max;
-	float fog_height_curve;
-
-	bool sdfgi_enabled;
-	SDFGICascades sdfgi_cascades;
-	float sdfgi_min_cell_size;
-	bool sdfgi_use_occlusion;
-	bool sdfgi_use_multibounce;
-	bool sdfgi_read_sky_light;
-	bool sdfgi_enhance_ssr;
-	float sdfgi_energy;
-	float sdfgi_normal_bias;
-	float sdfgi_probe_bias;
-	SDFGIYScale sdfgi_y_scale;
-
+	// SDFGI
+	bool sdfgi_enabled = false;
+	SDFGICascades sdfgi_cascades = SDFGI_CASCADES_6;
+	float sdfgi_min_cell_size = 0.2;
+	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
+	bool sdfgi_use_occlusion = false;
+	bool sdfgi_use_multibounce = false;
+	bool sdfgi_read_sky_light = false;
+	float sdfgi_energy = 1.0;
+	float sdfgi_normal_bias = 1.1;
+	float sdfgi_probe_bias = 1.1;
 	void _update_sdfgi();
+
+	// Glow
+	bool glow_enabled = false;
+	int glow_levels = (1 << 2) | (1 << 4);
+	float glow_intensity = 0.8;
+	float glow_strength = 1.0;
+	float glow_mix = 0.05;
+	float glow_bloom = 0.0;
+	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_SOFTLIGHT;
+	float glow_hdr_bleed_threshold = 1.0;
+	float glow_hdr_bleed_scale = 2.0;
+	float glow_hdr_luminance_cap = 12.0;
+	void _update_glow();
+
+	// Fog
+	bool fog_enabled = false;
+	Color fog_color = Color(0.5, 0.6, 0.7);
+	Color fog_sun_color = Color(1.0, 0.9, 0.7);
+	float fog_sun_amount = 0.0;
+	void _update_fog();
+
+	bool fog_depth_enabled = true;
+	float fog_depth_begin = 10.0;
+	float fog_depth_end = 100.0;
+	float fog_depth_curve = 1.0;
+	bool fog_transmit_enabled = false;
+	float fog_transmit_curve = 1.0;
+	void _update_fog_depth();
+
+	bool fog_height_enabled = false;
+	float fog_height_min = 10.0;
+	float fog_height_max = 0.0;
+	float fog_height_curve = 1.0;
+	void _update_fog_height();
+
+	// Adjustment
+	bool adjustment_enabled = false;
+	float adjustment_brightness = 1.0;
+	float adjustment_contrast = 1.0;
+	float adjustment_saturation = 1.0;
+	Ref<Texture2D> adjustment_color_correction;
+	void _update_adjustment();
 
 protected:
 	static void _bind_methods();
@@ -198,228 +213,179 @@ protected:
 #endif
 
 public:
+	virtual RID get_rid() const;
+
+	// Background
 	void set_background(BGMode p_bg);
-
-	void set_sky(const Ref<Sky> &p_sky);
-	void set_sky_custom_fov(float p_scale);
-	void set_sky_rotation(const Vector3 &p_rotation);
-	void set_bg_color(const Color &p_color);
-	void set_bg_energy(float p_energy);
-	void set_canvas_max_layer(int p_max_layer);
-	void set_ambient_light_color(const Color &p_color);
-	void set_ambient_light_energy(float p_energy);
-	void set_ambient_light_sky_contribution(float p_energy);
-	void set_camera_feed_id(int p_camera_feed_id);
-	void set_ambient_source(AmbientSource p_source);
-	AmbientSource get_ambient_source() const;
-	void set_reflection_source(ReflectionSource p_source);
-	ReflectionSource get_reflection_source() const;
-
 	BGMode get_background() const;
+	void set_sky(const Ref<Sky> &p_sky);
 	Ref<Sky> get_sky() const;
+	void set_sky_custom_fov(float p_scale);
 	float get_sky_custom_fov() const;
+	void set_sky_rotation(const Vector3 &p_rotation);
 	Vector3 get_sky_rotation() const;
+	void set_bg_color(const Color &p_color);
 	Color get_bg_color() const;
+	void set_bg_energy(float p_energy);
 	float get_bg_energy() const;
+	void set_canvas_max_layer(int p_max_layer);
 	int get_canvas_max_layer() const;
-	Color get_ambient_light_color() const;
-	float get_ambient_light_energy() const;
-	float get_ambient_light_sky_contribution() const;
+	void set_camera_feed_id(int p_id);
 	int get_camera_feed_id() const;
 
-	void set_tonemapper(ToneMapper p_tone_mapper);
-	ToneMapper get_tonemapper() const;
-
-	void set_tonemap_exposure(float p_exposure);
-	float get_tonemap_exposure() const;
-
-	void set_tonemap_white(float p_white);
-	float get_tonemap_white() const;
-
-	void set_tonemap_auto_exposure(bool p_enabled);
-	bool get_tonemap_auto_exposure() const;
-
-	void set_tonemap_auto_exposure_max(float p_auto_exposure_max);
-	float get_tonemap_auto_exposure_max() const;
-
-	void set_tonemap_auto_exposure_min(float p_auto_exposure_min);
-	float get_tonemap_auto_exposure_min() const;
-
-	void set_tonemap_auto_exposure_speed(float p_auto_exposure_speed);
-	float get_tonemap_auto_exposure_speed() const;
-
-	void set_tonemap_auto_exposure_grey(float p_auto_exposure_grey);
-	float get_tonemap_auto_exposure_grey() const;
-
-	void set_adjustment_enable(bool p_enable);
-	bool is_adjustment_enabled() const;
-
-	void set_adjustment_brightness(float p_brightness);
-	float get_adjustment_brightness() const;
-
-	void set_adjustment_contrast(float p_contrast);
-	float get_adjustment_contrast() const;
-
-	void set_adjustment_saturation(float p_saturation);
-	float get_adjustment_saturation() const;
-
-	void set_adjustment_color_correction(const Ref<Texture2D> &p_ramp);
-	Ref<Texture2D> get_adjustment_color_correction() const;
-
-	void set_ssr_enabled(bool p_enable);
-	bool is_ssr_enabled() const;
-
-	void set_ssr_max_steps(int p_steps);
-	int get_ssr_max_steps() const;
-
-	void set_ssr_fade_in(float p_fade_in);
-	float get_ssr_fade_in() const;
-
-	void set_ssr_fade_out(float p_fade_out);
-	float get_ssr_fade_out() const;
-
-	void set_ssr_depth_tolerance(float p_depth_tolerance);
-	float get_ssr_depth_tolerance() const;
-
-	void set_ssao_enabled(bool p_enable);
-	bool is_ssao_enabled() const;
-
-	void set_ssao_radius(float p_radius);
-	float get_ssao_radius() const;
-
-	void set_ssao_intensity(float p_intensity);
-	float get_ssao_intensity() const;
-
-	void set_ssao_bias(float p_bias);
-	float get_ssao_bias() const;
-
-	void set_ssao_direct_light_affect(float p_direct_light_affect);
-	float get_ssao_direct_light_affect() const;
-
-	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
-	float get_ssao_ao_channel_affect() const;
-
+	// Ambient light
+	void set_ambient_light_color(const Color &p_color);
+	Color get_ambient_light_color() const;
+	void set_ambient_source(AmbientSource p_source);
+	AmbientSource get_ambient_source() const;
+	void set_ambient_light_energy(float p_energy);
+	float get_ambient_light_energy() const;
+	void set_ambient_light_sky_contribution(float p_ratio);
+	float get_ambient_light_sky_contribution() const;
+	void set_reflection_source(ReflectionSource p_source);
+	ReflectionSource get_reflection_source() const;
 	void set_ao_color(const Color &p_color);
 	Color get_ao_color() const;
 
+	// Tonemap
+	void set_tonemapper(ToneMapper p_tone_mapper);
+	ToneMapper get_tonemapper() const;
+	void set_tonemap_exposure(float p_exposure);
+	float get_tonemap_exposure() const;
+	void set_tonemap_white(float p_white);
+	float get_tonemap_white() const;
+	void set_tonemap_auto_exposure_enabled(bool p_enabled);
+	bool is_tonemap_auto_exposure_enabled() const;
+	void set_tonemap_auto_exposure_min(float p_auto_exposure_min);
+	float get_tonemap_auto_exposure_min() const;
+	void set_tonemap_auto_exposure_max(float p_auto_exposure_max);
+	float get_tonemap_auto_exposure_max() const;
+	void set_tonemap_auto_exposure_speed(float p_auto_exposure_speed);
+	float get_tonemap_auto_exposure_speed() const;
+	void set_tonemap_auto_exposure_grey(float p_auto_exposure_grey);
+	float get_tonemap_auto_exposure_grey() const;
+
+	// SSR
+	void set_ssr_enabled(bool p_enabled);
+	bool is_ssr_enabled() const;
+	void set_ssr_max_steps(int p_steps);
+	int get_ssr_max_steps() const;
+	void set_ssr_fade_in(float p_fade_in);
+	float get_ssr_fade_in() const;
+	void set_ssr_fade_out(float p_fade_out);
+	float get_ssr_fade_out() const;
+	void set_ssr_depth_tolerance(float p_depth_tolerance);
+	float get_ssr_depth_tolerance() const;
+
+	// SSAO
+	void set_ssao_enabled(bool p_enabled);
+	bool is_ssao_enabled() const;
+	void set_ssao_radius(float p_radius);
+	float get_ssao_radius() const;
+	void set_ssao_intensity(float p_intensity);
+	float get_ssao_intensity() const;
+	void set_ssao_bias(float p_bias);
+	float get_ssao_bias() const;
+	void set_ssao_direct_light_affect(float p_direct_light_affect);
+	float get_ssao_direct_light_affect() const;
+	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
+	float get_ssao_ao_channel_affect() const;
 	void set_ssao_blur(SSAOBlur p_blur);
 	SSAOBlur get_ssao_blur() const;
-
 	void set_ssao_edge_sharpness(float p_edge_sharpness);
 	float get_ssao_edge_sharpness() const;
 
+	// SDFGI
+	void set_sdfgi_enabled(bool p_enabled);
+	bool is_sdfgi_enabled() const;
+	void set_sdfgi_cascades(SDFGICascades p_cascades);
+	SDFGICascades get_sdfgi_cascades() const;
+	void set_sdfgi_min_cell_size(float p_size);
+	float get_sdfgi_min_cell_size() const;
+	void set_sdfgi_max_distance(float p_distance);
+	float get_sdfgi_max_distance() const;
+	void set_sdfgi_cascade0_distance(float p_distance);
+	float get_sdfgi_cascade0_distance() const;
+	void set_sdfgi_y_scale(SDFGIYScale p_y_scale);
+	SDFGIYScale get_sdfgi_y_scale() const;
+	void set_sdfgi_use_occlusion(bool p_enabled);
+	bool is_sdfgi_using_occlusion() const;
+	void set_sdfgi_use_multi_bounce(bool p_enabled);
+	bool is_sdfgi_using_multi_bounce() const;
+	void set_sdfgi_read_sky_light(bool p_enabled);
+	bool is_sdfgi_reading_sky_light() const;
+	void set_sdfgi_energy(float p_energy);
+	float get_sdfgi_energy() const;
+	void set_sdfgi_normal_bias(float p_bias);
+	float get_sdfgi_normal_bias() const;
+	void set_sdfgi_probe_bias(float p_bias);
+	float get_sdfgi_probe_bias() const;
+
+	// Glow
 	void set_glow_enabled(bool p_enabled);
 	bool is_glow_enabled() const;
-
-	void set_glow_level(int p_level, bool p_enabled);
+	void set_glow_level_enabled(int p_level, bool p_enabled);
 	bool is_glow_level_enabled(int p_level) const;
-
 	void set_glow_intensity(float p_intensity);
 	float get_glow_intensity() const;
-
 	void set_glow_strength(float p_strength);
 	float get_glow_strength() const;
-
 	void set_glow_mix(float p_mix);
 	float get_glow_mix() const;
-
 	void set_glow_bloom(float p_threshold);
 	float get_glow_bloom() const;
-
 	void set_glow_blend_mode(GlowBlendMode p_mode);
 	GlowBlendMode get_glow_blend_mode() const;
-
 	void set_glow_hdr_bleed_threshold(float p_threshold);
 	float get_glow_hdr_bleed_threshold() const;
-
+	void set_glow_hdr_bleed_scale(float p_scale);
+	float get_glow_hdr_bleed_scale() const;
 	void set_glow_hdr_luminance_cap(float p_amount);
 	float get_glow_hdr_luminance_cap() const;
 
-	void set_glow_hdr_bleed_scale(float p_scale);
-	float get_glow_hdr_bleed_scale() const;
-
+	// Fog
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
-
 	void set_fog_color(const Color &p_color);
 	Color get_fog_color() const;
-
 	void set_fog_sun_color(const Color &p_color);
 	Color get_fog_sun_color() const;
-
 	void set_fog_sun_amount(float p_amount);
 	float get_fog_sun_amount() const;
 
 	void set_fog_depth_enabled(bool p_enabled);
 	bool is_fog_depth_enabled() const;
-
 	void set_fog_depth_begin(float p_distance);
 	float get_fog_depth_begin() const;
-
 	void set_fog_depth_end(float p_distance);
 	float get_fog_depth_end() const;
-
 	void set_fog_depth_curve(float p_curve);
 	float get_fog_depth_curve() const;
-
 	void set_fog_transmit_enabled(bool p_enabled);
 	bool is_fog_transmit_enabled() const;
-
 	void set_fog_transmit_curve(float p_curve);
 	float get_fog_transmit_curve() const;
 
 	void set_fog_height_enabled(bool p_enabled);
 	bool is_fog_height_enabled() const;
-
 	void set_fog_height_min(float p_distance);
 	float get_fog_height_min() const;
-
 	void set_fog_height_max(float p_distance);
 	float get_fog_height_max() const;
-
 	void set_fog_height_curve(float p_distance);
 	float get_fog_height_curve() const;
 
-	void set_sdfgi_enabled(bool p_enabled);
-	bool is_sdfgi_enabled() const;
-
-	void set_sdfgi_cascades(SDFGICascades p_cascades);
-	SDFGICascades get_sdfgi_cascades() const;
-
-	void set_sdfgi_min_cell_size(float p_size);
-	float get_sdfgi_min_cell_size() const;
-
-	void set_sdfgi_cascade0_distance(float p_size);
-	float get_sdfgi_cascade0_distance() const;
-
-	void set_sdfgi_max_distance(float p_size);
-	float get_sdfgi_max_distance() const;
-
-	void set_sdfgi_use_occlusion(bool p_enable);
-	bool is_sdfgi_using_occlusion() const;
-
-	void set_sdfgi_use_multi_bounce(bool p_enable);
-	bool is_sdfgi_using_multi_bounce() const;
-
-	void set_sdfgi_use_enhance_ssr(bool p_enable);
-	bool is_sdfgi_using_enhance_ssr() const;
-
-	void set_sdfgi_read_sky_light(bool p_enable);
-	bool is_sdfgi_reading_sky_light() const;
-
-	void set_sdfgi_energy(float p_energy);
-	float get_sdfgi_energy() const;
-
-	void set_sdfgi_normal_bias(float p_bias);
-	float get_sdfgi_normal_bias() const;
-
-	void set_sdfgi_probe_bias(float p_bias);
-	float get_sdfgi_probe_bias() const;
-
-	void set_sdfgi_y_scale(SDFGIYScale p_y_scale);
-	SDFGIYScale get_sdfgi_y_scale() const;
-
-	virtual RID get_rid() const;
+	// Adjustment
+	void set_adjustment_enabled(bool p_enabled);
+	bool is_adjustment_enabled() const;
+	void set_adjustment_brightness(float p_brightness);
+	float get_adjustment_brightness() const;
+	void set_adjustment_contrast(float p_contrast);
+	float get_adjustment_contrast() const;
+	void set_adjustment_saturation(float p_saturation);
+	float get_adjustment_saturation() const;
+	void set_adjustment_color_correction(const Ref<Texture2D> &p_ramp);
+	Ref<Texture2D> get_adjustment_color_correction() const;
 
 	Environment();
 	~Environment();
@@ -429,65 +395,9 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
 VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
-
-class CameraEffects : public Resource {
-	GDCLASS(CameraEffects, Resource);
-
-private:
-	RID camera_effects;
-
-	bool dof_blur_far_enabled;
-	float dof_blur_far_distance;
-	float dof_blur_far_transition;
-
-	bool dof_blur_near_enabled;
-	float dof_blur_near_distance;
-	float dof_blur_near_transition;
-
-	float dof_blur_amount;
-
-	bool override_exposure_enabled;
-	float override_exposure;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_dof_blur_far_enabled(bool p_enable);
-	bool is_dof_blur_far_enabled() const;
-
-	void set_dof_blur_far_distance(float p_distance);
-	float get_dof_blur_far_distance() const;
-
-	void set_dof_blur_far_transition(float p_distance);
-	float get_dof_blur_far_transition() const;
-
-	void set_dof_blur_near_enabled(bool p_enable);
-	bool is_dof_blur_near_enabled() const;
-
-	void set_dof_blur_near_distance(float p_distance);
-	float get_dof_blur_near_distance() const;
-
-	void set_dof_blur_near_transition(float p_distance);
-	float get_dof_blur_near_transition() const;
-
-	void set_dof_blur_amount(float p_amount);
-	float get_dof_blur_amount() const;
-
-	void set_override_exposure_enabled(bool p_enabled);
-	bool is_override_exposure_enabled() const;
-
-	void set_override_exposure(float p_exposure);
-	float get_override_exposure() const;
-
-	virtual RID get_rid() const;
-
-	CameraEffects();
-	~CameraEffects();
-};
+VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 
 #endif // ENVIRONMENT_H

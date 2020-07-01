@@ -24,7 +24,7 @@
 				Returns [code]true[/code] if the glow level [code]idx[/code] is specified, [code]false[/code] otherwise.
 			</description>
 		</method>
-		<method name="set_glow_level">
+		<method name="set_glow_level_enabled">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -46,7 +46,7 @@
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
 			The global contrast value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
-		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enable" getter="is_adjustment_enabled" default="false">
+		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enabled" getter="is_adjustment_enabled" default="false">
 			If [code]true[/code], enables the [code]adjustment_*[/code] properties provided by this resource. If [code]false[/code], modifications to the [code]adjustment_*[/code] properties will have no effect on the rendered scene.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
@@ -65,7 +65,7 @@
 		</member>
 		<member name="ambient_light_source" type="int" setter="set_ambient_source" getter="get_ambient_source" enum="Environment.AmbientSource" default="0">
 		</member>
-		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure" getter="get_tonemap_auto_exposure" default="false">
+		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure_enabled" getter="is_tonemap_auto_exposure_enabled" default="false">
 			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
 		</member>
 		<member name="auto_exposure_max_luma" type="float" setter="set_tonemap_auto_exposure_max" getter="get_tonemap_auto_exposure_max" default="8.0">
@@ -158,25 +158,25 @@
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
 			The glow intensity. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
 		</member>
-		<member name="glow_levels/1" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
+		<member name="glow_levels/1" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="false">
 			If [code]true[/code], the 1st level of glow is enabled. This is the most "local" level (least blurry).
 		</member>
-		<member name="glow_levels/2" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
+		<member name="glow_levels/2" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="false">
 			If [code]true[/code], the 2th level of glow is enabled.
 		</member>
-		<member name="glow_levels/3" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="true">
+		<member name="glow_levels/3" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="true">
 			If [code]true[/code], the 3th level of glow is enabled.
 		</member>
-		<member name="glow_levels/4" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
+		<member name="glow_levels/4" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="false">
 			If [code]true[/code], the 4th level of glow is enabled.
 		</member>
-		<member name="glow_levels/5" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="true">
+		<member name="glow_levels/5" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="true">
 			If [code]true[/code], the 5th level of glow is enabled.
 		</member>
-		<member name="glow_levels/6" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
+		<member name="glow_levels/6" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="false">
 			If [code]true[/code], the 6th level of glow is enabled.
 		</member>
-		<member name="glow_levels/7" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
+		<member name="glow_levels/7" type="bool" setter="set_glow_level_enabled" getter="is_glow_level_enabled" default="false">
 			If [code]true[/code], the 7th level of glow is enabled. This is the most "global" level (blurriest).
 		</member>
 		<member name="glow_mix" type="float" setter="set_glow_mix" getter="get_glow_mix" default="0.05">
@@ -185,6 +185,30 @@
 			The glow strength. When using the GLES2 renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
+		</member>
+		<member name="sdfgi_cascade0_distance" type="float" setter="set_sdfgi_cascade0_distance" getter="get_sdfgi_cascade0_distance" default="12.8">
+		</member>
+		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" enum="Environment.SDFGICascades" default="1">
+		</member>
+		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
+		</member>
+		<member name="sdfgi_energy" type="float" setter="set_sdfgi_energy" getter="get_sdfgi_energy" default="1.0">
+		</member>
+		<member name="sdfgi_max_distance" type="float" setter="set_sdfgi_max_distance" getter="get_sdfgi_max_distance" default="819.2">
+		</member>
+		<member name="sdfgi_min_cell_size" type="float" setter="set_sdfgi_min_cell_size" getter="get_sdfgi_min_cell_size" default="0.2">
+		</member>
+		<member name="sdfgi_normal_bias" type="float" setter="set_sdfgi_normal_bias" getter="get_sdfgi_normal_bias" default="1.1">
+		</member>
+		<member name="sdfgi_probe_bias" type="float" setter="set_sdfgi_probe_bias" getter="get_sdfgi_probe_bias" default="1.1">
+		</member>
+		<member name="sdfgi_read_sky_light" type="bool" setter="set_sdfgi_read_sky_light" getter="is_sdfgi_reading_sky_light" default="false">
+		</member>
+		<member name="sdfgi_use_multi_bounce" type="bool" setter="set_sdfgi_use_multi_bounce" getter="is_sdfgi_using_multi_bounce" default="false">
+		</member>
+		<member name="sdfgi_use_occlusion" type="bool" setter="set_sdfgi_use_occlusion" getter="is_sdfgi_using_occlusion" default="false">
+		</member>
+		<member name="sdfgi_y_scale" type="int" setter="set_sdfgi_y_scale" getter="get_sdfgi_y_scale" enum="Environment.SDFGIYScale" default="0">
 		</member>
 		<member name="sky" type="Sky" setter="set_sky" getter="get_sky">
 			The [Sky] resource used for this [Environment].
@@ -285,6 +309,18 @@
 		<constant name="REFLECTION_SOURCE_SKY" value="2" enum="ReflectionSource">
 			Use the [Sky] for reflections regardless of what the background is.
 		</constant>
+		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
+			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
+		</constant>
+		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
+			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].
+		</constant>
+		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
+			Filmic tonemapper operator.
+		</constant>
+		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
+			Academy Color Encoding System tonemapper operator.
+		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
@@ -300,18 +336,6 @@
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
-		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
-			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
-		</constant>
-		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].
-		</constant>
-		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
-			Filmic tonemapper operator.
-		</constant>
-		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
-			Academy Color Encoding System tonemapper operator.
-		</constant>
 		<constant name="SSAO_BLUR_DISABLED" value="0" enum="SSAOBlur">
 			No blur for the screen-space ambient occlusion effect (fastest).
 		</constant>
@@ -323,6 +347,18 @@
 		</constant>
 		<constant name="SSAO_BLUR_3x3" value="3" enum="SSAOBlur">
 			3×3 blur for the screen-space ambient occlusion effect. Increases the radius of the blur for a smoother look, but can result in checkerboard-like artifacts.
+		</constant>
+		<constant name="SDFGI_CASCADES_4" value="0" enum="SDFGICascades">
+		</constant>
+		<constant name="SDFGI_CASCADES_6" value="1" enum="SDFGICascades">
+		</constant>
+		<constant name="SDFGI_CASCADES_8" value="2" enum="SDFGICascades">
+		</constant>
+		<constant name="SDFGI_Y_SCALE_DISABLED" value="0" enum="SDFGIYScale">
+		</constant>
+		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
+		</constant>
+		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="2" enum="SDFGIYScale">
 		</constant>
 	</constants>
 </class>

@@ -211,7 +211,7 @@ public:
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
 	};
 
-	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i & = Rect2i());
+	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
