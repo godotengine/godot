@@ -32,10 +32,9 @@
 #define RASTERIZER_H
 
 #include "core/math/camera_matrix.h"
-#include "servers/rendering_server.h"
-
 #include "core/pair.h"
 #include "core/self_list.h"
+#include "servers/rendering_server.h"
 
 class RasterizerScene {
 public:
@@ -96,7 +95,7 @@ public:
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) = 0;
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, bool p_enhance_ssr, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;

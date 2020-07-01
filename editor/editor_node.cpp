@@ -360,7 +360,7 @@ void EditorNode::_notification(int p_what) {
 				bool dof_jitter = GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter");
 				RS::get_singleton()->camera_effects_set_dof_blur_quality(dof_quality, dof_jitter);
 				RS::get_singleton()->environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
-				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enable"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit"));
+				RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount"), GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit"));
 				bool glow_bicubic = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
 				RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));

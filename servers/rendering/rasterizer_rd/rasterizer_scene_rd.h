@@ -689,7 +689,6 @@ private:
 		bool sdfgi_use_occlusion = false;
 		bool sdfgi_use_multibounce = false;
 		bool sdfgi_read_sky_light = false;
-		bool sdfgi_enhance_ssr = false;
 		float sdfgi_energy = 1.0;
 		float sdfgi_normal_bias = 1.1;
 		float sdfgi_probe_bias = 1.1;
@@ -1290,7 +1289,7 @@ public:
 	bool environment_is_ssr_enabled(RID p_env) const;
 	bool environment_is_sdfgi_enabled(RID p_env) const;
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, bool p_enhance_ssr, float p_energy, float p_normal_bias, float p_probe_bias);
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count);
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames);
 

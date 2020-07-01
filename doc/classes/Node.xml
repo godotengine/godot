@@ -926,13 +926,11 @@
 			Notification received from the OS when the mouse leaves the game window.
 			Implemented on desktop and web platforms.
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
-			Notification received from the OS when the game window is focused.
-			Implemented on all platforms.
+		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_IN" value="1004">
+			Notification received from the OS when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
-			Notification received from the OS when the game window is unfocused.
-			Implemented on all platforms.
+		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_OUT" value="1005">
+			Notification received from the OS when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
 		</constant>
 		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
 			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
@@ -963,13 +961,21 @@
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_RESUMED" value="2014">
-			Notification received from the OS when the app is resumed.
+		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
+			Notification received from the OS when the application is resumed.
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_PAUSED" value="2015">
-			Notification received from the OS when the app is paused.
+		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
+			Notification received from the OS when the application is paused.
 			Specific to the Android platform.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
+			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
+			Implemented on desktop platforms.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
+			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
+			Implemented on desktop platforms.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.
