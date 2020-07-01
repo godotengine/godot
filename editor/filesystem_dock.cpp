@@ -2313,7 +2313,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 		tree_popup->clear();
 		tree_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(tree_popup, paths);
-		tree_popup->set_position(tree->get_global_position() + p_pos);
+		tree_popup->set_position(tree->get_screen_position() + p_pos);
 		tree_popup->popup();
 	}
 }
