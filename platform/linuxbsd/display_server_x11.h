@@ -167,6 +167,7 @@ class DisplayServerX11 : public DisplayServer {
 	int last_click_button_index;
 	uint32_t last_button_state;
 	bool app_focused = false;
+	uint64_t time_since_no_focus = 0;
 
 	struct {
 		int opcode;
