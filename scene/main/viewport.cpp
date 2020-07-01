@@ -2685,6 +2685,27 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_MOVE) {
 				Vector2 diff = mm->get_position() - gui.subwindow_drag_from;
 				Rect2i new_rect(gui.subwindow_drag_pos + diff, gui.subwindow_focused->get_size());
+
+				if (gui.subwindow_focused->is_clamped_to_embedder()) {
+					Size2i limit = get_visible_rect().size;
+					if (new_rect.position.x + new_rect.size.x > limit.x) {
+						new_rect.position.x = limit.x - new_rect.size.x;
+					}
+					if (new_rect.position.y + new_rect.size.y > limit.y) {
+						new_rect.position.y = limit.y - new_rect.size.y;
+					}
+
+					if (new_rect.position.x < 0) {
+						new_rect.position.x = 0;
+					}
+
+					int title_height = gui.subwindow_focused->get_flag(Window::FLAG_BORDERLESS) ? 0 : gui.subwindow_focused->get_theme_constant("title_height");
+
+					if (new_rect.position.y < title_height) {
+						new_rect.position.y = title_height;
+					}
+				}
+
 				gui.subwindow_focused->_rect_changed_callback(new_rect);
 			}
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {

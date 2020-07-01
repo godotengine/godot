@@ -298,6 +298,7 @@ AcceptDialog::AcceptDialog() {
 	set_visible(false);
 	set_transient(true);
 	set_exclusive(true);
+	set_clamp_to_embedder(true);
 
 	bg = memnew(Panel);
 	add_child(bg);
