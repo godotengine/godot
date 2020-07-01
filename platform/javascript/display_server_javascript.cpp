@@ -45,13 +45,14 @@
 #define DOM_BUTTON_XBUTTON2 4
 
 char DisplayServerJavaScript::canvas_id[256] = { 0 };
+static bool cursor_inside_canvas = true;
 
 DisplayServerJavaScript *DisplayServerJavaScript::get_singleton() {
 	return static_cast<DisplayServerJavaScript *>(DisplayServer::get_singleton());
 }
 
 // Window (canvas)
-static void focus_canvas() {
+void DisplayServerJavaScript::focus_canvas() {
 	/* clang-format off */
 	EM_ASM(
 		Module['canvas'].focus();
@@ -59,7 +60,7 @@ static void focus_canvas() {
 	/* clang-format on */
 }
 
-static bool is_canvas_focused() {
+bool DisplayServerJavaScript::is_canvas_focused() {
 	/* clang-format off */
 	return EM_ASM_INT_V(
 		return document.activeElement == Module['canvas'];
@@ -85,8 +86,6 @@ Point2 DisplayServerJavaScript::compute_position_in_canvas(int p_x, int p_y) {
 	return Point2((int)(canvas_width / element_width * (p_x - canvas_x)),
 			(int)(canvas_height / element_height * (p_y - canvas_y)));
 }
-
-static bool cursor_inside_canvas = true;
 
 EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 	DisplayServerJavaScript *display = get_singleton();
@@ -127,14 +126,14 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p
 // Keys
 
 template <typename T>
-static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
+void DisplayServerJavaScript::dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
 	godot_event->set_shift(emscripten_event_ptr->shiftKey);
 	godot_event->set_alt(emscripten_event_ptr->altKey);
 	godot_event->set_control(emscripten_event_ptr->ctrlKey);
 	godot_event->set_metakey(emscripten_event_ptr->metaKey);
 }
 
-static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
+Ref<InputEventKey> DisplayServerJavaScript::setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(emscripten_event->repeat);
@@ -285,7 +284,7 @@ EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const Emsc
 }
 
 // Cursor
-static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape) {
+const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape p_shape) {
 	switch (p_shape) {
 		case DisplayServer::CURSOR_ARROW:
 			return "auto";
@@ -326,7 +325,7 @@ static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape) {
 	}
 }
 
-static void set_css_cursor(const char *p_cursor) {
+void DisplayServerJavaScript::set_css_cursor(const char *p_cursor) {
 	/* clang-format off */
 	EM_ASM_({
 		Module['canvas'].style.cursor = UTF8ToString($0);
@@ -334,7 +333,7 @@ static void set_css_cursor(const char *p_cursor) {
 	/* clang-format on */
 }
 
-static bool is_css_cursor_hidden() {
+bool DisplayServerJavaScript::is_css_cursor_hidden() const {
 	/* clang-format off */
 	return EM_ASM_INT({
 		return Module['canvas'].style.cursor === 'none';
