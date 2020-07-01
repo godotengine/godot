@@ -44,9 +44,9 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
 			</argument>
-			<argument index="1" name="rect" type="int">
+			<argument index="1" name="flags" type="int">
 			</argument>
-			<argument index="2" name="arg2" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="2" name="rect" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
 			</argument>
 			<description>
 			</description>
