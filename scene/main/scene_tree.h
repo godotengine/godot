@@ -110,7 +110,6 @@ private:
 	StringName node_renamed_name;
 
 	int64_t current_frame;
-	int64_t current_event;
 	int node_count;
 
 #ifdef TOOLS_ENABLED
@@ -300,7 +299,6 @@ public:
 	int get_collision_debug_contact_count() { return collision_debug_contacts; }
 
 	int64_t get_frame() const;
-	int64_t get_event_count() const;
 
 	int get_node_count() const;
 
