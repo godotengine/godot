@@ -110,7 +110,7 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 		uint64_t modified_time = 0;
 
 		if (p_str.begins_with("ID:")) {
-			hash = uint32_t(p_str.get_slicec(':', 2).to_int64());
+			hash = uint32_t(p_str.get_slicec(':', 2).to_int());
 			path = "ID:" + p_str.get_slicec(':', 1);
 		} else {
 			modified_time = FileAccess::get_modified_time(path);
@@ -257,9 +257,9 @@ void EditorResourcePreview::_thread() {
 						_generate_preview(texture, small_texture, item, cache_base);
 					} else {
 						uint64_t modtime = FileAccess::get_modified_time(item.path);
-						int tsize = f->get_line().to_int64();
+						int tsize = f->get_line().to_int();
 						bool has_small_texture = f->get_line().to_int();
-						uint64_t last_modtime = f->get_line().to_int64();
+						uint64_t last_modtime = f->get_line().to_int();
 
 						bool cache_valid = true;
 

@@ -613,19 +613,19 @@ int64_t GDAPI godot_string_char_to_int64_with_len(const wchar_t *p_str, int p_le
 int64_t GDAPI godot_string_hex_to_int64(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
-	return self->hex_to_int64(false);
+	return self->hex_to_int(false);
 }
 
 int64_t GDAPI godot_string_hex_to_int64_with_prefix(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
-	return self->hex_to_int64();
+	return self->hex_to_int();
 }
 
 int64_t GDAPI godot_string_to_int64(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
-	return self->to_int64();
+	return self->to_int();
 }
 
 double GDAPI godot_string_unicode_char_to_double(const wchar_t *p_str, const wchar_t **r_end) {

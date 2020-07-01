@@ -1618,49 +1618,7 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
-		return 0;
-	}
-
-	const CharType *s = ptr();
-
-	int sign = s[0] == '-' ? -1 : 1;
-
-	if (sign < 0) {
-		s++;
-	}
-
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
-		s += 2;
-	}
-
-	int hex = 0;
-
-	while (*s) {
-		CharType c = LOWERCASE(*s);
-		int n;
-		if (c >= '0' && c <= '9') {
-			n = c - '0';
-		} else if (c >= 'a' && c <= 'f') {
-			n = (c - 'a') + 10;
-		} else {
-			return 0;
-		}
-
-		ERR_FAIL_COND_V_MSG(hex > INT32_MAX / 16, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
-		hex *= 16;
-		hex += n;
-		s++;
-	}
-
-	return hex * sign;
-}
-
-int64_t String::hex_to_int64(bool p_with_prefix) const {
+int64_t String::hex_to_int(bool p_with_prefix) const {
 	if (p_with_prefix && length() < 3) {
 		return 0;
 	}
@@ -1702,7 +1660,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int64(bool p_with_prefix) const {
+int64_t String::bin_to_int(bool p_with_prefix) const {
 	if (p_with_prefix && length() < 3) {
 		return 0;
 	}
@@ -1742,32 +1700,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 	return binary * sign;
 }
 
-int String::to_int() const {
-	if (length() == 0) {
-		return 0;
-	}
-
-	int to = (find(".") >= 0) ? find(".") : length();
-
-	int integer = 0;
-	int sign = 1;
-
-	for (int i = 0; i < to; i++) {
-		CharType c = operator[](i);
-		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
-			integer *= 10;
-			integer += c - '0';
-
-		} else if (integer == 0 && c == '-') {
-			sign = -sign;
-		}
-	}
-
-	return integer * sign;
-}
-
-int64_t String::to_int64() const {
+int64_t String::to_int() const {
 	if (length() == 0) {
 		return 0;
 	}
@@ -1780,7 +1713,7 @@ int64_t String::to_int64() const {
 	for (int i = 0; i < to; i++) {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as an integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1792,7 +1725,7 @@ int64_t String::to_int64() const {
 	return integer * sign;
 }
 
-int String::to_int(const char *p_str, int p_len) {
+int64_t String::to_int(const char *p_str, int p_len) {
 	int to = 0;
 	if (p_len >= 0) {
 		to = p_len;
@@ -1802,13 +1735,13 @@ int String::to_int(const char *p_str, int p_len) {
 		}
 	}
 
-	int integer = 0;
-	int sign = 1;
+	int64_t integer = 0;
+	int64_t sign = 1;
 
 	for (int i = 0; i < to; i++) {
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as an integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -3838,7 +3771,7 @@ bool String::is_valid_ip_address() const {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int(false);
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}

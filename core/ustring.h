@@ -245,13 +245,11 @@ public:
 	bool is_numeric() const;
 	double to_double() const;
 	float to_float() const;
-	int hex_to_int(bool p_with_prefix = true) const;
-	int to_int() const;
 
-	int64_t hex_to_int64(bool p_with_prefix = true) const;
-	int64_t bin_to_int64(bool p_with_prefix = true) const;
-	int64_t to_int64() const;
-	static int to_int(const char *p_str, int p_len = -1);
+	int64_t hex_to_int(bool p_with_prefix = true) const;
+	int64_t bin_to_int(bool p_with_prefix = true) const;
+	int64_t to_int() const;
+	static int64_t to_int(const char *p_str, int p_len = -1);
 	static double to_double(const char *p_str);
 	static double to_double(const CharType *p_str, const CharType **r_end = nullptr);
 	static int64_t to_int(const CharType *p_str, int p_len = -1, bool p_clamp = false);

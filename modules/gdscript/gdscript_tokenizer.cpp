@@ -952,16 +952,16 @@ void GDScriptTokenizerText::_advance() {
 
 					INCPOS(i);
 					if (hexa_found) {
-						int64_t val = str.hex_to_int64();
+						int64_t val = str.hex_to_int();
 						_make_constant(val);
 					} else if (bin_found) {
-						int64_t val = str.bin_to_int64();
+						int64_t val = str.bin_to_int();
 						_make_constant(val);
 					} else if (period_found || exponent_found) {
 						double val = str.to_double();
 						_make_constant(val);
 					} else {
-						int64_t val = str.to_int64();
+						int64_t val = str.to_int();
 						_make_constant(val);
 					}
 

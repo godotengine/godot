@@ -643,7 +643,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					}
 
 					if (hexa_found) {
-						tk.constant = (double)str.hex_to_int64(true);
+						tk.constant = (double)str.hex_to_int(true);
 					} else {
 						tk.constant = str.to_double();
 					}
