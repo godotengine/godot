@@ -583,7 +583,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 	if (current) {
 		if (p_save) {
-			apply_scripts();
+			_menu_option(FILE_SAVE);
 		}
 
 		Ref<Script> script = current->get_edited_resource();
