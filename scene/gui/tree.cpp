@@ -1786,7 +1786,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			case TreeItem::CELL_MODE_STRING: {
 				//nothing in particular
 
-				if (select_mode == SELECT_MULTI && (get_tree()->get_event_count() == focus_in_id || !already_cursor)) {
+				if (select_mode == SELECT_MULTI && (get_viewport()->get_processed_events_count() == focus_in_id || !already_cursor)) {
 					bring_up_editor = false;
 				}
 
@@ -1861,7 +1861,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 					} else {
 						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
-						if (select_mode == SELECT_MULTI && get_tree()->get_event_count() == focus_in_id) {
+						if (select_mode == SELECT_MULTI && get_viewport()->get_processed_events_count() == focus_in_id) {
 							bring_up_editor = false;
 						}
 					}
@@ -2787,7 +2787,7 @@ int Tree::_get_title_button_height() const {
 
 void Tree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		focus_in_id = get_tree()->get_event_count();
+		focus_in_id = get_viewport()->get_processed_events_count();
 	}
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
 		if (cache.hover_type != Cache::CLICK_NONE) {
@@ -3839,7 +3839,7 @@ Tree::Tree() {
 	add_child(popup_menu);
 	//	popup_menu->set_as_toplevel(true);
 
-	popup_editor = memnew(PopupPanel);
+	popup_editor = memnew(Popup);
 	popup_editor->set_wrap_controls(true);
 	add_child(popup_editor);
 	popup_editor_vb = memnew(VBoxContainer);
