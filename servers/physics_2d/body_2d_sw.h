@@ -109,6 +109,7 @@ class Body2DSW : public CollisionObject2DSW {
 		ObjectID collider_instance_id;
 		RID collider;
 		Vector2 collider_velocity_at_pos;
+		const Vector2 *impulse; // pointer to the impulse vector in BodyPair2DSW::Contact
 	};
 
 	Vector<Contact> contacts; //no contacts by default
@@ -163,7 +164,7 @@ public:
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
 	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
-	_FORCE_INLINE_ void add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos);
+	_FORCE_INLINE_ void add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos, const Vector2 *p_impulse);
 
 	_FORCE_INLINE_ void add_exception(const RID &p_exception) { exceptions.insert(p_exception); }
 	_FORCE_INLINE_ void remove_exception(const RID &p_exception) { exceptions.erase(p_exception); }
@@ -293,7 +294,7 @@ public:
 
 //add contact inline
 
-void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos) {
+void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_normal, real_t p_depth, int p_local_shape, const Vector2 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector2 &p_collider_velocity_at_pos, const Vector2 *p_impulse) {
 	int c_max = contacts.size();
 
 	if (c_max == 0) {
@@ -333,6 +334,7 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 	c[idx].collider_instance_id = p_collider_instance_id;
 	c[idx].collider = p_collider;
 	c[idx].collider_velocity_at_pos = p_collider_velocity_at_pos;
+	c[idx].impulse = p_impulse;
 }
 
 class PhysicsDirectBodyState2DSW : public PhysicsDirectBodyState2D {
@@ -405,6 +407,10 @@ public:
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
 		return body->contacts[p_contact_idx].collider_velocity_at_pos;
+	}
+	virtual Vector2 get_contact_impulse(int p_contact_idx) const {
+		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
+		return *(body->contacts[p_contact_idx].impulse);
 	}
 
 	virtual PhysicsDirectSpaceState2D *get_space_state();

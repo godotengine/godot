@@ -53,6 +53,8 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 
 	Contact contact;
 
+	contact.acc_impulse_A = Vector2(0.0f, 0.0f);
+	contact.acc_impulse_B = Vector2(0.0f, 0.0f);
 	contact.acc_normal_impulse = 0;
 	contact.acc_bias_impulse = 0;
 	contact.acc_tangent_impulse = 0;
@@ -390,11 +392,11 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 			if (gather_A) {
 				Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-				A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
+				A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity(), &c.acc_impulse_A);
 			}
 			if (gather_B) {
 				Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-				B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
+				B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity(), &c.acc_impulse_B);
 			}
 		}
 
@@ -429,6 +431,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 			A->apply_impulse(c.rA, -P);
 			B->apply_impulse(c.rB, P);
+			c.acc_impulse_A = -P;
+			c.acc_impulse_B = P;
 		}
 
 #endif
@@ -499,6 +503,8 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		A->apply_impulse(c.rA, -j);
 		B->apply_impulse(c.rB, j);
+		c.acc_impulse_A -= j;
+		c.acc_impulse_B += j;
 	}
 }
 
