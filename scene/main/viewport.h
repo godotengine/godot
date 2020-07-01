@@ -392,6 +392,7 @@ private:
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 
+	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_remove_focus();
 	void _gui_unfocus_control(Control *p_control);
 	bool _gui_control_has_focus(const Control *p_control);
@@ -442,6 +443,7 @@ private:
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
 	virtual bool _can_consume_input_events() const { return true; }
+	uint64_t event_count = 0;
 
 protected:
 	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
@@ -455,6 +457,8 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
+	uint64_t get_processed_events_count() const { return event_count; }
+
 	Listener3D *get_listener() const;
 	Camera3D *get_camera() const;
 
@@ -572,6 +576,7 @@ public:
 	bool is_embedding_subwindows() const;
 
 	Viewport *get_parent_viewport() const;
+	Window *get_base_window() const;
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 

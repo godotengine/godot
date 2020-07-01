@@ -939,10 +939,6 @@ int64_t SceneTree::get_frame() const {
 	return current_frame;
 }
 
-int64_t SceneTree::get_event_count() const {
-	return current_event;
-}
-
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	Array ret;
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
@@ -1362,7 +1358,6 @@ SceneTree::SceneTree() {
 	root = nullptr;
 	pause = false;
 	current_frame = 0;
-	current_event = 0;
 	tree_changed_name = "tree_changed";
 	node_added_name = "node_added";
 	node_removed_name = "node_removed";

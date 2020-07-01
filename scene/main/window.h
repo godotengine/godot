@@ -134,7 +134,6 @@ private:
 
 protected:
 	Viewport *_get_embedder() const;
-
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 
 	virtual void _post_popup() {}
