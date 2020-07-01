@@ -247,6 +247,9 @@ void ShaderCompilerGLES2::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		for (int i = 0; i < fnode->arguments.size(); i++) {
 			if (i > 0)
 				header += ", ";
+			if (fnode->arguments[i].is_const) {
+				header += "const ";
+			}
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
 				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
 			} else {
