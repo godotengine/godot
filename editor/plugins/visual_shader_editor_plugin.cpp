@@ -1620,7 +1620,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
 	} else {
 		members_dialog->popup();
 		saved_node_pos_dirty = false;
-		members_dialog->set_position(graph->get_global_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+		members_dialog->set_position(graph->get_screen_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
 	}
 
 	// keep dialog within window bounds

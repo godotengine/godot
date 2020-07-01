@@ -1509,7 +1509,7 @@ void Viewport::_gui_show_tooltip() {
 	}
 
 	Control *which = nullptr;
-	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_screen_transform().xform_inv(gui.tooltip_pos), &which);
 	tooltip = tooltip.strip_edges();
 	if (tooltip.length() == 0) {
 		return; // bye
@@ -2043,7 +2043,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (gui.tooltip_popup) {
 					if (can_tooltip && gui.tooltip) {
-						String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
+						String tooltip = _gui_get_tooltip(over, gui.tooltip->get_screen_transform().xform_inv(mpos));
 
 						if (tooltip.length() == 0) {
 							_gui_cancel_tooltip();
