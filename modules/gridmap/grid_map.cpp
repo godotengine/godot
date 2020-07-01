@@ -272,10 +272,12 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 
 			ERR_FAIL_COND(!octant_map.has(octantkey));
 			Octant &g = *octant_map[octantkey];
+			int prev = cell_map[key].item;
 			g.cells.erase(key);
 			g.dirty = true;
 			cell_map.erase(key);
 			_queue_octants_dirty();
+			emit_signal("cell_item_changed", this, Vector3(key.x, key.y, key.z), INVALID_CELL_ITEM, prev);
 		}
 		return;
 	}
@@ -315,7 +317,13 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	c.item = p_item;
 	c.rot = p_rot;
 
+	int prev = get_cell_item(key.x, key.y, key.z);
+
 	cell_map[key] = c;
+
+	if (p_item != prev) {
+		emit_signal("cell_item_changed", this, Vector3(key.x, key.y, key.z), p_item, prev);
+	}
 }
 
 int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
@@ -844,6 +852,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("cell_item_changed", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::VECTOR3, "cell"), PropertyInfo(Variant::INT, "new"), PropertyInfo(Variant::INT, "previous")));
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {
