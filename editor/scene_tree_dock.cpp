@@ -354,11 +354,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			// Prefer nodes that inherit from the current scene root.
 			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
 			if (current_edited_scene_root) {
-				static const String preferred_types[] = { "Node2D", "Node3D", "Control" };
+				String root_class = current_edited_scene_root->get_class_name();
+				static Vector<String> preferred_types;
+				if (preferred_types.empty()) {
+					preferred_types.push_back("Control");
+					preferred_types.push_back("Node2D");
+					preferred_types.push_back("Node3D");
+				}
 
-				StringName root_class = current_edited_scene_root->get_class_name();
-
-				for (int i = 0; i < preferred_types->size(); i++) {
+				for (int i = 0; i < preferred_types.size(); i++) {
 					if (ClassDB::is_parent_class(root_class, preferred_types[i])) {
 						create_dialog->set_preferred_search_result_type(preferred_types[i]);
 						break;
