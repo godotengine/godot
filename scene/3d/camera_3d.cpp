@@ -35,6 +35,7 @@
 #include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
+
 void Camera3D::_update_audio_listener_state() {
 }
 

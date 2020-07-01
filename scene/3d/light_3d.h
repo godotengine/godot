@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LIGHT_H
-#define LIGHT_H
+#ifndef LIGHT_3D_H
+#define LIGHT_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/texture.h"
@@ -145,7 +145,7 @@ public:
 	enum ShadowMode {
 		SHADOW_ORTHOGONAL,
 		SHADOW_PARALLEL_2_SPLITS,
-		SHADOW_PARALLEL_4_SPLITS
+		SHADOW_PARALLEL_4_SPLITS,
 	};
 
 	enum ShadowDepthRange {
@@ -217,4 +217,4 @@ public:
 			Light3D(RenderingServer::LIGHT_SPOT) {}
 };
 
-#endif
+#endif // LIGHT_3D_H

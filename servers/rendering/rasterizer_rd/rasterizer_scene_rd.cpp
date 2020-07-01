@@ -34,6 +34,7 @@
 #include "core/project_settings.h"
 #include "rasterizer_rd.h"
 #include "servers/rendering/rendering_server_raster.h"
+
 uint64_t RasterizerSceneRD::auto_exposure_counter = 2;
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -2826,7 +2827,7 @@ void RasterizerSceneRD::environment_glow_set_use_bicubic_upscale(bool p_enable) 
 	glow_bicubic_upscale = p_enable;
 }
 
-void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, bool p_enhance_ssr, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -2836,7 +2837,6 @@ void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::Envi
 	env->sdfgi_use_occlusion = p_use_occlusion;
 	env->sdfgi_use_multibounce = p_use_multibounce;
 	env->sdfgi_read_sky_light = p_read_sky;
-	env->sdfgi_enhance_ssr = p_enhance_ssr;
 	env->sdfgi_energy = p_energy;
 	env->sdfgi_normal_bias = p_normal_bias;
 	env->sdfgi_probe_bias = p_probe_bias;

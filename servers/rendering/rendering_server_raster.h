@@ -566,7 +566,7 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
-	BIND12(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, bool, float, float, float)
+	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
 	BIND1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
 

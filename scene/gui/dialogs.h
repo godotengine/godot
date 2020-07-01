@@ -44,7 +44,6 @@ class LineEdit;
 class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
-public:
 	Window *parent_visible;
 	Panel *bg;
 	HBoxContainer *hbc;

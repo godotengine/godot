@@ -152,6 +152,8 @@
 			</argument>
 			<argument index="8" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
 			</argument>
+			<argument index="9" name="storage_textures" type="Array" default="[  ]">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -187,6 +189,8 @@
 			<argument index="8" name="clear_stencil" type="int" default="0">
 			</argument>
 			<argument index="9" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="10" name="storage_textures" type="RID[]" default="[  ]">
 			</argument>
 			<description>
 			</description>
@@ -293,10 +297,28 @@
 			<description>
 			</description>
 		</method>
+		<method name="framebuffer_create_empty">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
+			</argument>
+			<argument index="1" name="validate_with_format" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="framebuffer_format_create">
 			<return type="int">
 			</return>
 			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_format_create_empty">
+			<return type="int">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
 			</argument>
 			<description>
 			</description>
@@ -495,6 +517,8 @@
 			<argument index="0" name="size_bytes" type="int">
 			</argument>
 			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<argument index="2" name="usage" type="int" default="0">
 			</argument>
 			<description>
 			</description>
@@ -1284,6 +1308,8 @@
 		<constant name="INDEX_BUFFER_FORMAT_UINT16" value="0" enum="IndexBufferFormat">
 		</constant>
 		<constant name="INDEX_BUFFER_FORMAT_UINT32" value="1" enum="IndexBufferFormat">
+		</constant>
+		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 		</constant>

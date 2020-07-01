@@ -148,12 +148,9 @@
 			Light is ignored when baking.
 			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking.
 		</constant>
-		<constant name="BAKE_INDIRECT" value="1" enum="BakeMode">
-			Only indirect lighting will be baked (default).
+		<constant name="BAKE_DYNAMIC" value="1" enum="BakeMode">
 		</constant>
-		<constant name="BAKE_ALL" value="2" enum="BakeMode">
-			Both direct and indirect light will be baked.
-			[b]Note:[/b] You should hide the light if you don't want it to appear twice (dynamic and baked).
+		<constant name="BAKE_STATIC" value="2" enum="BakeMode">
 		</constant>
 	</constants>
 </class>

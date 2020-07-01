@@ -34,9 +34,9 @@
 			The length of the transition between the near blur and no-blur area.
 		</member>
 		<member name="override_exposure" type="float" setter="set_override_exposure" getter="get_override_exposure" default="1.0">
-			The exposure override value to use. Higher values will result in a brighter scene. Only effective if [member override_exposure_enable] is [code]true[/code].
+			The exposure override value to use. Higher values will result in a brighter scene. Only effective if [member override_exposure_enabled] is [code]true[/code].
 		</member>
-		<member name="override_exposure_enable" type="bool" setter="set_override_exposure_enabled" getter="is_override_exposure_enabled" default="false">
+		<member name="override_exposure_enabled" type="bool" setter="set_override_exposure_enabled" getter="is_override_exposure_enabled" default="false">
 			If [code]true[/code], overrides the manual or automatic exposure defined in the [Environment] with the value in [member override_exposure].
 		</member>
 	</members>
