@@ -2450,6 +2450,22 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	}
 }
 
+Window *Viewport::get_base_window() const {
+	Viewport *v = const_cast<Viewport *>(this);
+	Window *w = Object::cast_to<Window>(v);
+	while (!w) {
+		v = v->get_parent_viewport();
+		w = Object::cast_to<Window>(v);
+	}
+
+	return w;
+}
+void Viewport::_gui_remove_focus_for_window(Node *p_window) {
+	if (get_base_window() == p_window) {
+		_gui_remove_focus();
+	}
+}
+
 void Viewport::_gui_remove_focus() {
 	if (gui.key_focus) {
 		Node *f = gui.key_focus;
@@ -2467,7 +2483,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	if (gui.key_focus && gui.key_focus == p_control) {
 		return;
 	}
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
 	gui.key_focus = p_control;
 	emit_signal("gui_focus_changed", p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
@@ -2924,6 +2940,8 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	if (!is_input_handled()) {
 		_gui_input_event(ev);
 	}
+
+	event_count++;
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",ev); //special one for GUI, as controls use their own process check
 }
 
@@ -3305,8 +3323,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
-	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
-	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
+	ClassDB::bind_method(D_METHOD("_gui_remove_focus_for_window"), &Viewport::_gui_remove_focus_for_window);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
