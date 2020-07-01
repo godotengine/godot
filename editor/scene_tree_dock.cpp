@@ -2399,7 +2399,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 
 		menu->set_size(Size2(1, 1));
-		menu->set_position(p_menu_pos);
+		menu->set_position(get_screen_position() + p_menu_pos);
 		menu->popup();
 		return;
 	}
