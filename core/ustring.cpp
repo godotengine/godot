@@ -2281,15 +2281,7 @@ String String::substr(int p_from, int p_chars) const {
 }
 
 int String::find_last(const String &p_str) const {
-	int pos = -1;
-	int findfrom = 0;
-	int findres = -1;
-	while ((findres = find(p_str, findfrom)) != -1) {
-		pos = findres;
-		findfrom = pos + 1;
-	}
-
-	return pos;
+	return rfind(p_str);
 }
 
 int String::find(const String &p_str, int p_from) const {
