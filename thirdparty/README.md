@@ -494,7 +494,7 @@ folder.
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.0 (2018)
+- Version: 1.1.1 (2020)
 - License: MIT
 
 File extracted from upstream release tarball:
