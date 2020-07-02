@@ -71,7 +71,6 @@ class ImportDock;
 class MenuButton;
 class NodeDock;
 class OrphanResourcesDialog;
-class PaneDrag;
 class Panel;
 class PanelContainer;
 class PluginConfigDialog;
@@ -255,7 +254,6 @@ private:
 	VSplitContainer *top_split;
 	HBoxContainer *bottom_hb;
 	Control *vp_base;
-	PaneDrag *pd;
 
 	HBoxContainer *menu_hb;
 	Control *viewport;

@@ -33,7 +33,6 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "editor/pane_drag.h"
 #include "grid_map.h"
 
 class Node3DEditorPlugin;
