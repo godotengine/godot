@@ -46,6 +46,7 @@ class Mutex;
 class OS {
 
 	static OS *singleton;
+	static uint64_t target_ticks;
 	String _execpath;
 	List<String> _cmdline;
 	bool _keep_screen_on;
@@ -345,6 +346,8 @@ public:
 	virtual uint64_t get_system_time_msecs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
+	virtual void add_frame_delay(bool p_can_draw);
+
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint32_t get_ticks_msec() const;
 	uint64_t get_splash_tick_msec() const;
