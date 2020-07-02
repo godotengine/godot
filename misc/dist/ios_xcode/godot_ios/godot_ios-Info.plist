@@ -26,6 +26,8 @@
 	<string>$signature</string>
 	<key>CFBundleVersion</key>
 	<string>$version</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false />
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
