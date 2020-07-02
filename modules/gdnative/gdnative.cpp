@@ -291,8 +291,26 @@ bool GDNative::initialize() {
 		return false;
 	}
 #ifdef IPHONE_ENABLED
-	// on iOS we use static linking
+	// On iOS we use static linking by default.
 	String path = "";
+
+	// On iOS dylibs is not allowed, but can be replaced with .framework or .xcframework.
+	// If they are used, we can run dlopen on them.
+	// They should be located under Frameworks directory, so we need to replace library path.
+	if (!lib_path.ends_with(".a")) {
+		path = ProjectSettings::get_singleton()->globalize_path(lib_path);
+
+		if (!FileAccess::exists(path)) {
+			String lib_name = lib_path.get_basename().get_file();
+			String framework_path_format = "Frameworks/$name.framework/$name";
+
+			Dictionary format_dict;
+			format_dict["name"] = lib_name;
+			String framework_path = framework_path_format.format(format_dict, "$_");
+
+			path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file(framework_path);
+		}
+	}
 #elif defined(ANDROID_ENABLED)
 	// On Android dynamic libraries are located separately from resource assets,
 	// we should pass library name to dlopen(). The library name is flattened
