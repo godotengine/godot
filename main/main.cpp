@@ -1895,10 +1895,10 @@ bool Main::start() {
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
-			if (stretch_mode == "objects") {
-				cs_sm = Window::CONTENT_SCALE_MODE_OBJECTS;
-			} else if (stretch_mode == "pixels") {
-				cs_sm = Window::CONTENT_SCALE_MODE_PIXELS;
+			if (stretch_mode == "canvas_items") {
+				cs_sm = Window::CONTENT_SCALE_MODE_CANVAS_ITEMS;
+			} else if (stretch_mode == "viewport") {
+				cs_sm = Window::CONTENT_SCALE_MODE_VIEWPORT;
 			}
 
 			Window::ContentScaleAspect cs_aspect = Window::CONTENT_SCALE_ASPECT_IGNORE;
@@ -1954,7 +1954,7 @@ bool Main::start() {
 
 		} else {
 			GLOBAL_DEF("display/window/stretch/mode", "disabled");
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode", PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,2d,viewport"));
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode", PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"));
 			GLOBAL_DEF("display/window/stretch/aspect", "ignore");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect", PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"));
 			GLOBAL_DEF("display/window/stretch/shrink", 1.0);
