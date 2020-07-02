@@ -39,6 +39,11 @@
 */
 
 #ifndef _3D_DISABLED
+bool init_bt_task_scheduler() {
+	btITaskScheduler *godot_bullet_task_scheduler = btCreateDefaultTaskScheduler();
+	btSetTaskScheduler(godot_bullet_task_scheduler);
+	return true;
+}
 PhysicsServer *_createBulletPhysicsCallback() {
 	return memnew(BulletPhysicsServer);
 }

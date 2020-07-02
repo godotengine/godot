@@ -34,6 +34,7 @@
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "constraint_bullet.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "godot_collision_configuration.h"
@@ -48,6 +49,8 @@
 #include <BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h>
 #include <BulletCollision/NarrowPhaseCollision/btGjkPairDetector.h>
 #include <BulletCollision/NarrowPhaseCollision/btPointCollector.h>
+#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <btBulletDynamicsCommon.h>
@@ -597,7 +600,6 @@ btScalar calculateGodotCombinedFriction(const btCollisionObject *body0, const bt
 }
 
 void SpaceBullet::create_empty_world(bool p_create_soft_world) {
-
 	gjk_epa_pen_solver = bulletnew(btGjkEpaPenetrationDepthSolver);
 	gjk_simplex_solver = bulletnew(btVoronoiSimplexSolver);
 
@@ -605,7 +607,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	if (p_create_soft_world) {
 		world_mem = malloc(sizeof(btSoftRigidDynamicsWorld));
 	} else {
-		world_mem = malloc(sizeof(btDiscreteDynamicsWorld));
+		world_mem = malloc(sizeof(btDiscreteDynamicsWorldMt));
 	}
 
 	ERR_FAIL_COND_MSG(!world_mem, "Out of memory.");
@@ -613,28 +615,28 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	if (p_create_soft_world) {
 		collisionConfiguration = bulletnew(GodotSoftCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
 	} else {
-		collisionConfiguration = bulletnew(GodotCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
+		collisionConfiguration = bulletnew(GodotCollisionConfiguration(static_cast<btDiscreteDynamicsWorldMt *>(world_mem)));
 	}
 
 	dispatcher = bulletnew(GodotCollisionDispatcher(collisionConfiguration));
 	broadphase = bulletnew(btDbvtBroadphase);
 	solver = bulletnew(btSequentialImpulseConstraintSolver);
+	int32_t process_count = OS::get_singleton()->get_processor_count() - 2;
+	solver_pool = bulletnew(btConstraintSolverPoolMt(process_count));
+	solver_mutithread = bulletnew(btSequentialImpulseConstraintSolverMt);
 
 	if (p_create_soft_world) {
 		dynamicsWorld = new (world_mem) btSoftRigidDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 		soft_body_world_info = bulletnew(btSoftBodyWorldInfo);
 	} else {
-		dynamicsWorld = new (world_mem) btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-	}
-
+		dynamicsWorld = new (world_mem) btDiscreteDynamicsWorldMt(dispatcher, broadphase, solver_pool, solver_mutithread, collisionConfiguration);
+	}		
+	dynamicsWorld->setWorldUserInfo(this);
 	ghostPairCallback = bulletnew(btGhostPairCallback);
 	godotFilterCallback = bulletnew(GodotFilterCallback);
 	gCalculateCombinedRestitutionCallback = &calculateGodotCombinedRestitution;
 	gCalculateCombinedFrictionCallback = &calculateGodotCombinedFriction;
 	gContactAddedCallback = &godotContactAddedCallback;
-
-	dynamicsWorld->setWorldUserInfo(this);
-
 	dynamicsWorld->setInternalTickCallback(onBulletPreTickCallback, this, true);
 	dynamicsWorld->setInternalTickCallback(onBulletTickCallback, this, false);
 	dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback); // Setup ghost check
@@ -652,7 +654,6 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 void SpaceBullet::destroy_world() {
 
 	/// The world elements (like: Collision Objects, Constraints, Shapes) are managed by godot
-
 	dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(NULL);
 	dynamicsWorld->getPairCache()->setOverlapFilterCallback(NULL);
 
@@ -663,8 +664,10 @@ void SpaceBullet::destroy_world() {
 	dynamicsWorld->~btDiscreteDynamicsWorld();
 	free(dynamicsWorld);
 	dynamicsWorld = NULL;
-
+	
 	bulletdelete(solver);
+	bulletdelete(solver_pool);
+	bulletdelete(solver_mutithread);
 	bulletdelete(broadphase);
 	bulletdelete(dispatcher);
 	bulletdelete(collisionConfiguration);
