@@ -136,9 +136,9 @@ bool PinJoint2DSW::setup(real_t p_step) {
 	bias = delta * -(get_bias() == 0 ? space->get_constraint_bias() : get_bias()) * (1.0 / p_step);
 
 	// apply accumulated impulse
-	A->apply_impulse(rA, -P);
+	A->apply_impulse(-P, rA);
 	if (B) {
-		B->apply_impulse(rB, P);
+		B->apply_impulse(P, rB);
 	}
 
 	return true;
@@ -161,9 +161,9 @@ void PinJoint2DSW::solve(real_t p_step) {
 
 	Vector2 impulse = M.basis_xform(bias - rel_vel - Vector2(softness, softness) * P);
 
-	A->apply_impulse(rA, -impulse);
+	A->apply_impulse(-impulse, rA);
 	if (B) {
-		B->apply_impulse(rB, impulse);
+		B->apply_impulse(impulse, rB);
 	}
 
 	P += impulse;
@@ -301,8 +301,8 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).clamped(get_max_bias());
 
 	// apply accumulated impulse
-	A->apply_impulse(rA, -jn_acc);
-	B->apply_impulse(rB, jn_acc);
+	A->apply_impulse(-jn_acc, rA);
+	B->apply_impulse(jn_acc, rB);
 
 	correct = true;
 	return true;
@@ -320,8 +320,8 @@ void GrooveJoint2DSW::solve(real_t p_step) {
 
 	j = jn_acc - jOld;
 
-	A->apply_impulse(rA, -j);
-	B->apply_impulse(rB, j);
+	A->apply_impulse(-j, rA);
+	B->apply_impulse(j, rB);
 }
 
 GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, Body2DSW *p_body_a, Body2DSW *p_body_b) :
@@ -370,8 +370,8 @@ bool DampedSpringJoint2DSW::setup(real_t p_step) {
 	real_t f_spring = (rest_length - dist) * stiffness;
 	Vector2 j = n * f_spring * (p_step);
 
-	A->apply_impulse(rA, -j);
-	B->apply_impulse(rB, j);
+	A->apply_impulse(-j, rA);
+	B->apply_impulse(j, rB);
 
 	return true;
 }
@@ -386,8 +386,8 @@ void DampedSpringJoint2DSW::solve(real_t p_step) {
 	target_vrn = vrn + v_damp;
 	Vector2 j = n * v_damp * n_mass;
 
-	A->apply_impulse(rA, -j);
-	B->apply_impulse(rB, j);
+	A->apply_impulse(-j, rA);
+	B->apply_impulse(j, rB);
 }
 
 void DampedSpringJoint2DSW::set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value) {
