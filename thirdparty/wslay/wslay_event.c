@@ -730,11 +730,11 @@ int wslay_event_recv(wslay_event_context_ptr ctx)
                 return r;
               }
             } else if(ctx->imsg->opcode == WSLAY_PING) {
-              struct wslay_event_msg arg;
-              arg.opcode = WSLAY_PONG;
-              arg.msg = msg;
-              arg.msg_length = ctx->imsg->msg_length;
-              if((r = wslay_event_queue_msg(ctx, &arg)) &&
+              struct wslay_event_msg pong_arg;
+              pong_arg.opcode = WSLAY_PONG;
+              pong_arg.msg = msg;
+              pong_arg.msg_length = ctx->imsg->msg_length;
+              if((r = wslay_event_queue_msg(ctx, &pong_arg)) &&
                  r != WSLAY_ERR_NO_MORE_MSG) {
                 ctx->read_enabled = 0;
                 free(msg);
@@ -885,7 +885,7 @@ int wslay_event_send(wslay_event_context_ptr ctx)
         r = ctx->omsg->read_callback(ctx, ctx->obuf, sizeof(ctx->obuf),
                                      &ctx->omsg->source,
                                      &eof, ctx->user_data);
-        if(r == 0) {
+        if(r == 0 && eof == 0) {
           break;
         } else if(r < 0) {
           ctx->write_enabled = 0;
