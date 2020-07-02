@@ -38,6 +38,8 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_translation_parser.h"
+#include "editor/pot_generator.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
 
@@ -120,6 +122,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			action_add_error->add_theme_color_override("font_color", input_editor->get_theme_color("error_color", "Editor"));
 
 			translation_list->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_delete));
+			translation_pot_list->connect("button_pressed", callable_mp(this, &ProjectSettingsEditor::_translation_pot_delete));
 			_update_actions();
 			popup_add->add_icon_item(input_editor->get_theme_icon("Keyboard", "EditorIcons"), TTR("Key"), INPUT_KEY);
 			popup_add->add_icon_item(input_editor->get_theme_icon("KeyboardPhysical", "EditorIcons"), TTR("Physical Key"), INPUT_KEY_PHYSICAL);
@@ -139,6 +142,9 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				translation_res_file_open->add_filter("*." + E->get());
 				translation_res_option_file_open->add_filter("*." + E->get());
 			}
+
+			_update_translation_pot_file_extensions();
+			translation_pot_generate->add_filter("*.pot");
 
 			restart_close_button->set_icon(input_editor->get_theme_icon("Close", "EditorIcons"));
 			restart_container->add_theme_style_override("panel", input_editor->get_theme_stylebox("bg", "Tree"));
@@ -865,6 +871,8 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	// New translation parser plugin might extend possible file extensions in POT generation.
+	_update_translation_pot_file_extensions();
 	set_process_unhandled_input(true);
 }
 
@@ -1519,8 +1527,71 @@ void ProjectSettingsEditor::_translation_filter_mode_changed(int p_mode) {
 	undo_redo->commit_action();
 }
 
+void ProjectSettingsEditor::_translation_pot_add(const String &p_path) {
+	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+
+	for (int i = 0; i < pot_translations.size(); i++) {
+		if (pot_translations[i] == p_path) {
+			return; //exists
+		}
+	}
+
+	pot_translations.push_back(p_path);
+	undo_redo->create_action(TTR("Add files for POT generation"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translations_pot_files", pot_translations);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translations_pot_files", ProjectSettings::get_singleton()->get("locale/translations_pot_files"));
+	undo_redo->add_do_method(this, "_update_translations");
+	undo_redo->add_undo_method(this, "_update_translations");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_translation_pot_delete(Object *p_item, int p_column, int p_button) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+	ERR_FAIL_COND(!ti);
+
+	int idx = ti->get_metadata(0);
+
+	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+
+	ERR_FAIL_INDEX(idx, pot_translations.size());
+
+	pot_translations.remove(idx);
+
+	undo_redo->create_action(TTR("Remove file from POT generation"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/translations_pot_files", pot_translations);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/translations_pot_files", ProjectSettings::get_singleton()->get("locale/translations_pot_files"));
+	undo_redo->add_do_method(this, "_update_translations");
+	undo_redo->add_undo_method(this, "_update_translations");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_translation_pot_file_open() {
+	translation_pot_file_open->popup_centered_ratio();
+}
+
+void ProjectSettingsEditor::_translation_pot_generate_open() {
+	translation_pot_generate->popup_centered_ratio();
+}
+
+void ProjectSettingsEditor::_translation_pot_generate(const String &p_file) {
+	POTGenerator::get_singleton()->generate_pot(p_file);
+}
+
+void ProjectSettingsEditor::_update_translation_pot_file_extensions() {
+	translation_pot_file_open->clear_filters();
+	List<String> translation_parse_file_extensions;
+	EditorTranslationParser::get_singleton()->get_recognized_extensions(&translation_parse_file_extensions);
+	for (List<String>::Element *E = translation_parse_file_extensions.front(); E; E = E->next()) {
+		translation_pot_file_open->add_filter("*." + E->get());
+	}
+}
+
 void ProjectSettingsEditor::_update_translations() {
-	//update translations
+	// Update translations.
 
 	if (updating_translations) {
 		return;
@@ -1601,7 +1672,7 @@ void ProjectSettingsEditor::_update_translations() {
 		}
 	}
 
-	//update translation remaps
+	// Update translation remaps.
 
 	String remap_selected;
 	if (translation_remap->get_selected()) {
@@ -1693,6 +1764,23 @@ void ProjectSettingsEditor::_update_translations() {
 					}
 				}
 			}
+		}
+	}
+
+	// Update translation POT files.
+
+	translation_pot_list->clear();
+	root = translation_pot_list->create_item(nullptr);
+	translation_pot_list->set_hide_root(true);
+	if (ProjectSettings::get_singleton()->has_setting("locale/translations_pot_files")) {
+		PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+		for (int i = 0; i < pot_translations.size(); i++) {
+			TreeItem *t = translation_pot_list->create_item(root);
+			t->set_editable(0, false);
+			t->set_text(0, pot_translations[i].replace_first("res://", ""));
+			t->set_tooltip(0, pot_translations[i]);
+			t->set_metadata(0, i);
+			t->add_button(0, input_editor->get_theme_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 		}
 	}
 
@@ -2106,6 +2194,38 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tmc->add_child(memnew(Label(TTR("Locales:"))));
 		tmc->add_child(translation_filter);
 		translation_filter->connect("item_edited", callable_mp(this, &ProjectSettingsEditor::_translation_filter_option_changed));
+	}
+
+	{
+		VBoxContainer *tvb = memnew(VBoxContainer);
+		translations->add_child(tvb);
+		tvb->set_name(TTR("POT Generation"));
+		HBoxContainer *thb = memnew(HBoxContainer);
+		tvb->add_child(thb);
+		thb->add_child(memnew(Label(TTR("Files with translation strings:"))));
+		thb->add_spacer();
+		Button *addtr = memnew(Button(TTR("Add...")));
+		addtr->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_pot_file_open));
+		thb->add_child(addtr);
+		Button *generate = memnew(Button(TTR("Generate POT")));
+		generate->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_translation_pot_generate_open));
+		thb->add_child(generate);
+		VBoxContainer *tmc = memnew(VBoxContainer);
+		tvb->add_child(tmc);
+		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		translation_pot_list = memnew(Tree);
+		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		tmc->add_child(translation_pot_list);
+
+		translation_pot_generate = memnew(EditorFileDialog);
+		add_child(translation_pot_generate);
+		translation_pot_generate->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		translation_pot_generate->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_pot_generate));
+
+		translation_pot_file_open = memnew(EditorFileDialog);
+		add_child(translation_pot_file_open);
+		translation_pot_file_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		translation_pot_file_open->connect("file_selected", callable_mp(this, &ProjectSettingsEditor::_translation_pot_add));
 	}
 
 	autoload_settings = memnew(EditorAutoloadSettings);
