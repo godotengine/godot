@@ -2565,6 +2565,21 @@ void RichTextLabel::selection_copy() {
 	}
 }
 
+void RichTextLabel::select_all() {
+	if (!selection.enabled) {
+		return;
+	}
+
+	if (main->lines.size() > 0) {
+		selection.from = main->subitems[0];
+		selection.to = main->subitems[main->subitems.size() - 1];
+		selection.from_char = 0;
+		selection.to_char = static_cast<ItemText *>(main->subitems[main->subitems.size() - 1])->text.length() - 1;
+		selection.active = true;
+		update();
+	}
+}
+
 bool RichTextLabel::is_selection_enabled() const {
 	return selection.enabled;
 }
@@ -2749,6 +2764,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_effects", "effects"), &RichTextLabel::set_effects);
 	ClassDB::bind_method(D_METHOD("get_effects"), &RichTextLabel::get_effects);
 	ClassDB::bind_method(D_METHOD("install_effect", "effect"), &RichTextLabel::install_effect);
+
+	ClassDB::bind_method(D_METHOD("copy_selection"), &RichTextLabel::selection_copy);
+	ClassDB::bind_method(D_METHOD("select_all"), &RichTextLabel::select_all);
 
 	ADD_GROUP("BBCode", "bbcode_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");

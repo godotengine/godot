@@ -281,6 +281,20 @@
 				If [code]expand[/code] is [code]false[/code], the column will not contribute to the total ratio.
 			</description>
 		</method>
+		<method name="copy_selection">
+			<return type="void">
+			</return>
+			<description>
+				Copies the current selection to the clipboard. This will only copy the raw text without any BBCode formatting.
+			</description>
+		</method>
+		<method name="select_all">
+			<return type="void">
+			</return>
+			<description>
+				Select all the text if selection is enabled.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
