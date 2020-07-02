@@ -559,6 +559,7 @@ void AnimationBezierTrackEdit::set_root(Node *p_root) {
 
 void AnimationBezierTrackEdit::_zoom_changed() {
 	update();
+	play_position->update();
 }
 
 String AnimationBezierTrackEdit::get_tooltip(const Point2 &p_pos) const {
