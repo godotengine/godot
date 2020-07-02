@@ -5,7 +5,13 @@
  */
 /*
  *  Copyright (C) 2006-2018, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -18,6 +24,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -138,6 +165,16 @@
     !defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED) &&                 \
     !defined(MBEDTLS_ECP_DP_CURVE448_ENABLED) ) )
 #error "MBEDTLS_ECP_C defined, but not all prerequisites"
+#endif
+
+#if defined(MBEDTLS_ECP_C) && !(            \
+    defined(MBEDTLS_ECP_ALT) ||             \
+    defined(MBEDTLS_CTR_DRBG_C) ||          \
+    defined(MBEDTLS_HMAC_DRBG_C) ||         \
+    defined(MBEDTLS_SHA512_C) ||            \
+    defined(MBEDTLS_SHA256_C) ||            \
+    defined(MBEDTLS_ECP_NO_INTERNAL_RNG))
+#error "MBEDTLS_ECP_C requires a DRBG or SHA-2 module unless MBEDTLS_ECP_NO_INTERNAL_RNG is defined or an alternative implementation is used"
 #endif
 
 #if defined(MBEDTLS_PK_PARSE_C) && !defined(MBEDTLS_ASN1_PARSE_C)
