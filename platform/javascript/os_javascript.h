@@ -40,7 +40,7 @@
 
 class OS_JavaScript : public OS_Unix {
 	MainLoop *main_loop = nullptr;
-	AudioDriverJavaScript audio_driver_javascript;
+	AudioDriverJavaScript *audio_driver_javascript = nullptr;
 
 	bool finalizing = false;
 	bool idb_available = false;
@@ -83,6 +83,9 @@ public:
 	String get_executable_path() const;
 	virtual Error shell_open(String p_uri);
 	virtual String get_name() const;
+	// Override default OS implementation which would block the main thread with delay_usec.
+	// Implemented in javascript_main.cpp loop callback instead.
+	virtual void add_frame_delay(bool p_can_draw) {}
 	virtual bool can_draw() const;
 
 	virtual String get_cache_path() const;

@@ -44,18 +44,15 @@
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
 
+char DisplayServerJavaScript::canvas_id[256] = { 0 };
+static bool cursor_inside_canvas = true;
+
 DisplayServerJavaScript *DisplayServerJavaScript::get_singleton() {
 	return static_cast<DisplayServerJavaScript *>(DisplayServer::get_singleton());
 }
 
 // Window (canvas)
-extern "C" EMSCRIPTEN_KEEPALIVE void _set_canvas_id(uint8_t *p_data, int p_data_size) {
-	DisplayServerJavaScript *display = DisplayServerJavaScript::get_singleton();
-	display->canvas_id.parse_utf8((const char *)p_data, p_data_size);
-	display->canvas_id = "#" + display->canvas_id;
-}
-
-static void focus_canvas() {
+void DisplayServerJavaScript::focus_canvas() {
 	/* clang-format off */
 	EM_ASM(
 		Module['canvas'].focus();
@@ -63,7 +60,7 @@ static void focus_canvas() {
 	/* clang-format on */
 }
 
-static bool is_canvas_focused() {
+bool DisplayServerJavaScript::is_canvas_focused() {
 	/* clang-format off */
 	return EM_ASM_INT_V(
 		return document.activeElement == Module['canvas'];
@@ -71,8 +68,21 @@ static bool is_canvas_focused() {
 	/* clang-format on */
 }
 
-static Point2 compute_position_in_canvas(int x, int y) {
-	DisplayServerJavaScript *display = DisplayServerJavaScript::get_singleton();
+bool DisplayServerJavaScript::check_size_force_redraw() {
+	int canvas_width;
+	int canvas_height;
+	emscripten_get_canvas_element_size(DisplayServerJavaScript::canvas_id, &canvas_width, &canvas_height);
+	if (last_width != canvas_width || last_height != canvas_height) {
+		last_width = canvas_width;
+		last_height = canvas_height;
+		// Update the framebuffer size and for redraw.
+		emscripten_set_canvas_element_size(DisplayServerJavaScript::canvas_id, canvas_width, canvas_height);
+		return true;
+	}
+	return false;
+}
+
+Point2 DisplayServerJavaScript::compute_position_in_canvas(int p_x, int p_y) {
 	int canvas_x = EM_ASM_INT({
 		return Module['canvas'].getBoundingClientRect().x;
 	});
@@ -81,23 +91,22 @@ static Point2 compute_position_in_canvas(int x, int y) {
 	});
 	int canvas_width;
 	int canvas_height;
-	emscripten_get_canvas_element_size(display->canvas_id.utf8().get_data(), &canvas_width, &canvas_height);
+	emscripten_get_canvas_element_size(canvas_id, &canvas_width, &canvas_height);
 
 	double element_width;
 	double element_height;
-	emscripten_get_element_css_size(display->canvas_id.utf8().get_data(), &element_width, &element_height);
+	emscripten_get_element_css_size(canvas_id, &element_width, &element_height);
 
-	return Point2((int)(canvas_width / element_width * (x - canvas_x)),
-			(int)(canvas_height / element_height * (y - canvas_y)));
+	return Point2((int)(canvas_width / element_width * (p_x - canvas_x)),
+			(int)(canvas_height / element_height * (p_y - canvas_y)));
 }
-
-static bool cursor_inside_canvas = true;
 
 EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 	DisplayServerJavaScript *display = get_singleton();
 	// Empty ID is canvas.
 	String target_id = String::utf8(p_event->id);
-	if (target_id.empty() || "#" + target_id == display->canvas_id) {
+	String canvas_str_id = String::utf8(canvas_id);
+	if (target_id.empty() || target_id == canvas_str_id) {
 		// This event property is the only reliable data on
 		// browser fullscreen state.
 		if (p_event->isFullscreen) {
@@ -131,14 +140,14 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p
 // Keys
 
 template <typename T>
-static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
+void DisplayServerJavaScript::dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
 	godot_event->set_shift(emscripten_event_ptr->shiftKey);
 	godot_event->set_alt(emscripten_event_ptr->altKey);
 	godot_event->set_control(emscripten_event_ptr->ctrlKey);
 	godot_event->set_metakey(emscripten_event_ptr->metaKey);
 }
 
-static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
+Ref<InputEventKey> DisplayServerJavaScript::setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(emscripten_event->repeat);
@@ -289,7 +298,7 @@ EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const Emsc
 }
 
 // Cursor
-static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape) {
+const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape p_shape) {
 	switch (p_shape) {
 		case DisplayServer::CURSOR_ARROW:
 			return "auto";
@@ -330,7 +339,7 @@ static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape) {
 	}
 }
 
-static void set_css_cursor(const char *p_cursor) {
+void DisplayServerJavaScript::set_css_cursor(const char *p_cursor) {
 	/* clang-format off */
 	EM_ASM_({
 		Module['canvas'].style.cursor = UTF8ToString($0);
@@ -338,7 +347,7 @@ static void set_css_cursor(const char *p_cursor) {
 	/* clang-format on */
 }
 
-static bool is_css_cursor_hidden() {
+bool DisplayServerJavaScript::is_css_cursor_hidden() const {
 	/* clang-format off */
 	return EM_ASM_INT({
 		return Module['canvas'].style.cursor === 'none';
@@ -820,23 +829,6 @@ DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_dr
 }
 
 DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	/* clang-format off */
-	EM_ASM({
-		const canvas = Module['canvas'];
-		var enc = new TextEncoder("utf-8");
-		var buffer = new Uint8Array(enc.encode(canvas.id));
-		var len = buffer.byteLength;
-		var out = _malloc(len);
-		HEAPU8.set(buffer, out);
-		ccall("_set_canvas_id",
-			"void",
-			["number", "number"],
-			[out, len]
-		);
-		_free(out);
-	});
-	/* clang-format on */
-
 	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 #if 0
 	EmscriptenWebGLContextAttributes attributes;
@@ -859,7 +851,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 		gl_initialization_error = true;
 	}
 
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(canvas_id.utf8().get_data(), &attributes);
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(canvas_id, &attributes);
 	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
 		gl_initialization_error = true;
 	}
@@ -881,7 +873,6 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	}
 
 	EMSCRIPTEN_RESULT result;
-	CharString id = canvas_id.utf8();
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
 		ERR_PRINT("Error while setting " #ev " callback: Code " + itos(result));
@@ -895,16 +886,16 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
-	SET_EM_CALLBACK(id.get_data(), mousedown, mouse_button_callback)
+	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
-	SET_EM_CALLBACK(id.get_data(), wheel, wheel_callback)
-	SET_EM_CALLBACK(id.get_data(), touchstart, touch_press_callback)
-	SET_EM_CALLBACK(id.get_data(), touchmove, touchmove_callback)
-	SET_EM_CALLBACK(id.get_data(), touchend, touch_press_callback)
-	SET_EM_CALLBACK(id.get_data(), touchcancel, touch_press_callback)
-	SET_EM_CALLBACK(id.get_data(), keydown, keydown_callback)
-	SET_EM_CALLBACK(id.get_data(), keypress, keypress_callback)
-	SET_EM_CALLBACK(id.get_data(), keyup, keyup_callback)
+	SET_EM_CALLBACK(canvas_id, wheel, wheel_callback)
+	SET_EM_CALLBACK(canvas_id, touchstart, touch_press_callback)
+	SET_EM_CALLBACK(canvas_id, touchmove, touchmove_callback)
+	SET_EM_CALLBACK(canvas_id, touchend, touch_press_callback)
+	SET_EM_CALLBACK(canvas_id, touchcancel, touch_press_callback)
+	SET_EM_CALLBACK(canvas_id, keydown, keydown_callback)
+	SET_EM_CALLBACK(canvas_id, keypress, keypress_callback)
+	SET_EM_CALLBACK(canvas_id, keyup, keyup_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, fullscreenchange, fullscreen_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepadconnected, gamepad_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepaddisconnected, gamepad_change_callback)
@@ -1012,7 +1003,7 @@ Size2i DisplayServerJavaScript::screen_get_size(int p_screen) const {
 
 Rect2i DisplayServerJavaScript::screen_get_usable_rect(int p_screen) const {
 	int canvas[2];
-	emscripten_get_canvas_element_size(canvas_id.utf8().get_data(), canvas, canvas + 1);
+	emscripten_get_canvas_element_size(canvas_id, canvas, canvas + 1);
 	return Rect2i(0, 0, canvas[0], canvas[1]);
 }
 
@@ -1103,12 +1094,14 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
-	emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), p_size.x, p_size.y);
+	last_width = p_size.x;
+	last_height = p_size.y;
+	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
 }
 
 Size2i DisplayServerJavaScript::window_get_size(WindowID p_window) const {
 	int canvas[2];
-	emscripten_get_canvas_element_size(canvas_id.utf8().get_data(), canvas, canvas + 1);
+	emscripten_get_canvas_element_size(canvas_id, canvas, canvas + 1);
 	return Size2(canvas[0], canvas[1]);
 }
 
@@ -1134,7 +1127,7 @@ void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_wind
 			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 			strategy.canvasResizedCallback = nullptr;
-			EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(canvas_id.utf8().get_data(), false, &strategy);
+			EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(canvas_id, false, &strategy);
 			ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 			ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		} break;
