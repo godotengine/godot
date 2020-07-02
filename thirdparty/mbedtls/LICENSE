@@ -1,2 +1,5 @@
-Unless specifically indicated otherwise in a file, files are licensed
-under the Apache 2.0 license, as can be found in: apache-2.0.txt
+Unless specifically indicated otherwise in a file, Mbed TLS files are provided
+under the Apache License 2.0, or the GNU General Public License v2.0 or later
+(SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later).
+
+A copy of these licenses can be found in apache-2.0.txt and gpl-2.0.txt
