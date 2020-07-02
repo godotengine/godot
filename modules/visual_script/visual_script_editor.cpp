@@ -3101,7 +3101,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 	undo_redo->commit_action();
 }
 
-void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot) {
+void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot, bool p_is_pressed) {
 	StringName func = _get_function_of_node(p_from.to_int());
 	ERR_FAIL_COND(func != _get_function_of_node(p_to.to_int()));
 
@@ -3140,8 +3140,10 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 		undo_redo->add_do_method(script.ptr(), "data_disconnect", func, p_from.to_int(), from_port, p_to.to_int(), to_port);
 		undo_redo->add_undo_method(script.ptr(), "data_connect", func, p_from.to_int(), from_port, p_to.to_int(), to_port);
 		//update relevant nodes in the graph
-		undo_redo->add_do_method(this, "_update_graph", p_from.to_int());
-		undo_redo->add_do_method(this, "_update_graph", p_to.to_int());
+		if (!p_is_pressed) {
+			undo_redo->add_do_method(this, "_update_graph", p_from.to_int());
+			undo_redo->add_do_method(this, "_update_graph", p_to.to_int());
+		}
 		undo_redo->add_undo_method(this, "_update_graph", p_from.to_int());
 		undo_redo->add_undo_method(this, "_update_graph", p_to.to_int());
 	}
