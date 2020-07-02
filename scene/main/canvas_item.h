@@ -348,7 +348,7 @@ public:
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
 
-	void draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale);
+	void draw_set_transform(const Point2 &p_offset, float p_rot = 0.0, const Size2 &p_scale = Size2(1.0, 1.0));
 	void draw_set_transform_matrix(const Transform2D &p_matrix);
 
 	static CanvasItem *get_current_item_drawn();
