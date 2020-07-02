@@ -625,26 +625,25 @@ void Window::_update_viewport_size() {
 				// Already handled above
 				//_update_font_oversampling(1.0);
 			} break;
-			case CONTENT_SCALE_MODE_OBJECTS: {
+			case CONTENT_SCALE_MODE_CANVAS_ITEMS: {
 				final_size = screen_size;
 				final_size_override = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
 				font_oversampling = screen_size.x / viewport_size.x;
+
+				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
+				stretch_transform.scale(scale);
+
 			} break;
-			case CONTENT_SCALE_MODE_PIXELS: {
+			case CONTENT_SCALE_MODE_VIEWPORT: {
 				final_size = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
 			} break;
 		}
-
-		Size2 scale = size / (Vector2(final_size) + margin * 2);
-		stretch_transform.scale(scale);
-		stretch_transform.elements[2] = margin * scale;
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-
 	_set_size(final_size, final_size_override, attach_to_screen_rect, stretch_transform, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -1373,7 +1372,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Object,Pixels"), "set_content_scale_mode", "get_content_scale_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,CanvasItems,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,KeepWidth,KeepHeight,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
@@ -1404,8 +1403,8 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_OBJECTS);
-	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_PIXELS);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_CANVAS_ITEMS);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_VIEWPORT);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_IGNORE);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP);
