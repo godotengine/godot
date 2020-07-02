@@ -86,6 +86,14 @@ public:
 		uint32_t unicode;
 	};
 
+	struct WarpEvent {
+		NSTimeInterval timestamp;
+		NSPoint delta;
+	};
+
+	List<WarpEvent> warp_events;
+	NSTimeInterval last_warp = 0;
+
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
 
