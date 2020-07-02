@@ -316,6 +316,8 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	c.rot = p_rot;
 
 	cell_map[key] = c;
+
+	emit_signal("cell_contents_changed", Vector3(p_x, p_y, p_z));
 }
 
 int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
@@ -844,6 +846,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("cell_contents_changed", PropertyInfo(Variant::VECTOR3, "cell_location")));
 }
 
 void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::Axis p_axis) {
