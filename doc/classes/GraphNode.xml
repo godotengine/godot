@@ -95,6 +95,17 @@
 				Returns the type of the output connection [code]idx[/code].
 			</description>
 		</method>
+		<method name="get_connection_slot_index">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="is_input" type="bool">
+			</argument>
+			<description>
+				Returns the index of the slot corresponding to the connection [code]idx[/code]. If [code]is_input[/code] is [code]true[/code], [code]idx[/code] is treated as an input connection, else as an output connection.
+			</description>
+		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color">
 			</return>

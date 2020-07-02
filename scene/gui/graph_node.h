@@ -81,6 +81,7 @@ private:
 	struct ConnCache {
 		Vector2 pos;
 		int type;
+		int slot_idx;
 		Color color;
 	};
 
@@ -144,6 +145,7 @@ public:
 	Vector2 get_connection_output_position(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
+	int get_connection_slot_index(int p_connection_idx, bool p_is_input);
 
 	void set_overlay(Overlay p_overlay);
 	Overlay get_overlay() const;

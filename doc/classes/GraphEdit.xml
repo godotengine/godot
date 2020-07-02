@@ -6,6 +6,7 @@
 	<description>
 		GraphEdit manages the showing of GraphNodes it contains, as well as connections and disconnections between them. Signals are sent for each of these two events. Disconnection between GraphNode slots is disabled by default.
 		It is greatly advised to enable low-processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
+		On this page, a port refers to a left or right slot on a GraphNode that is enabled. The index of a port corresponds to its slot index minus the number of disabled slots before it. The slot index corresponding to a port can be obtained using [method GraphNode.get_connection_slot_index].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -58,7 +59,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Create a connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection already exists, no connection is created.
+				Create a connection between the [code]from_port[/code] port of the [code]from[/code] GraphNode and the [code]to_port[/code] port of the [code]to[/code] GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -73,7 +74,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Removes the connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
+				Removes the connection between the [code]from_port[/code] port of the [code]from[/code] GraphNode and the [code]to_port[/code] port of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
@@ -103,7 +104,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]from_port[/code] slot of the [code]from[/code] GraphNode is connected to the [code]to_port[/code] slot of the [code]to[/code] GraphNode.
+				Returns [code]true[/code] if the [code]from_port[/code] port of the [code]from[/code] GraphNode is connected to the [code]to_port[/code] port of the [code]to[/code] GraphNode.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">
@@ -206,31 +207,31 @@
 		<signal name="connection_from_empty">
 			<argument index="0" name="to" type="StringName">
 			</argument>
-			<argument index="1" name="to_slot" type="int">
+			<argument index="1" name="to_port" type="int">
 			</argument>
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
-				Emitted when user dragging connection from input port into empty space of the graph.
+				Emitted when user drags connection from input port into empty space of the graph.
 			</description>
 		</signal>
 		<signal name="connection_request">
 			<argument index="0" name="from" type="StringName">
 			</argument>
-			<argument index="1" name="from_slot" type="int">
+			<argument index="1" name="from_port" type="int">
 			</argument>
 			<argument index="2" name="to" type="StringName">
 			</argument>
-			<argument index="3" name="to_slot" type="int">
+			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Emitted to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
+				Emitted to the GraphEdit when the connection between [code]from_port[/code] of the [code]from[/code] GraphNode and [code]to_port[/code] of the [code]to[/code] GraphNode is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
 			<argument index="0" name="from" type="StringName">
 			</argument>
-			<argument index="1" name="from_slot" type="int">
+			<argument index="1" name="from_port" type="int">
 			</argument>
 			<argument index="2" name="release_position" type="Vector2">
 			</argument>
@@ -251,14 +252,14 @@
 		<signal name="disconnection_request">
 			<argument index="0" name="from" type="StringName">
 			</argument>
-			<argument index="1" name="from_slot" type="int">
+			<argument index="1" name="from_port" type="int">
 			</argument>
 			<argument index="2" name="to" type="StringName">
 			</argument>
-			<argument index="3" name="to_slot" type="int">
+			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Emitted to the GraphEdit when the connection between [code]from_slot[/code] slot of [code]from[/code] GraphNode and [code]to_slot[/code] slot of [code]to[/code] GraphNode is attempted to be removed.
+				Emitted to the GraphEdit when the connection between [code]from_port[/code] of the [code]from[/code] GraphNode and [code]to_port[/code] of the [code]to[/code] GraphNode is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">

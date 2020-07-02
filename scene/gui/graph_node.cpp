@@ -491,6 +491,7 @@ void GraphNode::_connpos_update() {
 				ConnCache cc;
 				cc.pos = Point2i(edgeofs, y + h / 2);
 				cc.type = slot_info[idx].type_left;
+				cc.slot_idx = idx;
 				cc.color = slot_info[idx].color_left;
 				conn_input_cache.push_back(cc);
 			}
@@ -498,6 +499,7 @@ void GraphNode::_connpos_update() {
 				ConnCache cc;
 				cc.pos = Point2i(get_size().width - edgeofs, y + h / 2);
 				cc.type = slot_info[idx].type_right;
+				cc.slot_idx = idx;
 				cc.color = slot_info[idx].color_right;
 				conn_output_cache.push_back(cc);
 			}
@@ -587,6 +589,20 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), Color());
 	return conn_output_cache[p_idx].color;
+}
+
+int GraphNode::get_connection_slot_index(int p_connection_idx, bool p_is_input) {
+	if (connpos_dirty) {
+		_connpos_update();
+	}
+
+	if (p_is_input) {
+		ERR_FAIL_INDEX_V(p_connection_idx, conn_input_cache.size(), 0);
+		return conn_input_cache[p_connection_idx].slot_idx;
+	} else {
+		ERR_FAIL_INDEX_V(p_connection_idx, conn_output_cache.size(), 0);
+		return conn_output_cache[p_connection_idx].slot_idx;
+	}
 }
 
 void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
@@ -695,6 +711,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_input_position", "idx"), &GraphNode::get_connection_input_position);
 	ClassDB::bind_method(D_METHOD("get_connection_input_type", "idx"), &GraphNode::get_connection_input_type);
 	ClassDB::bind_method(D_METHOD("get_connection_input_color", "idx"), &GraphNode::get_connection_input_color);
+	ClassDB::bind_method(D_METHOD("get_connection_slot_index", "idx", "is_input"), &GraphNode::get_connection_slot_index);
 
 	ClassDB::bind_method(D_METHOD("set_show_close_button", "show"), &GraphNode::set_show_close_button);
 	ClassDB::bind_method(D_METHOD("is_close_button_visible"), &GraphNode::is_close_button_visible);
