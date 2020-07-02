@@ -1055,6 +1055,8 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 }
 
 void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
+	ERR_FAIL_COND(!animation_set.has(p_animation1));
+	ERR_FAIL_COND(!animation_set.has(p_animation2));
 	ERR_FAIL_COND_MSG(p_time < 0, "Blend time cannot be smaller than 0.");
 
 	BlendKey bk;
