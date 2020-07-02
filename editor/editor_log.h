@@ -32,7 +32,6 @@
 #define EDITOR_LOG_H
 
 #include "core/os/thread.h"
-#include "pane_drag.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -50,7 +49,6 @@ class EditorLog : public VBoxContainer {
 	Label *title;
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
-	//PaneDrag *pd;
 	Button *tool_button;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
