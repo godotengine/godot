@@ -663,17 +663,33 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_frameworks_refs;
 	String pbx_resources_build;
 	String pbx_resources_refs;
+	String pbx_embeded_frameworks;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
 									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
+		String additional_asset_info_format = file_info_format;
+
 		String build_id = (++current_id).str();
 		String ref_id = (++current_id).str();
+		String framework_id = "";
+
 		const IOSExportAsset &asset = p_additional_assets[i];
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
+			additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
+			framework_id = (++current_id).str();
+			pbx_embeded_frameworks += framework_id + ",\n";
+
 			type = "wrapper.framework";
+		} else if (asset.exported_path.ends_with(".xcframework")) {
+			additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
+			framework_id = (++current_id).str();
+			pbx_embeded_frameworks += framework_id + ",\n";
+
+			type = "wrapper.xcframework";
 		} else if (asset.exported_path.ends_with(".dylib")) {
 			type = "compiled.mach-o.dylib";
 		} else if (asset.exported_path.ends_with(".a")) {
@@ -698,7 +714,10 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 		format_dict["name"] = asset.exported_path.get_file();
 		format_dict["file_path"] = asset.exported_path;
 		format_dict["file_type"] = type;
-		pbx_files += file_info_format.format(format_dict, "$_");
+		if (framework_id.length() > 0) {
+			format_dict["framework_id"] = framework_id;
+		}
+		pbx_files += additional_asset_info_format.format(format_dict, "$_");
 	}
 
 	// Note, frameworks like gamekit are always included in our project.pbxprof file
@@ -732,6 +751,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	str = str.replace("$additional_pbx_frameworks_refs", pbx_frameworks_refs);
 	str = str.replace("$additional_pbx_resources_build", pbx_resources_build);
 	str = str.replace("$additional_pbx_resources_refs", pbx_resources_refs);
+	str = str.replace("$pbx_embeded_frameworks", pbx_embeded_frameworks);
 
 	CharString cs = str.utf8();
 	p_project_data.resize(cs.size() - 1);
