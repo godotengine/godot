@@ -1251,6 +1251,14 @@ Rect2i Window::get_parent_rect() const {
 	}
 }
 
+void Window::set_clamp_to_embedder(bool p_enable) {
+	clamp_to_embedder = p_enable;
+}
+
+bool Window::is_clamped_to_embedder() const {
+	return clamp_to_embedder;
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
