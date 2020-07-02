@@ -40,6 +40,8 @@
 
 #ifndef _3D_DISABLED
 PhysicsServer3D *_createBulletPhysicsCallback() {
+	btITaskScheduler *godot_bullet_task_scheduler = btCreateDefaultTaskScheduler();
+	btSetTaskScheduler(godot_bullet_task_scheduler);
 	return memnew(BulletPhysicsServer3D);
 }
 #endif
@@ -51,6 +53,8 @@ void register_bullet_types() {
 
 	GLOBAL_DEF("physics/3d/active_soft_world", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
+	GLOBAL_DEF("physics/3d/physics_load", 1.0f);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/physics_load", PropertyInfo(Variant::FLOAT, "physics/3d/physics_load", PROPERTY_HINT_RANGE, "0.1,1,0.001"));
 #endif
 }
 

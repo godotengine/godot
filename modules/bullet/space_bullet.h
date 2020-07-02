@@ -39,7 +39,10 @@
 
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
 #include <BulletCollision/BroadphaseCollision/btOverlappingPairCache.h>
+#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
 #include <LinearMath/btScalar.h>
+#include <LinearMath/btThreads.h>
 #include <LinearMath/btTransform.h>
 #include <LinearMath/btVector3.h>
 
@@ -53,7 +56,7 @@ class btCollisionDispatcher;
 class btConstraintSolver;
 class btDefaultCollisionConfiguration;
 class btDynamicsWorld;
-class btDiscreteDynamicsWorld;
+class btDiscreteDynamicsWorldMt;
 class btEmptyShape;
 class btGhostPairCallback;
 class btSoftRigidDynamicsWorld;
@@ -95,15 +98,17 @@ class SpaceBullet : public RIDBullet {
 	btDefaultCollisionConfiguration *collisionConfiguration = nullptr;
 	btCollisionDispatcher *dispatcher = nullptr;
 	btConstraintSolver *solver = nullptr;
+	btSequentialImpulseConstraintSolverMt *solver_mutithread = nullptr;
+	btConstraintSolverPoolMt *solver_pool = nullptr;
 	btDiscreteDynamicsWorld *dynamicsWorld = nullptr;
 	btSoftBodyWorldInfo *soft_body_world_info = nullptr;
 	btGhostPairCallback *ghostPairCallback = nullptr;
 	GodotFilterCallback *godotFilterCallback = nullptr;
 
-	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver;
-	btVoronoiSimplexSolver *gjk_simplex_solver;
+	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver = nullptr;
+	btVoronoiSimplexSolver *gjk_simplex_solver = nullptr;
 
-	BulletPhysicsDirectSpaceState *direct_access;
+	BulletPhysicsDirectSpaceState *direct_access = nullptr;
 	Vector3 gravityDirection = Vector3(0, -1, 0);
 	real_t gravityMagnitude = 10;
 
