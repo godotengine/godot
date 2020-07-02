@@ -848,13 +848,59 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
+	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
+	NSPoint mpos = [event locationInWindow];
+
+	if (DS_OSX->mouse_mode == DisplayServer::MOUSE_MODE_CONFINED) {
+		// Discard late events
+		if (([event timestamp]) < DS_OSX->last_warp) {
+			return;
+		}
+
+		// Warp affects next event delta, subtract previous warp deltas
+		List<DisplayServerOSX::WarpEvent>::Element *F = DS_OSX->warp_events.front();
+		while (F) {
+			if (F->get().timestamp < [event timestamp]) {
+				List<DisplayServerOSX::WarpEvent>::Element *E = F;
+				delta.x -= E->get().delta.x;
+				delta.y -= E->get().delta.y;
+				F = F->next();
+				DS_OSX->warp_events.erase(E);
+			} else {
+				F = F->next();
+			}
+		}
+
+		// Confine mouse position to the window, and update delta
+		NSRect frame = [wd.window_object frame];
+		NSPoint conf_pos = mpos;
+		conf_pos.x = CLAMP(conf_pos.x + delta.x, 0.f, frame.size.width);
+		conf_pos.y = CLAMP(conf_pos.y - delta.y, 0.f, frame.size.height);
+		delta.x = conf_pos.x - mpos.x;
+		delta.y = mpos.y - conf_pos.y;
+		mpos = conf_pos;
+
+		// Move mouse cursor
+		NSRect pointInWindowRect = NSMakeRect(conf_pos.x, conf_pos.y, 0, 0);
+		conf_pos = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
+		conf_pos.y = CGDisplayBounds(CGMainDisplayID()).size.height - conf_pos.y;
+		CGWarpMouseCursorPosition(conf_pos);
+
+		// Save warp data
+		DS_OSX->last_warp = [[NSProcessInfo processInfo] systemUptime];
+		DisplayServerOSX::WarpEvent ev;
+		ev.timestamp = DS_OSX->last_warp;
+		ev.delta = delta;
+		DS_OSX->warp_events.push_back(ev);
+	}
+
 	Ref<InputEventMouseMotion> mm;
 	mm.instance();
 
 	mm->set_window_id(window_id);
 	mm->set_button_mask(DS_OSX->last_button_state);
 	const CGFloat backingScaleFactor = (OS::get_singleton()->is_hidpi_allowed()) ? [[event window] backingScaleFactor] : 1.0;
-	const Vector2i pos = _get_mouse_pos(wd, [event locationInWindow], backingScaleFactor);
+	const Vector2i pos = _get_mouse_pos(wd, mpos, backingScaleFactor);
 	mm->set_position(pos);
 	mm->set_pressure([event pressure]);
 	if ([event subtype] == NSEventSubtypeTabletPoint) {
@@ -863,9 +909,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 	}
 	mm->set_global_position(pos);
 	mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
-	Vector2i relativeMotion = Vector2i();
-	relativeMotion.x = [event deltaX] * backingScaleFactor;
-	relativeMotion.y = [event deltaY] * backingScaleFactor;
+	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * backingScaleFactor;
 	mm->set_relative(relativeMotion);
 	_get_key_modifier_state([event modifierFlags], mm);
 
@@ -1970,11 +2014,15 @@ void DisplayServerOSX::mouse_set_mode(MouseMode p_mode) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(true);
+	} else if (p_mode == MOUSE_MODE_CONFINED) {
+		CGDisplayShowCursor(kCGDirectMainDisplay);
+		CGAssociateMouseAndMouseCursorPosition(false);
 	} else {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		CGAssociateMouseAndMouseCursorPosition(true);
 	}
 
+	warp_events.clear();
 	mouse_mode = p_mode;
 }
 
@@ -2004,7 +2052,9 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 		CGEventSourceSetLocalEventsSuppressionInterval(lEventRef, 0.0);
 		CGAssociateMouseAndMouseCursorPosition(false);
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-		CGAssociateMouseAndMouseCursorPosition(true);
+		if (mouse_mode != MOUSE_MODE_CONFINED) {
+			CGAssociateMouseAndMouseCursorPosition(true);
+		}
 	}
 }
 
