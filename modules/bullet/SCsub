@@ -203,6 +203,8 @@ if env["builtin_bullet"]:
     # if env['target'] == "debug" or env['target'] == "release_debug":
     #     env_bullet.Append(CPPDEFINES=['BT_DEBUG'])
 
+    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD"])
+
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
