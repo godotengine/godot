@@ -30,11 +30,12 @@
 
 #include "core/io/resource_loader.h"
 #include "main/main.h"
-#include "os_javascript.h"
+#include "platform/javascript/os_javascript.h"
 
 #include <emscripten/emscripten.h>
 
 static OS_JavaScript *os = NULL;
+static uint64_t target_ticks = 0;
 
 // Files drop (implemented in JS for now).
 extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p_filec) {
@@ -58,13 +59,32 @@ void exit_callback() {
 }
 
 void main_loop_callback() {
+	uint64_t current_ticks = os->get_ticks_usec();
 
+	bool force_draw = os->check_size_force_redraw();
+	if (force_draw) {
+		Main::force_redraw();
+	} else if (current_ticks < target_ticks && !force_draw) {
+		return; // Skip frame.
+	}
+
+	int target_fps = Engine::get_singleton()->get_target_fps();
+	if (target_fps > 0) {
+		target_ticks += (uint64_t)(1000000 / target_fps);
+	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
+		/* clang-format off */
 		EM_ASM({
 			// This will contain the list of operations that need to complete before cleanup.
-			Module.async_finish = [];
+			Module.async_finish = [
+				// Always contains at least one async promise, to avoid firing immediately if nothing is added.
+				new Promise(function(accept, reject) {
+					setTimeout(accept, 0);
+				})
+			];
 		});
+		/* clang-format on */
 		os->get_main_loop()->finish();
 		os->finalize_async(); // Will add all the async finish functions.
 		EM_ASM({
@@ -81,9 +101,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void cleanup_after_sync() {
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
-
-	OS_JavaScript *os = OS_JavaScript::get_singleton();
-
 	// Set IDBFS status
 	String idbfs_err = String::utf8(p_idbfs_err);
 	if (!idbfs_err.empty()) {
@@ -106,7 +123,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	EM_ASM({
 		stringToUTF8(Module['locale'], $0, 16);
 	}, locale_ptr);
-
 	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
 
@@ -115,14 +131,19 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->get_main_loop()->init();
+	// Immediately run the first iteration.
+	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
 	emscripten_resume_main_loop();
 }
 
 int main(int argc, char *argv[]) {
-
+	// Create and mount userfs immediately.
+	EM_ASM({
+		FS.mkdir('/userfs');
+		FS.mount(IDBFS, {}, '/userfs');
+	});
 	os = new OS_JavaScript(argc, argv);
-	// TODO: Check error return value.
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	emscripten_pause_main_loop(); // Will need to wait for FS sync.
@@ -131,8 +152,6 @@ int main(int argc, char *argv[]) {
 	// run the 'main_after_fs_sync' function.
 	/* clang-format off */
 	EM_ASM({
-		FS.mkdir('/userfs');
-		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
 			requestAnimationFrame(function() {
 				ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""]);

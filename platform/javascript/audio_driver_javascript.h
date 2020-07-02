@@ -41,6 +41,7 @@ class AudioDriverJavaScript : public AudioDriver {
 	int buffer_length;
 
 public:
+	static bool is_available();
 	void mix_to_js();
 	void process_capture(float sample);
 

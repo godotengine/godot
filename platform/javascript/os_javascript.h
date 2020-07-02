@@ -61,9 +61,12 @@ class OS_JavaScript : public OS_Unix {
 	double last_click_ms;
 	int last_click_button_index;
 
+	int last_width;
+	int last_height;
+
 	MainLoop *main_loop;
 	int video_driver_index;
-	AudioDriverJavaScript audio_driver_javascript;
+	AudioDriverJavaScript *audio_driver_javascript;
 	VisualServer *visual_server;
 
 	bool idb_available;
@@ -90,6 +93,8 @@ class OS_JavaScript : public OS_Unix {
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
 protected:
+	void resume_audio();
+
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
@@ -105,6 +110,7 @@ protected:
 public:
 	String canvas_id;
 	void finalize_async();
+	bool check_size_force_redraw();
 
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
@@ -159,6 +165,7 @@ public:
 	String get_executable_path() const;
 	virtual Error shell_open(String p_uri);
 	virtual String get_name() const;
+	virtual void add_frame_delay(bool p_can_draw) {}
 	virtual bool can_draw() const;
 
 	virtual String get_cache_path() const;
