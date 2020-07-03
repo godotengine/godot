@@ -702,30 +702,26 @@ void AnimationPlayerEditor::_animation_edit() {
 	}
 }
 
-void AnimationPlayerEditor::_dialog_action(String p_file) {
+void AnimationPlayerEditor::_dialog_action(String p_path) {
 	switch (current_option) {
 		case RESOURCE_LOAD: {
 			ERR_FAIL_COND(!player);
 
-			Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
-			ERR_FAIL_COND_MSG(res.is_null(), "Cannot load Animation from file '" + p_file + "'.");
-			ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + p_file + "' is not Animation.");
-			if (p_file.rfind("/") != -1) {
-				p_file = p_file.substr(p_file.rfind("/") + 1, p_file.length());
-			}
-			if (p_file.rfind("\\") != -1) {
-				p_file = p_file.substr(p_file.rfind("\\") + 1, p_file.length());
-			}
+			Ref<Resource> res = ResourceLoader::load(p_path, "Animation");
+			ERR_FAIL_COND_MSG(res.is_null(), "Cannot load Animation from file '" + p_path + "'.");
+			ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + p_path + "' is not Animation.");
 
-			if (p_file.find(".") != -1) {
-				p_file = p_file.substr(0, p_file.find("."));
+			String anim_name = p_path.get_file();
+			int ext_pos = anim_name.rfind(".");
+			if (ext_pos != -1) {
+				anim_name = anim_name.substr(0, ext_pos);
 			}
 
 			undo_redo->create_action(TTR("Load Animation"));
-			undo_redo->add_do_method(player, "add_animation", p_file, res);
-			undo_redo->add_undo_method(player, "remove_animation", p_file);
-			if (player->has_animation(p_file)) {
-				undo_redo->add_undo_method(player, "add_animation", p_file, player->get_animation(p_file));
+			undo_redo->add_do_method(player, "add_animation", anim_name, res);
+			undo_redo->add_undo_method(player, "remove_animation", anim_name);
+			if (player->has_animation(anim_name)) {
+				undo_redo->add_undo_method(player, "add_animation", anim_name, player->get_animation(anim_name));
 			}
 			undo_redo->add_do_method(this, "_animation_player_changed", player);
 			undo_redo->add_undo_method(this, "_animation_player_changed", player);
@@ -741,7 +737,7 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 
 				RES current_res = RES(Object::cast_to<Resource>(*anim));
 
-				_animation_save_in_path(current_res, p_file);
+				_animation_save_in_path(current_res, p_path);
 			}
 		}
 	}
