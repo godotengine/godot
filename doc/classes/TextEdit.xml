@@ -48,6 +48,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
 		<method name="clear_colors">
