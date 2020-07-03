@@ -2364,6 +2364,7 @@ void DisplayServerX11::process_events() {
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 			if (E->get().focused) {
 				focus_found = true;
+				break;
 			}
 		}
 
