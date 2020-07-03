@@ -31,11 +31,12 @@
 # Akihiro Ogoshi <technical@palsystem-game.com>, 2019, 2020.
 # Wataru Onuki <bettawat@yahoo.co.jp>, 2020.
 # sporeball <sporeballdev@gmail.com>, 2020.
+# BinotaLIU <me@binota.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-04 15:12+0000\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -785,6 +786,10 @@ msgid "Method in target node must be specified."
 msgstr "対象ノードのメソッドを指定してください。"
 
 #: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr "メソッド名は有効な識別子である必要があります。"
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -866,7 +871,6 @@ msgstr "シグナルに接続できません"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1476,17 +1480,9 @@ msgstr "有効"
 msgid "Rearrange Autoloads"
 msgstr "自動読込みの並べ替え"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "パスが無効です。"
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "ファイルが存在しません。"
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "リソースパスにありません。"
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1603,8 +1599,9 @@ msgid ""
 "Enabled'."
 msgstr ""
 "対象プラットフォームではGLES2へフォールバックするために'ETC'テクスチャ圧縮が"
-"必要です。プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To "
-"Gles 2' をオフにしてください。"
+"必要です。\n"
+"プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To Gles 2' をオフ"
+"にしてください。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2444,12 +2441,14 @@ msgid "Can't reload a scene that was never saved."
 msgstr "保存されていないシーンを読み込むことはできません。"
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "元に戻す"
+msgid "Reload Saved Scene"
+msgstr "保存済みのシーンをリロード"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "この操作は取り消せません。それでも元に戻しますか?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2735,10 +2734,6 @@ msgstr "元に戻す"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "やり直す"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "シーンを元に戻す"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3386,6 +3381,10 @@ msgstr "スクリプトを実行できませんでした:"
 msgid "Did you forget the '_run' method?"
 msgstr "'_run' メソッドを忘れていませんか？"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr "Ctrlを押したままで整数値に丸める。Shiftを押したままで精密調整。"
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "インポートするノードを選択"
@@ -3520,8 +3519,8 @@ msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"テンプレートのインストールに失敗しました。 問題のテンプレートのアーカイブは "
-"'%s' にあります。"
+"テンプレートのインストールに失敗しました。\n"
+"問題のテンプレートのアーカイブは '%s' にあります。"
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -3979,6 +3978,10 @@ msgid "Error running post-import script:"
 msgstr "インポート済スクリプトの実行中にエラー:"
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "保存中..."
 
@@ -4051,9 +4054,8 @@ msgid "Copy Resource"
 msgstr "リソースをコピー"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Make Built-In"
-msgstr "ビルトインを作成"
+msgstr "組み込みにする"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
@@ -5692,7 +5694,7 @@ msgstr "ハンドルを設定する"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr "放射マスクを読み込む"
+msgstr "放出マスクを読み込む"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/cpu_particles_editor_plugin.cpp
@@ -5704,7 +5706,7 @@ msgstr "再起動"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr "発光(Emission)マスクをクリア"
+msgstr "放出マスクをクリア"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5720,7 +5722,7 @@ msgstr "生成したポイントの数:"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr "\\ Emission Mask"
+msgstr "放出マスク"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5745,7 +5747,7 @@ msgstr "ピクセルからキャプチャ"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "発光(Emission)色"
+msgstr "放出色"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -6210,7 +6212,7 @@ msgstr "\"%s\" はフェイスジオメトリーを含んでいません。"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
-msgstr "放出器を作成"
+msgstr "放出源を作成"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Points:"
@@ -6923,12 +6925,12 @@ msgstr ""
 "ド'%s'へのシグナル用です。"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "ライン"
+msgid "[Ignore]"
+msgstr "[無視]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(無視)"
+msgid "Line"
+msgstr "ライン"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7401,6 +7403,15 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XFormダイアログ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -8815,27 +8826,27 @@ msgstr "ネイピア数(2.718282)。自然対数のベースを表します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr "Υ(イプシロン)定数(0.00001)。使用可能な最小のスカラー数。"
+msgstr "ε(イプシロン)定数(0.00001)。使用可能な最小のスカラー数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
-msgstr "Φ(ファイ)定数 (1.618034)。黄金比。"
+msgstr "φ(ファイ)定数 (1.618034)。黄金比。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/4 constant (0.785398) or 45 degrees."
-msgstr "Π(パイ)/4定数 (0.785398) または45度。"
+msgstr "π(パイ)/4定数 (0.785398) または45度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/2 constant (1.570796) or 90 degrees."
-msgstr "Π(パイ)/2 定数(1.570796)または90度。"
+msgstr "π(パイ)/2 定数(1.570796)または90度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi constant (3.141593) or 180 degrees."
-msgstr "Π(パイ)定数(3.141593)または180度。"
+msgstr "π(パイ)定数(3.141593)または180度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr "Τ(タウ)定数(6.283185)または360度。"
+msgstr "τ(タウ)定数(6.283185)または360度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
@@ -9286,7 +9297,6 @@ msgstr ""
 "ためにそれを使用しないでください。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
@@ -9441,8 +9451,9 @@ msgid ""
 "Only one preset per platform may be marked as runnable."
 msgstr ""
 "チェックを入れると、１クリック・デプロイでもこのプリセットが使われるようにな"
-"ります。ひとつのプラットフォームに対し、ひとつのプリセットのみが実行可能とし"
-"てマークできます。"
+"ります。\n"
+"ひとつのプラットフォームに対し、ひとつのプリセットのみが実行可能としてマーク"
+"できます。"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9885,7 +9896,7 @@ msgstr "新規プロジェクト"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
-msgstr "存在しないものを削除"
+msgstr "存在しないものを除去"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -9939,8 +9950,8 @@ msgid ""
 "Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
-"アクション名が無効です。空にしたり、'/'、':'、'='、'\\'等を含めることはできま"
-"せん"
+"アクション名が無効です。空にしたり、'/'、':'、'='、'\\'、'\"'を含めることはで"
+"きません"
 
 #: editor/project_settings_editor.cpp
 msgid "An action with the name '%s' already exists."
@@ -10083,8 +10094,8 @@ msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
-"無効なアクション名です。空もしくは'/'、':'、'='、'\\' 、'\"'等を含めることは"
-"できません。"
+"無効なアクション名です。空もしくは'/'、':'、'='、'\\' 、'\"'を含めることはで"
+"きません。"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
@@ -10483,8 +10494,8 @@ msgid "Instance Child Scene"
 msgstr "子シーンをインスタンス化"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "スクリプトをクリア"
+msgid "Detach Script"
+msgstr "スクリプトをデタッチ"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10648,6 +10659,13 @@ msgid "Open Documentation"
 msgstr "ドキュメントを開く"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "子ノードを追加"
 
@@ -10696,12 +10714,12 @@ msgstr ""
 "合は、継承されたシーンを作成します。"
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr "選択したノードに新規または既存のスクリプトをアタッチする。"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "選択したノードのスクリプトをクリアする。"
+msgid "Detach the script from the selected node."
+msgstr "選択したノードのスクリプトをデタッチする。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10748,7 +10766,7 @@ msgid ""
 "Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
-"ノードに  %s 個接続があります。\n"
+"ノードに %s 個接続があります。\n"
 "クリックでシグナル ドックを表示。"
 
 #: editor/scene_tree_editor.cpp
@@ -10832,6 +10850,10 @@ msgid "A directory with the same name exists."
 msgstr "同名のフォルダが存在します。"
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "ファイルが存在しません。"
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "無効な拡張子です。"
 
@@ -10870,6 +10892,10 @@ msgstr "スクリプトを開く"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "ファイルが既に存在します。そちらを再利用します。"
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "パスが無効です。"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -10973,7 +10999,7 @@ msgstr "エラー"
 
 #: editor/script_editor_debugger.cpp
 msgid "Child process connected."
-msgstr "子プロセスが接続された。"
+msgstr "子プロセスが接続されました。"
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
@@ -11919,6 +11945,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "デバッグキーストアがエディタ設定にもプリセットにも設定されていません。"
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "エクスポート設定にてリリース キーストアが誤って設定されています。"
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr "カスタムビルドにはエディタ設定で有効なAndroid SDKパスが必要です。"
 
@@ -11941,6 +11971,32 @@ msgstr "APK expansion の公開鍵が無効です。"
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "無効なパッケージ名:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12723,6 +12779,21 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Not in resource path."
+#~ msgstr "リソースパスにありません。"
+
+#~ msgid "Revert"
+#~ msgstr "元に戻す"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "この操作は取り消せません。それでも元に戻しますか?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "シーンを元に戻す"
+
+#~ msgid "Clear Script"
+#~ msgstr "スクリプトをクリア"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "課題管理システム"

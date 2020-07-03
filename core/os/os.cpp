@@ -41,6 +41,7 @@
 #include <stdarg.h>
 
 OS *OS::singleton = NULL;
+uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
 
@@ -221,7 +222,7 @@ bool OS::has_virtual_keyboard() const {
 	return false;
 }
 
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
+void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 }
 
 void OS::hide_virtual_keyboard() {
@@ -551,6 +552,24 @@ OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
+int OS::keyboard_get_layout_count() const {
+	return 0;
+}
+
+int OS::keyboard_get_current_layout() const {
+	return -1;
+}
+
+void OS::keyboard_set_current_layout(int p_index) {}
+
+String OS::keyboard_get_layout_language(int p_index) const {
+	return "";
+}
+
+String OS::keyboard_get_layout_name(int p_index) const {
+	return "";
+}
+
 bool OS::is_joy_known(int p_device) {
 	return true;
 }
@@ -728,19 +747,60 @@ PoolStringArray OS::get_connected_midi_inputs() {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 
 	PoolStringArray list;
-	return list;
+	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 }
 
 void OS::open_midi_inputs() {
 
-	if (MIDIDriver::get_singleton())
+	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->open();
+	} else {
+		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+	}
 }
 
 void OS::close_midi_inputs() {
 
-	if (MIDIDriver::get_singleton())
+	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->close();
+	} else {
+		ERR_PRINT(vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
+	}
+}
+
+void OS::add_frame_delay(bool p_can_draw) {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		delay_usec(frame_delay * 1000);
+	}
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int target_fps = Engine::get_singleton()->get_target_fps();
+	if (target_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / target_fps));
+	}
+
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
+		uint64_t current_ticks = get_ticks_usec();
+
+		if (current_ticks < target_ticks) {
+			delay_usec(target_ticks - current_ticks);
+		}
+
+		current_ticks = get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
+	}
 }
 
 OS::OS() {

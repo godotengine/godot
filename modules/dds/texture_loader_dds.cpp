@@ -29,14 +29,15 @@
 /*************************************************************************/
 
 #include "texture_loader_dds.h"
+
 #include "core/os/file_access.h"
 
 #define PF_FOURCC(s) ((uint32_t)(((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0])))
 
+// Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
+
 enum {
 	DDS_MAGIC = 0x20534444,
-	DDSD_CAPS = 0x00000001,
-	DDSD_PIXELFORMAT = 0x00001000,
 	DDSD_PITCH = 0x00000008,
 	DDSD_LINEARSIZE = 0x00080000,
 	DDSD_MIPMAPCOUNT = 0x00020000,
@@ -47,7 +48,6 @@ enum {
 };
 
 enum DDSFormat {
-
 	DDS_DXT1,
 	DDS_DXT3,
 	DDS_DXT5,
@@ -125,8 +125,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	//validate
 
-	if (magic != DDS_MAGIC || hsize != 124 || !(flags & DDSD_PIXELFORMAT) || !(flags & DDSD_CAPS)) {
-
+	// We don't check DDSD_CAPS or DDSD_PIXELFORMAT, as they're mandatory when writing,
+	// but non-mandatory when reading (as some writers don't set them)...
+	if (magic != DDS_MAGIC || hsize != 124) {
 		ERR_FAIL_V_MSG(RES(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
 	}
 

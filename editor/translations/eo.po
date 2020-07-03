@@ -8,18 +8,19 @@
 # Brandon Dyer <brandondyer64@gmail.com>, 2019.
 # Alejandro Sánchez Medina <alejandrosanchzmedina@gmail.com>, 2019.
 # Sr Half <flavio05@outlook.com>, 2020.
+# Cristian Yepez <cristianyepez@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-05-01 11:43+0000\n"
-"Last-Translator: Sr Half <flavio05@outlook.com>\n"
+"PO-Revision-Date: 2020-05-22 21:01+0000\n"
+"Last-Translator: Cristian Yepez <cristianyepez@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -640,9 +641,8 @@ msgid "Scale Ratio:"
 msgstr "Skali Rejŝo:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "Elekti vojetojn por duplikati:"
+msgstr "Elekti vojetojn por duplikati"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -764,6 +764,11 @@ msgstr "Metodo en celo nodo devas esti specifita."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Metodo en celo nodo devas esti specifita."
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -847,7 +852,6 @@ msgstr "Ne povas konekti signalo"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1342,12 +1346,13 @@ msgid "Open Audio Bus Layout"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "Neniu '%s' dosiero."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
-msgstr ""
+msgstr "Aranĝo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -1360,7 +1365,7 @@ msgstr "Eraro dum ŝargante tiparon."
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr ""
+msgstr "Aldoni Buso"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
@@ -1370,7 +1375,7 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr ""
+msgstr "Ŝarĝi"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
@@ -1448,16 +1453,8 @@ msgstr ""
 msgid "Rearrange Autoloads"
 msgstr ""
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Nevalida dosierindiko."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr ""
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
+msgid "Can't add autoload:"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp
@@ -2405,12 +2402,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Ne povas reŝarĝi scenon, kiu konservis neniam."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Malfari"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Konservi scenon"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Tiun ĉi agon ne povos malfari. Certe daŭrigi?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2676,10 +2676,6 @@ msgstr "Malfari"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Refari"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Malfari scenon"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3313,6 +3309,10 @@ msgstr "Ne povis ruli skripto:"
 msgid "Did you forget the '_run' method?"
 msgstr "Ĉu vi forgesis la '_run' metodo?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 #, fuzzy
 msgid "Select Node(s) to Import"
@@ -3902,6 +3902,10 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
@@ -6794,11 +6798,11 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
+msgid "[Ignore]"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
+msgid "Line"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7266,6 +7270,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10210,8 +10223,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Krei skripton"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10370,6 +10384,13 @@ msgid "Open Documentation"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10416,11 +10437,11 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10540,6 +10561,10 @@ msgid "A directory with the same name exists."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Nevalida kromprogramo."
 
@@ -10578,6 +10603,10 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Nevalida dosierindiko."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11622,6 +11651,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -11641,6 +11674,32 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12287,6 +12346,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstantoj ne povas esti modifitaj."
+
+#~ msgid "Revert"
+#~ msgstr "Malfari"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Tiun ĉi agon ne povos malfari. Certe daŭrigi?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Malfari scenon"
 
 #, fuzzy
 #~ msgid "Help improve the Godot documentation by giving feedback."

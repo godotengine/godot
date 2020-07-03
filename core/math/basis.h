@@ -90,8 +90,21 @@ public:
 
 	Vector3 get_euler_xyz() const;
 	void set_euler_xyz(const Vector3 &p_euler);
+
+	Vector3 get_euler_xzy() const;
+	void set_euler_xzy(const Vector3 &p_euler);
+
+	Vector3 get_euler_yzx() const;
+	void set_euler_yzx(const Vector3 &p_euler);
+
 	Vector3 get_euler_yxz() const;
 	void set_euler_yxz(const Vector3 &p_euler);
+
+	Vector3 get_euler_zxy() const;
+	void set_euler_zxy(const Vector3 &p_euler);
+
+	Vector3 get_euler_zyx() const;
+	void set_euler_zyx(const Vector3 &p_euler);
 
 	Quat get_quat() const;
 	void set_quat(const Quat &p_quat);

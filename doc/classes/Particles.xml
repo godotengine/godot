@@ -103,6 +103,7 @@
 		</member>
 		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb" default="AABB( -4, -4, -4, 8, 8, 8 )">
 			The [AABB] that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
+			[b]Note:[/b] If the [ParticlesMaterial] in use is configured to cast shadows, you may want to enlarge this AABB to ensure the shadow is updated when particles are off-screen.
 		</member>
 	</members>
 	<constants>

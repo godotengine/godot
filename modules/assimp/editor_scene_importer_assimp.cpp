@@ -44,7 +44,6 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
-#include <string>
 
 // move into assimp
 aiBone *get_bone_by_name(const aiScene *scene, aiString bone_name) {
@@ -104,8 +103,6 @@ void EditorSceneImporterAssimp::_bind_methods() {
 Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	Assimp::Importer importer;
-	std::wstring w_path = ProjectSettings::get_singleton()->globalize_path(p_path).c_str();
-	std::string s_path(w_path.begin(), w_path.end());
 	importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
 	// Cannot remove pivot points because the static mesh will be in the wrong place
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
@@ -147,7 +144,8 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 								 // aiProcess_EmbedTextures |
 								 //aiProcess_SplitByBoneCount |
 								 0;
-	aiScene *scene = (aiScene *)importer.ReadFile(s_path.c_str(), post_process_Steps);
+	String g_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+	aiScene *scene = (aiScene *)importer.ReadFile(g_path.utf8().ptr(), post_process_Steps);
 
 	ERR_FAIL_COND_V_MSG(scene == NULL, NULL, String("Open Asset Import failed to open: ") + String(importer.GetErrorString()));
 
@@ -308,6 +306,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 	state.assimp_scene = scene;
 	state.max_bone_weights = p_max_bone_weights;
 	state.animation_player = NULL;
+	state.import_flags = p_flags;
 
 	// populate light map
 	for (unsigned int l = 0; l < scene->mNumLights; l++) {
@@ -848,6 +847,8 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
 	bool has_uvs = false;
+	bool compress_vert_data = state.import_flags & IMPORT_USE_COMPRESSION;
+	uint32_t mesh_flags = compress_vert_data ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
 
 	Map<String, uint32_t> morph_mesh_string_lookup;
 
@@ -1295,7 +1296,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 
 			morphs[j] = array_copy;
 		}
-		mesh->add_surface_from_arrays(primitive, array_mesh, morphs);
+		mesh->add_surface_from_arrays(primitive, array_mesh, morphs, mesh_flags);
 		mesh->surface_set_material(i, mat);
 		mesh->surface_set_name(i, AssimpUtils::get_assimp_string(ai_mesh->mName));
 	}

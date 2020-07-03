@@ -52,18 +52,16 @@ protected:
 	Error set_error(Error p_error) const;
 
 	mutable struct File {
-
-		bool open;
-		int size;
-		int offset;
+		bool open = false;
+		int size = 0;
+		int offset = 0;
 		String name;
-		int access_flags;
+		int access_flags = 0;
 	} file;
 
 	mutable struct Cache {
-
 		Vector<uint8_t> buffer;
-		int offset;
+		int offset = 0;
 	} cache;
 
 	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const = 0;

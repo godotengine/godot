@@ -786,6 +786,9 @@ public:
 			_test_path();
 		}
 
+		// Reset the dialog to its initial size. Otherwise, the dialog window would be too large
+		// when opening a small dialog after closing a large dialog.
+		set_size(get_minimum_size());
 		popup_centered_minsize(Size2(500, 0) * EDSCALE);
 	}
 
@@ -942,6 +945,8 @@ public:
 		icon = NULL;
 		icon_needs_reload = true;
 		hover = false;
+
+		set_focus_mode(FocusMode::FOCUS_ALL);
 	}
 
 	void set_is_favorite(bool fav) {

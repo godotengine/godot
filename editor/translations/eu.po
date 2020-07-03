@@ -3,11 +3,11 @@
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Julen Irazoki <rktzbkr.julen@gmail.com>, 2019.
-# Osoitz <oelkoro@gmail.com>, 2019.
+# Osoitz <oelkoro@gmail.com>, 2019, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-12-03 14:05+0000\n"
+"PO-Revision-Date: 2020-06-15 01:48+0000\n"
 "Last-Translator: Osoitz <oelkoro@gmail.com>\n"
 "Language-Team: Basque <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eu/>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -24,7 +24,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "1 luzerako kate bat espero zen (karaktere bat)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -54,79 +54,79 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "'%s' eraikitzeko argumentu baliogabeak"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "'%s' deitzean:"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr ""
+msgstr "Libre"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Orekatua"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Ispilua"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Denbora:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Balioa:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "Txertatu gakoa hemen"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr ""
+msgstr "Bikoiztu hautatutako gakoa(k)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr ""
+msgstr "Ezabatu hautatutako gakoak"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Gehitu Bezier puntua"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "Mugitu Bezier puntuak"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -178,12 +178,12 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr ""
+msgstr "Aldatu animazioaren iraupena"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Aldatu animazioaren begizta"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -211,11 +211,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr ""
+msgstr "Animazioaren iraupena (fotogramak)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr ""
+msgstr "Animazioaren iraupena (segundoak)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -496,7 +496,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr ""
+msgstr "Atxikitzea:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -735,6 +735,10 @@ msgid "Method in target node must be specified."
 msgstr ""
 
 #: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr ""
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -814,7 +818,6 @@ msgstr ""
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -950,32 +953,32 @@ msgstr ""
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Mendekotasunak"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Baliabidea"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 msgid "Path"
-msgstr ""
+msgstr "Bidea"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Mendekotasunak:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Konpondu hautsitakoa"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Mendekotasun-editorea"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr ""
+msgstr "Bilatu ordezko baliabidea:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -985,15 +988,16 @@ msgstr ""
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr ""
+msgstr "Ireki"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr ""
+msgstr "Hauen jabeak:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
 msgstr ""
+"Kendu hautatutako fitxategiak proiektutik? (Ezin izango da berreskuratu)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1001,46 +1005,49 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"Kendu beharreko fitxategiak beste baliabide batzuek behar dituzte funtziona "
+"dezaten.\n"
+"Kendu, hala ere? (Ezin da desegin)"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr ""
+msgstr "Ezin kendu:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr ""
+msgstr "Errorea kargatzean:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
-msgstr ""
+msgstr "Kargak huts egin du mendekotasunak falta direlako:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Ireki dena den"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Zein ekintza egin behar da?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Konpondu mendekotasunak"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr ""
+msgstr "Erroreak kargatzean!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr ""
+msgstr "%d elementu behin betiko ezabatu nahi duzu? (Ezin da desegin!)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
-msgstr ""
+msgstr "Erakutsi mendekotasunak"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Baliabide umezurtzen arakatzailea"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -1048,27 +1055,28 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr ""
+msgstr "Ezabatu"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Jabea"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr ""
+msgstr "Jabetza esplizitu gabeko baliabideak:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr ""
+msgstr "Aldatu hiztegiaren gakoa"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr ""
+msgstr "Aldatu hiztegiaren balioa"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Thanks from the Godot community!"
-msgstr ""
+msgstr "Eskerrik asko Godot komunitatearen partetik!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1076,59 +1084,59 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr ""
+msgstr "Proiektuaren sortzaileak"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "Garatzaile nagusia"
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr ""
+msgstr "Proiektu-kudeatzailea "
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Garatzaileak"
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr ""
+msgstr "Egileak"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Platinozko babesleak"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Urrezko babesleak"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Mini babesleak"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Urrezko emaileak"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Zilarrezko emaileak"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "Brontzezko emaileak"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Emaileak"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Lizentzia"
 
 #: editor/editor_about.cpp
 msgid "Third-party Licenses"
-msgstr ""
+msgstr "Hirugarrengoen lizentziak"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -1140,27 +1148,27 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr ""
+msgstr "Osagai guztiak"
 
 #: editor/editor_about.cpp
 msgid "Components"
-msgstr ""
+msgstr "Osagaiak"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "Lizentziak"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in ZIP format."
-msgstr ""
+msgstr "Errorea pakete fitxategia irekitzean, ez dago ZIP formatuan."
 
 #: editor/editor_asset_installer.cpp
 msgid "%s (Already Exists)"
-msgstr ""
+msgstr "%s (jada existitzen da)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "Aktiboak deskonprimatzen"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -1168,28 +1176,28 @@ msgstr ""
 
 #: editor/editor_asset_installer.cpp
 msgid "And %s more files."
-msgstr ""
+msgstr "Eta beste %s fitxategi."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
-msgstr ""
+msgstr "Paketea ondo instalatu da!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Arrakasta!"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Contents:"
-msgstr ""
+msgstr "Paketearen edukia:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
-msgstr ""
+msgstr "Instalatu"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr ""
+msgstr "Pakete instalatzailea"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1197,7 +1205,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr ""
+msgstr "Gehitu efektua"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
@@ -1237,7 +1245,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
-msgstr ""
+msgstr "Arrastatu eta jaregin berrantolatzeko."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1258,19 +1266,19 @@ msgstr ""
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr ""
+msgstr "Bikoiztu"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
-msgstr ""
+msgstr "Berrezarri bolumena"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr ""
+msgstr "Ezabatu efektua"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "Audioa"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1336,7 +1344,7 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr ""
+msgstr "Kargatu"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
@@ -1344,7 +1352,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Save As"
-msgstr ""
+msgstr "Gorde honela"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
@@ -1414,16 +1422,8 @@ msgstr ""
 msgid "Rearrange Autoloads"
 msgstr ""
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr ""
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr ""
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
+msgid "Can't add autoload:"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp
@@ -1567,7 +1567,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
-msgstr ""
+msgstr "Aktiboen liburutegia"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
@@ -1668,35 +1668,35 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "Esportatu"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
-msgstr ""
+msgstr "Eskuragarri dauden profilak:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
-msgstr ""
+msgstr "Klaseko aukerak"
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
-msgstr ""
+msgstr "Profilaren izen berria:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
-msgstr ""
+msgstr "Ezabatu profila"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
-msgstr ""
+msgstr "Godot ezaugarri profila"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr ""
+msgstr "Inportatu profila(k)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
-msgstr ""
+msgstr "Esportatu profila"
 
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
@@ -1704,32 +1704,32 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr ""
+msgstr "Hautatu uneko karpeta"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "Fitxategia badago aurretik, gainidatzi?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select This Folder"
-msgstr ""
+msgstr "Hautatu karpeta hau"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr ""
+msgstr "Kopiatu bidea"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Open in File Manager"
-msgstr ""
+msgstr "Ireki fitxategi-kudeatzailean"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
 msgid "Show in File Manager"
-msgstr ""
+msgstr "Erakutsi fitxategi-kudeatzailean"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr ""
+msgstr "Karpeta berria..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -1742,58 +1742,58 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "Fitxategi guztiak (*)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr ""
+msgstr "Ireki fitxategi bat"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr ""
+msgstr "Ireki fitxategia(k)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a Directory"
-msgstr ""
+msgstr "Ireki direktorioa"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
+msgstr "Ireki fitxategia edo direktorioa"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/editor_properties.cpp editor/inspector_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
-msgstr ""
+msgstr "Gorde"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Save a File"
-msgstr ""
+msgstr "Gorde fitxategia"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Joan atzera"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Joan aurrera"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Joan gora"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Txandakatu ezkutatutako fitxategiak"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr ""
+msgstr "Txandakatu gogokoa"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
-msgstr ""
+msgstr "Txandakatu modua"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
@@ -1801,27 +1801,27 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
-msgstr ""
+msgstr "Eraman gogokoa gora"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Down"
-msgstr ""
+msgstr "Eraman gogoa behera"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to previous folder."
-msgstr ""
+msgstr "Joan aurreko karpetara."
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to next folder."
-msgstr ""
+msgstr "Joan hurrengo karpetara."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
-msgstr ""
+msgstr "Joan guraso karpetara."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh files."
-msgstr ""
+msgstr "Eguneratu fitxategiak."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
@@ -1829,7 +1829,7 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
-msgstr ""
+msgstr "Txandakatu ezkutuko fitxategien ikusgaitasuna."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1837,25 +1837,25 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a list."
-msgstr ""
+msgstr "Ikusi elementuak zerrenda gisa."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr ""
+msgstr "Direktorioak eta fitxategiak:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
-msgstr ""
+msgstr "Aurrebista:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
-msgstr ""
+msgstr "Fitxategia:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "Baliozko luzapena erabili behar du."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1869,7 +1869,7 @@ msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr ""
+msgstr "Aktiboak (bir)inportatzen"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
@@ -1877,20 +1877,20 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Class:"
-msgstr ""
+msgstr "Klasea:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr ""
+msgstr "Herentziak:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr ""
+msgstr "Hauek heredatua:"
 
 #: editor/editor_help.cpp
 msgid "Description"
-msgstr ""
+msgstr "Deskripzioa"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -1898,31 +1898,31 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
+msgstr "Propietateak"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr ""
+msgstr "gainidatzi:"
 
 #: editor/editor_help.cpp
 msgid "default:"
-msgstr ""
+msgstr "lehenetsia:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr ""
+msgstr "Metodoak"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr ""
+msgstr "Azalaren propietateak"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr ""
+msgstr "Enumerazioak"
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr ""
+msgstr "Konstanteak"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -1930,7 +1930,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "(value)"
-msgstr ""
+msgstr "(balioa)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -1940,7 +1940,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr ""
+msgstr "Metodo-deskripzioak"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -1951,63 +1951,63 @@ msgstr ""
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr ""
+msgstr "Bilatu laguntza"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "Maiuskulak eta minuskulak"
 
 #: editor/editor_help_search.cpp
 msgid "Show Hierarchy"
-msgstr ""
+msgstr "Erakutsi hierarkia"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
-msgstr ""
+msgstr "Erakutsi guztiak"
 
 #: editor/editor_help_search.cpp
 msgid "Classes Only"
-msgstr ""
+msgstr "Klaseak bakarrik"
 
 #: editor/editor_help_search.cpp
 msgid "Methods Only"
-msgstr ""
+msgstr "Metodoak bakarrik"
 
 #: editor/editor_help_search.cpp
 msgid "Signals Only"
-msgstr ""
+msgstr "Seinaleak bakarrik"
 
 #: editor/editor_help_search.cpp
 msgid "Constants Only"
-msgstr ""
+msgstr "Konstanteak bakarrik"
 
 #: editor/editor_help_search.cpp
 msgid "Properties Only"
-msgstr ""
+msgstr "Propietateak bakarrik"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Properties Only"
-msgstr ""
+msgstr "Azalaren propietateak bakarrik"
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
-msgstr ""
+msgstr "Kide mota"
 
 #: editor/editor_help_search.cpp
 msgid "Class"
-msgstr ""
+msgstr "Klasea"
 
 #: editor/editor_help_search.cpp
 msgid "Method"
-msgstr ""
+msgstr "Metodoa"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
 msgid "Signal"
-msgstr ""
+msgstr "Seinalea"
 
 #: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Konstantea"
 
 #: editor/editor_help_search.cpp
 msgid "Property"
@@ -2015,7 +2015,7 @@ msgstr ""
 
 #: editor/editor_help_search.cpp
 msgid "Theme Property"
-msgstr ""
+msgstr "Azalaren propietatea"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2343,11 +2343,14 @@ msgid "Can't reload a scene that was never saved."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr ""
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Birkargatu azala"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2605,16 +2608,12 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr ""
+msgstr "Desegin"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr ""
+msgstr "Berregin"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2623,27 +2622,27 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Project"
-msgstr ""
+msgstr "Proiektua"
 
 #: editor/editor_node.cpp
 msgid "Project Settings..."
-msgstr ""
+msgstr "Proiektuaren ezarpenak..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
-msgstr ""
+msgstr "Bertsio kontrola"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Ezarri bertsio kontrola"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Desgaitu bertsio kontrola"
 
 #: editor/editor_node.cpp
 msgid "Export..."
-msgstr ""
+msgstr "Esportatu..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
@@ -2651,24 +2650,24 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
-msgstr ""
+msgstr "Ireki proiektuaren datu karpeta"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr ""
+msgstr "Tresnak"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
-msgstr ""
+msgstr "Baliabide umezurtzen arakatzailea..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Irten proiektuen zerrendara"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Araztu"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -2696,7 +2695,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "Talka formak ikusgai"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2760,11 +2759,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr ""
+msgstr "Txandakatu pantaila osoa"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr ""
+msgstr "Txandakatu sistemaren kontsola"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2772,23 +2771,23 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "Ireki editorearen datu karpeta"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr ""
+msgstr "Ireki editorearen ezarpenen karpeta"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features..."
-msgstr ""
+msgstr "Kudeatu editorearen ezaugarriak..."
 
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
-msgstr ""
+msgstr "Kudeatu esportazio txantiloiak..."
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
-msgstr ""
+msgstr "Laguntza"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2797,20 +2796,20 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
-msgstr ""
+msgstr "Bilatu"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "Lineako dokumentuak"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "Galdera-erantzunak"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
-msgstr ""
+msgstr "Eman akats baten berri"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -2818,11 +2817,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Komunitatea"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "Honi buruz"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -2978,7 +2977,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr ""
+msgstr "Ireki aktiboen liburutegia"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
@@ -3204,7 +3203,7 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr ""
+msgstr "Badago editatutako eszena bat."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
@@ -3216,44 +3215,48 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr ""
+msgstr "Ezin izan da scripta exekutatu:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr ""
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "Hautatu inportatu nahi dituzun nodoak"
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
-msgstr ""
+msgstr "Arakatu"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr ""
+msgstr "Eszenaren bidea:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "Inportatu nodotik:"
 
 #: editor/export_template_manager.cpp
 msgid "Redownload"
-msgstr ""
+msgstr "Berriro jaitsi"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr ""
+msgstr "Desinstalatu"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr ""
+msgstr "(Instalatuta)"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
-msgstr ""
+msgstr "Jaitsi"
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
@@ -3261,11 +3264,11 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(Falta da)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr ""
+msgstr "(Unekoa)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
@@ -3312,6 +3315,8 @@ msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
+"Ez da bertsio hau jaisteko estekarik aurkitu. Deskarga zuzena bertsio "
+"ofizialentzat besterik ez dago."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3343,7 +3348,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
-msgstr ""
+msgstr "Jaitsiera osatuta."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -3395,11 +3400,11 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
-msgstr ""
+msgstr "Jaisten"
 
 #: editor/export_template_manager.cpp
 msgid "Connection Error"
-msgstr ""
+msgstr "Konexio-errorea"
 
 #: editor/export_template_manager.cpp
 msgid "SSL Handshake Error"
@@ -3411,35 +3416,35 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr ""
+msgstr "Uneko bertsioa:"
 
 #: editor/export_template_manager.cpp
 msgid "Installed Versions:"
-msgstr ""
+msgstr "Instalatutako bertsioak:"
 
 #: editor/export_template_manager.cpp
 msgid "Install From File"
-msgstr ""
+msgstr "Instalatu fitxategitik"
 
 #: editor/export_template_manager.cpp
 msgid "Remove Template"
-msgstr ""
+msgstr "Kendu txantiloia"
 
 #: editor/export_template_manager.cpp
 msgid "Select Template File"
-msgstr ""
+msgstr "Hautatu txantiloi fitxategia"
 
 #: editor/export_template_manager.cpp
 msgid "Godot Export Templates"
-msgstr ""
+msgstr "Godot esportazio-txantiloiak"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
-msgstr ""
+msgstr "Esportazio-txantiloi kudeatzailea"
 
 #: editor/export_template_manager.cpp
 msgid "Download Templates"
-msgstr ""
+msgstr "Jaitsi txantiloiak"
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
@@ -3584,7 +3589,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Next Folder/File"
-msgstr ""
+msgstr "Hurrengo karpeta/fitxategia"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
@@ -3596,17 +3601,19 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
-msgstr ""
+msgstr "Bilatu fitxategiak"
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
 "Please Wait..."
 msgstr ""
+"Fitxategiak arakatzen,\n"
+"Itxaron mesedez..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr ""
+msgstr "Mugitu"
 
 #: editor/filesystem_dock.cpp
 msgid "There is already file or folder with the same name in this location."
@@ -3806,12 +3813,16 @@ msgid "Error running post-import script:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr ""
 
 #: editor/import_dock.cpp
 msgid "%d Files"
-msgstr ""
+msgstr "%d fitxategi"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -3835,7 +3846,7 @@ msgstr ""
 
 #: editor/import_dock.cpp
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr ""
+msgstr "Gorde eszenak, berriro inportatu eta berrabiarazi"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -3845,6 +3856,8 @@ msgstr ""
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"ABISUA: Baliabide hau darabiltzaten aktiboak daude, kargatzeari utzi "
+"liezaiokete."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4040,7 +4053,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Animation Point"
-msgstr ""
+msgstr "Gehitu animazio puntua"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Remove BlendSpace1D Point"
@@ -4072,7 +4085,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "Gaitu atxikitzea eta erakutsi sareta."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4247,7 +4260,7 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable Filtering"
-msgstr ""
+msgstr "Gaitu iragazkia"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -4255,38 +4268,38 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr ""
+msgstr "Animazio berriaren izena:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Animazio berria"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Aldatu animazioaren izena:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr ""
+msgstr "Ezabatu animazioa?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Kendu animazioa"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr ""
+msgstr "Animazio izen baliogabea!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
+msgstr "Animazio izena existitzen da jada!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Aldatu izena animazioari"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -4298,31 +4311,31 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Kargatu animazioa"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Bikoiztu animazioa"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
-msgstr ""
+msgstr "Ez dago animaziorik kopiatzeko!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
-msgstr ""
+msgstr "Ez dago animazio baliabiderik arbelean!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr ""
+msgstr "Itsatsitako animazioa"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr ""
+msgstr "Itsatsi animazioa"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to edit!"
-msgstr ""
+msgstr "Ez dago animaziorik editatzeko!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
@@ -4662,7 +4675,7 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Blend4 nodoa"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
@@ -4674,51 +4687,51 @@ msgstr ""
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Trantsizio nodoa"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr ""
+msgstr "Inportatu animazioak..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Editatu nodo-iragazkiak"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
-msgstr ""
+msgstr "Iragazkiak..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
-msgstr ""
+msgstr "Edukiak:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
-msgstr ""
+msgstr "Ikusi fitxategiak"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Konexio errorea, saiatu berriro."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr ""
+msgstr "Ezin da ostalariarekin konektatu:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Ostalariaren erantzunik ez:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Ezin duzu ostalariaren izena ebatzi:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
-msgstr ""
+msgstr "Eskaerak huts egin du, itzulera-kodea:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed."
-msgstr ""
+msgstr "Eskaerak huts egin du."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Cannot save response to:"
@@ -4746,7 +4759,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Jaitsiera hash okerra, fitxategia aldatua izan delakoan."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -4762,15 +4775,15 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Aktiboaren jaitsiera errorea:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
-msgstr ""
+msgstr "Jaisten (%s / %s)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading..."
-msgstr ""
+msgstr "Jaisten..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
@@ -4794,11 +4807,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Jaitsiera errorea"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Aktibo honen jaitsiera abian da jada!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
@@ -4887,7 +4900,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "Aktiboen ZIP fitxategia"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -4917,7 +4930,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr ""
+msgstr "Konfiguratu atxikitzea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
@@ -5222,72 +5235,72 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle smart snapping."
-msgstr ""
+msgstr "Txandakatu atxikitze adimentsua."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
-msgstr ""
+msgstr "Erabili atxikitze adimentsua"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
-msgstr ""
+msgstr "Txandakatu saretara atxikitzea."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr ""
+msgstr "Erabili saretara atxikitzea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr ""
+msgstr "Atxikitze aukerak"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr ""
+msgstr "Erabili biraketa atxikitzea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Scale Snap"
-msgstr ""
+msgstr "Erabili eskala atxikitzea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr ""
+msgstr "Atxikitze erlatiboa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr ""
+msgstr "Erabili pixel atxikitzea"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr ""
+msgstr "Atxikitze adimentsua"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr ""
+msgstr "Konfiguratu atxikitzea..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr ""
+msgstr "Atxikitu gurasora"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
-msgstr ""
+msgstr "Atxikitu nodoaren aingurara"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Sides"
-msgstr ""
+msgstr "Atxikitu nodoaren ertzetara"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Center"
-msgstr ""
+msgstr "Atxikitu nodoaren zentrora"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Other Nodes"
-msgstr ""
+msgstr "Atxikitu beste nodoetara"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
-msgstr ""
+msgstr "Atxikitu gidalerroetara"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6298,11 +6311,11 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Snap"
-msgstr ""
+msgstr "Atxikitu"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr ""
+msgstr "Gaitu atxikitzea"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -6416,7 +6429,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme."
-msgstr ""
+msgstr "Errorea azala gordetzean."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error Saving"
@@ -6424,7 +6437,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme."
-msgstr ""
+msgstr "Errorea azala inportatzean."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error Importing"
@@ -6461,11 +6474,11 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr ""
+msgstr "Inportatu azala"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
-msgstr ""
+msgstr "Errorea azala gordetzean"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving"
@@ -6473,7 +6486,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
-msgstr ""
+msgstr "Gorde azala honela..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
@@ -6560,19 +6573,19 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
-msgstr ""
+msgstr "Azala"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
-msgstr ""
+msgstr "Inportatu azala..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr ""
+msgstr "Birkargatu azala"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr ""
+msgstr "Gorde azala"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
@@ -6677,11 +6690,11 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
+msgid "[Ignore]"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
+msgid "Line"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7151,12 +7164,21 @@ msgid "XForm Dialog"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap Nodes To Floor"
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap Nodes To Floor"
+msgstr "Atxikitu nodoak lurrera"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr ""
+msgstr "Ez da hautapena atxikitzeko lur trinkorik aurkitu."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7171,7 +7193,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr ""
+msgstr "Erabili atxikitzea"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7224,7 +7246,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr ""
+msgstr "Atxikitu objektua lurrera"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -7273,19 +7295,19 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
-msgstr ""
+msgstr "Atxikitze ezarpenak"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr ""
+msgstr "Translazio atzikitzea:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr ""
+msgstr "Biratze atxikitzea (graduak):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr ""
+msgstr "Eskala atxikitzea (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
@@ -7553,7 +7575,7 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
+msgstr "Atxikitze modua:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: scene/resources/visual_shader.cpp
@@ -7562,11 +7584,11 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr ""
+msgstr "Pixel atxikitzea"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr ""
+msgstr "Sareta atxikitzea"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -7598,19 +7620,19 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
-msgstr ""
+msgstr "Kendu elementu guztiak"
 
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove All"
-msgstr ""
+msgstr "Kendu guztiak"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit Theme"
-msgstr ""
+msgstr "Editatu azala"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
-msgstr ""
+msgstr "Azalaren edizio menua."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -7630,7 +7652,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create From Current Editor Theme"
-msgstr ""
+msgstr "Sortu editorearen uneko azaletik"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Toggle Button"
@@ -7739,7 +7761,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
-msgstr ""
+msgstr "Azal fitxategia"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -7963,6 +7985,7 @@ msgstr ""
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
 msgstr ""
+"Gaitu atxikitzea eta erakutsi sareta (Inspektorearen bidez konfiguragarria)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
@@ -9149,7 +9172,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr ""
+msgstr "Ezaugarriak"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -9157,11 +9180,11 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Feature List:"
-msgstr ""
+msgstr "Ezaugarri zerrenda:"
 
 #: editor/project_export.cpp
 msgid "Script"
-msgstr ""
+msgstr "Scripta"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -9169,11 +9192,11 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Text"
-msgstr ""
+msgstr "Testua"
 
 #: editor/project_export.cpp
 msgid "Compiled"
-msgstr ""
+msgstr "Konpilatuta"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
@@ -9229,7 +9252,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr ""
+msgstr "Errorea pakete fitxategia irekitzean (ez dago ZIP formatuan)."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9242,7 +9265,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr ""
+msgstr "Aukeratu \"project.godot\" edo \".zip\" fitxategia."
 
 #: editor/project_manager.cpp
 msgid "This directory already contains a Godot project."
@@ -9425,6 +9448,8 @@ msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
+"Ezin da proiektua exekutatu: Aktiboak inportatu behar dira.\n"
+"Editatu proiektua hasierako inportazioa abiatzeko."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run %d projects at once?"
@@ -9505,6 +9530,8 @@ msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
+"Orain ez duzu proiekturik.\n"
+"Adibide ofizialak arakatu nahi dituzu aktiboen liburutegian?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9899,7 +9926,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
-msgstr ""
+msgstr "Erabili adierazpen erregularrak"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -9975,7 +10002,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "PascalCase to snake_case"
-msgstr ""
+msgstr "PascalCase snake_case-ra"
 
 #: editor/rename_dialog.cpp
 msgid "snake_case to PascalCase"
@@ -9999,7 +10026,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "Regular Expression Error"
-msgstr ""
+msgstr "Adierazpen erregularraren errorea"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -10068,8 +10095,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Scripta"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10226,6 +10254,13 @@ msgid "Open Documentation"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10272,11 +10307,11 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10396,6 +10431,10 @@ msgid "A directory with the same name exists."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr ""
 
@@ -10436,6 +10475,10 @@ msgid "File exists, it will be reused."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid class name."
 msgstr ""
 
@@ -10445,7 +10488,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Script path/name is valid."
-msgstr ""
+msgstr "Scriptaren bidea/izena baliozkoa da."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10472,6 +10515,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Oharra: Inkorporatutako gidoiek muga batzuk dituzte eta ezin dira editatu "
+"kanpoko editore batekin."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -10595,7 +10640,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Export list to a CSV file"
-msgstr ""
+msgstr "Esportatu zerrenda CSV fitxategi batera"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -10871,7 +10916,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr ""
+msgstr "Atxikitu ikuspegia"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -11460,6 +11505,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -11479,6 +11528,32 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 
 #: platform/android/export/export.cpp

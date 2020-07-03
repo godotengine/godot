@@ -38,6 +38,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_rid) == sizeof(RID), "RID size mismatch");
+
 void GDAPI godot_rid_new(godot_rid *r_dest) {
 	RID *dest = (RID *)r_dest;
 	memnew_placement(dest, RID);

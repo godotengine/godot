@@ -7,12 +7,13 @@
 # Overloaded <manoschool@yahoo.gr>, 2019.
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
 # Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
+# pandektis <pandektis@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-20 05:51+0000\n"
-"Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: pandektis <pandektis@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -20,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -743,11 +744,11 @@ msgstr "Μεγέθυνση"
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr "Σμύκρινση"
+msgstr "Σμίκρυνση"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "Επαναφορά μεγέθυνσης"
+msgstr "Επαναφορά μεγένθυνσης"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -760,6 +761,10 @@ msgstr "Αριθμοί γραμμών και στηλών."
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
 msgstr "Πρέπει να οριστεί συνάρτηση στον στοχευμένο κόμβο."
+
+#: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικό."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -845,7 +850,6 @@ msgstr "Αδύνατη η σύνδεση σήματος"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1459,17 +1463,9 @@ msgstr "Ενεργοποίηση"
 msgid "Rearrange Autoloads"
 msgstr "Αναδιάταξη των AutoLoad"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Άκυρη διαδρομή."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Το αρχείο δεν υπάρχει."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Δεν υπάρχει στην διαδρομή πόρων."
+msgid "Can't add autoload:"
+msgstr "Αδυναμία προσθήκης autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2431,14 +2427,17 @@ msgstr ""
 "Δεν είναι δυνατό να φορτώσετε εκ νέου μια σκηνή που δεν αποθηκεύτηκε ποτέ."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Επαναφορά"
+msgid "Reload Saved Scene"
+msgstr "Ανανέωση Αποθηκευμένης Σκηνής"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θέλετε να συνεχίσετε με την "
-"επαναφορά;"
+"Η τρέχουσα σκηνή έχει μη αποθηκευμένες αλλαγές.\n"
+"Επαναφόρτωση της αποθηκευμένης σκηνής; Αυτή η ενέργεια δεν μπορεί να "
+"αναιρεθεί."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2733,10 +2732,6 @@ msgid "Redo"
 msgstr "Ακύρωση αναίρεσης"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Επαναφορά σκηνής"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Λοιπά έργα ή εργαλεία για όλη τη σκηνή."
 
@@ -2944,7 +2939,7 @@ msgstr "Αναζήτηση"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
-msgstr "Ηλεκτρονική  τεκμηρίωση"
+msgstr "Ηλεκτρονική τεκμηρίωση"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
@@ -3387,6 +3382,12 @@ msgstr "Αδυναμία εκτέλεσης δέσμης ενεργειών:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Μήπως ξεχάσατε τη μέθοδο '_run';"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Πατήστε παρατεταμένα το Ctrl για στρογγυλοποίηση ακεραίων και το Shift για "
+"πιο ακριβείς αλλαγές."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3987,6 +3988,10 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Σφάλμα κατά την εκτέλεση της δέσμης ενεργειών μετεισαγωγής:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6957,12 +6962,13 @@ msgstr ""
 "κόμβο «%s»."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Γραμμή"
+#, fuzzy
+msgid "[Ignore]"
+msgstr "(Παράβλεψη)"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(Παράβλεψη)"
+msgid "Line"
+msgstr "Γραμμή"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7439,6 +7445,15 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Διάλογος XForm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10527,8 +10542,9 @@ msgid "Instance Child Scene"
 msgstr "Αρχικοποίηση σκηνής ως παιδί"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Εκκαθάριση Δέσμης Ενεργειών"
+#, fuzzy
+msgid "Detach Script"
+msgstr "Σύνδεση Δέσμης Ενεργειών"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10699,6 +10715,13 @@ msgid "Open Documentation"
 msgstr "Άνοιγμα Τεκμηρίωσης"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Προσθήκη κόμβου ως παιδί"
 
@@ -10747,11 +10770,13 @@ msgstr ""
 "υπάρχει πηγαίος κόμβος."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
 msgstr "Σύνδεση νέας ή υπαρκτής δέσμης ενεργειών για τον επιλεγμένο κόμβο."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr "Εκκαθάριση δέσμης ενεργειών για τον επιλεγμένο κόμβο."
 
 #: editor/scene_tree_dock.cpp
@@ -10883,6 +10908,10 @@ msgid "A directory with the same name exists."
 msgstr "Υπαρκτός ομώνυμος κατάλογος."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Το αρχείο δεν υπάρχει."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Άκυρη επέκταση."
 
@@ -10921,6 +10950,10 @@ msgstr "Άνοιγμα Δέσμης Ενεργειών"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "Υπαρκτό αρχείο, θα επαναχρησιμοποιηθεί."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Άκυρη διαδρομή."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11983,6 +12016,13 @@ msgstr ""
 "διαμόρφωση."
 
 #: platform/android/export/export.cpp
+#, fuzzy
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Το «debug keystore» δεν έχει καθοριστεί στις Ρυθμίσεις Επεξεργαστή ή την "
+"διαμόρφωση."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "Η προσαρμοσμένη δόμηση απαιτεί μια έγκυρη διαδρομή για το Android SDK στις "
@@ -12009,6 +12049,32 @@ msgstr "Μη έγκυρο δημόσιο κλειδί (public key) για επέ
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Άκυρο όνομα πακέτου:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12803,6 +12869,23 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Δεν υπάρχει στην διαδρομή πόρων."
+
+#~ msgid "Revert"
+#~ msgstr "Επαναφορά"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr ""
+#~ "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θέλετε να συνεχίσετε με την "
+#~ "επαναφορά;"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Επαναφορά σκηνής"
+
+#~ msgid "Clear Script"
+#~ msgstr "Εκκαθάριση Δέσμης Ενεργειών"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Διαχείριση προβλημάτων"

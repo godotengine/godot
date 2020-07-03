@@ -447,16 +447,21 @@ public:
 
 			int light_mode;
 
+			// these flags are specifically for batching
+			// some of the logic is thus in rasterizer_storage.cpp
+			// we could alternatively set bitflags for each 'uses' and test on the fly
+			enum BatchFlags {
+				PREVENT_COLOR_BAKING = 1 << 0,
+				PREVENT_VERTEX_BAKING = 1 << 1,
+			};
+			unsigned int batch_flags;
+
 			bool uses_screen_texture;
 			bool uses_screen_uv;
 			bool uses_time;
 			bool uses_modulate;
-			bool reads_color;
-
-			// this flag is specifically for batching
-			// some of the logic is thus in rasterizer_storage.cpp
-			// we could alternatively set some bitflags here and test on the fly
-			bool prevent_color_baking;
+			bool uses_color;
+			bool uses_vertex;
 
 		} canvas_item;
 

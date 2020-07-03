@@ -150,7 +150,7 @@ private:
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
 		EDIT_REDO,
-		EDIT_REVERT,
+		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
@@ -691,7 +691,7 @@ public:
 	bool get_docks_visible() const;
 
 	void set_distraction_free_mode(bool p_enter);
-	bool get_distraction_free_mode() const;
+	bool is_distraction_free_mode_enabled() const;
 
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);

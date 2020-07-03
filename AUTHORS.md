@@ -95,6 +95,7 @@ name is available.
     Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
+    James Buck (jbuck3)
     Jérôme Gully (Nutriz)
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)

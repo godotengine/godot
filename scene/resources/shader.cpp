@@ -154,7 +154,7 @@ bool Shader::is_text_shader() const {
 
 bool Shader::has_param(const StringName &p_param) const {
 
-	return params_cache.has(p_param);
+	return params_cache.has("shader_param/" + p_param);
 }
 
 void Shader::_update_shader() const {
@@ -178,7 +178,7 @@ void Shader::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("get_param_list"),&Shader::get_fragment_code);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "custom_defines", PROPERTY_HINT_MULTILINE_TEXT), "set_custom_defines", "get_custom_defines");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "custom_defines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_custom_defines", "get_custom_defines");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
 	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);

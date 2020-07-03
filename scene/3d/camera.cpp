@@ -333,8 +333,8 @@ Vector3 Camera::project_ray_origin(const Point2 &p_pos) const {
 bool Camera::is_position_behind(const Vector3 &p_pos) const {
 
 	Transform t = get_global_transform();
-	Vector3 eyedir = -get_global_transform().basis.get_axis(2).normalized();
-	return eyedir.dot(p_pos) < (eyedir.dot(t.origin) + near);
+	Vector3 eyedir = -t.basis.get_axis(2).normalized();
+	return eyedir.dot(p_pos - t.origin) < near;
 }
 
 Vector<Vector3> Camera::get_near_plane_points() const {
@@ -782,9 +782,9 @@ void ClippedCamera::_notification(int p_what) {
 		xf.origin = ray_from;
 		xf.orthonormalize();
 
-		float csafe, cunsafe;
-		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
-			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * csafe);
+		float closest_safe = 1.0f, closest_unsafe = 1.0f;
+		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, closest_safe, closest_unsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
+			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * closest_safe);
 		}
 
 		_update_camera();

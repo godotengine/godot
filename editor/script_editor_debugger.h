@@ -100,6 +100,7 @@ private:
 	ObjectID inspected_object_id;
 	ScriptEditorDebuggerVariables *variables;
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
+	Set<RES> remote_dependencies;
 	Set<ObjectID> unfold_cache;
 
 	VBoxContainer *errors_tab;

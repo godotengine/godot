@@ -416,8 +416,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
 				if (update_mode == Animation::UPDATE_CAPTURE) {
-
-					if (p_started) {
+					if (p_started || pa->capture == Variant()) {
 						pa->capture = pa->object->get_indexed(pa->subpath);
 					}
 

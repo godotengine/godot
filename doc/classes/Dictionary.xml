@@ -7,6 +7,7 @@
 		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as an hash map or associative array.
 		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
 		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
+		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		Creating a dictionary:
 		[codeblock]
 		var my_dir = {} # Creates an empty dictionary.
@@ -123,6 +124,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
+				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
+				[codeblock]
+				# Will evaluate to `true`.
+				if "godot" in {"godot": "engine"}:
+				    pass
+				[/codeblock]
+				This method (like the [code]in[/code] operator) will evaluate to [code]true[/code] as long as the key exists, even if the associated value is [code]null[/code].
 			</description>
 		</method>
 		<method name="has_all">
@@ -145,6 +153,7 @@
 				# The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
 				print(dict1.hash() == dict2.hash())
 				[/codeblock]
+				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
 		<method name="keys">

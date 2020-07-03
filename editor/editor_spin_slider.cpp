@@ -196,6 +196,7 @@ void EditorSpinSlider::_notification(int p_what) {
 			p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN ||
 			p_what == NOTIFICATION_EXIT_TREE) {
 		if (grabbing_spinner) {
+			grabber->hide();
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			grabbing_spinner = false;
 			grabbing_spinner_attempt = false;

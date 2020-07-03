@@ -48,6 +48,8 @@ class OS_JavaScript : public OS_Unix {
 	bool just_exited_fullscreen;
 	bool transparency_enabled;
 
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx;
+
 	InputDefault *input;
 	Ref<InputEventKey> deferred_key_event;
 	CursorShape cursor_shape;
@@ -59,9 +61,13 @@ class OS_JavaScript : public OS_Unix {
 	double last_click_ms;
 	int last_click_button_index;
 
+	int last_width;
+	int last_height;
+
 	MainLoop *main_loop;
 	int video_driver_index;
-	AudioDriverJavaScript audio_driver_javascript;
+	AudioDriverJavaScript *audio_driver_javascript;
+	VisualServer *visual_server;
 
 	bool idb_available;
 	int64_t sync_wait_time;
@@ -84,11 +90,11 @@ class OS_JavaScript : public OS_Unix {
 	static EM_BOOL gamepad_change_callback(int p_event_type, const EmscriptenGamepadEvent *p_event, void *p_user_data);
 	void process_joypads();
 
-	static void main_loop_callback();
-
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
 protected:
+	void resume_audio();
+
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
@@ -102,9 +108,14 @@ protected:
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 public:
+	String canvas_id;
+	void finalize_async();
+	bool check_size_force_redraw();
+
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
+	virtual void swap_buffers();
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
@@ -142,7 +153,6 @@ public:
 	virtual String get_clipboard() const;
 
 	virtual MainLoop *get_main_loop() const;
-	void run_async();
 	bool main_loop_iterate();
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
@@ -155,9 +165,12 @@ public:
 	String get_executable_path() const;
 	virtual Error shell_open(String p_uri);
 	virtual String get_name() const;
+	virtual void add_frame_delay(bool p_can_draw) {}
 	virtual bool can_draw() const;
 
-	virtual String get_resource_dir() const;
+	virtual String get_cache_path() const;
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
 	virtual String get_user_data_dir() const;
 
 	virtual OS::PowerState get_power_state();

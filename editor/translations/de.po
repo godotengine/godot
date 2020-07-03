@@ -49,12 +49,15 @@
 # Draco Drache <jan.holger.te@gmail.com>, 2019.
 # Jonas <dotchucknorris@gmx.de>, 2019.
 # PagDev <pag.develop@gmail.com>, 2020.
+# artism90 <artism90@googlemail.com>, 2020.
+# Jaigskim <filzstift112@gmail.com>, 2020.
+# Jacqueline Ulken <Jacqueline.Ulken@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-04 15:11+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -62,17 +65,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"Ungültiger Argument-Typ in convert()-Aufruf, TYPE_*-Konstanten benötigt."
+msgstr "Ungültiger Argument-Typ in convert(), TYPE_*-Konstanten benötigt."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Zeichenkette der Länge 1 erwartet (ein Zeichen)."
+msgstr "Zeichenkette der Länge 1 erwartet (exakt ein Symbol)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -95,7 +97,7 @@ msgstr "Ungültige Operanden für Operator %s, %s und %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Ungültiger Index des Typs ‚%s‘ für Grundtyp %s"
+msgstr "Ungültiger Index des Typs %s für Grundtyp %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
@@ -435,7 +437,7 @@ msgstr "Spuren neu anordnen"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "Transformationsspuren gelten nur für Nodes die auf Spatial basieren."
+msgstr "Transformationsspuren gelten nur für Nodes, die auf Spatial basieren."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -538,11 +540,11 @@ msgstr ""
 "Diese Animation gehört zu einer importierten Szene, Änderungen an "
 "importierten Spuren werden nicht gespeichert.\n"
 "\n"
-"Um neue Spuren hinzufügen zu können muss unter den Importeinstellungen\n"
+"Um neue Spuren hinzufügen zu können muss unter den Importeinstellungen der "
+"Szene\n"
 "„Animation > Storage“ zu „Files“ gesetzt und „Animation > Keep Custom "
-"Tracks“ aktiviert werden.\n"
-"Danach ist die Szene erneut zu importieren.\n"
-"Alternativ kann eine Importeinstllung benutzt werden welche Animationen in "
+"Tracks“ aktiviert werden, danach ist die Szene erneut zu importieren.\n"
+"Alternativ kann eine Importeinstellung benutzt werden, welche Animationen in "
 "separate Dateien importiert."
 
 #: editor/animation_track_editor.cpp
@@ -552,7 +554,7 @@ msgstr "Achtung: Es wird eine importierte Animation bearbeitet"
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
-"Ein AnimationPlayer-Node auswählen um Animationen zu erzeugen oder zu "
+"Ein AnimationPlayer-Node auswählen, um Animationen zu erzeugen oder zu "
 "bearbeiten."
 
 #: editor/animation_track_editor.cpp
@@ -804,6 +806,10 @@ msgid "Method in target node must be specified."
 msgstr "Methode des Ziel-Nodes muss angegeben werden."
 
 #: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr "Methodenname muss ein gültiger Bezeichner sein."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -887,7 +893,6 @@ msgstr "Signal kann nicht verbunden werden"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1502,17 +1507,9 @@ msgstr "Aktivieren"
 msgid "Rearrange Autoloads"
 msgstr "Autoloads neu anordnen"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Ungültiger Pfad."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Datei existiert nicht."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Nicht im Ressourcen-Pfad."
+msgid "Can't add autoload:"
+msgstr "Autoload konnte nicht hinzugefügt werden:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1629,8 +1626,9 @@ msgid ""
 "Enabled'."
 msgstr ""
 "Die Zielplattform benötigt ‚ETC‘-Texturkompression für den Treiber-Fallback "
-"auf GLES2. Bitte ‚Import Etc‘ in den Projekteinstellungen aktivieren oder "
-"‚Driver Fallback Enabled‘ ausschalten."
+"auf GLES2. \n"
+"Bitte ‚Import Etc‘ in den Projekteinstellungen aktivieren oder ‚Driver "
+"Fallback Enabled‘ ausschalten."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2015,7 +2013,7 @@ msgstr "Methoden"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "Motiv-Eigenschaften"
+msgstr "Theme-Eigenschaften"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2092,11 +2090,11 @@ msgstr "Nur Eigenschaften"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Properties Only"
-msgstr "Nur Motiv-Eigenschaften"
+msgstr "Nur Theme-Eigenschaften"
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
-msgstr "Mitgliedstyp"
+msgstr "Attribut-Typ"
 
 #: editor/editor_help_search.cpp
 msgid "Class"
@@ -2112,7 +2110,7 @@ msgstr "Signal"
 
 #: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr "Konstant"
+msgstr "Konstante"
 
 #: editor/editor_help_search.cpp
 msgid "Property"
@@ -2120,7 +2118,7 @@ msgstr "Eigenschaft"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Property"
-msgstr "Motiv-Eigenschaft"
+msgstr "Theme-Eigenschaft"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2128,11 +2126,11 @@ msgstr "Eigenschaft:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
-msgstr "Setze"
+msgstr "Festlegen"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr "Mehrfach einstellen:"
+msgstr "Mehrfach festlegen:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2159,7 +2157,7 @@ msgstr "Ausgabe löschen"
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
 msgid "Stop"
-msgstr "Stop"
+msgstr "Stopp"
 
 #: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
 #: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
@@ -2172,7 +2170,7 @@ msgstr "%s/s"
 
 #: editor/editor_network_profiler.cpp
 msgid "Down"
-msgstr "Herunter"
+msgstr "Runter"
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
@@ -2213,7 +2211,7 @@ msgstr "OK"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr "Fehler beim speichern der Ressource!"
+msgstr "Fehler beim Speichern der Ressource!"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2229,7 +2227,7 @@ msgstr "Speichere Ressource als..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr "Datei kann nicht zum schreiben geöffnet werden:"
+msgstr "Datei kann nicht zum Schreiben geöffnet werden:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
@@ -2237,13 +2235,13 @@ msgstr "Angefordertes Dateiformat unbekannt:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr "Fehler beim speichern."
+msgstr "Fehler beim Speichern."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 "Datei ‚%s‘ kann nicht geöffnet werden. Die Datei könnte verschoben oder "
-"gelöscht sein."
+"gelöscht worden sein."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -2282,8 +2280,8 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
-"Diese Szene kann nicht gespeichert werden da sie eine zyklische "
-"Instantiierungshierarchie enthält.\n"
+"Diese Szene kann nicht gespeichert werden, da sie eine zyklische "
+"Instanziierungshierarchie enthält.\n"
 "Speichern ist erst nach Beheben des Konflikts möglich."
 
 #: editor/editor_node.cpp
@@ -2300,23 +2298,23 @@ msgstr "Momentan geöffnete Szenen können nicht überschrieben werden!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "MeshLibrary konnte nicht zum vereinen geladen werden!"
+msgstr "MeshLibrary konnte nicht zum Vereinen geladen werden!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr "Fehler beim speichern der MeshLibrary!"
+msgstr "Fehler beim Speichern der MeshLibrary!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr "TileSet konnte nicht zum vereinen geladen werden!"
+msgstr "TileSet konnte nicht zum Vereinen geladen werden!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr "Fehler beim speichern des TileSet!"
+msgstr "Fehler beim Speichern des TileSet!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr "Fehler beim speichern des Layouts!"
+msgstr "Fehler beim Speichern des Layouts!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
@@ -2324,7 +2322,7 @@ msgstr "Standard-Editorlayout überschrieben."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr "Layout Name nicht gefunden!"
+msgstr "Layout-Name nicht gefunden!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
@@ -2345,7 +2343,7 @@ msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
 msgstr ""
-"Diese Ressource gehört zu einer instantiierten oder geerbten Szene.\n"
+"Diese Ressource gehört zu einer instanziierten oder geerbten Szene.\n"
 "Änderungen an der Ressource werden beim Speichern der aktuellen Szene nicht "
 "mitgespeichert."
 
@@ -2366,7 +2364,7 @@ msgid ""
 "understand this workflow."
 msgstr ""
 "Diese Szene wurde importiert, Änderungen an ihr werden nicht gespeichert.\n"
-"Instantiierung oder Vererbung sind nötig um Änderungen vorzunehmen.\n"
+"Instanziierung oder Vererbung ist nötig, um Änderungen vorzunehmen.\n"
 "Die Dokumentation zum Szenenimport beschreibt den nötigen Arbeitsablauf."
 
 #: editor/editor_node.cpp
@@ -2375,18 +2373,19 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"Dies ist ein Fern-Objekt, Änderungen an ihm werden nicht gespeichert.\n"
+"Dies ist ein nicht-lokales Objekt, Änderungen an ihm werden nicht "
+"gespeichert.\n"
 "Die Dokumentation zum Debugging beschreibt den nötigen Arbeitsablauf."
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr "Es ist keine zu startende Szene definiert."
+msgstr "Es ist keine abzuspielende Szene definiert."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
 msgstr ""
-"Die aktuelle Szene wurde noch nicht gespeichert, bitte speichere sie vor dem "
-"Starten."
+"Die aktuelle Szene wurde noch nicht gespeichert, bitte vor dem Abspielen "
+"sichern."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2474,13 +2473,17 @@ msgstr ""
 "Szene kann nicht neu geladen werden, wenn sie vorher nicht gespeichert wurde."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Zurücksetzen"
+msgid "Reload Saved Scene"
+msgstr "Gespeicherte Szene neu laden"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"Diese Aktion kann nicht rückgängig gemacht werden. Trotzdem zurücksetzen?"
+"Die aktuelle Szene enthält ungesicherte Änderungen.\n"
+"Soll die Szene trotzdem neu geladen werden? Diese Aktion kann nicht "
+"rückgängig gemacht werden."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2612,9 +2615,10 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Die ausgewählte Szene ‚%s‘ existiert nicht.\n"
-"Wähle eine gültige Szene in den Projekteinstellungen unter der Kategorie "
-"„Anwendung“."
+"Die ausgewählte Szene ‚%s‘ existiert nicht, soll eine gültige ausgewählt "
+"werden?\n"
+"Dies kann später in den Projekteinstellungen unter der Kategorie ‚Anwendung‘ "
+"geändert werden."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2622,9 +2626,10 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Die ausgewählte Szene ‚%s‘ ist keine gültige Datei für eine Szene.\n"
-"Wähle eine gültige Szene in den Projekteinstellungen unter der Kategorie "
-"„Anwendung“."
+"Die ausgewählte Szene ‚%s‘ ist keine gültige Datei für eine Szene, soll eine "
+"andere ausgewählt werden?\n"
+"Dies kann später in den Projekteinstellungen unter der Kategorie ‚Anwendung‘ "
+"geändert werden."
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -2773,10 +2778,6 @@ msgstr "Rückgängig machen"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Wiederherstellen"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Szene zurücksetzen"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3428,6 +3429,12 @@ msgstr "Skript konnte nicht ausgeführt werden:"
 msgid "Did you forget the '_run' method?"
 msgstr "Hast du die '_run' Methode vergessen?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Strg-Taste halten um auf Ganzzahlen zu runden. Umschalt-Taste halten für "
+"präzisere Änderungen."
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Selektiere Node(s) für den Import"
@@ -3939,7 +3946,7 @@ msgstr "Nodes filtern"
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
-msgstr "Nodes in der Gruppe"
+msgstr "Nodes in Gruppe"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
@@ -4025,6 +4032,12 @@ msgstr "Ungültiges oder fehlerhaftes Skript für Post-Import (siehe Konsole):"
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Fehler beim ausführen des Post-Import Skripts:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+"Wurde ein von Node abstammendes Objekt in der ‚post_import()‘-Methode "
+"zurückgegeben?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -4581,7 +4594,7 @@ msgstr "Spiele ausgewählte Animation vom Start. (Umschalt+D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr "Ausgewählte Animation von aktueller Position aus abspielen. (D)"
+msgstr "Spiele ausgewählte Animation von aktueller Position. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
@@ -4621,7 +4634,7 @@ msgstr "Zwiebelhaut aktivieren"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning Options"
-msgstr "Zwiebelhaut-Einstellugen"
+msgstr "Zwiebelhaut-Einstellungen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -5268,8 +5281,8 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Wenn aktiviert ändert das Verschieben von Control-Nodes ihre Anker anstatt "
-"ihre Ausmaße."
+"Wenn aktiviert, ändert das Verschieben von Control-Nodes deren Bezugspunkte "
+"statt ihre Randabstände."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
@@ -5624,7 +5637,7 @@ msgstr "Zeige Ansichtsfenster (Viewport)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr "Gruppe zeigen und Icons sperren"
+msgstr "Gruppen und Symbole anzeigen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -6769,11 +6782,11 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr "Motiv importieren"
+msgstr "Theme importieren"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
-msgstr "Fehler beim Speichern des Motivs"
+msgstr "Fehler beim Speichern des Themes"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving"
@@ -6781,7 +6794,7 @@ msgstr "Fehler beim Speichern"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
-msgstr "Motiv speichern als..."
+msgstr "Theme speichern als..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
@@ -6868,7 +6881,7 @@ msgstr "Vorwärts im Verlauf"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
-msgstr "Motiv"
+msgstr "Theme"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
@@ -6876,11 +6889,11 @@ msgstr "Thema importieren..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr "Motiv neu laden"
+msgstr "Theme neu laden"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr "Motiv speichern"
+msgstr "Theme speichern"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
@@ -6988,12 +7001,12 @@ msgstr ""
 "Fehlende verbundene Methode ‚%s‘ für Signal ‚%s‘ von Node ‚%s‘ zu Node ‚%s‘."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Zeile"
+msgid "[Ignore]"
+msgstr "[Ignorieren]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(ignorieren)"
+msgid "Line"
+msgstr "Zeile"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7469,6 +7482,21 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Transformationsdialog"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"Klicken um zwischen Sichtbarkeitsmodi umzuschalten.\n"
+"\n"
+"Offenes Auge: Griffe sind sichtbar.\n"
+"Geschlossenes Auge: Griffe sind unsichtbar.\n"
+"Halb offenes Auge: Griffe sind auch durch deckende Oberflächen sichtbar "
+"(\"Röntgenblick\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7961,7 +7989,7 @@ msgstr "Aus derzeitigem Editor-Thema erstellen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Toggle Button"
-msgstr "Knopf umschalten"
+msgstr "Umschaltknopf"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled Button"
@@ -8066,7 +8094,7 @@ msgstr "Farbe"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
-msgstr "Motiv-Datei"
+msgstr "Theme-Datei"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8196,7 +8224,7 @@ msgstr "Nächste Koordinate"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr "Die nächste Form oder Kachel auswählen."
+msgstr "Die nächste Form oder (Unter-)Kachel auswählen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Previous Coordinate"
@@ -8204,7 +8232,7 @@ msgstr "Vorherige Koordinate"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr "Die vorherige Form oder Kachel auswählen."
+msgstr "Die vorherige Form oder (Unter-)Kachel auswählen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Region"
@@ -8244,7 +8272,7 @@ msgstr "Kollisionsmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occlusion Mode"
-msgstr "Verschlussmodus"
+msgstr "Verdeckungsmodus"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation Mode"
@@ -9317,7 +9345,7 @@ msgid ""
 msgstr ""
 "Stufenfunktion ( Vektor(Kante), Vektor(x) ).\n"
 "\n"
-"Gibt 0.0 zurück falls ‚x‘ kleiner als ‚Kante‘, ansonsten  1.0."
+"Gibt 0.0 zurück falls ‚x‘ kleiner als ‚Kante‘, ansonsten 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10575,8 +10603,8 @@ msgid "Instance Child Scene"
 msgstr "Szene hier instantiieren"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Skript leeren"
+msgid "Detach Script"
+msgstr "Skript loslösen"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10742,6 +10770,15 @@ msgid "Open Documentation"
 msgstr "Dokumentation öffnen"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"Skript konnte nicht angehängt werden: Keine Sprachen registriert.\n"
+"Vermutliche Ursache ist dass der Editor ohne Sprachmodulen gebaut wurde."
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Node hier anhängen"
 
@@ -10790,12 +10827,12 @@ msgstr ""
 "kein Root-Node existiert."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
-msgstr "Ein neues oder existierendes Skript zum ausgewählten Node hinzufügen."
+msgid "Attach a new or existing script to the selected node."
+msgstr "Ein neues oder existierendes Skript dem ausgewählten Node anhängen."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "Entferne Skript von ausgewähltem Node."
+msgid "Detach the script from the selected node."
+msgstr "Skript vom ausgewählten Node loslösen."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10850,12 +10887,12 @@ msgid ""
 "Node is in %s group(s).\n"
 "Click to show groups dock."
 msgstr ""
-"Node ist %s Gruppe(n).\n"
+"Node gehört zu %s Gruppe(n).\n"
 "Hier klicken zur Gruppenverwaltung."
 
 #: editor/scene_tree_editor.cpp
 msgid "Open Script:"
-msgstr "Offenes Skript:"
+msgstr "Skript öffnen:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -10927,6 +10964,10 @@ msgid "A directory with the same name exists."
 msgstr "Ein Verzeichnis mit gleichem Namen existiert bereits."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Datei existiert nicht."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Ungültige Dateiendung."
 
@@ -10965,6 +11006,10 @@ msgstr "Skript öffnen"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "Datei existiert bereits, wird erneut verwendet."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Ungültiger Pfad."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11986,7 +12031,7 @@ msgstr "Paketsegmente dürfen keine Länge gleich Null haben."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr "Das Zeichen ‚%s‘ ist in Android-Anwendungs-Paketnamen nicht gestattet."
+msgstr "Das Zeichen ‚%s‘ ist in Android-Anwendungspaketnamen nicht gestattet."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
@@ -12020,6 +12065,11 @@ msgstr ""
 "konfiguriert."
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Release-Keystore wurde nicht korrekt konfiguriert in den Exporteinstellungen."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "Eigene Builds erfordern gültigen Android-SDK-Pfad in den Editoreinstellungen."
@@ -12044,6 +12094,41 @@ msgstr "Ungültiger öffentlicher Schlüssel für APK-Erweiterung."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Ungültiger Paketname:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+"Ungültiges „GodotPaymentV3“-Modul eingebunden in den „android/modules“-"
+"Projekteinstellungen (wurde in Godot 3.2.2 geändert).\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+"„Use Custom Build“ muss aktiviert werden um die Plugins nutzen zu können."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+"„Degrees Of Freedom“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VR“ "
+"gesetzt wurde."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"„Hand Tracking“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VR“ "
+"gesetzt wurde."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"„Focus Awareness“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VR“ "
+"gesetzt wurde."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12229,7 +12314,7 @@ msgid ""
 msgstr ""
 "CollisionPolygon2D liefert nur eine Kollisionsform für ein von "
 "CollisionObject2D abgeleitetes Node. Es kann nur als Unterobjekt von Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D usw. eingehängt werden um diesen "
+"StaticBody2D, RigidBody2D, KinematicBody2D usw. eingehängt werden, um diesen "
 "eine Form zu geben."
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -12244,7 +12329,7 @@ msgid ""
 msgstr ""
 "CollisionShape2D liefert nur eine Kollisionsform für ein von "
 "CollisionObject2D abgeleitetes Node. Es kann nur als Unterobjekt von Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D usw. eingehängt werden um diesen "
+"StaticBody2D, RigidBody2D, KinematicBody2D usw. eingehängt werden, um diesen "
 "eine Form zu geben."
 
 #: scene/2d/collision_shape_2d.cpp
@@ -12298,9 +12383,9 @@ msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"Eine NavigationPolygon-Instanz muss ein Unterobjekt erster oder zweiter "
-"Ordnung unterhalb eines Navigation2D-Node sein. Sie liefert nur "
-"Navigationsdaten."
+"NavigationPolygonInstance muss ein Unterobjekt erster oder zweiter Ordnung "
+"unterhalb eines Navigation2D-Node sein. Es liefert nur "
+"Navigationsinformationen."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
@@ -12381,10 +12466,10 @@ msgid ""
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"Ein TileMap mit aktivierter „Use Parent“-Option benötigt ein "
-"CollisionObject2D-Elternnode dem es Form verleiht. Das TileMap sollte als "
-"als Unterobjekt von Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, usw. "
-"verwendet werden um ihnen eine Form zu geben."
+"Eine TileMap mit aktivierter „Use Parent“-Option benötigt ein Eltern-Node "
+"des Typs CollisionObject2D, welcher der TileMap eine Form verleiht. Sie "
+"sollte als Unterobjekt von Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, usw. verwendet werden, um ihnen eine Form zu geben."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -12469,7 +12554,8 @@ msgid ""
 msgstr ""
 "CollisionPolygon liefert nur eine Kollisionsform für ein von CollisionObject "
 "abgeleitetes Node. Es kann nur als Unterobjekt von Area, StaticBody, "
-"RigidBody, KinematicBody usw. eingehängt werden um diesen eine Form zu geben."
+"RigidBody, KinematicBody usw. eingehängt werden, um diesen eine Form zu "
+"verleihen."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -12483,7 +12569,8 @@ msgid ""
 msgstr ""
 "CollisionShape liefert nur eine Kollisionsform für ein von CollisionObject "
 "abgeleitetes Node. Es kann nur als Unterobjekt von Area, StaticBody, "
-"RigidBody, KinematicBody usw. eingehängt werden um diesen eine Form zu geben."
+"RigidBody, KinematicBody usw. eingehängt werden, um diesen eine Form zu "
+"geben."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12547,8 +12634,8 @@ msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
-"Eine NavigationMesh-Instanz muss ein Unterobjekt erster oder höherer Ordnung "
-"eines Navigation-Nodes sein. Es liefert nur Navigationsdaten."
+"NavigationMeshInstance muss ein Unterobjekt erster oder zweiter Ordnung "
+"eines Navigation-Nodes sein. Es liefert nur Navigationsinformationen."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12851,6 +12938,22 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Nicht im Ressourcen-Pfad."
+
+#~ msgid "Revert"
+#~ msgstr "Zurücksetzen"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr ""
+#~ "Diese Aktion kann nicht rückgängig gemacht werden. Trotzdem zurücksetzen?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Szene zurücksetzen"
+
+#~ msgid "Clear Script"
+#~ msgstr "Skript leeren"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Problem-Melder"

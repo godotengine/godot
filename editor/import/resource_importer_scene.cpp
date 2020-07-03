@@ -974,9 +974,9 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 				if (!p_animations.has(anim)) {
 
-					//mark what comes from the file first, this helps eventually keep user data
+					// We are making external files so they are modifiable
 					for (int i = 0; i < anim->get_track_count(); i++) {
-						anim->track_set_imported(i, true);
+						anim->track_set_imported(i, false);
 					}
 
 					String ext_name;
@@ -1490,7 +1490,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		post_import_script->init(base_path, p_source_file);
 		scene = post_import_script->post_import(scene);
 		if (!scene) {
-			EditorNode::add_io_error(TTR("Error running post-import script:") + " " + post_import_script_path);
+			EditorNode::add_io_error(
+					TTR("Error running post-import script:") + " " + post_import_script_path + "\n" +
+					TTR("Did you return a Node-derived object in the `post_import()` method?"));
 			return err;
 		}
 	}

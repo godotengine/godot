@@ -4,7 +4,7 @@
 		Provides a base class for different kinds of light nodes.
 	</brief_description>
 	<description>
-		Light is the abstract base class for light nodes, so it shouldn't be used directly (it can't be instanced). Other types of light nodes inherit from it. Light contains the common variables and parameters used for lighting.
+		Light is the [i]abstract[/i] base class for light nodes. As it can't be instanced, it shouldn't be used directly. Other types of light nodes inherit from it. Light contains the common variables and parameters used for lighting.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
@@ -39,13 +39,13 @@
 			The light's bake mode. See [enum BakeMode].
 		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
-			The light's color.
+			The light's color. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
 		</member>
 		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
 			The light will affect objects in the selected layers.
 		</member>
 		<member name="light_energy" type="float" setter="set_param" getter="get_param" default="1.0">
-			The light's strength multiplier.
+			The light's strength multiplier (this is not a physical unit). For [OmniLight] and [SpotLight], changing this value will only change the light color's intensity, not the light's radius.
 		</member>
 		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
 			Secondary multiplier used with indirect light (light bounces). This works on both [BakedLightmap] and [GIProbe].
@@ -54,10 +54,10 @@
 			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
 		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
-			The intensity of the specular blob in objects affected by the light. At [code]0[/code] the light becomes a pure diffuse light.
+			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
 		</member>
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" default="0.15">
-			Used to adjust shadow appearance. Too small a value results in self-shadowing, while too large a value causes shadows to separate from casters. Adjust as needed.
+			Used to adjust shadow appearance. Too small a value results in self-shadowing ("shadow acne"), while too large a value causes shadows to separate from casters ("peter-panning"). Adjust as needed.
 		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color( 0, 0, 0, 1 )">
 			The color of shadows cast by this light.

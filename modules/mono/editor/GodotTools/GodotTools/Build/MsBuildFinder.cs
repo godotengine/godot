@@ -17,16 +17,24 @@ namespace GodotTools.Build
         private static string _msbuildToolsPath = string.Empty;
         private static string _msbuildUnixPath = string.Empty;
 
-        public static string FindMsBuild()
+        public static (string, BuildTool) FindMsBuild()
         {
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var buildTool = (BuildManager.BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
+            var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
 
             if (OS.IsWindows)
             {
                 switch (buildTool)
                 {
-                    case BuildManager.BuildTool.MsBuildVs:
+                    case BuildTool.DotnetCli:
+                    {
+                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        if (!string.IsNullOrEmpty(dotnetCliPath))
+                            return (dotnetCliPath, BuildTool.DotnetCli);
+                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Visual Studio.");
+                        goto case BuildTool.MsBuildVs;
+                    }
+                    case BuildTool.MsBuildVs:
                     {
                         if (_msbuildToolsPath.Empty() || !File.Exists(_msbuildToolsPath))
                         {
@@ -35,32 +43,41 @@ namespace GodotTools.Build
 
                             if (_msbuildToolsPath.Empty())
                             {
-                                throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMsbuildVs}'.");
+                                throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildVs}'.");
                             }
                         }
 
                         if (!_msbuildToolsPath.EndsWith("\\"))
                             _msbuildToolsPath += "\\";
 
-                        return Path.Combine(_msbuildToolsPath, "MSBuild.exe");
+                        return (Path.Combine(_msbuildToolsPath, "MSBuild.exe"), BuildTool.MsBuildVs);
                     }
-                    case BuildManager.BuildTool.MsBuildMono:
+                    case BuildTool.MsBuildMono:
                     {
                         string msbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "msbuild.bat");
 
                         if (!File.Exists(msbuildPath))
                         {
-                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMsbuildMono}'. Tried with path: {msbuildPath}");
+                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildMono}'. Tried with path: {msbuildPath}");
                         }
 
-                        return msbuildPath;
+                        return (msbuildPath, BuildTool.MsBuildMono);
                     }
-                    case BuildManager.BuildTool.JetBrainsMsBuild:
+                    case BuildTool.JetBrainsMsBuild:
+                    {
                         var editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
                         if (!File.Exists(editorPath))
                             throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
-                        var riderDir = new FileInfo(editorPath).Directory.Parent;
-                        return Path.Combine(riderDir.FullName, @"tools\MSBuild\Current\Bin\MSBuild.exe");
+
+                        var riderDir = new FileInfo(editorPath).Directory?.Parent;
+
+                        string msbuildPath = Path.Combine(riderDir.FullName, @"tools\MSBuild\Current\Bin\MSBuild.exe");
+
+                        if (!File.Exists(msbuildPath))
+                            throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildJetBrains}'. Tried with path: {msbuildPath}");
+
+                        return (msbuildPath, BuildTool.JetBrainsMsBuild);
+                    }
                     default:
                         throw new IndexOutOfRangeException("Invalid build tool in editor settings");
                 }
@@ -68,24 +85,31 @@ namespace GodotTools.Build
 
             if (OS.IsUnixLike())
             {
-                if (buildTool == BuildManager.BuildTool.MsBuildMono)
+                switch (buildTool)
                 {
-                    if (_msbuildUnixPath.Empty() || !File.Exists(_msbuildUnixPath))
+                    case BuildTool.DotnetCli:
                     {
-                        // Try to search it again if it wasn't found last time or if it was removed from its location
-                        _msbuildUnixPath = FindBuildEngineOnUnix("msbuild");
+                        string dotnetCliPath = OS.PathWhich("dotnet");
+                        if (!string.IsNullOrEmpty(dotnetCliPath))
+                            return (dotnetCliPath, BuildTool.DotnetCli);
+                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Mono.");
+                        goto case BuildTool.MsBuildMono;
                     }
-
-                    if (_msbuildUnixPath.Empty())
+                    case BuildTool.MsBuildMono:
                     {
-                        throw new FileNotFoundException($"Cannot find binary for '{BuildManager.PropNameMsbuildMono}'");
-                    }
+                        if (string.IsNullOrEmpty(_msbuildUnixPath) || !File.Exists(_msbuildUnixPath))
+                        {
+                            // Try to search it again if it wasn't found last time or if it was removed from its location
+                            _msbuildUnixPath = FindBuildEngineOnUnix("msbuild");
+                        }
 
-                    return _msbuildUnixPath;
-                }
-                else
-                {
-                    throw new IndexOutOfRangeException("Invalid build tool in editor settings");
+                        if (string.IsNullOrEmpty(_msbuildUnixPath))
+                            throw new FileNotFoundException($"Cannot find binary for '{BuildManager.PropNameMSBuildMono}'");
+
+                        return (_msbuildUnixPath, BuildTool.MsBuildMono);
+                    }
+                    default:
+                        throw new IndexOutOfRangeException("Invalid build tool in editor settings");
                 }
             }
 

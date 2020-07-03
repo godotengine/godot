@@ -41,7 +41,25 @@
 			<return type="void">
 			</return>
 			<description>
-				Erases the [LineEdit] text.
+				Erases the [LineEdit]'s [member text].
+			</description>
+		</method>
+		<method name="delete_char_at_cursor">
+			<return type="void">
+			</return>
+			<description>
+				Deletes one character at the cursor's current position (equivalent to pressing the [code]Delete[/code] key).
+			</description>
+		</method>
+		<method name="delete_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_column" type="int">
+			</argument>
+			<argument index="1" name="to_column" type="int">
+			</argument>
+			<description>
+				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
 			</description>
 		</method>
 		<method name="deselect">

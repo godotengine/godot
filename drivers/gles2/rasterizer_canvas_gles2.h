@@ -113,6 +113,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		RID RID_normal;
 		TileMode tile_mode;
 		BatchVector2 tex_pixel_size;
+		uint32_t flags;
 	};
 
 	// items in a list to be sorted prior to joining
@@ -135,7 +136,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 		// note the z_index  may only be correct for the first of the joined item references
 		// this has implications for light culling with z ranged lights.
-		int z_index;
+		int16_t z_index;
+
+		// these are defined in RasterizerStorageGLES2::Shader::CanvasItem::BatchFlags
+		uint16_t flags;
 
 		// we are always splitting items with lots of commands,
 		// and items with unhandled primitives (default)
@@ -200,9 +204,12 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		// to alternate batching method and add color to the vertex format.
 		int total_color_changes;
 
-		// if the shader is using MODULATE, we prevent baking so the final_modulate can
-		// be read in the shader
-		bool prevent_color_baking;
+		// if the shader is using MODULATE, we prevent baking color so the final_modulate can
+		// be read in the shader.
+		// if the shader is reading VERTEX, we prevent baking vertex positions with extra matrices etc
+		// to prevent the read position being incorrect.
+		// These flags are defined in RasterizerStorageGLES2::Shader::CanvasItem::BatchFlags
+		uint32_t joined_item_batch_flags;
 
 		// measured in pixels, recalculated each frame
 		float scissor_threshold_area;
@@ -230,6 +237,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		int settings_item_reordering_lookahead;
 		bool settings_use_single_rect_fallback;
 		int settings_light_max_join_items;
+
+		// uv contraction
+		bool settings_uv_contract;
+		float settings_uv_contract_amount;
 
 		// only done on diagnose frame
 		void reset_stats() {
@@ -272,10 +283,12 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 			curr_batch = 0;
 			batch_tex_id = -1;
 			texpixel_size = Vector2(1, 1);
+			contract_uvs = false;
 		}
 		Batch *curr_batch;
 		int batch_tex_id;
 		bool use_hardware_transform;
+		bool contract_uvs;
 		Vector2 texpixel_size;
 		Color final_modulate;
 		TransformMode transform_mode;

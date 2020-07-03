@@ -12,12 +12,14 @@
 # MordechaiHadad <Mordechai.hadad01@gmail.com>, 2019.
 # Daniel <danielharush5252@gmail.com>, 2020.
 # test test <ugbdvwpeikvyzwaadt@awdrt.org>, 2020.
+# Anonymous <noreply@weblate.org>, 2020.
+# Daniel Kariv <danielkariv98@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-05 14:01+0000\n"
-"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"PO-Revision-Date: 2020-05-07 21:28+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -49,7 +51,7 @@ msgstr "קלט שגוי %I (לא הועבר) בתוך הביטוי"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "לא ניתן להשתמש ב־self כיוון שהמופע הוא אפס (null - לא הועבר)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -60,51 +62,48 @@ msgid "Invalid index of type %s for base type %s"
 msgstr "שם מאפיין האינדקס מסוג %s עבור בסיס %s שגוי"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid named index '%s' for base type %s"
 msgstr "שם אינדקס לא תקין '%s' לסוג בסיס '%s'"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": ארגומנט שגוי מסוג: "
+msgstr "פרמטרים שגויים לבניית 's%'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "בקריאה ל־‚%s’:"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "ב׳"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Free"
-msgstr "חינם"
+msgstr "חופשי"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -143,62 +142,52 @@ msgid "Move Bezier Points"
 msgstr "הזזת נקודות בזייה"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Duplicate Keys"
 msgstr "שכפול מפתחות הנפשה"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Delete Keys"
 msgstr "מחיקת מפתחות הנפשה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
 msgstr "שינוי זמן פריים-מפתח אנימציה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "שינוי מיקום אנימציה"
+msgstr "החלפת הנפשת אפקט החלפה"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "שינוי מיקום אנימציה"
+msgstr "החלפת הנפשת אפקט שינוי צורה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "שינוי ערך קיפריים אנימציה"
+msgstr "שינוי ערך פריים-מפתח אנימציה"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "שינוי קריאת אנימציה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "שינוי זמן פריים-מפתח אנימציה"
+msgstr "שינוי זמן פריים-מפתח אנימציה רבים"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "שינוי מיקום אנימציה"
+msgstr "שינוי מיקומי אנימציה רבים"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "שינוי מיקום אנימציה"
+msgstr "שינוי מיקומי אנימציה רבים"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "שינוי ערך קיפריים אנימציה"
+msgstr "שינוי ערכי פריים-מפתח אנימציה רבים"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "שינוי מיקום אנימציה"
+msgstr "שינוי מיקומים אנימציה רבים"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -206,16 +195,14 @@ msgstr "שנה אורך אנימציה"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Change Animation Loop"
-msgstr "שינוי לופ אנימציה"
+msgstr "שינוי לולאת אנימציה"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
 msgstr "רצועת מאפיין"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
 msgstr "רצועת שינוי 3D"
 
@@ -229,12 +216,10 @@ msgid "Bezier Curve Track"
 msgstr "רצועת עקום בזייה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Playback Track"
 msgstr "רצועת שמע"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
 msgstr "רצועת הנפשה"
 
@@ -243,7 +228,6 @@ msgid "Animation length (frames)"
 msgstr "משך ההנפשה (פריימים)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
 msgstr "משך ההנפשה (שניות)"
 
@@ -252,7 +236,6 @@ msgid "Add Track"
 msgstr "הוספת רצועה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
 msgstr "לולאת הנפשה"
 
@@ -262,19 +245,16 @@ msgid "Functions:"
 msgstr "פונקציות:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Clips:"
-msgstr "מאזין לשמע"
+msgstr "רצועות שמע:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Clips:"
 msgstr "קטעי הנפשה:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "החלפת ערך רצועה"
+msgstr "החלפת נתיב רצועה"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -286,7 +266,7 @@ msgstr "עדכן מצב (איך המאפיין הזה נקבע)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr ""
+msgstr "מצב אינתרפולציה"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -310,11 +290,11 @@ msgstr "מתמשך"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "בדיד"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "הדק/מפעיל"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -435,14 +415,18 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"רצועת אודיו יכולה להצביע על חוליות מסוג:\n"
+"- AudioStreamPlayer\n"
+"- AudioStreamPlayer2D\n"
+"- AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "רצועות הנפשה יכולות להצביע רק על איברי AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "נגן הנפשה אינו יכול להנפיש את עצמו, רק שחקנים אחרים."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -758,7 +742,7 @@ msgstr "בחירה בלבד"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "רגיל"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
@@ -790,6 +774,10 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
+msgstr ""
+
+#: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
 msgstr ""
 
 #: editor/connections_dialog.cpp
@@ -877,7 +865,6 @@ msgstr "שגיאת חיבור"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1497,18 +1484,9 @@ msgstr "הפעלה"
 msgid "Rearrange Autoloads"
 msgstr "סידור טעינות אוטומטית מחדש"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "נתיב שגוי."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "הקובץ לא קיים."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "לא בנתיב המשאב."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2493,12 +2471,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "לא ניתן לרענן סצנה שמעולם לא נשמרה."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "שחזור"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "שמירת סצנה"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "לא ניתן לבטל פעולה זו. לשחזר בכל זאת?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2771,10 +2752,6 @@ msgstr "ביטול"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "ביצוע חוזר"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "שחזור סצנה"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3413,6 +3390,10 @@ msgstr "לא ניתן להריץ את הסקריפט:"
 msgid "Did you forget the '_run' method?"
 msgstr "שכחת את השיטה ‚‎_run’?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "נא לבחור מפרקים לייצוא"
@@ -4037,6 +4018,10 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
@@ -7071,13 +7056,13 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "שורה:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7570,6 +7555,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10651,8 +10645,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "יצירת סקריפט"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10819,6 +10814,13 @@ msgid "Open Documentation"
 msgstr "פתיחת התיעוד המקוון של Godot"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10869,11 +10871,11 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -11003,6 +11005,10 @@ msgid "A directory with the same name exists."
 msgstr "כבר קיימים קובץ או תיקייה בשם הזה."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "הקובץ לא קיים."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "יש להשתמש בסיומת תקנית."
@@ -11044,6 +11050,11 @@ msgstr "הרצת סקריפט"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Invalid path."
+msgstr "נתיב שגוי."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12118,6 +12129,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12139,6 +12154,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "שם שגוי."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12800,6 +12841,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Not in resource path."
+#~ msgstr "לא בנתיב המשאב."
+
+#~ msgid "Revert"
+#~ msgstr "שחזור"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "לא ניתן לבטל פעולה זו. לשחזר בכל זאת?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "שחזור סצנה"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "עוקב תקלות"

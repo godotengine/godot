@@ -144,47 +144,86 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		}
 	}
 
+	// Add symbols for staticaly linked libraries on iOS
 	if (p_features.has("iOS")) {
-		// Register symbols in the "fake" dynamic lookup table, because dlsym does not work well on iOS.
-		LibrarySymbol expected_symbols[] = {
-			{ "gdnative_init", true },
-			{ "gdnative_terminate", false },
-			{ "nativescript_init", false },
-			{ "nativescript_frame", false },
-			{ "nativescript_thread_enter", false },
-			{ "nativescript_thread_exit", false },
-			{ "gdnative_singleton", false }
-		};
-		String declare_pattern = "extern \"C\" void $name(void)$weak;\n";
-		String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
-								 "extern void add_ios_init_callback(void (*cb)());\n";
-		String linker_flags = "";
-		for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
-			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
-			String code = declare_pattern.replace("$name", full_name);
-			code = code.replace("$weak", expected_symbols[i].is_required ? "" : " __attribute__((weak))");
-			additional_code += code;
 
-			if (!expected_symbols[i].is_required) {
-				if (linker_flags.length() > 0) {
-					linker_flags += " ";
+		bool should_fake_dynamic = false;
+
+		List<String> entry_keys;
+		config->get_section_keys("entry", &entry_keys);
+
+		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = p_features.has(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
 				}
-				linker_flags += "-Wl,-U,_" + full_name;
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			String entry_lib_path = config->get_value("entry", key);
+			if (entry_lib_path.begins_with("res://") && entry_lib_path.ends_with(".a")) {
+				// If we find static library that was used for export
+				// we should add a fake loopup table.
+				// In case of dynamic library being used,
+				// this symbols will not cause any issues with library loading.
+				should_fake_dynamic = true;
+				break;
 			}
 		}
 
-		additional_code += String("void $prefixinit() {\n").replace("$prefix", lib->get_symbol_prefix());
-		String register_pattern = "  if (&$name) register_dynamic_symbol((char *)\"$name\", (void *)$name);\n";
-		for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
-			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
-			additional_code += register_pattern.replace("$name", full_name);
-		}
-		additional_code += "}\n";
-		additional_code += String("struct $prefixstruct {$prefixstruct() {add_ios_init_callback($prefixinit);}};\n").replace("$prefix", lib->get_symbol_prefix());
-		additional_code += String("$prefixstruct $prefixstruct_instance;\n").replace("$prefix", lib->get_symbol_prefix());
+		if (should_fake_dynamic) {
+			// Register symbols in the "fake" dynamic lookup table, because dlsym does not work well on iOS.
+			LibrarySymbol expected_symbols[] = {
+				{ "gdnative_init", true },
+				{ "gdnative_terminate", false },
+				{ "nativescript_init", false },
+				{ "nativescript_frame", false },
+				{ "nativescript_thread_enter", false },
+				{ "nativescript_thread_exit", false },
+				{ "gdnative_singleton", false }
+			};
+			String declare_pattern = "extern \"C\" void $name(void)$weak;\n";
+			String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
+									 "extern void add_ios_init_callback(void (*cb)());\n";
+			String linker_flags = "";
+			for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+				String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
+				String code = declare_pattern.replace("$name", full_name);
+				code = code.replace("$weak", expected_symbols[i].is_required ? "" : " __attribute__((weak))");
+				additional_code += code;
 
-		add_ios_cpp_code(additional_code);
-		add_ios_linker_flags(linker_flags);
+				if (!expected_symbols[i].is_required) {
+					if (linker_flags.length() > 0) {
+						linker_flags += " ";
+					}
+					linker_flags += "-Wl,-U,_" + full_name;
+				}
+			}
+
+			additional_code += String("void $prefixinit() {\n").replace("$prefix", lib->get_symbol_prefix());
+			String register_pattern = "  if (&$name) register_dynamic_symbol((char *)\"$name\", (void *)$name);\n";
+			for (unsigned long i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+				String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
+				additional_code += register_pattern.replace("$name", full_name);
+			}
+			additional_code += "}\n";
+			additional_code += String("struct $prefixstruct {$prefixstruct() {add_ios_init_callback($prefixinit);}};\n").replace("$prefix", lib->get_symbol_prefix());
+			additional_code += String("$prefixstruct $prefixstruct_instance;\n").replace("$prefix", lib->get_symbol_prefix());
+
+			add_ios_cpp_code(additional_code);
+			add_ios_linker_flags(linker_flags);
+		}
 	}
 }
 

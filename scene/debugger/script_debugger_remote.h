@@ -92,7 +92,12 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 		Array callstack;
 	};
 
-	List<String> output_strings;
+	struct OutputString {
+		String message;
+		int type;
+	};
+
+	List<OutputString> output_strings;
 	List<Message> messages;
 	int max_messages_per_frame;
 	int n_messages_dropped;
@@ -151,6 +156,11 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	bool skip_breakpoints;
 
 public:
+	enum MessageType {
+		MESSAGE_TYPE_LOG,
+		MESSAGE_TYPE_ERROR,
+	};
+
 	struct ResourceUsage {
 
 		String path;

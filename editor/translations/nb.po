@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-16 11:03+0000\n"
-"Last-Translator: Petter Reinholdtsen <pere-weblate@hungry.com>\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -796,6 +796,11 @@ msgstr "Metode i mål-Node må spesifiseres!"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Navn er ikke en gyldig identifikator:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -883,7 +888,6 @@ msgstr "Kobler Til Signal:"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1527,18 +1531,9 @@ msgstr "Aktiver"
 msgid "Rearrange Autoloads"
 msgstr "Omorganiser Autoloads"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Ugyldig Filsti."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Fil eksisterer ikke."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Ikke i resource path."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2556,12 +2551,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Kan ikke laste en scene som aldri ble lagret."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Gå tilbake"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Lagre Scene"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Denne handlingen kan ikke angres. Gå tilbake likevel?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2854,10 +2852,6 @@ msgstr "Angre"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Gjenta"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Tilbakestille Scene"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3401,9 +3395,8 @@ msgid "Assign..."
 msgstr "Tilordne..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr ": Ugyldige argumenter: "
+msgstr "Ugyldig RID"
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -3532,6 +3525,10 @@ msgstr "Kunne ikke kjøre skript:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "Glemte du '_run'-metoden?"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3678,9 +3675,8 @@ msgid ""
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting URL:"
-msgstr "Error ved forespørsel av url: "
+msgstr "Feil ved nettadresse-forespørsel:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
@@ -3772,9 +3768,8 @@ msgid "Download Templates"
 msgstr "Last ned Mal"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-msgstr "Velg fillager fra liste: "
+msgstr "Velg speil fra liste: (Shift+Klikk: Åpne i nettleser)"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3782,12 +3777,9 @@ msgid "Favorites"
 msgstr "Favoritter:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
-"Status: Import av fil feilet. Vennligst reparer filen eller reimporter "
-"manuelt."
+"Status: Import av fil feilet. Reparer filen eller importer igjen manuelt."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -4027,14 +4019,12 @@ msgid "Cancel"
 msgstr "Avbryt"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find: "
-msgstr "Finn"
+msgstr "Finn: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace: "
-msgstr "Erstatt"
+msgstr "Erstatt: "
 
 #: editor/find_in_files.cpp
 #, fuzzy
@@ -4186,6 +4176,10 @@ msgstr "Ugyldig/ødelagt skript for post-import (sjekk konsoll):"
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Error ved kjøring av post-import script:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -5002,9 +4996,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "Overgang"
+msgstr "Overgang: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -7313,13 +7306,13 @@ msgid ""
 msgstr "Koble '%s' fra '%s'"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Linje:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7813,6 +7806,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10937,8 +10939,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Nytt Skript"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -11105,6 +11108,13 @@ msgid "Open Documentation"
 msgstr "Åpne Godots nettbaserte dokumentasjon"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -11158,12 +11168,13 @@ msgstr ""
 "finnes en rot-node."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr ""
+#, fuzzy
+msgid "Detach the script from the selected node."
+msgstr "Instanser den valgte scene(r) som barn av den valgte noden."
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -11293,6 +11304,10 @@ msgid "A directory with the same name exists."
 msgstr "En fil eller mappe med dette navnet eksisterer allerede."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Fil eksisterer ikke."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Må ha en gyldig filutvidelse."
@@ -11335,6 +11350,11 @@ msgstr "Kjør Skript"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Invalid path."
+msgstr "Ugyldig Filsti."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11403,7 +11423,7 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Remote "
-msgstr "Fjern Funksjon"
+msgstr "Fjern-funksjon "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -12440,6 +12460,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12461,6 +12485,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Ugyldig navn."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12575,7 +12625,7 @@ msgstr "Prosjektnavn:"
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Invalid publisher GUID."
-msgstr ": Ugyldige argumenter: "
+msgstr "Ugyldig forlags-GUID."
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -13123,6 +13173,18 @@ msgstr ""
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
 
+#~ msgid "Not in resource path."
+#~ msgstr "Ikke i resource path."
+
+#~ msgid "Revert"
+#~ msgstr "Gå tilbake"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Denne handlingen kan ikke angres. Gå tilbake likevel?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Tilbakestille Scene"
+
 #~ msgid "Issue Tracker"
 #~ msgstr "Problemtracker"
 
@@ -13367,10 +13429,6 @@ msgstr "Konstanter kan ikke endres."
 #, fuzzy
 #~ msgid "Insert keys."
 #~ msgstr "Sett inn Nøkler"
-
-#, fuzzy
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr "Instanser den valgte scene(r) som barn av den valgte noden."
 
 #, fuzzy
 #~ msgid "Font Size:"

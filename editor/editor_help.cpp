@@ -478,8 +478,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.tutorials.size(); i++) {
-			const String link = cd.tutorials[i];
-			String linktxt = link;
+			const String link = cd.tutorials[i].link;
+			String linktxt = (cd.tutorials[i].title.empty()) ? link : cd.tutorials[i].title;
 			const int seppos = linktxt.find("//");
 			if (seppos != -1) {
 				linktxt = link.right(seppos + 2);
@@ -1025,6 +1025,11 @@ void EditorHelp::_update_doc() {
 			class_desc->pop(); // font
 			class_desc->pop(); // cell
 
+			Map<String, DocData::MethodDoc> method_map;
+			for (int j = 0; j < methods.size(); j++) {
+				method_map[methods[j].name] = methods[j];
+			}
+
 			if (cd.properties[i].setter != "") {
 
 				class_desc->push_cell();
@@ -1033,13 +1038,21 @@ void EditorHelp::_update_doc() {
 				class_desc->push_cell();
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
-				class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+				if (method_map[cd.properties[i].setter].arguments.size() > 1) {
+					// Setters with additional arguments are exposed in the method list, so we link them here for quick access.
+					class_desc->push_meta("@method " + cd.properties[i].setter);
+					class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+					class_desc->pop();
+				} else {
+					class_desc->add_text(cd.properties[i].setter + TTR("(value)"));
+				}
 				class_desc->pop(); // color
 				class_desc->push_color(comment_color);
 				class_desc->add_text(" setter");
 				class_desc->pop(); // color
 				class_desc->pop(); // font
 				class_desc->pop(); // cell
+				method_line[cd.properties[i].setter] = property_line[cd.properties[i].name];
 			}
 
 			if (cd.properties[i].getter != "") {
@@ -1050,13 +1063,21 @@ void EditorHelp::_update_doc() {
 				class_desc->push_cell();
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
-				class_desc->add_text(cd.properties[i].getter + "()");
+				if (method_map[cd.properties[i].getter].arguments.size() > 0) {
+					// Getters with additional arguments are exposed in the method list, so we link them here for quick access.
+					class_desc->push_meta("@method " + cd.properties[i].getter);
+					class_desc->add_text(cd.properties[i].getter + "()");
+					class_desc->pop();
+				} else {
+					class_desc->add_text(cd.properties[i].getter + "()");
+				}
 				class_desc->pop(); //color
 				class_desc->push_color(comment_color);
 				class_desc->add_text(" getter");
 				class_desc->pop(); //color
 				class_desc->pop(); //font
 				class_desc->pop(); //cell
+				method_line[cd.properties[i].getter] = property_line[cd.properties[i].name];
 			}
 
 			class_desc->pop(); // table

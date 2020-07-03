@@ -10,7 +10,9 @@ namespace GodotTools
     public sealed class BuildInfo : Reference // TODO Remove Reference once we have proper serialization
     {
         public string Solution { get; }
+        public string[] Targets { get; }
         public string Configuration { get; }
+        public bool Restore { get; }
         public Array<string> CustomProperties { get; } = new Array<string>(); // TODO Use List once we have proper serialization
 
         public string LogsDirPath => Path.Combine(GodotSharpDirs.BuildLogsDirs, $"{Solution.MD5Text()}_{Configuration}");
@@ -38,10 +40,12 @@ namespace GodotTools
         {
         }
 
-        public BuildInfo(string solution, string configuration)
+        public BuildInfo(string solution, string[] targets, string configuration, bool restore)
         {
             Solution = solution;
+            Targets = targets;
             Configuration = configuration;
+            Restore = restore;
         }
     }
 }

@@ -4211,27 +4211,40 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					double value = values[value_index];
-					String str = String::num(value, min_decimals);
+					bool is_negative = (value < 0);
+					String str = String::num(ABS(value), min_decimals);
 
 					// Pad decimals out.
 					str = str.pad_decimals(min_decimals);
 
-					// Show sign
-					if (show_sign && str.left(1) != "-") {
-						str = str.insert(0, "+");
+					int initial_len = str.length();
+
+					// Padding. Leave room for sign later if required.
+					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
+					String pad_char = pad_with_zeroes ? String("0") : String(" ");
+					if (left_justified) {
+						if (pad_with_zeroes) {
+							return "left justification cannot be used with zeros as the padding";
+						} else {
+							str = str.rpad(pad_chars_count, pad_char);
+						}
+					} else {
+						str = str.lpad(pad_chars_count, pad_char);
 					}
 
-					// Padding
-					if (left_justified) {
-						str = str.rpad(min_chars);
-					} else {
-						str = str.lpad(min_chars);
+					// Add sign if needed.
+					if (show_sign || is_negative) {
+						String sign_char = is_negative ? "-" : "+";
+						if (left_justified) {
+							str = str.insert(0, sign_char);
+						} else {
+							str = str.insert(pad_with_zeroes ? 0 : str.length() - initial_len, sign_char);
+						}
 					}
 
 					formatted += str;
 					++value_index;
 					in_format = false;
-
 					break;
 				}
 				case 's': { // String

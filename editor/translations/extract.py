@@ -10,23 +10,23 @@ import sys
 line_nb = False
 
 for arg in sys.argv[1:]:
-    if (arg == "--with-line-nb"):
+    if arg == "--with-line-nb":
         print("Enabling line numbers in the context locations.")
         line_nb = True
     else:
         os.sys.exit("Non supported argument '" + arg + "'. Aborting.")
 
 
-if (not os.path.exists("editor")):
+if not os.path.exists("editor"):
     os.sys.exit("ERROR: This script should be started from the root of the git repo.")
 
 
 matches = []
-for root, dirnames, filenames in os.walk('.'):
+for root, dirnames, filenames in os.walk("."):
     dirnames[:] = [d for d in dirnames if d not in ["thirdparty"]]
-    for filename in fnmatch.filter(filenames, '*.cpp'):
+    for filename in fnmatch.filter(filenames, "*.cpp"):
         matches.append(os.path.join(root, filename))
-    for filename in fnmatch.filter(filenames, '*.h'):
+    for filename in fnmatch.filter(filenames, "*.h"):
         matches.append(os.path.join(root, filename))
 matches.sort()
 
@@ -49,51 +49,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\\n"
 """
 
+
 def process_file(f, fname):
 
     global main_po, unique_str, unique_loc
 
     l = f.readline()
     lc = 1
-    while (l):
+    while l:
 
-        patterns = ['RTR(\"', 'TTR(\"', 'TTRC(\"']
+        patterns = ['RTR("', 'TTR("', 'TTRC("']
         idx = 0
         pos = 0
-        while (pos >= 0):
+        while pos >= 0:
             pos = l.find(patterns[idx], pos)
-            if (pos == -1):
-                if (idx < len(patterns) - 1):
+            if pos == -1:
+                if idx < len(patterns) - 1:
                     idx += 1
                     pos = 0
                 continue
             pos += len(patterns[idx])
 
             msg = ""
-            while (pos < len(l) and (l[pos] != '"' or l[pos - 1] == '\\')):
+            while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
                 msg += l[pos]
                 pos += 1
 
-            location = os.path.relpath(fname).replace('\\', '/')
-            if (line_nb):
+            location = os.path.relpath(fname).replace("\\", "/")
+            if line_nb:
                 location += ":" + str(lc)
 
-            if (not msg in unique_str):
+            if not msg in unique_str:
                 main_po += "\n#: " + location + "\n"
                 main_po += 'msgid "' + msg + '"\n'
                 main_po += 'msgstr ""\n'
                 unique_str.append(msg)
                 unique_loc[msg] = [location]
-            elif (not location in unique_loc[msg]):
+            elif not location in unique_loc[msg]:
                 # Add additional location to previous occurrence too
                 msg_pos = main_po.find('\nmsgid "' + msg + '"')
-                if (msg_pos == -1):
+                if msg_pos == -1:
                     print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-                main_po = main_po[:msg_pos] + ' ' + location + main_po[msg_pos:]
+                main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
                 unique_loc[msg].append(location)
 
         l = f.readline()
         lc += 1
+
 
 print("Updating the editor.pot template...")
 
@@ -104,7 +106,7 @@ for fname in matches:
 with open("editor.pot", "w") as f:
     f.write(main_po)
 
-if (os.name == "posix"):
+if os.name == "posix":
     print("Wrapping template at 79 characters for compatibility with Weblate.")
     os.system("msgmerge -w79 editor.pot editor.pot > editor.pot.wrap")
     shutil.move("editor.pot.wrap", "editor.pot")
@@ -112,7 +114,7 @@ if (os.name == "posix"):
 shutil.move("editor.pot", "editor/translations/editor.pot")
 
 # TODO: Make that in a portable way, if we care; if not, kudos to Unix users
-if (os.name == "posix"):
+if os.name == "posix":
     added = subprocess.check_output(r"git diff editor/translations/editor.pot | grep \+msgid | wc -l", shell=True)
     removed = subprocess.check_output(r"git diff editor/translations/editor.pot | grep \\\-msgid | wc -l", shell=True)
     print("\n# Template changes compared to the staged status:")

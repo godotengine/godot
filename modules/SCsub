@@ -1,23 +1,29 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
+
+import os
 
 env_modules = env.Clone()
 
-Export('env_modules')
+Export("env_modules")
 
 env.modules_sources = []
 
 env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
 
-for x in env.module_list:
-    if (x in env.disabled_modules):
+for name, path in env.module_list.items():
+    if name in env.disabled_modules:
         continue
-    env_modules.Append(CPPDEFINES=["MODULE_" + x.upper() + "_ENABLED"])
-    SConscript(x + "/SCsub")
 
-if env['split_libmodules']:
-    env.split_lib("modules", env_lib = env_modules)
+    env_modules.Append(CPPDEFINES=["MODULE_" + name.upper() + "_ENABLED"])
+    if not os.path.isabs(path):
+        SConscript(name + "/SCsub")  # Built-in.
+    else:
+        SConscript(path + "/SCsub")  # Custom.
+
+if env["split_libmodules"]:
+    env.split_lib("modules", env_lib=env_modules)
 else:
     lib = env_modules.add_library("modules", env.modules_sources)
 

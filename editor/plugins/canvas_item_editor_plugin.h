@@ -533,6 +533,7 @@ private:
 
 	VBoxContainer *controls_vb;
 	HBoxContainer *zoom_hb;
+	float _get_next_zoom_value(int p_increment_count) const;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _update_zoom_label();
 	void _button_zoom_minus();

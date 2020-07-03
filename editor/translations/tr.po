@@ -44,12 +44,15 @@
 # Zsosu Ktosu <zktosu@gmail.com>, 2020.
 # Mesut Aslan <kontinyu@gmail.com>, 2020.
 # Kaan Genç <kaan@kaangenc.me>, 2020.
+# Anonymous <noreply@weblate.org>, 2020.
+# Güneş Gümüş <gunes.gumus.001@gmail.com>, 2020.
+# Oğuz Ersen <oguzersen@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-23 20:21+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-05-22 21:01+0000\n"
+"Last-Translator: Güneş Gümüş <gunes.gumus.001@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -57,18 +60,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"\"convert ()\" için geçersiz tür bağımsız değişkeni, \"TYPE_ *\" sabitlerini "
-"kullanın."
+msgstr "convert() için geçersiz türde argüman, TYPE_* sabitlerini kullanın."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "1 (karakter) uzunlukta metin bekleniyor."
+msgstr "1 uzunluğunda bir metin (bir karakter) bekleniyor."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -354,7 +355,7 @@ msgstr "Döngü Aradeğerlemesin Sar"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Yeni Anahtar"
+msgstr "Anahtar Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
@@ -532,12 +533,12 @@ msgstr ""
 "Bu animasyon içe aktarılmış bir sahneye ait, bu yüzden içe aktarılan "
 "parçalara yapılan değişiklikler kaydedilmeyecek.\n"
 "\n"
-"Özel parça ekleme özelliğini aktif etmek için, sahnenin içe aktarma "
-"ayarlarına gidin ve \"Animasyon > Depolama\" ayarını \"Dosyalama\" olarak "
-"ayarlayın, \"Animasyon > Özel Parçaları Sakla\"ayarını aktif edin ve sonra "
-"tekrar içe aktarın.\n"
-"Alternatif olarak, animasyonları ayrı dosyalara aktaran bir içe aktarma "
-"hazır ayarı kullanabilirsiniz."
+"Özel parça ekleme özelliğini etkinleştirmek için, sahnenin içe aktarma "
+"ayarlarına gidin ve \"Animasyon > Depolama\"\n"
+"ayarını \"Dosyalama\" olarak ayarlayın, \"Animasyon > Özel Parçaları Sakla\" "
+"ayarını etkinleştirin ve sonra tekrar içe aktarın.\n"
+"Alternatif olarak, animasyonları ayrı dosyalara aktaran bir içe aktarma ön "
+"ayarı kullanabilirsiniz."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -797,6 +798,11 @@ msgid "Method in target node must be specified."
 msgstr "Hedef düğümdeki metod tanımlanmalı."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Ad doğru bir belirleyici değil:"
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -878,7 +884,6 @@ msgstr "Sinyale bağlanamıyor"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -899,7 +904,7 @@ msgstr "Sinyal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Bunu '%s'  şuna '%s' bağla"
+msgstr "'%s' sinyalini '%s' yöntemine bağla"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
@@ -1216,7 +1221,7 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "All Components"
-msgstr "Tüm  Bileşenler"
+msgstr "Tüm Bileşenler"
 
 #: editor/editor_about.cpp
 msgid "Components"
@@ -1490,17 +1495,9 @@ msgstr "Etkin"
 msgid "Rearrange Autoloads"
 msgstr "KendindenYüklenme'leri Yeniden Sırala"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Geçersiz yol."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Dosya yok."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Kaynak yolunda değil."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1726,7 +1723,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
-msgstr "Profil yolu kaydetme hatası:  '%s'."
+msgstr "Profil '%s' yoluna kaydedilirken hata oluştu."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
@@ -2432,7 +2429,7 @@ msgstr "Bu işlem bir sahne olmadan yapılamaz."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "Örüntü Betikevini Dışa Aktar"
+msgstr "Örüntü Kütüphanesini Dışa Aktar"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
@@ -2455,12 +2452,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Hiç kaydedilmemiş bir sahne yeniden yüklenemiyor."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Geri dön"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Sahne Kaydet"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Bu eylem geri alınamaz. Yine de geri dönsün mü?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2484,7 +2484,7 @@ msgstr "Kaydet & Çık"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Çıkmadan önce değişiklikler aşağıdaki sahneye(lere)  kaydedilsin mi?"
+msgstr "Çıkmadan önce değişiklikler aşağıdaki sahne(ler)e kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
@@ -2497,8 +2497,8 @@ msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
-"Bu seçenek  artık kullanılmıyor. Yenilemeye zorlayan durumlar bug olarak "
-"değerlendirilir. Lütfen bildirin."
+"Bu seçenek artık kullanılmıyor. Yenilemenin zorlanması gereken durumlar "
+"artık hata olarak değerlendiriliyor. Lütfen bildirin."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -2739,16 +2739,12 @@ msgstr "TileSet ..."
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr "Geri"
+msgstr "Geri al"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr "Geri"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Sahneyi Eski Durumuna Çevir"
+msgstr "Yeniden yap"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2913,7 +2909,7 @@ msgstr "Ekran Görüntüleri Düzenleyici Verileri/Ayarları Klasöründe saklan
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "Tam Ekran Aç / Kapat"
+msgstr "Tam Ekranı Aç/Kapat"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
@@ -3077,8 +3073,14 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Bu, kaynak şablonlarını \"res://android/build\" yoluna yükleyerek, projenizi "
-"isteğe dayalı Android inşasına ayarlayacaktır."
+"Bu, kaynak şablonunu \"res://android/build\" dizinine kurarak projenizi özel "
+"Android derlemeleri için ayarlayacaktır.\n"
+"Daha sonra dışa aktarırken değişiklikleri uygulayabilir ve kendi özel "
+"APK'nızı oluşturabilirsiniz (modül ekleme, AndroidManifest.xml dosyasını "
+"değiştirme vb.).\n"
+"Önceden oluşturulmuş APK'ları kullanmak yerine özel derlemeler yapmak için "
+"Android dışa aktarma ön ayarında \"Özel Derleme Kullan\" seçeneğinin "
+"etkinleştirilmesi gerektiğini unutmayın."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3125,11 +3127,11 @@ msgstr "Seç"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "Düzenleyicide Aç"
+msgstr "2B Düzenleyiciyi Aç"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr "3B Düzenleyicide Aç"
+msgstr "3B Düzenleyiciyi Aç"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
@@ -3250,7 +3252,7 @@ msgstr "Katman"
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
-msgstr "Bit %d,  değer %d"
+msgstr "Bit %d, değer %d"
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
@@ -3391,6 +3393,13 @@ msgstr "Betik çalıştırılamadı:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "'_run()' metodunu unuttunuz mu?"
+
+#: editor/editor_spin_slider.cpp
+#, fuzzy
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Alıcı bırakmak için Ctrl'e basılı tutun. Genel imza bırakmak için Shift'e "
+"basılı tutun."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3990,6 +3999,10 @@ msgid "Error running post-import script:"
 msgstr "sonradan-içe aktarılmış betik çalıştırılırken hata:"
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Kaydediliyor..."
 
@@ -4444,7 +4457,7 @@ msgstr "Süzgeçlenmiş Parçaları Düzenle:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable Filtering"
-msgstr "Süzgeçlemeyi  Aç"
+msgstr "Süzgeçlemeyi Aç"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -5384,7 +5397,7 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr "Yakınlaşmayı Sıfırla"
+msgstr "Yakınlaştırmayı Sıfırla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5839,7 +5852,7 @@ msgstr "Eğri Doğrusal Tanjantını Aç/Kapa"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
-msgstr "Tanjantları tek tek düzenlemek için Shift'e basılı tut"
+msgstr "Tanjantları bireysel olarak düzenlemek için Shift tuşuna basılı tutun"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Right click to add point"
@@ -5875,7 +5888,7 @@ msgstr "Örüntü boş!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create a Trimesh collision shape."
-msgstr "Trimesh çarpışma şekli oluşturulamadı."
+msgstr "Üçlü Örüntü çarpışma yüzeyi oluşturulamadı."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Static Trimesh Body"
@@ -5911,7 +5924,7 @@ msgstr "Herhangi bir çarpışma şekli oluşturulamadı."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Shapes"
-msgstr "Dışbükey Şekilleri Oluştur"
+msgstr "Çoklu Dışbükey Şekiller Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -6934,12 +6947,13 @@ msgstr ""
 "'%s' düğümünden '%s' düğümüne, '%s' sinyali için '%s' bağlantı metodu eksik."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Satır"
+#, fuzzy
+msgid "[Ignore]"
+msgstr "(gözardı et)"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(gözardı et)"
+msgid "Line"
+msgstr "Satır"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7411,6 +7425,15 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm İletişim Kutusu"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -9927,6 +9950,9 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"Arama kutusu, projeleri adına ve son yol bileşenine göre filtreler.\n"
+"Projeleri adına ve tam yoluna göre filtrelemek için, sorgunun en az bir `/` "
+"karakteri içermesi gereklidir."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10081,7 +10107,7 @@ msgstr "'%s' özelliği mevcut değil."
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr "Ayar '%s' dahilidir  silinemez."
+msgstr "'%s' ayarı dahilidir ve silinemez."
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
@@ -10290,7 +10316,7 @@ msgstr "Bir Düğüm Seç"
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
-msgstr "Bit %d,  val %d."
+msgstr "Bit %d, değer %d."
 
 #: editor/property_selector.cpp
 msgid "Select Property"
@@ -10425,9 +10451,8 @@ msgid "Regular Expression Error"
 msgstr "Düzenli İfade Hatası"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "At character %s"
-msgstr "Geçerli karakterler:"
+msgstr "%s karakterinde"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10494,8 +10519,9 @@ msgid "Instance Child Scene"
 msgstr "Çocuk Sahnesini Örnekle"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Betiği Temizle"
+#, fuzzy
+msgid "Detach Script"
+msgstr "Betik İliştir"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10660,6 +10686,13 @@ msgid "Open Documentation"
 msgstr "Klavuzu Aç"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Çocuk Düğüm Ekle"
 
@@ -10708,11 +10741,13 @@ msgstr ""
 "alınmış bir sahne oluşturur."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
 msgstr "Seçili düğüm için yeni veya mevcut bir betik iliştir."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr "Seçilen düğüm için betik temizle."
 
 #: editor/scene_tree_dock.cpp
@@ -10844,6 +10879,10 @@ msgid "A directory with the same name exists."
 msgstr "Aynı isimde dizin zaten var."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Dosya yok."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Geçersiz uzantı."
 
@@ -10882,6 +10921,10 @@ msgstr "Betik Aç"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "Dosya mevcut, yeniden kullanılacak."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Geçersiz yol."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11044,9 +11087,8 @@ msgid "Total:"
 msgstr "Toplam:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Profil Dışa Aktar"
+msgstr "Listeyi CSV dosyasına aktar"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11928,6 +11970,13 @@ msgstr ""
 "yapılandırılmamış."
 
 #: platform/android/export/export.cpp
+#, fuzzy
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+"Anahtar deposunda Hata Ayıklayıcı Ayarları'nda veya ön ayarda "
+"yapılandırılmamış."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "Özel derleme için Editör Ayarları'nda geçerli bir Android SDK yolu gerekir."
@@ -11950,6 +11999,32 @@ msgstr "APK genişletmesi için geçersiz ortak anahtar."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Geçersiz paket ismi:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12732,6 +12807,21 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Kaynak yolunda değil."
+
+#~ msgid "Revert"
+#~ msgstr "Geri dön"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Bu eylem geri alınamaz. Yine de geri dönsün mü?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Sahneyi Eski Durumuna Çevir"
+
+#~ msgid "Clear Script"
+#~ msgstr "Betiği Temizle"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Sorun İzleyici"

@@ -1428,8 +1428,9 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_screen_uv = false;
 			p_shader->canvas_item.uses_time = false;
 			p_shader->canvas_item.uses_modulate = false;
-			p_shader->canvas_item.reads_color = false;
-			p_shader->canvas_item.prevent_color_baking = false;
+			p_shader->canvas_item.uses_color = false;
+			p_shader->canvas_item.uses_vertex = false;
+			p_shader->canvas_item.batch_flags = 0;
 
 			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
 			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
@@ -1445,8 +1446,8 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_TEXTURE"] = &p_shader->canvas_item.uses_screen_texture;
 			shaders.actions_canvas.usage_flag_pointers["TIME"] = &p_shader->canvas_item.uses_time;
 			shaders.actions_canvas.usage_flag_pointers["MODULATE"] = &p_shader->canvas_item.uses_modulate;
-
-			shaders.actions_canvas.read_flag_pointers["COLOR"] = &p_shader->canvas_item.reads_color;
+			shaders.actions_canvas.usage_flag_pointers["COLOR"] = &p_shader->canvas_item.uses_color;
+			shaders.actions_canvas.usage_flag_pointers["VERTEX"] = &p_shader->canvas_item.uses_vertex;
 
 			actions = &shaders.actions_canvas;
 			actions->uniforms = &p_shader->uniforms;
@@ -1536,7 +1537,12 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 	// some logic for batching
 	if (p_shader->mode == VS::SHADER_CANVAS_ITEM) {
-		p_shader->canvas_item.prevent_color_baking = p_shader->canvas_item.uses_modulate | p_shader->canvas_item.reads_color;
+		if (p_shader->canvas_item.uses_modulate | p_shader->canvas_item.uses_color) {
+			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_COLOR_BAKING;
+		}
+		if (p_shader->canvas_item.uses_vertex) {
+			p_shader->canvas_item.batch_flags |= Shader::CanvasItem::PREVENT_VERTEX_BAKING;
+		}
 	}
 
 	p_shader->shader->set_custom_shader(p_shader->custom_code_id);
@@ -5981,7 +5987,7 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef JAVASCRIPT_ENABLED
 	config.support_half_float_vertices = false;
 #endif
-	bool disable_half_float = GLOBAL_GET("rendering/gles2/debug/disable_half_float");
+	bool disable_half_float = GLOBAL_GET("rendering/gles2/compatibility/disable_half_float");
 	if (disable_half_float) {
 		config.support_half_float_vertices = false;
 	}

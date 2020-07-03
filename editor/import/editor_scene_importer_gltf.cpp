@@ -294,7 +294,16 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 			node->xform.basis.set_quat_scale(node->rotation, node->scale);
 			node->xform.origin = node->translation;
 		}
-
+		if (n.has("extensions")) {
+			Dictionary extensions = n["extensions"];
+			if (extensions.has("KHR_lights_punctual")) {
+				Dictionary lights_punctual = extensions["KHR_lights_punctual"];
+				if (lights_punctual.has("light")) {
+					GLTFLightIndex light = lights_punctual["light"];
+					node->light = light;
+				}
+			}
+		}
 		if (n.has("children")) {
 			const Array &children = n["children"];
 			for (int j = 0; j < children.size(); j++) {
@@ -951,6 +960,9 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 	if (!state.json.has("meshes"))
 		return OK;
 
+	bool compress_vert_data = state.import_flags & IMPORT_USE_COMPRESSION;
+	uint32_t mesh_flags = compress_vert_data ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+
 	Array meshes = state.json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 
@@ -1207,7 +1219,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 
 			//just add it
-			mesh.mesh->add_surface_from_arrays(primitive, array, morphs);
+			mesh.mesh->add_surface_from_arrays(primitive, array, morphs, mesh_flags);
 
 			if (p.has("material")) {
 				const int material = p["material"];
@@ -2231,7 +2243,6 @@ bool EditorSceneImporterGLTF::_skins_are_same(const Ref<Skin> &skin_a, const Ref
 	}
 
 	for (int i = 0; i < skin_a->get_bind_count(); ++i) {
-
 		if (skin_a->get_bind_bone(i) != skin_b->get_bind_bone(i)) {
 			return false;
 		}
@@ -2259,6 +2270,58 @@ void EditorSceneImporterGLTF::_remove_duplicate_skins(GLTFState &state) {
 			}
 		}
 	}
+}
+
+Error EditorSceneImporterGLTF::_parse_lights(GLTFState &state) {
+	if (!state.json.has("extensions")) {
+		return OK;
+	}
+	Dictionary extensions = state.json["extensions"];
+	if (!extensions.has("KHR_lights_punctual")) {
+		return OK;
+	}
+	Dictionary lights_punctual = extensions["KHR_lights_punctual"];
+	if (!lights_punctual.has("lights")) {
+		return OK;
+	}
+
+	const Array &lights = lights_punctual["lights"];
+
+	for (GLTFLightIndex light_i = 0; light_i < lights.size(); light_i++) {
+		const Dictionary &d = lights[light_i];
+
+		GLTFLight light;
+		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
+		const String &type = d["type"];
+		light.type = type;
+
+		if (d.has("color")) {
+			const Array &arr = d["color"];
+			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
+			const Color c = Color(arr[0], arr[1], arr[2]).to_srgb();
+			light.color = c;
+		}
+		if (d.has("intensity")) {
+			light.intensity = d["intensity"];
+		}
+		if (d.has("range")) {
+			light.range = d["range"];
+		}
+		if (type == "spot") {
+			const Dictionary &spot = d["spot"];
+			light.inner_cone_angle = spot["innerConeAngle"];
+			light.outer_cone_angle = spot["outerConeAngle"];
+			ERR_FAIL_COND_V_MSG(light.inner_cone_angle >= light.outer_cone_angle, ERR_PARSE_ERROR, "The inner angle must be smaller than the outer angle.");
+		} else if (type != "point" && type != "directional") {
+			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Light type is unknown.");
+		}
+
+		state.lights.push_back(light);
+	}
+
+	print_verbose("glTF: Total lights: " + itos(state.lights.size()));
+
+	return OK;
 }
 
 Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
@@ -2508,6 +2571,58 @@ MeshInstance *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &state,
 	return mi;
 }
 
+Light *EditorSceneImporterGLTF::_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+	const GLTFNode *gltf_node = state.nodes[node_index];
+
+	ERR_FAIL_INDEX_V(gltf_node->light, state.lights.size(), nullptr);
+
+	print_verbose("glTF: Creating light for: " + gltf_node->name);
+
+	const GLTFLight &l = state.lights[gltf_node->light];
+
+	float intensity = l.intensity;
+	if (intensity > 10) {
+		// GLTF spec has the default around 1, but Blender defaults lights to 100.
+		// The only sane way to handle this is to check where it came from and
+		// handle it accordingly. If it's over 10, it probably came from Blender.
+		intensity /= 100;
+	}
+
+	if (l.type == "directional") {
+		DirectionalLight *light = memnew(DirectionalLight);
+		light->set_param(Light::PARAM_ENERGY, intensity);
+		light->set_color(l.color);
+		return light;
+	}
+
+	const float range = CLAMP(l.range, 0, 4096);
+	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
+	// We want to have double intensity give double brightness, so we need half the attenuation.
+	const float attenuation = range / intensity;
+	if (l.type == "point") {
+		OmniLight *light = memnew(OmniLight);
+		light->set_param(OmniLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight::PARAM_RANGE, range);
+		light->set_color(l.color);
+		return light;
+	}
+	if (l.type == "spot") {
+		SpotLight *light = memnew(SpotLight);
+		light->set_param(SpotLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight::PARAM_RANGE, range);
+		light->set_param(SpotLight::PARAM_SPOT_ANGLE, Math::rad2deg(l.outer_cone_angle));
+		light->set_color(l.color);
+
+		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
+		// The points in desmos are not exact, except for (1, infinity).
+		float angle_ratio = l.inner_cone_angle / l.outer_cone_angle;
+		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
+		light->set_param(SpotLight::PARAM_SPOT_ATTENUATION, angle_attenuation);
+		return light;
+	}
+	return nullptr;
+}
+
 Camera *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	const GLTFNode *gltf_node = state.nodes[node_index];
 
@@ -2582,6 +2697,8 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 			current_node = _generate_mesh_instance(state, scene_parent, node_index);
 		} else if (gltf_node->camera >= 0) {
 			current_node = _generate_camera(state, scene_parent, node_index);
+		} else if (gltf_node->light >= 0) {
+			current_node = _generate_light(state, scene_parent, node_index);
 		} else {
 			current_node = _generate_spatial(state, scene_parent, node_index);
 		}
@@ -2793,6 +2910,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 			int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_TRANSFORM);
 			animation->track_set_path(track_idx, node_path);
+			animation->track_set_imported(track_idx, true);
 			//first determine animation length
 
 			const float increment = 1.0 / float(bake_fps);
@@ -2970,13 +3088,15 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 		//binary file
 		//text file
 		Error err = _parse_glb(p_path, state);
-		if (err)
+		if (err) {
 			return NULL;
+		}
 	} else {
 		//text file
 		Error err = _parse_json(p_path, state);
-		if (err)
+		if (err) {
 			return NULL;
+		}
 	}
 
 	ERR_FAIL_COND_V(!state.json.has("asset"), NULL);
@@ -2987,89 +3107,111 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 
 	String version = asset["version"];
 
+	state.import_flags = p_flags;
 	state.major_version = version.get_slice(".", 0).to_int();
 	state.minor_version = version.get_slice(".", 1).to_int();
 	state.use_named_skin_binds = p_flags & IMPORT_USE_NAMED_SKIN_BINDS;
 
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 1 PARSE NODES */
 	err = _parse_nodes(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 2 PARSE BUFFERS */
 	err = _parse_buffers(state, p_path.get_base_dir());
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 3 PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 4 PARSE ACCESSORS */
 	err = _parse_accessors(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 5 PARSE IMAGES */
 	err = _parse_images(state, p_path.get_base_dir());
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 6 PARSE TEXTURES */
 	err = _parse_textures(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 7 PARSE TEXTURES */
 	err = _parse_materials(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 9 PARSE SKINS */
 	err = _parse_skins(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 10 DETERMINE SKELETONS */
 	err = _determine_skeletons(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 11 CREATE SKELETONS */
 	err = _create_skeletons(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 12 CREATE SKINS */
 	err = _create_skins(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
 	/* STEP 13 PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
-	/* STEP 14 PARSE CAMERAS */
+	/* STEP 14 PARSE LIGHTS */
+	err = _parse_lights(state);
+	if (err != OK) {
+		return NULL;
+	}
+
+	/* STEP 15 PARSE CAMERAS */
 	err = _parse_cameras(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
-	/* STEP 15 PARSE ANIMATIONS */
+	/* STEP 16 PARSE ANIMATIONS */
 	err = _parse_animations(state);
-	if (err != OK)
+	if (err != OK) {
 		return NULL;
+	}
 
-	/* STEP 16 ASSIGN SCENE NAMES */
+	/* STEP 17 ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
-	/* STEP 17 MAKE SCENE! */
+	/* STEP 18 MAKE SCENE! */
 	Spatial *scene = _generate_scene(state, p_bake_fps);
 
 	return scene;

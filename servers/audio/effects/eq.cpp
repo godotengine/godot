@@ -125,6 +125,7 @@ void EQ::set_preset_band_mode(Preset p_preset) {
 	for (int i = 0; i < m_bands; i++) { \
 		Band b;                         \
 		b.freq = bands[i];              \
+		b.c1 = b.c2 = b.c3 = 0;         \
 		band.push_back(b);              \
 	}
 

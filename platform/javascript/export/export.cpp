@@ -94,6 +94,9 @@ public:
 		} else if (req[1] == basereq + ".js") {
 			filepath += ".js";
 			ctype = "application/javascript";
+		} else if (req[1] == basereq + ".worker.js") {
+			filepath += ".worker.js";
+			ctype = "application/javascript";
 		} else if (req[1] == basereq + ".pck") {
 			filepath += ".pck";
 			ctype = "application/octet-stream";
@@ -435,6 +438,10 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		} else if (file == "godot.js") {
 
 			file = p_path.get_file().get_basename() + ".js";
+		} else if (file == "godot.worker.js") {
+
+			file = p_path.get_file().get_basename() + ".worker.js";
+
 		} else if (file == "godot.wasm") {
 
 			file = p_path.get_file().get_basename() + ".wasm";
@@ -568,6 +575,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		// Export generates several files, clean them up on failure.
 		DirAccess::remove_file_or_error(basepath + ".html");
 		DirAccess::remove_file_or_error(basepath + ".js");
+		DirAccess::remove_file_or_error(basepath + ".worker.js");
 		DirAccess::remove_file_or_error(basepath + ".pck");
 		DirAccess::remove_file_or_error(basepath + ".png");
 		DirAccess::remove_file_or_error(basepath + ".wasm");

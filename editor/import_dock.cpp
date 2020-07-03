@@ -460,7 +460,9 @@ void ImportDock::_reimport() {
 		} else {
 			//override entirely
 			config->set_value("remap", "importer", importer_name);
-			config->erase_section("params");
+			if (config->has_section("params")) {
+				config->erase_section("params");
+			}
 
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
 				config->set_value("params", E->get().name, params->values[E->get().name]);

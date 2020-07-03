@@ -1121,9 +1121,9 @@ void Variant::clear() {
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-			if (_get_obj().rc) {
-				if (_get_obj().rc->decrement()) {
-					memfree(_get_obj().rc);
+			if (likely(_get_obj().rc)) {
+				if (unlikely(_get_obj().rc->decrement())) {
+					memdelete(_get_obj().rc);
 				}
 			} else {
 				_get_obj().ref.unref();
@@ -1598,6 +1598,10 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			Object *obj = _OBJ_PTR(*this);
 			if (obj) {
+				if (_get_obj().ref.is_null() && !ObjectDB::get_instance(obj->get_instance_id())) {
+					return "[Deleted Object]";
+				}
+
 				return obj->to_string();
 			} else {
 #ifdef DEBUG_ENABLED
@@ -2651,9 +2655,16 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 
+#ifdef DEBUG_ENABLED
+			if (likely(_get_obj().rc)) {
+				if (unlikely(_get_obj().rc->decrement())) {
+					memdelete(_get_obj().rc);
+				}
+			}
+#endif
 			*reinterpret_cast<ObjData *>(_data._mem) = p_variant._get_obj();
 #ifdef DEBUG_ENABLED
-			if (_get_obj().rc) {
+			if (likely(_get_obj().rc)) {
 				_get_obj().rc->increment();
 			}
 #endif

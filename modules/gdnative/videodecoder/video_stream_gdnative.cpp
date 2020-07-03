@@ -224,6 +224,11 @@ void VideoStreamPlaybackGDNative::cleanup() {
 		interface->destructor(data_struct);
 	if (pcm)
 		memfree(pcm);
+	if (file) {
+		file->close();
+		memdelete(file);
+		file = NULL;
+	}
 	pcm = NULL;
 	time = 0;
 	num_channels = -1;

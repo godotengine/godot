@@ -799,6 +799,11 @@ msgstr "Metoda v ciljnem gradniku mora biti navedena!"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Ime ni pravilen identifikator:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -886,7 +891,6 @@ msgstr "Povezovanje Signala:"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1523,18 +1527,9 @@ msgstr "Omogoči"
 msgid "Rearrange Autoloads"
 msgstr "Preuredi SamodejnoNalaganje"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Neveljavna Pot."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Datoteka ne obstaja."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Ni na poti virov."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2538,12 +2533,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Ni mogoče osvežiti scene, ki ni bila shranjena."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Povrni"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Shrani Prizor"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Tega dejanja ni mogoče razveljaviti. Vseeno povrni?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2838,10 +2836,6 @@ msgstr "Razveljavi"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Ponovi"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Povrni Prizor"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3498,6 +3492,10 @@ msgstr "Ni mogoče zagnati skripte:"
 msgid "Did you forget the '_run' method?"
 msgstr "Ali si pozabil metodo '_run' ?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Izberi Gradnik(e) za Uvoz"
@@ -4128,6 +4126,10 @@ msgstr "Neveljavna/pokvarjena skripta za naknadno uvažanje (Glej konzolo):"
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Napaka pri zagonu skripte po uvozu:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -7211,13 +7213,13 @@ msgid ""
 msgstr "Odklopite '%s' iz '%s'"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Vrstica:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7701,6 +7703,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10790,8 +10801,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Odstrani Gradnik VizualnaSkripta"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10957,6 +10969,13 @@ msgid "Open Documentation"
 msgstr "Odpri Nedavne"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -11007,12 +11026,14 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr ""
+"Naredi primer iz izbranih prizorov, ki bo naslednik izbranega gradnika."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11141,6 +11162,10 @@ msgid "A directory with the same name exists."
 msgstr "Datoteka ali mapa s tem imenom že obstaja."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Datoteka ne obstaja."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Uporabiti moraš valjavno razširitev."
@@ -11182,6 +11207,11 @@ msgstr "Zaženi Skripto"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Invalid path."
+msgstr "Neveljavna Pot."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12273,6 +12303,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12294,6 +12328,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Neveljavno ime."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12979,6 +13039,18 @@ msgstr ""
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
 
+#~ msgid "Not in resource path."
+#~ msgstr "Ni na poti virov."
+
+#~ msgid "Revert"
+#~ msgstr "Povrni"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Tega dejanja ni mogoče razveljaviti. Vseeno povrni?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Povrni Prizor"
+
 #~ msgid "Issue Tracker"
 #~ msgstr "Sledilnik Napak"
 
@@ -13178,10 +13250,6 @@ msgstr "Konstante ni možno spreminjati."
 
 #~ msgid "Edit Variable:"
 #~ msgstr "Uredi Spremenljivko:"
-
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr ""
-#~ "Naredi primer iz izbranih prizorov, ki bo naslednik izbranega gradnika."
 
 #~ msgid "Line:"
 #~ msgstr "Vrstica:"

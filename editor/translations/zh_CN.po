@@ -60,12 +60,18 @@
 # silentbird <silentbird520@outlook.com>, 2019.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020.
 # Revan Ji <jiruifancr@gmail.com>, 2020.
+# nieyuanhong <15625988003@163.com>, 2020.
+# binotaliu <binota@protonmail.ch>, 2020.
+# BinotaLIU <binota@protonmail.ch>, 2020.
+# Tim Bao <honiebao@gmail.com>, 2020.
+# UnluckyNinja <unluckyninja1994@gmail.com>, 2020.
+# 无双流 <1257678024@qq.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-05-01 11:42+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"Last-Translator: UnluckyNinja <unluckyninja1994@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -73,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.2\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -82,25 +88,25 @@ msgstr "convert()的参数类型无效，请使用TYPE_*常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "预期为长度为1的字符串（一个字符）。"
+msgstr "仅需要长度为1的字符串（1字符）。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "解码的字节不足，或格式无效。"
+msgstr "没有足够的字节来解码，或格式无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "表达式中的输入 %i 无效（未传递）"
+msgstr "表达式中包含得%i无效（未传递）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self 无法使用，因为实例为空（未传递）"
+msgstr "实例为null（未传递）,无法传递自身self"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "操作符 %s 的操作数 %s 和 %s 无效。"
+msgstr "操作符 %s ，%s 和 %s 的操作数无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -108,15 +114,15 @@ msgstr "将 %s 类型作为 %s 基础类型的索引无效"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "将“%s”作为 %s 基础类型的具名索引无效"
+msgstr "将 '%s' 作为 %s 基础类型的具名索引无效"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "构造“%s”的参数无效"
+msgstr "构造 '%s' 的参数无效"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "调用“%s”时："
+msgstr "在调用'%s'时："
 
 #: core/ustring.cpp
 msgid "B"
@@ -802,6 +808,10 @@ msgid "Method in target node must be specified."
 msgstr "必须指定目标节点的方法。"
 
 #: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr "方法名称必须是一个有效的标识符。"
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -881,7 +891,6 @@ msgstr "无法连接信号"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1489,17 +1498,9 @@ msgstr "启用"
 msgid "Rearrange Autoloads"
 msgstr "重排序Autoload"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "路径无效。"
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "文件不存在。"
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "不在资源路径下。"
+msgid "Can't add autoload:"
+msgstr "无法加载autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1874,7 +1875,7 @@ msgstr "切换模式"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
-msgstr "设置路径焦点"
+msgstr "聚焦路径"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
@@ -2435,12 +2436,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "无法重新加载未保存的场景。"
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "恢复"
+msgid "Reload Saved Scene"
+msgstr "重载已保存场景"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "此操作无法撤销，是否继续？"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"当前场景有未保存的更改。\n"
+"是否重新加载保存的场景？ 此操作无法撤消。"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2658,7 +2663,7 @@ msgstr "下一个标签页"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr "上一个标签页"
+msgstr "上一个标签"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
@@ -2713,10 +2718,6 @@ msgstr "撤销"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "重做"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "恢复场景"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2862,7 +2863,7 @@ msgstr "编辑器布局"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
-msgstr "截取屏幕"
+msgstr "截屏"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
@@ -3344,6 +3345,10 @@ msgstr "无法执行脚本:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "您是否遗漏了_run()方法？"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr "按住Ctrl键来四舍五入至整数。 按住Shift键获取更精确的变化。"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3931,6 +3936,10 @@ msgstr "导入后处理脚本无效或已损坏（请查看控制台）："
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "后处理脚本运行发生错误："
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr "你是否在 `post_import()` 方法中返回了 Node 衍生对象？"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6319,7 +6328,9 @@ msgstr "同步骨骼"
 msgid ""
 "No texture in this polygon.\n"
 "Set a texture to be able to edit UV."
-msgstr "此多边形没有贴图，请先为它设置贴图后再尝试编辑UV。"
+msgstr ""
+"此多边形没有贴图。\n"
+"请先为它设置贴图后再尝试编辑UV。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -6648,7 +6659,7 @@ msgstr "查找下一项"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr "查找上一项"
+msgstr "查找上一个"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
@@ -6840,12 +6851,12 @@ msgid ""
 msgstr "未找到方法“%s”（连接于信号“%s”、来自节点“%s”、目标节点“%s”）。"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "行"
+msgid "[Ignore]"
+msgstr "[忽略]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "（忽略）"
+msgid "Line"
+msgstr "行"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -6930,7 +6941,7 @@ msgstr "切换注释"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "折叠/展开当前行"
+msgstr "折叠/展开行"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -6946,7 +6957,7 @@ msgstr "拷贝到下一行"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
-msgstr "代码补全"
+msgstr "符号自动补全"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
@@ -6954,7 +6965,7 @@ msgstr "所选内容求值"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
-msgstr "修剪行后空白"
+msgstr "移除尾部空格"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Spaces"
@@ -7271,27 +7282,27 @@ msgstr "使用GLES2渲染器时不可用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr "自由视图 左"
+msgstr "自由观看向左"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr "自由视图 右"
+msgstr "自由观看向右"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "自由视图 前"
+msgstr "自由观看向前"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "自由视图 后"
+msgstr "自由观看向后"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "自由视图 上"
+msgstr "自由观看向上"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "自由视图 下"
+msgstr "自由观看向下"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -7316,6 +7327,20 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm对话框"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"点击以切换可见状态。\n"
+"\n"
+"睁眼：标志可见。\n"
+"闭眼：标志隐藏。\n"
+"半睁眼：标志也可穿过不透明的表面可见（“X光”）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7345,11 +7370,11 @@ msgstr "使用吸附"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
-msgstr "底视图"
+msgstr "仰视图。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr "顶视图"
+msgstr "俯视"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
@@ -7357,7 +7382,7 @@ msgstr "后视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View"
-msgstr "前视图"
+msgstr "正视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View"
@@ -7369,7 +7394,7 @@ msgstr "右视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
-msgstr "切换投影/正交视图"
+msgstr "切换透视图/正交视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
@@ -7385,7 +7410,7 @@ msgstr "聚焦选中项"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
-msgstr "切换自由观察模式"
+msgstr "切换自由观看"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7394,7 +7419,7 @@ msgstr "变换"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr "将对象吸附到地板"
+msgstr "吸附物体到地面"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -8174,7 +8199,7 @@ msgid ""
 "Drag handles to edit Rect.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"拖拽手柄以编辑举行。\n"
+"拖拽手柄以编辑矩形。\n"
 "点击另一个图块进行编辑。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -8336,7 +8361,7 @@ msgstr "没有提供提交消息"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "No files added to stage"
-msgstr "没有文件添加到舞台"
+msgstr "没有文件被添加到暂存区"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
@@ -8384,11 +8409,11 @@ msgstr "类型更改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage Selected"
-msgstr "舞台选定"
+msgstr "将选定放入暂存区"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
-msgstr "所有舞台"
+msgstr "暂存全部"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Add a commit message"
@@ -8632,7 +8657,7 @@ msgstr "返回NaN和标量参数之间比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr "小于 （*）"
+msgstr "小于 （<）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
@@ -8640,7 +8665,7 @@ msgstr "小于或等于（<=）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Not Equal (!=)"
-msgstr "不等于（！=）"
+msgstr "不等于（!=）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8650,7 +8675,7 @@ msgstr "如果提供的布尔值是true或false，则返回关联的向量。"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated scalar if the provided boolean value is true or false."
-msgstr "如果提供的布尔值是true或false，则返回关联的向量。"
+msgstr "如果提供的布尔值是true或false，则返回关联的标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the comparison between two parameters."
@@ -8953,7 +8978,7 @@ msgstr "执行立方体纹理查找。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the texture lookup."
-msgstr "执行立方体纹理查找。"
+msgstr "执行纹理查找。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Cubic texture uniform lookup."
@@ -8981,9 +9006,11 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"计算一对矢量的外部乘积。 OuterProduct 将第一个参数\"c\"视为列矢量（包含一列的"
-"矩阵），将第二个参数\"r\"视为行矢量（具有一行的矩阵），并执行线性代数矩阵乘以"
-"\"c = r\"，生成行数为\"c\"中的组件，其列数是\"r\"中的组件数。"
+"计算一对矢量的外积。\n"
+"\n"
+"OuterProduct 将第一个参数\"c\"视为列矢量（包含一列的矩阵），将第二个参数\"r"
+"\"视为行矢量（具有一行的矩阵），并执行线性代数矩阵乘以\"c * r\"，生成行数为"
+"\"c\"中的组件，其列数是\"r\"中的组件数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
@@ -9101,9 +9128,10 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
-"平滑步函数（矢量（边缘0）、矢量（边缘1）、矢量（x））。 如果\"x\"小于"
-"\"edge0\"，则返回 0.0;如果\"x\"大于\"edge1\"，则返回 0.0。否则，返回值将使用"
-"赫密特多项式在 0.0 和 1.0 之间插值。"
+"SmoothStep 函数（矢量（edge0）、矢量（edge1）、矢量（x））。 \n"
+"\n"
+"如果\"x\"小于\"edge0\"，则返回 0.0;如果\"x\"大于\"edge1\"，则返回 0.0。否则，"
+"返回值将使用赫密特多项式在 0.0 和 1.0 之间插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9708,7 +9736,9 @@ msgstr ""
 msgid ""
 "Language changed.\n"
 "The interface will update after restarting the editor or project manager."
-msgstr "语言已更改。 重新启动编辑器或项目管理器后，界面将更新。"
+msgstr ""
+"语言已更改。\n"
+"界面将在重新启动编辑器或项目管理器后更新。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9916,7 +9946,7 @@ msgstr "滚轮向下滚动。"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Global Property"
-msgstr "添加Getter属性"
+msgstr "添加全局属性"
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
@@ -10310,7 +10340,7 @@ msgstr "场景运行设置"
 
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
-msgstr "没有选中节点来添加实例。"
+msgstr "没有可实例化场景的父节点。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -10335,8 +10365,8 @@ msgid "Instance Child Scene"
 msgstr "实例化子场景"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "清除脚本"
+msgid "Detach Script"
+msgstr "分离脚本"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10494,6 +10524,15 @@ msgid "Open Documentation"
 msgstr "打开文档"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"无法附加脚本：没有语言被注册。\n"
+"这可能是因为这个编辑器是在所有语言模块被关闭的状态下被构建的。"
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "添加子节点"
 
@@ -10540,12 +10579,12 @@ msgid ""
 msgstr "实例化场景文件为一个节点，如果没有根节点则创建一个继承自该文件的场景。"
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr "为选中节点创建或设置脚本。"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "清除选中节点的脚本。"
+msgid "Detach the script from the selected node."
+msgstr "从选中节点分离脚本。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10676,6 +10715,10 @@ msgid "A directory with the same name exists."
 msgstr "存在同名目录。"
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "文件不存在。"
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "扩展名无效。"
 
@@ -10716,6 +10759,10 @@ msgid "File exists, it will be reused."
 msgstr "文件存在，将被重用。"
 
 #: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "路径无效。"
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid class name."
 msgstr "无效的类别名称。"
 
@@ -10729,7 +10776,7 @@ msgstr "脚本路径/名称有效。"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "允许：a-z，a-z，0-9，u和。"
+msgstr "允许：a-z，a-z，0-9，_ 和 ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -10979,19 +11026,19 @@ msgstr "改变方框大小"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"
-msgstr "修改胶囊体半径"
+msgstr "修改椭圆形半径"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Height"
-msgstr "修改胶囊体高度"
+msgstr "修改椭圆形高度"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Cylinder Shape Radius"
-msgstr "修改胶囊体半径"
+msgstr "修改圆柱形半径"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Cylinder Shape Height"
-msgstr "修改胶囊体高度"
+msgstr "修改圆柱形高度"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
@@ -11003,7 +11050,7 @@ msgstr "改变圆柱体半径"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Height"
-msgstr "修改胶囊体高度"
+msgstr "修改圆柱体高度"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Torus Inner Radius"
@@ -11696,7 +11743,7 @@ msgstr "搜索可视化脚本节点"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Get %s"
-msgstr "得到 %s"
+msgstr "获取 %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -11743,6 +11790,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "未在编辑器设置或预设中配置调试密钥库。"
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "用于发布的密钥存储在导出预设中未被正确设置。"
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr "自定义构建需要在“编辑器设置”中使用有效的Android SDK路径。"
 
@@ -11763,6 +11814,34 @@ msgstr "APK扩展的公钥无效。"
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "无效的包名称："
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+"“android/modules”项目设置（变更于Godot 3.2.2）中包含了无效模"
+"组“GodotPaymentV3”.\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr "必须启用“使用自定义构建”才能使用插件。"
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr "“自由度”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr "“手部追踪”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr "“焦点感知”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12384,15 +12463,15 @@ msgid ""
 "children placement behavior.\n"
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
-"除非脚本配置其子代放置行为，否则容器本身没有任何作用。 如果您不想添加脚本，请"
-"改用普通的Control节点。"
+"除非脚本配置其子代放置行为，否则容器本身没有任何作用。\n"
+"如果您不想添加脚本，请改用普通的Control节点。"
 
 #: scene/gui/control.cpp
 msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
-"由于该控件的 Mouse Filter 设置为  \"Ignore\" 因此它的 Hint Tooltip 将不会展"
+"由于该控件的 Mouse Filter 设置为 \"Ignore\" 因此它的 Hint Tooltip 将不会展"
 "示。将 Mouse Filter 设置为 \"Stop\" 或 \"Pass\" 可修正此问题。"
 
 #: scene/gui/dialogs.cpp
@@ -12422,8 +12501,9 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer旨在与单个子控件一起使用。 使用容器作为子容器（VBox，HBox等）"
-"或控件，并手动设置自定义最小尺寸。"
+"ScrollContainer旨在与单个子控件一起使用。\n"
+"子节点应该是单个容器（VBox、HBox等）或者使用单个控件并手动设置其自定义最小尺"
+"寸。"
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -12477,6 +12557,21 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Not in resource path."
+#~ msgstr "不在资源路径下。"
+
+#~ msgid "Revert"
+#~ msgstr "恢复"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "此操作无法撤销，是否继续？"
+
+#~ msgid "Revert Scene"
+#~ msgstr "恢复场景"
+
+#~ msgid "Clear Script"
+#~ msgstr "清除脚本"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "问题跟踪器"

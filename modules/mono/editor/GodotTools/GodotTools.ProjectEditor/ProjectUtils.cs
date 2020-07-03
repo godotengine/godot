@@ -168,6 +168,21 @@ namespace GodotTools.ProjectEditor
             return result.ToArray();
         }
 
+        public static void EnsureHasProjectTypeGuids(MSBuildProject project)
+        {
+            var root = project.Root;
+
+            bool found = root.PropertyGroups.Any(pg =>
+                string.IsNullOrEmpty(pg.Condition) && pg.Properties.Any(p => p.Name == "ProjectTypeGuids"));
+
+            if (found)
+                return;
+
+            root.AddProperty("ProjectTypeGuids", ProjectGenerator.GodotDefaultProjectTypeGuids);
+
+            project.HasUnsavedChanges = true;
+        }
+
         ///  Simple function to make sure the Api assembly references are configured correctly
         public static void FixApiHintPath(MSBuildProject project)
         {
@@ -176,7 +191,7 @@ namespace GodotTools.ProjectEditor
             void AddPropertyIfNotPresent(string name, string condition, string value)
             {
                 if (root.PropertyGroups
-                    .Any(g => (g.Condition == string.Empty || g.Condition.Trim() == condition) &&
+                    .Any(g => (string.IsNullOrEmpty(g.Condition) || g.Condition.Trim() == condition) &&
                               g.Properties
                                   .Any(p => p.Name == name &&
                                             p.Value == value &&
@@ -267,7 +282,7 @@ namespace GodotTools.ProjectEditor
             bool hasGodotProjectGeneratorVersion = false;
             bool foundOldConfiguration = false;
 
-            foreach (var propertyGroup in root.PropertyGroups.Where(g => g.Condition == string.Empty))
+            foreach (var propertyGroup in root.PropertyGroups.Where(g => string.IsNullOrEmpty(g.Condition)))
             {
                 if (!hasGodotProjectGeneratorVersion && propertyGroup.Properties.Any(p => p.Name == "GodotProjectGeneratorVersion"))
                     hasGodotProjectGeneratorVersion = true;
@@ -283,7 +298,7 @@ namespace GodotTools.ProjectEditor
 
             if (!hasGodotProjectGeneratorVersion)
             {
-                root.PropertyGroups.First(g => g.Condition == string.Empty)?
+                root.PropertyGroups.First(g => string.IsNullOrEmpty(g.Condition))?
                     .AddProperty("GodotProjectGeneratorVersion", Assembly.GetExecutingAssembly().GetName().Version.ToString());
                 project.HasUnsavedChanges = true;
             }
@@ -350,6 +365,26 @@ namespace GodotTools.ProjectEditor
                 MigrateConfigurationConditions("Release", "ExportRelease");
                 MigrateConfigurationConditions("Tools", "Debug"); // Must be last
             }
+        }
+
+        public static void EnsureHasNugetNetFrameworkRefAssemblies(MSBuildProject project)
+        {
+            var root = project.Root;
+
+            bool found = root.ItemGroups.Any(g => string.IsNullOrEmpty(g.Condition) && g.Items.Any(
+                item => item.ItemType == "PackageReference" && item.Include == "Microsoft.NETFramework.ReferenceAssemblies"));
+
+            if (found)
+                return;
+
+            var frameworkRefAssembliesItem = root.AddItem("PackageReference", "Microsoft.NETFramework.ReferenceAssemblies");
+
+            // Use metadata (child nodes) instead of attributes for the PackageReference.
+            // This is for compatibility with 3.2, where GodotTools uses an old Microsoft.Build.
+            frameworkRefAssembliesItem.AddMetadata("Version", "1.0.0");
+            frameworkRefAssembliesItem.AddMetadata("PrivateAssets", "All");
+
+            project.HasUnsavedChanges = true;
         }
     }
 }

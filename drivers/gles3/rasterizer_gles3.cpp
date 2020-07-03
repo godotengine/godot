@@ -194,7 +194,7 @@ void RasterizerGLES3::initialize() {
 
 void RasterizerGLES3::begin_frame(double frame_step) {
 
-	time_total += frame_step;
+	time_total += frame_step * time_scale;
 
 	if (frame_step == 0) {
 		//to avoid hiccups
@@ -331,6 +331,11 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
+void RasterizerGLES3::set_shader_time_scale(float p_scale) {
+
+	time_scale = p_scale;
+}
+
 void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
@@ -372,18 +377,7 @@ void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 
 	if (OS::get_singleton()->is_layered_allowed()) {
-		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
-			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
-			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
-			if (data) {
-				glReadPixels(0, 0, wndsize.x, wndsize.y, GL_BGRA, GL_UNSIGNED_BYTE, data);
-				OS::get_singleton()->swap_layered_buffer();
-
-				return;
-			}
-#endif
-		} else {
+		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 			//clear alpha
 			glColorMask(false, false, false, true);
 			glClearColor(0, 0, 0, 1);
@@ -431,6 +425,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	storage->scene = scene;
 
 	time_total = 0;
+	time_scale = 1;
 }
 
 RasterizerGLES3::~RasterizerGLES3() {

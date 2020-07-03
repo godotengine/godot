@@ -21,17 +21,16 @@ def make_editor_icons_action(target, source, env):
 
         icons_string.write('\t"')
 
-        with open(fname, 'rb') as svgf:
+        with open(fname, "rb") as svgf:
             b = svgf.read(1)
-            while(len(b) == 1):
+            while len(b) == 1:
                 icons_string.write("\\" + str(hex(ord(b)))[1:])
                 b = svgf.read(1)
-
 
         icons_string.write('"')
         if fname != svg_icons[-1]:
             icons_string.write(",")
-        icons_string.write('\n')
+        icons_string.write("\n")
 
     s = StringIO()
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
@@ -40,12 +39,12 @@ def make_editor_icons_action(target, source, env):
     s.write("static const int editor_icons_count = {};\n".format(len(svg_icons)))
     s.write("static const char *editor_icons_sources[] = {\n")
     s.write(icons_string.getvalue())
-    s.write('};\n\n')
+    s.write("};\n\n")
     s.write("static const char *editor_icons_names[] = {\n")
 
     # this is used to store the indices of thumbnail icons
-    thumb_medium_indices = [];
-    thumb_big_indices = [];
+    thumb_medium_indices = []
+    thumb_big_indices = []
     index = 0
     for f in svg_icons:
 
@@ -53,7 +52,7 @@ def make_editor_icons_action(target, source, env):
 
         icon_name = os.path.basename(fname)[5:-4].title().replace("_", "")
         # some special cases
-        if icon_name in ['Int', 'Bool', 'Float']:
+        if icon_name in ["Int", "Bool", "Float"]:
             icon_name = icon_name.lower()
         if icon_name.endswith("MediumThumb"):  # don't know a better way to handle this
             thumb_medium_indices.append(str(index))
@@ -64,11 +63,11 @@ def make_editor_icons_action(target, source, env):
 
         if fname != svg_icons[-1]:
             s.write(",")
-        s.write('\n')
+        s.write("\n")
 
         index += 1
 
-    s.write('};\n')
+    s.write("};\n")
 
     if thumb_medium_indices:
         s.write("\n\n")
@@ -92,5 +91,5 @@ def make_editor_icons_action(target, source, env):
     icons_string.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     subprocess_main(globals())

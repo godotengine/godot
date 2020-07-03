@@ -17,11 +17,12 @@
 # Ervin <zetsmart@gmail.com>, 2019.
 # Tilto_ <tilto0822@develable.xyz>, 2020.
 # Myeongjin Lee <aranet100@gmail.com>, 2020.
+# Doyun Kwon <caen4516@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-01 11:42+0000\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
 "Last-Translator: Ch. <ccwpc@hanmail.net>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.2\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -767,6 +768,10 @@ msgid "Method in target node must be specified."
 msgstr "대상 노드에 있는 메서드는 반드시 지정해야 합니다."
 
 #: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr "메서드 이름은 올바른 식별자여야 합니다."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -850,7 +855,6 @@ msgstr "시그널을 연결할 수 없음"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -977,7 +981,7 @@ msgid ""
 "Changes will only take effect when reloaded."
 msgstr ""
 "씬 '%s'이(가) 현재 편집중입니다.\n"
-"변경 사항은 다시 로드된 뒤에 반영됩니다."
+"변경 사항은 다시 불러온 뒤에 반영됩니다."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -985,7 +989,7 @@ msgid ""
 "Changes will only take effect when reloaded."
 msgstr ""
 "리소스 '%s'이(가) 현재 사용중입니다.\n"
-"변경 사항은 다시 로드된 뒤에 반영됩니다."
+"변경 사항은 다시 불러온 뒤에 반영됩니다."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1459,17 +1463,9 @@ msgstr "켜기"
 msgid "Rearrange Autoloads"
 msgstr "오토로드 다시 정렬"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "올바르지 않은 경로입니다."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "파일이 존재하지 않습니다."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "리소스 경로에 없습니다."
+msgid "Can't add autoload:"
+msgstr "오토로드를 추가할 수 없음:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1586,8 +1582,9 @@ msgid ""
 "Enabled'."
 msgstr ""
 "대상 플랫폼에서 드라이버가 GLES2로 폴백하기 위해 'ETC' 텍스처 압축이 필요합니"
-"다. 프로젝트 설정에서 'Import Etc' 설정을 켜거나, 'Driver Fallback Enabled' "
-"설정을 끄세요."
+"다.\n"
+"프로젝트 설정에서 'Import Etc' 설정을 활성화 하거나, 'Driver Fallback "
+"Enabled' 설정을 비활성화 하세요."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1968,7 +1965,7 @@ msgstr "메서드"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "테마 속성"
+msgstr "테마 속성들"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2420,12 +2417,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "저장하지 않은 씬은 새로고침할 수 없습니다."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "되돌리기"
+msgid "Reload Saved Scene"
+msgstr "저장된 씬 새로고침"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "이 행동은 취소할 수 없습니다. 무시하고 되돌릴까요?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"현재 씬에는 저장하지 않은 변경사항이 있습니다.\n"
+"그래도 저장된 씬을 새로고침하시겠습니까? 이 동작은 되돌릴 수 없습니다."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2710,10 +2711,6 @@ msgid "Redo"
 msgstr "다시 실행"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "씬 되돌리기"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "프로젝트 또는 씬 관련 여러가지 도구들."
 
@@ -2849,8 +2846,8 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"이 설정이 활성화된 경우, 어떤 스크립트든 저장하면 실행중인 게임에도 반영됩니"
-"다.\n"
+"이 설정이 활성화된 경우, 어떤 스크립트든 저장하면 실행중인 게임에도 새로고침"
+"되어 반영됩니다.\n"
 "원격 장치에서 사용중인 경우 네트워크 파일 시스템 기능을 활성화하면 더욱 효율"
 "적입니다."
 
@@ -3353,6 +3350,11 @@ msgstr "스크립트를 실행할 수 없음:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "'_run' 메서드를 잊었나요?"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Ctrl을 눌러 정수로 반올림합니다. Shift를 눌러 좀 더 정밀하게 조작합니다."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -3946,6 +3948,10 @@ msgstr "후 가져오기 용 스크립트가 잘못됨/망가짐 (콘솔을 확�
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "후 가져오기 스크립트 실행 중 오류:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr "`post_import()` 메소드에서 Node에서 상속받은 객체를 반환했습니까?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6643,7 +6649,7 @@ msgstr "실행하기 위한 스크립트를 가질 수 없습니다."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr "스크립트 다시 불러오기에 실패했습니다. 콘솔에서 오류를 확인하세요."
+msgstr "스크립트 새로고침에 실패했습니다. 콘솔에서 오류를 확인하세요."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
@@ -6740,7 +6746,7 @@ msgstr "모두 저장"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
-msgstr "스크립트 다시 불러오기"
+msgstr "스크립트 새로고침"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Copy Script Path"
@@ -6765,7 +6771,7 @@ msgstr "테마 가져오기..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr "테마 다시 불러오기"
+msgstr "테마 새로고침"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
@@ -6839,7 +6845,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Reload"
-msgstr "다시 불러오기"
+msgstr "새로고침"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -6878,12 +6884,12 @@ msgstr ""
 "다."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "행"
+msgid "[Ignore]"
+msgstr "[무시]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(무시함)"
+msgid "Line"
+msgstr "행"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7355,6 +7361,21 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm 대화 상자"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"표시 상태를 토글하려면 클릭하세요.\n"
+"\n"
+"열린 눈: 기즈모가 보입니다.\n"
+"닫힌 눈: 기즈모가 숨겨집니다.\n"
+"반 열린 눈: 불투명한 표면에도 기즈모가 보입니다 (\"엑스레이\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -9233,8 +9254,8 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"카메라의 화면 방향과 표면 노멀의 스칼라곱을 기반으로 하는 폴오프를 반환합니"
-"다 (폴오프와 관련된 입력을 전달함)."
+"표면의 법선 벡터와 카메라가 바라보는 방향 벡터의 내적을 기반으로 한 폴오프를 "
+"반환합니다. (폴오프와 관련된 입력을 전달함)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9407,15 +9428,16 @@ msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"리소스가 아닌 파일/폴더 내보내기 필터 (쉼표로 구분, 예: *.json, *.txt, docs/"
-"*)"
+"리소스가 아닌 파일/폴더 내보내기 필터\n"
+"(쉼표로 구분, 예: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"프로젝트에서 제외할 파일/폴더 필터 (쉼표로 구분, 예: *.json, *.txt, docs/*)"
+"프로젝트에서 제외할 파일/폴더 필터\n"
+"(쉼표로 구분, 예: *.json, *.txt, docs/*)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -10405,8 +10427,8 @@ msgid "Instance Child Scene"
 msgstr "자식 씬 인스턴스화"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "스크립트 삭제"
+msgid "Detach Script"
+msgstr "스크립트 떼기"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10569,6 +10591,15 @@ msgid "Open Documentation"
 msgstr "문서 열기"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"스크립트를 붙일 수 없습니다: 언어가 하나도 등록되지 않았습니다.\n"
+"에디터가 모든 언어를 비활성화한 채로 빌드되어서 그럴 가능성이 높습니다."
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "자식 노드 추가"
 
@@ -10616,12 +10647,12 @@ msgstr ""
 "씬 파일을 노드로 인스턴스합니다. 루트 노드가 없으면 상속된 씬을 만듭니다."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
-msgstr "선택한 노드에 새로운 혹은 존재하는 스크립트를 붙입니다."
+msgid "Attach a new or existing script to the selected node."
+msgstr "선택한 노드에 새 스크립트나 기존 스크립트를 붙입니다."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "선택한 노드의 스크립트를 삭제합니다."
+msgid "Detach the script from the selected node."
+msgstr "선택한 노드에서 스크립트를 뗍니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10752,6 +10783,10 @@ msgid "A directory with the same name exists."
 msgstr "같은 이름의 디렉토리가 있습니다."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "파일이 존재하지 않습니다."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "잘못된 확장자."
 
@@ -10790,6 +10825,10 @@ msgstr "스크립트 열기"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "파일이 있습니다. 다시 사용할 것입니다."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "올바르지 않은 경로입니다."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11834,6 +11873,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "Debug keystore를 편집기 설정과 프리셋에 설정하지 않았습니다."
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "내보내기 프리셋에 배포 keystorke가 잘못 설정되어 있습니다."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr "맞춤 빌드에는 편집기 설정에서 올바른 안드로이드 SDK 경로가 필요합니다."
 
@@ -11856,6 +11899,39 @@ msgstr "APK 확장에 잘못된 공개 키입니다."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "잘못된 패키지 이름:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+"\"android/modules\" 프로젝트 세팅에 잘못된 \"GodotPaymentV3\" 모듈이 포함되"
+"어 있습니다. (Godot 3.2.2 에서 변경됨).\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr "플러그인을 사용하려면 \"커스텀 빌드 사용\"이 활성화되어야 합니다."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+"\"자유도(DoF)\"는 \"Xr 모드\" 가 \"Oculus Mobile VR\" 일 때만 사용 가능합니"
+"다."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"손 추적\" 은 \"Xr 모드\" 가 \"Oculus Mobile VR\"일 때만 사용 가능합니다."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"포커스 인식\"은 \"Xr 모드\"가 \"Oculus Mobile VR\" 인 경우에만 사용 가능합"
+"니다."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12615,6 +12691,21 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Not in resource path."
+#~ msgstr "리소스 경로에 없습니다."
+
+#~ msgid "Revert"
+#~ msgstr "되돌리기"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "이 행동은 취소할 수 없습니다. 무시하고 되돌릴까요?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "씬 되돌리기"
+
+#~ msgid "Clear Script"
+#~ msgstr "스크립트 삭제"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "이슈 트래커"

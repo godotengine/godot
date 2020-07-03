@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-04 15:12+0000\n"
+"PO-Revision-Date: 2020-06-22 06:40+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -790,6 +790,11 @@ msgid "Method in target node must be specified."
 msgstr "Methode in doelknoop moet gespecificeerd worden."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Naam is geen geldige identifier:"
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -873,7 +878,6 @@ msgstr "Kan signaal niet verbinden"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1488,17 +1492,9 @@ msgstr "Inschakelen"
 msgid "Rearrange Autoloads"
 msgstr "Autoloads opnieuw ordenen"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Ongeldig pad."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Bestand bestaat niet."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Niet in bronpad."
+msgid "Can't add autoload:"
+msgstr "Autoload kon niet toevoegd worden:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1996,15 +1992,15 @@ msgstr "standaard:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "Methodes"
+msgstr "Methoden"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "Thema Eigenschappen"
+msgstr "Thema-eigenschappen"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Enumeraties"
+msgstr "Enumeratie"
 
 #: editor/editor_help.cpp
 msgid "Constants"
@@ -2012,7 +2008,7 @@ msgstr "Constanten"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Eigenschap Beschrijvingen"
+msgstr "Eigenschapbeschrijvingen"
 
 #: editor/editor_help.cpp
 msgid "(value)"
@@ -2028,7 +2024,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr "Methode Beschrijvingen"
+msgstr "Methodebeschrijvingen"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2458,13 +2454,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Een scène die nooit opgeslagen is kan niet opnieuw laden worden."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Herstellen"
+msgid "Reload Saved Scene"
+msgstr "Opgeslagen scène herladen"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"Deze actie kan niet ongedaan gemaakt worden. WIlt u desondanks terugzetten?"
+"De huidige scène bevat niet opgeslagen veranderingen.\n"
+"Scène desondanks herladen? Dit kan niet ongedaan gemaakt worden."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2749,10 +2748,6 @@ msgstr "Ongedaan maken"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Opnieuw"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Scène terugzetten"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3404,6 +3399,12 @@ msgstr "Script kon niet uitgevoerd worden:"
 msgid "Did you forget the '_run' method?"
 msgstr "Ben je de '_run' methode vergeten?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Houdt Ctrl ingedrukt om op gehele getallen af te ronden. Houdt Shift "
+"ingedrukt voor preciezere veranderingen."
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Selecteer een of meer knopen om te importeren"
@@ -3999,6 +4000,11 @@ msgstr "Ongeldig/gebroken post-import script (zie console):"
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Fout bij uitvoeren post-import script:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+"Gaf je een van Node afstammend object terug in de `post_import()`-methode?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6955,12 +6961,12 @@ msgid ""
 msgstr "Ontbrekende verbonden methode '%s' voor signaal '%s' naar knoop '%s'."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Regel"
+msgid "[Ignore]"
+msgstr "[Negeren]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(negeren)"
+msgid "Line"
+msgstr "Regel"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7433,6 +7439,20 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm Dialoog"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"Klik om te wisselen tussen zichtbaarheidsweergaven.\n"
+"\n"
+"Open oog: handvat is zichtbaar.\n"
+"Gesloten oog: handvat is verborgen.\n"
+"Half open oog: handvat is ook zichtbaar door ondoorzichtige oppervlaktes."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10538,8 +10558,8 @@ msgid "Instance Child Scene"
 msgstr "Scène instantiëren"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Script wissen"
+msgid "Detach Script"
+msgstr "Script losmaken"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10705,6 +10725,15 @@ msgid "Open Documentation"
 msgstr "Open Godot online documentatie"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"Script kon niet aangebracht worden: er zijn geen talen ingesteld.\n"
+"Dit is waarschijnlijk omdat deze editor zonder taalmodules was gecompileerd."
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Knoop hieronder toevoegen"
 
@@ -10753,12 +10782,12 @@ msgstr ""
 "wortelknoop bestaat."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
-msgstr "Verbind een nieuw of bestaand script aan de geselecteerde knoop."
+msgid "Attach a new or existing script to the selected node."
+msgstr "Een nieuw of bestaand script verbinden aan de geselecteerde knoop."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "Script van geselecteerde knopen wissen."
+msgid "Detach the script from the selected node."
+msgstr "Script van geselecteerde knoop losmaken."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10889,6 +10918,10 @@ msgid "A directory with the same name exists."
 msgstr "Een map met dezelfde naam bestaat al."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Bestand bestaat niet."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Ongeldige extentie."
 
@@ -10927,6 +10960,10 @@ msgstr "Open Script"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "Bestand Bestaat, zal hergebruikt worden."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Ongeldig pad."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11978,6 +12015,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr "Debug Keystore is niet ingesteld of aanwezig in de Editor Settings."
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "Release-Keystore is verkeerd ingesteld in de exportinstelingen."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "Eigen build vereist een geldige Android SDK pad in de Editorinstellingen."
@@ -12001,6 +12042,40 @@ msgstr "Ongeldige publieke sleutel voor APK -uitbreiding."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Ongeldige pakketnaam:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+"Ongeldige \"GodotPaymentV3\" module ingesloten in de projectinstelling "
+"\"android/modules\" (veranderd in Godot 3.2.2).\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr "\"Use Custom Build\" moet geactiveerd zijn om plugins te gebruiken."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+"\"Degrees Of Freedom\" is alleen geldig als \"Xr Mode\" op \"Oculus Mobile VR"
+"\" staat."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"Hand Tracking\" is alleen geldig als \"Xr Mode\" op \"Oculus Mobile VR\" "
+"staat."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"Focus Awareness\" is alleen geldig als \"Xr Mode\" op \"Oculus Mobile VR\" "
+"staat."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12786,6 +12861,23 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Niet in bronpad."
+
+#~ msgid "Revert"
+#~ msgstr "Herstellen"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr ""
+#~ "Deze actie kan niet ongedaan gemaakt worden. WIlt u desondanks "
+#~ "terugzetten?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Scène terugzetten"
+
+#~ msgid "Clear Script"
+#~ msgstr "Script wissen"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Issue Tracker"

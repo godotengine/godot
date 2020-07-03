@@ -147,12 +147,12 @@ void Navigation::_navmesh_unlink(int p_id) {
 
 		Polygon &p = E->get();
 
-		int ec = p.edges.size();
+		int edge_count = p.edges.size();
 		Polygon::Edge *edges = p.edges.ptrw();
 
-		for (int i = 0; i < ec; i++) {
-			int next = (i + 1) % ec;
+		for (int i = 0; i < edge_count; i++) {
 
+			int next = (i + 1) % edge_count;
 			EdgeKey ek(edges[i].point, edges[next].point);
 			Map<EdgeKey, Connection>::Element *C = connections.find(ek);
 
@@ -249,10 +249,12 @@ void Navigation::_clip_path(Vector<Vector3> &path, Polygon *from_poly, const Vec
 	cut_plane.d = cut_plane.normal.dot(from);
 
 	while (from_poly != p_to_poly) {
-
+		int edge_count = from_poly->edges.size();
+		ERR_FAIL_COND_MSG(edge_count == 0, "Polygon has no edges.");
 		int pe = from_poly->prev_edge;
+		int next = (pe + 1) % edge_count;
 		Vector3 a = _get_vertex(from_poly->edges[pe].point);
-		Vector3 b = _get_vertex(from_poly->edges[(pe + 1) % from_poly->edges.size()].point);
+		Vector3 b = _get_vertex(from_poly->edges[next].point);
 
 		from_poly = from_poly->edges[pe].C;
 		ERR_FAIL_COND(!from_poly);
@@ -326,16 +328,18 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 	bool found_route = false;
 
 	List<Polygon *> open_list;
+	int begin_edge_count = begin_poly->edges.size();
 
-	for (int i = 0; i < begin_poly->edges.size(); i++) {
+	for (int i = 0; i < begin_edge_count; i++) {
 
 		if (begin_poly->edges[i].C) {
 
 			begin_poly->edges[i].C->prev_edge = begin_poly->edges[i].C_edge;
 #ifdef USE_ENTRY_POINT
+			int next = (i + 1) % begin_edge_count;
 			Vector3 edge[2] = {
 				_get_vertex(begin_poly->edges[i].point),
-				_get_vertex(begin_poly->edges[(i + 1) % begin_poly->edges.size()].point)
+				_get_vertex(begin_poly->edges[next].point)
 			};
 
 			Vector3 entry = Geometry::get_closest_point_to_segment(begin_poly->entry, edge);
@@ -384,7 +388,8 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 			break;
 		}
 
-		for (int i = 0; i < p->edges.size(); i++) {
+		int edge_count = p->edges.size();
+		for (int i = 0; i < edge_count; i++) {
 
 			Polygon::Edge &e = p->edges.write[i];
 
@@ -392,9 +397,10 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 				continue;
 
 #ifdef USE_ENTRY_POINT
+			int next = (i + 1) % edge_count;
 			Vector3 edge[2] = {
 				_get_vertex(p->edges[i].point),
-				_get_vertex(p->edges[(i + 1) % p->edges.size()].point)
+				_get_vertex(p->edges[next].point)
 			};
 
 			Vector3 entry = Geometry::get_closest_point_to_segment(p->entry, edge);
@@ -456,8 +462,10 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 					left = begin_point;
 					right = begin_point;
 				} else {
+					int edge_count = p->edges.size();
+					ERR_FAIL_COND_V_MSG(edge_count == 0, Vector<Vector3>(), "Polygon has no edges.");
 					int prev = p->prev_edge;
-					int prev_n = (p->prev_edge + 1) % p->edges.size();
+					int prev_n = (p->prev_edge + 1) % edge_count;
 					left = _get_vertex(p->edges[prev].point);
 					right = _get_vertex(p->edges[prev_n].point);
 
@@ -529,7 +537,9 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 #ifdef USE_ENTRY_POINT
 				Vector3 point = p->entry;
 #else
-				int prev_n = (p->prev_edge + 1) % p->edges.size();
+				int edge_count = p->edges.size();
+				ERR_FAIL_COND_V_MSG(edge_count == 0, Vector<Vector3>(), "Polygon has no edges.");
+				int prev_n = (p->prev_edge + 1) % edge_count;
 				Vector3 point = (_get_vertex(p->edges[prev].point) + _get_vertex(p->edges[prev_n].point)) * 0.5;
 #endif
 				path.push_back(point);
@@ -582,11 +592,12 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 
 			if (!use_collision) {
 
-				for (int i = 0; i < p.edges.size(); i++) {
+				int edge_count = p.edges.size();
+				for (int i = 0; i < edge_count; i++) {
 
 					Vector3 a, b;
-
-					Geometry::get_closest_points_between_segments(p_from, p_to, _get_vertex(p.edges[i].point), _get_vertex(p.edges[(i + 1) % p.edges.size()].point), a, b);
+					int next = (i + 1) % edge_count;
+					Geometry::get_closest_points_between_segments(p_from, p_to, _get_vertex(p.edges[i].point), _get_vertex(p.edges[next].point), a, b);
 
 					float d = a.distance_to(b);
 					if (d < closest_point_d) {

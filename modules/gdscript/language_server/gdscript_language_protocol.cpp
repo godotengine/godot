@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gdscript_language_protocol.h"
+
 #include "core/io/json.h"
 #include "core/os/copymem.h"
 #include "core/project_settings.h"
@@ -160,7 +161,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialized", "params"), &GDScriptLanguageProtocol::initialized);
 	ClassDB::bind_method(D_METHOD("on_client_connected"), &GDScriptLanguageProtocol::on_client_connected);
 	ClassDB::bind_method(D_METHOD("on_client_disconnected"), &GDScriptLanguageProtocol::on_client_disconnected);
-	ClassDB::bind_method(D_METHOD("notify_client", "p_method", "p_params"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("notify_client", "method", "params"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
 	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
 	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
@@ -188,8 +189,10 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 		Dictionary params;
 		params["path"] = workspace->root;
-		Dictionary request = make_notification("gdscrip_client/changeWorkspace", params);
+		Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
 
+		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
+				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
 		if (peer != NULL) {
 			String msg = JSON::print(request);
@@ -271,8 +274,11 @@ void GDScriptLanguageProtocol::stop() {
 
 void GDScriptLanguageProtocol::notify_client(const String &p_method, const Variant &p_params, int p_client_id) {
 	if (p_client_id == -1) {
+		ERR_FAIL_COND_MSG(latest_client_id == -1,
+				"GDScript LSP: Can't notify client as none was connected.");
 		p_client_id = latest_client_id;
 	}
+	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
 	ERR_FAIL_COND(peer == NULL);
 
@@ -293,13 +299,10 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server.instance();
 	singleton = this;
-	_initialized = false;
 	workspace.instance();
 	text_document.instance();
 	set_scope("textDocument", text_document.ptr());
 	set_scope("completionItem", text_document.ptr());
 	set_scope("workspace", workspace.ptr());
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
-	latest_client_id = 0;
-	next_client_id = 0;
 }

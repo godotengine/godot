@@ -9,6 +9,7 @@
 		- Glow
 		- Tonemap (Auto Exposure)
 		- Adjustments
+		These effects will only apply when the [Viewport]'s intended usage is "3D" or "3D Without Effects". This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>

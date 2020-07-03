@@ -307,10 +307,16 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  * using the following merit order:
  *  - If using NetworkClient, try to lookup project file or fail.
  *  - If --main-pack was passed by the user (`p_main_pack`), load it or fail.
- *  - Search for .pck file matching binary name. There are two possibilities:
- *    o exec_path.get_basename() + '.pck' (e.g. 'win_game.exe' -> 'win_game.pck')
- *    o exec_path + '.pck' (e.g. 'linux_game' -> 'linux_game.pck')
- *    For each tentative, if the file exists, load it or fail.
+ *  - Search for project PCKs automatically. For each step we try loading a potential
+ *    PCK, and if it doesn't work, we proceed to the next step. If any step succeeds,
+ *    we try loading the project settings, and abort if it fails. Steps:
+ *    o Bundled PCK in the executable.
+ *    o [macOS only] PCK with same basename as the binary in the .app resource dir.
+ *    o PCK with same basename as the binary in the binary's directory. We handle both
+ *      changing the extension to '.pck' (e.g. 'win_game.exe' -> 'win_game.pck') and
+ *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
+ *    o PCK with the same basename as the binary in the current working directory.
+ *      Same as above for the two possible PCK file names.
  *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
@@ -354,65 +360,68 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	String exec_path = OS::get_singleton()->get_executable_path();
 
 	if (exec_path != "") {
-		// Attempt with exec_name.pck
+		// We do several tests sequentially until one succeeds to find a PCK,
+		// and if so we attempt loading it at the end.
+
+		// Attempt with PCK bundled into executable.
+		bool found = _load_resource_pack(exec_path);
+
+		// Attempt with exec_name.pck.
 		// (This is the usual case when distributing a Godot game.)
+		String exec_dir = exec_path.get_base_dir();
+		String exec_filename = exec_path.get_file();
+		String exec_basename = exec_filename.get_basename();
 
 		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
 		// or the exec path's basename + '.pck' (Windows).
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-		String exec_dir = exec_path.get_base_dir();
-		String exec_filename = exec_path.get_file();
-		String exec_basename = exec_filename.get_basename();
-
-		// Attempt with PCK bundled into executable
-		bool found = _load_resource_pack(exec_path);
-
 #ifdef OSX_ENABLED
 		if (!found) {
-			// Attempt to load PCK from macOS .app bundle resources
+			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"));
 		}
 #endif
 
 		if (!found) {
-			// Try to load data pack at the location of the executable
-			// As mentioned above, we have two potential names to attempt
+			// Try to load data pack at the location of the executable.
+			// As mentioned above, we have two potential names to attempt.
 			found = _load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) || _load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"));
-
-			if (!found) {
-				// If we couldn't find them next to the executable, we attempt
-				// the current working directory. Same story, two tests.
-				found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
-			}
 		}
 
-		// If we opened our package, try and load our project
+		if (!found) {
+			// If we couldn't find them next to the executable, we attempt
+			// the current working directory. Same story, two tests.
+			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
+		}
+
+		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 			if (err == OK) {
-				// Load override from location of executable
-				// Optional, we don't mind if it fails
+				// Load override from location of the executable.
+				// Optional, we don't mind if it fails.
 				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
 			return err;
 		}
 	}
 
-	// Try to use the filesystem for files, according to OS. (only Android -when reading from pck- and iOS use this)
+	// Try to use the filesystem for files, according to OS.
+	// (Only Android -when reading from pck- and iOS use this.)
 
 	if (OS::get_singleton()->get_resource_dir() != "") {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
 		if (resource_path != "" && resource_path[resource_path.length() - 1] == '/') {
-			resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
+			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK) {
-			// Optional, we don't mind if it fails
+			// Optional, we don't mind if it fails.
 			_load_settings_text("res://override.cfg");
 		}
 		return err;
@@ -433,7 +442,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	while (true) {
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK) {
-			// Optional, we don't mind if it fails
+			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.plus_file("override.cfg"));
 			candidate = current_dir;
 			found = true;
@@ -452,14 +461,15 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	}
 
 	resource_path = candidate;
-	resource_path = resource_path.replace("\\", "/"); // windows path to unix path just in case
+	resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 	memdelete(d);
 
 	if (!found)
 		return err;
 
-	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
-		resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
+	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/') {
+		resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
+	}
 
 	return OK;
 }

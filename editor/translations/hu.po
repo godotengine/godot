@@ -790,6 +790,11 @@ msgstr "Nevezze meg a metódust a cél Node-ban!"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Nevezze meg a metódust a cél Node-ban!"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -878,7 +883,6 @@ msgstr "Csatlakoztató Jelzés:"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1514,18 +1518,9 @@ msgstr "Engedélyezés"
 msgid "Rearrange Autoloads"
 msgstr "AutoLoad-ok Átrendezése"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Érvénytelen Elérési Út."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "A fájl nem létezik."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Nincs az erőforrás elérési útban."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2537,12 +2532,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Nem lehet újratölteni egy olyan jelenetet, amit soha nem mentett el."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Visszaállítás"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Scene mentés"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Ez a művelet nem vonható vissza. Visszaállítja mindenképp?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2843,10 +2841,6 @@ msgstr "Visszavonás"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Mégis"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Scene visszaállítás"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3507,6 +3501,10 @@ msgstr "Nem sikerült a szkript futtatása:"
 msgid "Did you forget the '_run' method?"
 msgstr "Nem felejtette el a '_run' metódust?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Válassza ki az importálandó Node-okat"
@@ -4139,6 +4137,10 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Hiba történt az importálás utána szkript futtatásakor:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -7249,13 +7251,13 @@ msgid ""
 msgstr "'%s' Lecsatlakoztatása '%s'-ról"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Sor:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7746,6 +7748,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10844,8 +10855,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Szkript Létrehozása"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -11012,6 +11024,13 @@ msgid "Open Documentation"
 msgstr "Godot online dokumentáció megnyitása"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -11062,12 +11081,13 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr ""
+#, fuzzy
+msgid "Detach the script from the selected node."
+msgstr "Kiválasztott Scene(k) példányosítása a kiválasztott Node gyermekeként."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11196,6 +11216,10 @@ msgid "A directory with the same name exists."
 msgstr "Egy fájl vagy mappa már létezik a megadott névvel."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "A fájl nem létezik."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Használjon érvényes kiterjesztést."
@@ -11237,6 +11261,11 @@ msgstr "Szkript Futtatása"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Invalid path."
+msgstr "Érvénytelen Elérési Út."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12322,6 +12351,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12343,6 +12376,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Érvénytelen név."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -13007,6 +13066,18 @@ msgstr ""
 msgid "Constants cannot be modified."
 msgstr ""
 
+#~ msgid "Not in resource path."
+#~ msgstr "Nincs az erőforrás elérési útban."
+
+#~ msgid "Revert"
+#~ msgstr "Visszaállítás"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Ez a művelet nem vonható vissza. Visszaállítja mindenképp?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Scene visszaállítás"
+
 #~ msgid "Issue Tracker"
 #~ msgstr "Problémakövető"
 
@@ -13209,10 +13280,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Insert keys."
 #~ msgstr "Kulcsok Beszúrása"
-
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr ""
-#~ "Kiválasztott Scene(k) példányosítása a kiválasztott Node gyermekeként."
 
 #, fuzzy
 #~ msgid "Font Size:"

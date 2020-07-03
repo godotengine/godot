@@ -643,7 +643,9 @@ void DocData::generate(bool p_basic_types) {
 		}
 	}
 
-	//built in script reference
+	// Built-in script reference.
+	// We only add a doc entry for languages which actually define any built-in
+	// methods or constants.
 
 	{
 
@@ -651,12 +653,11 @@ void DocData::generate(bool p_basic_types) {
 
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			String cname = "@" + lang->get_name();
-			class_list[cname] = ClassDoc();
-			ClassDoc &c = class_list[cname];
+			ClassDoc c;
 			c.name = cname;
 
+			// Get functions.
 			List<MethodInfo> minfo;
-
 			lang->get_public_functions(&minfo);
 
 			for (List<MethodInfo>::Element *E = minfo.front(); E; E = E->next()) {
@@ -690,6 +691,7 @@ void DocData::generate(bool p_basic_types) {
 				c.methods.push_back(md);
 			}
 
+			// Get constants.
 			List<Pair<String, Variant> > cinfo;
 			lang->get_public_constants(&cinfo);
 
@@ -700,6 +702,13 @@ void DocData::generate(bool p_basic_types) {
 				cd.value = E->get().second;
 				c.constants.push_back(cd);
 			}
+
+			// Skip adding the lang if it doesn't expose anything (e.g. C#).
+			if (c.methods.empty() && c.constants.empty()) {
+				continue;
+			}
+
+			class_list[cname] = c;
 		}
 	}
 }
@@ -873,10 +882,15 @@ Error DocData::_load(Ref<XMLParser> parser) {
 							String name3 = parser->get_node_name();
 
 							if (name3 == "link") {
-
+								TutorialDoc tutorial;
+								if (parser->has_attribute("title")) {
+									tutorial.title = parser->get_attribute_value("title");
+								}
 								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									c.tutorials.push_back(parser->get_node_data().strip_edges());
+								if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+									tutorial.link = parser->get_node_data().strip_edges();
+									c.tutorials.push_back(tutorial);
+								}
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
@@ -1051,7 +1065,9 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
-			_write_string(f, 2, "<link>" + c.tutorials.get(i).xml_escape() + "</link>");
+			TutorialDoc tutorial = c.tutorials.get(i);
+			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
 

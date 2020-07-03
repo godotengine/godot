@@ -265,7 +265,7 @@ void ShaderCompilerGLES2::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 	}
 }
 
-String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning) {
+String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 
 	StringBuilder code;
 
@@ -486,10 +486,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				*p_actions.write_flag_pointers[var_node->name] = true;
 			}
 
-			if (!p_assigning && p_actions.read_flag_pointers.has(var_node->name)) {
-				*p_actions.read_flag_pointers[var_node->name] = true;
-			}
-
 			if (p_default_actions.usage_defines.has(var_node->name) && !used_name_defines.has(var_node->name)) {
 				String define = p_default_actions.usage_defines[var_node->name];
 				String node_name = define.substr(1, define.length());
@@ -582,7 +578,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (arr_node->call_expression != NULL) {
 				code += ".";
-				code += _dump_node_code(arr_node->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				code += _dump_node_code(arr_node->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
 			}
 
 			if (arr_node->index_expression != NULL) {
@@ -777,13 +773,17 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} break;
 
 				default: {
-					code += "(";
+					if (p_use_scope) {
+						code += "(";
+					}
 					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += " ";
 					code += _opstr(op_node->op);
 					code += " ";
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					code += ")";
+					if (p_use_scope) {
+						code += ")";
+					}
 				} break;
 			}
 		} break;

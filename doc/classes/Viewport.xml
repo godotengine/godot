@@ -248,6 +248,7 @@
 		</member>
 		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr" default="true">
 			If [code]true[/code], the viewport rendering will receive benefits from High Dynamic Range algorithm. High Dynamic Range allows the viewport to receive values that are outside the 0-1 range. In Godot HDR uses 16 bits, meaning it does not store the full range of a floating point number.
+			[b]Note:[/b] Requires [member usage] to be set to [constant USAGE_3D] or [constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D.
 		</member>
 		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="get_keep_3d_linear" default="false">
 			If [code]true[/code], the result after 3D rendering will not have a linear to sRGB color conversion applied. This is important when the viewport is used as a render target where the result is used as a texture on a 3D object rendered in another viewport. It is also important if the viewport is used to create data that is not color based (noise, heightmaps, pickmaps, etc.). Do not enable this when the viewport is used as a texture on a 2D object or if the viewport is your final output.

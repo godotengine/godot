@@ -242,6 +242,11 @@ public:
 
 	String get_locale() const;
 	String get_latin_keyboard_variant() const;
+	int keyboard_get_layout_count() const;
+	int keyboard_get_current_layout() const;
+	void keyboard_set_current_layout(int p_index);
+	String keyboard_get_layout_language(int p_index) const;
+	String keyboard_get_layout_name(int p_index) const;
 
 	String get_model_name() const;
 
@@ -358,6 +363,11 @@ public:
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
+
+	int get_tablet_driver_count() const;
+	String get_tablet_driver_name(int p_driver) const;
+	String get_current_tablet_driver() const;
+	void set_current_tablet_driver(const String &p_driver);
 
 	static _OS *get_singleton() { return singleton; }
 

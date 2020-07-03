@@ -240,7 +240,9 @@ public:
 		BlockNode *parent_block;
 		List<Node *> statements;
 		Map<StringName, LocalVarNode *> variables;
-		bool has_return;
+		bool has_return = false;
+		bool can_break = false;
+		bool can_continue = false;
 
 		Node *if_condition; //tiny hack to improve code completion on if () blocks
 
@@ -253,7 +255,6 @@ public:
 			end_line = -1;
 			parent_block = NULL;
 			parent_class = NULL;
-			has_return = false;
 		}
 	};
 
@@ -624,6 +625,7 @@ private:
 	void _parse_extends(ClassNode *p_class);
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
+	void _set_end_statement_error(String p_name);
 
 	void _determine_inheritance(ClassNode *p_class, bool p_recursive = true);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
@@ -634,7 +636,7 @@ private:
 	DataType _get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const;
 	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
 	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
-	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
+	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type, bool *r_is_const = nullptr) const;
 	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
 	Node *_get_default_value_for_type(const DataType &p_type, int p_line = -1);
 

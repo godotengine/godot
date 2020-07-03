@@ -123,6 +123,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 		return 0;
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ERR_FAIL_COND_V(!shape, 0);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
@@ -152,7 +153,18 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 }
 
 bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &r_closest_safe, float &r_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
+
+	r_closest_safe = 0.0f;
+	r_closest_unsafe = 0.0f;
+
+	btVector3 bt_motion;
+	G_TO_B(p_motion, bt_motion);
+
+	if (bt_motion.fuzzyZero())
+		return false;
+
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
 	if (!btShape->isConvex()) {
@@ -161,9 +173,6 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 		return false;
 	}
 	btConvexShape *bt_convex_shape = static_cast<btConvexShape *>(btShape);
-
-	btVector3 bt_motion;
-	G_TO_B(p_motion, bt_motion);
 
 	btTransform bt_xform_from;
 	G_TO_B(p_xform, bt_xform_from);
@@ -177,9 +186,6 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btResult.m_collisionFilterMask = p_collision_mask;
 
 	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, space->dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
-
-	r_closest_unsafe = 1.0;
-	r_closest_safe = 1.0;
 
 	if (btResult.hasHit()) {
 		const btScalar l = bt_motion.length();
@@ -196,6 +202,9 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 			r_info->collider_id = collision_object->get_instance_id();
 			r_info->shape = btResult.m_shapeId;
 		}
+	} else {
+		r_closest_safe = 1.0f;
+		r_closest_unsafe = 1.0f;
 	}
 
 	bulletdelete(bt_convex_shape);
@@ -208,6 +217,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 		return 0;
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
@@ -240,6 +250,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
 	if (!btShape->isConvex()) {
@@ -342,6 +353,8 @@ SpaceBullet::SpaceBullet() :
 		godotFilterCallback(NULL),
 		gravityDirection(0, -1, 0),
 		gravityMagnitude(10),
+		linear_damp(0.0),
+		angular_damp(0.0),
 		contactDebugCount(0),
 		delta_time(0.) {
 
@@ -379,8 +392,11 @@ void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant 
 			update_gravity();
 			break;
 		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+			linear_damp = p_value;
+			break;
 		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
-			break; // No damp
+			angular_damp = p_value;
+			break;
 		case PhysicsServer::AREA_PARAM_PRIORITY:
 			// Priority is always 0, the lower
 			break;
@@ -401,8 +417,9 @@ Variant SpaceBullet::get_param(PhysicsServer::AreaParameter p_param) {
 		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
 			return gravityDirection;
 		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+			return linear_damp;
 		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
-			return 0; // No damp
+			return angular_damp;
 		case PhysicsServer::AREA_PARAM_PRIORITY:
 			return 0; // Priority is always 0, the lower
 		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:

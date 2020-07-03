@@ -1169,15 +1169,14 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				while (r_len%4)
 					r_len++; //pad
 				*/
+				Variant *v = d.getptr(E->get());
 				int len;
-				encode_variant(E->get(), buf, len, p_full_objects);
+				encode_variant(v ? E->get() : Variant("[Deleted Object]"), buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf)
 					buf += len;
-				Variant *v = d.getptr(E->get());
-				ERR_FAIL_COND_V(!v, ERR_BUG);
-				encode_variant(*v, buf, len, p_full_objects);
+				encode_variant(v ? *v : Variant(), buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf)

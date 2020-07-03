@@ -111,7 +111,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 }
 
 void unhandled_exception(MonoException *p_exc) {
-	mono_unhandled_exception((MonoObject *)p_exc); // prints the exception as well
+	mono_print_unhandled_exception((MonoObject *)p_exc);
 
 	if (GDMono::get_singleton()->get_unhandled_exception_policy() == GDMono::POLICY_TERMINATE_APP) {
 		// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders

@@ -29,14 +29,14 @@
 /*************************************************************************/
 
 #include "os_x11.h"
-#include "detect_prime.h"
 
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
+#include "detect_prime.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
-#include "errno.h"
 #include "key_mapping_x11.h"
+#include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -44,14 +44,15 @@
 #include <mntent.h>
 #endif
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "X11/Xutil.h"
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xinerama.h>
 
-#include "X11/Xatom.h"
-#include "X11/extensions/Xinerama.h"
 // ICCCM
 #define WM_NormalState 1L // window normal state
 #define WM_IconicState 3L // window minimized
@@ -59,8 +60,6 @@
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
 #define _NET_WM_STATE_TOGGLE 2L // toggle property
-
-#include "main/main.h"
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -72,8 +71,6 @@
 #ifdef KEY_TAB
 #undef KEY_TAB
 #endif
-
-#include <X11/Xatom.h>
 
 #undef CursorShape
 
@@ -964,7 +961,6 @@ void OS_X11::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 	if (!is_layered_allowed()) return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
-			set_borderless_window(true);
 			layered_window = true;
 		} else {
 			layered_window = false;
@@ -1505,6 +1501,7 @@ bool OS_X11::is_window_minimized() const {
 	unsigned long len;
 	unsigned long remaining;
 	unsigned char *data = NULL;
+	bool retval = false;
 
 	int result = XGetWindowProperty(
 			x11_display,
@@ -1522,10 +1519,13 @@ bool OS_X11::is_window_minimized() const {
 
 	if (result == Success) {
 		long *state = (long *)data;
-		if (state[0] == WM_IconicState)
-			return true;
+		if (state[0] == WM_IconicState) {
+			retval = true;
+		}
+		XFree(data);
 	}
-	return false;
+
+	return retval;
 }
 
 void OS_X11::set_window_maximized(bool p_enabled) {
@@ -1561,13 +1561,16 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 	maximized = p_enabled;
 }
 
-bool OS_X11::is_window_maximize_allowed() {
-	Atom property = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
+// Just a helper to reduce code duplication in `is_window_maximize_allowed`
+// and `is_window_maximized`.
+bool OS_X11::window_maximize_check(const char *p_atom_name) const {
+	Atom property = XInternAtom(x11_display, p_atom_name, False);
 	Atom type;
 	int format;
 	unsigned long len;
 	unsigned long remaining;
 	unsigned char *data = NULL;
+	bool retval = false;
 
 	int result = XGetWindowProperty(
 			x11_display,
@@ -1596,61 +1599,25 @@ bool OS_X11::is_window_maximize_allowed() {
 			if (atoms[i] == wm_act_max_vert)
 				found_wm_act_max_vert = true;
 
-			if (found_wm_act_max_horz || found_wm_act_max_vert)
-				return true;
-		}
-		XFree(atoms);
-	}
-
-	return false;
-}
-
-bool OS_X11::is_window_maximized() const {
-	// Using EWMH -- Extended Window Manager Hints
-	Atom property = XInternAtom(x11_display, "_NET_WM_STATE", False);
-	Atom type;
-	int format;
-	unsigned long len;
-	unsigned long remaining;
-	unsigned char *data = NULL;
-	bool retval = false;
-
-	int result = XGetWindowProperty(
-			x11_display,
-			x11_window,
-			property,
-			0,
-			1024,
-			False,
-			XA_ATOM,
-			&type,
-			&format,
-			&len,
-			&remaining,
-			&data);
-
-	if (result == Success) {
-		Atom *atoms = (Atom *)data;
-		Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
-		Atom wm_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
-		bool found_wm_max_horz = false;
-		bool found_wm_max_vert = false;
-
-		for (uint64_t i = 0; i < len; i++) {
-			if (atoms[i] == wm_max_horz)
-				found_wm_max_horz = true;
-			if (atoms[i] == wm_max_vert)
-				found_wm_max_vert = true;
-
-			if (found_wm_max_horz && found_wm_max_vert) {
+			if (found_wm_act_max_horz || found_wm_act_max_vert) {
 				retval = true;
 				break;
 			}
 		}
+
+		XFree(data);
 	}
 
-	XFree(data);
 	return retval;
+}
+
+bool OS_X11::is_window_maximize_allowed() const {
+	return window_maximize_check("_NET_WM_ALLOWED_ACTIONS");
+}
+
+bool OS_X11::is_window_maximized() const {
+	// Using EWMH -- Extended Window Manager Hints
+	return window_maximize_check("_NET_WM_STATE");
 }
 
 void OS_X11::set_window_always_on_top(bool p_enabled) {
@@ -1682,9 +1649,6 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 
 	if (get_borderless_window() == p_borderless)
 		return;
-
-	if (!p_borderless && layered_window)
-		set_window_per_pixel_transparency_enabled(false);
 
 	current_videomode.borderless_window = p_borderless;
 
@@ -3476,6 +3440,108 @@ OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 	}
 
 	return LATIN_KEYBOARD_QWERTY;
+}
+
+int OS_X11::keyboard_get_layout_count() const {
+	int _group_count = 0;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return _group_count;
+}
+
+int OS_X11::keyboard_get_current_layout() const {
+	XkbStateRec state;
+	XkbGetState(x11_display, XkbUseCoreKbd, &state);
+	return state.group;
+}
+
+void OS_X11::keyboard_set_current_layout(int p_index) {
+	ERR_FAIL_INDEX(p_index, keyboard_get_layout_count());
+	XkbLockGroup(x11_display, XkbUseCoreKbd, p_index);
+}
+
+String OS_X11::keyboard_get_layout_language(int p_index) const {
+	String ret;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+		XkbGetNames(x11_display, XkbGroupNamesMask, kbd);
+
+		int _group_count = 0;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+
+		Atom names = kbd->names->symbols;
+		if (names != None) {
+			char *name = XGetAtomName(x11_display, names);
+			Vector<String> info = String(name).split("+");
+			if (p_index >= 0 && p_index < _group_count) {
+				if (p_index + 1 < info.size()) {
+					ret = info[p_index + 1]; // Skip "pc" at the start and "inet"/"group" at the end of symbols.
+				} else {
+					ret = "en"; // No symbol for layout fallback to "en".
+				}
+			} else {
+				ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
+			}
+			XFree(name);
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return ret.substr(0, 2);
+}
+
+String OS_X11::keyboard_get_layout_name(int p_index) const {
+	String ret;
+	XkbDescRec *kbd = XkbAllocKeyboard();
+	if (kbd) {
+		kbd->dpy = x11_display;
+		XkbGetControls(x11_display, XkbAllControlsMask, kbd);
+		XkbGetNames(x11_display, XkbSymbolsNameMask, kbd);
+		XkbGetNames(x11_display, XkbGroupNamesMask, kbd);
+
+		int _group_count = 0;
+		const Atom *groups = kbd->names->groups;
+		if (kbd->ctrls != NULL) {
+			_group_count = kbd->ctrls->num_groups;
+		} else {
+			while (_group_count < XkbNumKbdGroups && groups[_group_count] != None) {
+				_group_count++;
+			}
+		}
+
+		if (p_index >= 0 && p_index < _group_count) {
+			char *full_name = XGetAtomName(x11_display, groups[p_index]);
+			ret.parse_utf8(full_name);
+			XFree(full_name);
+		} else {
+			ERR_PRINT("Index " + itos(p_index) + "is out of bounds (" + itos(_group_count) + ").");
+		}
+		XkbFreeKeyboard(kbd, 0, true);
+	}
+	return ret;
 }
 
 void OS_X11::update_real_mouse_position() {

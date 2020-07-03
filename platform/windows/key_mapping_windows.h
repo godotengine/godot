@@ -43,6 +43,7 @@ class KeyMappingWindows {
 
 public:
 	static unsigned int get_keysym(unsigned int p_code);
+	static bool is_extended_key(unsigned int p_code);
 };
 
 #endif // KEY_MAPPING_WINDOWS_H

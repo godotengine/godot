@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/android/logo.gen.h"
+#include "platform/android/plugin/godot_plugin_config.h"
 #include "platform/android/run_icon.gen.h"
 
 #include <string.h>
@@ -255,21 +256,51 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep;
 	};
 
+	Vector<PluginConfig> plugins;
+	String last_plugin_names;
+	uint64_t last_custom_build_time = 0;
+	volatile bool plugins_changed;
+	Mutex *plugins_lock;
 	Vector<Device> devices;
 	volatile bool devices_changed;
 	Mutex *device_lock;
-	Thread *device_thread;
+	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 
-	static void _device_poll_thread(void *ud) {
-
+	static void _check_for_changes_poll_thread(void *ud) {
 		EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
 		while (!ea->quit_request) {
+			// Check for plugins updates
+			{
+				// Nothing to do if we already know the plugins have changed.
+				if (!ea->plugins_changed) {
+					Vector<PluginConfig> loaded_plugins = get_plugins();
 
+					ea->plugins_lock->lock();
+
+					if (ea->plugins.size() != loaded_plugins.size()) {
+						ea->plugins_changed = true;
+					} else {
+						for (int i = 0; i < ea->plugins.size(); i++) {
+							if (ea->plugins[i].name != loaded_plugins[i].name) {
+								ea->plugins_changed = true;
+								break;
+							}
+						}
+					}
+
+					if (ea->plugins_changed) {
+						ea->plugins = loaded_plugins;
+					}
+
+					ea->plugins_lock->unlock();
+				}
+			}
+
+			// Check for devices updates
 			String adb = EditorSettings::get_singleton()->get("export/android/adb");
 			if (FileAccess::exists(adb)) {
-
 				String devices;
 				List<String> args;
 				args.push_back("devices");
@@ -282,8 +313,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 					String d = ds[i];
 					int dpos = d.find("device");
-					if (dpos == -1)
+					if (dpos == -1) {
 						continue;
+					}
 					d = d.substr(0, dpos).strip_edges();
 					ldevices.push_back(d);
 				}
@@ -293,12 +325,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				bool different = false;
 
 				if (ea->devices.size() != ldevices.size()) {
-
 					different = true;
 				} else {
 
 					for (int i = 0; i < ea->devices.size(); i++) {
-
 						if (ea->devices[i].id != ldevices[i]) {
 							different = true;
 							break;
@@ -307,11 +337,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				}
 
 				if (different) {
-
 					Vector<Device> ndevices;
 
 					for (int i = 0; i < ldevices.size(); i++) {
-
 						Device d;
 						d.id = ldevices[i];
 						for (int j = 0; j < ea->devices.size(); j++) {
@@ -588,6 +616,73 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return abis;
 	}
 
+	/// List the gdap files in the directory specified by the p_path parameter.
+	static Vector<String> list_gdap_files(const String &p_path) {
+		Vector<String> dir_files;
+		DirAccessRef da = DirAccess::open(p_path);
+		if (da) {
+			da->list_dir_begin();
+			while (true) {
+				String file = da->get_next();
+				if (file == "") {
+					break;
+				}
+
+				if (da->current_is_dir() || da->current_is_hidden()) {
+					continue;
+				}
+
+				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+					dir_files.push_back(file);
+				}
+			}
+			da->list_dir_end();
+		}
+
+		return dir_files;
+	}
+
+	static Vector<PluginConfig> get_plugins() {
+		Vector<PluginConfig> loaded_plugins;
+
+		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/plugins");
+
+		// Add the prebuilt plugins
+		loaded_plugins.append_array(get_prebuilt_plugins(plugins_dir));
+
+		if (DirAccess::exists(plugins_dir)) {
+			Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
+
+			if (!plugins_filenames.empty()) {
+				Ref<ConfigFile> config_file = memnew(ConfigFile);
+				for (int i = 0; i < plugins_filenames.size(); i++) {
+					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					if (config.valid_config) {
+						loaded_plugins.push_back(config);
+					} else {
+						print_error("Invalid plugin config file " + plugins_filenames[i]);
+					}
+				}
+			}
+		}
+
+		return loaded_plugins;
+	}
+
+	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfig> enabled_plugins;
+		Vector<PluginConfig> all_plugins = get_plugins();
+		for (int i = 0; i < all_plugins.size(); i++) {
+			PluginConfig plugin = all_plugins[i];
+			bool enabled = p_presets->get("plugins/" + plugin.name);
+			if (enabled) {
+				enabled_plugins.push_back(plugin);
+			}
+		}
+
+		return enabled_plugins;
+	}
+
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED) {
 		zip_fileinfo zipfi = get_zip_fileinfo();
 		zipOpenNewFileInZip(ed->apk,
@@ -691,8 +786,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		bool screen_support_xlarge = p_preset->get("screen/support_xlarge");
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
 
-		String plugins = p_preset->get("custom_template/plugins");
+		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
 		Vector<String> perms;
 
@@ -785,6 +881,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					String tname = string_table[name];
 					uint32_t attrcount = decode_uint32(&p_manifest[iofs + 20]);
 					iofs += 28;
+					bool is_focus_aware_metadata = false;
 
 					for (uint32_t i = 0; i < attrcount; i++) {
 						uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
@@ -862,11 +959,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "custom_template_plugins_value") {
-							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
-							string_table.write[attr_value] = plugins;
+						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
+							// Update the focus awareness meta-data value
+							encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 						}
 
+						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
+							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
+							string_table.write[attr_value] = plugins_names;
+						}
+
+						is_focus_aware_metadata = tname == "meta-data" && attrname == "name" && value == "com.oculus.vr.focusaware";
 						iofs += 20;
 					}
 
@@ -898,8 +1001,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								feature_required_list.push_back(hand_tracking_index == 2);
 								feature_versions.push_back(-1); // no version attribute should be added.
 
-								if (perms.find("oculus.permission.handtracking") == -1) {
-									perms.push_back("oculus.permission.handtracking");
+								if (perms.find("com.oculus.permission.HAND_TRACKING") == -1) {
+									perms.push_back("com.oculus.permission.HAND_TRACKING");
 								}
 							}
 						}
@@ -1394,11 +1497,19 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "xr_features/focus_awareness"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/plugins", PROPERTY_HINT_PLACEHOLDER_TEXT, "Plugin1,Plugin2,..."), ""));
+
+		Vector<PluginConfig> plugins_configs = get_plugins();
+		for (int i = 0; i < plugins_configs.size(); i++) {
+			print_verbose("Found Android plugin " + plugins_configs[i].name);
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
+		}
+		plugins_changed = false;
+
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
@@ -1452,6 +1563,15 @@ public:
 
 	virtual Ref<Texture> get_logo() const {
 		return logo;
+	}
+
+	virtual bool should_update_export_options() {
+		bool export_options_changed = plugins_changed;
+		if (export_options_changed) {
+			// don't clear unless we're reporting true, to avoid race
+			plugins_changed = false;
+		}
+		return export_options_changed;
 	}
 
 	virtual bool poll_export() {
@@ -1677,23 +1797,32 @@ public:
 		// Look for export templates (first official, and if defined custom templates).
 
 		if (!bool(p_preset->get("custom_template/use_custom_build"))) {
-			bool dvalid = exists_export_template("android_debug.apk", &err);
-			bool rvalid = exists_export_template("android_release.apk", &err);
+			String template_err;
+			bool dvalid = false;
+			bool rvalid = false;
 
 			if (p_preset->get("custom_template/debug") != "") {
 				dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 				if (!dvalid) {
-					err += TTR("Custom debug template not found.") + "\n";
+					template_err += TTR("Custom debug template not found.") + "\n";
 				}
+			} else {
+				dvalid = exists_export_template("android_debug.apk", &template_err);
 			}
+
 			if (p_preset->get("custom_template/release") != "") {
 				rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
 				if (!rvalid) {
-					err += TTR("Custom release template not found.") + "\n";
+					template_err += TTR("Custom release template not found.") + "\n";
 				}
+			} else {
+				rvalid = exists_export_template("android_release.apk", &template_err);
 			}
 
 			valid = dvalid || rvalid;
+			if (!valid) {
+				err += template_err;
+			}
 		} else {
 			valid = exists_export_template("android_source.zip", &err);
 		}
@@ -1726,6 +1855,13 @@ public:
 				valid = false;
 				err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
 			}
+		}
+
+		String rk = p_preset->get("keystore/release");
+
+		if (!rk.empty() && !FileAccess::exists(rk)) {
+			valid = false;
+			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 		}
 
 		if (bool(p_preset->get("custom_template/use_custom_build"))) {
@@ -1775,6 +1911,54 @@ public:
 		if (etc_error != String()) {
 			valid = false;
 			err += etc_error;
+		}
+
+		// The GodotPaymentV3 module was converted to the external GodotGooglePlayBilling plugin in Godot 3.2.2,
+		// this check helps users to notice the change to ensure that they change their settings.
+		String modules = ProjectSettings::get_singleton()->get("android/modules");
+		if (modules.find("org/godotengine/godot/GodotPaymentV3") != -1) {
+			bool godot_google_play_billing_enabled = p_preset->get("plugins/GodotGooglePlayBilling");
+			if (!godot_google_play_billing_enabled) {
+				valid = false;
+				err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\n"
+						   "Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+						   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotGooglePlayBilling\".");
+				err += "\n";
+			}
+		}
+
+		// Ensure that `Use Custom Build` is enabled if a plugin is selected.
+		String enabled_plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
+		bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
+		if (!enabled_plugins_names.empty() && !custom_build_enabled) {
+			valid = false;
+			err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
+			err += "\n";
+		}
+
+		// Validate the Xr features are properly populated
+		int xr_mode_index = p_preset->get("xr_features/xr_mode");
+		int degrees_of_freedom = p_preset->get("xr_features/degrees_of_freedom");
+		int hand_tracking = p_preset->get("xr_features/hand_tracking");
+		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
+		if (xr_mode_index != /* XRMode.OVR*/ 1) {
+			if (degrees_of_freedom > 0) {
+				valid = false;
+				err += TTR("\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
+				err += "\n";
+			}
+
+			if (hand_tracking > 0) {
+				valid = false;
+				err += TTR("\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
+				err += "\n";
+			}
+
+			if (focus_awareness) {
+				valid = false;
+				err += TTR("\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
+				err += "\n";
+			}
 		}
 
 		r_error = err;
@@ -2069,6 +2253,29 @@ public:
 		}
 	}
 
+	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
+		String plugin_names = get_plugins_names(enabled_plugins);
+		bool first_build = last_custom_build_time == 0;
+		bool have_plugins_changed = false;
+
+		if (!first_build) {
+			have_plugins_changed = plugin_names != last_plugin_names;
+			if (!have_plugins_changed) {
+				for (int i = 0; i < enabled_plugins.size(); i++) {
+					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
+						have_plugins_changed = true;
+						break;
+					}
+				}
+			}
+		}
+
+		last_custom_build_time = OS::get_singleton()->get_unix_time();
+		last_plugin_names = plugin_names;
+
+		return have_plugins_changed || first_build;
+	}
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
 
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
@@ -2109,18 +2316,26 @@ public:
 #endif
 
 			String build_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/build");
-			String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/plugins");
 
 			build_command = build_path.plus_file(build_command);
 
 			String package_name = get_package_name(p_preset->get("package/unique_name"));
-			String plugins = p_preset->get("custom_template/plugins");
+
+			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
+			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
+			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
+			bool clean_build_required = is_clean_build_required(enabled_plugins);
 
 			List<String> cmdline;
+			if (clean_build_required) {
+				cmdline.push_back("clean");
+			}
 			cmdline.push_back("build");
 			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
-			cmdline.push_back("-Pcustom_template_plugins_dir=" + plugins_dir); // argument to specify the plugins directory.
-			cmdline.push_back("-Pcustom_template_plugins=" + plugins); // argument to specify the list of plugins to enable.
+			cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
+			cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
+			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 			cmdline.push_back("-p"); // argument to specify the start directory.
 			cmdline.push_back(build_path); // start directory.
 			/*{ used for debug
@@ -2647,15 +2862,19 @@ public:
 
 		device_lock = Mutex::create();
 		devices_changed = true;
+
+		plugins_lock = Mutex::create();
+		plugins_changed = true;
 		quit_request = false;
-		device_thread = Thread::create(_device_poll_thread, this);
+		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
 	}
 
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
-		Thread::wait_to_finish(device_thread);
+		Thread::wait_to_finish(check_for_changes_thread);
+		memdelete(plugins_lock);
 		memdelete(device_lock);
-		memdelete(device_thread);
+		memdelete(check_for_changes_thread);
 	}
 };
 

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-01 11:42+0000\n"
+"PO-Revision-Date: 2020-06-25 08:40+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -757,6 +757,10 @@ msgid "Method in target node must be specified."
 msgstr "Kohdesolmun metodi täytyy määrittää."
 
 #: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
+msgstr "Metodin nimen täytyy olla kelvollinen tunniste."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -839,7 +843,6 @@ msgstr "Ei voida yhdistää signaalia"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1453,17 +1456,9 @@ msgstr "Ota käyttöön"
 msgid "Rearrange Autoloads"
 msgstr "Järjestele uudelleen automaattiset lataukset"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Virheellinen polku."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Tiedostoa ei ole olemassa."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Ei löytynyt resurssipolusta."
+msgid "Can't add autoload:"
+msgstr "Ei voida lisätä automaattisesti ladattavaa:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1579,8 +1574,8 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"GLES2 vara-ajuri tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke "
-"'Import Etc' päälle projektin asetuksista tai poista 'Driver Fallback "
+"GLES2 vara-ajuri tarvitsee kohdealustalla 'ETC' tekstuuripakkausta.\n"
+"Kytke 'Import Etc' päälle projektin asetuksista tai poista 'Driver Fallback "
 "Enabled' asetus."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1970,7 +1965,7 @@ msgstr "Teeman ominaisuudet"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Enumeraatiot"
+msgstr "Luetteloinnit"
 
 #: editor/editor_help.cpp
 msgid "Constants"
@@ -2421,12 +2416,17 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Ei voida ladata uudelleen skeneä, jota ei ole koskaan tallennettu."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Palauta"
+msgid "Reload Saved Scene"
+msgstr "Avaa uudelleen tallennettu skene"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Tätä toimintoa ei voida peruttaa. Palauta joka tapauksessa?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"Nykyisessä skenessä on tallentamattomia muutoksia.\n"
+"Avataanko tallennettu skene uudelleen siitä huolimatta? Tätä toimintoa ei "
+"voi perua."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2706,10 +2706,6 @@ msgstr "Peru"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Tee uudelleen"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Palauta skene"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3357,6 +3353,12 @@ msgstr "Skriptiä ei voitu suorittaa:"
 msgid "Did you forget the '_run' method?"
 msgstr "Unohditko '_run' metodin?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+"Pidä Ctrl pohjassa pyöristääksesi kokonaislukuun. Pidä Shift pohjassa "
+"tarkempia muutoksia varten."
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Valitse tuotavat solmut"
@@ -3951,6 +3953,11 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Virhe ajettaessa tuonnin jälkeistä skriptiä:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+"Palautitko Node-solmusta periytyvän objektin `post_import()` metodissa?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6905,12 +6912,12 @@ msgstr ""
 "Yhdistetty metodi '%s' signaalille '%s' puuttuu solmusta '%s' solmuun '%s'."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Rivi"
+msgid "[Ignore]"
+msgstr "[Sivuuta]"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr "(sivuuta)"
+msgid "Line"
+msgstr "Rivi"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7382,6 +7389,21 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm-ikkuna"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"Napsauta vaihtaaksesi näkyvyystilojen välillä.\n"
+"\n"
+"Avoin silmä: muokkain on näkyvissä.\n"
+"Suljettu silmä: muokkain on piilotettu.\n"
+"Puoliavoin silmä: muokkain on näkyvissä myös läpikuultamattomien pintojen "
+"läpi (\"röntgen\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -8795,7 +8817,7 @@ msgstr "E-vakio (2.718282). Kuvastaa luonnollisen logaritmin kantalukua."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr "Epsilon-vakio  (0.00001). Pienin mahdollinen skaalariluku."
+msgstr "Epsilon-vakio (0.00001). Pienin mahdollinen skaalariluku."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
@@ -9277,7 +9299,7 @@ msgid ""
 "direction of camera (pass associated inputs to it)."
 msgstr ""
 "Palauttaa valovähentymän perustuen pinnan normaalivektorin ja kameran "
-"suuntavektorin pistetuloon (välitä nämä syötteinä)."
+"suuntavektorin pistetuloon (välitä sille liittyvät syötteet)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10468,8 +10490,8 @@ msgid "Instance Child Scene"
 msgstr "Luo aliskenen ilmentymä"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Poista skripti"
+msgid "Detach Script"
+msgstr "Irrota skripti"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10637,6 +10659,16 @@ msgid "Open Documentation"
 msgstr "Avaa dokumentaatio"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+"Ei voida liittää skriptiä: yhtään kieltä ei ole rekisteröity.\n"
+"Tämä johtuu luultavasti siitä, että editori on käännetty ilman yhtäkään "
+"kielimoduulia."
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Lisää alisolmu"
 
@@ -10685,12 +10717,12 @@ msgstr ""
 "juurisolmua ei ole olemassa."
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr "Liitä uusi tai olemassa oleva skripti valitulle solmulle."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr "Poista skripti valitulta solmulta."
+msgid "Detach the script from the selected node."
+msgstr "Irrota skripti valitusta solmusta."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10821,6 +10853,10 @@ msgid "A directory with the same name exists."
 msgstr "Samanniminen hakemisto on jo olemassa."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Tiedostoa ei ole olemassa."
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension."
 msgstr "Virheellinen tiedostopääte."
 
@@ -10859,6 +10895,10 @@ msgstr "Avaa skripti"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr "Tiedosto on jo olemassa, se käytetään uudelleen."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Virheellinen polku."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -11910,6 +11950,10 @@ msgstr ""
 "Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr "Release keystore on konfiguroitu väärin viennin esiasetuksissa."
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 "Mukautettu käännös edellyttää kelvollista Android SDK -polkua editorin "
@@ -11936,6 +11980,42 @@ msgstr "Virheellinen julkinen avain APK-laajennosta varten."
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
 msgstr "Virheellinen paketin nimi:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+"\"android/modules\" projektiasetukseen on liitetty virheellinen "
+"\"GodotPaymentV3\" moduuli (muuttunut Godotin versiossa 3.2.2).\n"
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+"\"Use Custom Build\" asetuksen täytyy olla päällä, jotta liittännäisiä voi "
+"käyttää."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+"\"Degrees Of Freedom\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus "
+"on \"Oculus Mobile VR\"."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
+"\"Oculus Mobile VR\"."
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+"\"Focus Awareness\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
+"\"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12669,8 +12749,8 @@ msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"Projektin asetuksissa määriteltyä oletusympäristöä  (Rendering -> "
-"Environment -> Default Environment) ei voitu ladata."
+"Projektin asetuksissa määriteltyä oletusympäristöä (Rendering -> Environment "
+"-> Default Environment) ei voitu ladata."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -12716,6 +12796,21 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Ei löytynyt resurssipolusta."
+
+#~ msgid "Revert"
+#~ msgstr "Palauta"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Tätä toimintoa ei voida peruttaa. Palauta joka tapauksessa?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Palauta skene"
+
+#~ msgid "Clear Script"
+#~ msgstr "Poista skripti"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "Ilmoita viasta"

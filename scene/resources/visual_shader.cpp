@@ -1205,7 +1205,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 		String class_name = vsnode->get_class_name();
 		if (class_name == "VisualShaderNodeCustom") {
-			class_name = vsnode->get_script_instance()->get_script()->get_language()->get_global_class_name(vsnode->get_script_instance()->get_script()->get_path());
+			class_name = vsnode->get_script_instance()->get_script()->get_path();
 		}
 		if (!r_classes.has(class_name)) {
 			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);

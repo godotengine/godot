@@ -120,7 +120,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.1
+- Version: 2.10.2 (2020)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -144,14 +144,12 @@ the GLES version Godot targets.
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
-- Version: 2.00 (1eb17d558b9d3b7442d256642a5745974e9eeb1e, 2020)
+- Version: 2.00 (aeb7d3b463aa8228b87a28013c15ee50a7e6fcf3, 2020)
 - License: Public domain
 
 Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
-
-Patches in the `patches` directory should be re-applied after updates.
 
 
 ## libogg
@@ -326,7 +324,7 @@ Collection of single-file libraries used in Godot components.
   * License: BSL-1.0
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
-  * Version: git (f121734, 2007)
+  * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
   * License: MIT
 - `hq2x.{cpp,h}`
   * Upstream: https://github.com/brunexgeek/hqx
@@ -509,7 +507,7 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (e12ea82, 2019)
+- Version: git (470576d3516f7e6d8b4554e7c941194a935969fd, 2020)
 - License: MIT
 
 Files extracted from upstream source:

@@ -32,6 +32,7 @@
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
 #include "editor/import/resource_importer_scene.h"
+#include "scene/3d/light.h"
 #include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 
@@ -51,6 +52,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	typedef int GLTFImageIndex;
 	typedef int GLTFMaterialIndex;
 	typedef int GLTFMeshIndex;
+	typedef int GLTFLightIndex;
 	typedef int GLTFNodeIndex;
 	typedef int GLTFSkeletonIndex;
 	typedef int GLTFSkinIndex;
@@ -115,6 +117,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		GLTFNodeIndex fake_joint_parent;
 
+		GLTFLightIndex light;
+
 		GLTFNode() :
 				parent(-1),
 				height(-1),
@@ -125,7 +129,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 				joint(false),
 				translation(0, 0, 0),
 				scale(Vector3(1, 1, 1)),
-				fake_joint_parent(-1) {}
+				fake_joint_parent(-1),
+				light(-1) {}
 	};
 
 	struct GLTFBufferView {
@@ -262,6 +267,23 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
+	struct GLTFLight {
+		Color color;
+		float intensity;
+		String type;
+		float range;
+		float inner_cone_angle;
+		float outer_cone_angle;
+		GLTFLight() {
+			color = Color(1.0f, 1.0f, 1.0f);
+			intensity = 1.0f;
+			type = "";
+			range = Math_INF;
+			inner_cone_angle = 0.0f;
+			outer_cone_angle = Math_PI / 4.0;
+		}
+	};
+
 	struct GLTFAnimation {
 		bool loop = false;
 
@@ -317,6 +339,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Vector<GLTFSkin> skins;
 		Vector<GLTFCamera> cameras;
+		Vector<GLTFLight> lights;
 
 		Set<String> unique_names;
 
@@ -324,6 +347,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFAnimation> animations;
 
 		Map<GLTFNodeIndex, Node *> scene_nodes;
+
+		// EditorSceneImporter::ImportFlags
+		uint32_t import_flags;
 
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -392,12 +418,13 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	void _remove_duplicate_skins(GLTFState &state);
 
 	Error _parse_cameras(GLTFState &state);
-
+	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
 
 	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
 	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Light *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Spatial *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 
 	void _generate_scene_node(GLTFState &state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index);

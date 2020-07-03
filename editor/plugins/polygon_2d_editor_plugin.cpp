@@ -509,7 +509,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 						Vector2 tuv = mtx.affine_inverse().xform(snap_point(Vector2(mb->get_position().x, mb->get_position().y)));
 
-						if (points_prev.size() > 2 && tuv.distance_to(points_prev[0]) < 8) {
+						// Close the polygon if selected point is near start. Threshold for closing scaled by zoom level
+						if (points_prev.size() > 2 && tuv.distance_to(points_prev[0]) < (8 / uv_draw_zoom)) {
 							undo_redo->create_action(TTR("Create Polygon & UV"));
 							undo_redo->add_do_method(node, "set_uv", node->get_uv());
 							undo_redo->add_undo_method(node, "set_uv", uv_create_uv_prev);

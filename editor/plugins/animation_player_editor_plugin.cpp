@@ -405,27 +405,25 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 
+	String path;
 	//file->set_current_path(current_path);
 	if (p_resource->get_path() != "") {
-		file->set_current_path(p_resource->get_path());
+		path = p_resource->get_path();
 		if (extensions.size()) {
-			String ext = p_resource->get_path().get_extension().to_lower();
-			if (extensions.find(ext) == NULL) {
-				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
+			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == NULL) {
+				path = p_resource->get_path().get_base_dir() + p_resource->get_name() + "." + extensions.front()->get();
 			}
 		}
 	} else {
-
-		String existing;
 		if (extensions.size()) {
 			if (p_resource->get_name() != "") {
-				existing = p_resource->get_name() + "." + extensions.front()->get().to_lower();
+				path = p_resource->get_name() + "." + extensions.front()->get().to_lower();
 			} else {
-				existing = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
+				path = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
 			}
 		}
-		file->set_current_path(existing);
 	}
+	file->set_current_path(path);
 	file->popup_centered_ratio();
 	file->set_title(TTR("Save Resource As..."));
 	current_option = RESOURCE_SAVE;

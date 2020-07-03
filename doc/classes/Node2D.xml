@@ -142,10 +142,6 @@
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
 			The node's scale. Unscaled value: [code](1, 1)[/code].
 		</member>
-		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">
-		</member>
-		<member name="skew_degrees" type="float" setter="set_skew_degrees" getter="get_skew_degrees" default="0.0">
-		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].
 		</member>

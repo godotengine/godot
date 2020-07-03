@@ -85,6 +85,8 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 SavePNGFunc Image::save_png_func = NULL;
 SaveEXRFunc Image::save_exr_func = NULL;
 
+SavePNGBufferFunc Image::save_png_buffer_func = NULL;
+
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
 
 	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
@@ -617,34 +619,35 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	enum {
 		FRAC_BITS = 8,
 		FRAC_LEN = (1 << FRAC_BITS),
+		FRAC_HALF = (FRAC_LEN >> 1),
 		FRAC_MASK = FRAC_LEN - 1
-
 	};
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
-
-		uint32_t src_yofs_up_fp = (i * p_src_height * FRAC_LEN / p_dst_height);
-		uint32_t src_yofs_frac = src_yofs_up_fp & FRAC_MASK;
-		uint32_t src_yofs_up = src_yofs_up_fp >> FRAC_BITS;
-
-		uint32_t src_yofs_down = (i + 1) * p_src_height / p_dst_height;
-		if (src_yofs_down >= p_src_height)
+		// Add 0.5 in order to interpolate based on pixel center
+		uint32_t src_yofs_up_fp = (i + 0.5) * p_src_height * FRAC_LEN / p_dst_height;
+		// Calculate nearest src pixel center above current, and truncate to get y index
+		uint32_t src_yofs_up = src_yofs_up_fp >= FRAC_HALF ? (src_yofs_up_fp - FRAC_HALF) >> FRAC_BITS : 0;
+		uint32_t src_yofs_down = (src_yofs_up_fp + FRAC_HALF) >> FRAC_BITS;
+		if (src_yofs_down >= p_src_height) {
 			src_yofs_down = p_src_height - 1;
-
-		//src_yofs_up*=CC;
-		//src_yofs_down*=CC;
+		}
+		// Calculate distance to pixel center of src_yofs_up
+		uint32_t src_yofs_frac = src_yofs_up_fp & FRAC_MASK;
+		src_yofs_frac = src_yofs_frac >= FRAC_HALF ? src_yofs_frac - FRAC_HALF : src_yofs_frac + FRAC_HALF;
 
 		uint32_t y_ofs_up = src_yofs_up * p_src_width * CC;
 		uint32_t y_ofs_down = src_yofs_down * p_src_width * CC;
 
 		for (uint32_t j = 0; j < p_dst_width; j++) {
-
-			uint32_t src_xofs_left_fp = (j * p_src_width * FRAC_LEN / p_dst_width);
-			uint32_t src_xofs_frac = src_xofs_left_fp & FRAC_MASK;
-			uint32_t src_xofs_left = src_xofs_left_fp >> FRAC_BITS;
-			uint32_t src_xofs_right = (j + 1) * p_src_width / p_dst_width;
-			if (src_xofs_right >= p_src_width)
+			uint32_t src_xofs_left_fp = (j + 0.5) * p_src_width * FRAC_LEN / p_dst_width;
+			uint32_t src_xofs_left = src_xofs_left_fp >= FRAC_HALF ? (src_xofs_left_fp - FRAC_HALF) >> FRAC_BITS : 0;
+			uint32_t src_xofs_right = (src_xofs_left_fp + FRAC_HALF) >> FRAC_BITS;
+			if (src_xofs_right >= p_src_width) {
 				src_xofs_right = p_src_width - 1;
+			}
+			uint32_t src_xofs_frac = src_xofs_left_fp & FRAC_MASK;
+			src_xofs_frac = src_xofs_frac >= FRAC_HALF ? src_xofs_frac - FRAC_HALF : src_xofs_frac + FRAC_HALF;
 
 			src_xofs_left *= CC;
 			src_xofs_right *= CC;
@@ -1898,6 +1901,14 @@ Error Image::save_png(const String &p_path) const {
 	return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
+PoolVector<uint8_t> Image::save_png_to_buffer() const {
+	if (save_png_buffer_func == NULL) {
+		return PoolVector<uint8_t>();
+	}
+
+	return save_png_buffer_func(Ref<Image>((Image *)this));
+}
+
 Error Image::save_exr(const String &p_path, bool p_grayscale) const {
 
 	if (save_exr_func == NULL)
@@ -2213,12 +2224,11 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 			int dst_y = dest_rect.position.y + i;
 
 			Color sc = img->get_pixel(src_x, src_y);
-			Color dc = get_pixel(dst_x, dst_y);
-			dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
-			dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
-			dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
-			dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
-			set_pixel(dst_x, dst_y, dc);
+			if (sc.a != 0) {
+				Color dc = get_pixel(dst_x, dst_y);
+				dc = dc.blend(sc);
+				set_pixel(dst_x, dst_y, dc);
+			}
 		}
 	}
 
@@ -2275,12 +2285,11 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 				int dst_y = dest_rect.position.y + i;
 
 				Color sc = img->get_pixel(src_x, src_y);
-				Color dc = get_pixel(dst_x, dst_y);
-				dc.r = (double)(sc.a * sc.r + dc.a * (1.0 - sc.a) * dc.r);
-				dc.g = (double)(sc.a * sc.g + dc.a * (1.0 - sc.a) * dc.g);
-				dc.b = (double)(sc.a * sc.b + dc.a * (1.0 - sc.a) * dc.b);
-				dc.a = (double)(sc.a + dc.a * (1.0 - sc.a));
-				set_pixel(dst_x, dst_y, dc);
+				if (sc.a != 0) {
+					Color dc = get_pixel(dst_x, dst_y);
+					dc = dc.blend(sc);
+					set_pixel(dst_x, dst_y, dc);
+				}
 			}
 		}
 	}
@@ -2728,6 +2737,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
+	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);

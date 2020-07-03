@@ -55,6 +55,7 @@
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -66,6 +67,7 @@
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -77,6 +79,7 @@
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -99,6 +102,7 @@
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -111,6 +115,7 @@
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="add_child">
@@ -303,7 +308,7 @@
 			<return type="Node">
 			</return>
 			<description>
-				Returns the parent node of the current node, or an empty [Node] if the node lacks a parent.
+				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">

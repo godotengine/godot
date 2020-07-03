@@ -95,6 +95,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_descent"), &Font::get_descent);
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
+	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next"), &Font::get_char_size, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
 	ClassDB::bind_method(D_METHOD("get_wordwrap_string_size", "string", "width"), &Font::get_wordwrap_string_size);
 	ClassDB::bind_method(D_METHOD("has_outline"), &Font::has_outline);
@@ -605,8 +606,6 @@ void BitmapFont::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_texture_count"), &BitmapFont::get_texture_count);
 	ClassDB::bind_method(D_METHOD("get_texture", "idx"), &BitmapFont::get_texture);
-
-	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next"), &BitmapFont::get_char_size, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_distance_field_hint", "enable"), &BitmapFont::set_distance_field_hint);
 

@@ -30,6 +30,9 @@
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			The [Geometry] singleton.
 		</member>
+		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			The [GodotSharp] singleton.
+		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>

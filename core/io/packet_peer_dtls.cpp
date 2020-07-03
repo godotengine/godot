@@ -37,7 +37,10 @@ bool PacketPeerDTLS::available = false;
 
 PacketPeerDTLS *PacketPeerDTLS::create() {
 
-	return _create();
+	if (_create) {
+		return _create();
+	}
+	return NULL;
 }
 
 bool PacketPeerDTLS::is_available() {

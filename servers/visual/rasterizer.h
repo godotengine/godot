@@ -665,7 +665,7 @@ public:
 			item_mask = 1;
 			scale = 1.0;
 			energy = 1.0;
-			item_shadow_mask = -1;
+			item_shadow_mask = 1;
 			mode = VS::CANVAS_LIGHT_MODE_ADD;
 			texture_cache = NULL;
 			next_ptr = NULL;
@@ -1114,6 +1114,7 @@ public:
 	virtual RasterizerScene *get_scene() = 0;
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+	virtual void set_shader_time_scale(float p_scale) = 0;
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;

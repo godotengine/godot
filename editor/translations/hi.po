@@ -756,6 +756,11 @@ msgid "Method in target node must be specified."
 msgstr "Method को target node में निर्दिष्ट कीजिए."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Method को target node में निर्दिष्ट कीजिए."
+
+#: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -837,7 +842,6 @@ msgstr "इशारा कनेक्ट नहीं कर सकते"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1446,17 +1450,9 @@ msgstr "सक्रिय करे"
 msgid "Rearrange Autoloads"
 msgstr "औटोलोड पुनर्व्यवस्थित करें"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "अमान्य रास्ता।"
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "फ़ाइल नहीं मौजूद."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "रेसोर्स पाथ में नहीं."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2403,12 +2399,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "एक दृश्य है कि कभी नहीं बचाया गया था फिर से लोड नहीं कर सकते ।"
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "वापस लौटना"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "दृश्य बचाओ"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "इस कार्रवाई को पूर्ववत नहीं किया जा सकता । वैसे भी वापस?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2685,10 +2684,6 @@ msgstr "पूर्ववत्"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "दोहराएँ"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "वापस दृश्य"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3329,6 +3324,10 @@ msgstr "स्क्रिप्ट नहीं चला सका:"
 msgid "Did you forget the '_run' method?"
 msgstr "क्या आप '_run' विधि को भूल गए?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "आयात करने के लिए नोड (एस) का चयन करें"
@@ -3915,6 +3914,10 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
@@ -6811,13 +6814,13 @@ msgid ""
 msgstr "जुडिये '%s' to '%s'"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "रेखा:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7287,6 +7290,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10279,8 +10291,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "नई स्क्रिप्ट"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10442,6 +10455,13 @@ msgid "Open Documentation"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10490,11 +10510,11 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10617,6 +10637,10 @@ msgid "A directory with the same name exists."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "फ़ाइल नहीं मौजूद."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "गलत फॉण्ट का आकार |"
@@ -10656,6 +10680,10 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "अमान्य रास्ता।"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11710,6 +11738,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -11731,6 +11763,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "गलत फॉण्ट का आकार |"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12384,6 +12442,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Not in resource path."
+#~ msgstr "रेसोर्स पाथ में नहीं."
+
+#~ msgid "Revert"
+#~ msgstr "वापस लौटना"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "इस कार्रवाई को पूर्ववत नहीं किया जा सकता । वैसे भी वापस?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "वापस दृश्य"
 
 #~ msgid "Issue Tracker"
 #~ msgstr "मुद्दा पर नज़र रखने वाला"

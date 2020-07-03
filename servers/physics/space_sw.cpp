@@ -996,6 +996,9 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 }
 
 void *SpaceSW::_broadphase_pair(CollisionObjectSW *A, int p_subindex_A, CollisionObjectSW *B, int p_subindex_B, void *p_self) {
+	if (!A->test_collision_mask(B)) {
+		return nullptr;
+	}
 
 	CollisionObjectSW::Type type_A = A->get_type();
 	CollisionObjectSW::Type type_B = B->get_type();
@@ -1034,6 +1037,9 @@ void *SpaceSW::_broadphase_pair(CollisionObjectSW *A, int p_subindex_A, Collisio
 }
 
 void SpaceSW::_broadphase_unpair(CollisionObjectSW *A, int p_subindex_A, CollisionObjectSW *B, int p_subindex_B, void *p_data, void *p_self) {
+	if (!p_data) {
+		return;
+	}
 
 	SpaceSW *self = (SpaceSW *)p_self;
 	self->collision_pairs--;

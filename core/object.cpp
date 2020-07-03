@@ -1996,7 +1996,7 @@ Object::~Object() {
 	ObjectRC *rc = _rc.load(std::memory_order_acquire);
 	if (rc) {
 		if (rc->invalidate()) {
-			memfree(rc);
+			memdelete(rc);
 		}
 	}
 #endif
@@ -2132,18 +2132,26 @@ void ObjectDB::cleanup() {
 	rw_lock->write_lock();
 	if (instances.size()) {
 
-		WARN_PRINT("ObjectDB Instances still exist!");
+		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
+			// Ensure calling the native classes because if a leaked instance has a script
+			// that overrides any of those methods, it'd not be OK to call them at this point,
+			// now the scripting languages have already been terminated.
+			MethodBind *node_get_name = ClassDB::get_method("Node", "get_name");
+			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
+			Variant::CallError call_error;
+
 			const ObjectID *K = NULL;
 			while ((K = instances.next(K))) {
 
-				String node_name;
+				String extra_info;
 				if (instances[*K]->is_class("Node"))
-					node_name = " - Node name: " + String(instances[*K]->call("get_name"));
+					extra_info = " - Node name: " + String(node_get_name->call(instances[*K], NULL, 0, call_error));
 				if (instances[*K]->is_class("Resource"))
-					node_name = " - Resource name: " + String(instances[*K]->call("get_name")) + " Path: " + String(instances[*K]->call("get_path"));
-				print_line("Leaked instance: " + String(instances[*K]->get_class()) + ":" + itos(*K) + node_name);
+					extra_info = " - Resource path: " + String(resource_get_path->call(instances[*K], NULL, 0, call_error));
+				print_line("Leaked instance: " + String(instances[*K]->get_class()) + ":" + itos(*K) + extra_info);
 			}
+			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
 	}
 	instances.clear();

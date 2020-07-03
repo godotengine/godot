@@ -12,12 +12,15 @@
 # Toiya <elviraa98@gmail.com>, 2019.
 # Fredrik Welin <figgemail@gmail.com>, 2019.
 # Mattias Münster <mattiasmun@gmail.com>, 2019.
+# Anonymous <noreply@weblate.org>, 2020.
+# Joakim Lundberg <joakim@joakimlundberg.com>, 2020.
+# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-11-25 04:05+0000\n"
-"Last-Translator: Mattias Münster <mattiasmun@gmail.com>\n"
+"PO-Revision-Date: 2020-06-03 20:09+0000\n"
+"Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -25,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -34,7 +37,7 @@ msgstr "Ogiltligt typargument till convert(), använd TYPE_* konstanter."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Förväntade en sträng med längden 1 (en karaktär)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -73,31 +76,31 @@ msgstr "I anrop till '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -168,29 +171,24 @@ msgid "Anim Change Call"
 msgstr "Anim Ändra Anrop"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Anim Ändra Tid för Nyckebild"
+msgstr "Anim multi-ändring nyckelbildstid"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Anim Ändra Övergång"
+msgstr "Anim Fler-Ändra Övergång"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Anim Ändra Transformation"
+msgstr "Anim Fler-Ändra Transformation"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Anim Ändra Värde På Nyckelbild"
+msgstr "Anim Fler-Ändra Nyckelbildsvärde"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Anim Ändra Anrop"
+msgstr "Anim Fler-Ändra Anrop"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -203,43 +201,39 @@ msgstr "Ändra Animationsloop"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Egenskapsspår"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "Transformera"
+msgstr "3D Transformationsspår"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Anropa Metod Spår"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier kurvspår"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Ljuduppspelningsspår"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "Animationsuppspelningsspår"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Animation längd (i sekunder)."
+msgstr "Animation längd (bildrutor)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Animation längd (i sekunder)."
+msgstr "Animationslängd (i sekunder)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Anim Lägg till spår"
+msgstr "Lägg till spår"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -259,9 +253,8 @@ msgid "Anim Clips:"
 msgstr "Animklipp:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Ändra Arrays Värde"
+msgstr "Ändra spårväg"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -269,21 +262,19 @@ msgstr "Ändra spårets läge till på/av."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Uppdateringsläge (Hur denna egenskap sätts)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "Animations-Node"
+msgstr "Interpolationsläge"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "Återgående slingläge (Interpolerar slutet med början på slingan)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "Ta bort valt spår."
+msgstr "Ta bort detta spår."
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
@@ -291,7 +282,7 @@ msgstr "Tid (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "Växla Spår På"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -324,11 +315,11 @@ msgstr "Kubik"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Begränsa Sling Interpolering"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Återgåendeslinginterpolering"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -348,14 +339,12 @@ msgid "Change Animation Update Mode"
 msgstr "Ändra Animationens Uppdateringsläge"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Animations-Node"
+msgstr "Ändra Animationsinterpoleringsläge"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Ändra Anim Loop"
+msgstr "Ändra Animationsslingläge"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -388,6 +377,7 @@ msgstr "Anim Infoga"
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr ""
+"Animationsspelaren kan inte animera sig själv, utan bara andra spelare."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -402,18 +392,16 @@ msgid "Anim Insert Key"
 msgstr "Anim Infoga Nyckel"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Ändra Animationsnamn:"
+msgstr "Ändra Animationssteg"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Ändra ordning på Autoloads"
+msgstr "Ändra ordning på spår"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "Applicera Transformationsspår enbart på 3D-noder."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -422,22 +410,27 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Ljudspår kan bara peka på noder av typ:\n"
+"-LjudStrömsSpelare\n"
+"-LjudStrömsSpelare2D\n"
+"-LjudStrömsSpelare3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animationsspår kan bara peka på AnimationsSpelar noder."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
 msgstr ""
+"En animationsspelare kan inte animera sig själv, utan bara andra spelare."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Det är inte möjligt att lägga till ett nytt spår utan en rot-nod"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Felaktigt spår för Bezier (ej lämplig delegenskap)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -456,37 +449,32 @@ msgid "Add Transform Track Key"
 msgstr "Lägg till kurvförändringsnyckel"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "Anim Lägg till spår"
+msgstr "Lägg till spårnyckel"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Spårväg ogiltig, kan således inte lägga till en metod nyckel."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Anim Infoga Spår & Nyckel"
+msgstr "Lägg till metodspårnyckel"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "VariableGet hittades inte i Skript: "
+msgstr "Metoden hittades inte i objektet: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "Anim Flytta Nycklar"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "Sökvägen är tom"
+msgstr "Urklipp är tomt"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "Klistra in Params"
+msgstr "Klistra in spår"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -496,6 +484,8 @@ msgstr "Anim Skala Nycklar"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Detta alternativ fungerar ej för att redigera Bezier, då det enbart är ett "
+"spår."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -512,16 +502,15 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Varning: Redigerar importerad animation"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "Välj en AnimationPlayer från Scenträdet för att redigera animationer."
+msgstr "Välj en AnimationsSpelar-nod för att skapa och redigera animationer."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Visa enbart spår från valda noder i trädet."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
@@ -539,7 +528,7 @@ msgstr "Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Sekunder"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
@@ -575,11 +564,11 @@ msgstr "Skala Från Muspekare"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Duplicera urval"
+msgstr "Fördubbla val"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "Duplicera Transponerade"
+msgstr "Fördubbla Transponerade"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -606,11 +595,11 @@ msgstr "Städa upp Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Välj noden som ska animeras:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Använd Bezier-kurvor"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -783,6 +772,11 @@ msgstr "Metod i Mål-Node måste specificeras!"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Metod i Mål-Node måste specificeras!"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
@@ -870,7 +864,6 @@ msgstr "Ansluter Signal:"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1515,18 +1508,9 @@ msgstr "Aktivera"
 msgid "Rearrange Autoloads"
 msgstr "Ändra ordning på Autoloads"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Ogiltig Sökväg."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Fil existerar inte."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Inte i resursens sökväg."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2533,12 +2517,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Kan inte ladda om en scen som aldrig har sparats."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Återställ"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Spara Scen"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Åtgärden kan inte ångras. Återställ ändå?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2836,10 +2823,6 @@ msgstr "Ångra"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Ångra"
-
-#: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Återställ Scen"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3474,6 +3457,10 @@ msgstr "Kunde inte köra Skript:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
+msgstr ""
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 
 #: editor/editor_sub_scene.cpp
@@ -4113,6 +4100,10 @@ msgstr ""
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
 msgstr "Fel uppstod efter importering av skript:"
+
+#: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -7157,13 +7148,13 @@ msgid ""
 msgstr "Anslut '%s' till '%s'"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Rad:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7653,6 +7644,15 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10735,8 +10735,9 @@ msgid "Instance Child Scene"
 msgstr "Instansiera Barn-Scen"
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Fäst Skript"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10906,6 +10907,13 @@ msgid "Open Documentation"
 msgstr "Öppna Senaste"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "Lägg till Barn-Node"
 
@@ -10956,12 +10964,14 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+#, fuzzy
+msgid "Attach a new or existing script to the selected node."
 msgstr "Koppla på ett nytt eller befintligt Skript till vald Node."
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
-msgstr ""
+#, fuzzy
+msgid "Detach the script from the selected node."
+msgstr "Koppla på ett nytt eller befintligt Skript till vald Node."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11092,6 +11102,10 @@ msgid "A directory with the same name exists."
 msgstr "Katalog med samma namn finns redan"
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Fil existerar inte."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Måste använda en giltigt filändelse."
@@ -11133,6 +11147,11 @@ msgstr "Öppna Skript"
 #: editor/script_create_dialog.cpp
 msgid "File exists, it will be reused."
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Invalid path."
+msgstr "Ogiltig Sökväg."
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -12216,6 +12235,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12237,6 +12260,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Ogiltigt namn."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12924,6 +12973,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Not in resource path."
+#~ msgstr "Inte i resursens sökväg."
+
+#~ msgid "Revert"
+#~ msgstr "Återställ"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Åtgärden kan inte ångras. Återställ ändå?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Återställ Scen"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Ersatte %d förekomst(er)."

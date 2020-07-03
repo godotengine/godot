@@ -159,7 +159,7 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2019, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
@@ -253,7 +253,7 @@ License: BSD-3-clause
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
-Copyright: 2005-2007, Ariya Hidayat
+Copyright: 2005-2020, Ariya Hidayat
 License: Expat
 
 Files: ./thirdparty/misc/hq2x.cpp
@@ -350,7 +350,7 @@ License: Expat
 
 Files: ./thirdparty/xatlas/
 Comment: xatlas
-Copyright: 2018, Jonathan Young
+Copyright: 2018-2020, Jonathan Young
   2013, Thekla, Inc
   2006, NVIDIA Corporation, Ignacio Castano
 License: Expat
