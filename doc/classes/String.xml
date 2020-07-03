@@ -412,22 +412,14 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				Returns the index of the [b]first[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
+				
 				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
 				[codeblock]
 				# Will evaluate to `false`.
 				if "i" in "team":
 				    pass
 				[/codeblock]
-			</description>
-		</method>
-		<method name="find_last">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<description>
-				Finds the last occurrence of a substring. Returns the starting position of the substring or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="findn">
@@ -438,7 +430,7 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				Returns the index of the [b]first[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 			</description>
 		</method>
 		<method name="format">
@@ -801,7 +793,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a case-sensitive search for a substring, but starts from the end of the string instead of the beginning.
+				Returns the index of the [b]last[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
 		<method name="rfindn">
@@ -812,7 +804,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a case-insensitive search for a substring, but starts from the end of the string instead of the beginning.
+				Returns the index of the [b]last[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
 		<method name="right">
