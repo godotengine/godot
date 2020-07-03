@@ -167,6 +167,14 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual float screen_get_max_scale() const {
+		float scale = 1.f;
+		int screen_count = get_screen_count();
+		for (int i = 0; i < screen_count; i++) {
+			scale = fmax(scale, screen_get_scale(i));
+		}
+		return scale;
+	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	enum ScreenOrientation {
 
