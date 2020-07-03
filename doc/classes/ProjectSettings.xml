@@ -256,6 +256,9 @@
 		<member name="audio/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
 		</member>
+		<member name="audio/output_latency.web" type="int" setter="" getter="" default="50">
+			Safer override for [member audio/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
+		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
