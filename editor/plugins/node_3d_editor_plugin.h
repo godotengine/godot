@@ -498,6 +498,7 @@ public:
 	bool last_xform_dirty;
 	Node3D *sp;
 	RID sbox_instance;
+	RID sbox_instance_xray;
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;
@@ -613,6 +614,7 @@ private:
 	float snap_rotate_value;
 	float snap_scale_value;
 
+	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
 	RID indicators;
 	RID indicators_instance;
@@ -701,7 +703,7 @@ private:
 
 	HBoxContainer *hbc_menu;
 
-	void _generate_selection_box();
+	void _generate_selection_boxes();
 	UndoRedo *undo_redo;
 
 	int camera_override_viewport_id;
