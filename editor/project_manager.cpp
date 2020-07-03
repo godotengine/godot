@@ -2336,10 +2336,10 @@ ProjectManager::ProjectManager() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically
-				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 #ifdef OSX_ENABLED
-				editor_set_scale(DisplayServer::get_singleton()->screen_get_scale(screen));
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
+				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
 #endif
 			} break;
@@ -2371,11 +2371,8 @@ ProjectManager::ProjectManager() {
 		// Define a minimum window size to prevent UI elements from overlapping or being cut off
 		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
 
-#ifndef OSX_ENABLED
-		// The macOS platform implementation uses its own hiDPI window resizing code
 		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
 		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
-#endif
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
