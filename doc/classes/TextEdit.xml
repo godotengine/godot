@@ -457,6 +457,8 @@
 			The current vertical scroll value.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
+			If [code]true[/code], text can be selected.
+			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
