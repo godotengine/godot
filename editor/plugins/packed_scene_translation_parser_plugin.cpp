@@ -71,7 +71,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				String extension = s->get_language()->get_extension();
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					Vector<String> temp;
-					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_text(s->get_source_code(), &temp);
+					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), &temp);
 					parsed_strings.append_array(temp);
 				}
 			} else if (property_name == "filters") {

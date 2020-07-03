@@ -41,33 +41,16 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 	if (!get_script_instance())
 		return ERR_UNAVAILABLE;
 
-	if (get_script_instance()->has_method("parse_text")) {
-		Error err;
-		FileAccess *file = FileAccess::open(p_path, FileAccess::READ, &err);
-		if (err != OK) {
-			ERR_PRINT("Failed to open " + p_path);
-			return err;
-		}
-		parse_text(file->get_as_utf8_string(), r_extracted_strings);
-		return OK;
-	} else {
-		ERR_PRINT("Custom translation parser plugin's \"func parse_text(text, extracted_strings)\" is undefined.");
-		return ERR_UNAVAILABLE;
-	}
-}
-
-void EditorTranslationParserPlugin::parse_text(const String &p_text, Vector<String> *r_extracted_strings) {
-	if (!get_script_instance())
-		return;
-
-	if (get_script_instance()->has_method("parse_text")) {
+	if (get_script_instance()->has_method("parse_file")) {
 		Array extracted_strings;
-		get_script_instance()->call("parse_text", p_text, extracted_strings);
+		get_script_instance()->call("parse_file", p_path, extracted_strings);
 		for (int i = 0; i < extracted_strings.size(); i++) {
 			r_extracted_strings->append(extracted_strings[i]);
 		}
+		return OK;
 	} else {
-		ERR_PRINT("Custom translation parser plugin's \"func parse_text(text, extracted_strings)\" is undefined.");
+		ERR_PRINT("Custom translation parser plugin's \"func parse_file(path, extracted_strings)\" is undefined.");
+		return ERR_UNAVAILABLE;
 	}
 }
 
@@ -86,7 +69,7 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::NIL, "parse_text", PropertyInfo(Variant::STRING, "text"), PropertyInfo(Variant::ARRAY, "extracted_strings")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::NIL, "parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "extracted_strings")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "get_recognized_extensions"));
 }
 
