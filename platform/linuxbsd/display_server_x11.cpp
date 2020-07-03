@@ -410,7 +410,18 @@ void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerX11::mouse_get_position() const {
-	return last_mouse_pos;
+	int root_x, root_y;
+	int win_x, win_y;
+	unsigned int mask_return;
+	Window window_returned;
+
+	Bool result = XQueryPointer(x11_display, RootWindow(x11_display, DefaultScreen(x11_display)), &window_returned,
+			&window_returned, &root_x, &root_y, &win_x, &win_y,
+			&mask_return);
+	if (result == True) {
+		return Point2i(root_x, root_y);
+	}
+	return Point2i();
 }
 
 Point2i DisplayServerX11::mouse_get_absolute_position() const {
@@ -718,6 +729,14 @@ ObjectID DisplayServerX11::window_get_attached_instance_id(WindowID p_window) co
 }
 
 DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const Point2i &p_position) const {
+#warning This is an incorrect implementation, if windows overlap, it should return the topmost visible one or none if occluded by a foreign window
+
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		Rect2i win_rect = Rect2i(window_get_position(E->key()), window_get_size(E->key()));
+		if (win_rect.has_point(p_position)) {
+			return E->key();
+		}
+	}
 	return INVALID_WINDOW_ID;
 }
 

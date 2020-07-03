@@ -3374,6 +3374,8 @@ String DisplayServerOSX::ime_get_text() const {
 }
 
 DisplayServer::WindowID DisplayServerOSX::get_window_at_screen_position(const Point2i &p_position) const {
+#warning This is an incorrect implementation, if windows overlap, it should return the topmost visible one or none if occluded by a foreign window
+
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		Rect2i win_rect = Rect2i(window_get_position(E->key()), window_get_size(E->key()));
 		if (win_rect.has_point(p_position)) {
