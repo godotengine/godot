@@ -1035,6 +1035,10 @@ Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_ty
 }
 
 String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
+	if (p_obj == nullptr) {
+		return String("null");
+	}
+
 	ManagedType type = ManagedType::from_class(mono_object_get_class(p_obj));
 	Variant var = GDMonoMarshal::mono_object_to_variant_no_err(p_obj, type);
 
