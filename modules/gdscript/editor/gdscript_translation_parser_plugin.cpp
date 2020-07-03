@@ -38,25 +38,8 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 }
 
 Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_extracted_strings) {
-	List<String> extensions;
-	get_recognized_extensions(&extensions);
-	bool extension_valid = false;
-	for (auto E = extensions.front(); E; E = E->next()) {
-		if (p_path.get_extension() == E->get()) {
-			extension_valid = true;
-			break;
-		}
-	}
-
-	if (!extension_valid) {
-		Vector<String> temp;
-		for (auto E = extensions.front(); E; E = E->next()) {
-			temp.push_back(E->get());
-		}
-		String valid_extensions = String(", ").join(temp);
-		ERR_PRINT("Argument p_path \"" + p_path + "\" has wrong extension. List of valid extensions: " + valid_extensions);
-		return ERR_INVALID_PARAMETER;
-	}
+	// Parse and match all GDScript function API that involves translation string.
+	// E.g get_node("Label").text = "something", var test = tr("something"), "something" will be matched and collected.
 
 	Error err;
 	RES loaded_res = ResourceLoader::load(p_path, "", false, &err);
@@ -66,26 +49,18 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	}
 
 	Ref<GDScript> gdscript = loaded_res;
-	parse_text(gdscript->get_source_code(), r_extracted_strings);
-
-	return OK;
-}
-
-void GDScriptEditorTranslationParserPlugin::parse_text(const String &p_text, Vector<String> *r_extracted_strings) {
-	// Parse and match all GDScript function API that involves translation string.
-	// E.g get_node("Label").text = "something", var test = tr("something"), "something" will be matched and collected.
-
+	String source_code = gdscript->get_source_code();
 	Vector<String> parsed_strings;
 
 	// Search translation strings with RegEx.
 	regex.clear();
 	regex.compile(String("|").join(patterns));
-	Array results = regex.search_all(p_text);
+	Array results = regex.search_all(source_code);
 	_get_captured_strings(results, &parsed_strings);
 
 	// Special handling for FileDialog.
 	Vector<String> temp;
-	_parse_file_dialog(p_text, &temp);
+	_parse_file_dialog(source_code, &temp);
 	parsed_strings.append_array(temp);
 
 	// Filter out / and +
@@ -97,6 +72,8 @@ void GDScriptEditorTranslationParserPlugin::parse_text(const String &p_text, Vec
 	}
 
 	r_extracted_strings->append_array(parsed_strings);
+
+	return OK;
 }
 
 void GDScriptEditorTranslationParserPlugin::_parse_file_dialog(const String &p_source_code, Vector<String> *r_output) {
