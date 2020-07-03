@@ -48,7 +48,6 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings);
-	virtual void parse_text(const String &p_text, Vector<String> *r_extracted_strings);
 	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 
 	GDScriptEditorTranslationParserPlugin();
