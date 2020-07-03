@@ -335,6 +335,7 @@
 			</argument>
 			<description>
 				Perform selection, from line/column to line/column.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="select_all">
@@ -342,6 +343,7 @@
 			</return>
 			<description>
 				Select all the text.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="set_line">
