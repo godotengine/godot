@@ -3825,14 +3825,6 @@
         ]
       },
       {
-        "name": "godot_string_find_last",
-        "return_type": "godot_int",
-        "arguments": [
-          ["const godot_string *", "p_self"],
-          ["godot_string", "p_what"]
-        ]
-      },
-      {
         "name": "godot_string_format",
         "return_type": "godot_string",
         "arguments": [
