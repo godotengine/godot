@@ -2864,6 +2864,27 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.top = p_rect.position.y;
 	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
 
+	if (p_mode == WINDOW_MODE_FULLSCREEN) {
+		int nearest_area = 0;
+		Rect2i screen_rect;
+		for (int i = 0; i < get_screen_count(); i++) {
+			Rect2i r;
+			r.position = screen_get_position(i);
+			r.size = screen_get_size(i);
+			Rect2 inters = r.clip(p_rect);
+			int area = inters.size.width * inters.size.height;
+			if (area >= nearest_area) {
+				screen_rect = r;
+				nearest_area = area;
+			}
+		}
+
+		WindowRect.left = screen_rect.position.x;
+		WindowRect.right = screen_rect.position.x + screen_rect.size.x;
+		WindowRect.top = screen_rect.position.y;
+		WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+	}
+
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
 	WindowID id = window_id_counter;
