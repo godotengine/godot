@@ -141,14 +141,25 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 
 	if (id == BUTTON_SELECT_LIBRARY || id == BUTTON_SELECT_DEPENDENCES) {
 
+		TreeItem *treeItem = Object::cast_to<TreeItem>(item)->get_parent();
 		EditorFileDialog::Mode mode = EditorFileDialog::MODE_OPEN_FILE;
-		if (id == BUTTON_SELECT_DEPENDENCES)
+
+		if (id == BUTTON_SELECT_DEPENDENCES) {
 			mode = EditorFileDialog::MODE_OPEN_FILES;
+		} else if (treeItem->get_text(0) == "iOS") {
+			mode = EditorFileDialog::MODE_OPEN_ANY;
+		}
 
 		file_dialog->set_meta("target", target);
 		file_dialog->set_meta("section", section);
 		file_dialog->clear_filters();
-		file_dialog->add_filter(Object::cast_to<TreeItem>(item)->get_parent()->get_metadata(0));
+
+		String filter_string = treeItem->get_metadata(0);
+		Vector<String> filters = filter_string.split(",", false, 0);
+		for (int i = 0; i < filters.size(); i++) {
+			file_dialog->add_filter(filters[i]);
+		}
+
 		file_dialog->set_mode(mode);
 		file_dialog->popup_centered_ratio();
 
@@ -332,7 +343,9 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platform_ios.name = "iOS";
 		platform_ios.entries.push_back("armv7");
 		platform_ios.entries.push_back("arm64");
-		platform_ios.library_extension = "*.dylib";
+		// iOS can use both Static and Dynamic libraries.
+		// Frameworks is actually a folder with files.
+		platform_ios.library_extension = "*.framework; Framework, *.xcframework; Binary Framework, *.a; Static Library, *.dylib; Dynamic Library";
 		platforms["iOS"] = platform_ios;
 	}
 
@@ -383,6 +396,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	file_dialog->set_resizable(true);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", this, "_on_library_selected");
+	file_dialog->connect("dir_selected", this, "_on_library_selected");
 	file_dialog->connect("files_selected", this, "_on_dependencies_selected");
 
 	new_architecture_dialog = memnew(ConfirmationDialog);
