@@ -35,9 +35,9 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/text_label.h"
 
 class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
@@ -77,12 +77,12 @@ class TileMapEditor : public VBoxContainer {
 	ItemList *palette;
 	ItemList *manual_palette;
 
-	Label *info_message;
+	TextLabel *info_message;
 
 	HBoxContainer *toolbar;
 	HBoxContainer *toolbar_right;
 
-	Label *tile_info;
+	TextLabel *tile_info;
 	MenuButton *options;
 
 	Button *paint_button;
@@ -210,7 +210,7 @@ protected:
 public:
 	HBoxContainer *get_toolbar() const { return toolbar; }
 	HBoxContainer *get_toolbar_right() const { return toolbar_right; }
-	Label *get_tile_info() const { return tile_info; }
+	TextLabel *get_tile_info() const { return tile_info; }
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);

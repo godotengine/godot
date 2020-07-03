@@ -534,7 +534,7 @@
 				[codeblock]
 				TheGame
 				TheGame/Menu
-				TheGame/Menu/Label
+				TheGame/Menu/TextLabel
 				TheGame/Menu/Camera2D
 				TheGame/SplashScreen
 				TheGame/SplashScreen/Camera2D
@@ -550,7 +550,7 @@
 				[codeblock]
 				 ┖╴TheGame
 				    ┠╴Menu
-				    ┃  ┠╴Label
+				    ┃  ┠╴TextLabel
 				    ┃  ┖╴Camera2D
 				    ┖╴SplashScreen
 				       ┖╴Camera2D

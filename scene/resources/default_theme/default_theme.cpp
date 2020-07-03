@@ -322,21 +322,21 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);
 	theme->set_constant("check_vadjust", "CheckButton", 0 * scale);
 
-	// Label
+	// TextLabel.
 
-	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
-	theme->set_font("font", "Label", Ref<Font>());
-	theme->set_font_size("font_size", "Label", -1);
+	theme->set_stylebox("normal", "TextLabel", memnew(StyleBoxEmpty));
+	theme->set_font("font", "TextLabel", Ref<Font>());
+	theme->set_font_size("font_size", "TextLabel", -1);
 
-	theme->set_color("font_color", "Label", Color(1, 1, 1));
-	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_modulate", "Label", Color(1, 1, 1));
+	theme->set_color("font_color", "TextLabel", Color(1, 1, 1));
+	theme->set_color("font_color_shadow", "TextLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_modulate", "TextLabel", Color(1, 1, 1));
 
-	theme->set_constant("shadow_offset_x", "Label", 1 * scale);
-	theme->set_constant("shadow_offset_y", "Label", 1 * scale);
-	theme->set_constant("outline_size", "Label", 0 * scale);
-	theme->set_constant("shadow_outline_size", "Label", 1 * scale);
-	theme->set_constant("line_spacing", "Label", 3 * scale);
+	theme->set_constant("shadow_offset_x", "TextLabel", 1 * scale);
+	theme->set_constant("shadow_offset_y", "TextLabel", 1 * scale);
+	theme->set_constant("outline_size", "TextLabel", 0 * scale);
+	theme->set_constant("shadow_outline_size", "TextLabel", 1 * scale);
+	theme->set_constant("line_spacing", "TextLabel", 3 * scale);
 
 	// LineEdit
 

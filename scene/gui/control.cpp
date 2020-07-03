@@ -38,8 +38,8 @@
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
-#include "scene/gui/label.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/text_label.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"

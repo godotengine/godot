@@ -40,8 +40,8 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "scene/gui/center_container.h"
-#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/text_label.h"
 #include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
@@ -1490,7 +1490,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir_next->connect("pressed", callable_mp(this, &EditorFileDialog::_go_forward));
 	dir_up->connect("pressed", callable_mp(this, &EditorFileDialog::_go_up));
 
-	pathhb->add_child(memnew(Label(TTR("Path:"))));
+	pathhb->add_child(memnew(TextLabel(TTR("Path:"))));
 
 	drives_container = memnew(HBoxContainer);
 	pathhb->add_child(drives_container);
@@ -1571,7 +1571,7 @@ EditorFileDialog::EditorFileDialog() {
 	fav_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	HBoxContainer *fav_hb = memnew(HBoxContainer);
 	fav_vb->add_child(fav_hb);
-	fav_hb->add_child(memnew(Label(TTR("Favorites:"))));
+	fav_hb->add_child(memnew(TextLabel(TTR("Favorites:"))));
 	fav_hb->add_spacer();
 	fav_up = memnew(Button);
 	fav_up->set_flat(true);
@@ -1606,7 +1606,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	VBoxContainer *list_vb = memnew(VBoxContainer);
 	list_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	list_vb->add_child(memnew(Label(TTR("Directories & Files:"))));
+	list_vb->add_child(memnew(TextLabel(TTR("Directories & Files:"))));
 	preview_hb->add_child(list_vb);
 
 	// Item (files and folders) list with context menu.
@@ -1633,7 +1633,7 @@ EditorFileDialog::EditorFileDialog() {
 	preview_vb->hide();
 
 	file_box = memnew(HBoxContainer);
-	file_box->add_child(memnew(Label(TTR("File:"))));
+	file_box->add_child(memnew(TextLabel(TTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);

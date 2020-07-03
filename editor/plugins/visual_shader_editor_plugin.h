@@ -144,14 +144,14 @@ class VisualShaderEditor : public VBoxContainer {
 	OptionButton *edit_type_particles;
 
 	PanelContainer *error_panel;
-	Label *error_label;
+	TextLabel *error_label;
 
 	bool pending_update_preview;
 	bool shader_error;
 	VBoxContainer *preview_vbox;
 	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
-	Label *error_text;
+	TextLabel *error_text;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
@@ -194,7 +194,7 @@ class VisualShaderEditor : public VBoxContainer {
 	AcceptDialog *alert;
 	LineEdit *node_filter;
 	RichTextLabel *node_desc;
-	Label *highend_label;
+	TextLabel *highend_label;
 
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos);

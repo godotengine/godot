@@ -41,7 +41,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	ERR_FAIL_COND_MSG(tasks.has(p_task), "Task '" + p_task + "' already exists.");
 	BackgroundProgress::Task t;
 	t.hb = memnew(HBoxContainer);
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(p_label + " ");
 	t.hb->add_child(l);
 	t.progress = memnew(ProgressBar);
@@ -165,7 +165,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	t.progress->set_max(p_steps);
 	t.progress->set_value(p_steps);
 	vb2->add_child(t.progress);
-	t.state = memnew(Label);
+	t.state = memnew(TextLabel);
 	t.state->set_clip_text(true);
 	vb2->add_child(t.state);
 	main->add_child(t.vb);

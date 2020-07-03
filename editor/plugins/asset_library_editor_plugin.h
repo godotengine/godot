@@ -57,7 +57,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *category;
 	LinkButton *author;
 	TextureRect *stars[5];
-	Label *price;
+	TextLabel *price;
 
 	int asset_id;
 	int category_id;
@@ -130,7 +130,7 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
 
 	TextureRect *icon;
-	Label *title;
+	TextLabel *title;
 	ProgressBar *progress;
 	Button *install;
 	Button *retry;
@@ -140,7 +140,7 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 	HTTPRequest *download;
 	String host;
 	String sha256;
-	Label *status;
+	TextLabel *status;
 
 	int prev_status;
 
@@ -180,8 +180,8 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
-	Label *library_loading;
-	Label *library_error;
+	TextLabel *library_loading;
+	TextLabel *library_error;
 	LineEdit *filter;
 	Timer *filter_debounce_timer;
 	OptionButton *categories;
@@ -189,7 +189,7 @@ class EditorAssetLibrary : public PanelContainer {
 	OptionButton *sort;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
-	Label *error_label;
+	TextLabel *error_label;
 	MenuButton *support;
 
 	HBoxContainer *contents;

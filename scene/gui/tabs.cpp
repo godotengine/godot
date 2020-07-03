@@ -34,7 +34,7 @@
 #include "core/string/translation.h"
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/label.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_rect.h"
 
 Size2 Tabs::get_minimum_size() const {
@@ -788,7 +788,7 @@ Variant Tabs::get_drag_data(const Point2 &p_point) {
 		tf->set_texture(tabs[tab_over].icon);
 		drag_preview->add_child(tf);
 	}
-	Label *label = memnew(Label(tabs[tab_over].xl_text));
+	TextLabel *label = memnew(TextLabel(tabs[tab_over].xl_text));
 	drag_preview->add_child(label);
 	if (!tabs[tab_over].right_button.is_null()) {
 		TextureRect *tf = memnew(TextureRect);

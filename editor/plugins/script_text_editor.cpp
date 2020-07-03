@@ -90,8 +90,8 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
-	method = memnew(Label);
-	method->set_align(Label::ALIGN_CENTER);
+	method = memnew(TextLabel);
+	method->set_align(TextLabel::ALIGN_CENTER);
 	vbc->add_child(method);
 
 	tree = memnew(Tree);

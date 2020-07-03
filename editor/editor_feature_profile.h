@@ -124,7 +124,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	Tree *class_list;
 	VBoxContainer *property_list_vbc;
 	Tree *property_list;
-	Label *no_profile_selected_help;
+	TextLabel *no_profile_selected_help;
 
 	EditorFileDialog *import_profiles;
 	EditorFileDialog *export_profile;

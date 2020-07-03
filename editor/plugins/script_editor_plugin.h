@@ -256,7 +256,7 @@ class ScriptEditor : public PanelContainer {
 	VBoxContainer *scripts_vbox;
 	VBoxContainer *overview_vbox;
 	HBoxContainer *buttons_hbox;
-	Label *filename;
+	TextLabel *filename;
 	Button *members_overview_alphabeta_sort_button;
 	bool members_overview_enabled;
 	ItemList *help_overview;
@@ -272,7 +272,7 @@ class ScriptEditor : public PanelContainer {
 	String current_theme;
 
 	TextureRect *script_icon;
-	Label *script_name_label;
+	TextLabel *script_name_label;
 
 	Button *script_back;
 	Button *script_forward;

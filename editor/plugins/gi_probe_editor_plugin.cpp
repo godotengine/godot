@@ -150,7 +150,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect("pressed", callable_mp(this, &GIProbeEditorPlugin::_bake));
 	bake_hb->add_child(bake);
-	bake_info = memnew(Label);
+	bake_info = memnew(TextLabel);
 	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_info->set_clip_text(true);
 	bake_hb->add_child(bake_info);

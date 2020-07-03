@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  label.h                                                              */
+/*  text_label.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LABEL_H
-#define LABEL_H
+#ifndef TEXT_LABEL_H
+#define TEXT_LABEL_H
 
 #include "scene/gui/control.h"
 
-class Label : public Control {
-	GDCLASS(Label, Control);
+class TextLabel : public Control {
+	GDCLASS(TextLabel, Control);
 
 public:
 	enum Align {
@@ -144,11 +144,11 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	Label(const String &p_text = String());
-	~Label();
+	TextLabel(const String &p_text = String());
+	~TextLabel();
 };
 
-VARIANT_ENUM_CAST(Label::Align);
-VARIANT_ENUM_CAST(Label::VAlign);
+VARIANT_ENUM_CAST(TextLabel::Align);
+VARIANT_ENUM_CAST(TextLabel::VAlign);
 
-#endif
+#endif // TEXT_LABEL_H

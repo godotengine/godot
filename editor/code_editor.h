@@ -42,7 +42,7 @@
 class GotoLineDialog : public ConfirmationDialog {
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
-	Label *line_label;
+	TextLabel *line_label;
 	LineEdit *line;
 
 	CodeEdit *text_editor;
@@ -61,7 +61,7 @@ class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
-	Label *matches_label;
+	TextLabel *matches_label;
 	Button *find_prev;
 	Button *find_next;
 	CheckBox *case_sensitive;
@@ -143,11 +143,11 @@ class CodeTextEditor : public VBoxContainer {
 
 	Button *toggle_scripts_button;
 	Button *warning_button;
-	Label *warning_count_label;
+	TextLabel *warning_count_label;
 
-	Label *line_and_col_txt;
+	TextLabel *line_and_col_txt;
 
-	Label *info;
+	TextLabel *info;
 	Timer *idle;
 	Timer *code_complete_timer;
 
@@ -155,7 +155,7 @@ class CodeTextEditor : public VBoxContainer {
 	int font_resize_val;
 	real_t font_size;
 
-	Label *error;
+	TextLabel *error;
 	int error_line;
 	int error_column;
 

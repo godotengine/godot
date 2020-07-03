@@ -51,13 +51,13 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
@@ -1494,7 +1494,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 
-		reason = memnew(Label);
+		reason = memnew(TextLabel);
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1660,10 +1660,10 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	{ //vmem inspect
 		VBoxContainer *vmem_vb = memnew(VBoxContainer);
 		HBoxContainer *vmem_hb = memnew(HBoxContainer);
-		Label *vmlb = memnew(Label(TTR("List of Video Memory Usage by Resource:") + " "));
+		TextLabel *vmlb = memnew(TextLabel(TTR("List of Video Memory Usage by Resource:") + " "));
 		vmlb->set_h_size_flags(SIZE_EXPAND_FILL);
 		vmem_hb->add_child(vmlb);
-		vmem_hb->add_child(memnew(Label(TTR("Total:") + " ")));
+		vmem_hb->add_child(memnew(TextLabel(TTR("Total:") + " ")));
 		vmem_total = memnew(LineEdit);
 		vmem_total->set_editable(false);
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
@@ -1716,10 +1716,10 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		misc->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
 		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
-		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
+		info_left->add_child(memnew(TextLabel(TTR("Clicked Control:"))));
 		info_left->add_child(clicked_ctrl);
 		clicked_ctrl_type = memnew(LineEdit);
-		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
+		info_left->add_child(memnew(TextLabel(TTR("Clicked Control Type:"))));
 		info_left->add_child(clicked_ctrl_type);
 
 		scene_tree = memnew(SceneDebuggerTree);
@@ -1728,7 +1728,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		{
 			HBoxContainer *lehb = memnew(HBoxContainer);
-			Label *l = memnew(Label(TTR("Live Edit Root:")));
+			TextLabel *l = memnew(TextLabel(TTR("Live Edit Root:")));
 			info_left->add_child(l);
 			lehb->add_child(live_edit_root);
 			le_set = memnew(Button(TTR("Set From Tree")));

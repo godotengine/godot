@@ -250,7 +250,7 @@ void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
 		} else if (line_result["status"] == "-") {
 			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 		} else {
-			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("font_color", "Label"));
+			diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_theme_color("font_color", "TextLabel"));
 		}
 
 		diff->add_text((String)line_result["content"]);
@@ -372,7 +372,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_vcs_status->set_text(TTR("VCS Addon is not initialized"));
 	set_up_vbc->add_child(set_up_vcs_status);
 
-	set_up_vcs_label = memnew(Label);
+	set_up_vcs_label = memnew(TextLabel);
 	set_up_vcs_label->set_text(TTR("Version Control System"));
 	set_up_hbc->add_child(set_up_vcs_label);
 
@@ -401,8 +401,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_tools->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN_COLLAPSED);
 	commit_box_vbc->add_child(stage_tools);
 
-	staging_area_label = memnew(Label);
-	staging_area_label->set_h_size_flags(Label::SIZE_EXPAND_FILL);
+	staging_area_label = memnew(TextLabel);
+	staging_area_label->set_h_size_flags(TextLabel::SIZE_EXPAND_FILL);
 	staging_area_label->set_text(TTR("Staging area"));
 	stage_tools->add_child(staging_area_label);
 
@@ -471,8 +471,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_send_commit_msg));
 	commit_box_vbc->add_child(commit_button);
 
-	commit_status = memnew(Label);
-	commit_status->set_align(Label::ALIGN_CENTER);
+	commit_status = memnew(TextLabel);
+	commit_status->set_align(TextLabel::ALIGN_CENTER);
 	commit_box_vbc->add_child(commit_status);
 
 	version_control_dock = memnew(PanelContainer);
@@ -488,15 +488,15 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_hbc->set_h_size_flags(HBoxContainer::SIZE_FILL);
 	diff_vbc->add_child(diff_hbc);
 
-	diff_heading = memnew(Label);
+	diff_heading = memnew(TextLabel);
 	diff_heading->set_text(TTR("Status"));
 	diff_heading->set_tooltip(TTR("View file diffs before committing them to the latest version"));
 	diff_hbc->add_child(diff_heading);
 
-	diff_file_name = memnew(Label);
+	diff_file_name = memnew(TextLabel);
 	diff_file_name->set_text(TTR("No file diff is active"));
-	diff_file_name->set_h_size_flags(Label::SIZE_EXPAND_FILL);
-	diff_file_name->set_align(Label::ALIGN_RIGHT);
+	diff_file_name->set_h_size_flags(TextLabel::SIZE_EXPAND_FILL);
+	diff_file_name->set_align(TextLabel::ALIGN_RIGHT);
 	diff_hbc->add_child(diff_file_name);
 
 	diff_refresh_button = memnew(Button);

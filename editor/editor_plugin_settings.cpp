@@ -194,7 +194,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	add_child(plugin_config_dialog);
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
-	title_hb->add_child(memnew(Label(TTR("Installed Plugins:"))));
+	title_hb->add_child(memnew(TextLabel(TTR("Installed Plugins:"))));
 	title_hb->add_spacer();
 	create_plugin = memnew(Button(TTR("Create")));
 	create_plugin->connect("pressed", callable_mp(this, &EditorPluginSettings::_create_clicked));

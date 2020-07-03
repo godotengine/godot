@@ -331,7 +331,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	container->add_child(hbox);
-	Label *label = memnew(Label);
+	TextLabel *label = memnew(TextLabel);
 	label->set_text(TTR("Platform:"));
 	hbox->add_child(label);
 	filter = memnew(MenuButton);

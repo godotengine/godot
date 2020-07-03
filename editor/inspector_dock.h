@@ -40,8 +40,8 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/text_label.h"
 
 class EditorNode;
 

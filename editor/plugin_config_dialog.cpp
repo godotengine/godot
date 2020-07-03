@@ -158,17 +158,17 @@ void PluginConfigDialog::config(const String &p_config_path) {
 
 		_edit_mode = true;
 		active_edit->hide();
-		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->hide();
+		Object::cast_to<TextLabel>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->hide();
 		subfolder_edit->hide();
-		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->hide();
+		Object::cast_to<TextLabel>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->hide();
 		set_title(TTR("Edit a Plugin"));
 	} else {
 		_clear_fields();
 		_edit_mode = false;
 		active_edit->show();
-		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->show();
+		Object::cast_to<TextLabel>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->show();
 		subfolder_edit->show();
-		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->show();
+		Object::cast_to<TextLabel>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->show();
 		set_title(TTR("Create a Plugin"));
 	}
 	get_ok()->set_disabled(!_edit_mode);
@@ -187,7 +187,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->set_columns(2);
 	add_child(grid);
 
-	Label *name_lb = memnew(Label);
+	TextLabel *name_lb = memnew(TextLabel);
 	name_lb->set_text(TTR("Plugin Name:"));
 	grid->add_child(name_lb);
 
@@ -196,7 +196,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_edit->set_placeholder("MyPlugin");
 	grid->add_child(name_edit);
 
-	Label *subfolder_lb = memnew(Label);
+	TextLabel *subfolder_lb = memnew(TextLabel);
 	subfolder_lb->set_text(TTR("Subfolder:"));
 	grid->add_child(subfolder_lb);
 
@@ -204,7 +204,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
 	grid->add_child(subfolder_edit);
 
-	Label *desc_lb = memnew(Label);
+	TextLabel *desc_lb = memnew(TextLabel);
 	desc_lb->set_text(TTR("Description:"));
 	grid->add_child(desc_lb);
 
@@ -212,7 +212,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
 	grid->add_child(desc_edit);
 
-	Label *author_lb = memnew(Label);
+	TextLabel *author_lb = memnew(TextLabel);
 	author_lb->set_text(TTR("Author:"));
 	grid->add_child(author_lb);
 
@@ -220,7 +220,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	author_edit->set_placeholder("Godette");
 	grid->add_child(author_edit);
 
-	Label *version_lb = memnew(Label);
+	TextLabel *version_lb = memnew(TextLabel);
 	version_lb->set_text(TTR("Version:"));
 	grid->add_child(version_lb);
 
@@ -228,7 +228,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	version_edit->set_placeholder("1.0");
 	grid->add_child(version_edit);
 
-	Label *script_option_lb = memnew(Label);
+	TextLabel *script_option_lb = memnew(TextLabel);
 	script_option_lb->set_text(TTR("Language:"));
 	grid->add_child(script_option_lb);
 
@@ -246,7 +246,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);
 
-	Label *script_lb = memnew(Label);
+	TextLabel *script_lb = memnew(TextLabel);
 	script_lb->set_text(TTR("Script Name:"));
 	grid->add_child(script_lb);
 
@@ -256,7 +256,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_edit);
 
 	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.
-	Label *active_lb = memnew(Label);
+	TextLabel *active_lb = memnew(TextLabel);
 	active_lb->set_text(TTR("Activate now?"));
 	grid->add_child(active_lb);
 

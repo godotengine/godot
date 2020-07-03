@@ -45,7 +45,7 @@ class ExportTemplateManager : public ConfirmationDialog {
 
 	AcceptDialog *template_downloader;
 	VBoxContainer *template_list;
-	Label *template_list_state;
+	TextLabel *template_list_state;
 	ProgressBar *template_download_progress;
 
 	ScrollContainer *installed_scroll;

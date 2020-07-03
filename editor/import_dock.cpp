@@ -503,7 +503,7 @@ void ImportDock::initialize_import_options() const {
 
 ImportDock::ImportDock() {
 	set_name("Import");
-	imported = memnew(Label);
+	imported = memnew(TextLabel);
 	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 	imported->set_clip_text(true);
 	add_child(imported);
@@ -541,8 +541,8 @@ ImportDock::ImportDock() {
 	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
 
 	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
-	vbc_confirm->add_child(memnew(Label(TTR("Changing the type of an imported file requires editor restart."))));
-	label_warning = memnew(Label(TTR("WARNING: Assets exist that use this resource, they may stop loading properly.")));
+	vbc_confirm->add_child(memnew(TextLabel(TTR("Changing the type of an imported file requires editor restart."))));
+	label_warning = memnew(TextLabel(TTR("WARNING: Assets exist that use this resource, they may stop loading properly.")));
 	vbc_confirm->add_child(label_warning);
 	reimport_confirm->add_child(vbc_confirm);
 

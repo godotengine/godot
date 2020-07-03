@@ -40,7 +40,7 @@ class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
 
 	SpinBox *layer;
-	Label *info;
+	TextLabel *info;
 	Ref<Texture3D> texture;
 
 	Ref<Shader> shader;

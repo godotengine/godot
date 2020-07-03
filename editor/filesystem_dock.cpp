@@ -2805,9 +2805,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	scanning_vb->hide();
 	add_child(scanning_vb);
 
-	Label *slabel = memnew(Label);
+	TextLabel *slabel = memnew(TextLabel);
 	slabel->set_text(TTR("Scanning Files,\nPlease Wait..."));
-	slabel->set_align(Label::ALIGN_CENTER);
+	slabel->set_align(TextLabel::ALIGN_CENTER);
 	scanning_vb->add_child(slabel);
 
 	scanning_progress = memnew(ProgressBar);

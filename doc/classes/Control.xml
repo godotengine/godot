@@ -89,14 +89,14 @@
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
-				    var label = Label.new()
+				    var label = TextLabel.new()
 				    label.text = for_text
 				    return label
 				[/gdscript]
 				[csharp]
 				public override Godot.Control _MakeCustomTooltip(String forText)
 				{
-				    var label = new Label();
+				    var label = new TextLabel();
 				    label.Text = forText;
 				    return label;
 				}
@@ -107,14 +107,14 @@
 				[gdscript]
 				func _make_custom_tooltip(for_text):
 				    var tooltip = preload("res://SomeTooltipScene.tscn").instance()
-				    tooltip.get_node("Label").text = for_text
+				    tooltip.get_node("TextLabel").text = for_text
 				    return tooltip
 				[/gdscript]
 				[csharp]
 				public override Godot.Control _MakeCustomTooltip(String forText)
 				{
 				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://SomeTooltipScene.tscn").Instance();
-				    tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
+				    tooltip.GetNode&lt;TextLabel&gt;("TextLabel").Text = forText;
 				    return tooltip;
 				}
 				[/csharp]
@@ -153,18 +153,18 @@
 				[b]Example of overriding a label's color and resetting it later:[/b]
 				[codeblocks]
 				[gdscript]
-				# Override the child node "MyLabel"'s font color to orange.
-				$MyLabel.add_theme_color_override("font_color", Color(1, 0.5, 0))
+				# Override the child node "MyTextLabel"'s font color to orange.
+				$MyTextLabel.add_theme_color_override("font_color", Color(1, 0.5, 0))
 				# Reset the color by creating a new node to get the default value:
-				var default_label_color = Label.new().get_theme_color("font_color")
-				$MyLabel.add_theme_color_override("font_color", default_label_color)
+				var default_label_color = TextLabel.new().get_theme_color("font_color")
+				$MyTextLabel.add_theme_color_override("font_color", default_label_color)
 				[/gdscript]
 				[csharp]
-				// Override the child node "MyLabel"'s font color to orange.
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0));
+				// Override the child node "MyTextLabel"'s font color to orange.
+				GetNode&lt;TextLabel&gt;("MyTextLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0));
 				// Reset the color by creating a new node to get the default value:
-				var defaultLabelColor = new Label().GetThemeColor("font_color");
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", defaultLabelColor);
+				var defaultTextLabelColor = new TextLabel().GetThemeColor("font_color");
+				GetNode&lt;TextLabel&gt;("MyTextLabel").AddThemeColorOverride("font_color", defaultTextLabelColor);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -1056,7 +1056,7 @@
 		</member>
 		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
 			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
-			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
+			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [TextLabel] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipTextLabel"[/code] respectively. For example:
 			[codeblocks]
 			[gdscript]
 			var style_box = StyleBoxFlat.new()
@@ -1064,7 +1064,7 @@
 			style_box.set_border_width_all(2)
 			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
 			theme.set_stylebox("panel", "TooltipPanel", style_box)
-			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
+			theme.set_color("font_color", "TooltipTextLabel", Color(0, 1, 1))
 			[/gdscript]
 			[csharp]
 			var styleBox = new StyleBoxFlat();
@@ -1072,7 +1072,7 @@
 			styleBox.SetBorderWidthAll(2);
 			// We assume here that the `Theme` property has been assigned a custom Theme beforehand.
 			Theme.SetStyleBox("panel", "TooltipPanel", styleBox);
-			Theme.SetColor("font_color", "TooltipLabel", new Color(0, 1, 1));
+			Theme.SetColor("font_color", "TooltipTextLabel", new Color(0, 1, 1));
 			[/csharp]
 			[/codeblocks]
 		</member>

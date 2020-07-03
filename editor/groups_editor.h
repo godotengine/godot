@@ -60,7 +60,7 @@ class GroupDialog : public AcceptDialog {
 	TreeItem *remove_node_root;
 	LineEdit *remove_filter;
 
-	Label *group_empty;
+	TextLabel *group_empty;
 
 	Button *add_button;
 	Button *remove_button;

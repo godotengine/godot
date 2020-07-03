@@ -92,8 +92,8 @@ class RenameDialog : public ConfirmationDialog {
 	OptionButton *opt_style;
 	OptionButton *opt_case;
 
-	Label *lbl_preview_title;
-	Label *lbl_preview;
+	TextLabel *lbl_preview_title;
+	TextLabel *lbl_preview;
 
 	List<Pair<NodePath, String>> to_rename;
 	Node *preview_node;

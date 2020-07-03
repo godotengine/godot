@@ -584,7 +584,7 @@ public:
 
 class EditorPropertyRID : public EditorProperty {
 	GDCLASS(EditorPropertyRID, EditorProperty);
-	Label *label;
+	TextLabel *label;
 
 public:
 	virtual void update_property() override;

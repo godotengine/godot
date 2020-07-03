@@ -33,9 +33,9 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/text_label.h"
 
 class BackgroundProgress : public HBoxContainer {
 	GDCLASS(BackgroundProgress, HBoxContainer);
@@ -72,7 +72,7 @@ class ProgressDialog : public PopupPanel {
 		String task;
 		VBoxContainer *vb;
 		ProgressBar *progress;
-		Label *state;
+		TextLabel *state;
 	};
 	HBoxContainer *cancel_hb;
 	Button *cancel;

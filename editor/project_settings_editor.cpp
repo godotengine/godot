@@ -363,7 +363,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		category_box->set_placeholder(TTR("Category"));
 		hbc->add_child(category_box);
 
-		Label *l = memnew(Label);
+		TextLabel *l = memnew(TextLabel);
 		l->set_text("/");
 		hbc->add_child(l);
 
@@ -373,7 +373,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_text_field_changed));
 		hbc->add_child(property_box);
 
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("Type:"));
 		hbc->add_child(l);
 
@@ -386,7 +386,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 			type->add_item(Variant::get_type_name(Variant::Type(i)));
 		}
 
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("Feature Override:"));
 		hbc->add_child(l);
 
@@ -405,7 +405,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(false));
 		hbc->add_child(del_button);
 
-		error_label = memnew(Label);
+		error_label = memnew(TextLabel);
 		advanced_bar->add_child(error_label);
 	}
 
@@ -429,7 +429,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 
-	restart_label = memnew(Label);
+	restart_label = memnew(TextLabel);
 	restart_label->set_text(TTR("Changed settings will be applied to the editor after restarting."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();

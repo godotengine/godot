@@ -34,7 +34,7 @@
 #include "core/string/translation.h"
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/label.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_rect.h"
 
 int TabContainer::_get_top_margin() const {
@@ -851,7 +851,7 @@ Variant TabContainer::get_drag_data(const Point2 &p_point) {
 		tf->set_texture(icon);
 		drag_preview->add_child(tf);
 	}
-	Label *label = memnew(Label(get_tab_title(tab_over)));
+	TextLabel *label = memnew(TextLabel(get_tab_title(tab_over)));
 	drag_preview->add_child(label);
 	set_drag_preview(drag_preview);
 

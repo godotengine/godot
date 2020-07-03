@@ -97,7 +97,7 @@ public:
 class DependencyRemoveDialog : public ConfirmationDialog {
 	GDCLASS(DependencyRemoveDialog, ConfirmationDialog);
 
-	Label *text;
+	TextLabel *text;
 	Tree *owners;
 
 	Map<String, String> all_remove_files;
@@ -145,7 +145,7 @@ private:
 	String for_file;
 	Mode mode;
 	Button *fdep;
-	Label *text;
+	TextLabel *text;
 	Tree *files;
 	void ok_pressed() override;
 	void custom_action(const String &) override;

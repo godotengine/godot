@@ -726,7 +726,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				String text = node->get_text();
 				if (!text.empty()) {
 					has_gnode_text = true;
-					Label *label = memnew(Label);
+					TextLabel *label = memnew(TextLabel);
 					label->set_text(text);
 					gnode->add_child(label);
 				}
@@ -781,7 +781,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				// IF has_gnode_text is false, but we DO want to draw default sequence ports,
 				// we draw a dummy text to take up the position of the sequence nodes, so all the other ports are still aligned correctly.
 				if (!has_gnode_text) {
-					Label *dummy = memnew(Label);
+					TextLabel *dummy = memnew(TextLabel);
 					dummy->set_text(" ");
 					gnode->add_child(dummy);
 				}
@@ -796,9 +796,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					mixed_seq_ports = node->get_output_sequence_port_count();
 				} else {
 					for (int i = 0; i < node->get_output_sequence_port_count(); i++) {
-						Label *text2 = memnew(Label);
+						TextLabel *text2 = memnew(TextLabel);
 						text2->set_text(node->get_output_sequence_port_text(i));
-						text2->set_align(Label::ALIGN_RIGHT);
+						text2->set_align(TextLabel::ALIGN_RIGHT);
 						gnode->add_child(text2);
 						gnode->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
 						slot_idx++;
@@ -855,7 +855,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E->get()));
 							name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E->get(), i, true));
 						} else {
-							hbc->add_child(memnew(Label(left_name)));
+							hbc->add_child(memnew(TextLabel(left_name)));
 						}
 
 						if (nd_list->is_input_port_type_editable()) {
@@ -874,7 +874,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 						hbc->add_child(rmbtn);
 						rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port), varray(E->get(), i), CONNECT_DEFERRED);
 					} else {
-						hbc->add_child(memnew(Label(left_name)));
+						hbc->add_child(memnew(TextLabel(left_name)));
 					}
 
 					if (left_type != Variant::NIL && !script->is_input_value_port_connected(F->get(), E->get(), i)) {
@@ -917,9 +917,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				hbc2->add_spacer();
 
 				if (i < mixed_seq_ports) {
-					Label *text2 = memnew(Label);
+					TextLabel *text2 = memnew(TextLabel);
 					text2->set_text(node->get_output_sequence_port_text(i));
-					text2->set_align(Label::ALIGN_RIGHT);
+					text2->set_align(TextLabel::ALIGN_RIGHT);
 					hbc->add_child(text2);
 				}
 
@@ -950,10 +950,10 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							name_box->connect("resized", callable_mp(this, &VisualScriptEditor::_update_node_size), varray(E->get()));
 							name_box->connect("focus_exited", callable_mp(this, &VisualScriptEditor::_port_name_focus_out), varray(name_box, E->get(), i, false));
 						} else {
-							hbc->add_child(memnew(Label(right_name)));
+							hbc->add_child(memnew(TextLabel(right_name)));
 						}
 					} else {
-						hbc->add_child(memnew(Label(right_name)));
+						hbc->add_child(memnew(TextLabel(right_name)));
 					}
 
 					Ref<Texture2D> t;
@@ -1367,7 +1367,7 @@ void VisualScriptEditor::_add_func_input() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	Label *name_label = memnew(Label);
+	TextLabel *name_label = memnew(TextLabel);
 	name_label->set_text(TTR("Name:"));
 	hbox->add_child(name_label);
 
@@ -1377,7 +1377,7 @@ void VisualScriptEditor::_add_func_input() {
 	name_box->connect("focus_entered", callable_mp(this, &VisualScriptEditor::_deselect_input_names));
 	hbox->add_child(name_box);
 
-	Label *type_label = memnew(Label);
+	TextLabel *type_label = memnew(TextLabel);
 	type_label->set_text(TTR("Type:"));
 	hbox->add_child(type_label);
 
@@ -2006,7 +2006,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 			return Variant();
 		}
 
-		Label *label = memnew(Label);
+		TextLabel *label = memnew(TextLabel);
 		label->set_text(it->get_text(0));
 		set_drag_preview(label);
 		return dd;
@@ -4800,7 +4800,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	/// Add Buttons to Top Bar/Zoom bar.
 	HBoxContainer *graph_hbc = graph->get_zoom_hbox();
 
-	Label *base_lbl = memnew(Label);
+	TextLabel *base_lbl = memnew(TextLabel);
 	base_lbl->set_text(TTR("Change Base Type:") + " ");
 	graph_hbc->add_child(base_lbl);
 
@@ -4826,7 +4826,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	HBoxContainer *func_name_hbox = memnew(HBoxContainer);
 	function_vb->add_child(func_name_hbox);
 
-	Label *func_name_label = memnew(Label);
+	TextLabel *func_name_label = memnew(TextLabel);
 	func_name_label->set_text(TTR("Name:"));
 	func_name_hbox->add_child(func_name_label);
 
@@ -4862,19 +4862,19 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_create_dialog->get_ok()->connect("pressed", callable_mp(this, &VisualScriptEditor::_create_function));
 	add_child(function_create_dialog);
 
-	select_func_text = memnew(Label);
+	select_func_text = memnew(TextLabel);
 	select_func_text->set_text(TTR("Select or create a function to edit its graph."));
-	select_func_text->set_align(Label::ALIGN_CENTER);
-	select_func_text->set_valign(Label::VALIGN_CENTER);
+	select_func_text->set_align(TextLabel::ALIGN_CENTER);
+	select_func_text->set_valign(TextLabel::VALIGN_CENTER);
 	select_func_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(select_func_text);
 
-	hint_text = memnew(Label);
+	hint_text = memnew(TextLabel);
 	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -100);
 	hint_text->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	hint_text->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	hint_text->set_align(Label::ALIGN_CENTER);
-	hint_text->set_valign(Label::VALIGN_CENTER);
+	hint_text->set_align(TextLabel::ALIGN_CENTER);
+	hint_text->set_valign(TextLabel::VALIGN_CENTER);
 	graph->add_child(hint_text);
 
 	hint_text_timer = memnew(Timer);

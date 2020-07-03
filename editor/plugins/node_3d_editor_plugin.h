@@ -287,13 +287,13 @@ private:
 	real_t freelook_speed;
 	Vector2 previous_mouse_position;
 
-	Label *info_label;
-	Label *cinema_label;
-	Label *locked_label;
+	TextLabel *info_label;
+	TextLabel *cinema_label;
+	TextLabel *locked_label;
 
 	VBoxContainer *top_right_vbox;
 	ViewportRotationControl *rotation_control;
-	Label *fps_label;
+	TextLabel *fps_label;
 
 	struct _RayResult {
 		Node3D *item;

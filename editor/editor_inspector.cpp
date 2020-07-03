@@ -815,7 +815,7 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	dp["property"] = property;
 	dp["value"] = object->get(property);
 
-	Label *label = memnew(Label);
+	TextLabel *label = memnew(TextLabel);
 	label->set_text(property);
 	set_drag_preview(label);
 	return dp;
@@ -918,7 +918,7 @@ void EditorProperty::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("emit_changed", "property", "value", "field", "changing"), &EditorProperty::emit_changed, DEFVAL(StringName()), DEFVAL(false));
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "TextLabel"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checkable"), "set_checkable", "is_checkable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checked"), "set_checked", "is_checked");
@@ -1033,7 +1033,7 @@ void EditorInspectorPlugin::parse_end() {
 void EditorInspectorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_custom_control", "control"), &EditorInspectorPlugin::add_custom_control);
 	ClassDB::bind_method(D_METHOD("add_property_editor", "property", "editor"), &EditorInspectorPlugin::add_property_editor);
-	ClassDB::bind_method(D_METHOD("add_property_editor_for_multiple_properties", "label", "properties", "editor"), &EditorInspectorPlugin::add_property_editor_for_multiple_properties);
+	ClassDB::bind_method(D_METHOD("add_property_editor_for_multiple_properties", "TextLabel", "properties", "editor"), &EditorInspectorPlugin::add_property_editor_for_multiple_properties);
 
 	MethodInfo vm;
 	vm.name = "can_handle";
@@ -1377,7 +1377,7 @@ void EditorInspectorSection::fold() {
 }
 
 void EditorInspectorSection::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("setup", "section", "label", "object", "bg_color", "foldable"), &EditorInspectorSection::setup);
+	ClassDB::bind_method(D_METHOD("setup", "section", "TextLabel", "object", "bg_color", "foldable"), &EditorInspectorSection::setup);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorInspectorSection::get_vbox);
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);

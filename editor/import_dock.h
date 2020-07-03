@@ -45,7 +45,7 @@ class ImportDockParameters;
 class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer);
 
-	Label *imported;
+	TextLabel *imported;
 	OptionButton *import_as;
 	MenuButton *preset;
 	EditorInspector *import_opts;
@@ -54,7 +54,7 @@ class ImportDock : public VBoxContainer {
 	Map<StringName, Variant> property_values;
 
 	ConfirmationDialog *reimport_confirm;
-	Label *label_warning;
+	TextLabel *label_warning;
 	Button *import;
 
 	ImportDockParameters *params;

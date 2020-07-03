@@ -78,8 +78,8 @@ void TextureEditor::_notification(int p_what) {
 
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 
 		String format;
 		if (Object::cast_to<ImageTexture>(*texture)) {

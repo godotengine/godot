@@ -1306,7 +1306,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	bone_paint_strength->set_step(0.01);
 	bone_paint_strength->set_value(0.5);
 
-	bone_paint_radius_label = memnew(Label(TTR("Radius:")));
+	bone_paint_radius_label = memnew(TextLabel(TTR("Radius:")));
 	uv_mode_hb->add_child(bone_paint_radius_label);
 	bone_paint_radius = memnew(SpinBox);
 	uv_mode_hb->add_child(bone_paint_radius);

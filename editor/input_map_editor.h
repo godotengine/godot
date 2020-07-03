@@ -48,7 +48,7 @@ class InputMapEditor : public Control {
 	Tree *input_editor;
 	LineEdit *action_name;
 	Button *action_add;
-	Label *action_add_error;
+	TextLabel *action_add_error;
 
 	InputType add_type;
 	String add_at;
@@ -57,11 +57,11 @@ class InputMapEditor : public Control {
 	PopupMenu *popup_add;
 	ConfirmationDialog *press_a_key;
 	bool press_a_key_physical;
-	Label *press_a_key_label;
+	TextLabel *press_a_key_label;
 	ConfirmationDialog *device_input;
 	OptionButton *device_id;
 	OptionButton *device_index;
-	Label *device_index_label;
+	TextLabel *device_index_label;
 	MenuButton *popup_copy_to_feature;
 
 	Ref<InputEventKey> last_wait_for_key;

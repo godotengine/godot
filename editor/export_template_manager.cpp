@@ -79,7 +79,7 @@ void ExportTemplateManager::_update_template_list() {
 			String(VERSION_STATUS) != String("beta") &&
 			String(VERSION_STATUS) != String("rc");
 
-	Label *current = memnew(Label);
+	TextLabel *current = memnew(TextLabel);
 	current->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_hb->add_child(current);
 
@@ -117,7 +117,7 @@ void ExportTemplateManager::_update_template_list() {
 
 	for (Set<String>::Element *E = templates.back(); E; E = E->prev()) {
 		HBoxContainer *hbc = memnew(HBoxContainer);
-		Label *version = memnew(Label);
+		TextLabel *version = memnew(TextLabel);
 		version->set_modulate(current->get_theme_color("disabled_font_color", "Editor"));
 		String text = E->get();
 		if (text == current_version) {
@@ -704,7 +704,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	sc->add_child(template_list);
 	sc->set_enable_v_scroll(true);
 	sc->set_enable_h_scroll(false);
-	template_list_state = memnew(Label);
+	template_list_state = memnew(TextLabel);
 	vbc->add_child(template_list_state);
 	template_download_progress = memnew(ProgressBar);
 	vbc->add_child(template_download_progress);

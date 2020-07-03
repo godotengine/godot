@@ -417,7 +417,7 @@ Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_fro
 	tf->set_texture(icon);
 	tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	hb->add_child(tf);
-	Label *label = memnew(Label(selected->get_text(0)));
+	TextLabel *label = memnew(TextLabel(selected->get_text(0)));
 	hb->add_child(label);
 	vb->add_child(hb);
 	hb->set_modulate(Color(1, 1, 1, 1));

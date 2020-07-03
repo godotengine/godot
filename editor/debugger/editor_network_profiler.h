@@ -34,8 +34,8 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/tree.h"
 
 class EditorNetworkProfiler : public VBoxContainer {

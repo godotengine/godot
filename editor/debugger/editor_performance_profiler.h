@@ -35,8 +35,8 @@
 #include "core/templates/ordered_hash_map.h"
 #include "main/performance.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/tree.h"
 
 class EditorPerformanceProfiler : public HSplitContainer {
@@ -64,7 +64,7 @@ private:
 	Map<StringName, TreeItem *> base_map;
 	Tree *monitor_tree;
 	Control *monitor_draw;
-	Label *info_message;
+	TextLabel *info_message;
 	StringName marker_key;
 	int marker_frame;
 	const int MARGIN = 4;

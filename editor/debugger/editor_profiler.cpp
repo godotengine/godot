@@ -661,7 +661,7 @@ EditorProfiler::EditorProfiler() {
 	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
-	hb->add_child(memnew(Label(TTR("Measure:"))));
+	hb->add_child(memnew(TextLabel(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (sec)"));
@@ -672,7 +672,7 @@ EditorProfiler::EditorProfiler() {
 
 	hb->add_child(display_mode);
 
-	hb->add_child(memnew(Label(TTR("Time:"))));
+	hb->add_child(memnew(TextLabel(TTR("Time:"))));
 
 	display_time = memnew(OptionButton);
 	display_time->add_item(TTR("Inclusive"));
@@ -683,7 +683,7 @@ EditorProfiler::EditorProfiler() {
 
 	hb->add_spacer();
 
-	hb->add_child(memnew(Label(TTR("Frame #:"))));
+	hb->add_child(memnew(TextLabel(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);

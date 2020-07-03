@@ -84,7 +84,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *sync_bones;
 	HSlider *bone_paint_strength;
 	SpinBox *bone_paint_radius;
-	Label *bone_paint_radius_label;
+	TextLabel *bone_paint_radius_label;
 	bool bone_painting;
 	int bone_painting_bone;
 	Vector<float> prev_weights;

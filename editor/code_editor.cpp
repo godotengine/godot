@@ -72,7 +72,7 @@ GotoLineDialog::GotoLineDialog() {
 	vbc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -8 * EDSCALE);
 	add_child(vbc);
 
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(TTR("Line Number:"));
 	vbc->add_child(l);
 
@@ -102,7 +102,7 @@ void FindReplaceBar::_notification(int p_what) {
 		hide_button->set_pressed_texture(get_theme_icon("Close", "EditorIcons"));
 		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "TextLabel") : get_theme_color("error_color", "Editor"));
 	}
 }
 
@@ -295,7 +295,7 @@ void FindReplaceBar::_replace_all() {
 	}
 
 	text_editor->set_v_scroll(vsval);
-	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color("font_color", "TextLabel") : get_theme_color("error_color", "Editor"));
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	text_editor->call_deferred("connect", "text_changed", Callable(this, "_editor_text_changed"));
@@ -359,7 +359,7 @@ void FindReplaceBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color("font_color", "TextLabel") : get_theme_color("error_color", "Editor"));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }
@@ -627,7 +627,7 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->connect("text_changed", callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect("text_entered", callable_mp(this, &FindReplaceBar::_search_text_entered));
 
-	matches_label = memnew(Label);
+	matches_label = memnew(TextLabel);
 	hbc_button_search->add_child(matches_label);
 	matches_label->hide();
 
@@ -1772,12 +1772,12 @@ CodeTextEditor::CodeTextEditor() {
 	scroll->set_enable_v_scroll(false);
 	status_bar->add_child(scroll);
 
-	error = memnew(Label);
+	error = memnew(TextLabel);
 	scroll->add_child(error);
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	error->connect("gui_input", callable_mp(this, &CodeTextEditor::_error_pressed));
-	find_replace_bar->connect("error", callable_mp(error, &Label::set_text));
+	find_replace_bar->connect("error", callable_mp(error, &TextLabel::set_text));
 
 	// Warnings
 	warning_button = memnew(Button);
@@ -1788,10 +1788,10 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip(TTR("Warnings"));
 
-	warning_count_label = memnew(Label);
+	warning_count_label = memnew(TextLabel);
 	status_bar->add_child(warning_count_label);
 	warning_count_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	warning_count_label->set_align(Label::ALIGN_RIGHT);
+	warning_count_label->set_align(TextLabel::ALIGN_RIGHT);
 	warning_count_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_count_label->set_mouse_filter(MOUSE_FILTER_STOP);
 	warning_count_label->set_tooltip(TTR("Warnings"));
@@ -1804,7 +1804,7 @@ CodeTextEditor::CodeTextEditor() {
 	set_warning_nb(0);
 
 	// Line and column
-	line_and_col_txt = memnew(Label);
+	line_and_col_txt = memnew(TextLabel);
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));

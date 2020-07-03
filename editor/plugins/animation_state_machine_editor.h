@@ -71,7 +71,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Control *state_machine_play_pos;
 
 	PanelContainer *error_panel;
-	Label *error_label;
+	TextLabel *error_label;
 
 	bool updating;
 

@@ -753,13 +753,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	vb->add_child(error_label);
 
-	path_error_label = memnew(Label);
+	path_error_label = memnew(TextLabel);
 	vb->add_child(path_error_label);
 
-	builtin_warning_label = memnew(Label);
+	builtin_warning_label = memnew(TextLabel);
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
@@ -789,7 +789,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	language_menu = memnew(OptionButton);
 	language_menu->set_custom_minimum_size(Size2(250, 0) * EDSCALE);
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	gc->add_child(memnew(Label(TTR("Language:"))));
+	gc->add_child(memnew(TextLabel(TTR("Language:"))));
 	gc->add_child(language_menu);
 
 	default_language = -1;
@@ -825,7 +825,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	parent_browse_button->set_flat(true);
 	parent_browse_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(true, false));
 	hb->add_child(parent_browse_button);
-	gc->add_child(memnew(Label(TTR("Inherits:"))));
+	gc->add_child(memnew(TextLabel(TTR("Inherits:"))));
 	gc->add_child(hb);
 	is_browsing_parent = false;
 
@@ -834,13 +834,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	class_name = memnew(LineEdit);
 	class_name->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_class_name_changed));
 	class_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	gc->add_child(memnew(Label(TTR("Class Name:"))));
+	gc->add_child(memnew(TextLabel(TTR("Class Name:"))));
 	gc->add_child(class_name);
 
 	/* Templates */
 
 	template_menu = memnew(OptionButton);
-	gc->add_child(memnew(Label(TTR("Template:"))));
+	gc->add_child(memnew(TextLabel(TTR("Template:"))));
 	gc->add_child(template_menu);
 	template_menu->connect("item_selected", callable_mp(this, &ScriptCreateDialog::_template_changed));
 
@@ -849,7 +849,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
 	internal->connect("pressed", callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
-	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
+	gc->add_child(memnew(TextLabel(TTR("Built-in Script:"))));
 	gc->add_child(internal);
 
 	/* Path */
@@ -864,7 +864,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	path_button->set_flat(true);
 	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path), varray(false, true));
 	hb->add_child(path_button);
-	gc->add_child(memnew(Label(TTR("Path:"))));
+	gc->add_child(memnew(TextLabel(TTR("Path:"))));
 	gc->add_child(hb);
 	re_check_path = false;
 
@@ -881,8 +881,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	get_ok()->set_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap(true);
-	alert->get_label()->set_align(Label::ALIGN_CENTER);
-	alert->get_label()->set_valign(Label::VALIGN_CENTER);
+	alert->get_label()->set_align(TextLabel::ALIGN_CENTER);
+	alert->get_label()->set_valign(TextLabel::VALIGN_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
 	add_child(alert);
 

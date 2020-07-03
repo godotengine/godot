@@ -686,7 +686,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		HBoxContainer *thb = memnew(HBoxContainer);
 		thb->add_spacer();
-		thb->add_child(memnew(Label(TTR("Translations:"))));
+		thb->add_child(memnew(TextLabel(TTR("Translations:"))));
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
@@ -713,7 +713,7 @@ LocalizationEditor::LocalizationEditor() {
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		thb->add_child(memnew(Label(TTR("Resources:"))));
+		thb->add_child(memnew(TextLabel(TTR("Resources:"))));
 		thb->add_spacer();
 		tvb->add_child(thb);
 
@@ -737,7 +737,7 @@ LocalizationEditor::LocalizationEditor() {
 		add_child(translation_res_file_open_dialog);
 
 		thb = memnew(HBoxContainer);
-		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
+		thb->add_child(memnew(TextLabel(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
 		tvb->add_child(thb);
 
@@ -785,7 +785,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_locale_filter_mode->connect("item_selected", callable_mp(this, &LocalizationEditor::_translation_filter_mode_changed));
 		tmc->add_margin_child(TTR("Filter mode:"), translation_locale_filter_mode);
 
-		tmc->add_child(memnew(Label(TTR("Locales:"))));
+		tmc->add_child(memnew(TextLabel(TTR("Locales:"))));
 		translation_filter = memnew(Tree);
 		translation_filter->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		translation_filter->set_columns(1);
@@ -799,7 +799,7 @@ LocalizationEditor::LocalizationEditor() {
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		thb->add_child(memnew(Label(TTR("Files with translation strings:"))));
+		thb->add_child(memnew(TextLabel(TTR("Files with translation strings:"))));
 		thb->add_spacer();
 		tvb->add_child(thb);
 
@@ -835,13 +835,13 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->set_name(TTR("Text Server Data"));
 		translations->add_child(tvb);
 
-		ts_name = memnew(Label(TTR("Text server: ") + TS->get_name()));
+		ts_name = memnew(TextLabel(TTR("Text server: ") + TS->get_name()));
 		tvb->add_child(ts_name);
 
-		ts_data_status = memnew(Label(TTR("Support data: ")));
+		ts_data_status = memnew(TextLabel(TTR("Support data: ")));
 		tvb->add_child(ts_data_status);
 
-		ts_data_info = memnew(Label(TTR("Info: ") + TS->get_support_data_info()));
+		ts_data_info = memnew(TextLabel(TTR("Info: ") + TS->get_support_data_info()));
 		tvb->add_child(ts_data_info);
 
 		ts_install = memnew(Button(TTR("Install support data...")));

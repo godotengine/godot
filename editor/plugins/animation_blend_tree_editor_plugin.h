@@ -53,7 +53,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	bool use_popup_menu_position;
 
 	PanelContainer *error_panel;
-	Label *error_label;
+	TextLabel *error_label;
 
 	UndoRedo *undo_redo;
 

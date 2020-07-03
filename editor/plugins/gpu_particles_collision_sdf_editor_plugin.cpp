@@ -178,7 +178,7 @@ GPUParticlesCollisionSDFEditorPlugin::GPUParticlesCollisionSDFEditorPlugin(Edito
 	bake->set_text(TTR("Bake SDF"));
 	bake->connect("pressed", callable_mp(this, &GPUParticlesCollisionSDFEditorPlugin::_bake));
 	bake_hb->add_child(bake);
-	bake_info = memnew(Label);
+	bake_info = memnew(TextLabel);
 	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_info->set_clip_text(true);
 	bake_hb->add_child(bake_info);

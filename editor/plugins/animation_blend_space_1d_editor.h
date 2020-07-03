@@ -71,7 +71,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Control *blend_space_draw;
 
 	PanelContainer *error_panel;
-	Label *error_label;
+	TextLabel *error_label;
 
 	bool updating;
 

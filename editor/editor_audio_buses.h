@@ -77,7 +77,7 @@ class EditorAudioBus : public PanelContainer {
 	PopupMenu *delete_effect_popup;
 
 	Panel *audio_value_preview_box;
-	Label *audio_value_preview_label;
+	TextLabel *audio_value_preview_label;
 	Timer *preview_timer;
 
 	Button *solo;
@@ -161,7 +161,7 @@ class EditorAudioBuses : public VBoxContainer {
 
 	EditorAudioBusDrop *drop_end;
 
-	Label *file;
+	TextLabel *file;
 
 	Button *add;
 	Button *load;

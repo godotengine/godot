@@ -946,7 +946,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 
 	HBoxContainer *hb_tools = memnew(HBoxContainer);
 	add_child(hb_tools);
-	hb_tools->add_child(memnew(Label(TTR("Snap Mode:"))));
+	hb_tools->add_child(memnew(TextLabel(TTR("Snap Mode:"))));
 
 	snap_mode_button = memnew(OptionButton);
 	hb_tools->add_child(snap_mode_button);
@@ -961,7 +961,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_tools->add_child(hb_grid);
 
 	hb_grid->add_child(memnew(VSeparator));
-	hb_grid->add_child(memnew(Label(TTR("Offset:"))));
+	hb_grid->add_child(memnew(TextLabel(TTR("Offset:"))));
 
 	sb_off_x = memnew(SpinBox);
 	sb_off_x->set_min(-256);
@@ -982,7 +982,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_grid->add_child(sb_off_y);
 
 	hb_grid->add_child(memnew(VSeparator));
-	hb_grid->add_child(memnew(Label(TTR("Step:"))));
+	hb_grid->add_child(memnew(TextLabel(TTR("Step:"))));
 
 	sb_step_x = memnew(SpinBox);
 	sb_step_x->set_min(-256);
@@ -1003,7 +1003,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_grid->add_child(sb_step_y);
 
 	hb_grid->add_child(memnew(VSeparator));
-	hb_grid->add_child(memnew(Label(TTR("Sep.:"))));
+	hb_grid->add_child(memnew(TextLabel(TTR("Sep.:"))));
 
 	sb_sep_x = memnew(SpinBox);
 	sb_sep_x->set_min(0);

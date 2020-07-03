@@ -61,8 +61,8 @@ class ThemeEditor : public VBoxContainer {
 	MenuButton *name_menu;
 	LineEdit *name_edit;
 	OptionButton *type_select;
-	Label *type_select_label;
-	Label *name_select_label;
+	TextLabel *type_select_label;
+	TextLabel *name_select_label;
 
 	enum PopupMode {
 		POPUP_ADD,

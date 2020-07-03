@@ -142,7 +142,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 
 	hb->add_spacer();
 
-	Label *lb = memnew(Label);
+	TextLabel *lb = memnew(TextLabel);
 	lb->set_text(TTR("Down"));
 	hb->add_child(lb);
 
@@ -156,7 +156,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	down_up_spacer->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 	hb->add_child(down_up_spacer);
 
-	lb = memnew(Label);
+	lb = memnew(TextLabel);
 	lb->set_text(TTR("Up"));
 	hb->add_child(lb);
 

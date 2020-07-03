@@ -2650,8 +2650,8 @@ void Node3DEditorViewport::_draw() {
 	RID ci = surface->get_canvas_item();
 
 	if (message_time > 0) {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 		Point2 msgpos = Point2(5, get_size().y - 20);
 		font->draw_string(ci, msgpos + Point2(1, 1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 		font->draw_string(ci, msgpos + Point2(-1, -1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -2717,8 +2717,8 @@ void Node3DEditorViewport::_draw() {
 							*surface,
 							1.0 - logscale_t,
 							get_theme_icon("ViewportSpeed", "EditorIcons"),
-							get_theme_font("font", "Label"),
-							get_theme_font_size("font_size", "Label"),
+							get_theme_font("font", "TextLabel"),
+							get_theme_font_size("font_size", "TextLabel"),
 							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)));
 				}
 
@@ -2744,8 +2744,8 @@ void Node3DEditorViewport::_draw() {
 							*surface,
 							logscale_t,
 							get_theme_icon("ViewportZoom", "EditorIcons"),
-							get_theme_font("font", "Label"),
-							get_theme_font_size("font_size", "Label"),
+							get_theme_font("font", "TextLabel"),
+							get_theme_font_size("font_size", "TextLabel"),
 							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)));
 				}
 			}
@@ -4023,7 +4023,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	preview_node = nullptr;
 
-	info_label = memnew(Label);
+	info_label = memnew(TextLabel);
 	info_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
 	info_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -90 * EDSCALE);
 	info_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
@@ -4033,7 +4033,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	surface->add_child(info_label);
 	info_label->hide();
 
-	fps_label = memnew(Label);
+	fps_label = memnew(TextLabel);
 	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
 	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	fps_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
@@ -4043,21 +4043,21 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	surface->add_child(fps_label);
 	fps_label->hide();
 
-	cinema_label = memnew(Label);
+	cinema_label = memnew(TextLabel);
 	cinema_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
-	cinema_label->set_align(Label::ALIGN_CENTER);
+	cinema_label->set_align(TextLabel::ALIGN_CENTER);
 	surface->add_child(cinema_label);
 	cinema_label->set_text(TTR("Cinematic Preview"));
 	cinema_label->hide();
 	previewing_cinema = false;
 
-	locked_label = memnew(Label);
+	locked_label = memnew(TextLabel);
 	locked_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -20 * EDSCALE);
 	locked_label->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -10 * EDSCALE);
 	locked_label->set_h_grow_direction(GROW_DIRECTION_END);
 	locked_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	locked_label->set_align(Label::ALIGN_CENTER);
+	locked_label->set_align(TextLabel::ALIGN_CENTER);
 	surface->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
 	locked_label->hide();
@@ -4072,7 +4072,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
-	fps_label = memnew(Label);
+	fps_label = memnew(TextLabel);
 	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
 	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	fps_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
@@ -6487,7 +6487,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	VBoxContainer *xform_vbc = memnew(VBoxContainer);
 	xform_dialog->add_child(xform_vbc);
 
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(TTR("Translate:"));
 	xform_vbc->add_child(l);
 
@@ -6500,7 +6500,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		xform_hbc->add_child(xform_translate[i]);
 	}
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Rotate (deg.):"));
 	xform_vbc->add_child(l);
 
@@ -6513,7 +6513,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		xform_hbc->add_child(xform_rotate[i]);
 	}
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Scale (ratio):"));
 	xform_vbc->add_child(l);
 
@@ -6526,7 +6526,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		xform_hbc->add_child(xform_scale[i]);
 	}
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Transform Type"));
 	xform_vbc->add_child(l);
 

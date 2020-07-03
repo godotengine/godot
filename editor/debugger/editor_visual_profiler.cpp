@@ -437,8 +437,8 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	if (last_metric < 0) {
 		return;
 	}
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -731,7 +731,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	clear_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
-	hb->add_child(memnew(Label(TTR("Measure:"))));
+	hb->add_child(memnew(TextLabel(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (msec)"));
@@ -751,7 +751,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	hb->add_spacer();
 
-	hb->add_child(memnew(Label(TTR("Frame #:"))));
+	hb->add_child(memnew(TextLabel(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);

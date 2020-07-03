@@ -447,8 +447,8 @@ namespace GodotTools
                 editorBaseControl.AddChild(aboutDialog);
                 aboutDialog.Title = "Important: C# support is not feature-complete";
 
-                // We don't use DialogText as the default AcceptDialog Label doesn't play well with the TextureRect and CheckBox
-                // we'll add. Instead we add containers and a new autowrapped Label inside.
+                // We don't use DialogText as the default AcceptDialog TextLabel doesn't play well with the TextureRect and CheckBox
+                // we'll add. Instead we add containers and a new autowrapped TextLabel inside.
 
                 // Main VBoxContainer (icon + label on top, checkbox at bottom)
                 var aboutVBox = new VBoxContainer();
@@ -462,12 +462,12 @@ namespace GodotTools
                 aboutIcon.Texture = aboutIcon.GetThemeIcon("NodeWarning", "EditorIcons");
                 aboutHBox.AddChild(aboutIcon);
 
-                var aboutLabel = new Label();
-                aboutHBox.AddChild(aboutLabel);
-                aboutLabel.RectMinSize = new Vector2(600, 150) * EditorScale;
-                aboutLabel.SizeFlagsVertical = (int)Control.SizeFlags.ExpandFill;
-                aboutLabel.Autowrap = true;
-                aboutLabel.Text =
+                var aboutTextLabel = new TextLabel();
+                aboutHBox.AddChild(aboutTextLabel);
+                aboutTextLabel.RectMinSize = new Vector2(600, 150) * EditorScale;
+                aboutTextLabel.SizeFlagsVertical = (int)Control.SizeFlags.ExpandFill;
+                aboutTextLabel.Autowrap = true;
+                aboutTextLabel.Text =
                     "C# support in Godot Engine is in late alpha stage and, while already usable, " +
                     "it is not meant for use in production.\n\n" +
                     "Projects can be exported to Linux, macOS, Windows, Android, iOS and HTML5, but not yet to UWP. " +

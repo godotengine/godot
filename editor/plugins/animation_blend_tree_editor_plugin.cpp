@@ -138,7 +138,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			name->set_text(E->get());
 			name->set_expand_to_text_length(true);
 			node->add_child(name);
-			node->set_slot(0, false, 0, Color(), true, 0, get_theme_color("font_color", "Label"));
+			node->set_slot(0, false, 0, Color(), true, 0, get_theme_color("font_color", "TextLabel"));
 			name->connect("text_entered", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed), varray(agnode));
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out), varray(name, agnode), CONNECT_DEFERRED);
 			base = 1;
@@ -147,10 +147,10 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		}
 
 		for (int i = 0; i < agnode->get_input_count(); i++) {
-			Label *in_name = memnew(Label);
+			TextLabel *in_name = memnew(TextLabel);
 			node->add_child(in_name);
 			in_name->set_text(agnode->get_input_name(i));
-			node->set_slot(base + i, true, 0, get_theme_color("font_color", "Label"), false, 0, Color());
+			node->set_slot(base + i, true, 0, get_theme_color("font_color", "TextLabel"), false, 0, Color());
 		}
 
 		List<PropertyInfo> pinfo;
@@ -917,7 +917,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	error_panel->add_child(error_label);
 	error_label->set_text("eh");
 

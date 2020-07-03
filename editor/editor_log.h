@@ -35,9 +35,9 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 
@@ -46,7 +46,7 @@ class EditorLog : public VBoxContainer {
 
 	Button *clearbutton;
 	Button *copybutton;
-	Label *title;
+	TextLabel *title;
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
 	Button *tool_button;

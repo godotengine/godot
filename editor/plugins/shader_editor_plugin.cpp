@@ -656,7 +656,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	disk_changed->add_child(vbc);
 
-	Label *dl = memnew(Label);
+	TextLabel *dl = memnew(TextLabel);
 	dl->set_text(TTR("This shader has been modified on on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 

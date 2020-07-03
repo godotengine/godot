@@ -244,7 +244,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 			if (sc->get_as_text() == "None") {
 				// Fade out unassigned shortcut labels for easier visual grepping.
-				item->set_custom_color(1, shortcuts->get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.5));
+				item->set_custom_color(1, shortcuts->get_theme_color("font_color", "TextLabel") * Color(1, 1, 1, 0.5));
 			}
 
 			item->add_button(1, shortcuts->get_theme_icon("Edit", "EditorIcons"), 0);
@@ -425,7 +425,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_icon = memnew(TextureRect);
 	restart_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
-	restart_label = memnew(Label);
+	restart_label = memnew(TextLabel);
 	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
@@ -469,10 +469,10 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	//press_a_key->set_focus_mode(Control::FOCUS_ALL);
 	add_child(press_a_key);
 
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	l->set_align(Label::ALIGN_CENTER);
+	l->set_align(TextLabel::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 30);
 	press_a_key_label = l;

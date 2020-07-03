@@ -487,7 +487,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 }
 
 void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance) {
-	Color linecolor = get_theme_color("font_color", "Label");
+	Color linecolor = get_theme_color("font_color", "TextLabel");
 	Color icon_color(1, 1, 1);
 	Color accent = get_theme_color("accent_color", "Editor");
 
@@ -565,7 +565,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	Ref<Texture2D> auto_play = get_theme_icon("AutoPlay", "EditorIcons");
 	Ref<Texture2D> edit = get_theme_icon("Edit", "EditorIcons");
 	Color accent = get_theme_color("accent_color", "Editor");
-	Color linecolor = get_theme_color("font_color", "Label");
+	Color linecolor = get_theme_color("font_color", "TextLabel");
 	linecolor.a *= 0.3;
 	Ref<StyleBox> playing_overlay = get_theme_stylebox("position", "GraphNode");
 
@@ -857,7 +857,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 
 	float pos = CLAMP(play_pos, 0, len);
 	float c = pos / len;
-	Color fg = get_theme_color("font_color", "Label");
+	Color fg = get_theme_color("font_color", "TextLabel");
 	Color bg = fg;
 	bg.a *= 0.3;
 
@@ -1267,13 +1267,13 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_end->set_disabled(true);
 
 	top_hb->add_child(memnew(VSeparator));
-	top_hb->add_child(memnew(Label(TTR("Transition: "))));
+	top_hb->add_child(memnew(TextLabel(TTR("Transition: "))));
 	transition_mode = memnew(OptionButton);
 	top_hb->add_child(transition_mode);
 
 	top_hb->add_spacer();
 
-	top_hb->add_child(memnew(Label(TTR("Play Mode:"))));
+	top_hb->add_child(memnew(TextLabel(TTR("Play Mode:"))));
 	play_mode = memnew(OptionButton);
 	top_hb->add_child(play_mode);
 
@@ -1307,7 +1307,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	error_panel->add_child(error_label);
 	error_panel->hide();
 

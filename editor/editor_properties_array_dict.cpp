@@ -272,7 +272,7 @@ void EditorPropertyArray::update_property() {
 			set_bottom_editor(vbox);
 			HBoxContainer *hbc = memnew(HBoxContainer);
 			vbox->add_child(hbc);
-			Label *label = memnew(Label(TTR("Size: ")));
+			TextLabel *label = memnew(TextLabel(TTR("Size: ")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbc->add_child(label);
 			length = memnew(EditorSpinSlider);
@@ -284,7 +284,7 @@ void EditorPropertyArray::update_property() {
 
 			page_hb = memnew(HBoxContainer);
 			vbox->add_child(page_hb);
-			label = memnew(Label(TTR("Page: ")));
+			label = memnew(TextLabel(TTR("Page: ")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			page_hb->add_child(label);
 			page = memnew(EditorSpinSlider);
@@ -724,7 +724,7 @@ void EditorPropertyDictionary::update_property() {
 
 			page_hb = memnew(HBoxContainer);
 			vbox->add_child(page_hb);
-			Label *label = memnew(Label(TTR("Page: ")));
+			TextLabel *label = memnew(TextLabel(TTR("Page: ")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			page_hb->add_child(label);
 			page = memnew(EditorSpinSlider);

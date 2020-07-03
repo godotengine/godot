@@ -39,9 +39,9 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/tree.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
@@ -309,7 +309,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	gc->set_columns(2);
 	vbc->add_child(gc);
 
-	Label *find_label = memnew(Label);
+	TextLabel *find_label = memnew(TextLabel);
 	find_label->set_text(TTR("Find:"));
 	gc->add_child(find_label);
 
@@ -319,7 +319,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_search_text_line_edit->connect("text_entered", callable_mp(this, &FindInFilesDialog::_on_search_text_entered));
 	gc->add_child(_search_text_line_edit);
 
-	_replace_label = memnew(Label);
+	_replace_label = memnew(TextLabel);
 	_replace_label->set_text(TTR("Replace:"));
 	_replace_label->hide();
 	gc->add_child(_replace_label);
@@ -346,14 +346,14 @@ FindInFilesDialog::FindInFilesDialog() {
 		gc->add_child(hbc);
 	}
 
-	Label *folder_label = memnew(Label);
+	TextLabel *folder_label = memnew(TextLabel);
 	folder_label->set_text(TTR("Folder:"));
 	gc->add_child(folder_label);
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
-		Label *prefix_label = memnew(Label);
+		TextLabel *prefix_label = memnew(TextLabel);
 		prefix_label->set_text("res://");
 		hbc->add_child(prefix_label);
 
@@ -374,7 +374,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		gc->add_child(hbc);
 	}
 
-	Label *filter_label = memnew(Label);
+	TextLabel *filter_label = memnew(TextLabel);
 	filter_label->set_text(TTR("Filters:"));
 	filter_label->set_tooltip(TTR("Include the files with the following extensions. Add or remove them in ProjectSettings."));
 	gc->add_child(filter_label);
@@ -565,11 +565,11 @@ FindInFilesPanel::FindInFilesPanel() {
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
-		Label *find_label = memnew(Label);
+		TextLabel *find_label = memnew(TextLabel);
 		find_label->set_text(TTR("Find: "));
 		hbc->add_child(find_label);
 
-		_search_text_label = memnew(Label);
+		_search_text_label = memnew(TextLabel);
 		_search_text_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
 		_search_text_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("source_size", "EditorFonts"));
 		hbc->add_child(_search_text_label);
@@ -580,7 +580,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(_progress_bar);
 		set_progress_visible(false);
 
-		_status_label = memnew(Label);
+		_status_label = memnew(TextLabel);
 		hbc->add_child(_status_label);
 
 		_refresh_button = memnew(Button);
@@ -615,7 +615,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	{
 		_replace_container = memnew(HBoxContainer);
 
-		Label *replace_label = memnew(Label);
+		TextLabel *replace_label = memnew(TextLabel);
 		replace_label->set_text(TTR("Replace: "));
 		_replace_container->add_child(replace_label);
 

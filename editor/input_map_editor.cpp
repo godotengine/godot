@@ -848,7 +848,7 @@ Variant InputMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 	String name = selected->get_text(0);
 	VBoxContainer *vb = memnew(VBoxContainer);
 	HBoxContainer *hb = memnew(HBoxContainer);
-	Label *label = memnew(Label(name));
+	TextLabel *label = memnew(TextLabel(name));
 	hb->set_modulate(Color(1, 1, 1, 1.0f));
 	hb->add_child(label);
 	vb->add_child(hb);
@@ -945,7 +945,7 @@ InputMapEditor::InputMapEditor() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
 
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(TTR("Action:"));
 	hbc->add_child(l);
 
@@ -955,7 +955,7 @@ InputMapEditor::InputMapEditor() {
 	action_name->connect("text_changed", callable_mp(this, &InputMapEditor::_action_check));
 	hbc->add_child(action_name);
 
-	action_add_error = memnew(Label);
+	action_add_error = memnew(TextLabel);
 	action_add_error->hide();
 	hbc->add_child(action_add_error);
 
@@ -999,10 +999,10 @@ InputMapEditor::InputMapEditor() {
 	press_a_key->connect("confirmed", callable_mp(this, &InputMapEditor::_press_a_key_confirm));
 	add_child(press_a_key);
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Press a Key..."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	l->set_align(Label::ALIGN_CENTER);
+	l->set_align(TextLabel::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 30);
 	press_a_key->add_child(l);
@@ -1019,7 +1019,7 @@ InputMapEditor::InputMapEditor() {
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	hbc->add_child(vbc_left);
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Device:"));
 	vbc_left->add_child(l);
 
@@ -1034,7 +1034,7 @@ InputMapEditor::InputMapEditor() {
 	vbc_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(vbc_right);
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Index:"));
 	vbc_right->add_child(l);
 

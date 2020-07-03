@@ -52,7 +52,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/property_selector.h"
-#include "scene/gui/label.h"
+#include "scene/gui/text_label.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/packed_scene.h"
@@ -1388,9 +1388,9 @@ void CustomPropertyEditor::_draw_easing() {
 	float exp = v;
 	bool flip = hint_text == "attenuation";
 
-	Ref<Font> f = easing_draw->get_theme_font("font", "Label");
-	int font_size = easing_draw->get_theme_font_size("font_size", "Label");
-	Color color = easing_draw->get_theme_color("font_color", "Label");
+	Ref<Font> f = easing_draw->get_theme_font("font", "TextLabel");
+	int font_size = easing_draw->get_theme_font_size("font_size", "TextLabel");
+	Color color = easing_draw->get_theme_color("font_color", "TextLabel");
 
 	for (int i = 1; i <= points; i++) {
 		float ifl = i / float(points);
@@ -1750,7 +1750,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 			value_hboxes[i]->hide();
 		}
 		int hbox_idx = i / 4;
-		value_label[i] = memnew(Label);
+		value_label[i] = memnew(TextLabel);
 		value_hboxes[hbox_idx]->add_child(value_label[i]);
 		value_label[i]->hide();
 		value_editor[i] = memnew(LineEdit);

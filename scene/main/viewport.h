@@ -45,7 +45,7 @@ class Control;
 class CanvasItem;
 class CanvasLayer;
 class Panel;
-class Label;
+class TextLabel;
 class Timer;
 class Viewport;
 class CollisionObject3D;
@@ -343,7 +343,7 @@ private:
 		Vector2 drag_mouse_over_pos;
 		Control *tooltip_control;
 		Window *tooltip_popup;
-		Label *tooltip_label;
+		TextLabel *tooltip_label;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
 		Point2 drag_accum;

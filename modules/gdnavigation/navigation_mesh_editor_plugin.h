@@ -48,7 +48,7 @@ class NavigationMeshEditor : public Control {
 	HBoxContainer *bake_hbox;
 	Button *button_bake;
 	Button *button_reset;
-	Label *bake_info;
+	TextLabel *bake_info;
 
 	NavigationRegion3D *node;
 

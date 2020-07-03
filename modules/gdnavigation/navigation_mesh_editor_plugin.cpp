@@ -109,7 +109,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
 	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
-	bake_info = memnew(Label);
+	bake_info = memnew(TextLabel);
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);

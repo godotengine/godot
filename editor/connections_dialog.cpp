@@ -35,8 +35,8 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "plugins/script_editor_plugin.h"
-#include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/text_label.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -416,9 +416,9 @@ ConnectDialog::ConnectDialog() {
 	tree->set_connect_to_script_mode(true);
 
 	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), tree, true);
-	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
+	connect_to_label = Object::cast_to<TextLabel>(vbc_left->get_child(mc->get_index() - 1));
 
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	error_label->set_text(TTR("Scene does not contain any script."));
 	vbc_left->add_child(error_label);
 	error_label->hide();

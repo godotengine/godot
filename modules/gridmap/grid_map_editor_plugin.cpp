@@ -1161,7 +1161,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_END);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
-	spin_box_label = memnew(Label);
+	spin_box_label = memnew(TextLabel);
 	spin_box_label->set_text(TTR("Floor:"));
 	spatial_editor_hb->add_child(spin_box_label);
 
@@ -1278,10 +1278,10 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 
-	info_message = memnew(Label);
+	info_message = memnew(TextLabel);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_valign(TextLabel::VALIGN_CENTER);
+	info_message->set_align(TextLabel::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);

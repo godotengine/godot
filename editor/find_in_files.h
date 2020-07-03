@@ -136,7 +136,7 @@ private:
 	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit;
 
-	Label *_replace_label;
+	TextLabel *_replace_label;
 	LineEdit *_replace_text_line_edit;
 
 	LineEdit *_folder_line_edit;
@@ -204,9 +204,9 @@ private:
 	void clear();
 
 	FindInFiles *_finder;
-	Label *_search_text_label;
+	TextLabel *_search_text_label;
 	Tree *_results_display;
-	Label *_status_label;
+	TextLabel *_status_label;
 	Button *_refresh_button;
 	Button *_cancel_button;
 	ProgressBar *_progress_bar;

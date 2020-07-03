@@ -303,7 +303,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	VBoxContainer *track_vbox;
 	AnimationBezierTrackEdit *bezier_edit;
 
-	Label *info_message;
+	TextLabel *info_message;
 
 	AnimationTimelineEdit *timeline;
 	HSlider *zoom;
@@ -360,7 +360,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		bool advance;
 	}; /* insert_data;*/
 
-	Label *insert_confirm_text;
+	TextLabel *insert_confirm_text;
 	CheckBox *insert_confirm_bezier;
 	ConfirmationDialog *insert_confirm;
 	bool insert_queue;

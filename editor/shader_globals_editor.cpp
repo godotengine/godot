@@ -452,12 +452,12 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	HBoxContainer *add_menu_hb = memnew(HBoxContainer);
 	add_child(add_menu_hb);
 
-	add_menu_hb->add_child(memnew(Label(TTR("Name:"))));
+	add_menu_hb->add_child(memnew(TextLabel(TTR("Name:"))));
 	variable_name = memnew(LineEdit);
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_name);
 
-	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
+	add_menu_hb->add_child(memnew(TextLabel(TTR("Type:"))));
 	variable_type = memnew(OptionButton);
 	variable_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_menu_hb->add_child(variable_type);

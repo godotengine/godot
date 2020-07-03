@@ -44,8 +44,8 @@ class AudioStreamEditor : public ColorRect {
 	AudioStreamPlayer *_player;
 	ColorRect *_preview;
 	Control *_indicator;
-	Label *_current_label;
-	Label *_duration_label;
+	TextLabel *_current_label;
+	TextLabel *_duration_label;
 
 	Button *_play_button;
 	Button *_stop_button;

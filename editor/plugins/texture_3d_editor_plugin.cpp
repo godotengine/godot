@@ -164,7 +164,7 @@ Texture3DEditor::Texture3DEditor() {
 	layer->set_anchor(MARGIN_LEFT, 1);
 	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	layer->set_modulate(Color(1, 1, 1, 0.8));
-	info = memnew(Label);
+	info = memnew(TextLabel);
 	add_child(info);
 	info->set_anchor(MARGIN_RIGHT, 1);
 	info->set_anchor(MARGIN_LEFT, 1);

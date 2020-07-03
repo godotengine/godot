@@ -612,10 +612,10 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	scroll->connect("gui_input", callable_mp(this, &TileSetEditor::_on_scroll_container_input));
 	scroll->set_clip_contents(true);
 
-	empty_message = memnew(Label);
+	empty_message = memnew(TextLabel);
 	empty_message->set_text(TTR("Add or select a texture on the left panel to edit the tiles bound to it."));
-	empty_message->set_valign(Label::VALIGN_CENTER);
-	empty_message->set_align(Label::ALIGN_CENTER);
+	empty_message->set_valign(TextLabel::VALIGN_CENTER);
+	empty_message->set_align(TextLabel::ALIGN_CENTER);
 	empty_message->set_autowrap(true);
 	empty_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	empty_message->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1191,8 +1191,8 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 				c = COLOR_ATLAS;
 			}
 			String tile_id_name = String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id);
-			Ref<Font> font = get_theme_font("font", "Label");
-			int font_size = get_theme_font_size("font_size", "Label");
+			Ref<Font> font = get_theme_font("font", "TextLabel");
+			int font_size = get_theme_font_size("font_size", "TextLabel");
 			region.set_size(font->get_string_size(tile_id_name, font_size));
 			workspace_overlay->draw_rect(region, c);
 			region.position.y += region.size.y - 2;

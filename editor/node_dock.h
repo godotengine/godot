@@ -45,7 +45,7 @@ class NodeDock : public VBoxContainer {
 
 	HBoxContainer *mode_hb;
 
-	Label *select_a_node;
+	TextLabel *select_a_node;
 
 protected:
 	static void _bind_methods();

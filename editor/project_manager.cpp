@@ -90,7 +90,7 @@ private:
 	Container *install_path_container;
 	Container *rasterizer_container;
 	Ref<ButtonGroup> rasterizer_button_group;
-	Label *msg;
+	TextLabel *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
 	LineEdit *install_path;
@@ -776,7 +776,7 @@ public:
 		name_container = memnew(VBoxContainer);
 		vb->add_child(name_container);
 
-		Label *l = memnew(Label);
+		TextLabel *l = memnew(TextLabel);
 		l->set_text(TTR("Project Name:"));
 		name_container->add_child(l);
 
@@ -795,7 +795,7 @@ public:
 		path_container = memnew(VBoxContainer);
 		vb->add_child(path_container);
 
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("Project Path:"));
 		path_container->add_child(l);
 
@@ -810,7 +810,7 @@ public:
 		install_path_container = memnew(VBoxContainer);
 		vb->add_child(install_path_container);
 
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("Project Installation Path:"));
 		install_path_container->add_child(l);
 
@@ -842,14 +842,14 @@ public:
 		install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
 		iphb->add_child(install_browse);
 
-		msg = memnew(Label);
-		msg->set_align(Label::ALIGN_CENTER);
+		msg = memnew(TextLabel);
+		msg->set_align(TextLabel::ALIGN_CENTER);
 		vb->add_child(msg);
 
 		// rasterizer selection
 		rasterizer_container = memnew(VBoxContainer);
 		vb->add_child(rasterizer_container);
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("Renderer:"));
 		rasterizer_container->add_child(l);
 		Container *rshb = memnew(HBoxContainer);
@@ -865,7 +865,7 @@ public:
 		rs_button->set_meta("driver_name", "Vulkan");
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("- Higher visual quality\n- More accurate API, which produces very fast code\n- Some features not implemented yet - work in progress\n- Incompatible with older hardware\n- Not recommended for web and mobile games"));
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
@@ -885,7 +885,7 @@ public:
 		rs_button->set_disabled(true);
 		rs_button->set_tooltip(gles2_unsupported_tooltip);
 		rvb->add_child(rs_button);
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("- Lower visual quality\n- Some features not available\n- Works on most hardware\n- Recommended for web and mobile games"));
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		// Also set the tooltip on the label so it appears when hovering either the checkbox or label.
@@ -894,12 +894,12 @@ public:
 		l->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 		rvb->add_child(l);
 
-		l = memnew(Label);
+		l = memnew(TextLabel);
 		l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
 		// Add some extra spacing to separate it from the list above and the buttons below.
 		l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
-		l->set_align(Label::ALIGN_CENTER);
-		l->set_valign(Label::VALIGN_CENTER);
+		l->set_align(TextLabel::ALIGN_CENTER);
+		l->set_valign(TextLabel::VALIGN_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
 
@@ -1367,7 +1367,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	ec->set_custom_minimum_size(Size2(0, 1));
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(ec);
-	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
+	TextLabel *title = memnew(TextLabel(!item.missing ? item.project_name : TTR("Missing Project")));
 	title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
 	title->add_theme_font_size_override("font_size", get_theme_font_size("title_size", "EditorFonts"));
 	title->add_theme_color_override("font_color", font_color);
@@ -1395,7 +1395,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
 	}
 
-	Label *fpath = memnew(Label(item.path));
+	TextLabel *fpath = memnew(TextLabel(item.path));
 	fpath->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(fpath);
 	fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2486,7 +2486,7 @@ ProjectManager::ProjectManager() {
 
 		hb->add_spacer();
 
-		Label *sort_label = memnew(Label);
+		TextLabel *sort_label = memnew(TextLabel);
 		sort_label->set_text(TTR("Sort:"));
 		hb->add_child(sort_label);
 
@@ -2573,14 +2573,14 @@ ProjectManager::ProjectManager() {
 		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 		settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
 
-		Label *version_label = memnew(Label);
+		TextLabel *version_label = memnew(TextLabel);
 		String hash = String(VERSION_HASH);
 		if (hash.length() != 0) {
 			hash = "." + hash.left(9);
 		}
 		version_label->set_text("v" VERSION_FULL_BUILD "" + hash);
 		version_label->set_self_modulate(Color(1, 1, 1, 0.6));
-		version_label->set_align(Label::ALIGN_CENTER);
+		version_label->set_align(TextLabel::ALIGN_CENTER);
 		settings_hb->add_child(version_label);
 
 		language_btn = memnew(OptionButton);

@@ -194,7 +194,7 @@ void EditorSpinSlider::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_READY) {
-		// Add a left margin to the stylebox to make the number align with the Label
+		// Add a left margin to the stylebox to make the number align with the TextLabel
 		// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
 		// default margins.
 		Ref<StyleBoxFlat> stylebox =
@@ -457,7 +457,7 @@ void EditorSpinSlider::_focus_entered() {
 }
 
 void EditorSpinSlider::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_label", "label"), &EditorSpinSlider::set_label);
+	ClassDB::bind_method(D_METHOD("set_label", "TextLabel"), &EditorSpinSlider::set_label);
 	ClassDB::bind_method(D_METHOD("get_label"), &EditorSpinSlider::get_label);
 
 	ClassDB::bind_method(D_METHOD("set_read_only", "read_only"), &EditorSpinSlider::set_read_only);
@@ -468,7 +468,7 @@ void EditorSpinSlider::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "TextLabel"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 }

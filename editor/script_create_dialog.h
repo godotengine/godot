@@ -47,9 +47,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 
 	GridContainer *gc;
 	LineEdit *class_name;
-	Label *error_label;
-	Label *path_error_label;
-	Label *builtin_warning_label;
+	TextLabel *error_label;
+	TextLabel *path_error_label;
+	TextLabel *builtin_warning_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;

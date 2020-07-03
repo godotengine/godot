@@ -34,12 +34,12 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_rect.h"
 
 class ColorPicker : public BoxContainer {
@@ -61,7 +61,7 @@ private:
 	CheckButton *btn_raw;
 	HSlider *scroll[4];
 	SpinBox *values[4];
-	Label *labels[4];
+	TextLabel *labels[4];
 	Button *text_type;
 	LineEdit *c_text;
 	bool edit_alpha;

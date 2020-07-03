@@ -82,7 +82,7 @@ public:
 	};
 
 private:
-	Label *connect_to_label;
+	TextLabel *connect_to_label;
 	LineEdit *from_signal;
 	Node *source;
 	StringName signal;
@@ -100,7 +100,7 @@ private:
 	CheckBox *oneshot;
 	CheckButton *advanced;
 
-	Label *error_label;
+	TextLabel *error_label;
 
 	void ok_pressed() override;
 	void _cancel_pressed();

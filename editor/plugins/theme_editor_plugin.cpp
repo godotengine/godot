@@ -658,7 +658,7 @@ ThemeEditor::ThemeEditor() {
 	HBoxContainer *top_menu = memnew(HBoxContainer);
 	add_child(top_menu);
 
-	top_menu->add_child(memnew(Label(TTR("Preview:"))));
+	top_menu->add_child(memnew(TextLabel(TTR("Preview:"))));
 	top_menu->add_spacer(false);
 
 	theme_menu = memnew(MenuButton);
@@ -709,7 +709,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 
-	first_vb->add_child(memnew(Label("Label")));
+	first_vb->add_child(memnew(TextLabel("Label")));
 
 	first_vb->add_child(memnew(Button("Button")));
 	Button *bt = memnew(Button);
@@ -865,7 +865,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *dialog_vbc = memnew(VBoxContainer);
 	add_del_dialog->add_child(dialog_vbc);
 
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(TTR("Type:"));
 	dialog_vbc->add_child(l);
 
@@ -882,7 +882,7 @@ ThemeEditor::ThemeEditor() {
 
 	type_menu->get_popup()->connect("id_pressed", callable_mp(this, &ThemeEditor::_type_menu_cbk));
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Name:"));
 	dialog_vbc->add_child(l);
 	name_select_label = l;
@@ -901,7 +901,7 @@ ThemeEditor::ThemeEditor() {
 	name_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ThemeEditor::_name_menu_about_to_show));
 	name_menu->get_popup()->connect("id_pressed", callable_mp(this, &ThemeEditor::_name_menu_cbk));
 
-	type_select_label = memnew(Label);
+	type_select_label = memnew(TextLabel);
 	type_select_label->set_text(TTR("Data Type:"));
 	dialog_vbc->add_child(type_select_label);
 

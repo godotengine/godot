@@ -40,7 +40,7 @@
 #include "scene/resources/theme.h"
 
 class Viewport;
-class Label;
+class TextLabel;
 class Panel;
 
 class Control : public CanvasItem {

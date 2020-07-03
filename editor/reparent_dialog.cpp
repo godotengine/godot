@@ -32,7 +32,7 @@
 
 #include "core/string/print_string.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/label.h"
+#include "scene/gui/text_label.h"
 
 void ReparentDialog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {

@@ -618,7 +618,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 		fxd["bus"] = get_index();
 		fxd["effect"] = md;
 
-		Label *l = memnew(Label);
+		TextLabel *l = memnew(TextLabel);
 		l->set_text(item->get_text(0));
 		effects->set_drag_preview(l);
 
@@ -824,7 +824,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	audioprev_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_box->add_child(audioprev_hbc);
 
-	audio_value_preview_label = memnew(Label);
+	audio_value_preview_label = memnew(TextLabel);
 	audio_value_preview_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	audio_value_preview_label->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -1256,7 +1256,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 
-	file = memnew(Label);
+	file = memnew(TextLabel);
 	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 	file->set_text(String(TTR("Layout")) + ": " + layout_path.get_file());
 	file->set_clip_text(true);
@@ -1372,8 +1372,8 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 }
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	float font_height = font->get_height(font_size);
 
 	float width = 0;
@@ -1407,8 +1407,8 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 }
 
 void EditorAudioMeterNotches::_draw_audio_notches() {
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	float font_height = font->get_height(font_size);
 
 	for (int i = 0; i < notches.size(); i++) {

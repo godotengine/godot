@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  label.cpp                                                            */
+/*  text_label.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "label.h"
+#include "text_label.h"
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
@@ -36,7 +36,7 @@
 
 #include "servers/text_server.h"
 
-void Label::set_autowrap(bool p_autowrap) {
+void TextLabel::set_autowrap(bool p_autowrap) {
 	if (autowrap != p_autowrap) {
 		autowrap = p_autowrap;
 		lines_dirty = true;
@@ -48,22 +48,22 @@ void Label::set_autowrap(bool p_autowrap) {
 	}
 }
 
-bool Label::has_autowrap() const {
+bool TextLabel::has_autowrap() const {
 	return autowrap;
 }
 
-void Label::set_uppercase(bool p_uppercase) {
+void TextLabel::set_uppercase(bool p_uppercase) {
 	uppercase = p_uppercase;
 	dirty = true;
 
 	update();
 }
 
-bool Label::is_uppercase() const {
+bool TextLabel::is_uppercase() const {
 	return uppercase;
 }
 
-int Label::get_line_height(int p_line) const {
+int TextLabel::get_line_height(int p_line) const {
 	if (p_line >= 0 && p_line < lines_rid.size()) {
 		return TS->shaped_text_get_size(lines_rid[p_line]).y;
 	} else if (lines_rid.size() > 0) {
@@ -77,8 +77,8 @@ int Label::get_line_height(int p_line) const {
 	}
 }
 
-void Label::_shape() {
-	Ref<StyleBox> style = get_theme_stylebox("normal", "Label");
+void TextLabel::_shape() {
+	Ref<StyleBox> style = get_theme_stylebox("normal", "TextLabel");
 	int width = (get_size().width - style->get_minimum_size().width);
 
 	if (dirty) {
@@ -135,9 +135,9 @@ void Label::_shape() {
 	}
 }
 
-void Label::_update_visible() {
-	int line_spacing = get_theme_constant("line_spacing", "Label");
-	Ref<StyleBox> style = get_theme_stylebox("normal", "Label");
+void TextLabel::_update_visible() {
+	int line_spacing = get_theme_constant("line_spacing", "TextLabel");
+	Ref<StyleBox> style = get_theme_stylebox("normal", "TextLabel");
 	int lines_visible = lines_rid.size();
 
 	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
@@ -154,7 +154,7 @@ void Label::_update_visible() {
 	}
 }
 
-void Label::_notification(int p_what) {
+void TextLabel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		String new_text = tr(text);
 		if (new_text == xl_text) {
@@ -350,12 +350,12 @@ void Label::_notification(int p_what) {
 	}
 }
 
-Size2 Label::get_minimum_size() const {
+Size2 TextLabel::get_minimum_size() const {
 	Size2 min_style = get_theme_stylebox("normal")->get_minimum_size();
 
 	// don't want to mutable everything
 	if (dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		const_cast<TextLabel *>(this)->_shape();
 	}
 
 	if (autowrap) {
@@ -369,18 +369,18 @@ Size2 Label::get_minimum_size() const {
 	}
 }
 
-int Label::get_line_count() const {
+int TextLabel::get_line_count() const {
 	if (!is_inside_tree()) {
 		return 1;
 	}
 	if (dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		const_cast<TextLabel *>(this)->_shape();
 	}
 
 	return lines_rid.size();
 }
 
-int Label::get_visible_line_count() const {
+int TextLabel::get_visible_line_count() const {
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int line_spacing = get_theme_constant("line_spacing");
 	int lines_visible = 0;
@@ -404,7 +404,7 @@ int Label::get_visible_line_count() const {
 	return lines_visible;
 }
 
-void Label::set_align(Align p_align) {
+void TextLabel::set_align(Align p_align) {
 	ERR_FAIL_INDEX((int)p_align, 4);
 	if (align != p_align) {
 		if (align == ALIGN_FILL || p_align == ALIGN_FILL) {
@@ -415,21 +415,21 @@ void Label::set_align(Align p_align) {
 	update();
 }
 
-Label::Align Label::get_align() const {
+TextLabel::Align TextLabel::get_align() const {
 	return align;
 }
 
-void Label::set_valign(VAlign p_align) {
+void TextLabel::set_valign(VAlign p_align) {
 	ERR_FAIL_INDEX((int)p_align, 4);
 	valign = p_align;
 	update();
 }
 
-Label::VAlign Label::get_valign() const {
+TextLabel::VAlign TextLabel::get_valign() const {
 	return valign;
 }
 
-void Label::set_text(const String &p_string) {
+void TextLabel::set_text(const String &p_string) {
 	if (text == p_string) {
 		return;
 	}
@@ -442,7 +442,7 @@ void Label::set_text(const String &p_string) {
 	update();
 }
 
-void Label::set_text_direction(Control::TextDirection p_text_direction) {
+void TextLabel::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
@@ -451,7 +451,7 @@ void Label::set_text_direction(Control::TextDirection p_text_direction) {
 	}
 }
 
-void Label::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+void TextLabel::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		dirty = true;
@@ -459,31 +459,31 @@ void Label::set_structured_text_bidi_override(Control::StructuredTextParser p_pa
 	}
 }
 
-Control::StructuredTextParser Label::get_structured_text_bidi_override() const {
+Control::StructuredTextParser TextLabel::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 
-void Label::set_structured_text_bidi_override_options(Array p_args) {
+void TextLabel::set_structured_text_bidi_override_options(Array p_args) {
 	st_args = p_args;
 	dirty = true;
 	update();
 }
 
-Array Label::get_structured_text_bidi_override_options() const {
+Array TextLabel::get_structured_text_bidi_override_options() const {
 	return st_args;
 }
 
-Control::TextDirection Label::get_text_direction() const {
+Control::TextDirection TextLabel::get_text_direction() const {
 	return text_direction;
 }
 
-void Label::clear_opentype_features() {
+void TextLabel::clear_opentype_features() {
 	opentype_features.clear();
 	dirty = true;
 	update();
 }
 
-void Label::set_opentype_feature(const String &p_name, int p_value) {
+void TextLabel::set_opentype_feature(const String &p_name, int p_value) {
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
 		opentype_features[tag] = p_value;
@@ -492,7 +492,7 @@ void Label::set_opentype_feature(const String &p_name, int p_value) {
 	}
 }
 
-int Label::get_opentype_feature(const String &p_name) const {
+int TextLabel::get_opentype_feature(const String &p_name) const {
 	int32_t tag = TS->name_to_tag(p_name);
 	if (!opentype_features.has(tag)) {
 		return -1;
@@ -500,7 +500,7 @@ int Label::get_opentype_feature(const String &p_name) const {
 	return opentype_features[tag];
 }
 
-void Label::set_language(const String &p_language) {
+void TextLabel::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		dirty = true;
@@ -508,25 +508,25 @@ void Label::set_language(const String &p_language) {
 	}
 }
 
-String Label::get_language() const {
+String TextLabel::get_language() const {
 	return language;
 }
 
-void Label::set_clip_text(bool p_clip) {
+void TextLabel::set_clip_text(bool p_clip) {
 	clip = p_clip;
 	update();
 	minimum_size_changed();
 }
 
-bool Label::is_clipping_text() const {
+bool TextLabel::is_clipping_text() const {
 	return clip;
 }
 
-String Label::get_text() const {
+String TextLabel::get_text() const {
 	return text;
 }
 
-void Label::set_visible_characters(int p_amount) {
+void TextLabel::set_visible_characters(int p_amount) {
 	visible_chars = p_amount;
 	if (get_total_character_count() > 0) {
 		percent_visible = (float)p_amount / (float)get_total_character_count();
@@ -535,11 +535,11 @@ void Label::set_visible_characters(int p_amount) {
 	update();
 }
 
-int Label::get_visible_characters() const {
+int TextLabel::get_visible_characters() const {
 	return visible_chars;
 }
 
-void Label::set_percent_visible(float p_percent) {
+void TextLabel::set_percent_visible(float p_percent) {
 	if (p_percent < 0 || p_percent >= 1) {
 		visible_chars = -1;
 		percent_visible = 1;
@@ -552,39 +552,39 @@ void Label::set_percent_visible(float p_percent) {
 	update();
 }
 
-float Label::get_percent_visible() const {
+float TextLabel::get_percent_visible() const {
 	return percent_visible;
 }
 
-void Label::set_lines_skipped(int p_lines) {
+void TextLabel::set_lines_skipped(int p_lines) {
 	lines_skipped = p_lines;
 	_update_visible();
 	update();
 }
 
-int Label::get_lines_skipped() const {
+int TextLabel::get_lines_skipped() const {
 	return lines_skipped;
 }
 
-void Label::set_max_lines_visible(int p_lines) {
+void TextLabel::set_max_lines_visible(int p_lines) {
 	max_lines_visible = p_lines;
 	_update_visible();
 	update();
 }
 
-int Label::get_max_lines_visible() const {
+int TextLabel::get_max_lines_visible() const {
 	return max_lines_visible;
 }
 
-int Label::get_total_character_count() const {
+int TextLabel::get_total_character_count() const {
 	if (dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		const_cast<TextLabel *>(this)->_shape();
 	}
 
 	return xl_text.length();
 }
 
-bool Label::_set(const StringName &p_name, const Variant &p_value) {
+bool TextLabel::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 	if (str.begins_with("opentype_features/")) {
 		String name = str.get_slicec('/', 1);
@@ -610,7 +610,7 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 	return false;
 }
 
-bool Label::_get(const StringName &p_name, Variant &r_ret) const {
+bool TextLabel::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
 	if (str.begins_with("opentype_features/")) {
 		String name = str.get_slicec('/', 1);
@@ -626,7 +626,7 @@ bool Label::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-void Label::_get_property_list(List<PropertyInfo> *p_list) const {
+void TextLabel::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
 		String name = TS->tag_to_name(*ftr);
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
@@ -634,42 +634,42 @@ void Label::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 }
 
-void Label::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_align", "align"), &Label::set_align);
-	ClassDB::bind_method(D_METHOD("get_align"), &Label::get_align);
-	ClassDB::bind_method(D_METHOD("set_valign", "valign"), &Label::set_valign);
-	ClassDB::bind_method(D_METHOD("get_valign"), &Label::get_valign);
-	ClassDB::bind_method(D_METHOD("set_text", "text"), &Label::set_text);
-	ClassDB::bind_method(D_METHOD("get_text"), &Label::get_text);
-	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Label::set_text_direction);
-	ClassDB::bind_method(D_METHOD("get_text_direction"), &Label::get_text_direction);
-	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &Label::set_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &Label::get_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &Label::clear_opentype_features);
-	ClassDB::bind_method(D_METHOD("set_language", "language"), &Label::set_language);
-	ClassDB::bind_method(D_METHOD("get_language"), &Label::get_language);
-	ClassDB::bind_method(D_METHOD("set_autowrap", "enable"), &Label::set_autowrap);
-	ClassDB::bind_method(D_METHOD("has_autowrap"), &Label::has_autowrap);
-	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
-	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
-	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
-	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label::is_uppercase);
-	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_line_count"), &Label::get_line_count);
-	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &Label::get_visible_line_count);
-	ClassDB::bind_method(D_METHOD("get_total_character_count"), &Label::get_total_character_count);
-	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &Label::set_visible_characters);
-	ClassDB::bind_method(D_METHOD("get_visible_characters"), &Label::get_visible_characters);
-	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &Label::set_percent_visible);
-	ClassDB::bind_method(D_METHOD("get_percent_visible"), &Label::get_percent_visible);
-	ClassDB::bind_method(D_METHOD("set_lines_skipped", "lines_skipped"), &Label::set_lines_skipped);
-	ClassDB::bind_method(D_METHOD("get_lines_skipped"), &Label::get_lines_skipped);
-	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "lines_visible"), &Label::set_max_lines_visible);
-	ClassDB::bind_method(D_METHOD("get_max_lines_visible"), &Label::get_max_lines_visible);
-	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &Label::set_structured_text_bidi_override);
-	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label::get_structured_text_bidi_override);
-	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &Label::set_structured_text_bidi_override_options);
-	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
+void TextLabel::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_align", "align"), &TextLabel::set_align);
+	ClassDB::bind_method(D_METHOD("get_align"), &TextLabel::get_align);
+	ClassDB::bind_method(D_METHOD("set_valign", "valign"), &TextLabel::set_valign);
+	ClassDB::bind_method(D_METHOD("get_valign"), &TextLabel::get_valign);
+	ClassDB::bind_method(D_METHOD("set_text", "text"), &TextLabel::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"), &TextLabel::get_text);
+	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &TextLabel::set_text_direction);
+	ClassDB::bind_method(D_METHOD("get_text_direction"), &TextLabel::get_text_direction);
+	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &TextLabel::set_opentype_feature);
+	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &TextLabel::get_opentype_feature);
+	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &TextLabel::clear_opentype_features);
+	ClassDB::bind_method(D_METHOD("set_language", "language"), &TextLabel::set_language);
+	ClassDB::bind_method(D_METHOD("get_language"), &TextLabel::get_language);
+	ClassDB::bind_method(D_METHOD("set_autowrap", "enable"), &TextLabel::set_autowrap);
+	ClassDB::bind_method(D_METHOD("has_autowrap"), &TextLabel::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &TextLabel::set_clip_text);
+	ClassDB::bind_method(D_METHOD("is_clipping_text"), &TextLabel::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextLabel::set_uppercase);
+	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextLabel::is_uppercase);
+	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &TextLabel::get_line_height, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_line_count"), &TextLabel::get_line_count);
+	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &TextLabel::get_visible_line_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count"), &TextLabel::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &TextLabel::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"), &TextLabel::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &TextLabel::set_percent_visible);
+	ClassDB::bind_method(D_METHOD("get_percent_visible"), &TextLabel::get_percent_visible);
+	ClassDB::bind_method(D_METHOD("set_lines_skipped", "lines_skipped"), &TextLabel::set_lines_skipped);
+	ClassDB::bind_method(D_METHOD("get_lines_skipped"), &TextLabel::get_lines_skipped);
+	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "lines_visible"), &TextLabel::set_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("get_max_lines_visible"), &TextLabel::get_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &TextLabel::set_structured_text_bidi_override);
+	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &TextLabel::get_structured_text_bidi_override);
+	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &TextLabel::set_structured_text_bidi_override_options);
+	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &TextLabel::get_structured_text_bidi_override_options);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -698,7 +698,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 }
 
-Label::Label(const String &p_text) {
+TextLabel::TextLabel(const String &p_text) {
 	text_rid = TS->create_shaped_text();
 
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -706,7 +706,7 @@ Label::Label(const String &p_text) {
 	set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
-Label::~Label() {
+TextLabel::~TextLabel() {
 	for (int i = 0; i < lines_rid.size(); i++) {
 		TS->free(lines_rid[i]);
 	}

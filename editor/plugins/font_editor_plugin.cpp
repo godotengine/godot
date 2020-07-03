@@ -34,7 +34,7 @@
 
 void FontDataPreview::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Color text_color = get_theme_color("font_color", "Label");
+		Color text_color = get_theme_color("font_color", "TextLabel");
 		Color line_color = text_color;
 		line_color.a *= 0.6;
 		Vector2 pos = (get_size() - line->get_size()) / 2;

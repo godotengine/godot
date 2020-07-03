@@ -38,7 +38,6 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -49,6 +48,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
@@ -76,11 +76,11 @@ public:
 
 		get_root()->add_child(frame);
 
-		Label *label = memnew(Label);
+		TextLabel *label = memnew(TextLabel);
 
 		label->set_position(Point2(80, 90));
 		label->set_size(Point2(170, 80));
-		label->set_align(Label::ALIGN_FILL);
+		label->set_align(TextLabel::ALIGN_FILL);
 		label->set_text("There was once upon a time a beautiful unicorn that loved to play with little girls...");
 
 		frame->add_child(label);
@@ -241,7 +241,7 @@ public:
 		ctl = memnew(Control);
 		ctl->set_name("tab 2");
 		tabc->add_child(ctl);
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text("Some Label");
 		label->set_position(Point2(20, 20));
 		ctl->add_child(label);

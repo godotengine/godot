@@ -548,7 +548,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 	int max_size = MIN(PREVIEW_LIST_MAX_SIZE, autoloads.size());
 
 	for (int i = 0; i < max_size; i++) {
-		Label *label = memnew(Label(autoloads[i]));
+		TextLabel *label = memnew(TextLabel(autoloads[i]));
 		label->set_self_modulate(Color(1, 1, 1, Math::lerp(1, 0, float(i) / PREVIEW_LIST_MAX_SIZE)));
 
 		preview->add_child(label);
@@ -830,7 +830,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
-	Label *l = memnew(Label);
+	TextLabel *l = memnew(TextLabel);
 	l->set_text(TTR("Path:"));
 	hbc->add_child(l);
 
@@ -853,7 +853,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAutoloadSettings::_autoload_file_callback));
 
-	l = memnew(Label);
+	l = memnew(TextLabel);
 	l->set_text(TTR("Node Name:"));
 	hbc->add_child(l);
 

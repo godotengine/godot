@@ -60,7 +60,7 @@ private:
 	AcceptDialog *set_up_dialog;
 	VBoxContainer *set_up_vbc;
 	HBoxContainer *set_up_hbc;
-	Label *set_up_vcs_label;
+	TextLabel *set_up_vcs_label;
 	OptionButton *set_up_choice;
 	PanelContainer *set_up_init_settings;
 	Button *set_up_init_button;
@@ -79,22 +79,22 @@ private:
 	TreeItem *renamed_files;
 	TreeItem *deleted_files;
 	TreeItem *typechange_files;
-	Label *staging_area_label;
+	TextLabel *staging_area_label;
 	HSplitContainer *stage_buttons;
 	Button *stage_all_button;
 	Button *stage_selected_button;
 	Button *refresh_button;
 	TextEdit *commit_message;
 	Button *commit_button;
-	Label *commit_status;
+	TextLabel *commit_status;
 
 	PanelContainer *version_control_dock;
 	Button *version_control_dock_button;
 	VBoxContainer *diff_vbc;
 	HBoxContainer *diff_hbc;
 	Button *diff_refresh_button;
-	Label *diff_file_name;
-	Label *diff_heading;
+	TextLabel *diff_file_name;
+	TextLabel *diff_heading;
 	RichTextLabel *diff;
 
 	void _populate_available_vcs_names();

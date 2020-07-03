@@ -2079,10 +2079,10 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette_container->add_child(palette);
 
 	// Add message for when no texture is selected.
-	info_message = memnew(Label);
+	info_message = memnew(TextLabel);
 	info_message->set_text(TTR("Give a TileSet resource to this TileMap to use its tiles."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_valign(TextLabel::VALIGN_CENTER);
+	info_message->set_align(TextLabel::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
@@ -2167,7 +2167,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar_right);
 
 	// Tile position.
-	tile_info = memnew(Label);
+	tile_info = memnew(TextLabel);
 	tile_info->set_modulate(Color(1, 1, 1, 0.8));
 	tile_info->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	tile_info->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
@@ -2276,7 +2276,7 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		tile_map_editor->get_toolbar_right()->show();
 		// `tile_info` isn't shown here, as it's displayed after a tile has been hovered.
 		// Otherwise, a translucent black rectangle would be visible as there would be an
-		// empty Label in the CanvasItemEditor's info overlay.
+		// empty TextLabel in the CanvasItemEditor's info overlay.
 
 		// Change to TOOL_SELECT when TileMap node is selected, to prevent accidental movement.
 		CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);

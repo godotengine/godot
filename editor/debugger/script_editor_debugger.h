@@ -103,7 +103,7 @@ private:
 
 	TabContainer *tabs;
 
-	Label *reason;
+	TextLabel *reason;
 
 	Button *skip_breakpoints;
 	Button *copy;

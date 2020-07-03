@@ -2499,7 +2499,7 @@ Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 		tf->set_texture(preview_icon);
 		drag_preview->add_child(tf);
 	}
-	Label *label = memnew(Label(preview_name));
+	TextLabel *label = memnew(TextLabel(preview_name));
 	drag_preview->add_child(label);
 	set_drag_preview(drag_preview);
 
@@ -3253,7 +3253,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 
-	filename = memnew(Label);
+	filename = memnew(TextLabel);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
 	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
@@ -3381,7 +3381,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_icon = memnew(TextureRect);
 	menu_hb->add_child(script_icon);
-	script_name_label = memnew(Label);
+	script_name_label = memnew(TextLabel);
 	menu_hb->add_child(script_name_label);
 
 	script_icon->hide();
@@ -3446,7 +3446,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
 
-		Label *dl = memnew(Label);
+		TextLabel *dl = memnew(TextLabel);
 		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));
 		vbc->add_child(dl);
 

@@ -37,7 +37,7 @@
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "scene/gui/label.h"
+#include "scene/gui/text_label.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -951,7 +951,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 			tf->set_texture(icons[i]);
 			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			hb->add_child(tf);
-			Label *label = memnew(Label(selected[i]->get_name()));
+			TextLabel *label = memnew(TextLabel(selected[i]->get_name()));
 			hb->add_child(label);
 			vb->add_child(hb);
 			hb->set_modulate(Color(1, 1, 1, opacity_item));
@@ -1146,7 +1146,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	editor_selection = nullptr;
 
 	if (p_label) {
-		Label *label = memnew(Label);
+		TextLabel *label = memnew(TextLabel);
 		label->set_position(Point2(10, 0));
 		label->set_text(TTR("Scene Tree (Nodes):"));
 

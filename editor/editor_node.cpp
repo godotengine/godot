@@ -5007,7 +5007,7 @@ void EditorNode::remove_control_from_dock(Control *p_control) {
 Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	Control *drag_control = memnew(Control);
 	TextureRect *drag_preview = memnew(TextureRect);
-	Label *label = memnew(Label);
+	TextLabel *label = memnew(TextLabel);
 
 	Ref<Texture2D> preview;
 
@@ -5061,7 +5061,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 	for (int i = 0; i < num_rows; i++) {
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		TextureRect *icon = memnew(TextureRect);
-		Label *label = memnew(Label);
+		TextLabel *label = memnew(TextLabel);
 
 		if (p_paths[i].ends_with("/")) {
 			label->set_text(p_paths[i].substr(0, p_paths[i].length() - 1).get_file());
@@ -5078,7 +5078,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 	}
 
 	if (p_paths.size() > num_rows) {
-		Label *label = memnew(Label);
+		TextLabel *label = memnew(TextLabel);
 		if (has_file && has_folder) {
 			label->set_text(vformat(TTR("%d more files or folders"), p_paths.size() - num_rows));
 		} else if (has_folder) {
@@ -5907,10 +5907,10 @@ EditorNode::EditorNode() {
 	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
 	dock_hb->add_child(dock_tab_move_left);
 
-	Label *dock_label = memnew(Label);
+	TextLabel *dock_label = memnew(TextLabel);
 	dock_label->set_text(TTR("Dock Position"));
 	dock_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dock_label->set_align(Label::ALIGN_CENTER);
+	dock_label->set_align(TextLabel::ALIGN_CENTER);
 	dock_hb->add_child(dock_label);
 
 	dock_tab_move_right = memnew(Button);
@@ -6511,7 +6511,7 @@ EditorNode::EditorNode() {
 	bottom_panel_hb_editors->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bottom_panel_hb->add_child(bottom_panel_hb_editors);
 
-	version_label = memnew(Label);
+	version_label = memnew(TextLabel);
 	version_label->set_text(VERSION_FULL_CONFIG);
 	// Fade out the version label to be less prominent, but still readable
 	version_label->set_self_modulate(Color(1, 1, 1, 0.6));

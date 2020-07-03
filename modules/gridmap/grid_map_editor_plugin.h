@@ -78,7 +78,7 @@ class GridMapEditor : public VBoxContainer {
 	ConfirmationDialog *settings_dialog;
 	VBoxContainer *settings_vbc;
 	SpinBox *settings_pick_distance;
-	Label *spin_box_label;
+	TextLabel *spin_box_label;
 
 	struct SetItem {
 		Vector3i position;
@@ -188,7 +188,7 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	ItemList *mesh_library_palette;
-	Label *info_message;
+	TextLabel *info_message;
 
 	EditorNode *editor;
 

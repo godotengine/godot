@@ -358,9 +358,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 
-	ClassDB::bind_method(D_METHOD("global_menu_add_item", "menu_root", "label", "callback", "tag"), &DisplayServer::global_menu_add_item, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("global_menu_add_check_item", "menu_root", "label", "callback", "tag"), &DisplayServer::global_menu_add_check_item, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("global_menu_add_submenu_item", "menu_root", "label", "submenu"), &DisplayServer::global_menu_add_submenu_item);
+	ClassDB::bind_method(D_METHOD("global_menu_add_item", "menu_root", "TextLabel", "callback", "tag"), &DisplayServer::global_menu_add_item, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("global_menu_add_check_item", "menu_root", "TextLabel", "callback", "tag"), &DisplayServer::global_menu_add_check_item, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("global_menu_add_submenu_item", "menu_root", "TextLabel", "submenu"), &DisplayServer::global_menu_add_submenu_item);
 	ClassDB::bind_method(D_METHOD("global_menu_add_separator", "menu_root"), &DisplayServer::global_menu_add_separator);
 
 	ClassDB::bind_method(D_METHOD("global_menu_is_item_checked", "menu_root", "idx"), &DisplayServer::global_menu_is_item_checked);

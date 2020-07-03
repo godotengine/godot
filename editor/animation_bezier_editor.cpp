@@ -247,9 +247,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			draw_rect(Rect2(Point2(), get_size()), accent, false);
 		}
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
+		Color color = get_theme_color("font_color", "TextLabel");
 		int hsep = get_theme_constant("hseparation", "ItemList");
 		int vsep = get_theme_constant("vseparation", "ItemList");
 		Color linecolor = color;

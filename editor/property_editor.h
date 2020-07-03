@@ -39,10 +39,10 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
@@ -104,7 +104,7 @@ class CustomPropertyEditor : public PopupPanel {
 	VBoxContainer *value_vbox;
 	LineEdit *value_editor[MAX_VALUE_EDITORS];
 	int focused_value_editor;
-	Label *value_label[MAX_VALUE_EDITORS];
+	TextLabel *value_label[MAX_VALUE_EDITORS];
 	HScrollBar *scroll[4];
 	Button *action_buttons[MAX_ACTION_BUTTONS];
 	MenuButton *type_button;

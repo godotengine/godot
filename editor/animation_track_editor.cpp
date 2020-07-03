@@ -1396,9 +1396,9 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			return;
 		}
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
+		Color color = get_theme_color("font_color", "TextLabel");
 
 		int zoomw = key_range;
 		float scale = get_zoom_scale();
@@ -1583,8 +1583,8 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = add_track->get_minimum_size();
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	ms.height = MAX(ms.height, font->get_height(font_size));
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_theme_icon("Hsize", "EditorIcons")->get_width() + 2;
 	return ms;
@@ -1822,9 +1822,9 @@ void AnimationTrackEdit::_notification(int p_what) {
 			draw_rect(Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)), accent, false);
 		}
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
+		Color color = get_theme_color("font_color", "TextLabel");
 		Ref<Texture2D> type_icons[6] = {
 			get_theme_icon("KeyValue", "EditorIcons"),
 			get_theme_icon("KeyXform", "EditorIcons"),
@@ -2145,7 +2145,7 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 		return;
 	}
 
-	Color color = get_theme_color("font_color", "Label");
+	Color color = get_theme_color("font_color", "TextLabel");
 	color.a = 0.5;
 
 	int from_x = MAX(p_x, p_clip_left);
@@ -2177,9 +2177,9 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 	Vector2 ofs(p_x - icon_to_draw->get_width() / 2, int(get_size().height - icon_to_draw->get_height()) / 2);
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
-		Color color = get_theme_color("font_color", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
+		Color color = get_theme_color("font_color", "TextLabel");
 		color.a = 0.5;
 
 		Dictionary d = animation->track_get_key_value(track, p_index);
@@ -2307,8 +2307,8 @@ NodePath AnimationTrackEdit::get_path() const {
 
 Size2 AnimationTrackEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_theme_icon("Object", "EditorIcons");
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	int separation = get_theme_constant("vseparation", "ItemList");
 
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
@@ -3042,10 +3042,10 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 
 void AnimationTrackEditGroup::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 		int separation = get_theme_constant("hseparation", "ItemList");
-		Color color = get_theme_color("font_color", "Label");
+		Color color = get_theme_color("font_color", "TextLabel");
 
 		if (root && root->has_node(node)) {
 			Node *n = root->get_node(node);
@@ -3087,8 +3087,8 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 }
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	int separation = get_theme_constant("vseparation", "ItemList");
 
 	return Vector2(0, MAX(font->get_height(font_size), icon->get_height()) + separation);
@@ -5587,10 +5587,10 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	timeline_vbox->add_theme_constant_override("separation", 0);
 
-	info_message = memnew(Label);
+	info_message = memnew(TextLabel);
 	info_message->set_text(TTR("Select an AnimationPlayer node to create and edit animations."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_valign(TextLabel::VALIGN_CENTER);
+	info_message->set_align(TextLabel::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
@@ -5755,7 +5755,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_confirm_insert_list));
 	VBoxContainer *icvb = memnew(VBoxContainer);
 	insert_confirm->add_child(icvb);
-	insert_confirm_text = memnew(Label);
+	insert_confirm_text = memnew(TextLabel);
 	icvb->add_child(insert_confirm_text);
 	insert_confirm_bezier = memnew(CheckBox);
 	insert_confirm_bezier->set_text(TTR("Use Bezier Curves"));

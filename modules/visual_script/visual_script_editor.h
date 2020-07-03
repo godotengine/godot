@@ -116,10 +116,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	AcceptDialog *function_name_edit;
 	LineEdit *function_name_box;
 
-	Label *hint_text;
+	TextLabel *hint_text;
 	Timer *hint_text_timer;
 
-	Label *select_func_text;
+	TextLabel *select_func_text;
 
 	bool updating_graph;
 

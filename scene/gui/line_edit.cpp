@@ -35,13 +35,13 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-#include "label.h"
 #include "servers/display_server.h"
 #include "servers/text_server.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #endif
+#include "scene/gui/text_label.h"
 #include "scene/main/window.h"
 
 void LineEdit::_gui_input(Ref<InputEvent> p_event) {
@@ -631,7 +631,7 @@ LineEdit::Align LineEdit::get_align() const {
 Variant LineEdit::get_drag_data(const Point2 &p_point) {
 	if (selection.drag_attempt && selection.enabled) {
 		String t = text.substr(selection.begin, selection.end - selection.begin);
-		Label *l = memnew(Label);
+		TextLabel *l = memnew(TextLabel);
 		l->set_text(t);
 		set_drag_preview(l);
 		return t;

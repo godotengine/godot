@@ -39,7 +39,7 @@
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
 
-	Label *method = nullptr;
+	TextLabel *method = nullptr;
 	Tree *tree = nullptr;
 
 	virtual void ok_pressed() override;

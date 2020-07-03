@@ -34,10 +34,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 

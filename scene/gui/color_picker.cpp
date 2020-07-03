@@ -777,7 +777,7 @@ ColorPicker::ColorPicker() :
 	for (int i = 0; i < 4; i++) {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
-		labels[i] = memnew(Label());
+		labels[i] = memnew(TextLabel());
 		labels[i]->set_custom_minimum_size(Size2(get_theme_constant("label_width"), 0));
 		labels[i]->set_v_size_flags(SIZE_SHRINK_CENTER);
 		hbc->add_child(labels[i]);

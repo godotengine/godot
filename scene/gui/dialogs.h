@@ -33,9 +33,9 @@
 
 #include "box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_button.h"
 #include "scene/main/window.h"
 
@@ -47,7 +47,7 @@ class AcceptDialog : public Window {
 	Window *parent_visible;
 	Panel *bg;
 	HBoxContainer *hbc;
-	Label *label;
+	TextLabel *label;
 	Button *ok;
 	bool hide_on_ok;
 
@@ -74,7 +74,7 @@ protected:
 	void _cancel_pressed();
 
 public:
-	Label *get_label() { return label; }
+	TextLabel *get_label() { return label; }
 	static void set_swap_cancel_ok(bool p_swap);
 
 	void register_text_enter(Node *p_line_edit);

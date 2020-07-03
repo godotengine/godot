@@ -43,13 +43,13 @@
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
-#include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
@@ -82,7 +82,7 @@ private:
 	LineEdit *exclude_filters;
 	Tree *include_files;
 
-	Label *include_label;
+	TextLabel *include_label;
 	MarginContainer *include_margin;
 
 	StringName editor_icons;
@@ -96,9 +96,9 @@ private:
 
 	OptionButton *script_mode;
 	LineEdit *script_key;
-	Label *script_key_error;
+	TextLabel *script_key_error;
 
-	Label *export_error;
+	TextLabel *export_error;
 	HBoxContainer *export_templates_error;
 
 	String default_filename;

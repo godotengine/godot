@@ -231,7 +231,7 @@ DependencyEditor::DependencyEditor() {
 	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTR("Dependencies:")));
+	TextLabel *label = memnew(TextLabel(TTR("Dependencies:")));
 	hbc->add_child(label);
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
@@ -558,7 +558,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
-	text = memnew(Label);
+	text = memnew(TextLabel);
 	vb->add_child(text);
 
 	owners = memnew(Tree);
@@ -622,7 +622,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	get_ok()->set_text(TTR("Open Anyway"));
 	get_cancel()->set_text(TTR("Close"));
 
-	text = memnew(Label);
+	text = memnew(TextLabel);
 	vb->add_child(text);
 	text->set_text(TTR("Which action should be taken?"));
 

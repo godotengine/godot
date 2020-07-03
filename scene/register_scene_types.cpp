@@ -93,7 +93,6 @@
 #include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
@@ -117,6 +116,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/text_label.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/texture_rect.h"
@@ -299,7 +299,7 @@ void register_scene_types() {
 	ClassDB::register_class<Shortcut>();
 	ClassDB::register_class<Control>();
 	ClassDB::register_class<Button>();
-	ClassDB::register_class<Label>();
+	ClassDB::register_class<TextLabel>();
 	ClassDB::register_virtual_class<ScrollBar>();
 	ClassDB::register_class<HScrollBar>();
 	ClassDB::register_class<VScrollBar>();

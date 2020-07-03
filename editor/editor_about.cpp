@@ -84,7 +84,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 		bool single_column = p_flag_single_column & 1 << i;
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
-			Label *lbl = memnew(Label);
+			TextLabel *lbl = memnew(TextLabel);
 			lbl->set_text(p_sections[i]);
 			vbc->add_child(lbl);
 
@@ -130,7 +130,7 @@ EditorAbout::EditorAbout() {
 		hash = "." + hash.left(9);
 	}
 
-	Label *about_text = memnew(Label);
+	TextLabel *about_text = memnew(TextLabel);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(VERSION_FULL_NAME + hash +
 						 String::utf8("\n\xc2\xa9 2007-2020 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2020 ") +
@@ -188,7 +188,7 @@ EditorAbout::EditorAbout() {
 	license_thirdparty->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tc->add_child(license_thirdparty);
 
-	Label *tpl_label = memnew(Label);
+	TextLabel *tpl_label = memnew(TextLabel);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
 	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));

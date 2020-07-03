@@ -376,10 +376,10 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	monitor_draw->connect("gui_input", callable_mp(this, &EditorPerformanceProfiler::_marker_input));
 	add_child(monitor_draw);
 
-	info_message = memnew(Label);
+	info_message = memnew(TextLabel);
 	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_valign(TextLabel::VALIGN_CENTER);
+	info_message->set_align(TextLabel::ALIGN_CENTER);
 	info_message->set_autowrap(true);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);

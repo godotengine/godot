@@ -125,7 +125,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	author->connect("pressed", callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
 	vb->add_child(author);
 
-	price = memnew(Label);
+	price = memnew(TextLabel);
 	vb->add_child(price);
 
 	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
@@ -486,7 +486,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	vb->add_child(title_hb);
-	title = memnew(Label);
+	title = memnew(TextLabel);
 	title_hb->add_child(title);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -498,7 +498,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	vb->add_spacer();
 
-	status = memnew(Label(TTR("Idle")));
+	status = memnew(TextLabel(TTR("Idle")));
 	vb->add_child(status);
 	status->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 	progress = memnew(ProgressBar);
@@ -1335,7 +1335,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb2 = memnew(HBoxContainer);
 	library_main->add_child(search_hb2);
 
-	search_hb2->add_child(memnew(Label(TTR("Sort:") + " ")));
+	search_hb2->add_child(memnew(TextLabel(TTR("Sort:") + " ")));
 	sort = memnew(OptionButton);
 	for (int i = 0; i < SORT_MAX; i++) {
 		sort->add_item(TTRGET(sort_text[i]));
@@ -1348,7 +1348,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
+	search_hb2->add_child(memnew(TextLabel(TTR("Category:") + " ")));
 	categories = memnew(OptionButton);
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
@@ -1357,7 +1357,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
+	search_hb2->add_child(memnew(TextLabel(TTR("Site:") + " ")));
 	repository = memnew(OptionButton);
 
 	repository->add_item("godotengine.org");
@@ -1411,12 +1411,12 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb_border->add_child(library_vb);
 
-	library_loading = memnew(Label(TTR("Loading...")));
-	library_loading->set_align(Label::ALIGN_CENTER);
+	library_loading = memnew(TextLabel(TTR("Loading...")));
+	library_loading->set_align(TextLabel::ALIGN_CENTER);
 	library_vb->add_child(library_loading);
 
-	library_error = memnew(Label);
-	library_error->set_align(Label::ALIGN_CENTER);
+	library_error = memnew(TextLabel);
+	library_error->set_align(TextLabel::ALIGN_CENTER);
 	library_error->hide();
 	library_vb->add_child(library_error);
 
@@ -1444,7 +1444,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	error_label->add_theme_color_override("color", get_theme_color("error_color", "Editor"));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);

@@ -102,7 +102,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	SpinBox *frame;
 	LineEdit *scale;
 	LineEdit *name;
-	Label *name_title;
+	TextLabel *name_title;
 	UndoRedo *undo_redo;
 	Ref<Texture2D> autoplay_icon;
 	bool last_active;

@@ -592,13 +592,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					remove_btn->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_remove_input_port), varray(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
-					Label *label = memnew(Label);
+					TextLabel *label = memnew(TextLabel);
 					label->set_text(name_left);
 					label->add_theme_style_override("normal", label_style); //more compact
 					hb->add_child(label);
 
 					if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
-						Label *hint_label = memnew(Label);
+						TextLabel *hint_label = memnew(TextLabel);
 						hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
 						hint_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color("font_color_readonly", "TextEdit"));
 						hint_label->add_theme_style_override("normal", label_style);
@@ -638,7 +638,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 					type_box->connect("item_selected", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_change_output_port_type), varray(p_id, i), CONNECT_DEFERRED);
 				} else {
-					Label *label = memnew(Label);
+					TextLabel *label = memnew(TextLabel);
 					label->set_text(name_right);
 					label->add_theme_style_override("normal", label_style); //more compact
 					hb->add_child(label);
@@ -681,7 +681,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 	String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
 	if (error != String()) {
-		Label *error_label = memnew(Label);
+		TextLabel *error_label = memnew(TextLabel);
 		error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color("error_color", "Editor"));
 		error_label->set_text(error);
 		node->add_child(error_label);
@@ -2705,7 +2705,7 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 			d["sub_func"] = op.sub_func;
 		}
 
-		Label *label = memnew(Label);
+		TextLabel *label = memnew(TextLabel);
 		label->set_text(it->get_text(0));
 		set_drag_preview(label);
 		return d;
@@ -2973,7 +2973,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_text->set_draw_line_numbers(true);
 	preview_text->set_readonly(true);
 
-	error_text = memnew(Label);
+	error_text = memnew(TextLabel);
 	preview_vbox->add_child(error_text);
 	error_text->set_visible(false);
 
@@ -3031,13 +3031,13 @@ VisualShaderEditor::VisualShaderEditor() {
 	HBoxContainer *desc_hbox = memnew(HBoxContainer);
 	members_vb->add_child(desc_hbox);
 
-	Label *desc_label = memnew(Label);
+	TextLabel *desc_label = memnew(TextLabel);
 	desc_hbox->add_child(desc_label);
 	desc_label->set_text(TTR("Description:"));
 
 	desc_hbox->add_spacer();
 
-	highend_label = memnew(Label);
+	highend_label = memnew(TextLabel);
 	desc_hbox->add_child(highend_label);
 	highend_label->set_visible(false);
 	highend_label->set_text("Vulkan");
@@ -3062,8 +3062,8 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap(true);
-	alert->get_label()->set_align(Label::ALIGN_CENTER);
-	alert->get_label()->set_valign(Label::VALIGN_CENTER);
+	alert->get_label()->set_align(TextLabel::ALIGN_CENTER);
+	alert->get_label()->set_valign(TextLabel::VALIGN_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);
 	add_child(alert);
 
@@ -3513,7 +3513,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	error_panel->add_child(error_label);
 	error_label->set_text("eh");
 	error_panel->hide();
@@ -3731,7 +3731,7 @@ public:
 	bool updating;
 	Ref<VisualShaderNode> node;
 	Vector<EditorProperty *> properties;
-	Vector<Label *> prop_names;
+	Vector<TextLabel *> prop_names;
 
 	void _show_prop_names(bool p_show) {
 		for (int i = 0; i < prop_names.size(); i++) {
@@ -3753,7 +3753,7 @@ public:
 			hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			add_child(hbox);
 
-			Label *prop_name = memnew(Label);
+			TextLabel *prop_name = memnew(TextLabel);
 			String prop_name_str = p_names[i];
 			prop_name_str = prop_name_str.capitalize() + ":";
 			prop_name->set_text(prop_name_str);

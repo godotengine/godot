@@ -1634,7 +1634,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	VBoxContainer *vb = memnew(VBoxContainer);
 	name_dialog->add_child(vb);
 
-	name_title = memnew(Label(TTR("Animation Name:")));
+	name_title = memnew(TextLabel(TTR("Animation Name:")));
 	vb->add_child(name_title);
 
 	name = memnew(LineEdit);

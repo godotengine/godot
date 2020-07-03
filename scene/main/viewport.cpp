@@ -44,11 +44,11 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/text_label.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
@@ -175,8 +175,8 @@ public:
 	TooltipPanel() {}
 };
 
-class TooltipLabel : public Label {
-	GDCLASS(TooltipLabel, Label);
+class TooltipLabel : public TextLabel {
+	GDCLASS(TooltipLabel, TextLabel);
 
 public:
 	TooltipLabel() {}

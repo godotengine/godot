@@ -996,7 +996,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->set_allow_reselect(true);
 
 	HBoxContainer *hbc_anim_speed = memnew(HBoxContainer);
-	hbc_anim_speed->add_child(memnew(Label(TTR("Speed:"))));
+	hbc_anim_speed->add_child(memnew(TextLabel(TTR("Speed:"))));
 	vbc_animlist->add_child(hbc_anim_speed);
 	anim_speed = memnew(SpinBox);
 	anim_speed->set_suffix(TTR("FPS"));
@@ -1139,7 +1139,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
 
-	Label *ss_label = memnew(Label(TTR("Horizontal:")));
+	TextLabel *ss_label = memnew(TextLabel(TTR("Horizontal:")));
 	split_sheet_hb->add_child(ss_label);
 	split_sheet_h = memnew(SpinBox);
 	split_sheet_h->set_min(1);
@@ -1148,7 +1148,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_hb->add_child(split_sheet_h);
 	split_sheet_h->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed));
 
-	ss_label = memnew(Label(TTR("Vertical:")));
+	ss_label = memnew(TextLabel(TTR("Vertical:")));
 	split_sheet_hb->add_child(ss_label);
 	split_sheet_v = memnew(SpinBox);
 	split_sheet_v->set_min(1);

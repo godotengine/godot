@@ -392,11 +392,11 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
-	Color linecolor = get_theme_color("font_color", "Label");
+	Color linecolor = get_theme_color("font_color", "TextLabel");
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	Ref<Texture2D> icon = get_theme_icon("KeyValue", "EditorIcons");
 	Ref<Texture2D> icon_selected = get_theme_icon("KeySelected", "EditorIcons");
 
@@ -897,7 +897,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	top_hb->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Blend:"))));
+	top_hb->add_child(memnew(TextLabel(TTR("Blend:"))));
 	interpolation = memnew(OptionButton);
 	top_hb->add_child(interpolation);
 	interpolation->connect("item_selected", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
@@ -905,7 +905,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
 	edit_hb->add_child(memnew(VSeparator));
-	edit_hb->add_child(memnew(Label(TTR("Point"))));
+	edit_hb->add_child(memnew(TextLabel(TTR("Point"))));
 	edit_x = memnew(SpinBox);
 	edit_hb->add_child(edit_x);
 	edit_x->set_min(-1000);
@@ -1003,7 +1003,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
+	error_label = memnew(TextLabel);
 	error_panel->add_child(error_label);
 	error_label->set_text("eh");
 

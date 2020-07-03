@@ -33,7 +33,7 @@
 			</description>
 		</method>
 		<method name="get_label">
-			<return type="Label">
+			<return type="TextLabel">
 			</return>
 			<description>
 				Returns the label used for built-in text.

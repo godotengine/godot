@@ -58,7 +58,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Tree *shortcuts;
 
 	ConfirmationDialog *press_a_key;
-	Label *press_a_key_label;
+	TextLabel *press_a_key_label;
 	Ref<InputEventKey> last_wait_for_key;
 	String shortcut_configured;
 	String shortcut_filter;
@@ -90,7 +90,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
-	Label *restart_label;
+	TextLabel *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
 	Button *restart_close_button;

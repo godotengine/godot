@@ -75,11 +75,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Button *del_button;
 	OptionButton *type;
 	OptionButton *feature_override;
-	Label *error_label;
+	TextLabel *error_label;
 
 	ConfirmationDialog *del_confirmation;
 
-	Label *restart_label;
+	TextLabel *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
 	Button *restart_close_button;

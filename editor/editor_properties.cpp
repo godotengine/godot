@@ -44,7 +44,7 @@ void EditorPropertyNil::update_property() {
 }
 
 EditorPropertyNil::EditorPropertyNil() {
-	Label *label = memnew(Label);
+	TextLabel *label = memnew(TextLabel);
 	label->set_text("[null]");
 	add_child(label);
 }
@@ -145,8 +145,8 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Ref<Texture2D> df = get_theme_icon("DistractionFree", "EditorIcons");
 			open_big_text->set_icon(df);
-			Ref<Font> font = get_theme_font("font", "Label");
-			int font_size = get_theme_font_size("font_size", "Label");
+			Ref<Font> font = get_theme_font("font", "TextLabel");
+			int font_size = get_theme_font_size("font_size", "TextLabel");
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 
 		} break;
@@ -588,8 +588,8 @@ public:
 	int hovered_index;
 
 	virtual Size2 get_minimum_size() const override {
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 		return Vector2(0, font->get_height(font_size) * 2);
 	}
 
@@ -987,14 +987,14 @@ void EditorPropertyEasing::_draw_easing() {
 	float prev = 1.0;
 	const float exp = get_edited_object()->get(get_edited_property());
 
-	const Ref<Font> f = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
-	const Color font_color = get_theme_color("font_color", "Label");
+	const Ref<Font> f = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
+	const Color font_color = get_theme_color("font_color", "TextLabel");
 	Color line_color;
 	if (dragging) {
 		line_color = get_theme_color("accent_color", "Editor");
 	} else {
-		line_color = get_theme_color("font_color", "Label") * Color(1, 1, 1, 0.9);
+		line_color = get_theme_color("font_color", "TextLabel") * Color(1, 1, 1, 0.9);
 	}
 
 	Vector<Point2> lines;
@@ -1092,7 +1092,7 @@ void EditorPropertyEasing::_notification(int p_what) {
 				preset->add_icon_item(get_theme_icon("CurveInOut", "EditorIcons"), "In-Out", EASING_IN_OUT);
 				preset->add_icon_item(get_theme_icon("CurveOutIn", "EditorIcons"), "Out-In", EASING_OUT_IN);
 			}
-			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font("font", "Label")->get_height(get_theme_font_size("font_size", "Label")) * 2));
+			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font("font", "TextLabel")->get_height(get_theme_font_size("font_size", "TextLabel")) * 2));
 		} break;
 	}
 }
@@ -2336,7 +2336,7 @@ void EditorPropertyRID::update_property() {
 }
 
 EditorPropertyRID::EditorPropertyRID() {
-	label = memnew(Label);
+	label = memnew(TextLabel);
 	add_child(label);
 }
 

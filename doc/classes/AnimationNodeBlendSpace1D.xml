@@ -94,7 +94,7 @@
 			Position increment to snap to when moving a point on the axis.
 		</member>
 		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label" default="&quot;value&quot;">
-			Label of the virtual axis of the blend space.
+			TextLabel of the virtual axis of the blend space.
 		</member>
 	</members>
 	<constants>

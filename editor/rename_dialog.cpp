@@ -38,8 +38,8 @@
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/text_label.h"
 
 RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo) {
 	scene_tree_editor = p_scene_tree_editor;
@@ -60,14 +60,14 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	// ---- 1st & 2nd row
 
-	Label *lbl_search = memnew(Label);
+	TextLabel *lbl_search = memnew(TextLabel);
 	lbl_search->set_text(TTR("Search:"));
 
 	lne_search = memnew(LineEdit);
 	lne_search->set_name("lne_search");
 	lne_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	Label *lbl_replace = memnew(Label);
+	TextLabel *lbl_replace = memnew(TextLabel);
 	lbl_replace->set_text(TTR("Replace:"));
 
 	lne_replace = memnew(LineEdit);
@@ -81,14 +81,14 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	// ---- 3rd & 4th row
 
-	Label *lbl_prefix = memnew(Label);
+	TextLabel *lbl_prefix = memnew(TextLabel);
 	lbl_prefix->set_text(TTR("Prefix:"));
 
 	lne_prefix = memnew(LineEdit);
 	lne_prefix->set_name("lne_prefix");
 	lne_prefix->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	Label *lbl_suffix = memnew(Label);
+	TextLabel *lbl_suffix = memnew(TextLabel);
 	lbl_suffix->set_text(TTR("Suffix:"));
 
 	lne_suffix = memnew(LineEdit);
@@ -199,7 +199,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	HBoxContainer *hbc_count_options = memnew(HBoxContainer);
 	vbc_substitute->add_child(hbc_count_options);
 
-	Label *lbl_count_start = memnew(Label);
+	TextLabel *lbl_count_start = memnew(TextLabel);
 	lbl_count_start->set_text(TTR("Start"));
 	lbl_count_start->set_tooltip(TTR("Initial value for the counter."));
 	hbc_count_options->add_child(lbl_count_start);
@@ -210,7 +210,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	spn_count_start->set_min(0);
 	hbc_count_options->add_child(spn_count_start);
 
-	Label *lbl_count_step = memnew(Label);
+	TextLabel *lbl_count_step = memnew(TextLabel);
 	lbl_count_step->set_text(TTR("Step"));
 	lbl_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node."));
 	hbc_count_options->add_child(lbl_count_step);
@@ -220,7 +220,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	spn_count_step->set_step(1);
 	hbc_count_options->add_child(spn_count_step);
 
-	Label *lbl_count_padding = memnew(Label);
+	TextLabel *lbl_count_padding = memnew(TextLabel);
 	lbl_count_padding->set_text(TTR("Padding"));
 	lbl_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	hbc_count_options->add_child(lbl_count_padding);
@@ -246,7 +246,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	HBoxContainer *hbc_style = memnew(HBoxContainer);
 	vbc_process->add_child(hbc_style);
 
-	Label *lbl_style = memnew(Label);
+	TextLabel *lbl_style = memnew(TextLabel);
 	lbl_style->set_text(TTR("Style"));
 	hbc_style->add_child(lbl_style);
 
@@ -261,7 +261,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	HBoxContainer *hbc_case = memnew(HBoxContainer);
 	vbc_process->add_child(hbc_case);
 
-	Label *lbl_case = memnew(Label);
+	TextLabel *lbl_case = memnew(TextLabel);
 	lbl_case->set_text(TTR("Case"));
 	hbc_case->add_child(lbl_case);
 
@@ -277,10 +277,10 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	sep_preview->set_custom_minimum_size(Size2(10, 20));
 	vbc->add_child(sep_preview);
 
-	lbl_preview_title = memnew(Label);
+	lbl_preview_title = memnew(TextLabel);
 	vbc->add_child(lbl_preview_title);
 
-	lbl_preview = memnew(Label);
+	lbl_preview = memnew(TextLabel);
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related

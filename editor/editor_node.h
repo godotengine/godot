@@ -419,7 +419,7 @@ private:
 	HBoxContainer *bottom_panel_hb;
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
-	Label *version_label;
+	TextLabel *version_label;
 	Button *bottom_panel_raise;
 
 	void _bottom_panel_raise_toggled(bool);

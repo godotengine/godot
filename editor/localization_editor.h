@@ -58,9 +58,9 @@ class LocalizationEditor : public VBoxContainer {
 	Vector<TreeItem *> translation_filter_treeitems;
 	Vector<int> translation_locales_idxs_remap;
 
-	Label *ts_name;
-	Label *ts_data_status;
-	Label *ts_data_info;
+	TextLabel *ts_name;
+	TextLabel *ts_data_status;
+	TextLabel *ts_data_info;
 	Button *ts_install;
 
 	Tree *translation_pot_list;

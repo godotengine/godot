@@ -49,7 +49,7 @@ class FindBar : public HBoxContainer {
 	LineEdit *search_text;
 	Button *find_prev;
 	Button *find_next;
-	Label *matches_label;
+	TextLabel *matches_label;
 	TextureButton *hide_button;
 	String prev_search;
 

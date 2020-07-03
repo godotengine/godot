@@ -35,9 +35,9 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/text_label.h"
 #include "scene/main/canvas_item.h"
 
 class CanvasItemEditorViewport;
@@ -234,7 +234,7 @@ private:
 
 	Map<Control *, Timer *> popup_temporarily_timers;
 
-	Label *warning_child_of_container;
+	TextLabel *warning_child_of_container;
 	VBoxContainer *info_overlay;
 
 	Transform2D transform;
@@ -680,9 +680,9 @@ class CanvasItemEditorViewport : public Control {
 	Node2D *preview_node;
 	AcceptDialog *accept;
 	AcceptDialog *selector;
-	Label *selector_label;
-	Label *label;
-	Label *label_desc;
+	TextLabel *selector_label;
+	TextLabel *label;
+	TextLabel *label_desc;
 	VBoxContainer *btn_group;
 	Ref<ButtonGroup> button_group;
 

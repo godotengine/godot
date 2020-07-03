@@ -604,7 +604,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			TextureRect *tr = memnew(TextureRect);
 			tr->set_texture(presets->get_item_icon(pos));
 			drag->add_child(tr);
-			Label *label = memnew(Label);
+			TextLabel *label = memnew(TextLabel);
 			label->set_text(presets->get_item_text(pos));
 			drag->add_child(label);
 
@@ -1000,7 +1000,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	hbox->add_child(preset_vb);
 
 	HBoxContainer *preset_hb = memnew(HBoxContainer);
-	preset_hb->add_child(memnew(Label(TTR("Presets"))));
+	preset_hb->add_child(memnew(TextLabel(TTR("Presets"))));
 	preset_hb->add_spacer();
 	preset_vb->add_child(preset_hb);
 
@@ -1079,7 +1079,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
 	export_filter->connect("item_selected", callable_mp(this, &ProjectExportDialog::_export_type_changed));
 
-	include_label = memnew(Label);
+	include_label = memnew(TextLabel);
 	include_label->set_text(TTR("Resources to export:"));
 	resources_vb->add_child(include_label);
 	include_margin = memnew(MarginContainer);
@@ -1152,14 +1152,14 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	script_key = memnew(LineEdit);
 	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
-	script_key_error = memnew(Label);
+	script_key_error = memnew(TextLabel);
 	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 characters long)"));
 	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hex):"), script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_vb);
 
-	Label *sec_info = memnew(Label);
+	TextLabel *sec_info = memnew(TextLabel);
 	sec_info->set_text(TTR("Note: Encryption key needs to be stored in the binary,\nyou need to build the export templates from source."));
 	sec_vb->add_child(sec_info);
 
@@ -1220,7 +1220,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	add_child(export_pck_zip);
 	export_pck_zip->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_pck_zip_selected));
 
-	export_error = memnew(Label);
+	export_error = memnew(TextLabel);
 	main_vb->add_child(export_error);
 	export_error->hide();
 	export_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
@@ -1229,7 +1229,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	main_vb->add_child(export_templates_error);
 	export_templates_error->hide();
 
-	Label *export_error2 = memnew(Label);
+	TextLabel *export_error2 = memnew(TextLabel);
 	export_templates_error->add_child(export_error2);
 	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
 	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");

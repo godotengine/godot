@@ -1016,14 +1016,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
 	theme->set_stylebox("panel_fg", "Panel", style_default);
 
-	// Label
-	theme->set_stylebox("normal", "Label", style_empty);
-	theme->set_color("font_color", "Label", font_color);
-	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
-	theme->set_constant("shadow_offset_x", "Label", 1 * EDSCALE);
-	theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
-	theme->set_constant("shadow_as_outline", "Label", 0 * EDSCALE);
-	theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
+	// TextLabel
+	theme->set_stylebox("normal", "TextLabel", style_empty);
+	theme->set_color("font_color", "TextLabel", font_color);
+	theme->set_color("font_color_shadow", "TextLabel", Color(0, 0, 0, 0));
+	theme->set_constant("shadow_offset_x", "TextLabel", 1 * EDSCALE);
+	theme->set_constant("shadow_offset_y", "TextLabel", 1 * EDSCALE);
+	theme->set_constant("shadow_as_outline", "TextLabel", 0 * EDSCALE);
+	theme->set_constant("line_spacing", "TextLabel", 3 * EDSCALE);
 
 	// LinkButton
 	theme->set_stylebox("focus", "LinkButton", style_empty);

@@ -84,7 +84,7 @@ public:
 		const float SPIN_BOX_SCALE_MIN = 0.01f;
 		const float SPIN_BOX_SCALE_MAX = 100;
 
-		Label *label;
+		TextLabel *label;
 		VBoxContainer *container;
 		GridContainer *child_container;
 
@@ -97,7 +97,7 @@ public:
 		child_container->set_columns(3);
 		container->add_child(child_container);
 
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text(TTR("Grid Offset:"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -120,7 +120,7 @@ public:
 		grid_offset_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_y);
 
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text(TTR("Grid Step:"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -145,7 +145,7 @@ public:
 		child_container->set_columns(2);
 		container->add_child(child_container);
 
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text(TTR("Primary Line Every:"));
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(label);
@@ -167,7 +167,7 @@ public:
 		child_container->set_columns(2);
 		container->add_child(child_container);
 
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text(TTR("Rotation Offset:"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -179,7 +179,7 @@ public:
 		rotation_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(rotation_offset);
 
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text(TTR("Rotation Step:"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -196,7 +196,7 @@ public:
 		child_container = memnew(GridContainer);
 		child_container->set_columns(2);
 		container->add_child(child_container);
-		label = memnew(Label);
+		label = memnew(TextLabel);
 		label->set_text(TTR("Scale Step:"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2783,8 +2783,8 @@ void CanvasItemEditor::_update_cursor() {
 void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Margin p_side) {
 	Color color = get_theme_color("font_color", "Editor");
 	color.a = 0.8;
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font("font", "TextLabel");
+	int font_size = get_theme_font_size("font_size", "TextLabel");
 	Size2 text_size = font->get_string_size(p_string, font_size);
 	switch (p_side) {
 		case MARGIN_LEFT:
@@ -2856,16 +2856,16 @@ void CanvasItemEditor::_draw_guides() {
 	text_color.a = 0.5;
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE) {
 		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).x)));
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 		Size2 text_size = font->get_string_size(str, font_size);
 		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HALIGN_LEFT, -1, font_size, text_color);
 		viewport->draw_line(Point2(dragged_guide_pos.x, 0), Point2(dragged_guide_pos.x, viewport->get_size().y), guide_color, Math::round(EDSCALE));
 	}
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_H_GUIDE) {
 		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).y)));
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 		Size2 text_size = font->get_string_size(str, font_size);
 		viewport->draw_string(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HALIGN_LEFT, -1, font_size, text_color);
 		viewport->draw_line(Point2(0, dragged_guide_pos.y), Point2(viewport->get_size().x, dragged_guide_pos.y), guide_color, Math::round(EDSCALE));
@@ -3768,8 +3768,8 @@ void CanvasItemEditor::_draw_hover() {
 		Ref<Texture2D> node_icon = hovering_results[i].icon;
 		String node_name = hovering_results[i].name;
 
-		Ref<Font> font = get_theme_font("font", "Label");
-		int font_size = get_theme_font_size("font_size", "Label");
+		Ref<Font> font = get_theme_font("font", "TextLabel");
+		int font_size = get_theme_font_size("font_size", "TextLabel");
 		Size2 node_name_size = font->get_string_size(node_name);
 		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
 
@@ -5727,9 +5727,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	StyleBoxFlat *info_overlay_label_stylebox = memnew(StyleBoxFlat);
 	info_overlay_label_stylebox->set_bg_color(Color(0.0, 0.0, 0.0, 0.2));
 	info_overlay_label_stylebox->set_expand_margin_size_all(4);
-	info_overlay_theme->set_stylebox("normal", "Label", info_overlay_label_stylebox);
+	info_overlay_theme->set_stylebox("normal", "TextLabel", info_overlay_label_stylebox);
 
-	warning_child_of_container = memnew(Label);
+	warning_child_of_container = memnew(TextLabel);
 	warning_child_of_container->hide();
 	warning_child_of_container->set_text(TTR("Warning: Children of a container get their position and size determined only by their parent."));
 	warning_child_of_container->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor"));
@@ -6594,13 +6594,13 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 		check->set_button_group(button_group);
 	}
 
-	label = memnew(Label);
+	label = memnew(TextLabel);
 	label->add_theme_color_override("font_color_shadow", Color(0, 0, 0, 1));
 	label->add_theme_constant_override("shadow_as_outline", 1 * EDSCALE);
 	label->hide();
 	canvas_item_editor->get_controls_container()->add_child(label);
 
-	label_desc = memnew(Label);
+	label_desc = memnew(TextLabel);
 	label_desc->set_text(TTR("Drag & drop + Shift : Add node as sibling\nDrag & drop + Alt : Change node type"));
 	label_desc->add_theme_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
 	label_desc->add_theme_color_override("font_color_shadow", Color(0.2f, 0.2f, 0.2f, 1));

@@ -233,7 +233,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	path_edit->set_enable_v_scroll(false);
 	path_hb = memnew(HBoxContainer);
 	path_edit->add_child(path_hb);
-	path_hb->add_child(memnew(Label(TTR("Path:"))));
+	path_hb->add_child(memnew(TextLabel(TTR("Path:"))));
 
 	add_child(memnew(HSeparator));
 

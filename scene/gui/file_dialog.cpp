@@ -32,7 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
-#include "scene/gui/label.h"
+#include "scene/gui/text_label.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
 FileDialog::GetIconFunc FileDialog::get_large_icon_func = nullptr;
@@ -869,7 +869,7 @@ FileDialog::FileDialog() {
 	hbc->add_child(dir_up);
 	dir_up->connect("pressed", callable_mp(this, &FileDialog::_go_up));
 
-	hbc->add_child(memnew(Label(RTR("Path:"))));
+	hbc->add_child(memnew(TextLabel(RTR("Path:"))));
 
 	drives_container = memnew(HBoxContainer);
 	hbc->add_child(drives_container);
@@ -911,7 +911,7 @@ FileDialog::FileDialog() {
 	vbox->add_margin_child(RTR("Directories & Files:"), tree, true);
 
 	file_box = memnew(HBoxContainer);
-	file_box->add_child(memnew(Label(RTR("File:"))));
+	file_box->add_child(memnew(TextLabel(RTR("File:"))));
 	file = memnew(LineEdit);
 	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);
