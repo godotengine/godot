@@ -249,11 +249,11 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
-
+			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
-
+			// Cannot be edited directly, use CollisionPolygon2D instead.
 		} break;
 
 		case LINE_SHAPE: {

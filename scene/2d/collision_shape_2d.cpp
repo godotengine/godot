@@ -183,11 +183,14 @@ String CollisionShape2D::get_configuration_warning() const {
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
 	}
-
 	if (!shape.is_valid()) {
 		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
 	}
-
+	Ref<ConvexPolygonShape2D> convex = shape;
+	Ref<ConcavePolygonShape2D> concave = shape;
+	if (convex.is_valid() || concave.is_valid()) {
+		return TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
+	}
 	return String();
 }
 
