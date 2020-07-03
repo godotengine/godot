@@ -338,6 +338,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			emit_signal("go_back_requested");
 		} break;
 		case DisplayServer::WINDOW_EVENT_DPI_CHANGE: {
+			_update_viewport_size();
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
 			emit_signal("dpi_changed");
 		} break;
