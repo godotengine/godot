@@ -244,7 +244,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	current_root = 0;
 	singleton = this;
-	editor_base = memnew(PanelContainer);
+	editor_base = memnew(MarginContainer);
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(editor_base);
 

@@ -30,6 +30,8 @@
 
 #include "image_loader_tga.h"
 
+#include "core/error_macros.h"
+#include "core/io/file_access_memory.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 
@@ -314,5 +316,17 @@ void ImageLoaderTGA::get_recognized_extensions(List<String> *p_extensions) const
 	p_extensions->push_back("tga");
 }
 
+static Ref<Image> _tga_mem_loader_func(const uint8_t *p_png, int p_size) {
+	FileAccessMemory memfile;
+	Error open_memfile_error = memfile.open_custom(p_png, p_size);
+	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for TGA image buffer.");
+	Ref<Image> img;
+	img.instance();
+	Error load_error = ImageLoaderTGA().load_image(img, &memfile, false, 1.0f);
+	ERR_FAIL_COND_V_MSG(load_error, Ref<Image>(), "Failed to load TGA image.");
+	return img;
+}
+
 ImageLoaderTGA::ImageLoaderTGA() {
+	Image::_tga_mem_loader_func = _tga_mem_loader_func;
 }

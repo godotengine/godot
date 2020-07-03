@@ -131,6 +131,7 @@ public:
 	static ImageMemLoadFunc _png_mem_loader_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
+	static ImageMemLoadFunc _tga_mem_loader_func;
 
 	static void (*_image_compress_bc_func)(Image *, float, CompressSource p_source);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, CompressSource p_source);
@@ -331,6 +332,7 @@ public:
 	Error load_png_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_tga_from_buffer(const PoolVector<uint8_t> &p_array);
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);

@@ -973,10 +973,9 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 				ERR_CONTINUE(anim.is_null());
 
 				if (!p_animations.has(anim)) {
-
-					// We are making external files so they are modifiable
+					// Tracks from source file should be set as imported, anything else is a custom track.
 					for (int i = 0; i < anim->get_track_count(); i++) {
-						anim->track_set_imported(i, false);
+						anim->track_set_imported(i, true);
 					}
 
 					String ext_name;
@@ -988,10 +987,9 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					}
 
 					if (FileAccess::exists(ext_name) && p_keep_animations) {
-						//try to keep custom animation tracks
+						// Copy custom animation tracks from previously imported files.
 						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", true);
 						if (old_anim.is_valid()) {
-							//meergeee
 							for (int i = 0; i < old_anim->get_track_count(); i++) {
 								if (!old_anim->track_is_imported(i)) {
 									old_anim->copy_track(i, anim);
@@ -1001,7 +999,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 						}
 					}
 
-					anim->set_path(ext_name, true); //if not set, then its never saved externally
+					anim->set_path(ext_name, true); // Set path to save externally.
 					ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
 					p_animations[anim] = anim;
 				}

@@ -212,10 +212,9 @@ bool VideoPlayer::has_expand() const {
 void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 
 	stop();
+
 	AudioServer::get_singleton()->lock();
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
-	AudioServer::get_singleton()->unlock();
-
 	stream = p_stream;
 	if (stream.is_valid()) {
 		stream->set_audio_track(audio_track);
@@ -223,6 +222,7 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	} else {
 		playback = Ref<VideoStreamPlayback>();
 	}
+	AudioServer::get_singleton()->unlock();
 
 	if (!playback.is_null()) {
 		playback->set_loop(loops);

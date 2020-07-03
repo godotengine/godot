@@ -31,6 +31,7 @@
 #include "animation_bezier_editor.h"
 
 #include "editor/editor_node.h"
+#include "editor_scale.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 	float h = p_h;
@@ -541,7 +542,7 @@ void AnimationBezierTrackEdit::_play_position_draw() {
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color);
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
 
@@ -560,6 +561,7 @@ void AnimationBezierTrackEdit::set_root(Node *p_root) {
 }
 void AnimationBezierTrackEdit::_zoom_changed() {
 	update();
+	play_position->update();
 }
 
 String AnimationBezierTrackEdit::get_tooltip(const Point2 &p_pos) const {

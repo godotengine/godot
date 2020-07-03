@@ -34,7 +34,7 @@
 			</return>
 			<description>
 				Returns the vector's angle in radians with respect to the X axis, or [code](1, 0)[/code] vector.
-				Equivalent to the result of [method @GDScript.atan2] when called with the vector's [member x] and [member y] as parameters: [code]atan2(x, y)[/code].
+				Equivalent to the result of [method @GDScript.atan2] when called with the vector's [member y] and [member x] as parameters: [code]atan2(y, x)[/code].
 			</description>
 		</method>
 		<method name="angle_to">

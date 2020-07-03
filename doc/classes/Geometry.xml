@@ -302,6 +302,13 @@
 				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
 				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
+				[b]Note:[/b] To translate the polygon's vertices specifically, use the [method Transform2D.xform] method:
+				[codeblock]
+				var polygon = PoolVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
+				var offset = Vector2(50, 50)
+				polygon = Transform2D(0, offset).xform(polygon)
+				print(polygon) # prints [Vector2(50, 50), Vector2(150, 50), Vector2(150, 150), Vector2(50, 150)]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="offset_polyline_2d">
