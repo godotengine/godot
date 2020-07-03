@@ -225,7 +225,7 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 	uint16_t debug_port = 6007;
 
 	if (debug_host.find(":") != -1) {
-		int sep_pos = debug_host.find_last(":");
+		int sep_pos = debug_host.rfind(":");
 		debug_port = debug_host.substr(sep_pos + 1).to_int();
 		debug_host = debug_host.substr(0, sep_pos);
 	}

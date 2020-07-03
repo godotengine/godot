@@ -169,7 +169,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
 		String bp = p_breakpoints[i];
-		int sp = bp.find_last(":");
+		int sp = bp.rfind(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 
 		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));

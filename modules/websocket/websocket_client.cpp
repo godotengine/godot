@@ -66,7 +66,7 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	}
 
 	// Port
-	p_len = host.find_last(":");
+	p_len = host.rfind(":");
 	if (p_len != -1 && p_len == host.find(":")) {
 		port = host.substr(p_len, host.length() - p_len).to_int();
 		host = host.substr(0, p_len);

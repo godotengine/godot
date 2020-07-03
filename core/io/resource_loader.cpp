@@ -865,7 +865,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		bool near_match = false;
 
 		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].find_last(":");
+			int split = res_remaps[i].rfind(":");
 			if (split == -1) {
 				continue;
 			}
