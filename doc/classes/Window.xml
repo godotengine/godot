@@ -377,9 +377,9 @@
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
 		</constant>
-		<constant name="CONTENT_SCALE_MODE_OBJECTS" value="1" enum="ContentScaleMode">
+		<constant name="CONTENT_SCALE_MODE_CANVAS_ITEMS" value="1" enum="ContentScaleMode">
 		</constant>
-		<constant name="CONTENT_SCALE_MODE_PIXELS" value="2" enum="ContentScaleMode">
+		<constant name="CONTENT_SCALE_MODE_VIEWPORT" value="2" enum="ContentScaleMode">
 		</constant>
 		<constant name="CONTENT_SCALE_ASPECT_IGNORE" value="0" enum="ContentScaleAspect">
 		</constant>
