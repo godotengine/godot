@@ -1042,19 +1042,37 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 		} break;
 		case FILE_SAVE_AS: {
+			String path = ProjectSettings::get_singleton()->localize_path(p_file);
+
 			ScriptEditorBase *current = _get_current_editor();
 			if (current) {
 				RES resource = current->get_edited_resource();
-				String path = ProjectSettings::get_singleton()->localize_path(p_file);
 				Error err = _save_text_file(resource, path);
 
 				if (err != OK) {
 					editor->show_accept(TTR("Error saving file!"), TTR("OK"));
 					return;
 				}
-
 				resource->set_path(path);
 				_update_script_names();
+			} else {
+				EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
+				if (help) {
+					String xml_text;
+					XmlWriteStream xws(&xml_text);
+					DocData::ClassDoc c = EditorHelp::get_doc_data()->class_list[help->get_class()];
+					DocData::write_class(c, xws);
+					Ref<TextFile> doc_xml;
+					doc_xml.instance();
+					doc_xml->set_text(xml_text);
+
+					// TODO-DOC: "\"src/player/player.gd\"" is not a valid file name -> probably crash!
+					Error err = _save_text_file(doc_xml, path);
+					if (err != OK) {
+						editor->show_accept(TTR("Error saving file!"), TTR("OK"));
+						return;
+					}
+				}
 			}
 		} break;
 		case THEME_SAVE_AS: {
@@ -1394,6 +1412,19 @@ void ScriptEditor::_menu_option(int p_option) {
 				} break;
 				case HELP_SEARCH_FIND_PREVIOUS: {
 					help->search_again(true);
+				} break;
+				case FILE_SAVE_AS: {
+					ERR_FAIL_COND(!EditorHelp::get_doc_data()->class_list.has(help->get_class()));
+
+					file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+					file_dialog_option = FILE_SAVE_AS;
+
+					file_dialog->clear_filters();
+					file_dialog->set_current_file(help->get_class() + ".xml");
+					file_dialog->popup_centered_ratio();
+					file_dialog->set_title(TTR("Save File As..."));
+
 				} break;
 				case FILE_CLOSE: {
 					_close_current_tab();
@@ -2698,6 +2729,10 @@ void ScriptEditor::_make_script_list_context_menu() {
 	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 	if (se) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
+	}
+	EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
+	if (help) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
 	}
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);

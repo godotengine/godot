@@ -1030,15 +1030,194 @@ Error DocData::_load(Ref<XMLParser> parser) {
 	return OK;
 }
 
-static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
+static void _write_string(XmlWriteStream &p_ws, int p_tablevel, const String &p_string) {
 	if (p_string == "") {
 		return;
 	}
-	String tab;
-	for (int i = 0; i < p_tablevel; i++) {
-		tab += "\t";
+	if (p_ws.get_stream_type() == XmlWriteStream::FILE_STREAM) {
+		String tab;
+		for (int i = 0; i < p_tablevel; i++) {
+			tab += "\t";
+		}
+		p_ws.fstream->store_string(tab + p_string + "\n");
+	} else {
+		for (int i = 0; i < p_tablevel; i++) {
+			*p_ws.sstream += "\t";
+		}
+		*p_ws.sstream += p_string + "\n";
 	}
-	f->store_string(tab + p_string + "\n");
+}
+
+void DocData::write_class(ClassDoc &p_class, XmlWriteStream &p_ws) {
+	_write_string(p_ws, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+
+	String header = "<class name=\"" + p_class.name + "\"";
+	if (p_class.inherits != "") {
+		header += " inherits=\"" + p_class.inherits + "\"";
+	}
+	header += String(" version=\"") + VERSION_BRANCH + "\"";
+	header += ">";
+	_write_string(p_ws, 0, header);
+
+	_write_string(p_ws, 1, "<brief_description>");
+	_write_string(p_ws, 2, p_class.brief_description.strip_edges().xml_escape());
+	_write_string(p_ws, 1, "</brief_description>");
+
+	_write_string(p_ws, 1, "<description>");
+	_write_string(p_ws, 2, p_class.description.strip_edges().xml_escape());
+	_write_string(p_ws, 1, "</description>");
+
+	_write_string(p_ws, 1, "<tutorials>");
+	for (int i = 0; i < p_class.tutorials.size(); i++) {
+		TutorialDoc tutorial = p_class.tutorials.get(i);
+		String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+		_write_string(p_ws, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
+	}
+	_write_string(p_ws, 1, "</tutorials>");
+
+	_write_string(p_ws, 1, "<methods>");
+
+	p_class.methods.sort();
+
+	for (int i = 0; i < p_class.methods.size(); i++) {
+		const MethodDoc &m = p_class.methods[i];
+
+		String qualifiers;
+		if (m.qualifiers != "") {
+			qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
+		}
+
+		_write_string(p_ws, 2, "<method name=\"" + m.name + "\"" + qualifiers + ">");
+
+		if (m.return_type != "") {
+			String enum_text;
+			if (m.return_enum != String()) {
+				enum_text = " enum=\"" + m.return_enum + "\"";
+			}
+			_write_string(p_ws, 3, "<return type=\"" + m.return_type + "\"" + enum_text + ">");
+			_write_string(p_ws, 3, "</return>");
+		}
+
+		for (int j = 0; j < m.arguments.size(); j++) {
+			const ArgumentDoc &a = m.arguments[j];
+
+			String enum_text;
+			if (a.enumeration != String()) {
+				enum_text = " enum=\"" + a.enumeration + "\"";
+			}
+
+			if (a.default_value != "") {
+				_write_string(p_ws, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
+			} else {
+				_write_string(p_ws, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + ">");
+			}
+
+			_write_string(p_ws, 3, "</argument>");
+		}
+
+		_write_string(p_ws, 3, "<description>");
+		_write_string(p_ws, 4, m.description.strip_edges().xml_escape());
+		_write_string(p_ws, 3, "</description>");
+
+		_write_string(p_ws, 2, "</method>");
+	}
+
+	_write_string(p_ws, 1, "</methods>");
+
+	if (p_class.properties.size()) {
+		_write_string(p_ws, 1, "<members>");
+
+		p_class.properties.sort();
+
+		for (int i = 0; i < p_class.properties.size(); i++) {
+			String additional_attributes;
+			if (p_class.properties[i].enumeration != String()) {
+				additional_attributes += " enum=\"" + p_class.properties[i].enumeration + "\"";
+			}
+			if (p_class.properties[i].default_value != String()) {
+				additional_attributes += " default=\"" + p_class.properties[i].default_value.xml_escape(true) + "\"";
+			}
+
+			const PropertyDoc &p = p_class.properties[i];
+
+			if (p_class.properties[i].overridden) {
+				_write_string(p_ws, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" override=\"true\"" + additional_attributes + " />");
+			} else {
+				_write_string(p_ws, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
+				_write_string(p_ws, 3, p.description.strip_edges().xml_escape());
+				_write_string(p_ws, 2, "</member>");
+			}
+		}
+		_write_string(p_ws, 1, "</members>");
+	}
+
+	if (p_class.signals.size()) {
+		p_class.signals.sort();
+
+		_write_string(p_ws, 1, "<signals>");
+		for (int i = 0; i < p_class.signals.size(); i++) {
+			const MethodDoc &m = p_class.signals[i];
+			_write_string(p_ws, 2, "<signal name=\"" + m.name + "\">");
+			for (int j = 0; j < m.arguments.size(); j++) {
+				const ArgumentDoc &a = m.arguments[j];
+				_write_string(p_ws, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\">");
+				_write_string(p_ws, 3, "</argument>");
+			}
+
+			_write_string(p_ws, 3, "<description>");
+			_write_string(p_ws, 4, m.description.strip_edges().xml_escape());
+			_write_string(p_ws, 3, "</description>");
+
+			_write_string(p_ws, 2, "</signal>");
+		}
+
+		_write_string(p_ws, 1, "</signals>");
+	}
+
+	_write_string(p_ws, 1, "<constants>");
+
+	for (int i = 0; i < p_class.constants.size(); i++) {
+		const ConstantDoc &k = p_class.constants[i];
+		if (k.is_value_valid) {
+			if (k.enumeration != String()) {
+				_write_string(p_ws, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+			} else {
+				_write_string(p_ws, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+			}
+		} else {
+			if (k.enumeration != String()) {
+				_write_string(p_ws, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
+			} else {
+				_write_string(p_ws, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
+			}
+		}
+		_write_string(p_ws, 3, k.description.strip_edges().xml_escape());
+		_write_string(p_ws, 2, "</constant>");
+	}
+
+	_write_string(p_ws, 1, "</constants>");
+
+	if (p_class.theme_properties.size()) {
+		p_class.theme_properties.sort();
+
+		_write_string(p_ws, 1, "<theme_items>");
+		for (int i = 0; i < p_class.theme_properties.size(); i++) {
+			const PropertyDoc &p = p_class.theme_properties[i];
+
+			if (p.default_value != "") {
+				_write_string(p_ws, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\" default=\"" + p.default_value.xml_escape(true) + "\">");
+			} else {
+				_write_string(p_ws, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
+			}
+
+			_write_string(p_ws, 3, p.description.strip_edges().xml_escape());
+
+			_write_string(p_ws, 2, "</theme_item>");
+		}
+		_write_string(p_ws, 1, "</theme_items>");
+	}
+
+	_write_string(p_ws, 0, "</class>");
 }
 
 Error DocData::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
@@ -1058,175 +1237,8 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");
 
-		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-
-		String header = "<class name=\"" + c.name + "\"";
-		if (c.inherits != "") {
-			header += " inherits=\"" + c.inherits + "\"";
-		}
-		header += String(" version=\"") + VERSION_BRANCH + "\"";
-		header += ">";
-		_write_string(f, 0, header);
-
-		_write_string(f, 1, "<brief_description>");
-		_write_string(f, 2, c.brief_description.strip_edges().xml_escape());
-		_write_string(f, 1, "</brief_description>");
-
-		_write_string(f, 1, "<description>");
-		_write_string(f, 2, c.description.strip_edges().xml_escape());
-		_write_string(f, 1, "</description>");
-
-		_write_string(f, 1, "<tutorials>");
-		for (int i = 0; i < c.tutorials.size(); i++) {
-			TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
-			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
-		}
-		_write_string(f, 1, "</tutorials>");
-
-		_write_string(f, 1, "<methods>");
-
-		c.methods.sort();
-
-		for (int i = 0; i < c.methods.size(); i++) {
-			const MethodDoc &m = c.methods[i];
-
-			String qualifiers;
-			if (m.qualifiers != "") {
-				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
-			}
-
-			_write_string(f, 2, "<method name=\"" + m.name + "\"" + qualifiers + ">");
-
-			if (m.return_type != "") {
-				String enum_text;
-				if (m.return_enum != String()) {
-					enum_text = " enum=\"" + m.return_enum + "\"";
-				}
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + ">");
-				_write_string(f, 3, "</return>");
-			}
-
-			for (int j = 0; j < m.arguments.size(); j++) {
-				const ArgumentDoc &a = m.arguments[j];
-
-				String enum_text;
-				if (a.enumeration != String()) {
-					enum_text = " enum=\"" + a.enumeration + "\"";
-				}
-
-				if (a.default_value != "") {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
-				} else {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + ">");
-				}
-
-				_write_string(f, 3, "</argument>");
-			}
-
-			_write_string(f, 3, "<description>");
-			_write_string(f, 4, m.description.strip_edges().xml_escape());
-			_write_string(f, 3, "</description>");
-
-			_write_string(f, 2, "</method>");
-		}
-
-		_write_string(f, 1, "</methods>");
-
-		if (c.properties.size()) {
-			_write_string(f, 1, "<members>");
-
-			c.properties.sort();
-
-			for (int i = 0; i < c.properties.size(); i++) {
-				String additional_attributes;
-				if (c.properties[i].enumeration != String()) {
-					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
-				}
-				if (c.properties[i].default_value != String()) {
-					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
-				}
-
-				const PropertyDoc &p = c.properties[i];
-
-				if (c.properties[i].overridden) {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" override=\"true\"" + additional_attributes + " />");
-				} else {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
-					_write_string(f, 3, p.description.strip_edges().xml_escape());
-					_write_string(f, 2, "</member>");
-				}
-			}
-			_write_string(f, 1, "</members>");
-		}
-
-		if (c.signals.size()) {
-			c.signals.sort();
-
-			_write_string(f, 1, "<signals>");
-			for (int i = 0; i < c.signals.size(); i++) {
-				const MethodDoc &m = c.signals[i];
-				_write_string(f, 2, "<signal name=\"" + m.name + "\">");
-				for (int j = 0; j < m.arguments.size(); j++) {
-					const ArgumentDoc &a = m.arguments[j];
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\">");
-					_write_string(f, 3, "</argument>");
-				}
-
-				_write_string(f, 3, "<description>");
-				_write_string(f, 4, m.description.strip_edges().xml_escape());
-				_write_string(f, 3, "</description>");
-
-				_write_string(f, 2, "</signal>");
-			}
-
-			_write_string(f, 1, "</signals>");
-		}
-
-		_write_string(f, 1, "<constants>");
-
-		for (int i = 0; i < c.constants.size(); i++) {
-			const ConstantDoc &k = c.constants[i];
-			if (k.is_value_valid) {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
-				}
-			} else {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
-				}
-			}
-			_write_string(f, 3, k.description.strip_edges().xml_escape());
-			_write_string(f, 2, "</constant>");
-		}
-
-		_write_string(f, 1, "</constants>");
-
-		if (c.theme_properties.size()) {
-			c.theme_properties.sort();
-
-			_write_string(f, 1, "<theme_items>");
-			for (int i = 0; i < c.theme_properties.size(); i++) {
-				const PropertyDoc &p = c.theme_properties[i];
-
-				if (p.default_value != "") {
-					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\" default=\"" + p.default_value.xml_escape(true) + "\">");
-				} else {
-					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
-				}
-
-				_write_string(f, 3, p.description.strip_edges().xml_escape());
-
-				_write_string(f, 2, "</theme_item>");
-			}
-			_write_string(f, 1, "</theme_items>");
-		}
-
-		_write_string(f, 0, "</class>");
+		XmlWriteStream xws(f);
+		write_class(c, xws);
 	}
 
 	return OK;

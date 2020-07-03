@@ -35,6 +35,28 @@
 #include "core/map.h"
 #include "core/variant.h"
 
+struct XmlWriteStream {
+	enum StreamType {
+		FILE_STREAM,
+		STRING_STREAM,
+	};
+	FileAccess *fstream = nullptr;
+	String *sstream = nullptr;
+	StreamType get_stream_type() const { return type; }
+
+	XmlWriteStream(FileAccess *p_fstream) {
+		type = FILE_STREAM;
+		fstream = p_fstream;
+	}
+	XmlWriteStream(String *p_sstream) {
+		type = STRING_STREAM;
+		sstream = p_sstream;
+	}
+
+private:
+	StreamType type = STRING_STREAM;
+};
+
 class DocData {
 public:
 	struct ArgumentDoc {
@@ -116,6 +138,7 @@ public:
 	void generate(bool p_basic_types = false);
 	Error load_classes(const String &p_dir);
 	static Error erase_classes(const String &p_dir);
+	static void write_class(ClassDoc &p_class, XmlWriteStream &p_ws);
 	Error save_classes(const String &p_default_path, const Map<String, String> &p_class_path);
 
 	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);
