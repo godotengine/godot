@@ -19,7 +19,7 @@
 
 		func get_recognized_extensions():
 		    return ["csv"]
-		[/codeblock]		
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>

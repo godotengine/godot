@@ -138,7 +138,7 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="false">
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], collisions will be reported.
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
