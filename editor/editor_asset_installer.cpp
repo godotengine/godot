@@ -159,7 +159,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			isdir = true;
 		}
 
-		int pp = path.find_last("/");
+		int pp = path.rfind("/");
 
 		TreeItem *parent;
 		if (pp == -1) {

@@ -2280,18 +2280,6 @@ String String::substr(int p_from, int p_chars) const {
 	return s;
 }
 
-int String::find_last(const String &p_str) const {
-	int pos = -1;
-	int findfrom = 0;
-	int findres = -1;
-	while ((findres = find(p_str, findfrom)) != -1) {
-		pos = findres;
-		findfrom = pos + 1;
-	}
-
-	return pos;
-}
-
 int String::find(const String &p_str, int p_from) const {
 	if (p_from < 0) {
 		return -1;
@@ -2582,7 +2570,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
-	int pos = find_last(p_string);
+	int pos = rfind(p_string);
 	if (pos == -1) {
 		return false;
 	}
@@ -3831,7 +3819,7 @@ String String::get_base_dir() const {
 		}
 	}
 
-	int sep = MAX(rs.find_last("/"), rs.find_last("\\"));
+	int sep = MAX(rs.rfind("/"), rs.rfind("\\"));
 	if (sep == -1) {
 		return base;
 	}
@@ -3840,7 +3828,7 @@ String String::get_base_dir() const {
 }
 
 String String::get_file() const {
-	int sep = MAX(find_last("/"), find_last("\\"));
+	int sep = MAX(rfind("/"), rfind("\\"));
 	if (sep == -1) {
 		return *this;
 	}
@@ -3849,8 +3837,8 @@ String String::get_file() const {
 }
 
 String String::get_extension() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return "";
 	}
 
@@ -3938,8 +3926,8 @@ String String::property_name_encode() const {
 }
 
 String String::get_basename() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return *this;
 	}
 

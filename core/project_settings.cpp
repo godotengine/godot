@@ -93,7 +93,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 	} else {
 		memdelete(dir);
 
-		int sep = path.find_last("/");
+		int sep = path.rfind("/");
 		if (sep == -1) {
 			return "res://" + path;
 		}

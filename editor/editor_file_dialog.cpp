@@ -936,7 +936,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.find_last(".");
+	int lp = p_file.rfind(".");
 	if (lp != -1) {
 		file->select(0, lp);
 		file->grab_focus();
@@ -951,7 +951,7 @@ void EditorFileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size()) {
 		return;
 	}
-	int pos = MAX(p_path.find_last("/"), p_path.find_last("\\"));
+	int pos = MAX(p_path.rfind("/"), p_path.rfind("\\"));
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {
