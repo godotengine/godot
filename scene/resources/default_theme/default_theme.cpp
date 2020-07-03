@@ -181,7 +181,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("disabled", "Button", sb_button_disabled);
 	theme->set_stylebox("focus", "Button", sb_button_focus);
 
-	theme->set_font("font", "Button", default_font);
+	theme->set_font("font", "Button", Ref<Font>());
 
 	theme->set_color("font_color", "Button", control_font_color);
 	theme->set_color("font_color_pressed", "Button", control_font_color_pressed);
@@ -194,7 +194,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("focus", "LinkButton", focus);
 
-	theme->set_font("font", "LinkButton", default_font);
+	theme->set_font("font", "LinkButton", Ref<Font>());
 
 	theme->set_color("font_color", "LinkButton", control_font_color);
 	theme->set_color("font_color_pressed", "LinkButton", control_font_color_pressed);
@@ -210,7 +210,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("disabled", "ColorPickerButton", sb_button_disabled);
 	theme->set_stylebox("focus", "ColorPickerButton", sb_button_focus);
 
-	theme->set_font("font", "ColorPickerButton", default_font);
+	theme->set_font("font", "ColorPickerButton", Ref<Font>());
 
 	theme->set_color("font_color", "ColorPickerButton", Color(1, 1, 1, 1));
 	theme->set_color("font_color_pressed", "ColorPickerButton", Color(0.8, 0.8, 0.8, 1));
@@ -235,7 +235,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("arrow", "OptionButton", make_icon(option_arrow_png));
 
-	theme->set_font("font", "OptionButton", default_font);
+	theme->set_font("font", "OptionButton", Ref<Font>());
 
 	theme->set_color("font_color", "OptionButton", control_font_color);
 	theme->set_color("font_color_pressed", "OptionButton", control_font_color_pressed);
@@ -253,7 +253,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("disabled", "MenuButton", sb_button_disabled);
 	theme->set_stylebox("focus", "MenuButton", sb_button_focus);
 
-	theme->set_font("font", "MenuButton", default_font);
+	theme->set_font("font", "MenuButton", Ref<Font>());
 
 	theme->set_color("font_color", "MenuButton", control_font_color);
 	theme->set_color("font_color_pressed", "MenuButton", control_font_color_pressed);
@@ -287,7 +287,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("radio_checked", "CheckBox", make_icon(radio_checked_png));
 	theme->set_icon("radio_unchecked", "CheckBox", make_icon(radio_unchecked_png));
 
-	theme->set_font("font", "CheckBox", default_font);
+	theme->set_font("font", "CheckBox", Ref<Font>());
 
 	theme->set_color("font_color", "CheckBox", control_font_color);
 	theme->set_color("font_color_pressed", "CheckBox", control_font_color_pressed);
@@ -318,7 +318,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("off", "CheckButton", make_icon(toggle_off_png));
 	theme->set_icon("off_disabled", "CheckButton", make_icon(toggle_off_disabled_png));
 
-	theme->set_font("font", "CheckButton", default_font);
+	theme->set_font("font", "CheckButton", Ref<Font>());
 
 	theme->set_color("font_color", "CheckButton", control_font_color);
 	theme->set_color("font_color_pressed", "CheckButton", control_font_color_pressed);
@@ -332,7 +332,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Label
 
 	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
-	theme->set_font("font", "Label", default_font);
+	theme->set_font("font", "Label", Ref<Font>());
 
 	theme->set_color("font_color", "Label", Color(1, 1, 1));
 	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
@@ -349,7 +349,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "LineEdit", focus);
 	theme->set_stylebox("read_only", "LineEdit", make_stylebox(line_edit_disabled_png, 6, 6, 6, 6));
 
-	theme->set_font("font", "LineEdit", default_font);
+	theme->set_font("font", "LineEdit", Ref<Font>());
 
 	theme->set_color("font_color", "LineEdit", control_font_color);
 	theme->set_color("font_color_selected", "LineEdit", Color(0, 0, 0));
@@ -368,7 +368,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("bg", "ProgressBar", make_stylebox(progress_bar_png, 4, 4, 4, 4, 0, 0, 0, 0));
 	theme->set_stylebox("fg", "ProgressBar", make_stylebox(progress_fill_png, 6, 6, 6, 6, 2, 1, 2, 1));
 
-	theme->set_font("font", "ProgressBar", default_font);
+	theme->set_font("font", "ProgressBar", Ref<Font>());
 
 	theme->set_color("font_color", "ProgressBar", control_font_color_hover);
 	theme->set_color("font_color_shadow", "ProgressBar", Color(0, 0, 0));
@@ -385,7 +385,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("folded", "TextEdit", make_icon(arrow_right_png));
 	theme->set_icon("fold", "TextEdit", make_icon(arrow_down_png));
 
-	theme->set_font("font", "TextEdit", default_font);
+	theme->set_font("font", "TextEdit", Ref<Font>());
 
 	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 	theme->set_color("completion_background_color", "TextEdit", Color(0.17, 0.16, 0.2));
@@ -531,7 +531,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("radio_unchecked", "PopupMenu", make_icon(radio_unchecked_png));
 	theme->set_icon("submenu", "PopupMenu", make_icon(submenu_png));
 
-	theme->set_font("font", "PopupMenu", default_font);
+	theme->set_font("font", "PopupMenu", Ref<Font>());
 
 	theme->set_color("font_color", "PopupMenu", control_font_color);
 	theme->set_color("font_color_accel", "PopupMenu", Color(0.7, 0.7, 0.7, 0.8));
@@ -566,7 +566,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("port", "GraphNode", make_icon(graph_port_png));
 	theme->set_icon("close", "GraphNode", make_icon(graph_node_close_png));
 	theme->set_icon("resizer", "GraphNode", make_icon(window_resizer_png));
-	theme->set_font("title_font", "GraphNode", default_font);
+	theme->set_font("title_font", "GraphNode", Ref<Font>());
 	theme->set_color("title_color", "GraphNode", Color(0, 0, 0, 1));
 	theme->set_color("close_color", "GraphNode", Color(0, 0, 0, 1));
 	theme->set_color("resizer_color", "GraphNode", Color(0, 0, 0, 1));
@@ -600,8 +600,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("arrow", "Tree", make_icon(arrow_down_png));
 	theme->set_icon("arrow_collapsed", "Tree", make_icon(arrow_right_png));
 
-	theme->set_font("title_button_font", "Tree", default_font);
-	theme->set_font("font", "Tree", default_font);
+	theme->set_font("title_button_font", "Tree", Ref<Font>());
+	theme->set_font("font", "Tree", Ref<Font>());
 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color("font_color", "Tree", control_font_color_low);
@@ -630,7 +630,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("vseparation", "ItemList", 2);
 	theme->set_constant("icon_margin", "ItemList", 4);
 	theme->set_constant("line_separation", "ItemList", 2 * scale);
-	theme->set_font("font", "ItemList", default_font);
+	theme->set_font("font", "ItemList", Ref<Font>());
 	theme->set_color("font_color", "ItemList", control_font_color_lower);
 	theme->set_color("font_color_selected", "ItemList", control_font_color_pressed);
 	theme->set_color("guide_color", "ItemList", Color(0, 0, 0, 0.1));
@@ -658,7 +658,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("menu", "TabContainer", make_icon(tab_menu_png));
 	theme->set_icon("menu_highlight", "TabContainer", make_icon(tab_menu_hl_png));
 
-	theme->set_font("font", "TabContainer", default_font);
+	theme->set_font("font", "TabContainer", Ref<Font>());
 
 	theme->set_color("font_color_fg", "TabContainer", control_font_color_hover);
 	theme->set_color("font_color_bg", "TabContainer", control_font_color_low);
@@ -682,7 +682,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("decrement_highlight", "Tabs", make_icon(scroll_button_left_hl_png));
 	theme->set_icon("close", "Tabs", make_icon(tab_close_png));
 
-	theme->set_font("font", "Tabs", default_font);
+	theme->set_font("font", "Tabs", Ref<Font>());
 
 	theme->set_color("font_color_fg", "Tabs", control_font_color_hover);
 	theme->set_color("font_color_bg", "Tabs", control_font_color_low);
@@ -696,7 +696,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("separator", "VSeparator", make_stylebox(hseparator_png, 3, 3, 3, 3));
 
 	theme->set_icon("close", "Icons", make_icon(icon_close_png));
-	theme->set_font("normal", "Fonts", default_font);
+	theme->set_font("normal", "Fonts", Ref<Font>());
 	theme->set_font("large", "Fonts", large_font);
 
 	theme->set_constant("separation", "HSeparator", 4 * scale);
@@ -741,7 +741,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("panel", "TooltipPanel", style_tt);
 
-	theme->set_font("font", "TooltipLabel", default_font);
+	theme->set_font("font", "TooltipLabel", Ref<Font>());
 
 	theme->set_color("font_color", "TooltipLabel", Color(0, 0, 0));
 	theme->set_color("font_color_shadow", "TooltipLabel", Color(0, 0, 0, 0.1));
@@ -754,11 +754,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
 	theme->set_stylebox("normal", "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
-	theme->set_font("normal_font", "RichTextLabel", default_font);
-	theme->set_font("bold_font", "RichTextLabel", default_font);
-	theme->set_font("italics_font", "RichTextLabel", default_font);
-	theme->set_font("bold_italics_font", "RichTextLabel", default_font);
-	theme->set_font("mono_font", "RichTextLabel", default_font);
+	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
+	theme->set_font("bold_font", "RichTextLabel", Ref<Font>());
+	theme->set_font("italics_font", "RichTextLabel", Ref<Font>());
+	theme->set_font("bold_italics_font", "RichTextLabel", Ref<Font>());
+	theme->set_font("mono_font", "RichTextLabel", Ref<Font>());
 
 	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
 	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
