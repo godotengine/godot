@@ -5520,10 +5520,10 @@ EditorNode::EditorNode() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically
-				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 #ifdef OSX_ENABLED
-				editor_set_scale(DisplayServer::get_singleton()->screen_get_scale(screen));
+				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
+				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
 #endif
 			} break;
