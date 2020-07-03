@@ -793,17 +793,33 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_frameworks_refs;
 	String pbx_resources_build;
 	String pbx_resources_refs;
+	String pbx_embeded_frameworks;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
 									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
+		String additional_asset_info_format = file_info_format;
+
 		String build_id = (++current_id).str();
 		String ref_id = (++current_id).str();
+		String framework_id = "";
+
 		const IOSExportAsset &asset = p_additional_assets[i];
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
+			additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
+			framework_id = (++current_id).str();
+			pbx_embeded_frameworks += framework_id + ",\n";
+
 			type = "wrapper.framework";
+		} else if (asset.exported_path.ends_with(".xcframework")) {
+			additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
+			framework_id = (++current_id).str();
+			pbx_embeded_frameworks += framework_id + ",\n";
+
+			type = "wrapper.xcframework";
 		} else if (asset.exported_path.ends_with(".dylib")) {
 			type = "compiled.mach-o.dylib";
 		} else if (asset.exported_path.ends_with(".a")) {
@@ -828,7 +844,10 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 		format_dict["name"] = asset.exported_path.get_file();
 		format_dict["file_path"] = asset.exported_path;
 		format_dict["file_type"] = type;
-		pbx_files += file_info_format.format(format_dict, "$_");
+		if (framework_id.length() > 0) {
+			format_dict["framework_id"] = framework_id;
+		}
+		pbx_files += additional_asset_info_format.format(format_dict, "$_");
 	}
 
 	// Note, frameworks like gamekit are always included in our project.pbxprof file
@@ -862,6 +881,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	str = str.replace("$additional_pbx_frameworks_refs", pbx_frameworks_refs);
 	str = str.replace("$additional_pbx_resources_build", pbx_resources_build);
 	str = str.replace("$additional_pbx_resources_refs", pbx_resources_refs);
+	str = str.replace("$pbx_embeded_frameworks", pbx_embeded_frameworks);
 
 	CharString cs = str.utf8();
 	p_project_data.resize(cs.size() - 1);
@@ -892,8 +912,39 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				memdelete(filesystem_da);
 				return ERR_FILE_NOT_FOUND;
 			}
-			String additional_dir = p_is_framework && asset.ends_with(".dylib") ? "/dylibs/" : "/";
-			String destination_dir = p_out_dir + additional_dir + asset.get_base_dir().replace("res://", "");
+
+			String base_dir = asset.get_base_dir().replace("res://", "");
+			String destination_dir;
+			String destination;
+			String asset_path;
+			bool create_framework = false;
+
+			if (p_is_framework && asset.ends_with(".dylib")) {
+				// For iOS we need to turn .dylib into .framework
+				// to be able to send application to AppStore
+				destination_dir = p_out_dir.plus_file("dylibs").plus_file(base_dir);
+
+				String file_name = asset.get_basename().get_file();
+				String framework_name = file_name + ".framework";
+
+				destination_dir = destination_dir.plus_file(framework_name);
+				destination = destination_dir.plus_file(file_name);
+				asset_path = destination_dir;
+				create_framework = true;
+			} else if (p_is_framework && (asset.ends_with(".framework") || asset.ends_with(".xcframework"))) {
+				destination_dir = p_out_dir.plus_file("dylibs").plus_file(base_dir);
+
+				String file_name = asset.get_file();
+				destination = destination_dir.plus_file(file_name);
+				asset_path = destination;
+			} else {
+				destination_dir = p_out_dir.plus_file(base_dir);
+
+				String file_name = asset.get_file();
+				destination = destination_dir.plus_file(file_name);
+				asset_path = destination;
+			}
+
 			if (!filesystem_da->dir_exists(destination_dir)) {
 				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
 				if (make_dir_err) {
@@ -903,15 +954,66 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				}
 			}
 
-			String destination = destination_dir.plus_file(asset.get_file());
 			Error err = dir_exists ? da->copy_dir(asset, destination) : da->copy(asset, destination);
 			memdelete(da);
 			if (err) {
 				memdelete(filesystem_da);
 				return err;
 			}
-			IOSExportAsset exported_asset = { destination, p_is_framework };
+			IOSExportAsset exported_asset = { asset_path, p_is_framework };
 			r_exported_assets.push_back(exported_asset);
+
+			if (create_framework) {
+				String file_name = asset.get_basename().get_file();
+				String framework_name = file_name + ".framework";
+
+				// Performing `install_name_tool -id @rpath/{name}.framework/{name} ./{name}` on dylib
+				{
+					List<String> install_name_args;
+					install_name_args.push_back("-id");
+					install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
+					install_name_args.push_back(destination);
+
+					OS::get_singleton()->execute("install_name_tool", install_name_args, true);
+				}
+
+				// Creating Info.plist
+				{
+					String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+											   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+											   "<plist version=\"1.0\">\n"
+											   "<dict>\n"
+											   "<key>CFBundleShortVersionString</key>\n"
+											   "<string>1.0</string>\n"
+											   "<key>CFBundleIdentifier</key>\n"
+											   "<string>com.gdnative.framework.$name</string>\n"
+											   "<key>CFBundleName</key>\n"
+											   "<string>$name</string>\n"
+											   "<key>CFBundleExecutable</key>\n"
+											   "<string>$name</string>\n"
+											   "<key>DTPlatformName</key>\n"
+											   "<string>iphoneos</string>\n"
+											   "<key>CFBundleInfoDictionaryVersion</key>\n"
+											   "<string>6.0</string>\n"
+											   "<key>CFBundleVersion</key>\n"
+											   "<string>1</string>\n"
+											   "<key>CFBundlePackageType</key>\n"
+											   "<string>FMWK</string>\n"
+											   "<key>MinimumOSVersion</key>\n"
+											   "<string>10.0</string>\n"
+											   "</dict>\n"
+											   "</plist>";
+
+					String info_plist = info_plist_format.replace("$name", file_name);
+
+					FileAccess *f = FileAccess::open(asset_path.plus_file("Info.plist"), FileAccess::WRITE);
+					if (f) {
+						f->store_string(info_plist);
+						f->close();
+						memdelete(f);
+					}
+				}
+			}
 		}
 	}
 	memdelete(filesystem_da);
