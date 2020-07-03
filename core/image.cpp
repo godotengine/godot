@@ -1895,8 +1895,10 @@ Vector<uint8_t> Image::get_data() const {
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
-	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	int mm = 0;
@@ -1915,8 +1917,10 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
-	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	int mm;
