@@ -34,6 +34,10 @@
 #include "core/engine.h"
 #include "core/math/geometry_2d.h"
 
+void TileProperties::_bind_methods() {}
+
+TileProperties::TileProperties() {}
+
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	String n = p_name;
 	int slash = n.find("/");
@@ -203,6 +207,14 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_navigation_polygon_offset(id, p_value);
 	} else if (what == "z_index") {
 		tile_set_z_index(id, p_value);
+	} else if (what == "properties") {
+		tile_set_properties(id, p_value);
+	} else if (what == "properties_script") {
+		Ref<TileProperties> properties = tile_get_properties(id);
+		if (properties.is_valid()) {
+			Ref<Script> script = p_value;
+			properties->set_script(script.ptr());
+		}
 	} else {
 		return false;
 	}
@@ -318,6 +330,13 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_navigation_polygon_offset(id);
 	} else if (what == "z_index") {
 		r_ret = tile_get_z_index(id);
+	} else if (what == "properties") {
+		r_ret = tile_get_properties(id);
+	} else if (what == "properties_script") {
+		RES properties = tile_get_properties(id);
+		if (properties.is_valid()) {
+			r_ret = properties->get_script();
+		}
 	} else {
 		return false;
 	}
@@ -367,6 +386,8 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::FLOAT, pre + "shape_one_way_margin", PROPERTY_HINT_RANGE, "0,128,0.01", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, pre + "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "properties", PROPERTY_HINT_RESOURCE_TYPE, "TileProperties"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "properties_script", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
 	}
 }
 
@@ -374,8 +395,37 @@ void TileSet::create_tile(int p_id) {
 	ERR_FAIL_COND(tile_map.has(p_id));
 	tile_map[p_id] = TileData();
 	tile_map[p_id].autotile_data = AutotileData();
+	if (tile_properties_script.is_valid()) {
+		tile_map[p_id].properties = Ref<TileProperties>(memnew(TileProperties));
+		tile_map[p_id].properties->set_script(tile_properties_script.ptr());
+	}
 	_change_notify("");
 	emit_changed();
+}
+
+void TileSet::set_tile_properties_script(const Ref<Script> &p_script) {
+	if (tile_properties_script == p_script)
+		return;
+	if (tile_properties_script.is_null()) {
+		for (Map<int, TileSet::TileData>::Element *E = tile_map.front(); E; E = E->next()) {
+			Ref<TileProperties> tp = memnew(TileProperties());
+			tp->set_script(p_script.ptr());
+			E->value().properties = tp;
+		}
+	} else {
+		for (Map<int, TileSet::TileData>::Element *E = tile_map.front(); E; E = E->next()) {
+			Ref<TileProperties> p = E->value().properties;
+			ERR_CONTINUE(p.is_valid());
+			Ref<Script> s = p->get_script();
+			if (s != p_script)
+				E->value().properties->set_script(p_script.ptr());
+		}
+	}
+	tile_properties_script = p_script;
+}
+
+Ref<Script> TileSet::get_tile_properties_script() const {
+	return tile_properties_script;
 }
 
 void TileSet::autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode) {
@@ -907,6 +957,17 @@ Vector2 TileSet::tile_get_occluder_offset(int p_id) const {
 	return tile_map[p_id].occluder_offset;
 }
 
+Ref<TileProperties> TileSet::tile_get_properties(int p_id) const {
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
+	return tile_map[p_id].properties;
+}
+
+void TileSet::tile_set_properties(int p_id, const Ref<TileProperties> &p_properties) {
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].properties = p_properties;
+	emit_changed();
+}
+
 void TileSet::tile_set_shapes(int p_id, const Vector<ShapeData> &p_shapes) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].shapes_data = p_shapes;
@@ -1049,6 +1110,14 @@ void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
 	}
 }
 
+void TileSet::set_meta_properties(Dictionary p_dict) {
+	meta_properties = p_dict;
+}
+
+Dictionary TileSet::get_meta_properties() const {
+	return meta_properties;
+}
+
 void TileSet::get_tile_list(List<int> *p_tiles) const {
 	for (Map<int, TileData>::Element *E = tile_map.front(); E; E = E->next()) {
 		p_tiles->push_back(E->key());
@@ -1164,12 +1233,24 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_occluder_offset", "id"), &TileSet::tile_get_occluder_offset);
 	ClassDB::bind_method(D_METHOD("tile_set_z_index", "id", "z_index"), &TileSet::tile_set_z_index);
 	ClassDB::bind_method(D_METHOD("tile_get_z_index", "id"), &TileSet::tile_get_z_index);
+	ClassDB::bind_method(D_METHOD("tile_set_properties", "id", "properties"), &TileSet::tile_set_properties);
+	ClassDB::bind_method(D_METHOD("tile_get_properties", "id"), &TileSet::tile_get_properties);
 
 	ClassDB::bind_method(D_METHOD("remove_tile", "id"), &TileSet::remove_tile);
 	ClassDB::bind_method(D_METHOD("clear"), &TileSet::clear);
 	ClassDB::bind_method(D_METHOD("get_last_unused_tile_id"), &TileSet::get_last_unused_tile_id);
 	ClassDB::bind_method(D_METHOD("find_tile_by_name", "name"), &TileSet::find_tile_by_name);
 	ClassDB::bind_method(D_METHOD("get_tiles_ids"), &TileSet::_get_tiles_ids);
+	ClassDB::bind_method(D_METHOD("set_tile_properties_script", "script"), &TileSet::set_tile_properties_script);
+	ClassDB::bind_method(D_METHOD("get_tile_properties_script"), &TileSet::get_tile_properties_script);
+
+	ClassDB::bind_method(D_METHOD("set_meta_properties", "dict"), &TileSet::set_meta_properties);
+	ClassDB::bind_method(D_METHOD("get_meta_properties"), &TileSet::get_meta_properties);
+
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "meta_properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Script"), "set_meta_properties", "get_meta_properties");
+
+	ADD_GROUP("Tiles", "tiles_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tiles_default_script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT, "Script"), "set_tile_properties_script", "get_tile_properties_script");
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_tile_bound", PropertyInfo(Variant::INT, "drawn_id"), PropertyInfo(Variant::INT, "neighbor_id")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_forward_subtile_selection", PropertyInfo(Variant::INT, "autotile_id"), PropertyInfo(Variant::INT, "bitmask"), PropertyInfo(Variant::OBJECT, "tilemap", PROPERTY_HINT_NONE, "TileMap"), PropertyInfo(Variant::VECTOR2, "tile_location")));

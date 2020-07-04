@@ -39,6 +39,24 @@
 #include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
 
+class TileSet;
+
+class TileProperties : public Resource {
+	GDCLASS(TileProperties, Resource);
+
+	friend class TileSet;
+
+private:
+	int id;
+	Ref<TileSet> tileset;
+
+protected:
+	static void _bind_methods();
+
+public:
+	TileProperties();
+};
+
 class TileSet : public Resource {
 	GDCLASS(TileSet, Resource);
 
@@ -120,16 +138,21 @@ private:
 		Color modulate = Color(1, 1, 1);
 		AutotileData autotile_data;
 		int z_index = 0;
+		Ref<TileProperties> properties;
 
 		explicit TileData() {}
 	};
 
 	Map<int, TileData> tile_map;
 
+	Ref<Script> tile_properties_script;
+	Dictionary meta_properties;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _get_tile_property_list(int p_id, List<PropertyInfo> *p_list) const;
 	void _tile_set_shapes(int p_id, const Array &p_shapes);
 	Array _tile_get_shapes(int p_id) const;
 	Array _get_tiles_ids() const;
@@ -139,6 +162,12 @@ protected:
 
 public:
 	void create_tile(int p_id);
+
+	void set_meta_properties(Dictionary p_dict);
+	Dictionary get_meta_properties() const;
+
+	void set_tile_properties_script(const Ref<Script> &p_script);
+	Ref<Script> get_tile_properties_script() const;
 
 	void autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode);
 	BitmaskMode autotile_get_bitmask_mode(int p_id) const;
@@ -235,6 +264,9 @@ public:
 
 	void tile_set_z_index(int p_id, int p_z_index);
 	int tile_get_z_index(int p_id) const;
+
+	void tile_set_properties(int p_id, const Ref<TileProperties> &p_meta);
+	Ref<TileProperties> tile_get_properties(int p_id) const;
 
 	void remove_tile(int p_id);
 

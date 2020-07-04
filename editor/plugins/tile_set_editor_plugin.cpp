@@ -3424,6 +3424,13 @@ bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value
 			}
 		}
 		return false;
+	} else if (name == "tileset_meta") {
+		tileset->set_meta_properties(p_value);
+		return true;
+	} else if (name.left(8) == "tileset_") {
+		bool v = false;
+		tileset->set(name.right(8), p_value, &v);
+		return v;
 	}
 
 	tileset_editor->err_dialog->set_text(TTR("This property can't be changed."));
@@ -3494,6 +3501,11 @@ bool TilesetEditorContext::_get(const StringName &p_name, Variant &r_ret) const 
 	} else if (name == "tileset_script") {
 		r_ret = tileset->get_script();
 		v = true;
+	} else if (name == "tileset_meta") {
+		r_ret = tileset->get_meta_properties();
+		v = true;
+	} else if (name.left(8) == "tileset_") {
+		r_ret = tileset->get(name.substr(8, name.length()), &v);
 	}
 	return v;
 }
@@ -3505,6 +3517,23 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "options_step"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "options_separation"));
 	}
+	if (tileset.is_valid()) {
+		p_list->push_back(PropertyInfo(Variant::NIL, "TileSet", PROPERTY_HINT_NONE, "tileset_", PROPERTY_USAGE_GROUP));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "tileset_script", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
+		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "tileset_meta_properties", PROPERTY_HINT_NONE, String()));
+		List<PropertyInfo> tp_list;
+		tileset->get_property_list(&tp_list);
+		if (tp_list.size()) {
+			for (List<PropertyInfo>::Element *E = tp_list.front(); E; E = E->next()) {
+				if ((E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+					PropertyInfo &pi = E->get();
+					pi.name = "tileset_" + pi.name;
+					p_list->push_back(pi);
+				}
+			}
+		}
+	}
+
 	if (tileset_editor->get_current_tile() >= 0 && !tileset.is_null()) {
 		int id = tileset_editor->get_current_tile();
 		p_list->push_back(PropertyInfo(Variant::NIL, "Selected Tile", PROPERTY_HINT_NONE, "tile_", PROPERTY_USAGE_GROUP));
@@ -3527,6 +3556,8 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_shape_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_shape_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, "tile_z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_properties", PROPERTY_HINT_RESOURCE_TYPE, "TileProperties", PROPERTY_USAGE_DEFAULT, "TileProperties"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_properties_script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT, "Script"));
 	}
 	if (tileset_editor->edit_mode == TileSetEditor::EDITMODE_COLLISION && tileset_editor->edited_collision_shape.is_valid()) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "selected_collision", PROPERTY_HINT_RESOURCE_TYPE, tileset_editor->edited_collision_shape->get_class()));
