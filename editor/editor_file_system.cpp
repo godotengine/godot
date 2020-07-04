@@ -1107,7 +1107,7 @@ void EditorFileSystem::_notification(int p_what) {
 						_queue_update_script_classes();
 						first_scan = false;
 					}
-				} else if (!scanning) {
+				} else if (!scanning && thread) {
 					set_process(false);
 
 					if (filesystem) {
