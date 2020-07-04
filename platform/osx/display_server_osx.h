@@ -132,6 +132,7 @@ public:
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
+		bool no_focus = false;
 	};
 
 	Point2i im_selection;
@@ -150,7 +151,6 @@ public:
 
 	void _set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window);
 
-	float _display_scale(id screen) const;
 	Point2i _get_screens_origin() const;
 	Point2i _get_native_screen_position(int p_screen) const;
 
@@ -224,6 +224,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual float screen_get_max_scale() const;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
 	virtual Vector<int> get_window_list() const;
