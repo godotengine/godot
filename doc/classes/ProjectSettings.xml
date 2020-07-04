@@ -802,10 +802,12 @@
 		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
 		</member>
-		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/log.txt&quot;">
+		<member name="logging/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
 		</member>
-		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="10">
+		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="1024">
