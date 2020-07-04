@@ -137,6 +137,8 @@ private:
 	String connecting_target_to;
 	int connecting_target_index;
 	bool just_disconnected;
+	bool connecting_valid;
+	Vector2 click_pos;
 
 	bool dragging;
 	bool just_selected;
