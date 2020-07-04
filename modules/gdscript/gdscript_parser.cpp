@@ -4072,6 +4072,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								while (true) {
 									current_function = function;
 									Node *arg = _parse_and_reduce_expression(p_class, _static);
+									if (!arg) {
+										return;
+									}
 									current_function = nullptr;
 									cparent->arguments.push_back(arg);
 
