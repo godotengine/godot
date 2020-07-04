@@ -3300,8 +3300,7 @@ void CanvasItemEditor::_draw_selection() {
 				xform.xform(rect.position + Vector2(0, rect.size.y))
 			};
 
-			Color c = Color(1, 0.6, 0.4, 0.7);
-
+			Color c = get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.8);
 			if (item_locked) {
 				c = Color(0.7, 0.7, 0.7, 0.7);
 			}
@@ -3352,12 +3351,15 @@ void CanvasItemEditor::_draw_selection() {
 					Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
 					ofs *= Math_SQRT2 * (select_handle->get_size().width / 2);
 
+					const Color color = get_theme_color("accent_color", "Editor");
 					select_handle->draw(ci, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor());
+					select_handle_color->draw(ci, (endpoints[i] + ofs - (select_handle_color->get_size() / 2)).floor(), color);
 
 					ofs = (endpoints[i] + endpoints[next]) / 2;
 					ofs += (endpoints[next] - endpoints[i]).tangent().normalized() * (select_handle->get_size().width / 2);
 
 					select_handle->draw(ci, (ofs - (select_handle->get_size() / 2)).floor());
+					select_handle_color->draw(ci, (ofs - (select_handle_color->get_size() / 2)).floor(), color);
 				}
 			}
 
@@ -3988,7 +3990,10 @@ void CanvasItemEditor::_notification(int p_what) {
 		pan_button->set_icon(get_theme_icon("ToolPan", "EditorIcons"));
 		ruler_button->set_icon(get_theme_icon("Ruler", "EditorIcons"));
 		pivot_button->set_icon(get_theme_icon("EditPivot", "EditorIcons"));
+		// Contains the handle's background which is never modulated.
 		select_handle = get_theme_icon("EditorHandle", "EditorIcons");
+		// Contains only the part of the handle that should be modulated with the accent color.
+		select_handle_color = get_theme_icon("EditorHandleColor", "EditorIcons");
 		anchor_handle = get_theme_icon("EditorControlAnchor", "EditorIcons");
 		lock_button->set_icon(get_theme_icon("Lock", "EditorIcons"));
 		unlock_button->set_icon(get_theme_icon("Unlock", "EditorIcons"));

@@ -430,8 +430,11 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	Ref<Texture2D> h = get_theme_icon("EditorHandle", "EditorIcons");
-	Vector2 size = h->get_size() * 0.5;
+	const Ref<Texture2D> handle = get_theme_icon("EditorHandle", "EditorIcons");
+	const Ref<Texture2D> handle_color = get_theme_icon("EditorHandleColor", "EditorIcons");
+	const Vector2 handle_size = handle->get_size() * 0.5;
+	const Vector2 handle_color_size = handle_color->get_size() * 0.5;
+	const Color accent_color = get_theme_color("accent_color", "Editor");
 
 	handles.clear();
 
@@ -446,8 +449,10 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.write[0] = Point2(radius, height);
 			handles.write[1] = Point2(0, height + radius);
 
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
+			p_overlay->draw_texture(handle, gt.xform(handles[0]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[0]) - handle_color_size, accent_color);
+			p_overlay->draw_texture(handle, gt.xform(handles[1]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[1]) - handle_color_size, accent_color);
 
 		} break;
 
@@ -457,7 +462,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.resize(1);
 			handles.write[0] = Point2(shape->get_radius(), 0);
 
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
+			p_overlay->draw_texture(handle, gt.xform(handles[0]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[0]) - handle_size, accent_color);
 
 		} break;
 
@@ -474,8 +480,10 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.write[0] = shape->get_normal() * shape->get_distance();
 			handles.write[1] = shape->get_normal() * (shape->get_distance() + 30.0);
 
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
+			p_overlay->draw_texture(handle, gt.xform(handles[0]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[0]) - handle_color_size, accent_color);
+			p_overlay->draw_texture(handle, gt.xform(handles[1]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[1]) - handle_color_size, accent_color);
 
 		} break;
 
@@ -485,7 +493,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.resize(1);
 			handles.write[0] = Point2(0, shape->get_length());
 
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
+			p_overlay->draw_texture(handle, gt.xform(handles[0]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[0]) - handle_color_size, accent_color);
 
 		} break;
 
@@ -498,9 +507,12 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.write[1] = Point2(0, ext.y);
 			handles.write[2] = Point2(ext.x, ext.y);
 
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[2]) - size);
+			p_overlay->draw_texture(handle, gt.xform(handles[0]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[0]) - handle_color_size, accent_color);
+			p_overlay->draw_texture(handle, gt.xform(handles[1]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[1]) - handle_color_size, accent_color);
+			p_overlay->draw_texture(handle, gt.xform(handles[2]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[2]) - handle_color_size, accent_color);
 
 		} break;
 
@@ -511,8 +523,10 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			handles.write[0] = shape->get_a();
 			handles.write[1] = shape->get_b();
 
-			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
-			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
+			p_overlay->draw_texture(handle, gt.xform(handles[0]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[0]) - handle_color_size, accent_color);
+			p_overlay->draw_texture(handle, gt.xform(handles[1]) - handle_size);
+			p_overlay->draw_texture(handle_color, gt.xform(handles[1]) - handle_color_size, accent_color);
 
 		} break;
 	}

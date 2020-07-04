@@ -1168,10 +1168,15 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 		return;
 	}
 
-	Ref<Texture2D> handle = get_theme_icon("EditorHandle", "EditorIcons");
+	const Ref<Texture2D> handle = get_theme_icon("EditorHandle", "EditorIcons");
+	const Ref<Texture2D> handle_color = get_theme_icon("EditorHandleColor", "EditorIcons");
 	if (draw_handles) {
 		for (int i = 0; i < current_shape.size(); i++) {
 			workspace_overlay->draw_texture(handle, current_shape[i] * workspace->get_scale().x - handle->get_size() * 0.5);
+			workspace_overlay->draw_texture(
+					handle_color,
+					current_shape[i] * workspace->get_scale().x - handle_color->get_size() * 0.5,
+					get_theme_color("accent_color", "Editor"));
 		}
 	}
 }

@@ -398,6 +398,7 @@ private:
 
 	Ref<StyleBoxTexture> select_sb;
 	Ref<Texture2D> select_handle;
+	Ref<Texture2D> select_handle_color;
 	Ref<Texture2D> anchor_handle;
 
 	Ref<ShortCut> drag_pivot_shortcut;

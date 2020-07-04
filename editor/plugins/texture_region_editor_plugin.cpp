@@ -146,7 +146,8 @@ void TextureRegionEditor::_region_draw() {
 		}
 	}
 
-	Ref<Texture2D> select_handle = get_theme_icon("EditorHandle", "EditorIcons");
+	const Ref<Texture2D> select_handle = get_theme_icon("EditorHandle", "EditorIcons");
+	const Ref<Texture2D> select_handle_color = get_theme_icon("EditorHandleColor", "EditorIcons");
 
 	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
@@ -162,7 +163,8 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(raw_endpoints[2]),
 		mtx.basis_xform(raw_endpoints[3])
 	};
-	Color color = get_theme_color("mono_color", "Editor");
+	const Color color = get_theme_color("mono_color", "Editor");
+	const Color accent_color = get_theme_color("accent_color", "Editor");
 	for (int i = 0; i < 4; i++) {
 		int prev = (i + 3) % 4;
 		int next = (i + 1) % 4;
@@ -174,6 +176,10 @@ void TextureRegionEditor::_region_draw() {
 
 		if (snap_mode != SNAP_AUTOSLICE) {
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
+			edit_draw->draw_texture(
+					select_handle_color,
+					(endpoints[i] + ofs - (select_handle_color->get_size() / 2)).floor() - draw_ofs * draw_zoom,
+					accent_color);
 		}
 
 		ofs = (endpoints[next] - endpoints[i]) / 2;
@@ -181,6 +187,10 @@ void TextureRegionEditor::_region_draw() {
 
 		if (snap_mode != SNAP_AUTOSLICE) {
 			edit_draw->draw_texture(select_handle, (endpoints[i] + ofs - (select_handle->get_size() / 2)).floor() - draw_ofs * draw_zoom);
+			edit_draw->draw_texture(
+					select_handle_color,
+					(endpoints[i] + ofs - (select_handle_color->get_size() / 2)).floor() - draw_ofs * draw_zoom,
+					accent_color);
 		}
 
 		scroll_rect.expand_to(raw_endpoints[i]);
