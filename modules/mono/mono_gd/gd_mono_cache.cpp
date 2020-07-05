@@ -217,7 +217,7 @@ void update_corlib_cache() {
 	CACHE_METHOD_AND_CHECK(System_Diagnostics_StackTrace, ctor_Exception_bool, CACHED_CLASS(System_Diagnostics_StackTrace)->get_method_with_desc("System.Diagnostics.StackTrace:.ctor(System.Exception,bool)", true));
 #endif
 
-	CACHE_METHOD_THUNK_AND_CHECK(Delegate, Equals, GDMono::get_singleton()->get_corlib_assembly()->get_class("System", "Delegate")->get_method_with_desc("System.Delegate:Equals(object)", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(Delegate, Equals, GDMono::get_singleton()->get_corlib_assembly()->get_class("System", "Delegate")->get_method_with_desc("System.Delegate:Equals(object)", true));
 
 	CACHE_CLASS_AND_CHECK(KeyNotFoundException, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections.Generic", "KeyNotFoundException"));
 

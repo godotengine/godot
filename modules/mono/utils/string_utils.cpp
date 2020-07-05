@@ -38,14 +38,16 @@
 namespace {
 
 int sfind(const String &p_text, int p_from) {
-	if (p_from < 0)
+	if (p_from < 0) {
 		return -1;
+	}
 
 	int src_len = 2;
 	int len = p_text.length();
 
-	if (len == 0)
+	if (len == 0) {
 		return -1;
+	}
 
 	const CharType *src = p_text.c_str();
 
@@ -75,8 +77,9 @@ int sfind(const String &p_text, int p_from) {
 			}
 		}
 
-		if (found)
+		if (found) {
 			return i;
+		}
 	}
 
 	return -1;
@@ -85,8 +88,9 @@ int sfind(const String &p_text, int p_from) {
 } // namespace
 
 String sformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {
-	if (p_text.length() < 2)
+	if (p_text.length() < 2) {
 		return p_text;
+	}
 
 	Array args;
 
