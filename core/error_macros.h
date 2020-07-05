@@ -476,7 +476,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * The current function returns.
  */
 #define ERR_FAIL()                                                                     \
-	if (1) {                                                                           \
+	if (true) {                                                                        \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed."); \
 		return;                                                                        \
 	} else                                                                             \
@@ -489,7 +489,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Prints `m_msg`, and the current function returns.
  */
 #define ERR_FAIL_MSG(m_msg)                                                                              \
-	if (1) {                                                                                             \
+	if (true) {                                                                                          \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed.", DEBUG_STR(m_msg)); \
 		return;                                                                                          \
 	} else                                                                                               \
@@ -503,7 +503,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * The current function returns `m_retval`.
  */
 #define ERR_FAIL_V(m_retval)                                                                                      \
-	if (1) {                                                                                                      \
+	if (true) {                                                                                                   \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval)); \
 		return m_retval;                                                                                          \
 	} else                                                                                                        \
@@ -516,7 +516,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Prints `m_msg`, and the current function returns `m_retval`.
  */
 #define ERR_FAIL_V_MSG(m_retval, m_msg)                                                                                             \
-	if (1) {                                                                                                                        \
+	if (true) {                                                                                                                     \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), DEBUG_STR(m_msg)); \
 		return m_retval;                                                                                                            \
 	} else                                                                                                                          \
@@ -536,7 +536,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Prints `m_msg` once during the application lifetime.
  */
 #define ERR_PRINT_ONCE(m_msg)                                          \
-	if (1) {                                                           \
+	if (true) {                                                        \
 		static bool first_print = true;                                \
 		if (first_print) {                                             \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg); \
@@ -561,7 +561,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * If warning about deprecated usage, use `WARN_DEPRECATED` or `WARN_DEPRECATED_MSG` instead.
  */
 #define WARN_PRINT_ONCE(m_msg)                                                              \
-	if (1) {                                                                                \
+	if (true) {                                                                             \
 		static bool first_print = true;                                                     \
 		if (first_print) {                                                                  \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, ERR_HANDLER_WARNING); \
@@ -576,7 +576,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Warns that the current function is deprecated.
  */
 #define WARN_DEPRECATED                                                                                                                                    \
-	if (1) {                                                                                                                                               \
+	if (true) {                                                                                                                                            \
 		static volatile bool warning_shown = false;                                                                                                        \
 		if (!warning_shown) {                                                                                                                              \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", ERR_HANDLER_WARNING); \
@@ -589,7 +589,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Warns that the current function is deprecated and prints `m_msg`.
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                           \
-	if (1) {                                                                                                                                                                 \
+	if (true) {                                                                                                                                                              \
 		static volatile bool warning_shown = false;                                                                                                                          \
 		if (!warning_shown) {                                                                                                                                                \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", DEBUG_STR(m_msg), ERR_HANDLER_WARNING); \
@@ -605,7 +605,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * The application crashes.
  */
 #define CRASH_NOW()                                                                           \
-	if (1) {                                                                                  \
+	if (true) {                                                                               \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed."); \
 		GENERATE_TRAP();                                                                      \
 	} else                                                                                    \
@@ -617,7 +617,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
  * Prints `m_msg`, and then the application crashes.
  */
 #define CRASH_NOW_MSG(m_msg)                                                                                    \
-	if (1) {                                                                                                    \
+	if (true) {                                                                                                 \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Method/function failed.", DEBUG_STR(m_msg)); \
 		GENERATE_TRAP();                                                                                        \
 	} else                                                                                                      \
