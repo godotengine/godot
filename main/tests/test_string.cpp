@@ -370,8 +370,11 @@ bool test_22() {
 	static const int num[4] = { 1237461283, -22, 0, -1123412 };
 
 	for (int i = 0; i < 4; i++) {
+#ifdef __MINGW32__ // MinGW can't handle normal format specifiers for some reason. So we need special code just for MinGW.
+		OS::get_singleton()->print("\tString: \"%s\" as Int is %I64i\n", nums[i], (long long)(String(nums[i]).to_int()));
+#else
 		OS::get_singleton()->print("\tString: \"%s\" as Int is %lli\n", nums[i], (long long)(String(nums[i]).to_int()));
-
+#endif
 		if (String(nums[i]).to_int() != num[i]) {
 			return false;
 		}
