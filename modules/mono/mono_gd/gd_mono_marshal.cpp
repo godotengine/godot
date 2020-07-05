@@ -1229,7 +1229,7 @@ MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int32_t), length);
 
 	int32_t *dst = mono_array_addr(ret, int32_t, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(int32_t));
 
 	return ret;
 }
@@ -1244,7 +1244,7 @@ PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array) {
 	int32_t *dst = ret.ptrw();
 
 	const int32_t *src = mono_array_addr(p_array, int32_t, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(int32_t));
 
 	return ret;
 }
@@ -1256,7 +1256,7 @@ MonoArray *PackedInt64Array_to_mono_array(const PackedInt64Array &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int64_t), length);
 
 	int64_t *dst = mono_array_addr(ret, int64_t, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(int64_t));
 
 	return ret;
 }
@@ -1271,7 +1271,7 @@ PackedInt64Array mono_array_to_PackedInt64Array(MonoArray *p_array) {
 	int64_t *dst = ret.ptrw();
 
 	const int64_t *src = mono_array_addr(p_array, int64_t, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(int64_t));
 
 	return ret;
 }
@@ -1283,7 +1283,7 @@ MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), length);
 
 	uint8_t *dst = mono_array_addr(ret, uint8_t, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(uint8_t));
 
 	return ret;
 }
@@ -1298,7 +1298,7 @@ PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array) {
 	uint8_t *dst = ret.ptrw();
 
 	const uint8_t *src = mono_array_addr(p_array, uint8_t, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(uint8_t));
 
 	return ret;
 }
@@ -1310,7 +1310,7 @@ MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(float), length);
 
 	float *dst = mono_array_addr(ret, float, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(float));
 
 	return ret;
 }
@@ -1325,7 +1325,7 @@ PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array) {
 	float *dst = ret.ptrw();
 
 	const float *src = mono_array_addr(p_array, float, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(float));
 
 	return ret;
 }
@@ -1337,7 +1337,7 @@ MonoArray *PackedFloat64Array_to_mono_array(const PackedFloat64Array &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(double), length);
 
 	double *dst = mono_array_addr(ret, double, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(double));
 
 	return ret;
 }
@@ -1352,7 +1352,7 @@ PackedFloat64Array mono_array_to_PackedFloat64Array(MonoArray *p_array) {
 	double *dst = ret.ptrw();
 
 	const double *src = mono_array_addr(p_array, double, 0);
-	memcpy(dst, src, length);
+	memcpy(dst, src, length * sizeof(double));
 
 	return ret;
 }
@@ -1396,7 +1396,7 @@ MonoArray *PackedColorArray_to_mono_array(const PackedColorArray &p_array) {
 
 	if constexpr (InteropLayout::MATCHES_Color) {
 		Color *dst = mono_array_addr(ret, Color, 0);
-		memcpy(dst, src, length);
+		memcpy(dst, src, length * sizeof(Color));
 	} else {
 		for (int i = 0; i < length; i++) {
 			M_Color *raw = (M_Color *)mono_array_addr_with_size(ret, sizeof(M_Color), i);
@@ -1418,7 +1418,7 @@ PackedColorArray mono_array_to_PackedColorArray(MonoArray *p_array) {
 
 	if constexpr (InteropLayout::MATCHES_Color) {
 		const Color *src = mono_array_addr(p_array, Color, 0);
-		memcpy(dst, src, length);
+		memcpy(dst, src, length * sizeof(Color));
 	} else {
 		for (int i = 0; i < length; i++) {
 			dst[i] = MARSHALLED_IN(Color, (M_Color *)mono_array_addr_with_size(p_array, sizeof(M_Color), i));
@@ -1436,7 +1436,7 @@ MonoArray *PackedVector2Array_to_mono_array(const PackedVector2Array &p_array) {
 
 	if constexpr (InteropLayout::MATCHES_Vector2) {
 		Vector2 *dst = mono_array_addr(ret, Vector2, 0);
-		memcpy(dst, src, length);
+		memcpy(dst, src, length * sizeof(Vector2));
 	} else {
 		for (int i = 0; i < length; i++) {
 			M_Vector2 *raw = (M_Vector2 *)mono_array_addr_with_size(ret, sizeof(M_Vector2), i);
@@ -1458,7 +1458,7 @@ PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array) {
 
 	if constexpr (InteropLayout::MATCHES_Vector2) {
 		const Vector2 *src = mono_array_addr(p_array, Vector2, 0);
-		memcpy(dst, src, length);
+		memcpy(dst, src, length * sizeof(Vector2));
 	} else {
 		for (int i = 0; i < length; i++) {
 			dst[i] = MARSHALLED_IN(Vector2, (M_Vector2 *)mono_array_addr_with_size(p_array, sizeof(M_Vector2), i));
@@ -1476,7 +1476,7 @@ MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array) {
 
 	if constexpr (InteropLayout::MATCHES_Vector3) {
 		Vector3 *dst = mono_array_addr(ret, Vector3, 0);
-		memcpy(dst, src, length);
+		memcpy(dst, src, length * sizeof(Vector3));
 	} else {
 		for (int i = 0; i < length; i++) {
 			M_Vector3 *raw = (M_Vector3 *)mono_array_addr_with_size(ret, sizeof(M_Vector3), i);
@@ -1498,7 +1498,7 @@ PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array) {
 
 	if constexpr (InteropLayout::MATCHES_Vector3) {
 		const Vector3 *src = mono_array_addr(p_array, Vector3, 0);
-		memcpy(dst, src, length);
+		memcpy(dst, src, length * sizeof(Vector3));
 	} else {
 		for (int i = 0; i < length; i++) {
 			dst[i] = MARSHALLED_IN(Vector3, (M_Vector3 *)mono_array_addr_with_size(p_array, sizeof(M_Vector3), i));
