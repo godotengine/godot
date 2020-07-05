@@ -2750,41 +2750,34 @@ Size2 Tree::get_internal_min_size() const {
 
 void Tree::update_scrollbars() {
 	Size2 size = get_size();
-	int tbh;
-	if (show_column_titles) {
-		tbh = _get_title_button_height();
-	} else {
-		tbh = 0;
-	}
+	Size2 needed_size = get_internal_min_size();
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	float title_offset = show_column_titles ? _get_title_button_height() : 0;
+	Size2 items_area = Size2(size.x - v_scroll->get_combined_minimum_size().x, size.y - h_scroll->get_combined_minimum_size().y - title_offset);
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, cache.bg->get_margin(MARGIN_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - cache.bg->get_margin(MARGIN_TOP) - cache.bg->get_margin(MARGIN_BOTTOM)));
+	v_scroll->set_begin(Point2(items_area.x, title_offset + cache.bg->get_margin(MARGIN_TOP)));
+	v_scroll->set_end(Point2(size.x, size.y - cache.bg->get_margin(MARGIN_TOP) - cache.bg->get_margin(MARGIN_BOTTOM)));
 
-	h_scroll->set_begin(Point2(0, size.height - hmin.height));
-	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
+	h_scroll->set_begin(Point2(0, items_area.y + title_offset));
+	h_scroll->set_end(Point2(items_area.x, size.y));
 
-	Size2 min = get_internal_min_size();
-
-	if (min.height < size.height - hmin.height) {
+	if (items_area.y > needed_size.y) {
 		v_scroll->hide();
 		cache.offset.y = 0;
 	} else {
 		v_scroll->show();
-		v_scroll->set_max(min.height);
-		v_scroll->set_page(size.height - hmin.height - tbh);
+		v_scroll->set_max(needed_size.y);
+		v_scroll->set_page(items_area.y);
 		cache.offset.y = v_scroll->get_value();
 	}
 
-	if (min.width < size.width - vmin.width) {
+	if (items_area.x > needed_size.x) {
 		h_scroll->hide();
 		cache.offset.x = 0;
 	} else {
 		h_scroll->show();
-		h_scroll->set_max(min.width);
-		h_scroll->set_page(size.width - vmin.width);
+		h_scroll->set_max(needed_size.x);
+		h_scroll->set_page(items_area.x);
 		cache.offset.x = h_scroll->get_value();
 	}
 }
