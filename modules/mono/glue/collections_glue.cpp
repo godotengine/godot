@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "collections_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
 #include <mono/metadata/exception.h>
 
+#include "core/array.h"
+
 #include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_class.h"
+#include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 
 Array *godot_icall_Array_Ctor() {

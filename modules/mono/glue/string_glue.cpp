@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "string_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
 #include "core/ustring.h"
 #include "core/variant.h"
 #include "core/vector.h"
+
+#include "../mono_gd/gd_mono_marshal.h"
 
 MonoArray *godot_icall_String_md5_buffer(MonoString *p_str) {
 	Vector<uint8_t> ret = GDMonoMarshal::mono_string_to_godot(p_str).md5_buffer();

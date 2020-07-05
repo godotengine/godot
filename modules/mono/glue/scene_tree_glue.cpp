@@ -28,14 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene_tree_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
+#include "core/array.h"
 #include "core/class_db.h"
-#include "modules/mono/csharp_script.h"
-#include "modules/mono/mono_gd/gd_mono_utils.h"
+#include "core/string_name.h"
 #include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
+
+#include "../csharp_script.h"
+#include "../mono_gd/gd_mono_marshal.h"
+#include "../mono_gd/gd_mono_utils.h"
 
 Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringName *group, MonoReflectionType *refltype) {
 	List<Node *> nodes;
@@ -54,8 +57,9 @@ Array *godot_icall_SceneTree_get_nodes_in_group_Generic(SceneTree *ptr, StringNa
 			// If we're trying to get native objects, just check the inheritance list
 			StringName native_class_name = GDMonoUtils::get_native_godot_class_name(klass);
 			for (int i = 0; i < nodes.size(); ++i) {
-				if (ClassDB::is_parent_class(nodes[i]->get_class(), native_class_name))
+				if (ClassDB::is_parent_class(nodes[i]->get_class(), native_class_name)) {
 					ret.push_back(nodes[i]);
+				}
 			}
 		} else {
 			// If we're trying to get csharpscript instances, get the mono object and compare the classes

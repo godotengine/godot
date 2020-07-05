@@ -28,17 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rid_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
+#include "core/object.h"
 #include "core/resource.h"
+#include "core/rid.h"
+
+#include "../mono_gd/gd_mono_marshal.h"
 
 RID *godot_icall_RID_Ctor(Object *p_from) {
 	Resource *res_from = Object::cast_to<Resource>(p_from);
 
-	if (res_from)
+	if (res_from) {
 		return memnew(RID(res_from->get_rid()));
+	}
 
 	return memnew(RID);
 }

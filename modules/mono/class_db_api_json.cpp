@@ -53,8 +53,9 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E->get());
 		ERR_FAIL_COND(!t);
-		if (t->api != p_api || !t->exposed)
+		if (t->api != p_api || !t->exposed) {
 			continue;
+		}
 
 		Dictionary class_dict;
 		classes_dict[t->name] = class_dict;
@@ -72,8 +73,9 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 				ERR_CONTINUE(name.empty());
 
-				if (name[0] == '_')
+				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
+				}
 
 				snames.push_back(*k);
 			}
