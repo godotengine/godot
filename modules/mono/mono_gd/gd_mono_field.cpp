@@ -597,11 +597,13 @@ String GDMonoField::get_string_value(MonoObject *p_object) {
 bool GDMonoField::has_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, false);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return false;
+	}
 
 	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -609,11 +611,13 @@ bool GDMonoField::has_attribute(GDMonoClass *p_attr_class) {
 MonoObject *GDMonoField::get_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return nullptr;
+	}
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }

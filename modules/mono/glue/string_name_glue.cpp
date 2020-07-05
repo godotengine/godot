@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "string_name_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
+#include "core/string_name.h"
 #include "core/ustring.h"
+
+#include "../mono_gd/gd_mono_marshal.h"
 
 StringName *godot_icall_StringName_Ctor(MonoString *p_path) {
 	return memnew(StringName(GDMonoMarshal::mono_string_to_godot(p_path)));
@@ -48,7 +49,7 @@ MonoString *godot_icall_StringName_operator_String(StringName *p_np) {
 }
 
 MonoBoolean godot_icall_StringName_is_empty(StringName *p_ptr) {
-	return (MonoBoolean)(p_ptr == StringName());
+	return (MonoBoolean)(*p_ptr == StringName());
 }
 
 void godot_register_string_name_icalls() {

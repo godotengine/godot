@@ -38,7 +38,6 @@
 #include "core/os/dir_access.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
@@ -51,13 +50,13 @@
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
-#include "gd_mono_method_thunk.h"
 
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
-	if (!unmanaged)
+	if (!unmanaged) {
 		return nullptr;
+	}
 
 	if (unmanaged->get_script_instance()) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(unmanaged->get_script_instance());
@@ -90,8 +89,9 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	MonoObject *target = gchandle.get_target();
 
-	if (target)
+	if (target) {
 		return target;
+	}
 
 	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
@@ -196,8 +196,9 @@ GDMonoClass *get_object_class(MonoObject *p_object) {
 GDMonoClass *type_get_proxy_class(const StringName &p_type) {
 	String class_name = p_type;
 
-	if (class_name[0] == '_')
+	if (class_name[0] == '_') {
 		class_name = class_name.substr(1, class_name.length());
+	}
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, class_name);
 
@@ -220,11 +221,14 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 
 	do {
 		const GDMonoAssembly *assembly = klass->get_assembly();
-		if (assembly == GDMono::get_singleton()->get_core_api_assembly())
+
+		if (assembly == GDMono::get_singleton()->get_core_api_assembly()) {
 			return klass;
+		}
 #ifdef TOOLS_ENABLED
-		if (assembly == GDMono::get_singleton()->get_editor_api_assembly())
+		if (assembly == GDMono::get_singleton()->get_editor_api_assembly()) {
 			return klass;
+		}
 #endif
 	} while ((klass = klass->get_parent_class()) != nullptr);
 
@@ -385,14 +389,6 @@ String get_exception_name_and_message(MonoException *p_exc) {
 	return res;
 }
 
-void set_exception_message(MonoException *p_exc, String message) {
-	MonoClass *klass = mono_object_get_class((MonoObject *)p_exc);
-	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	MonoString *msg = GDMonoMarshal::mono_string_from_godot(message);
-	void *params[1] = { msg };
-	property_set_value(prop, (MonoObject *)p_exc, params, nullptr);
-}
-
 void debug_print_unhandled_exception(MonoException *p_exc) {
 	print_unhandled_exception(p_exc);
 	debug_send_unhandled_exception_error(p_exc);
@@ -410,8 +406,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	}
 
 	static thread_local bool _recursion_flag_ = false;
-	if (_recursion_flag_)
+	if (_recursion_flag_) {
 		return;
+	}
 	_recursion_flag_ = true;
 	SCOPE_EXIT { _recursion_flag_ = false; };
 
@@ -441,8 +438,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		Vector<ScriptLanguage::StackInfo> _si;
 		if (stack_trace != nullptr) {
 			_si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
-			for (int i = _si.size() - 1; i >= 0; i--)
+			for (int i = _si.size() - 1; i >= 0; i--) {
 				si.insert(0, _si[i]);
+			}
 		}
 
 		exc_msg += (exc_msg.length() > 0 ? " ---> " : "") + GDMonoUtils::get_exception_name_and_message(p_exc);
@@ -452,8 +450,9 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		CRASH_COND(inner_exc_prop == nullptr);
 
 		MonoObject *inner_exc = inner_exc_prop->get_value((MonoObject *)p_exc);
-		if (inner_exc != nullptr)
+		if (inner_exc != nullptr) {
 			si.insert(0, separator);
+		}
 
 		p_exc = (MonoException *)inner_exc;
 	}

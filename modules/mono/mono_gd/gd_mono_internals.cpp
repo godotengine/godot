@@ -122,9 +122,10 @@ void unhandled_exception(MonoException *p_exc) {
 		GD_UNREACHABLE();
 	} else {
 #ifdef DEBUG_ENABLED
-		GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-		if (EngineDebugger::is_active())
+		GDMonoUtils::debug_send_unhandled_exception_error(p_exc);
+		if (EngineDebugger::is_active()) {
 			EngineDebugger::get_singleton()->poll_events(false);
+		}
 #endif
 	}
 }

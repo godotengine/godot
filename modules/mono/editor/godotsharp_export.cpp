@@ -75,8 +75,9 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String>
 
 		const String &ref_name = ref_info.name;
 
-		if (r_assembly_dependencies.has(ref_name))
+		if (r_assembly_dependencies.has(ref_name)) {
 			continue;
+		}
 
 		GDMonoAssembly *ref_assembly = nullptr;
 
@@ -130,8 +131,9 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 		ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + assembly_name + "'.");
 
 		Error err = get_assembly_dependencies(assembly, search_dirs, r_assembly_dependencies);
-		if (err != OK)
+		if (err != OK) {
 			return err;
+		}
 	}
 
 	return OK;

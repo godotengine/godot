@@ -40,8 +40,8 @@ private:
 	T *_ptr;
 	int size;
 
-	ArgumentsVector();
-	ArgumentsVector(const ArgumentsVector &);
+	ArgumentsVector() = delete;
+	ArgumentsVector(const ArgumentsVector &) = delete;
 
 public:
 	T *ptr() { return _ptr; }
