@@ -45,8 +45,9 @@
 namespace CSharpProject {
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {
-	if (!GLOBAL_DEF("mono/project/auto_update_project", true))
+	if (!GLOBAL_DEF("mono/project/auto_update_project", true)) {
 		return;
+	}
 
 	GDMonoAssembly *tools_project_editor_assembly = GDMono::get_singleton()->get_tools_project_editor_assembly();
 

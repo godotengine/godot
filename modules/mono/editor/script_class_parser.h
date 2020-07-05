@@ -53,7 +53,6 @@ public:
 		String namespace_;
 		Vector<String> base;
 		bool nested;
-		bool has_script_attr;
 	};
 
 private:

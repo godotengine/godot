@@ -51,18 +51,21 @@ bool SignalAwaiterCallable::compare_equal(const CallableCustom *p_a, const Calla
 	const SignalAwaiterCallable *a = static_cast<const SignalAwaiterCallable *>(p_a);
 	const SignalAwaiterCallable *b = static_cast<const SignalAwaiterCallable *>(p_b);
 
-	if (a->target_id != b->target_id)
+	if (a->target_id != b->target_id) {
 		return false;
+	}
 
-	if (a->signal != b->signal)
+	if (a->signal != b->signal) {
 		return false;
+	}
 
 	return true;
 }
 
 bool SignalAwaiterCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	if (compare_equal(p_a, p_b))
+	if (compare_equal(p_a, p_b)) {
 		return false;
+	}
 	return p_a < p_b;
 }
 
@@ -145,18 +148,21 @@ bool EventSignalCallable::compare_equal(const CallableCustom *p_a, const Callabl
 	const EventSignalCallable *a = static_cast<const EventSignalCallable *>(p_a);
 	const EventSignalCallable *b = static_cast<const EventSignalCallable *>(p_b);
 
-	if (a->owner != b->owner)
+	if (a->owner != b->owner) {
 		return false;
+	}
 
-	if (a->event_signal != b->event_signal)
+	if (a->event_signal != b->event_signal) {
 		return false;
+	}
 
 	return true;
 }
 
 bool EventSignalCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	if (compare_equal(p_a, p_b))
+	if (compare_equal(p_a, p_b)) {
 		return false;
+	}
 	return p_a < p_b;
 }
 

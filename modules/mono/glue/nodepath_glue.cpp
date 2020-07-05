@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "nodepath_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
+#include "core/node_path.h"
 #include "core/ustring.h"
+
+#include "../mono_gd/gd_mono_marshal.h"
 
 NodePath *godot_icall_NodePath_Ctor(MonoString *p_path) {
 	return memnew(NodePath(GDMonoMarshal::mono_string_to_godot(p_path)));
@@ -51,7 +52,7 @@ MonoBoolean godot_icall_NodePath_is_absolute(NodePath *p_ptr) {
 	return (MonoBoolean)p_ptr->is_absolute();
 }
 
-uint32_t godot_icall_NodePath_get_name_count(NodePath *p_ptr) {
+int32_t godot_icall_NodePath_get_name_count(NodePath *p_ptr) {
 	return p_ptr->get_name_count();
 }
 
@@ -59,7 +60,7 @@ MonoString *godot_icall_NodePath_get_name(NodePath *p_ptr, uint32_t p_idx) {
 	return GDMonoMarshal::mono_string_from_godot(p_ptr->get_name(p_idx));
 }
 
-uint32_t godot_icall_NodePath_get_subname_count(NodePath *p_ptr) {
+int32_t godot_icall_NodePath_get_subname_count(NodePath *p_ptr) {
 	return p_ptr->get_subname_count();
 }
 

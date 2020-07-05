@@ -81,15 +81,17 @@ bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 
 StringName GDMonoClass::get_namespace() const {
 	GDMonoClass *nesting_class = get_nesting_class();
-	if (!nesting_class)
+	if (!nesting_class) {
 		return namespace_name;
+	}
 	return nesting_class->get_namespace();
 }
 
 String GDMonoClass::get_name_for_lookup() const {
 	GDMonoClass *nesting_class = get_nesting_class();
-	if (!nesting_class)
+	if (!nesting_class) {
 		return class_name;
+	}
 	return nesting_class->get_name_for_lookup() + "/" + class_name;
 }
 
@@ -131,11 +133,13 @@ bool GDMonoClass::has_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, false);
 #endif
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return false;
+	}
 
 	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -145,11 +149,13 @@ MonoObject *GDMonoClass::get_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 #endif
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return nullptr;
+	}
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -164,8 +170,9 @@ void GDMonoClass::fetch_attributes() {
 void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base) {
 	CRASH_COND(!CACHED_CLASS(GodotObject)->is_assignable_from(this));
 
-	if (methods_fetched)
+	if (methods_fetched) {
 		return;
+	}
 
 	void *iter = nullptr;
 	MonoMethod *raw_method = nullptr;
@@ -202,8 +209,9 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 					break;
 				}
 
-				if (native_top == CACHED_CLASS(GodotObject))
+				if (native_top == CACHED_CLASS(GodotObject)) {
 					break;
+				}
 
 				native_top = native_top->get_parent_class();
 			}
@@ -212,8 +220,9 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 		uint32_t flags = mono_method_get_flags(method->mono_method, nullptr);
 
-		if (!(flags & MONO_METHOD_ATTR_VIRTUAL))
+		if (!(flags & MONO_METHOD_ATTR_VIRTUAL)) {
 			continue;
+		}
 
 		// Virtual method of Godot Object derived type, let's try to find GodotMethod attribute
 
@@ -235,15 +244,17 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 #endif
 				MethodKey key = MethodKey(godot_method_name, method->get_parameters_count());
 				GDMonoMethod **existing_method = methods.getptr(key);
-				if (existing_method)
+				if (existing_method) {
 					memdelete(*existing_method); // Must delete old one
+				}
 				methods.set(key, method);
 
 				break;
 			}
 
-			if (top == CACHED_CLASS(GodotObject))
+			if (top == CACHED_CLASS(GodotObject)) {
 				break;
+			}
 
 			top = top->get_parent_class();
 		}
@@ -258,8 +269,9 @@ GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p
 	const MethodKey *k = nullptr;
 
 	while ((k = methods.next(k))) {
-		if (k->name == p_name)
+		if (k->name == p_name) {
 			return methods.get(*k);
+		}
 	}
 
 	return nullptr;
@@ -283,11 +295,13 @@ GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_cou
 
 	GDMonoMethod **match = methods.getptr(key);
 
-	if (match)
+	if (match) {
 		return *match;
+	}
 
-	if (methods_fetched)
+	if (methods_fetched) {
 		return nullptr;
+	}
 
 	MonoMethod *raw_method = mono_class_get_method_from_name(mono_class, String(p_name).utf8().get_data(), p_params_count);
 
@@ -323,8 +337,9 @@ GDMonoMethod *GDMonoClass::get_method(MonoMethod *p_raw_method, const StringName
 
 	GDMonoMethod **match = methods.getptr(key);
 
-	if (match)
+	if (match) {
 		return *match;
+	}
 
 	GDMonoMethod *method = memnew(GDMonoMethod(p_name, p_raw_method));
 	methods.set(key, method);
@@ -337,8 +352,9 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	MonoMethod *method = mono_method_desc_search_in_class(desc, mono_class);
 	mono_method_desc_free(desc);
 
-	if (!method)
+	if (!method) {
 		return nullptr;
+	}
 
 	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, nullptr);
 
@@ -348,11 +364,13 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
 	Map<StringName, GDMonoField *>::Element *result = fields.find(p_name);
 
-	if (result)
+	if (result) {
 		return result->value();
+	}
 
-	if (fields_fetched)
+	if (fields_fetched) {
 		return nullptr;
+	}
 
 	MonoClassField *raw_field = mono_class_get_field_from_name(mono_class, String(p_name).utf8().get_data());
 
@@ -367,8 +385,9 @@ GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
 }
 
 const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
-	if (fields_fetched)
+	if (fields_fetched) {
 		return fields_list;
+	}
 
 	void *iter = nullptr;
 	MonoClassField *raw_field = nullptr;
@@ -394,11 +413,13 @@ const Vector<GDMonoField *> &GDMonoClass::get_all_fields() {
 GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
 	Map<StringName, GDMonoProperty *>::Element *result = properties.find(p_name);
 
-	if (result)
+	if (result) {
 		return result->value();
+	}
 
-	if (properties_fetched)
+	if (properties_fetched) {
 		return nullptr;
+	}
 
 	MonoProperty *raw_property = mono_class_get_property_from_name(mono_class, String(p_name).utf8().get_data());
 
@@ -413,8 +434,9 @@ GDMonoProperty *GDMonoClass::get_property(const StringName &p_name) {
 }
 
 const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
-	if (properties_fetched)
+	if (properties_fetched) {
 		return properties_list;
+	}
 
 	void *iter = nullptr;
 	MonoProperty *raw_property = nullptr;
@@ -438,8 +460,9 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 }
 
 const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
-	if (delegates_fetched)
+	if (delegates_fetched) {
 		return delegates_list;
+	}
 
 	void *iter = nullptr;
 	MonoClass *raw_class = nullptr;

@@ -40,8 +40,6 @@ String join(const String &p_a, const String &p_b);
 String join(const String &p_a, const String &p_b, const String &p_c);
 String join(const String &p_a, const String &p_b, const String &p_c, const String &p_d);
 
-String find_executable(const String &p_name);
-
 /// Returns a normalized absolute path to the current working directory
 String cwd();
 

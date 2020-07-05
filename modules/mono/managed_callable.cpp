@@ -48,8 +48,9 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	MonoDelegate *delegate_b = (MonoDelegate *)b->delegate_handle.get_target();
 
 	if (!delegate_a || !delegate_b) {
-		if (!delegate_a && !delegate_b)
+		if (!delegate_a && !delegate_b) {
 			return true;
+		}
 		return false;
 	}
 
@@ -58,8 +59,9 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 }
 
 bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	if (compare_equal(p_a, p_b))
+	if (compare_equal(p_a, p_b)) {
 		return false;
+	}
 	return p_a < p_b;
 }
 
