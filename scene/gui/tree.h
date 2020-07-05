@@ -682,7 +682,7 @@ public:
 	TreeItem *get_item_with_text(const String &p_find) const;
 
 	Point2 get_scroll() const;
-	void scroll_to_item(TreeItem *p_item);
+	void scroll_to_item(TreeItem *p_item, bool p_center_on_item = false);
 	void set_h_scroll_enabled(bool p_enable);
 	bool is_h_scroll_enabled() const;
 	void set_v_scroll_enabled(bool p_enable);

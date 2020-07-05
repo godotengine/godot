@@ -446,14 +446,14 @@ void CreateDialog::_notification(int p_what) {
 	}
 }
 
-void CreateDialog::select_type(const String &p_type) {
+void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	if (!search_options_types.has(p_type)) {
 		return;
 	}
 
 	TreeItem *to_select = search_options_types[p_type];
 	to_select->select(0);
-	search_options->scroll_to_item(to_select);
+	search_options->scroll_to_item(to_select, p_center_on_item);
 
 	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
 		// Display both class name and description, since the help bit may be displayed
@@ -520,7 +520,7 @@ Variant CreateDialog::instance_selected() {
 
 void CreateDialog::_item_selected() {
 	String name = get_selected_type();
-	select_type(name);
+	select_type(name, false);
 }
 
 void CreateDialog::_hide_requested() {

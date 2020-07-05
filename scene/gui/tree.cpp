@@ -4409,21 +4409,29 @@ Point2 Tree::get_scroll() const {
 	return ofs;
 }
 
-void Tree::scroll_to_item(TreeItem *p_item) {
+void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 	if (!is_visible_in_tree()) {
-		// hack to work around crash in get_item_rect() if Tree is not in tree.
-		return;
+		return; // Hack to work around crash in get_item_rect() if Tree is not in tree.
 	}
 
-	// make sure the scrollbar min and max are up to date with latest changes.
 	update_scrollbars();
 
-	const Rect2 r = get_item_rect(p_item);
+	const real_t tree_height = get_size().y;
+	const Rect2 item_rect = get_item_rect(p_item);
+	const real_t item_y = item_rect.position.y;
+	const real_t item_height = item_rect.size.y + cache.vseparation;
 
-	if (r.position.y <= v_scroll->get_value()) {
-		v_scroll->set_value(r.position.y);
-	} else if (r.position.y + r.size.y + 2 * cache.vseparation > v_scroll->get_value() + get_size().y) {
-		v_scroll->set_value(r.position.y + r.size.y + 2 * cache.vseparation - get_size().y);
+	if (p_center_on_item) {
+		v_scroll->set_value(item_y - (tree_height - item_height) / 2.0f);
+	} else {
+		if (item_y < v_scroll->get_value()) {
+			v_scroll->set_value(item_y);
+		} else {
+			const real_t new_position = item_y + item_height - tree_height;
+			if (new_position > v_scroll->get_value()) {
+				v_scroll->set_value(new_position);
+			}
+		}
 	}
 }
 
@@ -4868,7 +4876,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_column_title_language", "column"), &Tree::get_column_title_language);
 
 	ClassDB::bind_method(D_METHOD("get_scroll"), &Tree::get_scroll);
-	ClassDB::bind_method(D_METHOD("scroll_to_item", "item"), &Tree::scroll_to_item);
+	ClassDB::bind_method(D_METHOD("scroll_to_item", "item", "center_on_item"), &Tree::scroll_to_item, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_h_scroll_enabled", "h_scroll"), &Tree::set_h_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"), &Tree::is_h_scroll_enabled);

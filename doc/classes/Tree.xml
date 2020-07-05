@@ -240,6 +240,7 @@
 		<method name="scroll_to_item">
 			<return type="void" />
 			<argument index="0" name="item" type="TreeItem" />
+			<argument index="1" name="center_on_item" type="bool" default="false" />
 			<description>
 				Causes the [Tree] to jump to the specified [TreeItem].
 			</description>
