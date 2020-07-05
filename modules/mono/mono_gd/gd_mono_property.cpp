@@ -77,15 +77,17 @@ GDMonoProperty::~GDMonoProperty() {
 
 bool GDMonoProperty::is_static() {
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
-	if (prop_method == nullptr)
+	if (prop_method == nullptr) {
 		prop_method = mono_property_get_set_method(mono_property);
+	}
 	return mono_method_get_flags(prop_method, nullptr) & MONO_METHOD_ATTR_STATIC;
 }
 
 IMonoClassMember::Visibility GDMonoProperty::get_visibility() {
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
-	if (prop_method == nullptr)
+	if (prop_method == nullptr) {
 		prop_method = mono_property_get_set_method(mono_property);
+	}
 
 	switch (mono_method_get_flags(prop_method, nullptr) & MONO_METHOD_ATTR_ACCESS_MASK) {
 		case MONO_METHOD_ATTR_PRIVATE:
@@ -106,11 +108,13 @@ IMonoClassMember::Visibility GDMonoProperty::get_visibility() {
 bool GDMonoProperty::has_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, false);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return false;
+	}
 
 	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -118,11 +122,13 @@ bool GDMonoProperty::has_attribute(GDMonoClass *p_attr_class) {
 MonoObject *GDMonoProperty::get_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return nullptr;
+	}
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }

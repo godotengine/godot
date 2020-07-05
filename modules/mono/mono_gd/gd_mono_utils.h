@@ -84,10 +84,6 @@ void detach_current_thread(MonoThread *p_mono_thread);
 MonoThread *get_current_thread();
 bool is_thread_attached();
 
-_FORCE_INLINE_ bool is_main_thread() {
-	return mono_domain_get() != nullptr && mono_thread_get_main() == mono_thread_current();
-}
-
 uint32_t new_strong_gchandle(MonoObject *p_object);
 uint32_t new_strong_gchandle_pinned(MonoObject *p_object);
 uint32_t new_weak_gchandle(MonoObject *p_object);
@@ -115,7 +111,6 @@ String get_type_desc(MonoType *p_type);
 String get_type_desc(MonoReflectionType *p_reftype);
 
 String get_exception_name_and_message(MonoException *p_exc);
-void set_exception_message(MonoException *p_exc, String message);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);
