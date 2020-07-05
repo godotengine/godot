@@ -1592,7 +1592,9 @@ void EditorInspector::update_tree() {
 				}
 			}
 			if (category->icon.is_null()) {
-				category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+				if (type != String()) { // Can happen for built-in scripts.
+					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+				}
 			}
 			category->label = type;
 
@@ -2405,8 +2407,11 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 		String n = EditorNode::get_editor_data().script_class_get_name(script->get_path());
 		if (n.length()) {
 			classes.push_front(n);
-		} else {
+		} else if (script->get_path() != String() && script->get_path().find("::") == -1) {
 			n = script->get_path().get_file();
+			classes.push_front(n);
+		} else {
+			n = TTR("Built-in script");
 			classes.push_front(n);
 		}
 		paths[n] = script->get_path();
@@ -2436,7 +2441,14 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
 		StringName name = E->get();
 		String path = paths[name];
-		Ref<Script> s = ResourceLoader::load(path, "Script");
+		Ref<Script> s;
+		if (path == String()) {
+			// Built-in script. It can't be inherited, so must be the script attached to the object.
+			s = p_object.get_script();
+		} else {
+			s = ResourceLoader::load(path, "Script");
+		}
+		ERR_FAIL_COND(!s->is_valid());
 		List<PropertyInfo> props;
 		s->get_script_property_list(&props);
 
