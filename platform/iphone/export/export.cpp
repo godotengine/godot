@@ -892,6 +892,8 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 
 Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets) {
 	DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String binary_name = p_out_dir.get_file().get_basename();
+
 	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
 		String asset = p_assets[f_idx];
@@ -917,32 +919,35 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 			String destination_dir;
 			String destination;
 			String asset_path;
+
 			bool create_framework = false;
 
 			if (p_is_framework && asset.ends_with(".dylib")) {
 				// For iOS we need to turn .dylib into .framework
 				// to be able to send application to AppStore
-				destination_dir = p_out_dir.plus_file("dylibs").plus_file(base_dir);
+				asset_path = String("dylibs").plus_file(base_dir);
 
 				String file_name = asset.get_basename().get_file();
 				String framework_name = file_name + ".framework";
 
-				destination_dir = destination_dir.plus_file(framework_name);
+				asset_path = asset_path.plus_file(framework_name);
+				destination_dir = p_out_dir.plus_file(asset_path);
 				destination = destination_dir.plus_file(file_name);
-				asset_path = destination_dir;
 				create_framework = true;
 			} else if (p_is_framework && (asset.ends_with(".framework") || asset.ends_with(".xcframework"))) {
-				destination_dir = p_out_dir.plus_file("dylibs").plus_file(base_dir);
+				asset_path = String("dylibs").plus_file(base_dir);
 
 				String file_name = asset.get_file();
-				destination = destination_dir.plus_file(file_name);
-				asset_path = destination;
+				asset_path = asset_path.plus_file(file_name);
+				destination_dir = p_out_dir.plus_file(asset_path);
+				destination = destination_dir;
 			} else {
-				destination_dir = p_out_dir.plus_file(base_dir);
+				asset_path = base_dir;
 
 				String file_name = asset.get_file();
-				destination = destination_dir.plus_file(file_name);
-				asset_path = destination;
+				destination_dir = p_out_dir.plus_file(asset_path);
+				asset_path = asset_path.plus_file(file_name);
+				destination = p_out_dir.plus_file(asset_path);
 			}
 
 			if (!filesystem_da->dir_exists(destination_dir)) {
@@ -960,7 +965,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				memdelete(filesystem_da);
 				return err;
 			}
-			IOSExportAsset exported_asset = { asset_path, p_is_framework };
+			IOSExportAsset exported_asset = { binary_name.plus_file(asset_path), p_is_framework };
 			r_exported_assets.push_back(exported_asset);
 
 			if (create_framework) {
@@ -1006,7 +1011,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 
 					String info_plist = info_plist_format.replace("$name", file_name);
 
-					FileAccess *f = FileAccess::open(asset_path.plus_file("Info.plist"), FileAccess::WRITE);
+					FileAccess *f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
 					if (f) {
 						f->store_string(info_plist);
 						f->close();
