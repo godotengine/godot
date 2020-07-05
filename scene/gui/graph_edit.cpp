@@ -677,7 +677,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_to = mm->get_position();
 		connecting_target = false;
 		top_layer->update();
-		connecting_valid = click_pos.distance_to(connecting_to) > 20.0 * zoom;
+		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to) > 20.0 * zoom;
 
 		if (connecting_valid) {
 			Ref<Texture> port = get_icon("port", "GraphNode");
