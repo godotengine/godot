@@ -477,6 +477,8 @@ void EditorAutoloadSettings::update_autoload() {
 			info.node->queue_delete();
 			info.node = nullptr;
 		}
+
+		ProjectSettings::get_singleton()->remove_autoload(info.name);
 	}
 
 	// Load new/changed autoloads
@@ -502,6 +504,12 @@ void EditorAutoloadSettings::update_autoload() {
 				ScriptServer::get_language(i)->add_named_global_constant(info->name, info->node);
 			}
 		}
+
+		ProjectSettings::AutoloadInfo prop_info;
+		prop_info.name = info->name;
+		prop_info.path = info->path;
+		prop_info.is_singleton = info->is_singleton;
+		ProjectSettings::get_singleton()->add_autoload(prop_info);
 
 		if (!info->in_editor && !info->is_singleton) {
 			// No reason to keep this node
