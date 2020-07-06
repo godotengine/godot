@@ -351,6 +351,15 @@
 				Loads an image from the binary contents of a PNG file.
 			</description>
 		</method>
+		<method name="load_tga_from_buffer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+				Loads an image from the binary contents of a TGA file.
+			</description>
+		</method>
 		<method name="load_webp_from_buffer">
 			<return type="int" enum="Error">
 			</return>
