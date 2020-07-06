@@ -38,6 +38,8 @@
 
 class SyntaxHighlighter;
 
+/// When two overloads of a method (that's related to cursors or selections), one with (int p_idx) in the parameter and one doesn't,
+/// the former operates on the specific cursor/selection, and the latter operates on all the cursors/selections.
 class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
 
@@ -151,18 +153,11 @@ public:
 
 private:
 	struct Cursor {
-		int last_fit_x;
-		int line, column; ///< cursor
-		int x_ofs, line_ofs, wrap_ofs;
-		Cursor() {
-			last_fit_x = 0;
-			line = 0;
-			column = 0; ///< cursor
-			x_ofs = 0;
-			line_ofs = 0;
-			wrap_ofs = 0;
-		}
-	} cursor;
+		int last_fit_x = 0;
+		int line = 0, column = 0; ///< cursor
+		int line_ofs = 0;
+		int wrap_ofs = 0;
+	};
 
 	struct Selection {
 		enum Mode {
@@ -174,33 +169,27 @@ private:
 			MODE_LINE
 		};
 
-		Mode selecting_mode;
-		int selecting_line, selecting_column;
-		int selected_word_beg, selected_word_end, selected_word_origin;
-		bool selecting_text;
+		Mode selecting_mode = MODE_NONE;
+		int selecting_line = 0, selecting_column = 0;
+		int selected_word_beg = 0, selected_word_end = 0, selected_word_origin = 0;
+		bool selecting_text = false;
 
-		bool active;
+		bool active = false;
 
-		int from_line, from_column;
-		int to_line, to_column;
+		int from_line = 0, from_column = 0;
+		int to_line = 0, to_column = 0;
 
-		bool shiftclick_left;
-		Selection() {
-			selecting_mode = MODE_NONE;
-			selecting_line = 0;
-			selecting_column = 0;
-			selected_word_beg = 0;
-			selected_word_end = 0;
-			selected_word_origin = 0;
-			selecting_text = false;
-			active = false;
-			from_line = 0;
-			from_column = 0;
-			to_line = 0;
-			to_column = 0;
-			shiftclick_left = false;
-		}
-	} selection;
+		bool shiftclick_left = false;
+	};
+
+	struct CursorData {
+		Cursor cursor;
+		Selection selection;
+	};
+
+	Vector<CursorData> cursors;
+
+	int x_ofs = 0;
 
 	struct Cache {
 		Ref<Texture2D> tab_icon;
@@ -443,7 +432,7 @@ private:
 	bool line_wraps(int line) const;
 	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
-	int get_cursor_wrap_index() const;
+	int get_cursor_wrap_index(int p_idx) const;
 	int get_line_wrap_index_at_col(int p_line, int p_column) const;
 	int get_char_count();
 
@@ -463,6 +452,7 @@ private:
 	int get_column_x_offset(int p_char, String p_str) const;
 
 	void adjust_viewport_to_cursor();
+	// TODO this doens't have def for some reason
 	double get_scroll_line_diff() const;
 	void _scroll_moved(double);
 	void _update_scrollbars();
@@ -526,6 +516,7 @@ protected:
 
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
+	void _insert_text_at_cursor(int p_idx, const String &p_text);
 	void _insert_text_at_cursor(const String &p_text);
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
@@ -576,6 +567,7 @@ public:
 
 	void set_highlighted_word(const String &new_word);
 	void set_text(String p_text);
+	void insert_text_at_cursor(int p_idx, const String &p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
@@ -615,9 +607,12 @@ public:
 	String get_text();
 	String get_line(int line) const;
 	void set_line(int line, String new_text);
+	void backspace_at_cursor(int p_idx);
 	void backspace_at_cursor();
 
+	void indent_left(int p_idx);
 	void indent_left();
+	void indent_right(int p_idx);
 	void indent_right();
 	int get_indent_level(int p_line) const;
 	bool is_line_comment(int p_line) const;
@@ -641,12 +636,16 @@ public:
 
 	void center_viewport_to_cursor();
 
+	void clear_rest_cursors();
+	void cursor_set_column(int p_idx, int p_col, bool p_adjust_viewport = true);
 	void cursor_set_column(int p_col, bool p_adjust_viewport = true);
+	void cursor_set_line(int p_idx, int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);
 	void cursor_set_line(int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);
 
-	int cursor_get_column() const;
-	int cursor_get_line() const;
-	Vector2i _get_cursor_pixel_pos();
+	int get_cursor_count() const;
+	int cursor_get_column(int p_idx) const;
+	int cursor_get_line(int p_idx) const;
+	Vector2i _get_cursor_pixel_pos(int p_idx);
 
 	bool cursor_get_blink_enabled() const;
 	void cursor_set_blink_enabled(const bool p_enabled);
@@ -674,12 +673,16 @@ public:
 	void set_syntax_coloring(bool p_enabled);
 	bool is_syntax_coloring_enabled() const;
 
+	// Cut/Copy works on the "primary" (first) cursor only, and paste pastes to all cursors
+	// TODO: make separate copy buffers for all cursors (this is a feature of sublime/vscode's multi cursor)
 	void cut();
 	void copy();
 	void paste();
 	void select_all();
-	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
-	void deselect();
+	void select(int p_idx, int p_from_line, int p_from_column, int p_to_line, int p_to_column);
+	void select_next_occurence();
+	void deselect_all();
+	void deselect(int p_idx);
 	void swap_lines(int line1, int line2);
 
 	void set_search_text(const String &p_search_text);
@@ -688,14 +691,16 @@ public:
 
 	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_highlight_all_occurrences_enabled() const;
-	bool is_selection_active() const;
-	int get_selection_from_line() const;
-	int get_selection_from_column() const;
-	int get_selection_to_line() const;
-	int get_selection_to_column() const;
-	String get_selection_text() const;
+	bool is_any_selections_active() const;
+	// Default parameters to 0 (primary cursor) to provide backward compatibility
+	bool is_selection_active(int p_idx = 0) const;
+	int get_selection_from_line(int p_idx = 0) const;
+	int get_selection_from_column(int p_idx = 0) const;
+	int get_selection_to_line(int p_idx = 0) const;
+	int get_selection_to_column(int p_idx = 0) const;
+	String get_selection_text(int p_idx = 0) const;
 
-	String get_word_under_cursor() const;
+	String get_word_under_cursor(int p_idx) const;
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
 	bool search(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column, int &r_line, int &r_column) const;
