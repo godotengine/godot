@@ -260,6 +260,11 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale To Fit,Scale To Fill,Scale"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
 
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -277,6 +282,12 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		"development",
 		"ad-hoc",
 		"enterprise"
+	};
+	static const String storyboard_image_scale_mode[] = {
+		"center",
+		"scaleAspectFit",
+		"scaleAspectFill",
+		"scaleToFill"
 	};
 	String str;
 	String strnew;
@@ -419,13 +430,25 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String value = is_on ? "" : "ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;";
 			strnew += lines[i].replace("$pbx_launch_image_usage_setting", value) + "\n";
 		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
-			String logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-			bool is_on = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
-			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
-			String value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
+			String value;
+
+			switch (image_scale_mode) {
+				case 0: {
+					String logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+					bool is_on = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+					// If custom logo is not specified, Godot does not scale default one, so we should do the same.
+					value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+				} break;
+				default: {
+					value = storyboard_image_scale_mode[image_scale_mode - 1];
+				}
+			}
+
 			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
 		} else if (lines[i].find("$launch_screen_background_color") != -1) {
-			Color color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
+			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
+			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
 			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
 
 			Dictionary value_dictionary;
@@ -567,35 +590,68 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 }
 
 Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
-	Ref<Image> splash;
+	const String custom_launch_image_2x = p_preset->get("storyboard/custom_image@2x");
+	const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
 
-	const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
+		Ref<Image> image;
+		String image_path = p_dest_dir.plus_file("splash@2x.png");
+		image.instance();
+		Error err = image->load(custom_launch_image_2x);
 
-	if (!splash_path.empty()) {
-		splash.instance();
-		const Error err = splash->load(splash_path);
 		if (err) {
-			splash.unref();
+			image.unref();
+			return err;
 		}
-	}
 
-	if (splash.is_null()) {
-		splash = Ref<Image>(memnew(Image(boot_splash_png)));
-	}
+		if (image->save_png(image_path) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
 
-	// Using same image for both @2x and @3x
-	// because Godot's own boot logo uses single image for all resolutions.
-	// Also not using @1x image, because devices using this image variant
-	// are not supported by iOS 9, which is minimal target.
-	const String splash_png_path_2x = p_dest_dir.plus_file("splash@2x.png");
-	const String splash_png_path_3x = p_dest_dir.plus_file("splash@3x.png");
+		image.unref();
+		image_path = p_dest_dir.plus_file("splash@3x.png");
+		image.instance();
+		err = image->load(custom_launch_image_3x);
 
-	if (splash->save_png(splash_png_path_2x) != OK) {
-		return ERR_FILE_CANT_WRITE;
-	}
+		if (err) {
+			image.unref();
+			return err;
+		}
 
-	if (splash->save_png(splash_png_path_3x) != OK) {
-		return ERR_FILE_CANT_WRITE;
+		if (image->save_png(image_path) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
+	} else {
+		Ref<Image> splash;
+
+		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+
+		if (!splash_path.empty()) {
+			splash.instance();
+			const Error err = splash->load(splash_path);
+			if (err) {
+				splash.unref();
+			}
+		}
+
+		if (splash.is_null()) {
+			splash = Ref<Image>(memnew(Image(boot_splash_png)));
+		}
+
+		// Using same image for both @2x and @3x
+		// because Godot's own boot logo uses single image for all resolutions.
+		// Also not using @1x image, because devices using this image variant
+		// are not supported by iOS 9, which is minimal target.
+		const String splash_png_path_2x = p_dest_dir.plus_file("splash@2x.png");
+		const String splash_png_path_3x = p_dest_dir.plus_file("splash@3x.png");
+
+		if (splash->save_png(splash_png_path_2x) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
+
+		if (splash->save_png(splash_png_path_3x) != OK) {
+			return ERR_FILE_CANT_WRITE;
+		}
 	}
 
 	return OK;
