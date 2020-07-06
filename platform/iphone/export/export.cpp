@@ -39,6 +39,7 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "main/splash.gen.h"
 #include "platform/iphone/logo.gen.h"
 #include "string.h"
 
@@ -93,7 +94,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	String _get_linker_flags();
 	String _get_cpp_code();
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug);
-	Error _export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
+	Error _export_loading_screen_images(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
+	Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
 	Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
 
 	Vector<ExportArchitecture> _get_supported_architectures();
@@ -257,6 +259,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_launch_screen_storyboard"), false));
+
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
 	}
@@ -390,6 +394,48 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$photolibrary_usage_description") != -1) {
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
+		} else if (lines[i].find("$plist_launch_screen_name") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>" : "";
+			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_file_reference") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };" : "";
+			strnew += lines[i].replace("$pbx_launch_screen_file_reference", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_copy_files") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */," : "";
+			strnew += lines[i].replace("$pbx_launch_screen_copy_files", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_build_phase") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */," : "";
+			strnew += lines[i].replace("$pbx_launch_screen_build_phase", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };" : "";
+			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
+		} else if (lines[i].find("$pbx_launch_image_usage_setting") != -1) {
+			bool is_on = p_preset->get("storyboard/use_launch_screen_storyboard");
+			String value = is_on ? "" : "ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;";
+			strnew += lines[i].replace("$pbx_launch_image_usage_setting", value) + "\n";
+		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
+			String logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+			bool is_on = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
+			String value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
+		} else if (lines[i].find("$launch_screen_background_color") != -1) {
+			Color color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
+			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
+
+			Dictionary value_dictionary;
+			value_dictionary["red"] = color.r;
+			value_dictionary["green"] = color.g;
+			value_dictionary["blue"] = color.b;
+			value_dictionary["alpha"] = color.a;
+			String value = value_format.format(value_dictionary, "$_");
+
+			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -520,7 +566,42 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	return OK;
 }
 
-Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
+Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
+	Ref<Image> splash;
+
+	const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+
+	if (!splash_path.empty()) {
+		splash.instance();
+		const Error err = splash->load(splash_path);
+		if (err) {
+			splash.unref();
+		}
+	}
+
+	if (splash.is_null()) {
+		splash = Ref<Image>(memnew(Image(boot_splash_png)));
+	}
+
+	// Using same image for both @2x and @3x
+	// because Godot's own boot logo uses single image for all resolutions.
+	// Also not using @1x image, because devices using this image variant
+	// are not supported by iOS 9, which is minimal target.
+	const String splash_png_path_2x = p_dest_dir.plus_file("splash@2x.png");
+	const String splash_png_path_3x = p_dest_dir.plus_file("splash@3x.png");
+
+	if (splash->save_png(splash_png_path_2x) != OK) {
+		return ERR_FILE_CANT_WRITE;
+	}
+
+	if (splash->save_png(splash_png_path_3x) != OK) {
+		return ERR_FILE_CANT_WRITE;
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
 	DirAccess *da = DirAccess::open(p_dest_dir);
 	ERR_FAIL_COND_V_MSG(!da, ERR_CANT_OPEN, "Cannot open directory '" + p_dest_dir + "'.");
 
@@ -1038,6 +1119,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	files_to_parse.insert("godot_ios.xcodeproj/project.xcworkspace/contents.xcworkspacedata");
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
 	files_to_parse.insert("godot_ios/godot_ios.entitlements");
+	files_to_parse.insert("godot_ios/Launch Screen.storyboard");
 
 	IOSConfigData config_data = {
 		pkg_name,
@@ -1211,9 +1293,46 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	if (err)
 		return err;
 
-	err = _export_loading_screens(p_preset, dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/");
-	if (err)
+	bool use_storyboard = p_preset->get("storyboard/use_launch_screen_storyboard");
+
+	String launch_image_path = dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/";
+	String splash_image_path = dest_dir + binary_name + "/Images.xcassets/SplashImage.imageset/";
+
+	DirAccess *launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	if (!launch_screen_da) {
+		return ERR_CANT_CREATE;
+	}
+
+	if (use_storyboard) {
+		print_line("Using Launch Storyboard");
+
+		if (launch_screen_da->change_dir(launch_image_path) == OK) {
+			launch_screen_da->erase_contents_recursive();
+			launch_screen_da->remove(launch_image_path);
+		}
+
+		err = _export_loading_screen_file(p_preset, splash_image_path);
+	} else {
+		print_line("Using Launch Images");
+
+		const String launch_screen_path = dest_dir + binary_name + "/Launch Screen.storyboard";
+
+		launch_screen_da->remove(launch_screen_path);
+
+		if (launch_screen_da->change_dir(splash_image_path) == OK) {
+			launch_screen_da->erase_contents_recursive();
+			launch_screen_da->remove(splash_image_path);
+		}
+
+		err = _export_loading_screen_images(p_preset, launch_image_path);
+	}
+
+	memdelete(launch_screen_da);
+
+	if (err) {
 		return err;
+	}
 
 	print_line("Exporting additional assets");
 	Vector<IOSExportAsset> assets;
