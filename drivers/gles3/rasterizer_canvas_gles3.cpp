@@ -2141,7 +2141,7 @@ void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_im
 	canvas_begin();
 
 	if (black_image[MARGIN_LEFT].is_valid()) {
-		_bind_canvas_texture(black_image[MARGIN_LEFT], RID());
+		_bind_canvas_texture(black_image[MARGIN_LEFT], RID(), true);
 		Size2 sz(storage->texture_get_width(black_image[MARGIN_LEFT]), storage->texture_get_height(black_image[MARGIN_LEFT]));
 
 		draw_generic_textured_rect(Rect2(0, 0, black_margin[MARGIN_LEFT], window_h),
@@ -2154,7 +2154,7 @@ void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_im
 	}
 
 	if (black_image[MARGIN_RIGHT].is_valid()) {
-		_bind_canvas_texture(black_image[MARGIN_RIGHT], RID());
+		_bind_canvas_texture(black_image[MARGIN_RIGHT], RID(), true);
 		Size2 sz(storage->texture_get_width(black_image[MARGIN_RIGHT]), storage->texture_get_height(black_image[MARGIN_RIGHT]));
 		draw_generic_textured_rect(Rect2(window_w - black_margin[MARGIN_RIGHT], 0, black_margin[MARGIN_RIGHT], window_h),
 				Rect2(0, 0, (float)black_margin[MARGIN_RIGHT] / sz.x, (float)window_h / sz.y));
@@ -2166,7 +2166,7 @@ void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_im
 	}
 
 	if (black_image[MARGIN_TOP].is_valid()) {
-		_bind_canvas_texture(black_image[MARGIN_TOP], RID());
+		_bind_canvas_texture(black_image[MARGIN_TOP], RID(), true);
 
 		Size2 sz(storage->texture_get_width(black_image[MARGIN_TOP]), storage->texture_get_height(black_image[MARGIN_TOP]));
 		draw_generic_textured_rect(Rect2(0, 0, window_w, black_margin[MARGIN_TOP]),
@@ -2181,7 +2181,7 @@ void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_im
 
 	if (black_image[MARGIN_BOTTOM].is_valid()) {
 
-		_bind_canvas_texture(black_image[MARGIN_BOTTOM], RID());
+		_bind_canvas_texture(black_image[MARGIN_BOTTOM], RID(), true);
 
 		Size2 sz(storage->texture_get_width(black_image[MARGIN_BOTTOM]), storage->texture_get_height(black_image[MARGIN_BOTTOM]));
 		draw_generic_textured_rect(Rect2(0, window_h - black_margin[MARGIN_BOTTOM], window_w, black_margin[MARGIN_BOTTOM]),
