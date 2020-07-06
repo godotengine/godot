@@ -50,6 +50,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_CREATE_INTERNAL,
 		UV_MODE_REMOVE_INTERNAL,
 		UV_MODE_EDIT_POINT,
+		UV_MODE_REMOVE_POINT,
 		UV_MODE_MOVE,
 		UV_MODE_ROTATE,
 		UV_MODE_SCALE,
@@ -108,6 +109,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int point_drag_index;
 	bool uv_drag;
 	bool uv_create;
+	bool uv_add;
 	Vector<int> polygon_create;
 	UVMode uv_move_current;
 	Vector2 uv_drag_from;
