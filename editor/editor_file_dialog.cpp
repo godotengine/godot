@@ -559,7 +559,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 			continue;
 		}
 		Dictionary item_meta = item_list->get_item_metadata(i);
-		if (item_meta["path"] == "res://.import") {
+		if (String(item_meta["path"]).begins_with("res://.godot")) {
 			allow_delete = false;
 			break;
 		}
