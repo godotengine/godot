@@ -76,7 +76,8 @@ private:
 	float pixel_size;
 	AABB aabb;
 
-	RID immediate;
+	RID mesh;
+	RID material;
 
 	bool flags[FLAG_MAX];
 	AlphaCutMode alpha_cut;
@@ -92,7 +93,13 @@ protected:
 	static void _bind_methods();
 	virtual void _draw() = 0;
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
-	_FORCE_INLINE_ RID &get_immediate() { return immediate; }
+	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
+	_FORCE_INLINE_ RID &get_material() { return material; }
+
+	uint32_t mesh_surface_offsets[VS::ARRAY_MAX];
+	PoolByteArray mesh_buffer;
+	uint32_t mesh_stride;
+
 	void _queue_update();
 
 public:
