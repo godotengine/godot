@@ -425,7 +425,6 @@ Object *CreateDialog::instance_selected() {
 			if (n) {
 				n->set_name(custom);
 			}
-			obj = n;
 		} else {
 			obj = EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
 		}
