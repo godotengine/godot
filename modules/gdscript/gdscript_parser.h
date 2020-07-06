@@ -565,6 +565,9 @@ public:
 		bool has_member(const StringName &p_name) const {
 			return members_indices.has(p_name);
 		}
+		bool has_function(const StringName &p_name) const {
+			return has_member(p_name) && members[members_indices[p_name]].type == Member::FUNCTION;
+		}
 		template <class T>
 		void add_member(T *p_member_node) {
 			members_indices[p_member_node->identifier->name] = members.size();
@@ -908,7 +911,6 @@ public:
 		FunctionNode *parent_function = nullptr;
 		ForNode *parent_for = nullptr;
 		IfNode *parent_if = nullptr;
-		PatternNode *parent_pattern = nullptr;
 
 		bool has_return = false;
 		bool has_continue = false;
@@ -1011,6 +1013,47 @@ public:
 		}
 	};
 
+	enum CompletionType {
+		COMPLETION_NONE,
+		COMPLETION_ANNOTATION, // Annotation (following @).
+		COMPLETION_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
+		COMPLETION_ASSIGN, // Assignment based on type (e.g. enum values).
+		COMPLETION_ATTRIBUTE, // After id.| to look for members.
+		COMPLETION_BUILT_IN_TYPE_CONSTANT, // Constants inside a built-in type (e.g. Color.blue).
+		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
+		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
+		COMPLETION_GET_NODE, // Get node with $ notation.
+		COMPLETION_IDENTIFIER, // List available identifiers in scope.
+		COMPLETION_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
+		COMPLETION_OVERRIDE_METHOD, // Override implementation, also for native virtuals.
+		COMPLETION_PROPERTY_DECLARATION, // Property declaration (get, set).
+		COMPLETION_PROPERTY_DECLARATION_OR_TYPE, // Property declaration (get, set) or a type hint.
+		COMPLETION_PROPERTY_METHOD, // Property setter or getter (list available methods).
+		COMPLETION_RESOURCE_PATH, // For load/preload.
+		COMPLETION_SUBSCRIPT, // Inside id[|].
+		COMPLETION_SUPER_METHOD, // After super.
+		COMPLETION_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
+		COMPLETION_TYPE_NAME, // Name of type (after :).
+		COMPLETION_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
+	};
+
+	struct CompletionContext {
+		CompletionType type = COMPLETION_NONE;
+		ClassNode *current_class = nullptr;
+		FunctionNode *current_function = nullptr;
+		SuiteNode *current_suite = nullptr;
+		int current_line = -1;
+		int current_argument = -1;
+		Variant::Type builtin_type = Variant::VARIANT_MAX;
+		Node *node = nullptr;
+		Object *base = nullptr;
+	};
+
+	struct CompletionCall {
+		Node *call = nullptr;
+		int argument = -1;
+	};
+
 private:
 	friend class GDScriptAnalyzer;
 
@@ -1037,6 +1080,11 @@ private:
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
 	SuiteNode *current_suite = nullptr;
+
+	CompletionContext completion_context;
+	CompletionCall completion_call;
+	List<CompletionCall> completion_call_stack;
+	bool passed_cursor = false;
 
 	typedef bool (GDScriptParser::*AnnotationAction)(const AnnotationNode *p_annotation, Node *p_target);
 	struct AnnotationInfo {
@@ -1099,6 +1147,12 @@ private:
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+
+	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
+	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = false);
+	void push_completion_call(Node *p_call);
+	void pop_completion_call();
+	void set_last_completion_call_arg(int p_argument);
 
 	GDScriptTokenizer::Token advance();
 	bool match(GDScriptTokenizer::Token::Type p_token_type);
@@ -1186,6 +1240,10 @@ public:
 	bool is_tool() const { return _is_tool; }
 	static Variant::Type get_builtin_type(const StringName &p_type);
 	static GDScriptFunctions::Function get_builtin_function(const StringName &p_name);
+
+	CompletionContext get_completion_context() const { return completion_context; }
+	CompletionCall get_completion_call() const { return completion_call; }
+	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 
 	const List<ParserError> &get_errors() const { return errors; }
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
