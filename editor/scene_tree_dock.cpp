@@ -645,9 +645,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 				nodeset.insert(E->get());
 			}
-			reparent_dialog->popup_centered_ratio();
+			reparent_dialog->popup_centered_clamped(Size2(350, 700) * EDSCALE);
 			reparent_dialog->set_current(nodeset);
-
 		} break;
 		case TOOL_MAKE_ROOT: {
 			if (!profile_allow_editing) {

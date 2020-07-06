@@ -76,7 +76,7 @@ ReparentDialog::ReparentDialog() {
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_show_enabled_subscene(true);
 
-	vbc->add_margin_child(TTR("Reparent Location (Select new Parent):"), tree, true);
+	vbc->add_margin_child(TTR("Select new parent:"), tree, true);
 
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
 
