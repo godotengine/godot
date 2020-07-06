@@ -937,6 +937,9 @@
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="JOY_INVALID_OPTION" value="-1" enum="JoystickList">
+			Invalid button or axis.
+		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
 			Gamepad button 0.
 		</constant>

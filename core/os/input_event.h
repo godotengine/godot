@@ -61,6 +61,8 @@ enum ButtonList {
 
 enum JoystickList {
 
+	JOY_INVALID_OPTION = -1,
+
 	JOY_BUTTON_0 = 0,
 	JOY_BUTTON_1 = 1,
 	JOY_BUTTON_2 = 2,

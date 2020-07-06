@@ -709,22 +709,6 @@ InputDefault::InputDefault() {
 	main_loop = NULL;
 	default_shape = CURSOR_ARROW;
 
-	hat_map_default[HAT_UP].type = TYPE_BUTTON;
-	hat_map_default[HAT_UP].index = JOY_DPAD_UP;
-	hat_map_default[HAT_UP].value = 0;
-
-	hat_map_default[HAT_RIGHT].type = TYPE_BUTTON;
-	hat_map_default[HAT_RIGHT].index = JOY_DPAD_RIGHT;
-	hat_map_default[HAT_RIGHT].value = 0;
-
-	hat_map_default[HAT_DOWN].type = TYPE_BUTTON;
-	hat_map_default[HAT_DOWN].index = JOY_DPAD_DOWN;
-	hat_map_default[HAT_DOWN].value = 0;
-
-	hat_map_default[HAT_LEFT].type = TYPE_BUTTON;
-	hat_map_default[HAT_LEFT].index = JOY_DPAD_LEFT;
-	hat_map_default[HAT_LEFT].value = 0;
-
 	fallback_mapping = -1;
 
 	// Parse default mappings.
@@ -761,14 +745,8 @@ void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 		return;
 	}
 
-	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
-	if (!el) {
-		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
-		//return _button_event(p_last_id, p_device, p_button, p_pressed);
-		return;
-	}
+	JoyEvent map = _get_mapped_button_event(map_db[joy.mapping], p_button);
 
-	JoyEvent map = el->get();
 	if (map.type == TYPE_BUTTON) {
 		//fake additional axis event for triggers
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
@@ -831,13 +809,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		return;
 	};
 
-	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
-	if (!el) {
-		//return _axis_event(p_last_id, p_device, p_axis, p_value);
-		return;
-	};
-
-	JoyEvent map = el->get();
+	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
 
 	if (map.type == TYPE_BUTTON) {
 		//send axis event for triggers
@@ -906,12 +878,26 @@ void InputDefault::joy_hat(int p_device, int p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 
-	const JoyEvent *map;
+	JoyEvent map[HAT_MAX];
 
-	if (joy.mapping == -1) {
-		map = hat_map_default;
-	} else {
-		map = map_db[joy.mapping].hat;
+	map[HAT_UP].type = TYPE_BUTTON;
+	map[HAT_UP].index = JOY_DPAD_UP;
+	map[HAT_UP].value = 0;
+
+	map[HAT_RIGHT].type = TYPE_BUTTON;
+	map[HAT_RIGHT].index = JOY_DPAD_RIGHT;
+	map[HAT_RIGHT].value = 0;
+
+	map[HAT_DOWN].type = TYPE_BUTTON;
+	map[HAT_DOWN].index = JOY_DPAD_DOWN;
+	map[HAT_DOWN].value = 0;
+
+	map[HAT_LEFT].type = TYPE_BUTTON;
+	map[HAT_LEFT].index = JOY_DPAD_LEFT;
+	map[HAT_LEFT].value = 0;
+
+	if (joy.mapping != -1) {
+		_get_mapped_hat_events(map_db[joy.mapping], 0, map);
 	};
 
 	int cur_val = joy_names[p_device].hat_current;
@@ -955,50 +941,153 @@ void InputDefault::_axis_event(int p_device, int p_axis, float p_value) {
 	parse_input_event(ievent);
 };
 
-InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
+InputDefault::JoyEvent InputDefault::_get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button) {
 
-	// string names of the SDL buttons in the same order as input_event.h godot buttons
-	static const char *buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", NULL };
+	JoyEvent event;
+	event.type = TYPE_MAX;
 
-	static const char *axis[] = { "leftx", "lefty", "rightx", "righty", NULL };
+	for (int i = 0; i < mapping.bindings.size(); i++) {
+		const JoyBinding binding = mapping.bindings[i];
+		if (binding.inputType == TYPE_BUTTON && binding.input.button == p_button) {
+			event.type = binding.outputType;
+			switch (binding.outputType) {
+				case TYPE_BUTTON:
+					event.index = binding.output.button;
+					return event;
+				case TYPE_AXIS:
+					event.index = binding.output.axis.axis;
+					return event;
+				default:
+					ERR_PRINT_ONCE("Joypad button mapping error.");
+			}
+		}
+	}
+	return event;
+}
 
-	JoyEvent ret;
-	ret.type = -1;
-	ret.index = 0;
+InputDefault::JoyEvent InputDefault::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, const JoyAxis &p_value) {
 
-	int i = 0;
-	while (buttons[i]) {
+	JoyEvent event;
+	event.type = TYPE_MAX;
 
-		if (p_to == buttons[i]) {
-			ret.type = TYPE_BUTTON;
-			ret.index = i;
-			ret.value = 0;
-			return ret;
-		};
-		++i;
-	};
+	for (int i = 0; i < mapping.bindings.size(); i++) {
+		const JoyBinding binding = mapping.bindings[i];
+		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
+			float value = p_value.value;
+			if (binding.input.axis.invert)
+				value = -value;
+			if (binding.input.axis.range == FULL_AXIS ||
+					(binding.input.axis.range == POSITIVE_HALF_AXIS && value > 0) ||
+					(binding.input.axis.range == NEGATIVE_HALF_AXIS && value < 0)) {
+				event.type = binding.outputType;
+				switch (binding.outputType) {
+					case TYPE_BUTTON:
+						event.index = binding.output.button;
+						return event;
+					case TYPE_AXIS:
+						event.index = binding.output.axis.axis;
+						event.value = value;
+						if (binding.output.axis.range != binding.input.axis.range) {
+							float shifted_positive_value = 0;
+							switch (binding.input.axis.range) {
+								case POSITIVE_HALF_AXIS:
+									shifted_positive_value = value;
+									break;
+								case NEGATIVE_HALF_AXIS:
+									shifted_positive_value = value + 1;
+									break;
+								case FULL_AXIS:
+									shifted_positive_value = (value + 1) / 2;
+									break;
+							}
+							switch (binding.output.axis.range) {
+								case POSITIVE_HALF_AXIS:
+									event.value = shifted_positive_value;
+									break;
+								case NEGATIVE_HALF_AXIS:
+									event.value = shifted_positive_value - 1;
+									break;
+								case FULL_AXIS:
+									event.value = (shifted_positive_value * 2) - 1;
+									break;
+							}
+						}
+						return event;
+					default:
+						ERR_PRINT_ONCE("Joypad axis mapping error.");
+				}
+			}
+		}
+	}
+	return event;
+}
 
-	i = 0;
-	while (axis[i]) {
+void InputDefault::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[]) {
 
-		if (p_to == axis[i]) {
-			ret.type = TYPE_AXIS;
-			ret.index = i;
-			ret.value = 0;
-			return ret;
-		};
-		++i;
-	};
+	for (int i = 0; i < mapping.bindings.size(); i++) {
+		const JoyBinding binding = mapping.bindings[i];
+		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 
-	return ret;
-};
+			int index;
+			switch (binding.input.hat.hat_mask) {
+				case HAT_MASK_UP:
+					index = 0;
+					break;
+				case HAT_MASK_RIGHT:
+					index = 1;
+					break;
+				case HAT_MASK_DOWN:
+					index = 2;
+					break;
+				case HAT_MASK_LEFT:
+					index = 3;
+					break;
+				default:
+					ERR_PRINT_ONCE("Joypad button mapping error.");
+					continue;
+			}
+
+			r_events[index].type = binding.outputType;
+			switch (binding.outputType) {
+				case TYPE_BUTTON:
+					r_events[index].index = binding.output.button;
+					break;
+				case TYPE_AXIS:
+					r_events[index].index = binding.output.axis.axis;
+					break;
+				default:
+					ERR_PRINT_ONCE("Joypad button mapping error.");
+			}
+		}
+	}
+}
+
+// string names of the SDL buttons in the same order as input_event.h godot buttons
+static const char *_joy_buttons[] = { "a", "b", "x", "y", "leftshoulder", "rightshoulder", "lefttrigger", "righttrigger", "leftstick", "rightstick", "back", "start", "dpup", "dpdown", "dpleft", "dpright", "guide", nullptr };
+static const char *_joy_axes[] = { "leftx", "lefty", "rightx", "righty", nullptr };
+
+JoystickList InputDefault::_get_output_button(String output) {
+
+	for (int i = 0; _joy_buttons[i]; i++) {
+		if (output == _joy_buttons[i])
+			return JoystickList(i);
+	}
+	return JoystickList::JOY_INVALID_OPTION;
+}
+
+JoystickList InputDefault::_get_output_axis(String output) {
+
+	for (int i = 0; _joy_axes[i]; i++) {
+		if (output == _joy_axes[i])
+			return JoystickList(i);
+	}
+	return JoystickList::JOY_INVALID_OPTION;
+}
 
 void InputDefault::parse_mapping(String p_mapping) {
 
 	_THREAD_SAFE_METHOD_;
 	JoyDeviceMapping mapping;
-	for (int i = 0; i < HAT_MAX; ++i)
-		mapping.hat[i].index = 1024 + i;
 
 	Vector<String> entry = p_mapping.split(",");
 	if (entry.size() < 2) {
@@ -1017,45 +1106,79 @@ void InputDefault::parse_mapping(String p_mapping) {
 		if (entry[idx] == "")
 			continue;
 
-		String from = entry[idx].get_slice(":", 1).replace(" ", "");
-		String to = entry[idx].get_slice(":", 0).replace(" ", "");
+		String output = entry[idx].get_slice(":", 0).replace(" ", "");
+		String input = entry[idx].get_slice(":", 1).replace(" ", "");
+		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
+				String(entry[idx] + "\nInvalid device mapping entry: " + entry[idx]));
 
-		JoyEvent to_event = _find_to_event(to);
-		if (to_event.type == -1)
+		if (output == "platform")
 			continue;
 
-		String etype = from.substr(0, 1);
-		if (etype == "a") {
+		JoyAxisRange output_range = FULL_AXIS;
+		if (output[0] == '+' || output[0] == '-') {
+			ERR_CONTINUE_MSG(output.length() < 2, String(entry[idx] + "\nInvalid output: " + entry[idx]));
+			output = output.right(1);
+			if (output[0] == '+')
+				output_range = POSITIVE_HALF_AXIS;
+			else if (output[0] == '-')
+				output_range = NEGATIVE_HALF_AXIS;
+		}
 
-			int aid = from.substr(1, from.length() - 1).to_int();
-			mapping.axis[aid] = to_event;
+		JoyAxisRange input_range = FULL_AXIS;
+		if (input[0] == '+') {
+			input_range = POSITIVE_HALF_AXIS;
+			input = input.right(1);
+		} else if (input[0] == '-') {
+			input_range = NEGATIVE_HALF_AXIS;
+			input = input.right(1);
+		}
+		bool invert_axis = false;
+		if (input[input.length() - 1] == '~')
+			invert_axis = true;
 
-		} else if (etype == "b") {
+		JoystickList output_button = _get_output_button(output);
+		JoystickList output_axis = _get_output_axis(output);
+		ERR_CONTINUE_MSG(output_button == JOY_INVALID_OPTION && output_axis == JOY_INVALID_OPTION,
+				String(entry[idx] + "\nUnrecognised output string: " + output));
+		ERR_CONTINUE_MSG(output_button != JOY_INVALID_OPTION && output_axis != JOY_INVALID_OPTION,
+				String("BUG: Output string matched both button and axis: " + output));
 
-			int bid = from.substr(1, from.length() - 1).to_int();
-			mapping.buttons[bid] = to_event;
+		JoyBinding binding;
+		if (output_button != JOY_INVALID_OPTION) {
+			binding.outputType = TYPE_BUTTON;
+			binding.output.button = output_button;
+		} else if (output_axis != JOY_INVALID_OPTION) {
+			binding.outputType = TYPE_AXIS;
+			binding.output.axis.axis = output_axis;
+			binding.output.axis.range = output_range;
+		}
 
-		} else if (etype == "h") {
+		switch (input[0]) {
+			case 'b':
+				binding.inputType = TYPE_BUTTON;
+				binding.input.button = input.right(1).to_int();
+				break;
+			case 'a':
+				binding.inputType = TYPE_AXIS;
+				binding.input.axis.axis = input.right(1).to_int();
+				binding.input.axis.range = input_range;
+				binding.input.axis.invert = invert_axis;
+				break;
+			case 'h':
+				ERR_CONTINUE_MSG(input.length() != 4 || input[2] != '.',
+						String(entry[idx] + "\nInvalid hat input: " + input));
+				binding.inputType = TYPE_HAT;
+				binding.input.hat.hat = input.substr(1, 1).to_int();
+				binding.input.hat.hat_mask = static_cast<HatMask>(input.right(3).to_int());
+				break;
+			default:
+				ERR_CONTINUE_MSG(true, String(entry[idx] + "\nUnrecognised input string: " + input));
+		}
 
-			int hat_value = from.get_slice(".", 1).to_int();
-			switch (hat_value) {
-				case 1:
-					mapping.hat[HAT_UP] = to_event;
-					break;
-				case 2:
-					mapping.hat[HAT_RIGHT] = to_event;
-					break;
-				case 4:
-					mapping.hat[HAT_DOWN] = to_event;
-					break;
-				case 8:
-					mapping.hat[HAT_LEFT] = to_event;
-					break;
-			};
-		};
+		mapping.bindings.push_back(binding);
 	};
+
 	map_db.push_back(mapping);
-	//printf("added mapping with uuid %ls\n", mapping.uid.c_str());
 };
 
 void InputDefault::add_joy_mapping(String p_mapping, bool p_update_existing) {
