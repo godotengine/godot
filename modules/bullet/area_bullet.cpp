@@ -181,6 +181,7 @@ void AreaBullet::reload_body() {
 void AreaBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
+		overlappingObjects.clear();
 		isScratched = false;
 
 		// Remove this object form the physics world
