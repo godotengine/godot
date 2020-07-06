@@ -53,6 +53,8 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+const String ProjectSettings::IMPORTED_FILES_PATH("res://.godot/imported");
+
 String ProjectSettings::localize_path(const String &p_path) const {
 	if (resource_path == "") {
 		return p_path; //not initialized yet
