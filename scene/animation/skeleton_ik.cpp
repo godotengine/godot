@@ -274,7 +274,7 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_
 	} else {
 
 		// End effector in local transform
-		const Transform end_effector_pose(p_task->skeleton->get_bone_global_pose(p_task->end_effectors.write[0].tip_bone));
+		const Transform end_effector_pose(p_task->skeleton->get_bone_global_pose(p_task->end_effectors[0].tip_bone));
 
 		// Update the end_effector (local transform) by blending with current pose
 		p_task->end_effectors.write[0].goal_transform = end_effector_pose.interpolate_with(p_inverse_transf * p_task->goal_global_transform, blending_delta);
@@ -330,6 +330,10 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 			else
 				new_bone_pose.basis = new_bone_pose.basis * p_task->chain.tips[0].end_effector->goal_transform.basis;
 		}
+
+		// IK should not affect scale, so undo any scaling
+		new_bone_pose.basis.orthonormalize();
+		new_bone_pose.basis.scale(p_task->skeleton->get_bone_global_pose(ci->bone).basis.get_scale());
 
 		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
 
