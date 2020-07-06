@@ -471,7 +471,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 
 						members_cache.push_back(member.variable->export_info);
 						Variant default_value;
-						if (member.variable->initializer->is_constant) {
+						if (member.variable->initializer && member.variable->initializer->is_constant) {
 							default_value = member.variable->initializer->reduced_value;
 						}
 						member_default_values_cache[member.variable->identifier->name] = default_value;

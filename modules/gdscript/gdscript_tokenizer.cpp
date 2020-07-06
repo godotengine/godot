@@ -191,13 +191,26 @@ int GDScriptTokenizer::get_cursor_column() const {
 	return cursor_column;
 }
 
+bool GDScriptTokenizer::is_past_cursor() const {
+	if (line < cursor_line) {
+		return false;
+	}
+	if (line > cursor_line) {
+		return true;
+	}
+	if (column < cursor_column) {
+		return false;
+	}
+	return true;
+}
+
 CharType GDScriptTokenizer::_advance() {
 	if (unlikely(_is_at_end())) {
 		return '\0';
 	}
 	_current++;
-	position++;
 	column++;
+	position++;
 	if (column > rightmost_column) {
 		rightmost_column = column;
 	}
@@ -246,7 +259,7 @@ static bool _is_binary_digit(CharType c) {
 	return (c == '0' || c == '1');
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) const {
+GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
 	Token token(p_type);
 	token.start_line = start_line;
 	token.end_line = line;
@@ -254,17 +267,63 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) const
 	token.end_column = column;
 	token.leftmost_column = leftmost_column;
 	token.rightmost_column = rightmost_column;
+	token.source = String(_start, _current - _start);
+
+	if (p_type != Token::ERROR && cursor_line > -1) {
+		// Also count whitespace after token.
+		int offset = 0;
+		while (_peek(offset) == ' ' || _peek(offset) == '\t') {
+			offset++;
+		}
+		int last_column = column + offset;
+		// Check cursor position in token.
+		if (start_line == line) {
+			// Single line token.
+			if (cursor_line == start_line && cursor_column >= start_column && cursor_column <= last_column) {
+				token.cursor_position = cursor_column - start_column;
+				if (cursor_column == start_column) {
+					token.cursor_place = CURSOR_BEGINNING;
+				} else if (cursor_column < column) {
+					token.cursor_place = CURSOR_MIDDLE;
+				} else {
+					token.cursor_place = CURSOR_END;
+				}
+			}
+		} else {
+			// Multi line token.
+			if (cursor_line == start_line && cursor_column >= start_column) {
+				// Is in first line.
+				token.cursor_position = cursor_column - start_column;
+				if (cursor_column == start_column) {
+					token.cursor_place = CURSOR_BEGINNING;
+				} else {
+					token.cursor_place = CURSOR_MIDDLE;
+				}
+			} else if (cursor_line == line && cursor_column <= last_column) {
+				// Is in last line.
+				token.cursor_position = cursor_column - start_column;
+				if (cursor_column < column) {
+					token.cursor_place = CURSOR_MIDDLE;
+				} else {
+					token.cursor_place = CURSOR_END;
+				}
+			} else if (cursor_line > start_line && cursor_line < line) {
+				// Is in middle line.
+				token.cursor_position = CURSOR_MIDDLE;
+			}
+		}
+	}
 
 	return token;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_literal(const Variant &p_literal) const {
+GDScriptTokenizer::Token GDScriptTokenizer::make_literal(const Variant &p_literal) {
 	Token token = make_token(Token::LITERAL);
 	token.literal = p_literal;
 	return token;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::make_identifier(const StringName &p_identifier) const {
+GDScriptTokenizer::Token GDScriptTokenizer::make_identifier(const StringName &p_identifier) {
 	Token identifier = make_token(Token::IDENTIFIER);
 	identifier.literal = p_identifier;
 	return identifier;
@@ -321,14 +380,14 @@ GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(CharType p_test, To
 
 GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
 	if (!_is_alphanumeric(_peek())) {
-		return make_error("Expected annotation identifier after \"@\".");
+		push_error("Expected annotation identifier after \"@\".");
 	}
 	while (_is_alphanumeric(_peek())) {
 		// Consume all identifier characters.
 		_advance();
 	}
 	Token annotation = make_token(Token::ANNOTATION);
-	annotation.literal = StringName(String(_start, _current - _start));
+	annotation.literal = StringName(annotation.source);
 	return annotation;
 }
 
