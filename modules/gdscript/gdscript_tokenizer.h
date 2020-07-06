@@ -38,6 +38,13 @@
 
 class GDScriptTokenizer {
 public:
+	enum CursorPlace {
+		CURSOR_NONE,
+		CURSOR_BEGINNING,
+		CURSOR_MIDDLE,
+		CURSOR_END,
+	};
+
 	struct Token {
 		enum Type {
 			EMPTY,
@@ -155,6 +162,9 @@ public:
 		Variant literal;
 		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
 		int leftmost_column = 0, rightmost_column = 0; // Column span for multiline tokens.
+		int cursor_position = -1;
+		CursorPlace cursor_place = CURSOR_NONE;
+		String source;
 
 		const char *get_name() const;
 		// TODO: Allow some keywords as identifiers?
@@ -174,8 +184,8 @@ private:
 	String source;
 	const CharType *_source = nullptr;
 	const CharType *_current = nullptr;
-	int line = 0, column = 0;
-	int cursor_line = 0, cursor_column = 0;
+	int line = -1, column = -1;
+	int cursor_line = -1, cursor_column = -1;
 	int tab_size = 4;
 
 	// Keep track of multichar tokens.
@@ -209,9 +219,9 @@ private:
 	void push_error(const String &p_message);
 	void push_error(const Token &p_error);
 	Token make_paren_error(CharType p_paren);
-	Token make_token(Token::Type p_type) const;
-	Token make_literal(const Variant &p_literal) const;
-	Token make_identifier(const StringName &p_identifier) const;
+	Token make_token(Token::Type p_type);
+	Token make_literal(const Variant &p_literal);
+	Token make_identifier(const StringName &p_identifier);
 	Token check_vcs_marker(CharType p_test, Token::Type p_double_type);
 	void push_paren(CharType p_char);
 	bool pop_paren(CharType p_expected);
@@ -231,6 +241,7 @@ public:
 	int get_cursor_column() const;
 	void set_cursor_position(int p_line, int p_column);
 	void set_multiline_mode(bool p_state);
+	bool is_past_cursor() const;
 	static String get_token_name(Token::Type p_token_type);
 
 	GDScriptTokenizer();
