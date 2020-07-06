@@ -57,5 +57,6 @@
 		$interface_orientations
 	</array>
 	$additional_plist_content
+	$plist_launch_screen_name
 </dict>
 </plist>
