@@ -1778,6 +1778,7 @@ CodeTextEditor::CodeTextEditor() {
 	cs.push_back("(");
 	cs.push_back("=");
 	cs.push_back("$");
+	cs.push_back("@");
 	text_editor->set_completion(true, cs);
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 

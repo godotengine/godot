@@ -1134,6 +1134,10 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression) {
 	// This one makes some magic happen.
 
+	if (p_expression == nullptr) {
+		return;
+	}
+
 	if (p_expression->reduced) {
 		// Don't do this more than once.
 		return;
@@ -1247,6 +1251,10 @@ void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
 void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assignment) {
 	reduce_expression(p_assignment->assignee);
 	reduce_expression(p_assignment->assigned_value);
+
+	if (p_assignment->assigned_value == nullptr || p_assignment->assignee == nullptr) {
+		return;
+	}
 
 	if (p_assignment->assignee->get_datatype().is_constant) {
 		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
@@ -2038,6 +2046,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 	// Reduce index first. If it's a constant StringName, use attribute instead.
 	if (!p_subscript->is_attribute) {
+		if (p_subscript->index == nullptr) {
+			return;
+		}
 		reduce_expression(p_subscript->index);
 
 		if (p_subscript->index->is_constant && p_subscript->index->reduced_value.get_type() == Variant::STRING_NAME) {
@@ -2053,6 +2064,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 	}
 
 	if (p_subscript->is_attribute) {
+		if (p_subscript->attribute == nullptr) {
+			return;
+		}
 		if (p_subscript->base->is_constant) {
 			// Just try to get it.
 			bool valid = false;

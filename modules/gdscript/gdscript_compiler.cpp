@@ -165,10 +165,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 
 		} break;
-		default: {
+		case GDScriptParser::DataType::UNRESOLVED: {
 			ERR_PRINT("Parser bug: converting unresolved type.");
 			return GDScriptDataType();
 		}
+		default:
+			break; // FIXME
 	}
 
 	return result;
@@ -1325,10 +1327,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					return -1;
 				}
 
-				// FIXME: Actually check type.
-				GDScriptDataType assign_type; // = _gdtype_from_datatype(on->arguments[0]->get_datatype());
+				GDScriptDataType assign_type = _gdtype_from_datatype(assignment->assignee->get_datatype());
 
-				if (assign_type.has_type && !assignment->get_datatype().is_set()) {
+				if (assign_type.has_type && !assignment->assigned_value->get_datatype().is_variant()) {
 					// Typed assignment
 					switch (assign_type.kind) {
 						case GDScriptDataType::BUILTIN: {
