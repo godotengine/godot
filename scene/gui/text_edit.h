@@ -155,7 +155,7 @@ private:
 	struct Cursor {
 		int last_fit_x = 0;
 		int line = 0, column = 0; ///< cursor
-		int line_ofs = 0;
+		/// The row created by soft wrapping counting from the line that contains this cursor.
 		int wrap_ofs = 0;
 	};
 
@@ -189,7 +189,8 @@ private:
 
 	Vector<CursorData> cursors;
 
-	int x_ofs = 0;
+	int first_vis_col = 0;
+	int first_vis_line = 0;
 
 	struct Cache {
 		Ref<Texture2D> tab_icon;
@@ -232,22 +233,13 @@ private:
 		Color symbol_color;
 		Color background_color;
 
-		int row_height;
-		int line_spacing;
-		int line_number_w;
-		int breakpoint_gutter_width;
-		int fold_gutter_width;
-		int info_gutter_width;
-		int minimap_width;
-		Cache() {
-			row_height = 0;
-			line_spacing = 0;
-			line_number_w = 0;
-			breakpoint_gutter_width = 0;
-			fold_gutter_width = 0;
-			info_gutter_width = 0;
-			minimap_width = 0;
-		}
+		int row_height = 0;
+		int line_spacing = 0;
+		int line_number_w = 0;
+		int breakpoint_gutter_width = 0;
+		int fold_gutter_width = 0;
+		int info_gutter_width = 0;
+		int minimap_width = 0;
 	} cache;
 
 	Map<int, int> color_region_cache;
@@ -260,25 +252,17 @@ private:
 			TYPE_REMOVE
 		};
 
-		Type type;
-		int from_line, from_column;
-		int to_line, to_column;
+		Type type = TYPE_NONE;
+		Vector<CursorData> cursors;
+		// Only one text specification because all insertions work on all cursors at the same time
+		// TODO: limit the usage of insert_text_at_cursor to ensure this
 		String text;
-		uint32_t prev_version;
-		uint32_t version;
-		bool chain_forward;
-		bool chain_backward;
-		TextOperation() {
-			type = TYPE_NONE;
-			from_line = 0;
-			from_column = 0;
-			to_line = 0;
-			to_column = 0;
-			prev_version = 0;
-			version = 0;
-			chain_forward = false;
-			chain_backward = false;
-		}
+		uint32_t prev_version = 0;
+		uint32_t version = 0;
+		/// Whether to redo the previous operation when redoing this one.
+		bool chain_forward = false;
+		/// Whether to undo the previous operation when undoing this one.
+		bool chain_backward = false;
 	};
 
 	String ime_text;
@@ -427,12 +411,14 @@ private:
 
 	int _get_minimap_visible_rows() const;
 
-	void update_cursor_wrap_offset();
+	void update_cursors_wrap_offset();
 	void _update_wrap_at();
 	bool line_wraps(int line) const;
 	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
+	/// Get the nth wrap (of the line) in which the idx-th cursor is in.
 	int get_cursor_wrap_index(int p_idx) const;
+	/// Get the nth wrap (of the line) in which the specified character is in.
 	int get_line_wrap_index_at_col(int p_line, int p_column) const;
 	int get_char_count();
 
@@ -441,8 +427,12 @@ private:
 	void set_line_as_center_visible(int p_line, int p_wrap_index = 0);
 	void set_line_as_last_visible(int p_line, int p_wrap_index = 0);
 	int get_first_visible_line() const;
+	/// Get the last visible line in terms of the cursor at p_idx.
+	int get_last_visible_line(int p_idx) const;
+	/// Get the last visible line (searches through all cursors).
 	int get_last_visible_line() const;
-	int get_last_visible_line_wrap_index() const;
+	int get_last_visible_line_wrap_index(int p_idx) const;
+	/// Get the 
 	double get_visible_rows_offset() const;
 	double get_v_scroll_offset() const;
 
@@ -451,7 +441,7 @@ private:
 	int get_char_pos_for(int p_px, String p_str) const;
 	int get_column_x_offset(int p_char, String p_str) const;
 
-	void adjust_viewport_to_cursor();
+	void adjust_viewport_to_cursors();
 	// TODO this doens't have def for some reason
 	double get_scroll_line_diff() const;
 	void _scroll_moved(double);
@@ -594,7 +584,9 @@ public:
 	void fold_all_lines();
 	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int visible_amount) const;
-	int num_lines_from_rows(int p_line_from, int p_wrap_index_from, int visible_amount, int &wrap_index) const;
+	/// Returns the number of lines (hidden and unhidden) from (p_line_from + p_wrap_index_from) row to (p_line_from + visible_amount of unhidden and wrapped rows).
+	/// `wrap_index` is set to the wrap index of the last line.
+	int num_lines_from_rows(int p_line_from, int p_wrap_index_from, int visible_amount, int &r_wrap_index) const;
 	int get_last_unhidden_line() const;
 
 	bool can_fold(int p_line) const;
@@ -634,9 +626,13 @@ public:
 	}
 	void set_auto_indent(bool p_auto_indent);
 
-	void center_viewport_to_cursor();
+	void center_viewport_to_cursor(int p_idx);
+
+	bool does_selections_overlap(const Selection &a, const Selection &b) const;
+	void merge_selections_to(const Selection &a, const Selection &b, Selection *target) const;
 
 	void clear_rest_cursors();
+	void merge_cursors_selections();
 	void cursor_set_column(int p_idx, int p_col, bool p_adjust_viewport = true);
 	void cursor_set_column(int p_col, bool p_adjust_viewport = true);
 	void cursor_set_line(int p_idx, int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0);
@@ -692,13 +688,12 @@ public:
 	void set_highlight_all_occurrences(const bool p_enabled);
 	bool is_highlight_all_occurrences_enabled() const;
 	bool is_any_selections_active() const;
-	// Default parameters to 0 (primary cursor) to provide backward compatibility
-	bool is_selection_active(int p_idx = 0) const;
-	int get_selection_from_line(int p_idx = 0) const;
-	int get_selection_from_column(int p_idx = 0) const;
-	int get_selection_to_line(int p_idx = 0) const;
-	int get_selection_to_column(int p_idx = 0) const;
-	String get_selection_text(int p_idx = 0) const;
+	bool is_selection_active(int p_idx) const;
+	int get_selection_from_line(int p_idx) const;
+	int get_selection_from_column(int p_idx) const;
+	int get_selection_to_line(int p_idx) const;
+	int get_selection_to_column(int p_idx) const;
+	String get_selection_text(int p_idx) const;
 
 	String get_word_under_cursor(int p_idx) const;
 	String get_word_at_pos(const Vector2 &p_pos) const;
