@@ -57,7 +57,7 @@ bool GodotFilterCallback::needBroadphaseCollision(btBroadphaseProxy *proxy0, btB
 
 bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) const {
 	const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
-	if (needs) {
+	if (m_pickRay || needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
 
