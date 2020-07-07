@@ -40,7 +40,7 @@ before_build:
  # - set "SCONS_CACHE=%SCONS_CACHE_ROOT%\%APPVEYOR_REPO_BRANCH%"
 
 build_script:
-  - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
+  - scons -j2 platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
 
 after_build:
   - git rev-parse --short=9 HEAD > VERSION_HASH.txt
