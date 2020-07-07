@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
       with: 
-        path: ~/scon_cache/
+        path: ~/.scons_cache/
         key: ${{ runner.os }}-release_debug
     - name: Installation scons
       run: |
@@ -36,7 +36,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
       with: 
-        path: ~/scon_cache/
+        path: ~/.scons_cache/
         key: ${{ runner.os }}-release
     - name: Installation scons
       run: |
