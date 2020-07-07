@@ -9,8 +9,9 @@ jobs:
     runs-on: windows-2019
     name: Windows Editor
     env:
-     SCONS_CACHE: ~/scons_cache/
-    steps:
+     SCONS_CACHE: ~/.scons_cache/
+     SCONS_CACHE_LIMIT: 2048  
+  steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
       with: 
@@ -22,14 +23,15 @@ jobs:
 
     - name: Compilation
       run: |
-        scons -j6 werror=true warnings=all platform=windows target=release_debug
+        scons -j6 warnings=all werror=yes platform=windows target=release_debug
 
   windows-release:
     runs-on: windows-2019
     name: Windows Release
 
     env:
-     SCONS_CACHE: ~/scons_cache/ 
+     SCONS_CACHE: ~/.scons_cache/ 
+     SCONS_CACHE_LIMIT: 2048
     steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
@@ -42,6 +44,6 @@ jobs:
 
     - name: Compilation
       run: |
-        scons -j6 platform=windows tools=no warnings=all werror=true target=release
+        scons -j6 platform=windows tools=no warnings=all werror=yes target=release
 
 
