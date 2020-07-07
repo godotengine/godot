@@ -23,7 +23,7 @@ jobs:
 
     - name: Compilation
       run: |
-        scons -j6 warnings=all progress=yes werror=yes platform=windows target=release_debug
+        scons -j6 warnings=all werror=yes platform=windows target=release_debug
 
   windows-release:
     runs-on: windows-2019
@@ -44,6 +44,6 @@ jobs:
 
     - name: Compilation
       run: |
-        scons -j6 platform=windows progrews=yes tools=no warnings=all werror=yes target=release
+        scons -j6 platform=windows tools=no warnings=all werror=yes target=release
 
 
