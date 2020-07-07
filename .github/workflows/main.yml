@@ -11,7 +11,7 @@ jobs:
     env:
       SCONS_CACHE: ~/.scons_cache/
       SCONS_CACHE_LIMIT: 2048  
-  steps:
+    steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
       with: 
