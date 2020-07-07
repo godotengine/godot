@@ -5,9 +5,9 @@ platform: x64
 environment:
   HOME: "%HOMEDRIVE%%HOMEPATH%"
   PYTHON: C:\Python38
-  SCONS_CACHE_ROOT: "%HOME%\\scons_cache"
-  SCONS_CACHE_LIMIT: 1024
-  OPTIONS: "debug_symbols=no verbose=yes progress=no"
+  #SCONS_CACHE_ROOT: "%HOME%\\scons_cache"
+  #SCONS_CACHE_LIMIT: 0
+  OPTIONS: "debug_symbols=no verbose=no progress=no"
   EXTRA_ARGS: "warnings=all werror=yes"
   matrix:
   - GD_PLATFORM: windows
@@ -24,8 +24,8 @@ matrix:
 init:
   - ps: if ($env:APPVEYOR_REPO_BRANCH -ne "master") { $env:APPVEYOR_CACHE_SKIP_SAVE = "true" }
 
-cache:
-  - "%SCONS_CACHE_ROOT%"
+#cache:
+#  - "%SCONS_CACHE_ROOT%"
 
 install:
   - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
@@ -37,7 +37,7 @@ before_build:
   - echo %GD_PLATFORM%
   - python --version
   - scons --version
-  - set "SCONS_CACHE=%SCONS_CACHE_ROOT%\%APPVEYOR_REPO_BRANCH%"
+ # - set "SCONS_CACHE=%SCONS_CACHE_ROOT%\%APPVEYOR_REPO_BRANCH%"
 
 build_script:
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
