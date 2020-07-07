@@ -23,7 +23,7 @@ jobs:
 
     - name: Compilation
       run: |
-        scons -j6 warnings=all werror=yes platform=windows target=release_debug
+        scons -j2 warnings=all werror=yes platform=windows target=release_debug
     - name: publishing godot windows-editor
       uses: actions/upload-artifact@v1
       with:
@@ -48,7 +48,7 @@ jobs:
 
     - name: Compilation
       run: |
-        scons -j6 platform=windows tools=no warnings=all werror=yes target=release
+        scons -j2 platform=windows tools=no warnings=all werror=yes target=release
 
     - name: publishing godot windows-player
       uses: actions/upload-artifact@v1
