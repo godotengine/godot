@@ -15,14 +15,14 @@ jobs:
     - uses: actions/cache@v2
       with: 
         path: ~/scon_cache/
-        key: ${{ runner.os }}-wincache
+        key: ${{ runner.os }}-release_debug
     - name: Installation scons
       run: |
         python -m pip install scons pywin32
 
     - name: Compilation
       run: |
-        scons -j6 werror=true warnings=all platform=windows
+        scons -j6 werror=true warnings=all platform=windows target=release_debug
 
   windows-release:
     runs-on: windows-2019
@@ -35,7 +35,7 @@ jobs:
     - uses: actions/cache@v2
       with: 
         path: ~/scon_cache/
-        key: ${{ runner.os }}-wincache
+        key: ${{ runner.os }}-release
     - name: Installation scons
       run: |
         python -m pip install scons pywin32
