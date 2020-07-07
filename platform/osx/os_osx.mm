@@ -105,11 +105,11 @@ static int mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
 
-static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFactor) {
+static Vector2 get_mouse_pos(NSPoint locationInWindow) {
 
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
 	const NSPoint p = locationInWindow;
-	const float s = OS_OSX::singleton->_mouse_scale(backingScaleFactor);
+	const float s = OS_OSX::singleton->get_screen_max_scale();
 	mouse_x = p.x * s;
 	mouse_y = (contentRect.size.height - p.y) * s;
 	return Vector2(mouse_x, mouse_y);
@@ -317,11 +317,11 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	OS_OSX::singleton->zoomed = false;
 
 	if (OS_OSX::singleton->min_size != Size2()) {
-		Size2 size = OS_OSX::singleton->min_size / OS_OSX::singleton->_display_scale();
+		Size2 size = OS_OSX::singleton->min_size / OS_OSX::singleton->get_screen_max_scale();
 		[OS_OSX::singleton->window_object setContentMinSize:NSMakeSize(size.x, size.y)];
 	}
 	if (OS_OSX::singleton->max_size != Size2()) {
-		Size2 size = OS_OSX::singleton->max_size / OS_OSX::singleton->_display_scale();
+		Size2 size = OS_OSX::singleton->max_size / OS_OSX::singleton->get_screen_max_scale();
 		[OS_OSX::singleton->window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 	}
 
@@ -344,13 +344,21 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 	if (newBackingScaleFactor != oldBackingScaleFactor) {
 		//Set new display scale and window size
-		float newDisplayScale = OS_OSX::singleton->is_hidpi_allowed() ? newBackingScaleFactor : 1.0;
+		float newDisplayScale = OS_OSX::singleton->get_screen_max_scale();
 
 		const NSRect contentRect = [OS_OSX::singleton->window_view frame];
 		const NSRect fbRect = contentRect;
 
 		OS_OSX::singleton->window_size.width = fbRect.size.width * newDisplayScale;
 		OS_OSX::singleton->window_size.height = fbRect.size.height * newDisplayScale;
+
+		if (OS_OSX::singleton->context) {
+			GLint dim[2];
+			dim[0] = OS_OSX::singleton->window_size.width;
+			dim[1] = OS_OSX::singleton->window_size.height;
+			CGLSetParameter((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
+			CGLEnable((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCESurfaceBackingSize);
+		}
 
 		//Update context
 		if (OS_OSX::singleton->main_loop) {
@@ -366,9 +374,17 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
 	const NSRect fbRect = contentRect;
 
-	float displayScale = OS_OSX::singleton->_display_scale();
+	float displayScale = OS_OSX::singleton->get_screen_max_scale();
 	OS_OSX::singleton->window_size.width = fbRect.size.width * displayScale;
 	OS_OSX::singleton->window_size.height = fbRect.size.height * displayScale;
+
+	if (OS_OSX::singleton->context) {
+		GLint dim[2];
+		dim[0] = OS_OSX::singleton->window_size.width;
+		dim[1] = OS_OSX::singleton->window_size.height;
+		CGLSetParameter((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
+		CGLEnable((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCESurfaceBackingSize);
+	}
 
 	if (OS_OSX::singleton->main_loop) {
 		Main::force_redraw();
@@ -408,9 +424,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
 	if (OS_OSX::singleton->get_main_loop()) {
-		get_mouse_pos(
-				[OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream],
-				[OS_OSX::singleton->window_view backingScaleFactor]);
+		get_mouse_pos([OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream]);
 		OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -555,7 +569,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
 - (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange {
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
-	float displayScale = OS_OSX::singleton->_display_scale();
+	float displayScale = OS_OSX::singleton->get_screen_max_scale();
 	NSRect pointInWindowRect = NSMakeRect(OS_OSX::singleton->im_position.x / displayScale, contentRect.size.height - (OS_OSX::singleton->im_position.y / displayScale) - 1, 0, 0);
 	NSPoint pointOnScreen = [[OS_OSX::singleton->window_view window] convertRectToScreen:pointInWindowRect].origin;
 
@@ -678,8 +692,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
-	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
+	const Vector2 pos = get_mouse_pos([event locationInWindow]);
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(index);
 	mb->set_pressed(pressed);
@@ -766,8 +779,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm.instance();
 
 	mm->set_button_mask(button_mask);
-	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
-	const Vector2 pos = get_mouse_pos(mpos, backingScaleFactor);
+	const Vector2 pos = get_mouse_pos(mpos);
 	mm->set_position(pos);
 	mm->set_pressure([event pressure]);
 	if ([event subtype] == NSEventSubtypeTabletPoint) {
@@ -776,7 +788,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	}
 	mm->set_global_position(pos);
 	mm->set_speed(OS_OSX::singleton->input->get_last_mouse_speed());
-	const Vector2 relativeMotion = Vector2(delta.x, delta.y) * OS_OSX::singleton->_mouse_scale(backingScaleFactor);
+	const Vector2 relativeMotion = Vector2(delta.x, delta.y) * OS_OSX::singleton->get_screen_max_scale();
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
@@ -855,7 +867,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instance();
 	get_key_modifier_state([event modifierFlags], ev);
-	ev->set_position(get_mouse_pos([event locationInWindow], [[event window] backingScaleFactor]));
+	ev->set_position(get_mouse_pos([event locationInWindow]));
 	ev->set_factor([event magnification] + 1.0);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -1336,7 +1348,7 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
-	get_mouse_pos([event locationInWindow], [[event window] backingScaleFactor]);
+	get_mouse_pos([event locationInWindow]);
 
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
@@ -1509,8 +1521,10 @@ static void keyboard_layout_changed(CFNotificationCenterRef center, void *observ
 }
 
 static bool displays_arrangement_dirty = true;
+static bool displays_scale_dirty = true;
 static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info) {
 	displays_arrangement_dirty = true;
+	displays_scale_dirty = true;
 }
 
 int OS_OSX::get_current_video_driver() const {
@@ -1525,6 +1539,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	keyboard_layout_dirty = true;
 	displays_arrangement_dirty = true;
+	displays_scale_dirty = true;
 
 	// Register to be notified on keyboard layout changes
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
@@ -1549,8 +1564,10 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (p_desired.resizable ? NSWindowStyleMaskResizable : 0);
 	}
 
+	float displayScale = get_screen_max_scale();
+
 	window_object = [[GodotWindow alloc]
-			initWithContentRect:NSMakeRect(0, 0, p_desired.width, p_desired.height)
+			initWithContentRect:NSMakeRect(0, 0, p_desired.width / displayScale, p_desired.height / displayScale)
 					  styleMask:styleMask
 						backing:NSBackingStoreBuffered
 						  defer:NO];
@@ -1562,17 +1579,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		[window_view setWantsLayer:TRUE];
 	}
 
-	float displayScale = 1.0;
-	if (is_hidpi_allowed()) {
-		// note that mainScreen is not screen #0 but the one with the keyboard focus.
-		NSScreen *screen = [NSScreen mainScreen];
-		if ([screen respondsToSelector:@selector(backingScaleFactor)]) {
-			displayScale = fmax(displayScale, [screen backingScaleFactor]);
-		}
-	}
-
-	window_size.width = p_desired.width * displayScale;
-	window_size.height = p_desired.height * displayScale;
+	window_size.width = p_desired.width;
+	window_size.height = p_desired.height;
 
 	if (displayScale > 1.0) {
 		[window_view setWantsBestResolutionOpenGLSurface:YES];
@@ -1659,6 +1667,12 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	[window_view setOpenGLContext:context];
 
 	[context makeCurrentContext];
+
+	GLint dim[2];
+	dim[0] = window_size.width;
+	dim[1] = window_size.height;
+	CGLSetParameter((CGLContextObj)[context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
+	CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCESurfaceBackingSize);
 
 	set_use_vsync(p_desired.use_vsync);
 
@@ -2074,7 +2088,7 @@ void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 
 		//local point in window coords
 		const NSRect contentRect = [window_view frame];
-		float displayScale = _display_scale();
+		float displayScale = get_screen_max_scale();
 		NSRect pointInWindowRect = NSMakeRect(p_to.x / displayScale, contentRect.size.height - (p_to.y / displayScale) - 1, 0, 0);
 		NSPoint pointOnScreen = [[window_view window] convertRectToScreen:pointInWindowRect].origin;
 
@@ -2094,7 +2108,7 @@ void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 
 void OS_OSX::update_real_mouse_position() {
 
-	get_mouse_pos([window_object mouseLocationOutsideOfEventStream], [window_view backingScaleFactor]);
+	get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
 	input->set_mouse_position(Point2(mouse_x, mouse_y));
 }
 
@@ -2415,7 +2429,7 @@ Point2 OS_OSX::get_native_screen_position(int p_screen) const {
 
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
-		float display_scale = _display_scale([screenArray objectAtIndex:p_screen]);
+		float display_scale = get_screen_max_scale();
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
 		// Return the top-left corner of the screen, for OS X the y starts at the bottom
 		return Point2(nsrect.origin.x, nsrect.origin.y + nsrect.size.height) * display_scale;
@@ -2439,13 +2453,9 @@ int OS_OSX::get_screen_dpi(int p_screen) const {
 
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
-		float displayScale = _display_scale([screenArray objectAtIndex:p_screen]);
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		NSSize displayPixelSize = [[description objectForKey:NSDeviceSize] sizeValue];
-		CGSize displayPhysicalSize = CGDisplayScreenSize(
-				[[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
-
-		return (displayPixelSize.width * 25.4f / displayPhysicalSize.width) * displayScale;
+		NSSize displayDPI = [[description objectForKey:NSDeviceResolution] sizeValue];
+		return (displayDPI.width + displayDPI.height) / 2;
 	}
 
 	return 72;
@@ -2458,7 +2468,7 @@ Size2 OS_OSX::get_screen_size(int p_screen) const {
 
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
-		float displayScale = _display_scale([screenArray objectAtIndex:p_screen]);
+		float displayScale = get_screen_max_scale();
 		// Note: Use frame to get the whole screen size
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
 		return Size2(nsrect.size.width, nsrect.size.height) * displayScale;
@@ -2492,28 +2502,40 @@ void OS_OSX::_update_window() {
 	}
 }
 
-float OS_OSX::_display_scale() const {
-	if (window_object) {
-		return _display_scale([window_object screen]);
-	} else {
-		return _display_scale([NSScreen mainScreen]);
+float OS_OSX::get_screen_scale(int p_screen) const {
+	if (p_screen < 0) {
+		p_screen = get_current_screen();
 	}
-}
 
-float OS_OSX::_display_scale(id screen) const {
 	if (is_hidpi_allowed()) {
-		if ([screen respondsToSelector:@selector(backingScaleFactor)]) {
-			return fmax(1.0, [screen backingScaleFactor]);
+		NSArray *screenArray = [NSScreen screens];
+		if ((NSUInteger)p_screen < [screenArray count]) {
+			if ([[screenArray objectAtIndex:p_screen] respondsToSelector:@selector(backingScaleFactor)]) {
+				return fmax(1.0, [[screenArray objectAtIndex:p_screen] backingScaleFactor]);
+			}
 		}
 	}
-	return 1.0;
+
+	return 1.f;
+}
+
+float OS_OSX::get_screen_max_scale() const {
+	static float scale = 1.f;
+	if (displays_scale_dirty) {
+		int screen_count = get_screen_count();
+		for (int i = 0; i < screen_count; i++) {
+			scale = fmax(scale, get_screen_scale(i));
+		}
+		displays_scale_dirty = false;
+	}
+	return scale;
 }
 
 Point2 OS_OSX::get_native_window_position() const {
 
 	NSRect nsrect = [window_object frame];
 	Point2 pos;
-	float display_scale = _display_scale();
+	float display_scale = get_screen_max_scale();
 
 	// Return the position of the top-left corner, for OS X the y starts at the bottom
 	pos.x = nsrect.origin.x * display_scale;
@@ -2533,7 +2555,7 @@ Point2 OS_OSX::get_window_position() const {
 void OS_OSX::set_native_window_position(const Point2 &p_position) {
 
 	NSPoint pos;
-	float displayScale = _display_scale();
+	float displayScale = get_screen_max_scale();
 
 	pos.x = p_position.x / displayScale;
 	pos.y = p_position.y / displayScale;
@@ -2561,7 +2583,7 @@ Size2 OS_OSX::get_window_size() const {
 Size2 OS_OSX::get_real_window_size() const {
 
 	NSRect frame = [window_object frame];
-	return Size2(frame.size.width, frame.size.height) * _display_scale();
+	return Size2(frame.size.width, frame.size.height) * get_screen_max_scale();
 }
 
 Size2 OS_OSX::get_max_window_size() const {
@@ -2581,7 +2603,7 @@ void OS_OSX::set_min_window_size(const Size2 p_size) {
 	min_size = p_size;
 
 	if ((min_size != Size2()) && !zoomed) {
-		Size2 size = min_size / _display_scale();
+		Size2 size = min_size / get_screen_max_scale();
 		[window_object setContentMinSize:NSMakeSize(size.x, size.y)];
 	} else {
 		[window_object setContentMinSize:NSMakeSize(0, 0)];
@@ -2597,7 +2619,7 @@ void OS_OSX::set_max_window_size(const Size2 p_size) {
 	max_size = p_size;
 
 	if ((max_size != Size2()) && !zoomed) {
-		Size2 size = max_size / _display_scale();
+		Size2 size = max_size / get_screen_max_scale();
 		[window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 	} else {
 		[window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
@@ -2606,7 +2628,7 @@ void OS_OSX::set_max_window_size(const Size2 p_size) {
 
 void OS_OSX::set_window_size(const Size2 p_size) {
 
-	Size2 size = p_size / _display_scale();
+	Size2 size = p_size / get_screen_max_scale();
 
 	if (get_borderless_window() == false) {
 		// NSRect used by setFrame includes the title bar, so add it to our size.y
@@ -2638,11 +2660,11 @@ void OS_OSX::set_window_fullscreen(bool p_enabled) {
 			[window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 		} else {
 			if (min_size != Size2()) {
-				Size2 size = min_size / _display_scale();
+				Size2 size = min_size / get_screen_max_scale();
 				[window_object setContentMinSize:NSMakeSize(size.x, size.y)];
 			}
 			if (max_size != Size2()) {
-				Size2 size = max_size / _display_scale();
+				Size2 size = max_size / get_screen_max_scale();
 				[window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 			}
 		}
@@ -3201,6 +3223,8 @@ void OS_OSX::_set_use_vsync(bool p_enable) {
 OS_OSX *OS_OSX::singleton = NULL;
 
 OS_OSX::OS_OSX() {
+
+	context = nullptr;
 
 	memset(cursors, 0, sizeof(cursors));
 	key_event_pos = 0;
