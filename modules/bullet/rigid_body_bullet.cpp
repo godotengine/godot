@@ -237,7 +237,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer::SHAPE_CYLINDER:
 			case PhysicsServer::SHAPE_CONVEX_POLYGON:
 			case PhysicsServer::SHAPE_RAY: {
-				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
+				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->internal_create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported to be kinematic!");
@@ -325,7 +325,7 @@ void RigidBodyBullet::main_shape_changed() {
 	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }
 
-void RigidBodyBullet::reload_body() {
+void RigidBodyBullet::do_reload_body() {
 	if (space) {
 		space->remove_rigid_body(this);
 		if (get_main_shape())
@@ -343,13 +343,15 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 		assert_no_constraints();
 
 		// Remove this object form the physics world
+		space->unregister_collision_object(this);
 		space->remove_rigid_body(this);
 	}
 
 	space = p_space;
 
 	if (space) {
-		space->add_rigid_body(this);
+		space->register_collision_object(this);
+		reload_body();
 	}
 }
 
@@ -820,8 +822,8 @@ const btTransform &RigidBodyBullet::get_transform__bullet() const {
 	}
 }
 
-void RigidBodyBullet::reload_shapes() {
-	RigidCollisionObjectBullet::reload_shapes();
+void RigidBodyBullet::do_reload_shapes() {
+	RigidCollisionObjectBullet::do_reload_shapes();
 
 	const btScalar invMass = btBody->getInvMass();
 	const btScalar mass = invMass == 0 ? 0 : 1 / invMass;

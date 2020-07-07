@@ -54,6 +54,10 @@ class ShapeBullet : public RIDBullet {
 	Map<ShapeOwnerBullet *, int> owners;
 	real_t margin;
 
+	// Contains the default shape.
+	btCollisionShape *default_shape = nullptr;
+	btCollisionShape *old_default_shape = nullptr;
+
 protected:
 	/// return self
 	btCollisionShape *prepare(btCollisionShape *p_btShape) const;
@@ -64,7 +68,11 @@ public:
 	virtual ~ShapeBullet();
 
 	btCollisionShape *create_bt_shape(const Vector3 &p_implicit_scale, real_t p_extra_edge = 0);
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0) = 0;
+	btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+
+	void destroy_bt_shape(btCollisionShape *p_shape) const;
+
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0) = 0;
 
 	void add_owner(ShapeOwnerBullet *p_owner);
 	void remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody = false);
@@ -104,7 +112,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(const Plane &p_plane);
@@ -121,7 +129,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(real_t p_radius);
@@ -138,7 +146,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(const Vector3 &p_half_extents);
@@ -157,7 +165,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(real_t p_height, real_t p_radius);
@@ -176,7 +184,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
 
 private:
 	void setup(real_t p_height, real_t p_radius);
@@ -193,7 +201,7 @@ public:
 	void get_vertices(Vector<Vector3> &out_vertices);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(const Vector<Vector3> &p_vertices);
@@ -211,7 +219,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(PoolVector<Vector3> p_faces);
@@ -231,7 +239,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
@@ -248,7 +256,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(real_t p_length, bool p_slips_on_slope);
