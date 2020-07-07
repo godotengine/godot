@@ -9,8 +9,8 @@ jobs:
     runs-on: windows-2019
     name: Windows Editor
     env:
-     SCONS_CACHE: ~/.scons_cache/
-     SCONS_CACHE_LIMIT: 2048  
+      SCONS_CACHE: ~/.scons_cache/
+      SCONS_CACHE_LIMIT: 2048  
   steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
