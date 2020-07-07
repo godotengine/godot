@@ -1908,7 +1908,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	function = NULL; //cleaned up;
 	state.result = Variant();
 
-	if (completed) {
+	if (completed && reference_get_count() > 0) {
 		if (first_state.is_valid()) {
 			first_state->emit_signal("completed", ret);
 		} else {
