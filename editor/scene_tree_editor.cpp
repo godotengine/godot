@@ -424,6 +424,15 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			}
 		}
 
+		for (int i = 0; !valid && i < valid_types.size(); i++) {
+			List<StringName> inheritors;
+			ClassDB::get_inheriters_from_class(valid_types[i], &inheritors);
+			if (inheritors.size() > 0 && inheritors.find(EditorNode::get_singleton()->get_object_custom_type_name(p_node)) != NULL) {
+				valid = true;
+				break;
+			}
+		}
+
 		if (!valid) {
 			//item->set_selectable(0,marked_selectable);
 			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
