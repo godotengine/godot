@@ -6037,18 +6037,11 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 			} else {
 				if (scene.is_valid()) {
 					Node *instance = scene->instance();
-#ifndef _MSC_VER
-#warning TODO find a better method for pausing preview
-#endif
 					if (instance) {
-						
-						for (int j = 0; j < instance->get_child_count(); j++) {
-							Timer *timer = Object::cast_to<Timer>(instance->get_child(j));
-							if (timer) {
-								timer->stop();
-							}
-						}
 						preview_node->add_child(instance);
+						preview_node->set_pause_mode(PAUSE_MODE_STOP);
+						// make sure only the preview node stops
+						editor->set_pause_mode(PAUSE_MODE_PROCESS);
 					}
 				}
 			}
@@ -6058,6 +6051,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 
 	if (add_preview) {
 		editor->get_scene_root()->add_child(preview_node);
+		preview_node->get_tree()->set_pause(true);
 	}
 }
 
