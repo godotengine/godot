@@ -405,7 +405,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Rect2i, get_area);
 	VCALL_LOCALMEM0R(Rect2i, has_no_area);
 	VCALL_LOCALMEM1R(Rect2i, has_point);
-	VCALL_LOCALMEM1R(Rect2i, intersects);
+	VCALL_LOCALMEM2R(Rect2i, intersects);
 	VCALL_LOCALMEM1R(Rect2i, encloses);
 	VCALL_LOCALMEM1R(Rect2i, clip);
 	VCALL_LOCALMEM1R(Rect2i, merge);
@@ -1930,7 +1930,7 @@ void register_variant_methods() {
 	ADDFUNC0R(RECT2I, INT, Rect2i, get_area, varray());
 	ADDFUNC0R(RECT2I, BOOL, Rect2i, has_no_area, varray());
 	ADDFUNC1R(RECT2I, BOOL, Rect2i, has_point, VECTOR2I, "point", varray());
-	ADDFUNC1R(RECT2I, BOOL, Rect2i, intersects, RECT2I, "b", varray());
+	ADDFUNC2R(RECT2I, BOOL, Rect2i, intersects, RECT2I, "b", BOOL, "include_borders", varray(false));
 	ADDFUNC1R(RECT2I, BOOL, Rect2i, encloses, RECT2I, "b", varray());
 	ADDFUNC1R(RECT2I, RECT2I, Rect2i, clip, RECT2I, "b", varray());
 	ADDFUNC1R(RECT2I, RECT2I, Rect2i, merge, RECT2I, "b", varray());
