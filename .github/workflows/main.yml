@@ -28,7 +28,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: windows-editor
-        path: bin/*
+        path: ~/bin/*
   windows-release:
     runs-on: windows-2019
     name: Windows Release
@@ -54,5 +54,5 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: windows-player
-        path: bin/*
+        path: ~/bin/*
 
