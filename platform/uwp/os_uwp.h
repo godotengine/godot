@@ -245,7 +245,7 @@ public:
 
 	void run();
 
-	virtual bool get_swap_ok_cancel() { return true; }
+	virtual bool get_swap_cancel_ok() { return true; }
 
 	void input_event(const Ref<InputEvent> &p_event);
 

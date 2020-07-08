@@ -1248,7 +1248,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	get_cancel()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Export PCK/Zip"));
-	export_button = add_button(TTR("Export Project"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "export");
+	export_button = add_button(TTR("Export Project"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
@@ -1263,7 +1263,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
 
-	export_all_button = add_button(TTR("Export All"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "export");
+	export_all_button = add_button(TTR("Export All"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 
