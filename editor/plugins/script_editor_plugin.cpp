@@ -537,11 +537,14 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 	if (current) {
+		Ref<Script> script = current->get_edited_resource();
 		if (p_save) {
-			_menu_option(FILE_SAVE);
+			// Do not try to save internal scripts
+			if (!(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
+				_menu_option(FILE_SAVE);
+			}
 		}
 
-		Ref<Script> script = current->get_edited_resource();
 		if (script != nullptr) {
 			previous_scripts.push_back(script->get_path());
 			notify_script_close(script);
