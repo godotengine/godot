@@ -472,8 +472,8 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
-		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
+		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 		</member>

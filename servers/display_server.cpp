@@ -238,7 +238,7 @@ void DisplayServer::cursor_set_custom_image(const RES &p_cursor, CursorShape p_s
 	WARN_PRINT("Custom cursor shape not supported by this display server.");
 }
 
-bool DisplayServer::get_swap_ok_cancel() {
+bool DisplayServer::get_swap_cancel_ok() {
 	return false;
 }
 
@@ -464,7 +464,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
 	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 
-	ClassDB::bind_method(D_METHOD("get_swap_ok_cancel"), &DisplayServer::get_swap_ok_cancel);
+	ClassDB::bind_method(D_METHOD("get_swap_cancel_ok"), &DisplayServer::get_swap_cancel_ok);
 
 	ClassDB::bind_method(D_METHOD("enable_for_stealing_focus", "process_id"), &DisplayServer::enable_for_stealing_focus);
 

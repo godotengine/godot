@@ -54,7 +54,7 @@ class AcceptDialog : public Window {
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
 
-	static bool swap_ok_cancel;
+	static bool swap_cancel_ok;
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
 	void _parent_focused();
@@ -75,7 +75,7 @@ protected:
 
 public:
 	Label *get_label() { return label; }
-	static void set_swap_ok_cancel(bool p_swap);
+	static void set_swap_cancel_ok(bool p_swap);
 
 	void register_text_enter(Node *p_line_edit);
 

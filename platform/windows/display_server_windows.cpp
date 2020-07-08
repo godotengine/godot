@@ -1367,7 +1367,7 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 	}
 }
 
-bool DisplayServerWindows::get_swap_ok_cancel() {
+bool DisplayServerWindows::get_swap_cancel_ok() {
 	return true;
 }
 

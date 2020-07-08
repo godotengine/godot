@@ -288,7 +288,7 @@ public:
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
-	virtual bool get_swap_ok_cancel() override;
+	virtual bool get_swap_cancel_ok() override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
