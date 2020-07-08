@@ -3166,7 +3166,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->get_ok()->set_text(TTR("Save"));
-	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "discard");
+	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
@@ -3200,7 +3200,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::_reload_scripts));
 		disk_changed->get_ok()->set_text(TTR("Reload"));
 
-		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "resave");
+		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &ScriptEditor::_resave_scripts));
 	}
 

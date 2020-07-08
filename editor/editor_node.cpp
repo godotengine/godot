@@ -6478,7 +6478,7 @@ EditorNode::EditorNode() {
 	confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 
 	save_confirmation = memnew(ConfirmationDialog);
-	save_confirmation->add_button(TTR("Don't Save"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "discard");
+	save_confirmation->add_button(TTR("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(save_confirmation);
 	save_confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
@@ -6697,7 +6697,7 @@ EditorNode::EditorNode() {
 
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->get_ok()->set_text(TTR("Open Anyway"));
-	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "inherit");
+	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
 	open_imported->connect("confirmed", callable_mp(this, &EditorNode::_open_imported));
 	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
 	gui_base->add_child(open_imported);
