@@ -6,7 +6,7 @@ on:
       branches: [ master, 3.2, 3.1, 3.0 ]
 jobs:
   windows-editor:
-    runs-on: windows-2019
+    runs-on: windows-latest
     name: Windows Editor
     env:
       SCONS_CACHE: ~/.scons_cache/
@@ -30,7 +30,7 @@ jobs:
         name: windows-editor
         path: bin/godot.windows.opt.tools.64.exe
   windows-release:
-    runs-on: windows-2019
+    runs-on: windows-latest
     name: Windows Release
 
     env:
