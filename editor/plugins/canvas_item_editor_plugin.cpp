@@ -6041,10 +6041,11 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 #warning TODO find a better method for pausing preview
 #endif
 					if (instance) {
+						
 						for (int j = 0; j < instance->get_child_count(); j++) {
-							Node *curr_child = instance->get_child(j);
-							if (curr_child->get_class() == "Timer") {
-								curr_child->call("stop");
+							Timer *timer = Object::cast_to<Timer>(instance->get_child(j));
+							if (timer) {
+								timer->stop();
 							}
 						}
 						preview_node->add_child(instance);
