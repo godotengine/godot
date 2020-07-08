@@ -23,7 +23,8 @@
 			<argument index="0" name="subresources" type="bool" default="false">
 			</argument>
 			<description>
-				Duplicates the resource, returning a new resource. By default, sub-resources are shared between resource copies for efficiency, this can be changed by passing [code]true[/code] to the [code]subresources[/code] argument.
+				Duplicates the resource, returning a new resource. By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing [code]true[/code] to the [code]subresources[/code] argument which will copy the subresources.
+				[b]Note:[/b] If [code]subresources[/code] is [code]true[/code], this method will only perform a shallow copy. Nested resources within subresources will not be duplicated and will still be shared.
 			</description>
 		</method>
 		<method name="get_local_scene" qualifiers="const">
