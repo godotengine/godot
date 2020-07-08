@@ -790,6 +790,7 @@ public:
 
 	Control *get_gui_base() { return gui_base; }
 	Control *get_theme_base() { return gui_base->get_parent_control(); }
+	Ref<Theme> get_theme() { return theme; }
 
 	static void add_io_error(const String &p_error);
 

@@ -277,7 +277,7 @@ public:
 	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 
 	String test_etc2() const; //generic test for etc2 since most platforms use it
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const = 0;
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
@@ -410,6 +410,8 @@ public:
 	void update_export_presets();
 	bool poll_export_platforms();
 
+	void add_export_console_placeholder_platforms();
+
 	EditorExport();
 	~EditorExport();
 };
@@ -446,7 +448,7 @@ public:
 	virtual String get_os_name() const override;
 	virtual Ref<Texture2D> get_logo() const override;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
@@ -481,6 +483,47 @@ class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) override;
 	EditorExportTextSceneToBinaryPlugin();
+};
+
+class EditorExportConsolePlaceholder : public EditorExportPlatform {
+	GDCLASS(EditorExportConsolePlaceholder, EditorExportPlatform);
+
+public:
+	String console_name;
+	String console_os_name;
+	String console_licensing;
+	Ref<Texture2D> logo;
+
+	virtual String get_name() const override {
+		return vformat(TTR("%s (third-party license required)"), console_name);
+	}
+	virtual String get_os_name() const override {
+		return console_os_name;
+	}
+	virtual Ref<Texture2D> get_logo() const override {
+		return logo;
+	}
+
+	bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const override {
+		r_error = vformat(TTR("As %s does not authorize public distribution of their SDKs, you need to get licensed with them first.\nAfterwards, export templates are commercially available from third party companies."), console_licensing);
+		r_missing_templates = false;
+		r_missing_console = true;
+		return false;
+	}
+
+	virtual void get_platform_features(List<String> *r_features) override {
+	}
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
+	}
+
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override {
+	}
+	virtual void get_export_options(List<ExportOption> *r_options) override {
+	}
+
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override { return List<String>(); }
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override { return ERR_CANT_CREATE; }
+	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) { return ERR_CANT_CREATE; }
 };
 
 #endif // EDITOR_IMPORT_EXPORT_H
