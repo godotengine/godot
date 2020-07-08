@@ -2913,8 +2913,8 @@ void DisplayServerOSX::window_set_ime_position(const Point2i &p_pos, WindowID p_
 	wd.im_position = p_pos;
 }
 
-bool DisplayServerOSX::get_swap_ok_cancel() {
-	return true;
+bool DisplayServerOSX::get_swap_cancel_ok() {
+	return false;
 }
 
 void DisplayServerOSX::cursor_set_shape(CursorShape p_shape) {

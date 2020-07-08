@@ -369,7 +369,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(DisplayServer::get_singleton()->get_swap_ok_cancel())));
+	AcceptDialog::set_swap_cancel_ok(GLOBAL_DEF("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok())));
 #endif
 
 	/* REGISTER 3D */

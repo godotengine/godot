@@ -258,7 +258,7 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	if (p_cancel == "") {
 		c = RTR("Cancel");
 	}
-	Button *b = swap_ok_cancel ? add_button(c, true) : add_button(c);
+	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
 	return b;
 }
@@ -286,9 +286,9 @@ void AcceptDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 }
 
-bool AcceptDialog::swap_ok_cancel = false;
-void AcceptDialog::set_swap_ok_cancel(bool p_swap) {
-	swap_ok_cancel = p_swap;
+bool AcceptDialog::swap_cancel_ok = false;
+void AcceptDialog::set_swap_cancel_ok(bool p_swap) {
+	swap_cancel_ok = p_swap;
 }
 
 AcceptDialog::AcceptDialog() {
