@@ -2,6 +2,8 @@
 
 ## Godot Engine
 
+![Godot CI](https://github.com/RevoluPowered/godot/workflows/Godot%20CI/badge.svg?branch=master)
+
 Homepage: https://godotengine.org
 
 #### 2D and 3D cross-platform game engine
