@@ -93,7 +93,7 @@ Path::Path() {
 
 //////////////
 
-void PathFollow::_update_transform() {
+void PathFollow::_update_transform(bool p_update_xyz_rot) {
 
 	if (!path)
 		return;
@@ -163,45 +163,47 @@ void PathFollow::_update_transform() {
 
 		t.origin = pos;
 
-		Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
-		Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
+		if (p_update_xyz_rot) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree
+			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
+			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
 
-		Vector3 axis = t_prev.cross(t_cur);
-		float dot = t_prev.dot(t_cur);
-		float angle = Math::acos(CLAMP(dot, -1, 1));
+			Vector3 axis = t_prev.cross(t_cur);
+			float dot = t_prev.dot(t_cur);
+			float angle = Math::acos(CLAMP(dot, -1, 1));
 
-		if (likely(!Math::is_zero_approx(angle))) {
-			if (rotation_mode == ROTATION_Y) {
-				// assuming we're referring to global Y-axis. is this correct?
-				axis.x = 0;
-				axis.z = 0;
-			} else if (rotation_mode == ROTATION_XY) {
-				axis.z = 0;
-			} else if (rotation_mode == ROTATION_XYZ) {
-				// all components are allowed
+			if (likely(!Math::is_zero_approx(angle))) {
+				if (rotation_mode == ROTATION_Y) {
+					// assuming we're referring to global Y-axis. is this correct?
+					axis.x = 0;
+					axis.z = 0;
+				} else if (rotation_mode == ROTATION_XY) {
+					axis.z = 0;
+				} else if (rotation_mode == ROTATION_XYZ) {
+					// all components are allowed
+				}
+
+				if (likely(!Math::is_zero_approx(axis.length()))) {
+					t.rotate_basis(axis.normalized(), angle);
+				}
 			}
 
-			if (likely(!Math::is_zero_approx(axis.length()))) {
-				t.rotate_basis(axis.normalized(), angle);
-			}
-		}
+			// do the additional tilting
+			float tilt_angle = c->interpolate_baked_tilt(offset);
+			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
 
-		// do the additional tilting
-		float tilt_angle = c->interpolate_baked_tilt(offset);
-		Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
+			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
+				if (rotation_mode == ROTATION_Y) {
+					tilt_axis.x = 0;
+					tilt_axis.z = 0;
+				} else if (rotation_mode == ROTATION_XY) {
+					tilt_axis.z = 0;
+				} else if (rotation_mode == ROTATION_XYZ) {
+					// all components are allowed
+				}
 
-		if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
-			if (rotation_mode == ROTATION_Y) {
-				tilt_axis.x = 0;
-				tilt_axis.z = 0;
-			} else if (rotation_mode == ROTATION_XY) {
-				tilt_axis.z = 0;
-			} else if (rotation_mode == ROTATION_XYZ) {
-				// all components are allowed
-			}
-
-			if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
-				t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+				if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
+					t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+				}
 			}
 		}
 
@@ -223,7 +225,7 @@ void PathFollow::_notification(int p_what) {
 			if (parent) {
 				path = Object::cast_to<Path>(parent);
 				if (path) {
-					_update_transform();
+					_update_transform(false);
 				}
 			}
 
