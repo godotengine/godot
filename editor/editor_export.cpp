@@ -1408,6 +1408,37 @@ bool EditorExport::poll_export_platforms() {
 	return changed;
 }
 
+void EditorExport::add_export_console_placeholder_platforms() {
+	{
+		Ref<EditorExportConsolePlaceholder> ps;
+		ps.instance();
+		ps->console_name = "Sony PlayStation";
+		ps->console_licensing = "Sony";
+		ps->console_os_name = "PlayStation";
+		Ref<Image> img = EditorNode::get_singleton()->get_theme()->get_icon("PS", "EditorIcons")->get_data();
+		img->resize(32, 32);
+		Ref<ImageTexture> it;
+		it.instance();
+		it->create_from_image(img);
+		ps->logo = it;
+		add_export_platform(ps);
+	}
+	{
+		Ref<EditorExportConsolePlaceholder> ns;
+		ns.instance();
+		ns->console_name = "Nintendo Switch";
+		ns->console_licensing = "Nintendo";
+		ns->console_os_name = "Switch";
+		Ref<Image> img = EditorNode::get_singleton()->get_theme()->get_icon("NS", "EditorIcons")->get_data();
+		img->resize(32, 32);
+		Ref<ImageTexture> it;
+		it.instance();
+		it->create_from_image(img);
+		ns->logo = it;
+		add_export_platform(ns);
+	}
+}
+
 EditorExport::EditorExport() {
 	save_timer = memnew(Timer);
 	add_child(save_timer);
@@ -1469,9 +1500,10 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
-bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const {
 	String err;
 	bool valid = false;
+	r_missing_console = false;
 
 	// Look for export templates (first official, and if defined custom templates).
 

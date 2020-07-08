@@ -142,7 +142,7 @@ public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual void add_module_code(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid);
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const;
 
 	virtual void get_platform_features(List<String> *r_features) {
 		r_features->push_back("mobile");
@@ -1419,9 +1419,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const {
 	String err;
 	bool valid = false;
+	r_missing_console = false;
 
 	// Look for export templates (first official, and if defined custom templates).
 

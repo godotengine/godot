@@ -758,7 +758,8 @@ void EditorNode::_fs_changed() {
 				} else { // Normal project export.
 					String config_error;
 					bool missing_templates;
-					if (!platform->can_export(preset, config_error, missing_templates)) {
+					bool consoles;
+					if (!platform->can_export(preset, config_error, missing_templates, consoles)) {
 						ERR_PRINT(vformat("Cannot export project with preset '%s' due to configuration errors:\n%s", preset_name, config_error));
 						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 					} else {
@@ -5710,6 +5711,8 @@ EditorNode::EditorNode() {
 	theme = create_custom_theme();
 
 	register_exporters();
+
+	editor_export->add_export_console_placeholder_platforms();
 
 	GLOBAL_DEF("editor/main_run_args", "");
 

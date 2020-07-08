@@ -1575,7 +1575,8 @@ public:
 
 		String can_export_error;
 		bool can_export_missing_templates;
-		if (!can_export(p_preset, can_export_error, can_export_missing_templates)) {
+		bool export_for_consoles = false;
+		if (!can_export(p_preset, can_export_error, can_export_missing_templates, export_for_consoles)) {
 			EditorNode::add_io_error(can_export_error);
 			return ERR_UNCONFIGURED;
 		}
@@ -1731,9 +1732,10 @@ public:
 		return run_icon;
 	}
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const {
 		String err;
 		bool valid = false;
+		r_missing_console = false;
 
 		// Look for export templates (first official, and if defined custom templates).
 

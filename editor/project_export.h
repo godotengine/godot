@@ -107,6 +107,8 @@ private:
 	Label *export_error;
 	HBoxContainer *export_templates_error;
 
+	LinkButton *export_to_console;
+
 	String default_filename;
 
 	void _patch_selected(const String &p_path);
@@ -146,6 +148,7 @@ private:
 	CheckBox *export_pck_zip_debug;
 
 	void _open_export_template_manager();
+	void _open_export_to_consoles();
 
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);

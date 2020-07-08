@@ -180,8 +180,9 @@ void ProjectExportDialog::_update_export_all() {
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		bool needs_templates;
+		bool needs_consoles;
 		String error;
-		if (preset->get_export_path() == "" || !preset->get_platform()->can_export(preset, error, needs_templates)) {
+		if (preset->get_export_path() == "" || !preset->get_platform()->can_export(preset, error, needs_templates, needs_consoles)) {
 			can_export = false;
 			break;
 		}
@@ -208,6 +209,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		patches->clear();
 		export_error->hide();
 		export_templates_error->hide();
+		export_to_console->hide();
+
 		return;
 	}
 
@@ -272,8 +275,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	_fill_resource_tree();
 
 	bool needs_templates;
+	bool exporting_to_consoles;
 	String error;
-	if (!current->get_platform()->can_export(current, error, needs_templates)) {
+	if (!current->get_platform()->can_export(current, error, needs_templates, exporting_to_consoles)) {
 		if (error != String()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
@@ -288,11 +292,18 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			export_error->show();
 		} else {
 			export_error->hide();
+			export_to_console->hide();
 		}
 		if (needs_templates) {
 			export_templates_error->show();
 		} else {
 			export_templates_error->hide();
+		}
+
+		if (exporting_to_consoles) {
+			export_to_console->show();
+		} else {
+			export_to_console->hide();
 		}
 
 		export_button->set_disabled(true);
@@ -301,6 +312,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	} else {
 		export_error->hide();
 		export_templates_error->hide();
+		export_to_console->hide();
 		export_button->set_disabled(false);
 		get_ok()->set_disabled(false);
 	}
@@ -897,6 +909,11 @@ void ProjectExportDialog::_open_export_template_manager() {
 	hide();
 }
 
+void ProjectExportDialog::_open_export_to_consoles() {
+	OS::get_singleton()->shell_open("https://docs.godotengine.org/en/stable/tutorials/platform/consoles.html");
+	hide();
+}
+
 void ProjectExportDialog::_validate_export_path(const String &p_path) {
 	// Disable export via OK button or Enter key if LineEdit has an empty filename
 	bool invalid_path = (p_path.get_file().get_basename() == "");
@@ -1300,6 +1317,15 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
 	download_templates->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
+
+	export_to_console = memnew(LinkButton);
+	export_to_console->set_text(TTR("Learn more about exporting to consoles..."));
+	export_to_console->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	export_to_console->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_to_consoles));
+	main_vb->add_child(export_to_console);
+	export_to_console->hide();
+	export_to_console->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+	export_to_console->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 
 	export_project = memnew(EditorFileDialog);
 	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

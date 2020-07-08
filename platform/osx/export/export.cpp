@@ -109,7 +109,7 @@ public:
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const;
 
 	virtual void get_platform_features(List<String> *r_features) {
 		r_features->push_back("pc");
@@ -864,9 +864,11 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 	memdelete(da);
 }
 
-bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const {
 	String err;
 	bool valid = false;
+
+	r_missing_console = false;
 
 	// Look for export templates (first official, and if defined custom templates).
 

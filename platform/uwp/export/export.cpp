@@ -1067,9 +1067,10 @@ public:
 		}
 	}
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const {
 		String err;
 		bool valid = false;
+		r_missing_console = false;
 
 		// Look for export templates (first official, and if defined custom templates).
 

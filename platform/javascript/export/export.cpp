@@ -218,7 +218,7 @@ public:
 	virtual String get_os_name() const;
 	virtual Ref<Texture2D> get_logo() const;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
@@ -307,9 +307,11 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_logo() const {
 	return logo;
 }
 
-bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool &r_missing_console) const {
 	String err;
 	bool valid = false;
+
+	r_missing_console = false;
 
 	// Look for export templates (first official, and if defined custom templates).
 
