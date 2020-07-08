@@ -362,6 +362,15 @@
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
 			</description>
 		</method>
+		<method name="get_screen_max_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the greatest scale factor of all screens.
+				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="get_screen_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -369,6 +378,17 @@
 			</argument>
 			<description>
 				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+			</description>
+		</method>
+		<method name="get_screen_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+				Return the scale factor of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
+				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">

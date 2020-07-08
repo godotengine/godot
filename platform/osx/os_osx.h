@@ -145,16 +145,6 @@ public:
 
 	CrashHandler crash_handler;
 
-	float _mouse_scale(float p_scale) {
-		if (_display_scale() > 1.0)
-			return p_scale;
-		else
-			return 1.0;
-	}
-
-	float _display_scale() const;
-	float _display_scale(id screen) const;
-
 	void _update_window();
 
 	int video_driver_index;
@@ -269,6 +259,8 @@ public:
 	virtual Point2 get_screen_position(int p_screen = -1) const;
 	virtual Size2 get_screen_size(int p_screen = -1) const;
 	virtual int get_screen_dpi(int p_screen = -1) const;
+	virtual float get_screen_scale(int p_screen = -1) const;
+	virtual float get_screen_max_scale() const;
 
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
