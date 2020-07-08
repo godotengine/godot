@@ -46,6 +46,7 @@ public:
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
 
+	Ref<ArrayMesh> get_debug_arraymesh_faces() const;
 	virtual Vector<Vector3> get_debug_mesh_lines();
 	virtual real_t get_enclosing_radius() const;
 

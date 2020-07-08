@@ -29,7 +29,19 @@
 /*************************************************************************/
 
 #include "cylinder_shape_3d.h"
+#include "primitive_meshes.h"
 #include "servers/physics_server_3d.h"
+
+Ref<ArrayMesh> CylinderShape3D::get_debug_arraymesh_faces() const {
+	CylinderMesh sm;
+	sm.set_bottom_radius(radius);
+	sm.set_top_radius(radius);
+	sm.set_height(height);
+	Array a = sm.surface_get_arrays(0);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
+	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+	return m;
+}
 
 Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() {
 	float radius = get_radius();

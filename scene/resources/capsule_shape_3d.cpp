@@ -29,7 +29,18 @@
 /*************************************************************************/
 
 #include "capsule_shape_3d.h"
+#include "primitive_meshes.h"
 #include "servers/physics_server_3d.h"
+
+Ref<ArrayMesh> CapsuleShape3D::get_debug_arraymesh_faces() const {
+	CapsuleMesh sm;
+	sm.set_radius(radius);
+	sm.set_mid_height(height);
+	Array a = sm.surface_get_arrays(0);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
+	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+	return m;
+}
 
 Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() {
 	float radius = get_radius();

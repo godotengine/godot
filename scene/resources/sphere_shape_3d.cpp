@@ -29,7 +29,18 @@
 /*************************************************************************/
 
 #include "sphere_shape_3d.h"
+#include "primitive_meshes.h"
 #include "servers/physics_server_3d.h"
+
+Ref<ArrayMesh> SphereShape3D::get_debug_arraymesh_faces() const {
+	SphereMesh sm;
+	sm.set_radius(radius);
+	sm.set_height(radius * 2);
+	Array a = sm.surface_get_arrays(0);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
+	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+	return m;
+}
 
 Vector<Vector3> SphereShape3D::get_debug_mesh_lines() {
 	float r = get_radius();
