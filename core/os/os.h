@@ -53,6 +53,7 @@ class OS {
 	bool low_processor_usage_mode;
 	int low_processor_usage_mode_sleep_usec;
 	bool _verbose_stdout;
+	bool _debug_stdout;
 	String _local_clipboard;
 	uint64_t _msec_splash;
 	bool _no_window;
@@ -359,6 +360,7 @@ public:
 	virtual bool is_userfs_persistent() const { return true; }
 
 	bool is_stdout_verbose() const;
+	bool is_stdout_debug_enabled() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }

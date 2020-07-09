@@ -197,6 +197,10 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+bool OS::is_stdout_debug_enabled() const {
+	return _debug_stdout;
+}
+
 void OS::dump_memory_to_file(const char *p_file) {
 
 	//Memory::dump_static_mem_to_file(p_file);
@@ -812,6 +816,7 @@ OS::OS() {
 	low_processor_usage_mode = false;
 	low_processor_usage_mode_sleep_usec = 10000;
 	_verbose_stdout = false;
+	_debug_stdout = false;
 	_no_window = false;
 	_exit_code = 0;
 	_orientation = SCREEN_LANDSCAPE;

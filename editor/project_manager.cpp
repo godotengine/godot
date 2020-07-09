@@ -2040,6 +2040,14 @@ void ProjectManager::_open_selected_projects() {
 
 		args.push_back("--editor");
 
+		if (OS::get_singleton()->is_stdout_debug_enabled()) {
+			args.push_back("--debug");
+		}
+
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			args.push_back("--verbose");
+		}
+
 		if (OS::get_singleton()->is_disable_crash_handler()) {
 			args.push_back("--disable-crash-handler");
 		}

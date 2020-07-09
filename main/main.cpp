@@ -799,6 +799,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (I->get() == "-d" || I->get() == "--debug") {
 			debug_mode = "local";
+			OS::get_singleton()->_debug_stdout = true;
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
