@@ -2667,9 +2667,7 @@ PoolVector<uint8_t> RasterizerStorageGLES2::mesh_surface_get_array(RID p_mesh, i
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
 	Surface *surface = mesh->surfaces[p_surface];
-#ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
-#endif
+
 	return surface->data;
 }
 
@@ -2713,7 +2711,7 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES2::mesh_surface_get_blend_shap
 	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t> >());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t> >());
 #ifndef TOOLS_ENABLED
-	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
+	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving blend shape data");
 #endif
 
 	return mesh->surfaces[p_surface]->blend_shape_data;
