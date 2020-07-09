@@ -7,6 +7,13 @@
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
 		Can be used to save a node to a file. When saving, the node as well as all the node it owns get saved (see [code]owner[/code] property on [Node]).
 		[b]Note:[/b] The node doesn't need to own itself.
+		[b]Example of loading a saved scene:[/b]
+		[codeblock]
+		# Use `load()` instead of `preload()` if the path isn't known at compile-time.
+		var scene = preload("res://scene.tscn").instance()
+		# Add the node as a child of the node the script is attached to.
+		add_child(scene)
+		[/codeblock]
 		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblock]
 		# Create the objects.
