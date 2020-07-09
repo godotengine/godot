@@ -2465,7 +2465,7 @@ void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		[wd_window.window_object setParentWindow:nil];
+		[wd_parent.window_object removeChildWindow:wd_window.window_object];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2474,7 +2474,7 @@ void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
 
-		[wd_window.window_object setParentWindow:wd_parent.window_object];
+		[wd_parent.window_object addChildWindow:wd_window.window_object ordered:NSWindowAbove];
 	}
 }
 
