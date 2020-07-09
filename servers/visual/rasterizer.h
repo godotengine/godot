@@ -185,6 +185,8 @@ public:
 			VS::TextureType p_type,
 			uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) = 0;
 
+	virtual void texture_set_external(RID p_texture, int p_width, int p_height) = 0;
+
 	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_level = 0) = 0;
 
 	virtual void texture_set_data_partial(RID p_texture,

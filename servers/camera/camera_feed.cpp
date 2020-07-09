@@ -52,6 +52,7 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_RGB_img", "rgb_img"), &CameraFeed::set_RGB_img);
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_img", "ycbcr_img"), &CameraFeed::set_YCbCr_img);
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_imgs", "y_img", "cbcr_img"), &CameraFeed::set_YCbCr_imgs);
+	ClassDB::bind_method(D_METHOD("_set_external", "width", "height"), &CameraFeed::set_external);
 	ClassDB::bind_method(D_METHOD("_allocate_texture", "width", "height", "format", "texture_type", "data_type"), &CameraFeed::allocate_texture);
 
 	ADD_GROUP("Feed", "feed_");
@@ -62,6 +63,7 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_RGB);
 	BIND_ENUM_CONSTANT(FEED_YCBCR);
 	BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
+	BIND_ENUM_CONSTANT(FEED_EXTERNAL);
 
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
@@ -242,10 +244,24 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
 	}
 }
 
-void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_format, VisualServer::TextureType p_texture_type, FeedDataType p_data_type) {
+void CameraFeed::set_external(int p_width, int p_height) {
 	VisualServer *vs = VisualServer::get_singleton();
 
 	if ((base_width != p_width) || (base_height != p_height)) {
+		// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
+		base_width = p_width;
+		base_height = p_height;
+
+		vs->texture_set_external(texture[0], p_width, p_height);
+	}
+
+	datatype = FEED_EXTERNAL;
+}
+
+void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_format, VisualServer::TextureType p_texture_type, FeedDataType p_data_type) {
+	VisualServer *vs = VisualServer::get_singleton();
+
+	if ((base_width != p_width) || (base_height != p_height) || ((datatype != p_data_type))) {
 		// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 		base_width = p_width;
 		base_height = p_height;

@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_arcore = env_modules.Clone()
+
+# Get ARCore native libraries with gradle
+from subprocess import call
+abspath = env.Dir("#").abspath
+cmd = '"%s/platform/android/java/gradlew" -b "%s/thirdparty/arcore/extract-arcore-libs.gradle" extractNativeLibraries' % (abspath, abspath)
+call(cmd, shell=True)
+
+thirdparty_dir = "#thirdparty/arcore/"
+env_arcore.Append(CPPPATH=[thirdparty_dir + "include"])
+
+arch_conversion = {
+    'x86': "x86",
+    'x86_64': "x86_64",
+    'armv7': "armeabi-v7a",
+    'arm64v8': "arm64-v8a"
+}
+env.Append(LIBPATH=[thirdparty_dir + "jni/" + arch_conversion[env['android_arch']]])
+env.Append(LIBS=["libarcore_sdk_c", "libarcore_sdk_jni"])
+
+# Add source files
+env_arcore.add_source_files(env.modules_sources, "*.cpp")

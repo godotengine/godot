@@ -1,0 +1,51 @@
+apply from: '../../platform/android/java/app/config.gradle'
+
+buildscript {
+    apply from: '../../platform/android/java/app/config.gradle'
+
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath libraries.androidGradlePlugin
+    }
+}
+
+apply plugin: 'com.android.application'
+
+// Create a configuration to mark which aars to extract .so files from
+configurations { natives }
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:support-core-utils:28.0.0'
+    implementation 'com.google.ar:core:1.7.0'
+    natives 'com.google.ar:core:1.7.0'
+}
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+}
+
+task extractNativeLibraries() {
+    // Always extract, this insures the native libs are updated if the version changes.
+    outputs.upToDateWhen { false }
+    doFirst {
+        configurations.natives.files.each { f ->
+            copy {
+                from zipTree(f)
+                into "."
+                include "jni/**/*"
+            }
+        }
+    }
+}

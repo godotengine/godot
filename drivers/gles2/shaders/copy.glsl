@@ -63,6 +63,11 @@ void main() {
 /* clang-format off */
 [fragment]
 
+#ifdef USE_EXTERNAL_SAMPLER
+// Leave the ifdef so we have this define, for now the extension is loaded through custom defines
+// #extension GL_OES_EGL_image_external : require
+#endif
+
 #define M_PI 3.14159265359
 
 #ifdef USE_GLES_OVER_GL
@@ -93,8 +98,10 @@ uniform highp vec4 asym_proj;
 
 #ifdef USE_CUBEMAP
 uniform samplerCube source_cube; // texunit:0
+#elif defined(USE_EXTERNAL_SAMPLER)
+uniform samplerExternalOES source;
 #else
-uniform sampler2D source; // texunit:0
+		uniform sampler2D source; // texunit:0
 #endif
 
 #ifdef SEP_CBCR_TEXTURE

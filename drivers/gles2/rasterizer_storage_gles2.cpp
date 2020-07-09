@@ -648,6 +648,31 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	texture->active = true;
 }
 
+void RasterizerStorageGLES2::texture_set_external(RID p_texture, int p_width, int p_height) {
+	Texture *texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->width = p_width;
+	texture->height = p_height;
+
+	// most of this is ignored
+	texture->depth = 1;
+	texture->format = Image::FORMAT_RGBA8;
+	texture->flags = 0;
+	texture->stored_cube_sides = 0;
+	texture->type = VS::TEXTURE_TYPE_2D;
+
+	texture->target = _GL_TEXTURE_EXTERNAL_OES;
+	texture->images.resize(0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, texture->tex_id);
+	glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	texture->active = true;
+}
+
 void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	Texture *texture = texture_owner.getornull(p_texture);
 

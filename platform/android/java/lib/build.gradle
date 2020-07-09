@@ -5,6 +5,9 @@ dependencies {
     implementation libraries.supportCoreUtils
     implementation libraries.kotlinStdLib
     implementation libraries.v4Support
+
+    //ARCore specific, needs to become options
+    implementation "com.google.ar:core:1.10.0"
 }
 
 def pathToRootDir = "../../../../"

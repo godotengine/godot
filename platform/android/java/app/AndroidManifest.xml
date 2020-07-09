@@ -20,6 +20,11 @@
         android:glEsVersion="0x00020000"
         android:required="true" />
 
+    <!--ARCore meta data. This is modified by the exporter based on whether ARCore is enabled-->
+    <uses-feature
+        android:name="xr_mode_uses_camera_name"
+        android:required="true" />
+
 <!-- Custom user permissions XML added by add-ons. It's recommended to add them from the export preset, though. -->
 <!--CHUNK_USER_PERMISSIONS_BEGIN-->
 <!--CHUNK_USER_PERMISSIONS_END-->

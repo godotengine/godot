@@ -51,7 +51,8 @@ public:
 		FEED_NOIMAGE, // we don't have an image yet
 		FEED_RGB, // our texture will contain a normal RGB texture that can be used directly
 		FEED_YCBCR, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
-		FEED_YCBCR_SEP // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_YCBCR_SEP, // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
+		FEED_EXTERNAL // specific for android atm, camera feed is managed externally, assumed RGB for now
 	};
 
 	enum FeedPosition {
@@ -103,6 +104,8 @@ public:
 	void set_RGB_img(Ref<Image> p_rgb_img);
 	void set_YCbCr_img(Ref<Image> p_ycbcr_img);
 	void set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img);
+	void set_external(int p_width, int p_height);
+
 	void allocate_texture(int p_width, int p_height, Image::Format p_format, VisualServer::TextureType p_texture_type, FeedDataType p_data_type);
 
 	virtual bool activate_feed();
