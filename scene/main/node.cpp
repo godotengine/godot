@@ -842,14 +842,14 @@ bool Node::can_process() const {
 
 float Node::get_physics_process_delta_time() const {
 
-	if (data.tree)
+	if (data.tree) {
 		if (data.time_scale_inherit && data.parent)
 			return data.tree->get_physics_process_time() * data.time_scale_value * data.time_scale_inherit_value;
 		else
 			return data.tree->get_physics_process_time() * data.time_scale_value;
+	}
 	else
 		return 0;
-	}
 }
 
 float Node::get_process_delta_time() const {
@@ -2954,7 +2954,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
 	ADD_GROUP("Time Scale", "time_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_scale_value", PROPERTY_HINT_NONE, ""), "set_time_scale_value", "get_time_scale_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale_value", PROPERTY_HINT_NONE, ""), "set_time_scale_value", "get_time_scale_value");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "time_scale_inherit", PROPERTY_HINT_NONE, ""), "set_time_scale_inherit", "is_time_scale_inheriting");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
