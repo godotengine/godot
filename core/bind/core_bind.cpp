@@ -1673,8 +1673,15 @@ int _Directory::get_current_drive() {
 }
 
 Error _Directory::change_dir(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
-	return d->change_dir(p_dir);
+	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
+	Error err = d->change_dir(p_dir);
+
+	if (err != OK) {
+		return err;
+	}
+	dir_open = true;
+
+	return OK;
 }
 
 String _Directory::get_current_dir() {
@@ -1705,8 +1712,7 @@ Error _Directory::make_dir_recursive(String p_dir) {
 }
 
 bool _Directory::file_exists(String p_file) {
-	ERR_FAIL_COND_V_MSG(!is_open(), false, "Directory must be opened before use.");
-
+	ERR_FAIL_COND_V_MSG(!d, false, "Directory is not configured properly.");
 	if (!p_file.is_rel_path()) {
 		return FileAccess::exists(p_file);
 	}
@@ -1715,16 +1721,15 @@ bool _Directory::file_exists(String p_file) {
 }
 
 bool _Directory::dir_exists(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!is_open(), false, "Directory must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!d, false, "Directory is not configured properly.");
 	if (!p_dir.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_dir);
 		bool exists = d->dir_exists(p_dir);
 		memdelete(d);
 		return exists;
-
-	} else {
-		return d->dir_exists(p_dir);
 	}
+
+	return d->dir_exists(p_dir);
 }
 
 int _Directory::get_space_left() {
