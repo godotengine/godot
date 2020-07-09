@@ -163,6 +163,10 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+bool OS::is_stdout_debug_enabled() const {
+	return _debug_stdout;
+}
+
 void OS::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
 }
