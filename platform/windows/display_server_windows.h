@@ -331,6 +331,7 @@ private:
 		bool maximized = false;
 		bool minimized = false;
 		bool fullscreen = false;
+		
 		bool borderless = false;
 		bool resizable = true;
 		bool window_focused = false;

@@ -33,6 +33,7 @@
 
 #include "box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/texture_button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
@@ -46,10 +47,13 @@ class AcceptDialog : public Window {
 
 	Window *parent_visible;
 	Panel *bg;
+	Label *title;
+	TextureButton *close_btn;
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
 	bool hide_on_ok;
+	bool dragging = false;
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
@@ -61,8 +65,8 @@ class AcceptDialog : public Window {
 
 protected:
 	virtual Size2 _get_contents_minimum_size() const override;
-
 	void _notification(int p_what);
+
 	static void _bind_methods();
 	virtual void ok_pressed() {}
 	virtual void cancel_pressed() {}
@@ -74,11 +78,14 @@ protected:
 	void _cancel_pressed();
 
 public:
+	void set_title(const String &p_title);
+	
 	Label *get_label() { return label; }
 	static void set_swap_cancel_ok(bool p_swap);
 
 	void register_text_enter(Node *p_line_edit);
 
+	TextureButton *get_close_button() { return close_btn; }
 	Button *get_ok() { return ok; }
 	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
 	Button *add_cancel(const String &p_cancel = "");

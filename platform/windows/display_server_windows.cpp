@@ -887,20 +887,26 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		r_style_ex |= WS_EX_APPWINDOW;
 	}
 
-	if (p_fullscreen || p_borderless) {
+	// Note: unsetting WS_CAPTION will also cause the window to be borderless, regardless of the value of WS_BORDER.
+	// See https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
+	if (p_fullscreen) {
 		r_style |= WS_POPUP;
-		//if (p_borderless) {
-		//	r_style_ex |= WS_EX_TOOLWINDOW;
-		//}
 	} else {
 		if (p_resizable) {
-			if (p_maximized) {
+			// TODO add a new flag for title bar?
+			if (p_borderless) {
+				r_style = 0;
+			} else if (p_maximized) {
 				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
 			} else {
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
 		} else {
-			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			if (p_borderless) {
+				r_style = 0;
+			} else {
+				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			}
 		}
 	}
 
