@@ -50,7 +50,7 @@ Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		f->close();
 	}
 	const uint8_t *reader = file_buffer.ptr();
-	return PNGDriverCommon::png_to_image(reader, buffer_size, p_image);
+	return PNGDriverCommon::png_to_image(reader, buffer_size, p_force_linear, p_image);
 }
 
 void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {
@@ -61,7 +61,8 @@ Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 	Ref<Image> img;
 	img.instance();
 
-	Error err = PNGDriverCommon::png_to_image(p_png, p_size, img);
+	// the value of p_force_linear does not matter since it only applies to 16 bit
+	Error err = PNGDriverCommon::png_to_image(p_png, p_size, false, img);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 
 	return img;
