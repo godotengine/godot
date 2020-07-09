@@ -58,8 +58,7 @@ static bool check_error(const png_image &image) {
 	return false;
 }
 
-Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
-
+Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, Ref<Image> p_image) {
 	png_image png_img;
 	zeromem(&png_img, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
@@ -98,6 +97,11 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 			png_image_free(&png_img); // only required when we return before finish_read
 			ERR_PRINT("Unsupported png format.");
 			return ERR_UNAVAILABLE;
+	}
+
+	if (!p_force_linear) {
+		// assume 16 bit pngs without sRGB or gAMA chunks are in sRGB format
+		png_img.flags |= PNG_IMAGE_FLAG_16BIT_sRGB;
 	}
 
 	const png_uint_32 stride = PNG_IMAGE_ROW_STRIDE(png_img);
