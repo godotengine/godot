@@ -53,7 +53,9 @@ class AcceptDialog : public Window {
 	Label *label;
 	Button *ok;
 	bool hide_on_ok;
-	bool dragging = false;
+	bool is_dragging = false;
+	// Dragging position relative to top left of the window, including native decorations
+	Point2 initial_drag_pos = Point2{-1, -1};
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();

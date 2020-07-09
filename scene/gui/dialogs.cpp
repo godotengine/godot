@@ -33,8 +33,8 @@
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "core/translation.h"
-#include "servers/rendering_server.h"
 #include "line_edit.h"
+#include "servers/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -50,10 +50,9 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && dragging) {
-		DisplayServer::WindowID id = get_window_id();
-		Point2 p = DisplayServer::get_singleton()->window_get_position(id);
-		DisplayServer::get_singleton()->window_set_position(p + mm->get_relative(), id);
+	if (mm.is_valid() && is_dragging) {
+		Point2 mouse = DisplayServer::get_singleton()->mouse_get_absolute_position();
+		set_position(mouse - initial_drag_pos);
 
 		set_input_as_handled();
 		return;
@@ -62,14 +61,16 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == BUTTON_LEFT) {
-			if (mb->is_pressed() && title->has_point(get_mouse_position())) {
-				dragging = true;
+			if (mb->is_pressed() && title->has_point(mb->get_position())) {
+				is_dragging = true;
+				initial_drag_pos = DisplayServer::get_singleton()->mouse_get_absolute_position() - this->get_position();
 				set_input_as_handled();
 			} else {
-				dragging = false;
+				is_dragging = false;
+				initial_drag_pos = Point2{ -1, -1 };
 			}
+			return;
 		}
-		return;
 	}
 }
 
@@ -155,7 +156,7 @@ void AcceptDialog::_cancel_pressed() {
 	}
 }
 
-void AcceptDialog::set_title(const String& p_title) {
+void AcceptDialog::set_title(const String &p_title) {
 	Window::set_title(p_title);
 	title->set_text(p_title);
 }
@@ -225,13 +226,13 @@ void AcceptDialog::_update_child_rects() {
 		c->set_size(csize);
 	}
 
-	title->set_position(Point2{0, 0});
-	close_btn->set_position(Point2{size.x - margin - close_minsize.x, margin});
+	title->set_position(Point2{ 0, 0 });
+	close_btn->set_position(Point2{ size.x - margin - close_minsize.x, margin });
 
 	label->set_margin(MARGIN_TOP, title_minsize.y);
 
-	hbc->set_position(Point2{cpos.x, cpos.y + csize.y + margin});
-	hbc->set_size(Size2{csize.x, hminsize.y});
+	hbc->set_position(Point2{ cpos.x, cpos.y + csize.y + margin });
+	hbc->set_size(Size2{ csize.x, hminsize.y });
 
 	bg->set_position(Point2{});
 	bg->set_size(size);
@@ -343,6 +344,7 @@ AcceptDialog::AcceptDialog() {
 	set_exclusive(true);
 	set_clamp_to_embedder(true);
 	set_flag(FLAG_BORDERLESS, true);
+	// set_flag(FLAG_RESIZE_DISABLED, true);
 
 	bg = memnew(Panel);
 	add_child(bg);

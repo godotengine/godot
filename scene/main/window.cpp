@@ -517,13 +517,10 @@ bool Window::is_visible() const {
 }
 
 void Window::_update_window_size() {
-	Size2i size_limit;
+	Size2i size_limit{};
 	if (wrap_controls) {
 		size_limit = get_contents_minimum_size();
 	}
-
-	size_limit.x = MAX(size_limit.x, min_size.x);
-	size_limit.y = MAX(size_limit.y, min_size.y);
 
 	size.x = MAX(size_limit.x, size.x);
 	size.y = MAX(size_limit.y, size.y);

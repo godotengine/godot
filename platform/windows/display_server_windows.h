@@ -417,7 +417,9 @@ private:
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
+	LRESULT	_hit_test(WindowID p_window, POINT p_cursor) const;
 
+	bool _try_enable_composition();
 	void _update_window_style(WindowID p_window, bool p_repaint = true, bool p_maximized = false);
 	void _update_window_mouse_passthrough(WindowID p_window);
 
@@ -443,6 +445,7 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to);
 	virtual Point2i mouse_get_position() const;
+	virtual Point2i mouse_get_absolute_position() const override;
 	virtual int mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
