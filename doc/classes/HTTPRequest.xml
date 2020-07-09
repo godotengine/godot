@@ -14,8 +14,16 @@
 		    add_child(http_request)
 		    http_request.connect("request_completed", self, "_http_request_completed")
 
-		    # Perform the HTTP request. The URL below returns some JSON as of writing.
+		    # Perform a GET request. The URL below returns JSON as of writing.
 		    var error = http_request.request("https://httpbin.org/get")
+		    if error != OK:
+		        push_error("An error occurred in the HTTP request.")
+
+		    # Perform a POST request. The URL below returns JSON as of writing.
+		    # Note: Don't make simultaneous requests using a single HTTPRequest node.
+		    # The snippet below is provided for reference only.
+		    var body = {"name": "Godette"}
+		    var error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
 
