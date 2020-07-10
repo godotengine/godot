@@ -55,8 +55,8 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
 #endif
 
 	void set_rect(const Rect2 &p_rect);
@@ -82,8 +82,8 @@ public:
 	};
 
 protected:
-	virtual void _screen_enter();
-	virtual void _screen_exit();
+	virtual void _screen_enter() override;
+	virtual void _screen_exit() override;
 
 	bool visible;
 
@@ -102,7 +102,7 @@ public:
 	void set_enabler(Enabler p_enabler, bool p_enable);
 	bool is_enabler_enabled(Enabler p_enabler) const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	VisibilityEnabler2D();
 };

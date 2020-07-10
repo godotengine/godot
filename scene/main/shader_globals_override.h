@@ -58,7 +58,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	ShaderGlobalsOverride();
 };

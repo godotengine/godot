@@ -61,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	// DOF blur
 	void set_dof_blur_far_enabled(bool p_enabled);

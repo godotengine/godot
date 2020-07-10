@@ -190,8 +190,8 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class Skeleton3DEditorPlugin : public EditorPlugin {
@@ -202,7 +202,7 @@ class Skeleton3DEditorPlugin : public EditorPlugin {
 public:
 	Skeleton3DEditorPlugin(EditorNode *p_node);
 
-	virtual String get_name() const { return "Skeleton3D"; }
+	virtual String get_name() const override { return "Skeleton3D"; }
 };
 
 #endif // SKELETON_3D_EDITOR_PLUGIN_H

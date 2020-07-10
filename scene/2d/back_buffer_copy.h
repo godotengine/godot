@@ -54,13 +54,13 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
+	Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
 #endif
 
 	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
-	Rect2 get_anchorable_rect() const;
+	Rect2 get_anchorable_rect() const override;
 
 	void set_copy_mode(CopyMode p_mode);
 	CopyMode get_copy_mode() const;

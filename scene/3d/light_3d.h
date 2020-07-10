@@ -91,7 +91,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	Light3D(RenderingServer::LightType p_type);
 
@@ -128,8 +128,8 @@ public:
 	void set_projector(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_projector() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	Light3D();
 	~Light3D();
@@ -197,7 +197,7 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	OmniLight3D();
 };
@@ -211,7 +211,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	SpotLight3D() :
 			Light3D(RenderingServer::LIGHT_SPOT) {}
