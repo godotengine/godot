@@ -147,7 +147,7 @@
 			<argument index="2" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a child node. The child is placed below the given node in the list of children.
+				Adds [code]child_node[/code] as a child. The child is placed below the given [code]node[/code] in the list of children.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 			</description>
 		</method>
