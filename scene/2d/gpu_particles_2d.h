@@ -71,7 +71,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 
 public:
@@ -114,7 +114,7 @@ public:
 	void set_normal_map(const Ref<Texture2D> &p_normal_map);
 	Ref<Texture2D> get_normal_map() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	void restart();
 	Rect2 capture_rect() const;

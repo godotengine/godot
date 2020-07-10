@@ -68,8 +68,8 @@ public:
 	void set_zero_y(bool p_zero_y);
 	bool get_zero_y() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	RootMotionView();
 	~RootMotionView();

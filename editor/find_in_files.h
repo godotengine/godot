@@ -123,7 +123,7 @@ protected:
 	void _notification(int p_what);
 
 	void _visibility_changed();
-	void custom_action(const String &p_action);
+	void custom_action(const String &p_action) override;
 	static void _bind_methods();
 
 private:

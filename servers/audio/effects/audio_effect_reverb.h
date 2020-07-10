@@ -49,7 +49,7 @@ class AudioEffectReverbInstance : public AudioEffectInstance {
 	Reverb reverb[2];
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 	AudioEffectReverbInstance();
 };
 
@@ -89,7 +89,7 @@ public:
 	float get_wet() const;
 	float get_hpf() const;
 
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 

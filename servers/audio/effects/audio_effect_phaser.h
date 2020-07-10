@@ -66,7 +66,7 @@ class AudioEffectPhaserInstance : public AudioEffectInstance {
 	AllpassDelay allpass[2][6];
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectPhaser : public AudioEffect {
@@ -83,7 +83,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 
 	void set_range_min_hz(float p_hz);
 	float get_range_min_hz() const;

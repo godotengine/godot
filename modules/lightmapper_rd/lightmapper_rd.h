@@ -235,22 +235,22 @@ class LightmapperRD : public Lightmapper {
 	void _raster_geometry(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform);
 
 public:
-	virtual void add_mesh(const MeshData &p_mesh);
-	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance);
-	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size);
-	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size);
-	virtual void add_probe(const Vector3 &p_position);
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr);
+	virtual void add_mesh(const MeshData &p_mesh) override;
+	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance) override;
+	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) override;
+	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) override;
+	virtual void add_probe(const Vector3 &p_position) override;
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr) override;
 
-	int get_bake_texture_count() const;
-	Ref<Image> get_bake_texture(int p_index) const;
-	int get_bake_mesh_count() const;
-	Variant get_bake_mesh_userdata(int p_index) const;
-	Rect2 get_bake_mesh_uv_scale(int p_index) const;
-	int get_bake_mesh_texture_slice(int p_index) const;
-	int get_bake_probe_count() const;
-	Vector3 get_bake_probe_point(int p_probe) const;
-	Vector<Color> get_bake_probe_sh(int p_probe) const;
+	int get_bake_texture_count() const override;
+	Ref<Image> get_bake_texture(int p_index) const override;
+	int get_bake_mesh_count() const override;
+	Variant get_bake_mesh_userdata(int p_index) const override;
+	Rect2 get_bake_mesh_uv_scale(int p_index) const override;
+	int get_bake_mesh_texture_slice(int p_index) const override;
+	int get_bake_probe_count() const override;
+	Vector3 get_bake_probe_point(int p_probe) const override;
+	Vector<Color> get_bake_probe_sh(int p_probe) const override;
 
 	LightmapperRD();
 };
