@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeMultiplyAdd" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+		Performs a fused multiply-add operation within the visual shader graph.
+	</brief_description>
+	<description>
+		Uses three operands to compute [code](a * b + c)[/code] expression.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="type" type="int" setter="set_type" getter="get_type" enum="VisualShaderNodeMultiplyAdd.Type" default="0">
+			A type of operands and returned value.
+		</member>
+	</members>
+	<constants>
+		<constant name="TYPE_SCALAR" value="0" enum="Type">
+			A scalar type.
+		</constant>
+		<constant name="TYPE_VECTOR" value="1" enum="Type">
+			A vector type.
+		</constant>
+		<constant name="TYPE_MAX" value="2" enum="Type">
+			Represents the size of the [enum Type] enum.
+		</constant>
+	</constants>
+</class>
