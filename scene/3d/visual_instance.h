@@ -132,7 +132,7 @@ public:
 	void set_lod_max_hysteresis(float p_dist);
 	float get_lod_max_hysteresis() const;
 
-	void set_material_override(const Ref<Material> &p_material);
+	virtual void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
 
 	void set_extra_cull_margin(float p_margin);

@@ -503,6 +503,8 @@ public:
 			bool uses_screen_texture;
 			bool uses_depth_texture;
 			bool uses_time;
+			bool uses_tangent;
+			bool uses_ensure_correct_normals;
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 			bool uses_world_coordinates;
@@ -607,6 +609,8 @@ public:
 
 	virtual bool material_is_animated(RID p_material);
 	virtual bool material_casts_shadows(RID p_material);
+	virtual bool material_uses_tangents(RID p_material);
+	virtual bool material_uses_ensure_correct_normals(RID p_material);
 
 	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
 	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);

@@ -2432,6 +2432,9 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 
+	GLOBAL_DEF("rendering/quality/skinning/software_skinning_fallback", true);
+	GLOBAL_DEF("rendering/quality/skinning/force_software_skinning", false);
+
 	const char *sz_balance_render_tree = "rendering/quality/spatial_partitioning/render_tree_balance";
 	GLOBAL_DEF(sz_balance_render_tree, 0.17f);
 	ProjectSettings::get_singleton()->set_custom_property_info(sz_balance_render_tree, PropertyInfo(Variant::REAL, sz_balance_render_tree, PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));

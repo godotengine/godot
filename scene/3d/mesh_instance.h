@@ -36,6 +36,8 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/skin.h"
 
+#include "core/local_vector.h"
+
 class MeshInstance : public GeometryInstance {
 
 	GDCLASS(MeshInstance, GeometryInstance);
@@ -46,6 +48,31 @@ protected:
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
 	NodePath skeleton_path;
+
+	struct SoftwareSkinning {
+		enum Flags {
+			// Data flags.
+			FLAG_TRANSFORM_NORMALS = 1 << 0,
+
+			// Runtime flags.
+			FLAG_BONES_READY = 1 << 1,
+		};
+
+		struct SurfaceData {
+			PoolByteArray source_buffer;
+			uint32_t source_format;
+			PoolByteArray buffer;
+			PoolByteArray::Write buffer_write;
+			bool transform_tangents;
+			bool ensure_correct_normals;
+		};
+
+		Ref<Mesh> mesh_instance;
+		LocalVector<SurfaceData> surface_data;
+	};
+
+	SoftwareSkinning *software_skinning;
+	uint32_t software_skinning_flags;
 
 	struct BlendShapeTrack {
 
@@ -62,6 +89,12 @@ protected:
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();
+
+	bool _is_software_skinning_enabled() const;
+	static bool _is_global_software_skinning_enabled();
+
+	void _initialize_skinning(bool p_force_reset = false);
+	void _update_skinning();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -84,6 +117,12 @@ public:
 	int get_surface_material_count() const;
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_surface) const;
+	Ref<Material> get_active_material(int p_surface) const;
+
+	virtual void set_material_override(const Ref<Material> &p_material);
+
+	void set_software_skinning_transform_normals(bool p_enabled);
+	bool is_software_skinning_transform_normals_enabled() const;
 
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();

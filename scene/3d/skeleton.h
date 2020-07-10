@@ -47,13 +47,13 @@ class SkinReference : public Reference {
 	GDCLASS(SkinReference, Reference)
 	friend class Skeleton;
 
-	Skeleton *skeleton_node;
+	Skeleton *skeleton_node = nullptr;
 	RID skeleton;
 	Ref<Skin> skin;
 	uint32_t bind_count = 0;
 	uint64_t skeleton_version = 0;
 	Vector<uint32_t> skin_bone_indices;
-	uint32_t *skin_bone_indices_ptrs;
+	uint32_t *skin_bone_indices_ptrs = nullptr;
 	void _skin_changed();
 
 protected:
@@ -61,6 +61,7 @@ protected:
 
 public:
 	RID get_skeleton() const;
+	Skeleton *get_skeleton_node() const;
 	Ref<Skin> get_skin() const;
 	~SkinReference();
 };
