@@ -32,7 +32,6 @@ package org.godotengine.godot;
 
 import org.godotengine.godot.input.*;
 
-import android.app.Activity;
 import android.content.*;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -53,7 +52,7 @@ import java.util.Locale;
 public class GodotIO {
 
 	AssetManager am;
-	final Activity activity;
+	Godot activity;
 	GodotEditText edit;
 
 	MediaPlayer mediaPlayer;
@@ -341,7 +340,7 @@ public class GodotIO {
 		dirs.remove(id);
 	}
 
-	GodotIO(Activity p_activity) {
+	GodotIO(Godot p_activity) {
 
 		am = p_activity.getAssets();
 		activity = p_activity;
