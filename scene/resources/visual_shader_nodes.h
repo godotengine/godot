@@ -2012,22 +2012,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_caption() const;
+	virtual String get_caption() const override;
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_type(Type p_type);
 	Type get_type() const;
 
-	virtual Vector<StringName> get_editable_properties() const;
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeMultiplyAdd();
 };
