@@ -456,6 +456,8 @@ void EditorNode::_notification(int p_what) {
 
 			editor_selection->update();
 
+			//scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
+
 			{ //TODO should only happen on settings changed
 				int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
 				if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
