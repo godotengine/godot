@@ -31,6 +31,7 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
+#include "core/local_vector.h"
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
 #include "core/object.h"
@@ -126,16 +127,18 @@ protected:
 
 	VSet<RID> exceptions;
 
-	bool need_body_reload = true;
+	bool needs_body_reload = true;
+	bool needs_collision_filters_reload = true;
 
 	/// This array is used to know all areas where this Object is overlapped in
 	/// New area is added when overlap with new area (AreaBullet::addOverlap), then is removed when it exit (CollisionObjectBullet::onExitArea)
 	/// This array is used mainly to know which area hold the pointer of this object
-	Vector<AreaBullet *> areasOverlapped;
+	LocalVector<AreaBullet *> areasOverlapped;
 	bool isTransformChanged = false;
 
 public:
 	bool is_in_world = false;
+	bool is_in_flush_queue = false;
 
 public:
 	CollisionObjectBullet(Type p_type);
@@ -171,7 +174,7 @@ public:
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
 		if (collisionLayer != p_layer) {
 			collisionLayer = p_layer;
-			on_collision_filters_change();
+			needs_collision_filters_reload = true;
 		}
 	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collisionLayer; }
@@ -179,24 +182,23 @@ public:
 	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
 		if (collisionMask != p_mask) {
 			collisionMask = p_mask;
-			on_collision_filters_change();
+			needs_collision_filters_reload = true;
 		}
 	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collisionMask; }
 
-	virtual void on_collision_filters_change() = 0;
+	virtual void do_reload_collision_filters() = 0;
 
 	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectBullet *p_other) const {
 		return collisionLayer & p_other->collisionMask || p_other->collisionLayer & collisionMask;
 	}
 
 	bool need_reload_body() const {
-		return need_body_reload;
+		return needs_body_reload;
 	}
 
-	void reload_body() {
-		need_body_reload = true;
-	}
+	void reload_body();
+
 	virtual void do_reload_body() = 0;
 	virtual void set_space(SpaceBullet *p_space) = 0;
 	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
@@ -204,8 +206,8 @@ public:
 	virtual void on_collision_checker_start() = 0;
 	virtual void on_collision_checker_end() = 0;
 
-	virtual void prepare_object_for_dispatch();
-	virtual void dispatch_callbacks() = 0;
+	virtual void dispatch_callbacks();
+	virtual void pre_process();
 
 	void set_collision_enabled(bool p_enabled);
 	bool is_collisions_response_enabled();
@@ -229,7 +231,7 @@ public:
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
 protected:
 	btCollisionShape *mainShape = nullptr;
-	Vector<ShapeWrapper> shapes;
+	LocalVector<ShapeWrapper> shapes;
 	bool need_shape_reload = true;
 
 public:
@@ -237,7 +239,7 @@ public:
 			CollisionObjectBullet(p_type) {}
 	~RigidCollisionObjectBullet();
 
-	_FORCE_INLINE_ const Vector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
+	_FORCE_INLINE_ const LocalVector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
@@ -248,9 +250,9 @@ public:
 	ShapeBullet *get_shape(int p_index) const;
 	btCollisionShape *get_bt_shape(int p_index) const;
 
-	int find_shape(ShapeBullet *p_shape) const;
+	virtual int find_shape(ShapeBullet *p_shape) const override;
 
-	virtual void remove_shape_full(ShapeBullet *p_shape);
+	virtual void remove_shape_full(ShapeBullet *p_shape) override;
 	void remove_shape_full(int p_index);
 	void remove_all_shapes(bool p_permanentlyFromThisBody = false, bool p_force_not_reload = false);
 
@@ -262,15 +264,15 @@ public:
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);
 
-	virtual void prepare_object_for_dispatch();
+	virtual void pre_process() override;
 
-	virtual void shape_changed(int p_shape_index);
-	void reload_shapes();
+	virtual void shape_changed(int p_shape_index) override;
+	virtual void reload_shapes() override;
 	bool need_reload_shapes() const { return need_shape_reload; }
 	virtual void do_reload_shapes();
 
 	virtual void main_shape_changed() = 0;
-	virtual void body_scale_changed();
+	virtual void body_scale_changed() override;
 
 private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);
