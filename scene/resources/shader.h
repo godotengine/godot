@@ -93,7 +93,7 @@ public:
 		return StringName();
 	}
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	Shader();
 	~Shader();
