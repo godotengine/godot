@@ -122,11 +122,11 @@ public:
 	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
 	bool intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = nullptr, bool p_sec_first = false);
 
-	virtual void clear();
-	virtual void create();
-	virtual void transform();
-	virtual void redraw();
-	virtual void free();
+	virtual void clear() override;
+	virtual void create() override;
+	virtual void transform() override;
+	virtual void redraw() override;
+	virtual void free() override;
 
 	virtual bool is_editable() const;
 
@@ -826,17 +826,17 @@ public:
 	void snap_cursor_to_plane(const Plane &p_plane);
 
 	Node3DEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_name() const { return "3D"; }
-	bool has_main_screen() const { return true; }
-	virtual void make_visible(bool p_visible);
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
+	virtual String get_name() const override { return "3D"; }
+	bool has_main_screen() const override { return true; }
+	virtual void make_visible(bool p_visible) override;
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
 
-	virtual Dictionary get_state() const;
-	virtual void set_state(const Dictionary &p_state);
-	virtual void clear() { spatial_editor->clear(); }
+	virtual Dictionary get_state() const override;
+	virtual void set_state(const Dictionary &p_state) override;
+	virtual void clear() override { spatial_editor->clear(); }
 
-	virtual void edited_scene_changed();
+	virtual void edited_scene_changed() override;
 
 	Node3DEditorPlugin(EditorNode *p_node);
 	~Node3DEditorPlugin();

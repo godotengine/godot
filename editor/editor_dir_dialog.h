@@ -56,7 +56,7 @@ class EditorDirDialog : public ConfirmationDialog {
 	void _make_dir();
 	void _make_dir_confirm();
 
-	void ok_pressed();
+	void ok_pressed() override;
 
 	bool must_reload;
 

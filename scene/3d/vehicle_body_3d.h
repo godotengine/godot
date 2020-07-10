@@ -145,7 +145,7 @@ public:
 	void set_steering(float p_steering);
 	float get_steering() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	VehicleWheel3D();
 };
@@ -192,7 +192,7 @@ class VehicleBody3D : public RigidBody3D {
 
 	static void _bind_methods();
 
-	void _direct_state_changed(Object *p_state);
+	void _direct_state_changed(Object *p_state) override;
 
 public:
 	void set_engine_force(float p_engine_force);

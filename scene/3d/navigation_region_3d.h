@@ -51,7 +51,7 @@ class NavigationRegion3D : public Node3D {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void set_enabled(bool p_enabled);
@@ -65,7 +65,7 @@ public:
 	void bake_navigation_mesh();
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

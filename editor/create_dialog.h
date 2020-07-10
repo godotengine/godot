@@ -78,7 +78,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _hide_requested();
 
 	void _confirmed();
-	virtual void cancel_pressed();
+	virtual void cancel_pressed() override;
 
 	void _favorite_toggled();
 

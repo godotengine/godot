@@ -89,27 +89,27 @@ public:
 	void close();
 
 	// PacketPeer
-	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
-	Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	int get_available_packet_count() const;
-	int get_max_packet_size() const;
+	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
+	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	int get_available_packet_count() const override;
+	int get_max_packet_size() const override;
 
 	// NetworkedMultiplayerPeer
-	void set_transfer_mode(TransferMode p_mode);
-	TransferMode get_transfer_mode() const;
-	void set_target_peer(int p_peer_id);
+	void set_transfer_mode(TransferMode p_mode) override;
+	TransferMode get_transfer_mode() const override;
+	void set_target_peer(int p_peer_id) override;
 
-	int get_unique_id() const;
-	int get_packet_peer() const;
+	int get_unique_id() const override;
+	int get_packet_peer() const override;
 
-	bool is_server() const;
+	bool is_server() const override;
 
-	void poll();
+	void poll() override;
 
-	void set_refuse_new_connections(bool p_enable);
-	bool is_refusing_new_connections() const;
+	void set_refuse_new_connections(bool p_enable) override;
+	bool is_refusing_new_connections() const override;
 
-	ConnectionStatus get_connection_status() const;
+	ConnectionStatus get_connection_status() const override;
 };
 
 #endif

@@ -99,7 +99,7 @@ class NativeScript : public Script {
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 	friend class NativeScriptInstance;
@@ -125,7 +125,7 @@ protected:
 public:
 	inline NativeScriptDesc *get_script_desc() const;
 
-	bool inherits_script(const Ref<Script> &p_script) const;
+	bool inherits_script(const Ref<Script> &p_script) const override;
 
 	void set_class_name(String p_class_name);
 	String get_class_name() const;
@@ -138,48 +138,48 @@ public:
 	void set_script_class_icon_path(String p_icon_path);
 	String get_script_class_icon_path() const;
 
-	virtual bool can_instance() const;
+	virtual bool can_instance() const override;
 
-	virtual Ref<Script> get_base_script() const; //for script inheritance
+	virtual Ref<Script> get_base_script() const override; //for script inheritance
 
-	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
-	virtual ScriptInstance *instance_create(Object *p_this);
-	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
-	virtual bool instance_has(const Object *p_this) const;
+	virtual StringName get_instance_base_type() const override; // this may not work in all scripts, will return empty if so
+	virtual ScriptInstance *instance_create(Object *p_this) override;
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
+	virtual bool instance_has(const Object *p_this) const override;
 
-	virtual bool has_source_code() const;
-	virtual String get_source_code() const;
-	virtual void set_source_code(const String &p_code);
-	virtual Error reload(bool p_keep_state = false);
+	virtual bool has_source_code() const override;
+	virtual String get_source_code() const override;
+	virtual void set_source_code(const String &p_code) override;
+	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual bool has_method(const StringName &p_method) const;
-	virtual MethodInfo get_method_info(const StringName &p_method) const;
+	virtual bool has_method(const StringName &p_method) const override;
+	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual bool is_tool() const;
-	virtual bool is_valid() const;
+	virtual bool is_tool() const override;
+	virtual bool is_valid() const override;
 
-	virtual ScriptLanguage *get_language() const;
+	virtual ScriptLanguage *get_language() const override;
 
-	virtual bool has_script_signal(const StringName &p_signal) const;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
+	virtual bool has_script_signal(const StringName &p_signal) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
-	virtual void update_exports(); //editor tool
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void update_exports() override; //editor tool
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual Vector<ScriptNetData> get_rpc_methods() const override;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const override;
+	virtual StringName get_rpc_method(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
 
-	virtual Vector<ScriptNetData> get_rset_properties() const;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
-	virtual StringName get_rset_property(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual Vector<ScriptNetData> get_rset_properties() const override;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const override;
+	virtual StringName get_rset_property(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
 
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;
