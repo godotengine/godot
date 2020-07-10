@@ -749,6 +749,7 @@ PropertyInfo VisualScriptComposeArray::get_output_value_port_info(int p_idx) con
 }
 
 String VisualScriptComposeArray::get_caption() const {
+
 	return "Compose Array";
 }
 
@@ -1195,9 +1196,10 @@ PropertyInfo VisualScriptVariableGet::get_input_value_port_info(int p_idx) const
 
 PropertyInfo VisualScriptVariableGet::get_output_value_port_info(int p_idx) const {
 	PropertyInfo pinfo;
-	pinfo.name = "value";
+	pinfo.name = "Unconnected";
 	if (get_visual_script().is_valid() && get_visual_script()->has_variable(variable)) {
 		PropertyInfo vinfo = get_visual_script()->get_variable_info(variable);
+		pinfo.name = variable;
 		pinfo.type = vinfo.type;
 		pinfo.hint = vinfo.hint;
 		pinfo.hint_string = vinfo.hint_string;
@@ -1246,6 +1248,19 @@ void VisualScriptVariableGet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_variable"), &VisualScriptVariableGet::get_variable);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "var_name"), "set_variable", "get_variable");
+}
+
+void VisualScriptVariableGet::on_enter_graph() {
+	// If the node doesn't have a variable set, set it to the first variable in the list
+	if (variable.operator String().empty()) {
+		Ref<VisualScript> vs = get_visual_script();
+		if (vs.is_valid()) {
+			List<StringName> vars;
+			vs->get_variable_list(&vars);
+			if (vars.size())
+				variable = vars.front()->get();
+		}
+	}
 }
 
 class VisualScriptNodeInstanceVariableGet : public VisualScriptNodeInstance {
@@ -1301,9 +1316,10 @@ String VisualScriptVariableSet::get_output_sequence_port_text(int p_port) const 
 
 PropertyInfo VisualScriptVariableSet::get_input_value_port_info(int p_idx) const {
 	PropertyInfo pinfo;
-	pinfo.name = "set";
+	pinfo.name = "Unconnected";
 	if (get_visual_script().is_valid() && get_visual_script()->has_variable(variable)) {
 		PropertyInfo vinfo = get_visual_script()->get_variable_info(variable);
+		pinfo.name = "Set " + variable;
 		pinfo.type = vinfo.type;
 		pinfo.hint = vinfo.hint;
 		pinfo.hint_string = vinfo.hint_string;
@@ -1356,6 +1372,19 @@ void VisualScriptVariableSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_variable"), &VisualScriptVariableSet::get_variable);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "var_name"), "set_variable", "get_variable");
+}
+
+void VisualScriptVariableSet::on_enter_graph() {
+	// If the node doesn't have a variable set, set it to the first variable in the list
+	if (variable.operator String().empty()) {
+		Ref<VisualScript> vs = get_visual_script();
+		if (vs.is_valid()) {
+			List<StringName> vars;
+			vs->get_variable_list(&vars);
+			if (vars.size())
+				variable = vars.front()->get();
+		}
+	}
 }
 
 class VisualScriptNodeInstanceVariableSet : public VisualScriptNodeInstance {
