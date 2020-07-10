@@ -146,32 +146,32 @@ public:
 
 	bool open_file(const String &p_file);
 
-	virtual void stop();
-	virtual void play();
+	virtual void stop() override;
+	virtual void play() override;
 
-	virtual bool is_playing() const;
+	virtual bool is_playing() const override;
 
-	virtual void set_paused(bool p_paused);
-	virtual bool is_paused() const;
+	virtual void set_paused(bool p_paused) override;
+	virtual bool is_paused() const override;
 
-	virtual void set_loop(bool p_enable);
-	virtual bool has_loop() const;
+	virtual void set_loop(bool p_enable) override;
+	virtual bool has_loop() const override;
 
-	virtual float get_length() const;
+	virtual float get_length() const override;
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
-	virtual void set_audio_track(int p_idx);
+	virtual void set_audio_track(int p_idx) override;
 
 	//virtual int mix(int16_t* p_buffer,int p_frames)=0;
 
-	virtual Ref<Texture2D> get_texture() const;
-	virtual void update(float p_delta);
+	virtual Ref<Texture2D> get_texture() const override;
+	virtual void update(float p_delta) override;
 
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
-	virtual int get_channels() const;
-	virtual int get_mix_rate() const;
+	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) override;
+	virtual int get_channels() const override;
+	virtual int get_mix_rate() const override;
 };
 
 class VideoStreamGDNative : public VideoStream {
@@ -188,8 +188,8 @@ public:
 	void set_file(const String &p_file);
 	String get_file();
 
-	virtual void set_audio_track(int p_track);
-	virtual Ref<VideoStreamPlayback> instance_playback();
+	virtual void set_audio_track(int p_track) override;
+	virtual Ref<VideoStreamPlayback> instance_playback() override;
 
 	VideoStreamGDNative() {}
 };

@@ -71,8 +71,8 @@ public:
 	};
 
 protected:
-	virtual void _screen_enter();
-	virtual void _screen_exit();
+	virtual void _screen_enter() override;
+	virtual void _screen_exit() override;
 
 	bool visible;
 

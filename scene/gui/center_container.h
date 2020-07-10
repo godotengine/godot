@@ -46,7 +46,7 @@ public:
 	void set_use_top_left(bool p_enable);
 	bool is_using_top_left() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	CenterContainer();
 };

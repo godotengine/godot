@@ -60,7 +60,7 @@ public:
 	void apply_rest();
 	Transform2D get_skeleton_rest() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	void set_default_length(float p_length);
 	float get_default_length() const;

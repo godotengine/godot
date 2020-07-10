@@ -180,7 +180,7 @@ class JavaClass : public Reference {
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	JavaClass();
 };
@@ -196,7 +196,7 @@ class JavaObject : public Reference {
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 #ifdef ANDROID_ENABLED
 	JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance);

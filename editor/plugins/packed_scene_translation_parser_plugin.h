@@ -40,8 +40,8 @@ class PackedSceneEditorTranslationParserPlugin : public EditorTranslationParserP
 	Set<String> lookup_properties;
 
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings);
-	virtual void get_recognized_extensions(List<String> *r_extensions) const;
+	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings) override;
+	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
 
 	PackedSceneEditorTranslationParserPlugin();
 };

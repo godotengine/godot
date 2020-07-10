@@ -45,7 +45,7 @@ class AudioEffectEQInstance : public AudioEffectInstance {
 	Vector<float> gains;
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectEQ : public AudioEffect {
@@ -66,7 +66,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 	void set_band_gain_db(int p_band, float p_volume);
 	float get_band_gain_db(int p_band) const;
 	int get_band_count() const;

@@ -43,20 +43,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
 	void set_return_type(Variant::Type);
 	Variant::Type get_return_type() const;
@@ -64,7 +64,7 @@ public:
 	void set_enable_return_value(bool p_enable);
 	bool is_return_value_enabled() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptReturn();
 };
@@ -76,22 +76,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptCondition();
 };
@@ -103,22 +103,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptWhile();
 };
@@ -130,22 +130,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptIterator();
 };
@@ -159,25 +159,25 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
 	void set_steps(int p_steps);
 	int get_steps() const;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptSequence();
 };
@@ -202,23 +202,23 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
-	virtual bool has_mixed_input_and_sequence_ports() const { return true; }
+	virtual String get_output_sequence_port_text(int p_port) const override;
+	virtual bool has_mixed_input_and_sequence_ports() const override { return true; }
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptSwitch();
 };
@@ -233,20 +233,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
+	virtual int get_output_sequence_port_count() const override;
+	virtual bool has_input_sequence_port() const override;
 
-	virtual String get_output_sequence_port_text(int p_port) const;
+	virtual String get_output_sequence_port_text(int p_port) const override;
 
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
+	virtual int get_input_value_port_count() const override;
+	virtual int get_output_value_port_count() const override;
 
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
 
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
+	virtual String get_caption() const override;
+	virtual String get_text() const override;
+	virtual String get_category() const override { return "flow_control"; }
 
 	void set_base_type(const StringName &p_type);
 	StringName get_base_type() const;
@@ -254,9 +254,9 @@ public:
 	void set_base_script(const String &p_path);
 	String get_base_script() const;
 
-	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
+	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const override;
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
 
 	VisualScriptTypeCast();
 };

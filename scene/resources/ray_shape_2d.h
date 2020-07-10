@@ -51,9 +51,9 @@ public:
 	void set_slips_on_slope(bool p_active);
 	bool get_slips_on_slope() const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color);
-	virtual Rect2 get_rect() const;
-	virtual real_t get_enclosing_radius() const;
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual Rect2 get_rect() const override;
+	virtual real_t get_enclosing_radius() const override;
 
 	RayShape2D();
 };

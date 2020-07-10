@@ -77,7 +77,7 @@ private:
 	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

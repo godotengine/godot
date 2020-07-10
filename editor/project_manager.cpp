@@ -415,7 +415,7 @@ private:
 		}
 	}
 
-	void ok_pressed() {
+	void ok_pressed() override {
 		String dir = project_path->get_text();
 
 		if (mode == MODE_RENAME) {
@@ -603,7 +603,7 @@ private:
 		}
 	}
 
-	void cancel_pressed() {
+	void cancel_pressed() override {
 		_remove_created_folder();
 
 		project_path->clear();
