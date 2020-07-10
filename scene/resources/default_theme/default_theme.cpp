@@ -511,21 +511,22 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	empty.instance();
 	theme->set_stylebox("bg", "ScrollContainer", empty);
 
-	// WindowDialog
+	// TitleBar
 
-	theme->set_stylebox("panel", "Window", default_style);
-	theme->set_stylebox("window_panel", "Window", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
-	theme->set_constant("scaleborder_size", "Window", 4 * scale);
+	theme->set_font("title_font", "TitleBar", large_font);
+	theme->set_color("title_color", "TitleBar", Color(1.0f, 1.0f, 1.0f));
 
-	theme->set_font("title_font", "Window", large_font);
-	theme->set_color("title_color", "Window", Color(0, 0, 0));
-	theme->set_constant("title_height", "Window", 20 * scale);
-	theme->set_constant("resize_margin", "Window", 4 * scale);
+	theme->set_icon("close", "TitleBar", make_icon(close_png));
+	theme->set_icon("close_highlight", "TitleBar", make_icon(close_hl_png));
+	theme->set_icon("maximize", "TitleBar", make_icon(maximize_png));
+	theme->set_icon("maximize_highlight", "TitleBar", make_icon(maximize_hl_png));
+	theme->set_icon("restore", "TitleBar", make_icon(restore_maximized_png));
+	theme->set_icon("restore_highlight", "TitleBar", make_icon(restore_maximized_hl_png));
+	theme->set_icon("minimize", "TitleBar", make_icon(minimize_png));
+	theme->set_icon("minimize_highlight", "TitleBar", make_icon(minimize_hl_png));
 
-	theme->set_icon("close", "Window", make_icon(close_png));
-	theme->set_icon("close_highlight", "Window", make_icon(close_hl_png));
-	theme->set_constant("close_h_ofs", "Window", 18 * scale);
-	theme->set_constant("close_v_ofs", "Window", 18 * scale);
+	theme->set_constant("margin", "TitleBar", 8 * scale);
+	theme->set_constant("button_margin", "TitleBar", 2 * scale);
 
 	// File Dialog
 

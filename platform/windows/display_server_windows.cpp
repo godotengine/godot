@@ -36,10 +36,9 @@
 #include "os_windows.h"
 #include "scene/resources/texture.h"
 
-#include <dwmapi.h>
 #include <avrt.h>
 
-// Borderless windows and its shadow effects adapted from https://github.com/melak47/BorderlessWindow
+// Borderless windows and resizing behaviors are adapted from https://github.com/melak47/BorderlessWindow
 
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
@@ -917,12 +916,6 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 	}
 }
 
-bool DisplayServerWindows::_try_enable_composition() {
-	BOOL composition_enabled = FALSE;
-    bool success = DwmIsCompositionEnabled(&composition_enabled) == S_OK;
-    return composition_enabled && success;
-}
-
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_maximized) {
 	_THREAD_SAFE_METHOD_
 
@@ -933,16 +926,6 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style_ex = 0;
 
 	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
-	if (wd.borderless) {
-		if (_try_enable_composition()) {
-			static const MARGINS shadows[2]{
-				{ 0, 0, 0, 0 },
-				// Add shadows to a borderless window
-				{ 1, 1, 1, 1 }
-			};
-			DwmExtendFrameIntoClientArea(wd.hWnd, shadows);
-		}
-	}
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2004,7 +1987,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			auto &wd = windows[window_id];
 			// Draw over the caption to pretend that it doens't exist
 			if (wd.borderless) {
-
 			}
 			Main::force_redraw();
 		} break;

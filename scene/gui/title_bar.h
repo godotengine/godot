@@ -28,87 +28,77 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIALOGS_H
-#define DIALOGS_H
+#ifndef TITLE_BAR_H
+#define TITLE_BAR_H
 
-#include "box_container.h"
-#include "scene/gui/button.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/title_bar.h"
+#include "scene/gui/texture_button.h"
 #include "scene/main/window.h"
 
-class LineEdit;
+class TitleBar : public Control {
+	GDCLASS(TitleBar, Control);
 
-class AcceptDialog : public Window {
-	GDCLASS(AcceptDialog, Window);
+public:
+	enum TitleAlign {
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT,
+	};
 
-	Window *parent_visible;
-	Panel *bg;
-	TitleBar *title_bar;
-	HBoxContainer *hbc;
-	Label *label;
-	Button *ok;
-	bool hide_on_ok;
+	enum TitleButton {
+		BUTTON_CLOSE = 0b001,
+		BUTTON_MAXIMIZE = 0b010,
+		BUTTON_MINIMIZE = 0b100,
+	};
 
-	void _custom_action(const String &p_action);
-	void _update_child_rects();
+private:
+	Window *window = nullptr;
+	TextureButton *close_btn;
+	TextureButton *maximize_btn;
+	TextureButton *minimize_btn;
+	// Dragging position relative to top left of the window, including native decorations
+	Point2i initial_drag_pos = { -1, -1 };
+	TitleAlign title_align = ALIGN_CENTER;
+	bool has_default_behaviors = false;
 
-	static bool swap_cancel_ok;
+	void _update_button_rects();
 
-	void _input_from_window(const Ref<InputEvent> &p_event);
-	void _parent_focused();
+	void _close_pressed();
+	void _maximize_pressed();
+	void _minimize_pressed();
 
 protected:
-	virtual Size2 _get_contents_minimum_size() const override;
+	static void _bind_methods();
+	virtual void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
-	static void _bind_methods();
-	virtual void ok_pressed() {}
-	virtual void cancel_pressed() {}
-	virtual void custom_action(const String &) {}
-
-	// Not private since used by derived classes signal.
-	void _text_entered(const String &p_text);
-	void _ok_pressed();
-	void _cancel_pressed();
-
 public:
+	String get_title() const;
 	void set_title(const String &p_title);
 
-	Label *get_label() { return label; }
-	static void set_swap_cancel_ok(bool p_swap);
+	TitleAlign get_title_align() const;
+	void set_title_align(TitleAlign p_align);
 
-	void register_text_enter(Node *p_line_edit);
+	void bind_window(Window *p_window);
+	void bind_default_behaviors(int p_flags = BUTTON_CLOSE | BUTTON_MAXIMIZE | BUTTON_MINIMIZE);
 
-	Button *get_ok() { return ok; }
-	Button *add_button(const String &p_text, bool p_right = false, const String &p_action = "");
-	Button *add_cancel(const String &p_cancel = "");
+	TextureButton *get_close_button() { return close_btn; }
+	TextureButton *get_maximize_button() { return maximize_btn; }
+	TextureButton *get_minimize_button() { return minimize_btn; }
 
-	void set_hide_on_ok(bool p_hide);
-	bool get_hide_on_ok() const;
+	void close_window();
+	void maximize_window();
+	void restore_window();
+	void minimize_window();
 
-	void set_text(String p_text);
-	String get_text() const;
+	virtual Size2 get_minimum_size() const override;
 
-	void set_autowrap(bool p_autowrap);
-	bool has_autowrap();
-
-	AcceptDialog();
-	~AcceptDialog();
+	TitleBar();
+	~TitleBar();
 };
 
-class ConfirmationDialog : public AcceptDialog {
-	GDCLASS(ConfirmationDialog, AcceptDialog);
-	Button *cancel;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Button *get_cancel();
-	ConfirmationDialog();
-};
+VARIANT_ENUM_CAST(TitleBar::TitleAlign);
+VARIANT_ENUM_CAST(TitleBar::TitleButton);
 
 #endif

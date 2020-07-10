@@ -46,31 +46,6 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
 		_cancel_pressed();
-		return;
-	}
-
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && is_dragging) {
-		Point2 mouse = DisplayServer::get_singleton()->mouse_get_absolute_position();
-		set_position(mouse - initial_drag_pos);
-
-		set_input_as_handled();
-		return;
-	}
-
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid()) {
-		if (mb->get_button_index() == BUTTON_LEFT) {
-			if (mb->is_pressed() && title->has_point(mb->get_position())) {
-				is_dragging = true;
-				initial_drag_pos = DisplayServer::get_singleton()->mouse_get_absolute_position() - this->get_position();
-				set_input_as_handled();
-			} else {
-				is_dragging = false;
-				initial_drag_pos = Point2{ -1, -1 };
-			}
-			return;
-		}
 	}
 }
 
@@ -99,11 +74,6 @@ void AcceptDialog::_notification(int p_what) {
 
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
-			close_btn->set_normal_texture(get_theme_icon("close"));
-			close_btn->set_hover_texture(get_theme_icon("close_highlight"));
-			close_btn->set_pressed_texture(get_theme_icon("close"));
-		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			bg->add_theme_style_override("panel", bg->get_theme_stylebox("panel", "AcceptDialog"));
 		} break;
@@ -158,7 +128,7 @@ void AcceptDialog::_cancel_pressed() {
 
 void AcceptDialog::set_title(const String &p_title) {
 	Window::set_title(p_title);
-	title->set_text(p_title);
+	title_bar->set_title(p_title);
 }
 
 String AcceptDialog::get_text() const {
@@ -205,12 +175,11 @@ void AcceptDialog::_update_child_rects() {
 	float margin = hbc->get_theme_constant("margin", "Dialogs");
 	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
-	Size2 title_minsize = title->get_minimum_size();
-	Size2 close_minsize = close_btn->get_combined_minimum_size();
+	Size2 title_minsize = title_bar->get_combined_minimum_size();
 
 	// Position/size for non-default child controls
-	Point2 cpos(margin, MAX(close_minsize.y, title_minsize.y) + margin + label_size.height);
-	Size2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height - MAX(close_minsize.y, title_minsize.y));
+	Point2 cpos(margin, title_minsize.y + margin + label_size.height);
+	Size2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height - title_minsize.y);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -218,7 +187,7 @@ void AcceptDialog::_update_child_rects() {
 			continue;
 		}
 
-		if (c == title || c == close_btn || c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
+		if (c == title_bar || c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
 			continue;
 		}
 
@@ -226,8 +195,7 @@ void AcceptDialog::_update_child_rects() {
 		c->set_size(csize);
 	}
 
-	title->set_position(Point2{ 0, 0 });
-	close_btn->set_position(Point2{ size.x - margin - close_minsize.x, margin });
+	title_bar->set_position(Point2{ 0, 0 });
 
 	label->set_margin(MARGIN_TOP, title_minsize.y);
 
@@ -257,16 +225,15 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 		minsize.y = MAX(cminsize.y, minsize.y);
 	}
 
-	Size2 title_minsize = title->get_minimum_size();
-	Size2 close_minsize = close_btn->get_combined_minimum_size();
+	Size2 title_minsize = title_bar->get_minimum_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 	minsize.x = MAX(hminsize.x, minsize.x);
 	minsize.x = MAX(title_minsize.x, minsize.x);
 	minsize.x += margin * 2;
-	// [border] title
+	// [border] title <-> label child <-> hbc <-> [border]
 	minsize.y += title_minsize.y;
 	minsize.y += hminsize.y;
-	minsize.y += margin * 3; // title <-> label child <-> hbc <-> [border]
+	minsize.y += margin * 3;
 
 	Size2 wmsize = get_min_size();
 	minsize.x = MAX(wmsize.x, minsize.x);
@@ -344,18 +311,19 @@ AcceptDialog::AcceptDialog() {
 	set_exclusive(true);
 	set_clamp_to_embedder(true);
 	set_flag(FLAG_BORDERLESS, true);
-	// set_flag(FLAG_RESIZE_DISABLED, true);
 
 	bg = memnew(Panel);
 	add_child(bg);
 
-	title = memnew(Label);
-	title->set_align(Label::ALIGN_CENTER);
-	title->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-	add_child(title);
-	close_btn = memnew(TextureButton);
-	close_btn->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
-	add_child(close_btn);
+	title_bar = memnew(TitleBar);
+	title_bar->bind_window(this);
+	title_bar->set_title_align(TitleBar::ALIGN_CENTER);
+	title_bar->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+	add_child(title_bar);
+	title_bar->get_close_button()->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	// title_bar->get_maximize_button()->set_visible(false);
+	// title_bar->get_minimize_button()->set_visible(false);
+	title_bar->bind_default_behaviors(TitleBar::BUTTON_MAXIMIZE | TitleBar::BUTTON_MINIMIZE);
 
 	hbc = memnew(HBoxContainer);
 
