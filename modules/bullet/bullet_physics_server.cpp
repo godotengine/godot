@@ -1557,6 +1557,13 @@ void BulletPhysicsServer3D::sync() {
 }
 
 void BulletPhysicsServer3D::flush_queries() {
+	if (!active) {
+		return;
+	}
+
+	for (int i = 0; i < active_spaces_count; ++i) {
+		active_spaces[i]->flush_queries();
+	}
 }
 
 void BulletPhysicsServer3D::finish() {
