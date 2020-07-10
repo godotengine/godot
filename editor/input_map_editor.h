@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  project_settings_editor.h                                            */
+/*  input_map_editor.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,22 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_SETTINGS_EDITOR_H
-#define PROJECT_SETTINGS_EDITOR_H
+#ifndef INPUT_MAP_EDITOR_H
+#define INPUT_MAP_EDITOR_H
 
 #include "core/undo_redo.h"
 #include "editor/editor_data.h"
-#include "editor/editor_plugin_settings.h"
-#include "editor/editor_sectioned_inspector.h"
-#include "editor_autoload_settings.h"
-#include "input_map_editor.h"
-#include "localization_editor.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
-#include "shader_globals_editor.h"
 
-class ProjectSettingsEditor : public AcceptDialog {
-	GDCLASS(ProjectSettingsEditor, AcceptDialog);
+class InputMapEditor : public Control {
+	GDCLASS(InputMapEditor, Control);
 
 	enum InputType {
 		INPUT_KEY,
@@ -53,76 +45,63 @@ class ProjectSettingsEditor : public AcceptDialog {
 		INPUT_MOUSE_BUTTON
 	};
 
-	TabContainer *tab_container;
-	AcceptDialog *message;
-	Timer *timer;
+	Tree *input_editor;
+	LineEdit *action_name;
+	Button *action_add;
+	Label *action_add_error;
 
-	HBoxContainer *search_bar;
-	Button *search_button;
-	LineEdit *search_box;
-	HBoxContainer *add_prop_bar;
-	LineEdit *category;
-	LineEdit *property;
-	OptionButton *type;
+	InputType add_type;
+	String add_at;
+	int edit_idx;
 
-	SectionedInspector *globals_editor;
-
+	PopupMenu *popup_add;
+	ConfirmationDialog *press_a_key;
+	bool press_a_key_physical;
+	Label *press_a_key_label;
+	ConfirmationDialog *device_input;
+	OptionButton *device_id;
+	OptionButton *device_index;
+	Label *device_index_label;
 	MenuButton *popup_copy_to_feature;
 
-	InputMapEditor *inputmap_editor;
-	LocalizationEditor *localization_editor;
-	EditorAutoloadSettings *autoload_settings;
-	ShaderGlobalsEditor *shaders_global_variables_editor;
-	EditorPluginSettings *plugin_settings;
+	Ref<InputEventKey> last_wait_for_key;
 
-	Label *restart_label;
-	TextureRect *restart_icon;
-	PanelContainer *restart_container;
-	Button *restart_close_button;
-
-	EditorData *data;
+	AcceptDialog *message;
 	UndoRedo *undo_redo;
+	String inputmap_changed;
+	bool setting;
 
-	void _item_selected(const String &);
-	void _item_adds(String);
-	void _item_add();
-	void _item_del();
-	void _save();
+	void _update_actions();
+	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = Ref<InputEvent>());
+	void _edit_item(Ref<InputEvent> p_exiting_event);
 
-	void _settings_prop_edited(const String &p_name);
-	void _settings_changed();
+	void _action_check(String p_action);
+	void _action_adds(String);
+	void _action_add();
+	void _device_input_add();
 
-	void _copy_to_platform(int p_which);
-	void _copy_to_platform_about_to_show();
+	void _action_selected();
+	void _action_edited();
+	void _action_activated();
+	void _action_button_pressed(Object *p_obj, int p_column, int p_id);
+	void _wait_for_key(const Ref<InputEvent> &p_event);
+	void _press_a_key_confirm();
+	void _show_last_added(const Ref<InputEvent> &p_event, const String &p_name);
 
-	void _toggle_search_bar(bool p_pressed);
-
-	ProjectSettingsEditor();
-
-	static ProjectSettingsEditor *singleton;
-
-	void _editor_restart_request();
-	void _editor_restart();
-	void _editor_restart_close();
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	int _get_current_device();
+	void _set_current_device(int i_device);
+	String _get_device_string(int i_device);
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	static ProjectSettingsEditor *get_singleton() { return singleton; }
-	void popup_project_settings();
-	void set_plugins_page();
-	void update_plugins();
-
-	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
-
-	TabContainer *get_tabs();
-
-	void queue_save();
-
-	ProjectSettingsEditor(EditorData *p_data);
+	InputMapEditor();
 };
 
-#endif // PROJECT_SETTINGS_EDITOR_H
+#endif // INPUT_MAP_EDITOR_H
