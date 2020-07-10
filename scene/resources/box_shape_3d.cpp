@@ -29,7 +29,17 @@
 /*************************************************************************/
 
 #include "box_shape_3d.h"
+#include "primitive_meshes.h"
 #include "servers/physics_server_3d.h"
+
+Ref<ArrayMesh> BoxShape3D::get_debug_arraymesh_faces() const {
+	CubeMesh mesh;
+	mesh.set_size(extents * 2);
+	const Array a = mesh.surface_get_arrays(0);
+	Ref<ArrayMesh> m = memnew(ArrayMesh);
+	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+	return m;
+}
 
 Vector<Vector3> BoxShape3D::get_debug_mesh_lines() {
 	Vector<Vector3> lines;

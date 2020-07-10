@@ -37,6 +37,7 @@
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
@@ -190,6 +191,7 @@ CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();
 	disabled = false;
 	debug_shape = nullptr;
+	debug_shape_faces = nullptr;
 	parent = nullptr;
 	owner_id = 0;
 	set_notify_local_transform(true);
@@ -210,6 +212,11 @@ void CollisionShape3D::_update_debug_shape() {
 		debug_shape = nullptr;
 	}
 
+	if (debug_shape_faces) {
+		debug_shape_faces->queue_delete();
+		debug_shape_faces = nullptr;
+	}
+
 	Ref<Shape3D> s = get_shape();
 	if (s.is_null()) {
 		return;
@@ -220,6 +227,37 @@ void CollisionShape3D::_update_debug_shape() {
 	mi->set_mesh(mesh);
 	add_child(mi);
 	debug_shape = mi;
+
+	// Visible Faces
+	Ref<ArrayMesh> mesh_faces;
+	MeshInstance3D *mi_faces = memnew(MeshInstance3D);
+	const Color shape_face_color = Color().from_hsv(hash_one_uint64(s->get_instance_id()) / (float)UINT32_MAX, 1.0, 1.0, 1.0);
+	Ref<StandardMaterial3D> shape_face_color_mat = memnew(StandardMaterial3D);
+	shape_face_color_mat->set_albedo(Color(shape_face_color, is_disabled() ? 0.25 : 0.66));
+	shape_face_color_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	shape_face_color_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+
+	if (Object::cast_to<SphereShape3D>(*s)) {
+		Ref<SphereShape3D> sphere_shape_3d = s;
+		mesh_faces = sphere_shape_3d->get_debug_arraymesh_faces();
+		mesh_faces->surface_set_material(0, shape_face_color_mat);
+	} else if (Object::cast_to<BoxShape3D>(*s)) {
+		Ref<BoxShape3D> box_shape_3d = s;
+		mesh_faces = box_shape_3d->get_debug_arraymesh_faces();
+		mesh_faces->surface_set_material(0, shape_face_color_mat);
+	} else if (Object::cast_to<CapsuleShape3D>(*s)) {
+		Ref<CapsuleShape3D> capsule_shape_3d = s;
+		mesh_faces = capsule_shape_3d->get_debug_arraymesh_faces();
+		mesh_faces->surface_set_material(0, shape_face_color_mat);
+	} else if (Object::cast_to<CylinderShape3D>(*s)) {
+		Ref<CylinderShape3D> cylinder_shape_3d = s;
+		mesh_faces = cylinder_shape_3d->get_debug_arraymesh_faces();
+		mesh_faces->surface_set_material(0, shape_face_color_mat);
+	}
+
+	mi_faces->set_mesh(mesh_faces);
+	add_child(mi_faces);
+	debug_shape_faces = mi_faces;
 }
 
 void CollisionShape3D::_shape_changed() {

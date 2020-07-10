@@ -43,6 +43,7 @@ class CollisionShape3D : public Node3D {
 	uint32_t owner_id;
 	CollisionObject3D *parent;
 
+	Node *debug_shape_faces;
 	Node *debug_shape;
 	bool debug_shape_dirty;
 
