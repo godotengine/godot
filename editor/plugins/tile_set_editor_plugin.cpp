@@ -646,7 +646,7 @@ void TileSetEditor::_on_tileset_toolbar_button_pressed(int p_index) {
 	option = p_index;
 	switch (option) {
 		case TOOL_TILESET_ADD_TEXTURE: {
-			texture_dialog->popup_centered_ratio();
+			texture_dialog->popup_file_dialog();
 		} break;
 		case TOOL_TILESET_REMOVE_TEXTURE: {
 			if (get_current_texture().is_valid()) {

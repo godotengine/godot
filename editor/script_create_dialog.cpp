@@ -540,7 +540,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	}
 
 	file_browse->set_current_path(file_path->get_text());
-	file_browse->popup_centered_ratio();
+	file_browse->popup_file_dialog();
 }
 
 void ScriptCreateDialog::_file_selected(const String &p_file) {

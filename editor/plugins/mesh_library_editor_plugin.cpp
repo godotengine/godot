@@ -224,7 +224,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			}
 		} break;
 		case MENU_OPTION_IMPORT_FROM_SCENE: {
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
 			cd->set_text(vformat(TTR("Update from existing scene?:\n%s"), String(mesh_library->get_meta("_editor_source_scene"))));

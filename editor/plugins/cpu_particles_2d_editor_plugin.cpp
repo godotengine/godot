@@ -60,7 +60,7 @@ void CPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_LOAD_EMISSION_MASK: {
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
