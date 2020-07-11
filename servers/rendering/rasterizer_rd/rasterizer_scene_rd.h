@@ -145,7 +145,7 @@ private:
 	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality);
 	void _create_reflection_fast_filter(ReflectionData &rd, bool p_use_arrays);
 	void _create_reflection_importance_sample(ReflectionData &rd, bool p_use_arrays, int p_cube_side, int p_base_layer);
-	void _update_reflection_mipmaps(ReflectionData &rd);
+	void _update_reflection_mipmaps(ReflectionData &rd, int p_start, int p_end);
 
 	/* Sky shader */
 
@@ -261,10 +261,11 @@ private:
 
 		int radiance_size = 256;
 
-		RS::SkyMode mode = RS::SKY_MODE_QUALITY;
+		RS::SkyMode mode = RS::SKY_MODE_AUTOMATIC;
 
 		ReflectionData reflection;
 		bool dirty = false;
+		int processing_layer = 0;
 		Sky *dirty_list = nullptr;
 
 		//State to track when radiance cubemap needs updating
