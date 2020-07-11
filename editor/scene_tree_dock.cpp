@@ -645,9 +645,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 				nodeset.insert(E->get());
 			}
-			reparent_dialog->popup_centered_ratio();
 			reparent_dialog->set_current(nodeset);
-
+			reparent_dialog->popup_centered_clamped(Size2(350, 700) * EDSCALE);
 		} break;
 		case TOOL_MAKE_ROOT: {
 			if (!profile_allow_editing) {
@@ -834,8 +833,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			new_scene_from_dialog->set_current_path(existing);
 
-			new_scene_from_dialog->popup_centered_ratio();
 			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
+			new_scene_from_dialog->popup_file_dialog();
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 			List<Node *> selection = editor_selection->get_selected_node_list();

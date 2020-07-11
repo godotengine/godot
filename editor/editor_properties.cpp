@@ -253,7 +253,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_current_path(full_path);
 	}
 
-	dialog->popup_centered_ratio();
+	dialog->popup_file_dialog();
 }
 
 void EditorPropertyPath::update_property() {
@@ -2207,7 +2207,7 @@ void EditorPropertyNodePath::_node_assign() {
 		add_child(scene_tree);
 		scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected));
 	}
-	scene_tree->popup_centered_ratio();
+	scene_tree->popup_scenetree_dialog();
 }
 
 void EditorPropertyNodePath::_node_clear() {
@@ -2343,7 +2343,7 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 }
 
 void EditorPropertyResource::_menu_option(int p_which) {
-	//	scene_tree->popup_centered_ratio();
+	//scene_tree->popup_scenetree_dialog();
 	switch (p_which) {
 		case OBJ_MENU_LOAD: {
 			if (!file) {
@@ -2369,7 +2369,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
 			}
 
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 		} break;
 
 		case OBJ_MENU_EDIT: {
@@ -2507,7 +2507,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 					scene_tree->connect("selected", callable_mp(this, &EditorPropertyResource::_viewport_selected));
 					scene_tree->set_title(TTR("Pick a Viewport"));
 				}
-				scene_tree->popup_centered_ratio();
+				scene_tree->popup_scenetree_dialog();
 
 				return;
 			}

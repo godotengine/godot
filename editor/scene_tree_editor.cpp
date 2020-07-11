@@ -33,6 +33,7 @@
 #include "core/message_queue.h"
 #include "core/print_string.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -1193,6 +1194,10 @@ SceneTreeEditor::~SceneTreeEditor() {
 }
 
 /******** DIALOG *********/
+
+void SceneTreeDialog::popup_scenetree_dialog() {
+	popup_centered_clamped(Size2(350, 700) * EDSCALE);
+}
 
 void SceneTreeDialog::_notification(int p_what) {
 	switch (p_what) {

@@ -254,7 +254,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			emission_tree_dialog->popup_centered_ratio();
+			emission_tree_dialog->popup_scenetree_dialog();
 
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {

@@ -50,6 +50,10 @@ EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
+void EditorFileDialog::popup_file_dialog() {
+	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+}
+
 VBoxContainer *EditorFileDialog::get_vbox() {
 	return vbox;
 }

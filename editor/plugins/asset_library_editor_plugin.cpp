@@ -1260,7 +1260,7 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 }
 
 void EditorAssetLibrary::_asset_open() {
-	asset_open->popup_centered_ratio();
+	asset_open->popup_file_dialog();
 }
 
 void EditorAssetLibrary::_manage_plugins() {

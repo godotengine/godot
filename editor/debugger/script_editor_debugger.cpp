@@ -282,7 +282,7 @@ void ScriptEditorDebugger::_video_mem_export() {
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog->clear_filters();
 	file_dialog_purpose = SAVE_VRAM_CSV;
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }
 
 Size2 ScriptEditorDebugger::get_minimum_size() const {
@@ -944,7 +944,7 @@ void ScriptEditorDebugger::_export_csv() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog_purpose = SAVE_MONITORS_CSV;
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }
 
 String ScriptEditorDebugger::get_var_value(const String &p_var) const {

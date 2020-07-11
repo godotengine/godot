@@ -4370,7 +4370,7 @@ void AnimationTrackEditor::_add_track(int p_type) {
 		return;
 	}
 	adding_track_type = p_type;
-	pick_track->popup_centered_ratio();
+	pick_track->popup_scenetree_dialog();
 }
 
 void AnimationTrackEditor::_new_track_property_selected(String p_name) {
@@ -5731,7 +5731,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	pick_track = memnew(SceneTreeDialog);
 	add_child(pick_track);
-	pick_track->set_title(TTR("Pick the node that will be animated:"));
+	pick_track->set_title(TTR("Pick a node to animate:"));
 	pick_track->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_node_selected));
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);

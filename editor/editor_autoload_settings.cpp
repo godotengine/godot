@@ -919,5 +919,5 @@ void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
 }
 
 void EditorAutoloadSettings::_browse_autoload_add_path() {
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }

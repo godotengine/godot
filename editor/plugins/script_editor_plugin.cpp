@@ -1107,7 +1107,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog_option = FILE_NEW_TEXTFILE;
 
 			file_dialog->clear_filters();
-			file_dialog->popup_centered_ratio();
+			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("New Text File..."));
 		} break;
 		case FILE_OPEN: {
@@ -1122,7 +1122,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 			}
 
-			file_dialog->popup_centered_ratio();
+			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("Open File"));
 			return;
 		} break;
@@ -1275,7 +1275,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					file_dialog->clear_filters();
 					file_dialog->set_current_dir(text_file->get_path().get_base_dir());
 					file_dialog->set_current_file(text_file->get_path().get_file());
-					file_dialog->popup_centered_ratio();
+					file_dialog->popup_file_dialog();
 					file_dialog->set_title(TTR("Save File As..."));
 					break;
 				}
@@ -1425,7 +1425,7 @@ void ScriptEditor::_theme_option(int p_option) {
 			file_dialog_option = THEME_IMPORT;
 			file_dialog->clear_filters();
 			file_dialog->add_filter("*.tet");
-			file_dialog->popup_centered_ratio();
+			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("Import Theme"));
 		} break;
 		case THEME_RELOAD: {
@@ -1451,7 +1451,7 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog->clear_filters();
 	file_dialog->add_filter("*.tet");
 	file_dialog->set_current_path(EditorSettings::get_singleton()->get_text_editor_themes_dir().plus_file(EditorSettings::get_singleton()->get("text_editor/theme/color_theme")));
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	file_dialog->set_title(TTR("Save Theme As..."));
 }
 

@@ -365,13 +365,13 @@ private:
 		} else {
 			fdialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		}
-		fdialog->popup_centered_ratio();
+		fdialog->popup_file_dialog();
 	}
 
 	void _browse_install_path() {
 		fdialog_install->set_current_dir(install_path->get_text());
 		fdialog_install->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
-		fdialog_install->popup_centered_ratio();
+		fdialog_install->popup_file_dialog();
 	}
 
 	void _create_folder() {
@@ -2159,7 +2159,7 @@ void ProjectManager::_scan_begin(const String &p_base) {
 }
 
 void ProjectManager::_scan_projects() {
-	scan_dir->popup_centered_ratio();
+	scan_dir->popup_file_dialog();
 }
 
 void ProjectManager::_new_project() {
