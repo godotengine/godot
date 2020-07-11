@@ -251,7 +251,7 @@ void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
 void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
 	std->get_scene_tree()->set_marked(node, false);
-	std->popup_centered_ratio();
+	std->popup_scenetree_dialog();
 	if (p_source) {
 		std->set_title(TTR("Select a Source Mesh:"));
 	} else {

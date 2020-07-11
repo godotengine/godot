@@ -95,8 +95,7 @@ void ResourcePreloaderEditor::_load_pressed() {
 	}
 
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-
-	file->popup_centered_ratio();
+	file->popup_file_dialog();
 }
 
 void ResourcePreloaderEditor::_item_edited() {

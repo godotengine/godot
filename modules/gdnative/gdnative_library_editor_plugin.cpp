@@ -146,7 +146,7 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 		}
 
 		file_dialog->set_file_mode(mode);
-		file_dialog->popup_centered_ratio();
+		file_dialog->popup_file_dialog();
 
 	} else if (id == BUTTON_CLEAR_LIBRARY) {
 		_set_target_value(section, target, "");

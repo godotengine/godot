@@ -340,7 +340,7 @@ void AnimationPlayerEditor::_animation_load() {
 		file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
 	}
 
-	file->popup_centered_ratio();
+	file->popup_file_dialog();
 	current_option = RESOURCE_LOAD;
 }
 
@@ -399,8 +399,8 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		}
 	}
 	file->set_current_path(path);
-	file->popup_centered_ratio();
 	file->set_title(TTR("Save Resource As..."));
+	file->popup_file_dialog();
 	current_option = RESOURCE_SAVE;
 }
 

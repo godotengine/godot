@@ -152,7 +152,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
 					}
 
-					file->popup_centered_ratio();
+					file->popup_file_dialog();
 				} break;
 
 				case OBJ_MENU_EDIT: {
@@ -257,7 +257,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					if (intype == "ViewportTexture") {
 						scene_tree->set_title(TTR("Pick a Viewport"));
-						scene_tree->popup_centered_ratio();
+						scene_tree->popup_scenetree_dialog();
 						picking_viewport = true;
 						return;
 					}
@@ -1198,7 +1198,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 							file->add_filter(filter + " ; " + extensions[i].to_upper());
 						}
 					}
-					file->popup_centered_ratio();
+					file->popup_file_dialog();
 				} else {
 					v = "";
 					emit_signal("variant_changed");
@@ -1214,7 +1214,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					}
 					file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 					file->clear_filters();
-					file->popup_centered_ratio();
+					file->popup_file_dialog();
 				} else {
 					v = "";
 					emit_signal("variant_changed");
@@ -1227,7 +1227,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 			if (p_which == 0) {
 				picking_viewport = false;
 				scene_tree->set_title(TTR("Pick a Node"));
-				scene_tree->popup_centered_ratio();
+				scene_tree->popup_scenetree_dialog();
 
 			} else if (p_which == 1) {
 				v = NodePath();
@@ -1281,7 +1281,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
 				}
 
-				file->popup_centered_ratio();
+				file->popup_file_dialog();
 
 			} else if (p_which == 2) {
 				RES r = v;

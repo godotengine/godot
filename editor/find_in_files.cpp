@@ -483,7 +483,7 @@ void FindInFilesDialog::_notification(int p_what) {
 }
 
 void FindInFilesDialog::_on_folder_button_pressed() {
-	_folder_dialog->popup_centered_ratio();
+	_folder_dialog->popup_file_dialog();
 }
 
 void FindInFilesDialog::custom_action(const String &p_action) {

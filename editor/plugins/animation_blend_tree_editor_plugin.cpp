@@ -276,7 +276,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		for (List<String>::Element *E = filters.front(); E; E = E->next()) {
 			open_file->add_filter("*." + E->get());
 		}
-		open_file->popup_centered_ratio();
+		open_file->popup_file_dialog();
 		return;
 	} else if (p_idx == MENU_LOAD_FILE_CONFIRM) {
 		anode = file_loaded;

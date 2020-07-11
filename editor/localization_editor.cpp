@@ -82,7 +82,7 @@ void LocalizationEditor::_translation_add(const String &p_path) {
 }
 
 void LocalizationEditor::_translation_file_open() {
-	translation_file_open->popup_centered_ratio();
+	translation_file_open->popup_file_dialog();
 }
 
 void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p_button) {
@@ -108,7 +108,7 @@ void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p
 }
 
 void LocalizationEditor::_translation_res_file_open() {
-	translation_res_file_open_dialog->popup_centered_ratio();
+	translation_res_file_open_dialog->popup_file_dialog();
 }
 
 void LocalizationEditor::_translation_res_add(const String &p_path) {
@@ -137,7 +137,7 @@ void LocalizationEditor::_translation_res_add(const String &p_path) {
 }
 
 void LocalizationEditor::_translation_res_option_file_open() {
-	translation_res_option_file_open_dialog->popup_centered_ratio();
+	translation_res_option_file_open_dialog->popup_file_dialog();
 }
 
 void LocalizationEditor::_translation_res_option_add(const String &p_path) {
@@ -406,11 +406,11 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button)
 }
 
 void LocalizationEditor::_pot_file_open() {
-	pot_file_open_dialog->popup_centered_ratio();
+	pot_file_open_dialog->popup_file_dialog();
 }
 
 void LocalizationEditor::_pot_generate_open() {
-	pot_generate_dialog->popup_centered_ratio();
+	pot_generate_dialog->popup_file_dialog();
 }
 
 void LocalizationEditor::_pot_generate(const String &p_file) {

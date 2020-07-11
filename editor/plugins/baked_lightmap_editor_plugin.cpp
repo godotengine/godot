@@ -54,7 +54,7 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 				scene_path = scene_path.get_basename() + ".lmbake";
 
 				file_dialog->set_current_path(scene_path);
-				file_dialog->popup_centered_ratio();
+				file_dialog->popup_file_dialog();
 
 			} break;
 			case BakedLightmap::BAKE_ERROR_NO_MESHES:

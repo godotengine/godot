@@ -75,14 +75,8 @@ ReparentDialog::ReparentDialog() {
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_show_enabled_subscene(true);
-
-	vbc->add_margin_child(TTR("Reparent Location (Select new Parent):"), tree, true);
-
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
-
-	//Label *label = memnew( Label );
-	//label->set_position( Point2( 15,8) );
-	//label->set_text("Reparent Location (Select new Parent):");
+	vbc->add_margin_child(TTR("Select new parent:"), tree, true);
 
 	keep_transform = memnew(CheckBox);
 	keep_transform->set_text(TTR("Keep Global Transform"));
