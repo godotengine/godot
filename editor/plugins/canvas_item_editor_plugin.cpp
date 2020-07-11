@@ -6262,7 +6262,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	selector->add_child(vbc);
 	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
-	vbc->set_custom_minimum_size(Size2(200, 260) * EDSCALE);
+	vbc->set_custom_minimum_size(Size2(240, 260) * EDSCALE);
 
 	btn_group = memnew(VBoxContainer);
 	vbc->add_child(btn_group);
