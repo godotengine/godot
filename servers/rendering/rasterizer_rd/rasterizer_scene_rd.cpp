@@ -181,16 +181,14 @@ void RasterizerSceneRD::_create_reflection_importance_sample(ReflectionData &rd,
 	}
 }
 
-void RasterizerSceneRD::_update_reflection_mipmaps(ReflectionData &rd) {
-	if (sky_use_cubemap_array) {
-		for (int i = 0; i < rd.layers.size(); i++) {
-			for (int j = 0; j < rd.layers[i].mipmaps.size() - 1; j++) {
-				for (int k = 0; k < 6; k++) {
-					RID view = rd.layers[i].mipmaps[j].views[k];
-					RID texture = rd.layers[i].mipmaps[j + 1].views[k];
-					Size2i size = rd.layers[i].mipmaps[j + 1].size;
-					storage->get_effects()->make_mipmap(view, texture, size);
-				}
+void RasterizerSceneRD::_update_reflection_mipmaps(ReflectionData &rd, int p_start, int p_end) {
+	for (int i = p_start; i < p_end; i++) {
+		for (int j = 0; j < rd.layers[i].mipmaps.size() - 1; j++) {
+			for (int k = 0; k < 6; k++) {
+				RID view = rd.layers[i].mipmaps[j].views[k];
+				RID texture = rd.layers[i].mipmaps[j + 1].views[k];
+				Size2i size = rd.layers[i].mipmaps[j + 1].size;
+				storage->get_effects()->make_mipmap(view, texture, size);
 			}
 		}
 	}
@@ -1924,6 +1922,7 @@ void RasterizerSceneRD::_update_dirty_skys() {
 		}
 
 		sky->reflection.dirty = true;
+		sky->processing_layer = 0;
 
 		Sky *next = sky->dirty_list;
 		sky->dirty_list = nullptr;
@@ -2276,8 +2275,32 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 
 	float multiplier = environment_get_bg_energy(p_environment);
 
+	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY;
+	RS::SkyMode sky_mode = sky->mode;
+
+	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
+		if (shader_data->uses_time || shader_data->uses_position) {
+			update_single_frame = true;
+			sky_mode = RS::SKY_MODE_REALTIME;
+		} else if (shader_data->uses_light || shader_data->ubo_size > 0) {
+			update_single_frame = false;
+			sky_mode = RS::SKY_MODE_INCREMENTAL;
+		} else {
+			update_single_frame = true;
+			sky_mode = RS::SKY_MODE_QUALITY;
+		}
+	}
+
+	if (sky->processing_layer == 0 && sky_mode == RS::SKY_MODE_INCREMENTAL) {
+		// On the first frame after creating sky, rebuild in single frame
+		update_single_frame = true;
+		sky_mode = RS::SKY_MODE_QUALITY;
+	}
+
+	int max_processing_layer = sky_use_cubemap_array ? sky->reflection.layers.size() : sky->reflection.layers[0].mipmaps.size();
+
 	// Update radiance cubemap
-	if (sky->reflection.dirty) {
+	if (sky->reflection.dirty && (sky->processing_layer >= max_processing_layer || update_single_frame)) {
 		static const Vector3 view_normals[6] = {
 			Vector3(+1, 0, 0),
 			Vector3(-1, 0, 0),
@@ -2349,27 +2372,41 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 			storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
 			RD::get_singleton()->draw_list_end();
 		}
-		if (sky_use_cubemap_array) {
-			if (sky->mode == RS::SKY_MODE_QUALITY) {
-				for (int i = 1; i < sky->reflection.layers.size(); i++) {
-					_create_reflection_importance_sample(sky->reflection, sky_use_cubemap_array, 10, i);
-				}
-			} else {
-				_create_reflection_fast_filter(sky->reflection, sky_use_cubemap_array);
-			}
 
-			_update_reflection_mipmaps(sky->reflection);
+		if (sky_mode == RS::SKY_MODE_REALTIME) {
+			_create_reflection_fast_filter(sky->reflection, sky_use_cubemap_array);
+			if (sky_use_cubemap_array) {
+				_update_reflection_mipmaps(sky->reflection, 0, sky->reflection.layers.size());
+			}
 		} else {
-			if (sky->mode == RS::SKY_MODE_QUALITY) {
-				for (int i = 1; i < sky->reflection.layers[0].mipmaps.size(); i++) {
+			if (update_single_frame) {
+				for (int i = 1; i < max_processing_layer; i++) {
 					_create_reflection_importance_sample(sky->reflection, sky_use_cubemap_array, 10, i);
 				}
+				if (sky_use_cubemap_array) {
+					_update_reflection_mipmaps(sky->reflection, 0, sky->reflection.layers.size());
+				}
 			} else {
-				_create_reflection_fast_filter(sky->reflection, sky_use_cubemap_array);
+				if (sky_use_cubemap_array) {
+					// Multi-Frame so just update the first array level
+					_update_reflection_mipmaps(sky->reflection, 0, 1);
+				}
 			}
+			sky->processing_layer = 1;
 		}
 
 		sky->reflection.dirty = false;
+
+	} else {
+		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
+			_create_reflection_importance_sample(sky->reflection, sky_use_cubemap_array, 10, sky->processing_layer);
+
+			if (sky_use_cubemap_array) {
+				_update_reflection_mipmaps(sky->reflection, sky->processing_layer, sky->processing_layer + 1);
+			}
+
+			sky->processing_layer++;
+		}
 	}
 }
 

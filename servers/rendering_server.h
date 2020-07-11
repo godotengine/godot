@@ -720,7 +720,9 @@ public:
 	/* SKY API */
 
 	enum SkyMode {
+		SKY_MODE_AUTOMATIC,
 		SKY_MODE_QUALITY,
+		SKY_MODE_INCREMENTAL,
 		SKY_MODE_REALTIME
 	};
 
