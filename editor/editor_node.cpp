@@ -994,8 +994,8 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		}
 		file->set_current_path(existing);
 	}
-	file->popup_centered_ratio();
 	file->set_title(TTR("Save Resource As..."));
+	file->popup_file_dialog();
 }
 
 void EditorNode::_menu_option(int p_option) {
@@ -2182,7 +2182,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file->set_current_path(scene->get_filename());
 			};
 			file->set_title(p_option == FILE_OPEN_SCENE ? TTR("Open Scene") : TTR("Open Base Scene"));
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 
 		} break;
 		case FILE_QUICK_OPEN: {
@@ -2318,7 +2318,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 				file->set_current_path(existing);
 			}
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 			file->set_title(TTR("Save Scene As..."));
 
 		} break;
@@ -2357,7 +2357,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file_export_lib->add_filter("*." + E->get());
 			}
 
-			file_export_lib->popup_centered_ratio();
+			file_export_lib->popup_file_dialog();
 			file_export_lib->set_title(TTR("Export Mesh Library"));
 
 		} break;
@@ -2376,7 +2376,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file_export_lib->add_filter("*." + E->get());
 			}
 
-			file_export_lib->popup_centered_ratio();
+			file_export_lib->popup_file_dialog();
 			file_export_lib->set_title(TTR("Export Tile Set"));
 
 		} break;
@@ -2642,7 +2642,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file->set_current_path(scene->get_filename());
 			};
 			file->set_title(TTR("Pick a Main Scene"));
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 
 		} break;
 		case HELP_SEARCH: {

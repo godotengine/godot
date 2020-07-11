@@ -40,6 +40,10 @@ FileDialog::GetIconFunc FileDialog::get_large_icon_func = nullptr;
 FileDialog::RegisterFunc FileDialog::register_func = nullptr;
 FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
 
+void FileDialog::popup_file_dialog() {
+	popup_centered_clamped(Size2i(700, 500), 0.8f);
+}
+
 VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
 }

@@ -334,7 +334,7 @@ void ExportTemplateManager::popup_manager() {
 }
 
 void ExportTemplateManager::ok_pressed() {
-	template_open->popup_centered_ratio();
+	template_open->popup_file_dialog();
 }
 
 void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {

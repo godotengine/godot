@@ -48,7 +48,7 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 		file_split_sheet->add_filter("*." + extensions[i]);
 	}
 
-	file_split_sheet->popup_centered_ratio();
+	file_split_sheet->popup_file_dialog();
 }
 
 void SpriteFramesEditor::_sheet_preview_draw() {
@@ -298,8 +298,7 @@ void SpriteFramesEditor::_load_pressed() {
 	}
 
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-
-	file->popup_centered_ratio();
+	file->popup_file_dialog();
 }
 
 void SpriteFramesEditor::_paste_pressed() {

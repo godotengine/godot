@@ -179,6 +179,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void popup_scenetree_dialog();
 	SceneTreeEditor *get_scene_tree() { return tree; }
 	SceneTreeDialog();
 	~SceneTreeDialog();

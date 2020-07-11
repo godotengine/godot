@@ -1176,7 +1176,7 @@ void EditorAudioBuses::_save_as_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(edited_path);
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
 
@@ -1184,7 +1184,7 @@ void EditorAudioBuses::_new_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Location for New Layout..."));
 	file_dialog->set_current_path(edited_path);
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	new_layout = true;
 }
 
@@ -1192,7 +1192,7 @@ void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
 	file_dialog->set_current_path(edited_path);
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
 
