@@ -99,6 +99,7 @@ private:
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
 		FILE_SHOW_IN_EXPLORER,
+		FILE_OPEN_WITH_DEFAULT_PROGRAM,
 		FILE_COPY_PATH,
 		FILE_NEW_RESOURCE,
 		FOLDER_EXPAND_ALL,
@@ -189,6 +190,7 @@ private:
 	Tree *tree;
 	ItemList *files;
 	bool import_dock_needs_update;
+	List<String> shell_ignored_extensions;
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
