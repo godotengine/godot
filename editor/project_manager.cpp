@@ -2472,7 +2472,11 @@ ProjectManager::ProjectManager() {
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
-	vb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
+	// Add just one pixel of offset on all sides to prevent text or controls from touching the edges of the screen,
+	// and being partially occluded on some displays.
+	vb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, Math::round(EDSCALE));
+	// Add some offset at the top to avoid making text touch the window's top edge.
+	vb->set_offset(SIDE_TOP, Math::round(4 * EDSCALE));
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);

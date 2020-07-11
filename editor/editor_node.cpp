@@ -5933,8 +5933,12 @@ EditorNode::EditorNode() {
 
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
-	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8);
-	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
+	// Add just one pixel of offset on all sides to prevent text or controls from touching the edges of the screen,
+	// and being partially occluded on some displays.
+	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, Math::round(EDSCALE));
+	// Add some offset at the top to avoid making text touch the window's top edge.
+	main_vbox->set_offset(SIDE_TOP, Math::round(4 * EDSCALE));
+	main_vbox->add_theme_constant_override("separation", Math::round(4 * EDSCALE));
 
 	menu_hb = memnew(HBoxContainer);
 	main_vbox->add_child(menu_hb);
