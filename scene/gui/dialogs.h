@@ -75,8 +75,6 @@ protected:
 	void _cancel_pressed();
 
 public:
-	void set_title(const String &p_title);
-
 	Label *get_label() { return label; }
 	static void set_swap_cancel_ok(bool p_swap);
 

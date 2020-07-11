@@ -90,6 +90,8 @@ void AcceptDialog::_notification(int p_what) {
 				_update_child_rects();
 			}
 		} break;
+
+		// Handle native close button
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
 		} break;
@@ -124,11 +126,6 @@ void AcceptDialog::_cancel_pressed() {
 	if (parent_window) {
 		//parent_window->grab_focus();
 	}
-}
-
-void AcceptDialog::set_title(const String &p_title) {
-	Window::set_title(p_title);
-	title_bar->set_title(p_title);
 }
 
 String AcceptDialog::get_text() const {
@@ -216,7 +213,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c == hbc || c == label || c->is_set_as_top_level()) {
+		if (c == title_bar || c == hbc || c == label || c->is_set_as_toplevel()) {
 			continue;
 		}
 
@@ -317,13 +314,9 @@ AcceptDialog::AcceptDialog() {
 
 	title_bar = memnew(TitleBar);
 	title_bar->bind_window(this);
-	title_bar->set_title_align(TitleBar::ALIGN_CENTER);
 	title_bar->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
 	add_child(title_bar);
-	title_bar->get_close_button()->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
-	// title_bar->get_maximize_button()->set_visible(false);
-	// title_bar->get_minimize_button()->set_visible(false);
-	title_bar->bind_default_behaviors(TitleBar::BUTTON_MAXIMIZE | TitleBar::BUTTON_MINIMIZE);
+	title_bar->connect("window_closing", callable_mp(this, &AcceptDialog::_cancel_pressed));
 
 	hbc = memnew(HBoxContainer);
 

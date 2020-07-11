@@ -193,8 +193,25 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
 
+<<<<<<< HEAD
 void DisplayServer::window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window) {
 	ERR_FAIL_MSG("Mouse passthrough not supported by this display server.");
+=======
+void DisplayServer::window_set_decoration(WindowDecoration p_decor, bool p_enabled, WindowID p_window) {
+	WARN_PRINT("Window decorations are not supported by this display server.");
+}
+
+bool DisplayServer::window_get_decoration(WindowDecoration p_decor, WindowID p_window) const {
+	return false;
+}
+
+Rect2 DisplayServer::window_get_native_title_buttons_rect(WindowID p_window) const {
+	ERR_FAIL_V_MSG(Rect2(), "Native title bar buttons (a type of window decorations) not supported by this display server.");
+}
+
+float DisplayServer::window_get_suggested_title_x(WindowID p_window) const {
+	ERR_FAIL_V_MSG(0.0f, "Native title bar buttons (a type of window decorations) not supported by this display server.");
+>>>>>>> 490cd6064b... Add DisplayServer title buttons feature
 }
 
 void DisplayServer::window_set_ime_active(const bool p_active, WindowID p_window) {
@@ -454,6 +471,10 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_can_draw", "window_id"), &DisplayServer::window_can_draw, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_set_transient", "window_id", "parent_window_id"), &DisplayServer::window_set_transient);
+
+	ClassDB::bind_method(D_METHOD("window_set_decoration", "decoration", "enabled", "window_id"), &DisplayServer::window_set_decoration);
+	ClassDB::bind_method(D_METHOD("window_get_decoration", "decoration", "window_id"), &DisplayServer::window_get_decoration);
+	ClassDB::bind_method(D_METHOD("window_get_native_tbb_rect", "window_id"), &DisplayServer::window_get_native_title_buttons_rect);
 
 	ClassDB::bind_method(D_METHOD("window_set_ime_active", "active", "window_id"), &DisplayServer::window_set_ime_active, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_ime_position", "position", "window_id"), &DisplayServer::window_set_ime_position, DEFVAL(MAIN_WINDOW_ID));

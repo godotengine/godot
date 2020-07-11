@@ -108,6 +108,7 @@ public:
 		FEATURE_ORIENTATION,
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
+		FEATURE_NATIVE_TITLE_BUTTONS,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -204,6 +205,7 @@ public:
 	enum WindowFlags {
 		WINDOW_FLAG_RESIZE_DISABLED,
 		WINDOW_FLAG_BORDERLESS,
+		WINDOW_FLAG_SHADOWS,
 		WINDOW_FLAG_ALWAYS_ON_TOP,
 		WINDOW_FLAG_TRANSPARENT,
 		WINDOW_FLAG_NO_FOCUS,
@@ -214,9 +216,10 @@ public:
 	enum WindowFlagsBit {
 		WINDOW_FLAG_RESIZE_DISABLED_BIT = (1 << WINDOW_FLAG_RESIZE_DISABLED),
 		WINDOW_FLAG_BORDERLESS_BIT = (1 << WINDOW_FLAG_BORDERLESS),
+		WINDOW_FLAG_SHADOWS_BIT = (1 << WINDOW_FLAG_SHADOWS),
 		WINDOW_FLAG_ALWAYS_ON_TOP_BIT = (1 << WINDOW_FLAG_ALWAYS_ON_TOP),
 		WINDOW_FLAG_TRANSPARENT_BIT = (1 << WINDOW_FLAG_TRANSPARENT),
-		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
+		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
@@ -279,6 +282,16 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
+
+	enum WindowDecoration {
+		DECORATION_CLOSE_BUTTON,
+		DECORATION_MAXIMIZE_BUTTON,
+		DECORATION_MINIMIZE_BUTTON,
+	};
+	virtual void window_set_decoration(WindowDecoration p_decor, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_get_decoration(WindowDecoration p_decor, WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual Rect2 window_get_native_title_buttons_rect(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual float window_get_suggested_title_x(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual bool can_any_window_draw() const = 0;
 
@@ -388,6 +401,7 @@ VARIANT_ENUM_CAST(DisplayServer::MouseMode)
 VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
+VARIANT_ENUM_CAST(DisplayServer::WindowDecoration)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 
 #endif // DISPLAY_SERVER_H
