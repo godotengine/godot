@@ -2551,7 +2551,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		view_menu->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
+		view_menu->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 		preview_camera->set_icon(get_theme_icon("Camera3D", "EditorIcons"));
 
 		view_menu->add_theme_style_override("normal", editor->get_gui_base()->get_theme_stylebox("Information3dViewport", "EditorStyles"));
