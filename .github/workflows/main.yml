@@ -5,7 +5,8 @@ on:
     push:
       branches: [ master, 3.2, 3.1, 3.0 ]
 env: 
-    SCONS_CACHE: ~/.scons_cache/
+    # caching outside git directory is very unsupported on windows platform
+    SCONS_CACHE: ${{GITHUB_WORKSPACE}}/.scons_cache/
     SCONS_CACHE_LIMIT: 2048
     SCONS_CACHE_MSVC_CONFIG: true
 jobs:
