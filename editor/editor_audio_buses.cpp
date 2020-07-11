@@ -89,7 +89,7 @@ void EditorAudioBus::_notification(int p_what) {
 			bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
 			bypass->add_color_override("icon_color_pressed", bypass_color);
 
-			bus_options->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			bus_options->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 
 			update_bus();
 			set_process(true);
@@ -181,7 +181,7 @@ void EditorAudioBus::_notification(int p_what) {
 			mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
 			bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
 
-			bus_options->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			bus_options->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 		} break;
 		case NOTIFICATION_MOUSE_EXIT:
 		case NOTIFICATION_DRAG_END: {
