@@ -977,7 +977,8 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_scene(path);
 		}
 	} else if (p_symbol.is_rel_path()) {
-		// Every symbol other than absolute path is relative path so keep this condition at last.
+		// Every symbol other than absolute path is relative path,
+		// so keep this condition at last for engine-related symbols and files.
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
 			List<String> scene_extensions;
@@ -989,6 +990,10 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				EditorNode::get_singleton()->load_resource(path);
 			}
 		}
+	} else {
+		// Assume we have an URI which can be opened by the OS externally.
+		// If the URI is invalid, nothing should happen.
+		OS::get_singleton()->shell_open(p_symbol);
 	}
 }
 
