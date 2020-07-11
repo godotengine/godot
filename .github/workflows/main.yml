@@ -19,7 +19,7 @@ jobs:
       id: scons-cache
       uses: actions/cache@v2
       with:
-        path: ~/.scons_cache/
+        path: ${{env.SCONS_CACHE}}
         key: ${{ runner.os }}-release_debug-editor
         restore-keys: ${{ runner.os }}-release_debug-editor
     # use python 3.x release (works cross platform)
@@ -58,7 +58,7 @@ jobs:
       id: scons-cache
       uses: actions/cache@v2
       with:
-        path: ~/.scons_cache/**
+        path: ${{env.SCONS_CACHE}}
         key: ${{ runner.os }}-release-runtime
         restore-keys: ${{ runner.os }}-release-runtime
     # use python 3.x release (works cross platform)
