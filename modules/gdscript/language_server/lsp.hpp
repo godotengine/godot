@@ -1661,7 +1661,7 @@ struct ServerCapabilities {
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
 		dict["signatureHelpProvider"] = signatureHelpProvider.to_json();
-		dict["codeLensProvider"] = false; // codeLensProvider.to_json();
+		//dict["codeLensProvider"] = codeLensProvider.to_json();
 		dict["documentOnTypeFormattingProvider"] = documentOnTypeFormattingProvider.to_json();
 		dict["renameProvider"] = renameProvider.to_json();
 		dict["documentLinkProvider"] = documentLinkProvider.to_json();
