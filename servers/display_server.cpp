@@ -205,13 +205,18 @@ bool DisplayServer::window_get_decoration(WindowDecoration p_decor, WindowID p_w
 	return false;
 }
 
-Rect2 DisplayServer::window_get_native_title_buttons_rect(WindowID p_window) const {
-	ERR_FAIL_V_MSG(Rect2(), "Native title bar buttons (a type of window decorations) not supported by this display server.");
+void DisplayServer::window_set_native_title_buttons_pos(Point2 p_position, WindowID p_window) {
+	WARN_PRINT("Native title bar buttons (a type of window decorations) not supported by this display server.");
 }
 
+<<<<<<< HEAD
 float DisplayServer::window_get_suggested_title_x(WindowID p_window) const {
 	ERR_FAIL_V_MSG(0.0f, "Native title bar buttons (a type of window decorations) not supported by this display server.");
 >>>>>>> 490cd6064b... Add DisplayServer title buttons feature
+=======
+Rect2 DisplayServer::window_get_native_title_buttons_rect(WindowID p_window) const {
+	ERR_FAIL_V_MSG(Rect2(), "Native title bar buttons (a type of window decorations) not supported by this display server.");
+>>>>>>> f3e86bcfb4... Add optional shadows to borderless windows
 }
 
 void DisplayServer::window_set_ime_active(const bool p_active, WindowID p_window) {

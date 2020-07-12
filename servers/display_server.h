@@ -290,8 +290,8 @@ public:
 	};
 	virtual void window_set_decoration(WindowDecoration p_decor, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
 	virtual bool window_get_decoration(WindowDecoration p_decor, WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_native_title_buttons_pos(Point2 p_position, WindowID p_window = MAIN_WINDOW_ID);
 	virtual Rect2 window_get_native_title_buttons_rect(WindowID p_window = MAIN_WINDOW_ID) const;
-	virtual float window_get_suggested_title_x(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual bool can_any_window_draw() const = 0;
 

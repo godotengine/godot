@@ -140,8 +140,8 @@ void TitleBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			auto canvas_item = get_canvas_item();
-			float margin = get_theme_constant("margin", "TitleBar");
 			auto abs_pos = get_global_position();
+			float margin = get_theme_constant("margin", "TitleBar");
 			auto size = get_size();
 			auto title = window->get_title();
 			auto title_font = get_theme_font("title_font", "TitleBar");
@@ -149,8 +149,8 @@ void TitleBar::_notification(int p_what) {
 			float font_height = title_font->get_height() - title_font->get_descent() * 2;
 			float y = abs_pos.y + (size.y + font_height) / 2;
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_TITLE_BUTTONS) && !force_custom_buttons) {
-				float x = DisplayServer::get_singleton()->window_get_suggested_title_x(window->get_window_id());
-				title_font->draw(canvas_item, Point2{ x, y }, title, title_color);
+				Rect2 rect = DisplayServer::get_singleton()->window_get_native_title_buttons_rect(window->get_window_id());
+				title_font->draw(canvas_item, Point2{ rect.position.x + margin, y }, title, title_color);
 			} else {
 				float x = abs_pos.x + (size.x - title_font->get_string_size(title).x) / 2;
 				title_font->draw(canvas_item, Point2{ x, y }, title, title_color);
@@ -183,6 +183,13 @@ void TitleBar::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 			if (is_visible()) {
 				_update_button_rects();
+				update();
+			}
+		} break;
+		case NOTIFICATION_MOVED_IN_PARENT: {
+			if (is_visible()) {
+				float margin = get_theme_constant("margin", "TitleBar");
+				DisplayServer::get_singleton()->window_set_native_title_buttons_pos(get_global_position() + Point2{ margin, margin }, window->get_window_id());
 				update();
 			}
 		} break;

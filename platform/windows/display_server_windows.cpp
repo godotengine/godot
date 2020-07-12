@@ -37,6 +37,7 @@
 #include "scene/resources/texture.h"
 
 #include <avrt.h>
+#include <dwmapi.h>
 
 // Borderless windows and resizing behaviors are adapted from https://github.com/melak47/BorderlessWindow
 
@@ -891,19 +892,19 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
 
-	// WS_SIZEBOX/WS_THICKFRAME is necessary for creating shadows, and for automatic window resizing, but it also causes a series of problems:
-	// 1. It creates a little title bar with nothing in it, above the window. Some really heavy trickery is needed to remove that (transform everything up, draw something over it, etc.).
-	// 2. It makes the window size smaller than intended, but somehow setting the window position after Window::show() fixes that
+	// Windows must have a frame in order to have shadows
 	r_style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	if (p_fullscreen) {
 		r_style |= WS_POPUP;
 	} else {
 		if (p_resizable) {
 			if (p_borderless) {
+				// `WS_SIZEBOX` makes the window rect unpredictable for some reason (it includes the shadow size on creation, but doesn't do so when moving the window afterwards)
+				// Instead, we implement resizing for borderless windows by processing `WM_NCHITTEST` in `WndProc`
 				r_style = WS_POPUP;
-			} else if (p_maximized) {
-				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
 			} else {
+				// `WS_OVERLAPPEDWINDOW` is equivlent to `WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX`
+				// `WS_THICKFRAME == WS_SIZEBOX`, which does the resizing here
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
 		} else {
@@ -913,7 +914,17 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
 			}
 		}
+
+		if (p_maximized) {
+			r_style |= WS_MAXIMIZE;
+		}
 	}
+}
+
+bool DisplayServerWindows::_try_enable_composition() {
+	BOOL composition_enabled = FALSE;
+	bool success = DwmIsCompositionEnabled(&composition_enabled) == S_OK;
+	return composition_enabled && success;
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_maximized) {
@@ -926,6 +937,21 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style_ex = 0;
 
 	_get_window_style(p_window == MAIN_WINDOW_ID, wd.fullscreen, wd.borderless, wd.resizable, wd.maximized, wd.no_focus, style, style_ex);
+	if (wd.borderless) {
+		if (wd.shadows) {
+			// Add shadows to a borderless window
+			if (_try_enable_composition()) {
+				static const DWORD val = DWMNCRP_ENABLED;
+				DwmSetWindowAttribute(wd.hWnd, DWMWA_NCRENDERING_POLICY, &val, sizeof(DWORD));
+				static const MARGINS shadows{ 0, 0, 0, 1 };
+				DwmExtendFrameIntoClientArea(wd.hWnd, &shadows);
+			}
+		}
+	} else {
+		if (!wd.shadows) {
+			// TODO how do you even do this, google doesn't seem to help here
+		}
+	}
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -1049,6 +1075,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.borderless = p_enabled;
 			_update_window_style(p_window);
 			_update_window_mouse_passthrough(p_window);
+		} break;
+		case WINDOW_FLAG_SHADOWS: {
+			wd.shadows = p_enabled;
+			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top");

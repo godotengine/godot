@@ -333,6 +333,7 @@ private:
 		bool fullscreen = false;
 
 		bool borderless = false;
+		bool shadows = true;
 		bool resizable = true;
 		bool window_focused = false;
 		bool was_maximized = false;
@@ -419,6 +420,7 @@ private:
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 	LRESULT _hit_test(WindowID p_window, POINT p_cursor) const;
 
+	bool _try_enable_composition();
 	void _update_window_style(WindowID p_window, bool p_repaint = true, bool p_maximized = false);
 	void _update_window_mouse_passthrough(WindowID p_window);
 
