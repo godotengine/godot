@@ -49,6 +49,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="animation_finished">
+			<description>
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn.
+			</description>
+		</signal>
 		<signal name="frame_changed">
 			<description>
 				Emitted when [member frame] changed.
