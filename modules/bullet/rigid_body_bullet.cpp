@@ -337,6 +337,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
 		can_integrate_forces = false;
+		isScratchedSpaceOverrideModificator = false;
 
 		// Remove all eventual constraints
 		assert_no_constraints();
