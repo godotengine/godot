@@ -113,7 +113,7 @@ public:
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
-	Error add_pack(const String &p_path, bool p_replace_files);
+	Error add_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
@@ -125,7 +125,7 @@ public:
 class PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
@@ -133,7 +133,7 @@ public:
 class PackedSourcePCK : public PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
