@@ -1298,7 +1298,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			}
 		}
 
-		if (!display_server) {
+		if (!display_server || err != OK) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.");
 			return err;
 		}
