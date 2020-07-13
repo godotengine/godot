@@ -51,6 +51,7 @@ public:
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
 	virtual int set_option(ENetSocketOption p_option, int p_value) = 0;
 	virtual void close() = 0;
+	virtual void set_refuse_new_connections(bool p_refuse) { /* Only used by dtls server */ }
 	virtual ~ENetGodotSocket(){};
 };
 
@@ -250,6 +251,10 @@ public:
 		close();
 	}
 
+	void set_refuse_new_connections(bool p_refuse) {
+		udp_server->set_max_pending_connections(p_refuse ? 0 : 16);
+	}
+
 	Error bind(IP_Address p_ip, uint16_t p_port) {
 		return udp_server->listen(p_port, p_ip);
 	}
@@ -269,6 +274,7 @@ public:
 	}
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
+		udp_server->poll();
 		// TODO limits? Maybe we can better enforce allowed connections!
 		if (udp_server->is_connection_available()) {
 			Ref<PacketPeerUDP> udp = udp_server->take_connection();
@@ -407,6 +413,11 @@ void enet_host_dtls_client_setup(ENetHost *host, void *p_cert, uint8_t p_verify,
 	ENetUDP *sock = (ENetUDP *)host->socket;
 	host->socket = memnew(ENetDTLSClient(sock, Ref<X509Certificate>((X509Certificate *)p_cert), p_verify, String(p_for_hostname)));
 	memdelete(sock);
+}
+
+void enet_host_refuse_new_connections(ENetHost *host, int p_refuse) {
+	ERR_FAIL_COND(!host->socket);
+	((ENetGodotSocket *)host->socket)->set_refuse_new_connections(p_refuse);
 }
 
 int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
