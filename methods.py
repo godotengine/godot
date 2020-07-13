@@ -201,14 +201,15 @@ void unregister_module_types() {
 def convert_custom_modules_path(path):
     if not path:
         return path
+    path = os.path.realpath(os.path.expanduser(os.path.expandvars(path)))
     err_msg = "Build option 'custom_modules' must %s"
     if not os.path.isdir(path):
         raise ValueError(err_msg % "point to an existing directory.")
-    if os.path.realpath(path) == os.path.realpath("modules"):
+    if path == os.path.realpath("modules"):
         raise ValueError(err_msg % "be a directory other than built-in `modules` directory.")
     if is_module(path):
         raise ValueError(err_msg % "point to a directory with modules, not a single module.")
-    return os.path.realpath(os.path.expanduser(path))
+    return path
 
 
 def disable_module(self):

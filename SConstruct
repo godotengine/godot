@@ -402,6 +402,7 @@ if selected_platform in platform_list:
         all_plus_warnings = ["-Wwrite-strings"]
 
         if methods.using_gcc(env):
+            env.Append(CCFLAGS=["-Wno-misleading-indentation"])
             if version[0] >= 7:
                 shadow_local_warning = ["-Wshadow-local"]
 
