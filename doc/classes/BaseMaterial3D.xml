@@ -81,6 +81,15 @@
 		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
 		</member>
+		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
+			Threshold at which antialiasing will by applied on the alpha channel.
+		</member>
+		<member name="alpha_antialiasing_mode" type="int" setter="set_alpha_antialiasing" getter="get_alpha_antialiasing" enum="BaseMaterial3D.AlphaAntiAliasing">
+			The type of alpha antialiasing to apply. See [enum AlphaAntiAliasing].
+		</member>
+		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
+			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
+		</member>
 		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
 			Threshold at which the alpha scissor will discard values.
 		</member>
@@ -486,10 +495,13 @@
 		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
 			The material will cut off all values below a threshold, the rest will remain opaque.
 		</constant>
-		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="3" enum="Transparency">
+		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
+			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque.
+		</constant>
+		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="4" enum="Transparency">
 			The material will use the texture's alpha value for transparency, but will still be rendered in the pre-pass.
 		</constant>
-		<constant name="TRANSPARENCY_MAX" value="4" enum="Transparency">
+		<constant name="TRANSPARENCY_MAX" value="5" enum="Transparency">
 			Represents the size of the [enum Transparency] enum.
 		</constant>
 		<constant name="SHADING_MODE_UNSHADED" value="0" enum="ShadingMode">
@@ -554,6 +566,15 @@
 		</constant>
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
+		</constant>
+		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
+			Disables Alpha AntiAliasing for the material.
+		</constant>
+		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE" value="1" enum="AlphaAntiAliasing">
+			Enables AlphaToCoverage. Alpha values in the material are passed to the AntiAliasing sample mask.
+		</constant>
+		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE" value="2" enum="AlphaAntiAliasing">
+			Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
 		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 			Default depth draw mode. Depth is drawn only for opaque objects.

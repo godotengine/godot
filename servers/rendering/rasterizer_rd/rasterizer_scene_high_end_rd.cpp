@@ -51,6 +51,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 
 	int blend_mode = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
+	int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	int cull = CULL_BACK;
 
 	uses_point_size = false;
@@ -81,6 +82,9 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
 	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
+
+	actions.render_mode_values["alpha_to_coverage"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
+	actions.render_mode_values["alpha_to_coverage_and_one"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
 
 	actions.render_mode_values["depth_draw_never"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_DISABLED);
 	actions.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_OPAQUE);
@@ -154,6 +158,11 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 
 	//blend modes
 
+	// if any form of Alpha Antialiasing is enabled, set the blend mode to alpha to coverage
+	if (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) {
+		blend_mode = BLEND_MODE_ALPHA_TO_COVERAGE;
+	}
+
 	RD::PipelineColorBlendState::Attachment blend_attachment;
 
 	switch (blend_mode) {
@@ -199,6 +208,15 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
 			uses_blend_alpha = true; //force alpha used because of blend
 		} break;
+		case BLEND_MODE_ALPHA_TO_COVERAGE: {
+			blend_attachment.enable_blend = true;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			blend_attachment.color_blend_op = RD::BLEND_OP_ADD;
+			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		}
 	}
 
 	RD::PipelineColorBlendState blend_state_blend;
@@ -245,8 +263,17 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 
 				RD::PipelineColorBlendState blend_state;
 				RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
+				RD::PipelineMultisampleState multisample_state;
 
 				if (uses_alpha || uses_blend_alpha) {
+					// only allow these flags to go through if we have some form of msaa
+					if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
+						multisample_state.enable_alpha_to_coverage = true;
+					} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
+						multisample_state.enable_alpha_to_coverage = true;
+						multisample_state.enable_alpha_to_one = true;
+					}
+
 					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_COLOR_PASS_WITH_FORWARD_GI || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_blend;
 						if (depth_draw == DEPTH_DRAW_OPAQUE) {
@@ -286,7 +313,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 				}
 
 				RID shader_variant = scene_singleton->shader.scene_shader.version_get_shader(version, k);
-				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, RD::PipelineMultisampleState(), depth_stencil, blend_state, 0);
+				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0);
 			}
 		}
 	}
@@ -2725,6 +2752,11 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
 
+		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
+		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
+		actions.renames["ALPHA_ANTIALIASING_EDGE"] = "alpha_antialiasing_edge";
+		actions.renames["ALPHA_TEXTURE_COORDINATE"] = "alpha_texture_coordinate";
+
 		//builtins
 
 		actions.renames["TIME"] = "scene_data.time";
@@ -2792,6 +2824,11 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
+
+		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
+		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
+		actions.usage_defines["ALPHA_ANTIALIASING_EDGE"] = "#define ALPHA_ANTIALIASING_EDGE_USED\n";
+		actions.usage_defines["ALPHA_TEXTURE_COORDINATE"] = "@ALPHA_ANTIALIASING_EDGE";
 
 		actions.usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 		actions.usage_defines["SSS_TRANSMITTANCE_DEPTH"] = "#define ENABLE_TRANSMITTANCE\n";
