@@ -139,7 +139,7 @@ static String get_type_name(const PropertyInfo &info) {
 }
 
 /*
- * Some comparison helper functions we need 
+ * Some comparison helper functions we need
  */
 
 struct MethodInfoComparator {

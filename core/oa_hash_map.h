@@ -48,7 +48,7 @@
  *
  * Only used keys and values are constructed. For free positions there's space
  * in the arrays for each, but that memory is kept uninitialized.
- * 
+ *
  * The assignment operator copy the pairs from one map to the other.
  */
 template <class TKey, class TValue,
