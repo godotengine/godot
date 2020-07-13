@@ -203,6 +203,8 @@ private:
 	bool notify_local_transform;
 	bool notify_transform;
 
+	Rect2 culling_rect;
+
 	Ref<Material> material;
 
 	mutable Transform2D global_transform;
@@ -382,6 +384,9 @@ public:
 	bool is_transform_notification_enabled() const;
 
 	void force_update_transform();
+
+	void set_culling_rect(const Rect2 &p_rect);
+	Rect2 get_culling_rect() const;
 
 	// Used by control nodes to retrieve the parent's anchorable area
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };

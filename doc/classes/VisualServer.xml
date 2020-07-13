@@ -489,7 +489,7 @@
 			<argument index="2" name="rect" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
 			</argument>
 			<description>
-				Defines a custom drawing rectangle for the [CanvasItem].
+				Sets a custom rectangle for culling. If [code]use_custom_rect[/code] is [code]true[/code], overrides generated culling rect. If [code]use_custom_rect[/code] is [code]false[/code], sets a minimum size for the culling rect.
 			</description>
 		</method>
 		<method name="canvas_item_set_distance_field_mode">

@@ -1118,6 +1118,17 @@ void CanvasItem::force_update_transform() {
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
+void CanvasItem::set_culling_rect(const Rect2 &p_rect) {
+
+	culling_rect = p_rect;
+
+	VS::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), false, p_rect);
+}
+
+Rect2 CanvasItem::get_culling_rect() const {
+	return culling_rect;
+}
+
 void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"), &CanvasItem::_toplevel_raise_self);
@@ -1221,6 +1232,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
+	ClassDB::bind_method(D_METHOD("set_culling_rect", "rect"), &CanvasItem::set_culling_rect);
+	ClassDB::bind_method(D_METHOD("get_culling_rect"), &CanvasItem::get_culling_rect);
+
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_GROUP("Visibility", "");
@@ -1230,6 +1244,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", 0), "_set_on_top", "_is_on_top"); //compatibility
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "culling_rect"), "set_culling_rect", "get_culling_rect");
 
 	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,CanvasItemMaterial"), "set_material", "get_material");
@@ -1338,6 +1353,8 @@ CanvasItem::CanvasItem() :
 	notify_local_transform = false;
 	notify_transform = false;
 	light_mask = 1;
+
+	culling_rect = Rect2();
 
 	C = NULL;
 }

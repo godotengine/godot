@@ -543,6 +543,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="culling_rect" type="Rect2" setter="set_culling_rect" getter="get_culling_rect" default="Rect2( 0, 0, 0, 0 )">
+			Custom [Rect2] for culling the [CanvasItem] as it enters or exits the [Viewport]. Set the culling rect to a large size to keep the renderer from culling the [CanvasItem] or its draw commands. This can be especially useful if you have a [Node2D] with a [Skeleton2D] attached that moves the [Node2D] a lot. If the culling rect is smaller than the [CanvasItem], it will have no effect. 
+		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
 		</member>

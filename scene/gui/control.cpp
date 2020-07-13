@@ -620,7 +620,12 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_DRAW: {
 
 			_update_canvas_item_transform();
-			VisualServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
+
+			Rect2 cull_rect = get_culling_rect();
+			cull_rect = cull_rect.merge(Rect2(Point2(), get_size()));
+
+			VisualServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, cull_rect);
+
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
 			//emit_signal(SceneStringNames::get_singleton()->draw);
 
