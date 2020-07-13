@@ -48,7 +48,7 @@ after_build:
   - cd bin
   - mv godot.windows.opt.tools.64.exe godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.exe
   - 7z a -mx9 godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.zip *.exe
-  
+
 artifacts:
   - path: bin/godot_${APPVEYOR_REPO_BRANCH}-${VERSION_HASH}_win64.zip
     name: Win64 release_debug editor build
