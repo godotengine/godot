@@ -587,6 +587,7 @@ extern   void       enet_host_bandwidth_throttle (ENetHost *);
 extern  enet_uint32 enet_host_random_seed (void);
 ENET_API void enet_host_dtls_server_setup (ENetHost *, void *, void *);
 ENET_API void enet_host_dtls_client_setup (ENetHost *, void *, uint8_t, const char *);
+ENET_API void enet_host_refuse_new_connections (ENetHost *, int);
 
 ENET_API int                 enet_peer_send (ENetPeer *, enet_uint8, ENetPacket *);
 ENET_API ENetPacket *        enet_peer_receive (ENetPeer *, enet_uint8 * channelID);
