@@ -69,4 +69,12 @@ typedef struct
 
 typedef void ENetSocketSet;
 
+typedef struct _ENetAddress
+{
+   uint8_t host[16];
+   uint16_t port;
+   uint8_t wildcard;
+} ENetAddress;
+#define enet_host_equal(host_a, host_b) (memcmp(&host_a, &host_b,16) == 0)
+
 #endif /* __ENET_GODOT_H__ */
