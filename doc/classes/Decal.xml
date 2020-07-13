@@ -17,7 +17,7 @@
 			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
 			</argument>
 			<description>
-				Returns the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly. 
+				Returns the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]albedo_tex = $Decal.get_texture(Decal.TEXTURE_ALBEDO)[/code], use [code]albedo_tex = $Decal.texture_albedo[/code].
 				One case where this is better than accessing the texture directly is when you want to copy one Decal's textures to another. For example:
 				[codeblock]
@@ -34,7 +34,7 @@
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly. 
+				Sets the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]$Decal.set_texture(Decal.TEXTURE_ALBEDO, albedo_tex)[/code], use [code]$Decal.texture_albedo = albedo_tex[/code].
 				One case where this is better than accessing the texture directly is when you want to copy one Decal's textures to another. For example:
 				[codeblock]
