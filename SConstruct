@@ -700,3 +700,16 @@ if "env" in locals():
     # TODO: replace this with `env.Dump(format="json")`
     # once we start requiring SCons 4.0 as min version.
     methods.dump(env)
+
+    import atexit
+
+    def check_build_failures():
+        failed = len(GetBuildFailures()) > 0
+        if failed and env["werror"] and not env.stable_release:
+            print(
+                "Build failed while treating warnings as errors. "
+                "Use `werror=no` build option to compile the engine normally "
+                "in the development versions."
+            )
+
+    atexit.register(check_build_failures)
