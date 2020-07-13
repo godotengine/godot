@@ -320,7 +320,7 @@ void OS_OSX::run() {
 			}
 			joypad_osx->process_joypads();
 
-			if (Main::iteration() == true) {
+			if (Main::iteration()) {
 				quit = true;
 			}
 		} @catch (NSException *exception) {
