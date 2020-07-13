@@ -117,7 +117,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));
 
 			onion_toggle->set_icon(get_theme_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
+			onion_skinning->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 
 			pin->set_icon(get_theme_icon("Pin", "EditorIcons"));
 
