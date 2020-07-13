@@ -3185,7 +3185,13 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 }
 
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	if (r_error != OK) {
+		ds->alert("Your video card driver does not support any of the supported Vulkan versions.\n"
+				  "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+				"Unable to initialize Video driver");
+	}
+	return ds;
 }
 
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {

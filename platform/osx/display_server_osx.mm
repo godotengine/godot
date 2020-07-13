@@ -3456,7 +3456,11 @@ ObjectID DisplayServerOSX::window_get_attached_instance_id(WindowID p_window) co
 }
 
 DisplayServer *DisplayServerOSX::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerOSX(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	DisplayServer *ds = memnew(DisplayServerOSX(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	if (r_error != OK) {
+		ds->alert("Your video card driver does not support any of the supported Metal versions.", "Unable to initialize Video driver");
+	}
+	return ds;
 }
 
 DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, const Rect2i &p_rect) {
@@ -3745,6 +3749,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
 			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
 	WindowID main_window = _create_window(p_mode, Rect2i(window_position, p_resolution));
+	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);

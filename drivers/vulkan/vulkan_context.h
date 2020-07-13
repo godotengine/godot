@@ -53,6 +53,8 @@ class VulkanContext {
 	uint32_t queue_family_count;
 	VkQueueFamilyProperties *queue_props;
 	VkDevice device;
+	bool device_initialized = false;
+	bool inst_initialized = false;
 
 	//present
 	bool queues_initialized;
