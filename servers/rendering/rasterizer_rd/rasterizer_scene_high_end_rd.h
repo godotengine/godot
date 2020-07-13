@@ -83,6 +83,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			BLEND_MODE_ADD,
 			BLEND_MODE_SUB,
 			BLEND_MODE_MUL,
+			BLEND_MODE_ALPHA_TO_COVERAGE
 		};
 
 		enum DepthDraw {
@@ -110,6 +111,12 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 		};
 
+		enum AlphaAntiAliasing {
+			ALPHA_ANTIALIASING_OFF,
+			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
+			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+		};
+
 		bool valid;
 		RID version;
 		uint32_t vertex_input_mask;
@@ -132,6 +139,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		bool uses_point_size;
 		bool uses_alpha;
 		bool uses_blend_alpha;
+		bool uses_alpha_clip;
 		bool uses_depth_pre_pass;
 		bool uses_discard;
 		bool uses_roughness;
