@@ -1,61 +1,54 @@
 diff --git a/thirdparty/enet/enet/enet.h b/thirdparty/enet/enet/enet.h
-index 650b199ee5..246cbb0a62 100644
+index 54d91b5603..24d36647d9 100644
 --- a/thirdparty/enet/enet/enet.h
 +++ b/thirdparty/enet/enet/enet.h
-@@ -10,13 +10,10 @@ extern "C"
+@@ -10,13 +10,19 @@ extern "C"
  {
  #endif
  
 +#include <stdint.h>
  #include <stdlib.h>
  
--#ifdef _WIN32
--#include "enet/win32.h"
--#else
--#include "enet/unix.h"
--#endif
++// -- Godot start --
++#if 0
+ #ifdef _WIN32
+ #include "enet/win32.h"
+ #else
+ #include "enet/unix.h"
+ #endif
++#endif
 +#include "enet/godot.h"
++// -- Godot end --
  
  #include "enet/types.h"
  #include "enet/protocol.h"
-@@ -72,7 +69,6 @@ typedef enum _ENetSocketShutdown
-     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
- } ENetSocketShutdown;
- 
--#define ENET_HOST_ANY       0
- #define ENET_HOST_BROADCAST 0xFFFFFFFFU
- #define ENET_PORT_ANY       0
- 
-@@ -88,9 +84,11 @@ typedef enum _ENetSocketShutdown
+@@ -86,11 +92,15 @@ typedef enum _ENetSocketShutdown
+  * but not for enet_host_create.  Once a server responds to a broadcast, the
+  * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
   */
++// -- Godot start --
++#if 0
  typedef struct _ENetAddress
  {
--   enet_uint32 host;
-+   uint8_t host[16];
+    enet_uint32 host;
     enet_uint16 port;
-+   uint8_t wildcard;
  } ENetAddress;
-+#define enet_host_equal(host_a, host_b) (memcmp(&host_a, &host_b,16) == 0)
++#endif
++// -- Godot end --
  
  /**
   * Packet flag bit constants.
-@@ -519,6 +517,16 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
- */
- ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
+@@ -606,6 +616,10 @@ ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t,
+    
+ extern size_t enet_protocol_command_size (enet_uint8);
  
-+/** Sets the host field in the address parameter from ip struct.
-+    @param address destination to store resolved address
-+    @param ip the ip struct to read from
-+    @param size the size of the ip struct.
-+    @retval 0 on success
-+    @retval != 0 on failure
-+    @returns the address of the given ip in address on success.
-+*/
-+ENET_API void enet_address_set_ip(ENetAddress * address, const uint8_t * ip, size_t size);
++// -- Godot start --
++#include "enet/godot_ext.h"
++// -- Godot end --
 +
- /** Gives the printable form of the IP address specified in the address parameter.
-     @param address    address printed
-     @param hostName   destination for name, must not be NULL
+ #ifdef __cplusplus
+ }
+ #endif
 diff --git a/thirdparty/enet/host.c b/thirdparty/enet/host.c
 index 3be6c0922c..fc4da4ca67 100644
 --- a/thirdparty/enet/host.c
@@ -70,10 +63,10 @@ index 3be6c0922c..fc4da4ca67 100644
      host -> receivedData = NULL;
      host -> receivedDataLength = 0;
 diff --git a/thirdparty/enet/protocol.c b/thirdparty/enet/protocol.c
-index 29d648732d..ab26886de4 100644
+index 0a60253173..fefc0e6f0a 100644
 --- a/thirdparty/enet/protocol.c
 +++ b/thirdparty/enet/protocol.c
-@@ -298,7 +298,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
+@@ -307,7 +307,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
          }
          else 
          if (currentPeer -> state != ENET_PEER_STATE_CONNECTING &&
@@ -82,7 +75,7 @@ index 29d648732d..ab26886de4 100644
          {
              if (currentPeer -> address.port == host -> receivedAddress.port &&
                  currentPeer -> connectID == command -> connect.connectID)
-@@ -1010,9 +1010,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
+@@ -1027,9 +1027,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
  
         if (peer -> state == ENET_PEER_STATE_DISCONNECTED ||
             peer -> state == ENET_PEER_STATE_ZOMBIE ||
@@ -94,7 +87,7 @@ index 29d648732d..ab26886de4 100644
             (peer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID &&
              sessionID != peer -> incomingSessionID))
           return 0;
-@@ -1054,7 +1053,7 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
+@@ -1071,7 +1070,7 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
         
      if (peer != NULL)
      {
