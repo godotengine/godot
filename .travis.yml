@@ -19,16 +19,6 @@ cache:
 
 matrix:
   include:
-    - name: Static checks (clang-format) + Documentation checks
-      stage: build
-      env: STATIC_CHECKS=yes
-      os: linux
-      compiler: gcc
-      addons:
-        apt:
-          packages:
-            - clang-format-8
-
     - name: Linux editor (debug, GCC 9, with Mono)
       stage: build
       env: PLATFORM=linuxbsd TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
@@ -130,10 +120,6 @@ install:
       ./emsdk/emsdk install latest;
       ./emsdk/emsdk activate --no-embedded latest;
     fi
-  - if [ "$STATIC_CHECKS" = "yes" ]; then
-      unset SCONS_CACHE;
-      pip3 install --user black pygments;
-    fi
 
 before_script:
   - if [ "$PLATFORM" = "android" ]; then
@@ -142,15 +128,9 @@ before_script:
     fi
 
 script:
-  - if [ "$STATIC_CHECKS" = "yes" ]; then
-      sh ./misc/travis/clang-format.sh &&
-      sh ./misc/travis/black-format.sh &&
-      doc/tools/makerst.py --dry-run doc/classes modules;
-    else
-      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
-      if [ "$TEST_PROJECT" = "yes" ]; then
-        git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
-        sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.linuxbsd.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
-        godot-tests/tests/project_export/test_project.sh "bin/godot_server.linuxbsd.opt.tools.64";
-      fi
+  - scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
+    if [ "$TEST_PROJECT" = "yes" ]; then
+      git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
+      sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.linuxbsd.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
+      godot-tests/tests/project_export/test_project.sh "bin/godot_server.linuxbsd.opt.tools.64";
     fi
