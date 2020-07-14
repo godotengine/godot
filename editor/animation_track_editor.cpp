@@ -1657,7 +1657,7 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal("timeline_changed", ofs, false);
+			emit_signal("timeline_changed", ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
 			dragging_timeline = true;
 		}
 		if (!dragging_timeline && mb->get_button_index() == BUTTON_MIDDLE) {
@@ -1696,7 +1696,7 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
-			emit_signal("timeline_changed", ofs, false);
+			emit_signal("timeline_changed", ofs, false, Input::get_singleton()->is_key_pressed(KEY_ALT));
 		}
 		if (panning_timeline) {
 			int x = mm->get_position().x - get_name_limit();
@@ -3250,8 +3250,8 @@ void AnimationTrackEditor::_name_limit_changed() {
 	}
 }
 
-void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag) {
-	emit_signal("timeline_changed", p_new_pos, p_drag);
+void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only) {
+	emit_signal("timeline_changed", p_new_pos, p_drag, p_timeline_only);
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
