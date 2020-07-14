@@ -1432,13 +1432,14 @@ void KinematicBody::_bind_methods() {
 
 KinematicBody::KinematicBody() :
 		PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC) {
-
-	margin = 0.001;
 	locked_axis = 0;
 	on_floor = false;
 	on_ceiling = false;
 	on_wall = false;
+
+	set_safe_margin(0.001);
 }
+
 KinematicBody::~KinematicBody() {
 
 	if (motion_cache.is_valid()) {
