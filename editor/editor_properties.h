@@ -35,6 +35,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
+#include "editor/quick_open.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/line_edit.h"
@@ -615,7 +616,7 @@ class EditorPropertyResource : public EditorProperty {
 	TextureRect *preview;
 	Button *edit;
 	PopupMenu *menu;
-	EditorFileDialog *file;
+	EditorQuickOpen *file;
 	Vector<String> inheritors_array;
 	EditorInspector *sub_inspector;
 	VBoxContainer *sub_inspector_vbox;
@@ -626,7 +627,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	SceneTreeDialog *scene_tree;
 
-	void _file_selected(const String &p_path);
+	void _file_selected();
 	void _menu_option(int p_which);
 	void _resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 	void _resource_selected();

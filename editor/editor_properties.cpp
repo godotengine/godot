@@ -2309,10 +2309,11 @@ EditorPropertyRID::EditorPropertyRID() {
 
 ////////////// RESOURCE //////////////////////
 
-void EditorPropertyResource::_file_selected(const String &p_path) {
-	RES res = ResourceLoader::load(p_path);
+void EditorPropertyResource::_file_selected() {
+	const String path = file->get_selected();
+	RES res = ResourceLoader::load(path);
 
-	ERR_FAIL_COND_MSG(res.is_null(), "Cannot load resource from path '" + p_path + "'.");
+	ERR_FAIL_COND_MSG(res.is_null(), "Cannot load resource from path '" + path + "'.");
 
 	List<PropertyInfo> prop_list;
 	get_edited_object()->get_property_list(&prop_list);
@@ -2347,29 +2348,12 @@ void EditorPropertyResource::_menu_option(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_LOAD: {
 			if (!file) {
-				file = memnew(EditorFileDialog);
-				file->connect("file_selected", callable_mp(this, &EditorPropertyResource::_file_selected));
+				file = memnew(EditorQuickOpen);
+				file->connect("quick_open", callable_mp(this, &EditorPropertyResource::_file_selected));
 				add_child(file);
 			}
-			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-			String type = base_type;
-
-			List<String> extensions;
-			for (int i = 0; i < type.get_slice_count(","); i++) {
-				ResourceLoader::get_recognized_extensions_for_type(type.get_slice(",", i), &extensions);
-			}
-
-			Set<String> valid_extensions;
-			for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-				valid_extensions.insert(E->get());
-			}
-
-			file->clear_filters();
-			for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
-				file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
-			}
-
-			file->popup_centered_ratio();
+			file->set_title(TTR("Select a Resource"));
+			file->popup_dialog(base_type);
 		} break;
 
 		case OBJ_MENU_EDIT: {
