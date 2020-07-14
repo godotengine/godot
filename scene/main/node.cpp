@@ -1189,7 +1189,7 @@ void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_uniq
 
 	add_child(p_child, p_legible_unique_name);
 
-	if (is_a_parent_of(p_node)) {
+	if (p_node->data.parent == this) {
 		move_child(p_child, p_node->get_position_in_parent() + 1);
 	} else {
 		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
