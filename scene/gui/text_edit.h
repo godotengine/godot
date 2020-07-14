@@ -35,43 +35,14 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/main/timer.h"
-
-class SyntaxHighlighter;
+#include "scene/resources/syntax_highlighter.h"
 
 class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
 
 public:
-	struct HighlighterInfo {
-		Color color;
-	};
-
-	struct ColorRegion {
-		Color color;
-		String begin_key;
-		String end_key;
-		bool line_only;
-		bool eq;
-		ColorRegion(const String &p_begin_key = "", const String &p_end_key = "", const Color &p_color = Color(), bool p_line_only = false) {
-			begin_key = p_begin_key;
-			end_key = p_end_key;
-			color = p_color;
-			line_only = p_line_only || p_end_key == "";
-			eq = begin_key == end_key;
-		}
-	};
-
 	class Text {
 	public:
-		struct ColorRegionInfo {
-			int region;
-			bool end;
-			ColorRegionInfo() {
-				region = 0;
-				end = false;
-			}
-		};
-
 		struct Line {
 			int width_cache : 24;
 			bool marked : 1;
@@ -81,7 +52,6 @@ public:
 			bool safe : 1;
 			bool has_info : 1;
 			int wrap_amount_cache : 24;
-			Map<int, ColorRegionInfo> region_info;
 			Ref<Texture2D> info_icon;
 			String info;
 			String data;
@@ -98,7 +68,6 @@ public:
 		};
 
 	private:
-		const Vector<ColorRegion> *color_regions;
 		mutable Vector<Line> text;
 		Ref<Font> font;
 		int indent_size;
@@ -108,13 +77,11 @@ public:
 	public:
 		void set_indent_size(int p_indent_size);
 		void set_font(const Ref<Font> &p_font);
-		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
 		int get_char_width(CharType c, CharType next_c, int px) const;
 		void set_line_wrap_amount(int p_line, int p_wrap_amount) const;
 		int get_line_wrap_amount(int p_line) const;
-		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
@@ -224,10 +191,6 @@ private:
 		Color font_color;
 		Color font_color_selected;
 		Color font_color_readonly;
-		Color keyword_color;
-		Color number_color;
-		Color function_color;
-		Color member_variable_color;
 		Color selection_color;
 		Color mark_color;
 		Color bookmark_color;
@@ -240,7 +203,6 @@ private:
 		Color word_highlighted_color;
 		Color search_result_color;
 		Color search_result_border_color;
-		Color symbol_color;
 		Color background_color;
 
 		int row_height;
@@ -261,8 +223,7 @@ private:
 		}
 	} cache;
 
-	Map<int, int> color_region_cache;
-	Map<int, Map<int, HighlighterInfo>> syntax_highlighting_cache;
+	Map<int, Dictionary> syntax_highlighting_cache;
 
 	struct TextOperation {
 		enum Type {
@@ -305,13 +266,10 @@ private:
 	void _do_text_op(const TextOperation &p_op, bool p_reverse);
 
 	//syntax coloring
-	SyntaxHighlighter *syntax_highlighter;
-	HashMap<String, Color> keywords;
-	HashMap<String, Color> member_keywords;
+	Ref<SyntaxHighlighter> syntax_highlighter;
+	Set<String> keywords;
 
-	Map<int, HighlighterInfo> _get_line_syntax_highlighting(int p_line);
-
-	Vector<ColorRegion> color_regions;
+	Dictionary _get_line_syntax_highlighting(int p_line);
 
 	Set<String> completion_prefixes;
 	bool completion_enabled;
@@ -337,7 +295,6 @@ private:
 
 	int max_chars;
 	bool readonly;
-	bool syntax_coloring;
 	bool indent_using_spaces;
 	int indent_size;
 	String space_indent;
@@ -496,7 +453,6 @@ private:
 	void _update_caches();
 	void _cursor_changed_emit();
 	void _text_changed_emit();
-	void _line_edited_from(int p_line);
 
 	void _push_current_op();
 
@@ -536,12 +492,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	SyntaxHighlighter *_get_syntax_highlighting();
-	void _set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter);
-
-	int _is_line_in_region(int p_line);
-	ColorRegion _get_color_region(int p_region) const;
-	Map<int, Text::ColorRegionInfo> _get_line_color_region_info(int p_line) const;
+	Ref<SyntaxHighlighter> get_syntax_highlighter();
+	void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
 
 	enum MenuItems {
 		MENU_CUT,
@@ -671,9 +623,6 @@ public:
 
 	void clear();
 
-	void set_syntax_coloring(bool p_enabled);
-	bool is_syntax_coloring_enabled() const;
-
 	void cut();
 	void copy();
 	void paste();
@@ -718,17 +667,8 @@ public:
 	void set_insert_mode(bool p_enabled);
 	bool is_insert_mode() const;
 
-	void add_keyword_color(const String &p_keyword, const Color &p_color);
-	bool has_keyword_color(String p_keyword) const;
-	Color get_keyword_color(String p_keyword) const;
-
-	void add_color_region(const String &p_begin_key = String(), const String &p_end_key = String(), const Color &p_color = Color(), bool p_line_only = false);
-	void clear_colors();
-
-	void add_member_keyword(const String &p_keyword, const Color &p_color);
-	bool has_member_color(String p_member) const;
-	Color get_member_color(String p_member) const;
-	void clear_member_keywords();
+	void add_keyword(const String &p_keyword);
+	void clear_keywords();
 
 	double get_v_scroll() const;
 	void set_v_scroll(double p_scroll);
@@ -821,21 +761,5 @@ public:
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
-
-class SyntaxHighlighter {
-protected:
-	TextEdit *text_editor;
-
-public:
-	virtual ~SyntaxHighlighter() {}
-	virtual void _update_cache() = 0;
-	virtual Map<int, TextEdit::HighlighterInfo> _get_line_syntax_highlighting(int p_line) = 0;
-
-	virtual String get_name() const = 0;
-	virtual List<String> get_supported_languages() = 0;
-
-	void set_text_editor(TextEdit *p_text_editor);
-	TextEdit *get_text_editor();
-};
 
 #endif // TEXT_EDIT_H

@@ -47,6 +47,53 @@
 #include "scene/main/timer.h"
 #include "scene/resources/text_file.h"
 
+class EditorSyntaxHighlighter : public SyntaxHighlighter {
+	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
+
+private:
+	REF edited_resourse;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String _get_name() const;
+	virtual Array _get_supported_languages() const;
+
+	void _set_edited_resource(const RES &p_res) { edited_resourse = p_res; }
+	REF _get_edited_resource() { return edited_resourse; }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const;
+};
+
+class EditorStandardSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorStandardSyntaxHighlighter, EditorSyntaxHighlighter)
+
+private:
+	Ref<CodeHighlighter> highlighter;
+
+public:
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+
+	virtual String _get_name() const override { return TTR("Standard"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	EditorStandardSyntaxHighlighter() { highlighter.instance(); }
+};
+
+class EditorPlainTextSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorPlainTextSyntaxHighlighter, EditorSyntaxHighlighter)
+
+public:
+	virtual String _get_name() const override { return TTR("Plain Text"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
@@ -80,8 +127,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
-	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
+	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
+	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 
 	virtual void apply_code() = 0;
 	virtual RES get_edited_resource() const = 0;
@@ -120,7 +167,6 @@ public:
 	ScriptEditorBase() {}
 };
 
-typedef SyntaxHighlighter *(*CreateSyntaxHighlighterFunc)();
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
 
 class EditorScriptCodeCompletionCache;
@@ -236,14 +282,12 @@ class ScriptEditor : public PanelContainer {
 
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
-		SYNTAX_HIGHLIGHTER_FUNC_MAX = 32
 	};
 
 	static int script_editor_func_count;
 	static CreateScriptEditorFunc script_editor_funcs[SCRIPT_EDITOR_FUNC_MAX];
 
-	static int syntax_highlighters_func_count;
-	static CreateSyntaxHighlighterFunc syntax_highlighters_funcs[SYNTAX_HIGHLIGHTER_FUNC_MAX];
+	Vector<Ref<EditorSyntaxHighlighter>> syntax_highlighters;
 
 	struct ScriptHistory {
 		Control *control;
@@ -322,6 +366,7 @@ class ScriptEditor : public PanelContainer {
 	void _script_created(Ref<Script> p_script);
 
 	ScriptEditorBase *_get_current_editor() const;
+	Array _get_open_script_editors() const;
 
 	void _save_layout();
 	void _editor_settings_changed();
@@ -441,7 +486,9 @@ public:
 
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
-	static void register_create_syntax_highlighter_function(CreateSyntaxHighlighterFunc p_func);
+	void register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter);
+	void unregister_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter);
+
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(EditorNode *p_editor);

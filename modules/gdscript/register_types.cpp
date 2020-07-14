@@ -142,6 +142,12 @@ static void _editor_init() {
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
 
+#ifdef TOOLS_ENABLED
+	Ref<GDScriptSyntaxHighlighter> gdscript_syntax_highlighter;
+	gdscript_syntax_highlighter.instance();
+	ScriptEditor::get_singleton()->register_syntax_highlighter(gdscript_syntax_highlighter);
+#endif
+
 #ifndef GDSCRIPT_NO_LSP
 	register_lsp_types();
 	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
@@ -166,7 +172,6 @@ void register_gdscript_types() {
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
 
 #ifdef TOOLS_ENABLED
-	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
 
 	gdscript_translation_parser_plugin.instance();

@@ -83,18 +83,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Vector2 color_position;
 	String color_args;
 
-	void _update_member_keywords();
-
-	struct ColorsCache {
-		Color symbol_color;
-		Color keyword_color;
-		Color basetype_color;
-		Color type_color;
-		Color usertype_color;
-		Color comment_color;
-		Color string_color;
-	} colors_cache;
-
 	bool theme_loaded;
 
 	enum {
@@ -164,7 +152,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	Map<String, SyntaxHighlighter *> highlighters;
+	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
 
 	void _edit_option(int p_op);
@@ -190,8 +178,8 @@ protected:
 public:
 	void _update_connected_methods();
 
-	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
-	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
+	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
+	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 	void update_toggle_scripts_button();
 
 	virtual void apply_code() override;

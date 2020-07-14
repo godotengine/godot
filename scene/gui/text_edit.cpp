@@ -60,14 +60,6 @@ static bool _is_char(CharType c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
-static bool _is_number(CharType c) {
-	return (c >= '0' && c <= '9');
-}
-
-static bool _is_hex_symbol(CharType c) {
-	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
 static bool _is_pair_right_symbol(CharType c) {
 	return c == '"' ||
 		   c == '\'' ||
@@ -136,94 +128,7 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 	}
 
 	text.write[p_line].width_cache = w;
-
 	text.write[p_line].wrap_amount_cache = -1;
-
-	// Update regions.
-
-	text.write[p_line].region_info.clear();
-
-	for (int i = 0; i < len; i++) {
-		if (!_is_symbol(str[i])) {
-			continue;
-		}
-		if (str[i] == '\\') {
-			i++; // Skip quoted anything.
-			continue;
-		}
-
-		int left = len - i;
-
-		for (int j = 0; j < color_regions->size(); j++) {
-			const ColorRegion &cr = color_regions->operator[](j);
-
-			/* BEGIN */
-
-			int lr = cr.begin_key.length();
-			const CharType *kc;
-			bool match;
-
-			if (lr != 0 && lr <= left) {
-				kc = cr.begin_key.c_str();
-
-				match = true;
-
-				for (int k = 0; k < lr; k++) {
-					if (kc[k] != str[i + k]) {
-						match = false;
-						break;
-					}
-				}
-
-				if (match) {
-					ColorRegionInfo cri;
-					cri.end = false;
-					cri.region = j;
-					text.write[p_line].region_info[i] = cri;
-					i += lr - 1;
-
-					break;
-				}
-			}
-
-			/* END */
-
-			lr = cr.end_key.length();
-			if (lr != 0 && lr <= left) {
-				kc = cr.end_key.c_str();
-
-				match = true;
-
-				for (int k = 0; k < lr; k++) {
-					if (kc[k] != str[i + k]) {
-						match = false;
-						break;
-					}
-				}
-
-				if (match) {
-					ColorRegionInfo cri;
-					cri.end = true;
-					cri.region = j;
-					text.write[p_line].region_info[i] = cri;
-					i += lr - 1;
-
-					break;
-				}
-			}
-		}
-	}
-}
-
-const Map<int, TextEdit::Text::ColorRegionInfo> &TextEdit::Text::get_color_region_info(int p_line) const {
-	static Map<int, ColorRegionInfo> cri;
-	ERR_FAIL_INDEX_V(p_line, text.size(), cri);
-
-	if (text[p_line].width_cache == -1) {
-		_update_line_cache(p_line);
-	}
-
-	return text[p_line].region_info;
 }
 
 int TextEdit::Text::get_line_width(int p_line) const {
@@ -601,7 +506,6 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_caches();
 			_update_wrap_at();
-			syntax_highlighting_cache.clear();
 		} break;
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
@@ -640,6 +544,14 @@ void TextEdit::_notification(int p_what) {
 				adjust_viewport_to_cursor();
 				first_draw = false;
 			}
+
+			/* Prevent the resource getting lost between the editor and game. */
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (syntax_highlighter.is_valid() && syntax_highlighter->get_text_edit() != this) {
+					syntax_highlighter->set_text_edit(this);
+				}
+			}
+
 			Size2 size = get_size();
 			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
 				draw_caret = false;
@@ -711,10 +623,8 @@ void TextEdit::_notification(int p_what) {
 
 			Color color = readonly ? cache.font_color_readonly : cache.font_color;
 
-			if (syntax_coloring) {
-				if (cache.background_color.a > 0.01) {
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
-				}
+			if (cache.background_color.a > 0.01) {
+				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 			}
 
 			if (line_length_guidelines) {
@@ -937,10 +847,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					Map<int, HighlighterInfo> color_map;
-					if (syntax_coloring) {
-						color_map = _get_line_syntax_highlighting(minimap_line);
-					}
+					Dictionary color_map = _get_line_syntax_highlighting(minimap_line);
 
 					Color current_color = cache.font_color;
 					if (readonly) {
@@ -978,15 +885,13 @@ void TextEdit::_notification(int p_what) {
 						int characters = 0;
 						int tabs = 0;
 						for (int j = 0; j < str.length(); j++) {
-							if (syntax_coloring) {
-								if (color_map.has(last_wrap_column + j)) {
-									current_color = color_map[last_wrap_column + j].color;
-									if (readonly) {
-										current_color.a = cache.font_color_readonly.a;
-									}
+							if (color_map.has(last_wrap_column + j)) {
+								current_color = color_map[last_wrap_column + j].get("color");
+								if (readonly) {
+									current_color.a = cache.font_color_readonly.a;
 								}
-								color = current_color;
 							}
+							color = current_color;
 
 							if (j == 0) {
 								previous_color = color;
@@ -1060,10 +965,8 @@ void TextEdit::_notification(int p_what) {
 
 				const String &fullstr = text[line];
 
-				Map<int, HighlighterInfo> color_map;
-				if (syntax_coloring) {
-					color_map = _get_line_syntax_highlighting(line);
-				}
+				Dictionary color_map = _get_line_syntax_highlighting(line);
+
 				// Ensure we at least use the font color.
 				Color current_color = readonly ? cache.font_color_readonly : cache.font_color;
 
@@ -1253,15 +1156,13 @@ void TextEdit::_notification(int p_what) {
 					// Loop through characters in one line.
 					int j = 0;
 					for (; j < str.length(); j++) {
-						if (syntax_coloring) {
-							if (color_map.has(last_wrap_column + j)) {
-								current_color = color_map[last_wrap_column + j].color;
-								if (readonly && current_color.a > cache.font_color_readonly.a) {
-									current_color.a = cache.font_color_readonly.a;
-								}
+						if (color_map.has(last_wrap_column + j)) {
+							current_color = color_map[last_wrap_column + j].get("color");
+							if (readonly && current_color.a > cache.font_color_readonly.a) {
+								current_color.a = cache.font_color_readonly.a;
 							}
-							color = current_color;
 						}
+						color = current_color;
 
 						int char_w;
 
@@ -1447,7 +1348,7 @@ void TextEdit::_notification(int p_what) {
 
 						if (cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index && block_caret && draw_caret && !insert_mode) {
 							color = cache.caret_background_color;
-						} else if (!syntax_coloring && block_caret) {
+						} else if (block_caret) {
 							color = readonly ? cache.font_color_readonly : cache.font_color;
 						}
 
@@ -1609,12 +1510,6 @@ void TextEdit::_notification(int p_what) {
 				for (int i = 0; i < lines; i++) {
 					int l = line_from + i;
 					ERR_CONTINUE(l < 0 || l >= completion_options_size);
-					Color text_color = cache.completion_font_color;
-					for (int j = 0; j < color_regions.size(); j++) {
-						if (completion_options[l].insert_text.begins_with(color_regions[j].begin_key)) {
-							text_color = color_regions[j].color;
-						}
-					}
 					int yofs = (get_row_height() - cache.font->get_height()) / 2;
 					Point2 title_pos(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs);
 
@@ -1630,7 +1525,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					title_pos.x = icon_area.position.x + icon_area.size.width + icon_hsep;
-					draw_string(cache.font, title_pos, completion_options[l].display, text_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
+					draw_string(cache.font, title_pos, completion_options[l].display, completion_options[l].font_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
 				}
 
 				if (scrollw) {
@@ -2851,7 +2746,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					// Indent once again if previous line will end with ':','{','[','(' and the line is not a comment
 					// (i.e. colon/brace precedes current cursor position).
 					if (cursor.column > 0) {
-						const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(cursor.line);
 						bool indent_char_found = false;
 						bool should_indent = false;
 						char indent_char = ':';
@@ -2870,7 +2764,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 									continue;
 							}
 
-							if (indent_char_found && cri_map.has(i) && (color_regions[cri_map[i].region].begin_key == "#" || color_regions[cri_map[i].region].begin_key == "//")) {
+							if (indent_char_found && is_line_comment(i)) {
 								should_indent = true;
 								break;
 							} else if (indent_char_found && !_is_whitespace(c)) {
@@ -3943,7 +3837,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 		}
 		text_changed_dirty = true;
 	}
-	_line_edited_from(p_line);
+	emit_signal("line_edited_from", p_line);
 }
 
 String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
@@ -4006,7 +3900,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 		}
 		text_changed_dirty = true;
 	}
-	_line_edited_from(p_from_line);
+	emit_signal("line_edited_from", p_from_line);
 }
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
@@ -4124,22 +4018,6 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 	cursor_set_column(new_column);
 
 	update();
-}
-
-void TextEdit::_line_edited_from(int p_line) {
-	int cache_size = color_region_cache.size();
-	for (int i = p_line; i < cache_size; i++) {
-		color_region_cache.erase(i);
-	}
-
-	if (syntax_highlighting_cache.size() > 0) {
-		cache_size = syntax_highlighting_cache.back()->key();
-		for (int i = p_line - 1; i <= cache_size; i++) {
-			if (syntax_highlighting_cache.has(i)) {
-				syntax_highlighting_cache.erase(i);
-			}
-		}
-	}
 }
 
 int TextEdit::get_char_count() {
@@ -4985,10 +4863,6 @@ void TextEdit::_update_caches() {
 	cache.font_color = get_theme_color("font_color");
 	cache.font_color_selected = get_theme_color("font_color_selected");
 	cache.font_color_readonly = get_theme_color("font_color_readonly");
-	cache.keyword_color = get_theme_color("keyword_color");
-	cache.function_color = get_theme_color("function_color");
-	cache.member_variable_color = get_theme_color("member_variable_color");
-	cache.number_color = get_theme_color("number_color");
 	cache.selection_color = get_theme_color("selection_color");
 	cache.mark_color = get_theme_color("mark_color");
 	cache.current_line_color = get_theme_color("current_line_color");
@@ -5001,7 +4875,6 @@ void TextEdit::_update_caches() {
 	cache.word_highlighted_color = get_theme_color("word_highlighted_color");
 	cache.search_result_color = get_theme_color("search_result_color");
 	cache.search_result_border_color = get_theme_color("search_result_border_color");
-	cache.symbol_color = get_theme_color("symbol_color");
 	cache.background_color = get_theme_color("background_color");
 #ifdef TOOLS_ENABLED
 	cache.line_spacing = get_theme_constant("line_spacing") * EDSCALE;
@@ -5017,141 +4890,29 @@ void TextEdit::_update_caches() {
 	cache.executing_icon = get_theme_icon("MainPlay", "EditorIcons");
 	text.set_font(cache.font);
 
-	if (syntax_highlighter) {
-		syntax_highlighter->_update_cache();
+	if (syntax_highlighter.is_valid()) {
+		syntax_highlighter->set_text_edit(this);
 	}
 }
 
-SyntaxHighlighter *TextEdit::_get_syntax_highlighting() {
+Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() {
 	return syntax_highlighter;
 }
 
-void TextEdit::_set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter) {
+void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter) {
 	syntax_highlighter = p_syntax_highlighter;
-	if (syntax_highlighter) {
-		syntax_highlighter->set_text_editor(this);
-		syntax_highlighter->_update_cache();
+	if (syntax_highlighter.is_valid()) {
+		syntax_highlighter->set_text_edit(this);
 	}
-	syntax_highlighting_cache.clear();
 	update();
 }
 
-int TextEdit::_is_line_in_region(int p_line) {
-	// Do we have in cache?
-	if (color_region_cache.has(p_line)) {
-		return color_region_cache[p_line];
-	}
-
-	// If not find the closest line we have.
-	int previous_line = p_line - 1;
-	for (; previous_line > -1; previous_line--) {
-		if (color_region_cache.has(p_line)) {
-			break;
-		}
-	}
-
-	// Calculate up to line we need and update the cache along the way.
-	int in_region = color_region_cache[previous_line];
-	if (previous_line == -1) {
-		in_region = -1;
-	}
-	for (int i = previous_line; i < p_line; i++) {
-		const Map<int, Text::ColorRegionInfo> &cri_map = _get_line_color_region_info(i);
-		for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
-			const Text::ColorRegionInfo &cri = E->get();
-			if (in_region == -1) {
-				if (!cri.end) {
-					in_region = cri.region;
-				}
-			} else if (in_region == cri.region && !_get_color_region(cri.region).line_only) {
-				if (cri.end || _get_color_region(cri.region).eq) {
-					in_region = -1;
-				}
-			}
-		}
-
-		if (in_region >= 0 && _get_color_region(in_region).line_only) {
-			in_region = -1;
-		}
-
-		color_region_cache[i + 1] = in_region;
-	}
-	return in_region;
+void TextEdit::add_keyword(const String &p_keyword) {
+	keywords.insert(p_keyword);
 }
 
-TextEdit::ColorRegion TextEdit::_get_color_region(int p_region) const {
-	if (p_region < 0 || p_region >= color_regions.size()) {
-		return ColorRegion();
-	}
-	return color_regions[p_region];
-}
-
-Map<int, TextEdit::Text::ColorRegionInfo> TextEdit::_get_line_color_region_info(int p_line) const {
-	if (p_line < 0 || p_line > text.size() - 1) {
-		return Map<int, Text::ColorRegionInfo>();
-	}
-	return text.get_color_region_info(p_line);
-}
-
-void TextEdit::clear_colors() {
+void TextEdit::clear_keywords() {
 	keywords.clear();
-	member_keywords.clear();
-	color_regions.clear();
-	color_region_cache.clear();
-	syntax_highlighting_cache.clear();
-	text.clear_width_cache();
-	update();
-}
-
-void TextEdit::add_keyword_color(const String &p_keyword, const Color &p_color) {
-	keywords[p_keyword] = p_color;
-	syntax_highlighting_cache.clear();
-	update();
-}
-
-bool TextEdit::has_keyword_color(String p_keyword) const {
-	return keywords.has(p_keyword);
-}
-
-Color TextEdit::get_keyword_color(String p_keyword) const {
-	ERR_FAIL_COND_V(!keywords.has(p_keyword), Color());
-	return keywords[p_keyword];
-}
-
-void TextEdit::add_color_region(const String &p_begin_key, const String &p_end_key, const Color &p_color, bool p_line_only) {
-	color_regions.push_back(ColorRegion(p_begin_key, p_end_key, p_color, p_line_only));
-	syntax_highlighting_cache.clear();
-	text.clear_width_cache();
-	update();
-}
-
-void TextEdit::add_member_keyword(const String &p_keyword, const Color &p_color) {
-	member_keywords[p_keyword] = p_color;
-	syntax_highlighting_cache.clear();
-	update();
-}
-
-bool TextEdit::has_member_color(String p_member) const {
-	return member_keywords.has(p_member);
-}
-
-Color TextEdit::get_member_color(String p_member) const {
-	return member_keywords[p_member];
-}
-
-void TextEdit::clear_member_keywords() {
-	member_keywords.clear();
-	syntax_highlighting_cache.clear();
-	update();
-}
-
-void TextEdit::set_syntax_coloring(bool p_enabled) {
-	syntax_coloring = p_enabled;
-	update();
-}
-
-bool TextEdit::is_syntax_coloring_enabled() const {
-	return syntax_coloring;
 }
 
 void TextEdit::set_auto_indent(bool p_auto_indent) {
@@ -5827,18 +5588,19 @@ bool TextEdit::is_line_comment(int p_line) const {
 	// Checks to see if this line is the start of a comment.
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 
-	const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(p_line);
-
 	int line_length = text[p_line].size();
 	for (int i = 0; i < line_length - 1; i++) {
-		if (_is_symbol(text[p_line][i]) && cri_map.has(i)) {
-			const Text::ColorRegionInfo &cri = cri_map[i];
-			return color_regions[cri.region].begin_key == "#" || color_regions[cri.region].begin_key == "//";
-		} else if (_is_whitespace(text[p_line][i])) {
+		if (_is_whitespace(text[p_line][i])) {
 			continue;
-		} else {
-			break;
 		}
+		if (_is_symbol(text[p_line][i])) {
+			if (text[p_line][i] == '\\') {
+				i++; // Skip quoted anything.
+				continue;
+			}
+			return text[p_line][i] == '#' || (i + 1 < line_length && text[p_line][i] == '/' && text[p_line][i + 1] == '/');
+		}
+		break;
 	}
 	return false;
 }
@@ -7053,8 +6815,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &TextEdit::set_override_selected_font_color);
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
 
-	ClassDB::bind_method(D_METHOD("set_syntax_coloring", "enable"), &TextEdit::set_syntax_coloring);
-	ClassDB::bind_method(D_METHOD("is_syntax_coloring_enabled"), &TextEdit::is_syntax_coloring_enabled);
+	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
+	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
 
 	ClassDB::bind_method(D_METHOD("set_highlight_current_line", "enabled"), &TextEdit::set_highlight_current_line);
 	ClassDB::bind_method(D_METHOD("is_highlight_current_line_enabled"), &TextEdit::is_highlight_current_line_enabled);
@@ -7068,11 +6830,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &TextEdit::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &TextEdit::get_h_scroll);
 
-	ClassDB::bind_method(D_METHOD("add_keyword_color", "keyword", "color"), &TextEdit::add_keyword_color);
-	ClassDB::bind_method(D_METHOD("has_keyword_color", "keyword"), &TextEdit::has_keyword_color);
-	ClassDB::bind_method(D_METHOD("get_keyword_color", "keyword"), &TextEdit::get_keyword_color);
-	ClassDB::bind_method(D_METHOD("add_color_region", "begin_key", "end_key", "color", "line_only"), &TextEdit::add_color_region, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("clear_colors"), &TextEdit::clear_colors);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
@@ -7087,7 +6844,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
@@ -7105,6 +6861,8 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
 
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "syntax_highlighter", PROPERTY_HINT_RESOURCE_TYPE, "SyntaxHighlighter", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_syntax_highlighter", "get_syntax_highlighter");
+
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width"), "set_minimap_width", "get_minimap_width");
@@ -7117,6 +6875,7 @@ void TextEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
+	ADD_SIGNAL(MethodInfo("line_edited_from", PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_completion"));
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
@@ -7150,7 +6909,6 @@ TextEdit::TextEdit() {
 	wrap_at = 0;
 	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);
-	syntax_highlighter = nullptr;
 	_update_caches();
 	cache.row_height = 1;
 	cache.line_spacing = 1;
@@ -7166,7 +6924,6 @@ TextEdit::TextEdit() {
 	indent_size = 4;
 	text.set_indent_size(indent_size);
 	text.clear();
-	text.set_color_regions(&color_regions);
 
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
@@ -7190,7 +6947,6 @@ TextEdit::TextEdit() {
 	selection.selecting_column = 0;
 	selection.selecting_text = false;
 	selection.active = false;
-	syntax_coloring = false;
 
 	block_caret = false;
 	caret_blink_enabled = false;
@@ -7281,204 +7037,6 @@ TextEdit::~TextEdit() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int p_line) {
-	if (syntax_highlighting_cache.has(p_line)) {
-		return syntax_highlighting_cache[p_line];
-	}
-
-	if (syntax_highlighter != nullptr) {
-		Map<int, HighlighterInfo> color_map = syntax_highlighter->_get_line_syntax_highlighting(p_line);
-		syntax_highlighting_cache[p_line] = color_map;
-		return color_map;
-	}
-
-	Map<int, HighlighterInfo> color_map;
-
-	bool prev_is_char = false;
-	bool prev_is_number = false;
-	bool in_keyword = false;
-	bool in_word = false;
-	bool in_function_name = false;
-	bool in_member_variable = false;
-	bool is_hex_notation = false;
-	Color keyword_color;
-	Color color;
-
-	int in_region = _is_line_in_region(p_line);
-	int deregion = 0;
-
-	const Map<int, TextEdit::Text::ColorRegionInfo> cri_map = text.get_color_region_info(p_line);
-	const String &str = text[p_line];
-	Color prev_color;
-	for (int j = 0; j < str.length(); j++) {
-		HighlighterInfo highlighter_info;
-
-		if (deregion > 0) {
-			deregion--;
-			if (deregion == 0) {
-				in_region = -1;
-			}
-		}
-
-		if (deregion != 0) {
-			if (color != prev_color) {
-				prev_color = color;
-				highlighter_info.color = color;
-				color_map[j] = highlighter_info;
-			}
-			continue;
-		}
-
-		color = cache.font_color;
-
-		bool is_char = _is_text_char(str[j]);
-		bool is_symbol = _is_symbol(str[j]);
-		bool is_number = _is_number(str[j]);
-
-		// Allow ABCDEF in hex notation.
-		if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
-			is_number = true;
-		} else {
-			is_hex_notation = false;
-		}
-
-		// Check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation.
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'f' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
-			is_number = true;
-			is_symbol = false;
-			is_char = false;
-
-			if (str[j] == 'x' && str[j - 1] == '0') {
-				is_hex_notation = true;
-			}
-		}
-
-		if (!in_word && _is_char(str[j]) && !is_number) {
-			in_word = true;
-		}
-
-		if ((in_keyword || in_word) && !is_hex_notation) {
-			is_number = false;
-		}
-
-		if (is_symbol && str[j] != '.' && in_word) {
-			in_word = false;
-		}
-
-		if (is_symbol && cri_map.has(j)) {
-			const TextEdit::Text::ColorRegionInfo &cri = cri_map[j];
-
-			if (in_region == -1) {
-				if (!cri.end) {
-					in_region = cri.region;
-				}
-			} else if (in_region == cri.region && !color_regions[cri.region].line_only) { // Ignore otherwise.
-				if (cri.end || color_regions[cri.region].eq) {
-					deregion = color_regions[cri.region].eq ? color_regions[cri.region].begin_key.length() : color_regions[cri.region].end_key.length();
-				}
-			}
-		}
-
-		if (!is_char) {
-			in_keyword = false;
-		}
-
-		if (in_region == -1 && !in_keyword && is_char && !prev_is_char) {
-			int to = j;
-			while (to < str.length() && _is_text_char(str[to])) {
-				to++;
-			}
-
-			uint32_t hash = String::hash(&str[j], to - j);
-			StrRange range(&str[j], to - j);
-
-			const Color *col = keywords.custom_getptr(range, hash);
-
-			if (!col) {
-				col = member_keywords.custom_getptr(range, hash);
-
-				if (col) {
-					for (int k = j - 1; k >= 0; k--) {
-						if (str[k] == '.') {
-							col = nullptr; // Member indexing not allowed.
-							break;
-						} else if (str[k] > 32) {
-							break;
-						}
-					}
-				}
-			}
-
-			if (col) {
-				in_keyword = true;
-				keyword_color = *col;
-			}
-		}
-
-		if (!in_function_name && in_word && !in_keyword) {
-			int k = j;
-			while (k < str.length() && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
-				k++;
-			}
-
-			// Check for space between name and bracket.
-			while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
-				k++;
-			}
-
-			if (str[k] == '(') {
-				in_function_name = true;
-			}
-		}
-
-		if (!in_function_name && !in_member_variable && !in_keyword && !is_number && in_word) {
-			int k = j;
-			while (k > 0 && !_is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
-				k--;
-			}
-
-			if (str[k] == '.') {
-				in_member_variable = true;
-			}
-		}
-
-		if (is_symbol) {
-			in_function_name = false;
-			in_member_variable = false;
-		}
-
-		if (in_region >= 0) {
-			color = color_regions[in_region].color;
-		} else if (in_keyword) {
-			color = keyword_color;
-		} else if (in_member_variable) {
-			color = cache.member_variable_color;
-		} else if (in_function_name) {
-			color = cache.function_color;
-		} else if (is_symbol) {
-			color = cache.symbol_color;
-		} else if (is_number) {
-			color = cache.number_color;
-		}
-
-		prev_is_char = is_char;
-		prev_is_number = is_number;
-
-		if (color != prev_color) {
-			prev_color = color;
-			highlighter_info.color = color;
-			color_map[j] = highlighter_info;
-		}
-	}
-
-	syntax_highlighting_cache[p_line] = color_map;
-	return color_map;
-}
-
-void SyntaxHighlighter::set_text_editor(TextEdit *p_text_editor) {
-	text_editor = p_text_editor;
-}
-
-TextEdit *SyntaxHighlighter::get_text_editor() {
-	return text_editor;
+Dictionary TextEdit::_get_line_syntax_highlighting(int p_line) {
+	return syntax_highlighter.is_null() && !setting_text ? Dictionary() : syntax_highlighter->get_line_syntax_highlighting(p_line);
 }

@@ -50,16 +50,6 @@ private:
 
 	GotoLineDialog *goto_line_dialog;
 
-	struct ColorsCache {
-		Color font_color;
-		Color symbol_color;
-		Color keyword_color;
-		Color basetype_color;
-		Color type_color;
-		Color comment_color;
-		Color string_color;
-	} colors_cache;
-
 	enum {
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -104,7 +94,7 @@ protected:
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 
-	Map<String, SyntaxHighlighter *> highlighters;
+	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
 	void _load_theme_settings();
 
@@ -116,8 +106,8 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
-	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
-	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) override;
+	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
+	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) override;
 
 	virtual String get_name() override;
 	virtual Ref<Texture2D> get_theme_icon() override;

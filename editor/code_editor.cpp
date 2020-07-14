@@ -837,7 +837,14 @@ void CodeTextEditor::_complete_request() {
 	}
 
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
-		E->get().icon = _get_completion_icon(E->get());
+		ScriptCodeCompletionOption *e = &E->get();
+		e->icon = _get_completion_icon(*e);
+		e->font_color = completion_font_color;
+		if (e->insert_text.begins_with("\"") || e->insert_text.begins_with("\'")) {
+			e->font_color = completion_string_color;
+		} else if (e->insert_text.begins_with("#") || e->insert_text.begins_with("//")) {
+			e->font_color = completion_comment_color;
+		}
 	}
 	text_editor->code_complete(entries, forced);
 }
@@ -910,7 +917,10 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 }
 
 void CodeTextEditor::update_editor_settings() {
-	text_editor->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/highlighting/syntax_highlighting"));
+	completion_font_color = EDITOR_GET("text_editor/highlighting/completion_font_color");
+	completion_string_color = EDITOR_GET("text_editor/highlighting/string_color");
+	completion_comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+
 	text_editor->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
 	text_editor->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
 	text_editor->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
@@ -1407,11 +1417,8 @@ Variant CodeTextEditor::get_edit_state() {
 	state["breakpoints"] = text_editor->get_breakpoints_array();
 	state["bookmarks"] = text_editor->get_bookmarks_array();
 
-	state["syntax_highlighter"] = TTR("Standard");
-	SyntaxHighlighter *syntax_highlighter = text_editor->_get_syntax_highlighting();
-	if (syntax_highlighter) {
-		state["syntax_highlighter"] = syntax_highlighter->get_name();
-	}
+	Ref<EditorSyntaxHighlighter> syntax_highlighter = text_editor->get_syntax_highlighter();
+	state["syntax_highlighter"] = syntax_highlighter->_get_name();
 
 	return state;
 }

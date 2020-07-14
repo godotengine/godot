@@ -31,10 +31,25 @@
 #ifndef GDSCRIPT_HIGHLIGHTER_H
 #define GDSCRIPT_HIGHLIGHTER_H
 
+#include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/text_edit.h"
 
-class GDScriptSyntaxHighlighter : public SyntaxHighlighter {
+class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
+
 private:
+	struct ColorRegion {
+		Color color;
+		String start_key;
+		String end_key;
+		bool line_only;
+	};
+	Vector<ColorRegion> color_regions;
+	Map<int, int> color_region_cache;
+
+	Dictionary keywords;
+	Dictionary member_keywords;
+
 	enum Type {
 		NONE,
 		REGION,
@@ -59,14 +74,16 @@ private:
 	Color node_path_color;
 	Color type_color;
 
+	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);
+
 public:
-	static SyntaxHighlighter *create();
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting(int p_line) override;
 
-	virtual void _update_cache();
-	virtual Map<int, TextEdit::HighlighterInfo> _get_line_syntax_highlighting(int p_line);
+	virtual String _get_name() const override;
+	virtual Array _get_supported_languages() const override;
 
-	virtual String get_name() const;
-	virtual List<String> get_supported_languages();
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
 
 #endif // GDSCRIPT_HIGHLIGHTER_H
