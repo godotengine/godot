@@ -90,6 +90,11 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 		godot.onBackPressed();
 	}
 
+	@Override
+	public GodotInputHandler getInputHandler() {
+		return mInputHandler;
+	}
+
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
