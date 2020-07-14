@@ -12,7 +12,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -qq dos2unix recode clang-format
-          pip3 install --user black pygments
+          sudo pip3 install black pygments
 
       - name: File formatting checks (file_format.sh)
         run: |
