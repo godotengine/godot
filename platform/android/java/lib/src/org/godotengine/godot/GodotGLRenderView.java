@@ -117,6 +117,11 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 		godot.onBackPressed();
 	}
 
+	@Override
+	public GodotInputHandler getInputHandler() {
+		return inputHandler;
+	}
+
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {

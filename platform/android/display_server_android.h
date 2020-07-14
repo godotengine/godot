@@ -63,6 +63,11 @@ public:
 private:
 	String rendering_driver;
 
+	bool alt_mem = false;
+	bool shift_mem = false;
+	bool control_mem = false;
+	bool meta_mem = false;
+
 	bool keep_screen_on;
 
 	Vector<TouchPos> touch;
@@ -83,6 +88,8 @@ private:
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
 
 public:
 	static DisplayServerAndroid *get_singleton();
