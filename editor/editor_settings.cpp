@@ -997,7 +997,7 @@ void EditorSettings::setup_language() {
 			FileAccessMemory *fa = memnew(FileAccessMemory);
 			fa->open_custom(data.ptr(), data.size());
 
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, NULL, "translation_" + String(etl->lang));
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa, NULL);
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);

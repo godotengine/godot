@@ -37,7 +37,7 @@
 
 class TranslationLoaderPO : public ResourceFormatLoader {
 public:
-	static RES load_translation(FileAccess *f, Error *r_error, const String &p_path = String());
+	static RES load_translation(FileAccess *f, Error *r_error);
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
