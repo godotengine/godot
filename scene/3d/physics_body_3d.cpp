@@ -1241,12 +1241,12 @@ void KinematicBody3D::_direct_state_changed(Object *p_state) {
 
 KinematicBody3D::KinematicBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-	margin = 0.001;
 	locked_axis = 0;
 	on_floor = false;
 	on_ceiling = false;
 	on_wall = false;
 
+	set_safe_margin(0.001);
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }
 
