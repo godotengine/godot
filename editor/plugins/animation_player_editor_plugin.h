@@ -187,7 +187,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _scale_changed(const String &p_scale);
 	void _dialog_action(String p_file);
 	void _seek_frame_changed(const String &p_frame);
-	void _seek_value_changed(float p_value, bool p_set = false);
+	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
@@ -197,7 +197,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_player_changed(Object *p_pl);
 
-	void _animation_key_editor_seek(float p_pos, bool p_drag);
+	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
