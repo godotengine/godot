@@ -1,8 +1,9 @@
-name: Static checks
+name: Godot
 on: [push, pull_request]
 
 jobs:
-  build:
+  static-checks:
+    name: Static Checks (clang-format, black format, file format, documentation checks)
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
