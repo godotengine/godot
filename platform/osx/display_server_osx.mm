@@ -2583,16 +2583,18 @@ void DisplayServerOSX::window_set_size(const Size2i p_size, WindowID p_window) {
 
 	Size2i size = p_size / screen_get_max_scale();
 
-	if (!wd.borderless) {
-		// NSRect used by setFrame includes the title bar, so add it to our size.y
-		CGFloat menuBarHeight = [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
-		if (menuBarHeight != 0.f) {
-			size.y += menuBarHeight;
-		}
-	}
+	NSPoint top_left;
+	NSRect old_frame = [wd.window_object frame];
+	top_left.x = old_frame.origin.x;
+	top_left.y = NSMaxY(old_frame);
 
-	NSRect frame = [wd.window_object frame];
-	[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, size.x, size.y) display:YES];
+	NSRect new_frame = NSMakeRect(0, 0, size.x, size.y);
+	new_frame = [wd.window_object frameRectForContentRect:new_frame];
+
+	new_frame.origin.x = top_left.x;
+	new_frame.origin.y = top_left.y - new_frame.size.height;
+
+	[wd.window_object setFrame:new_frame display:YES];
 
 	_update_window(wd);
 }
