@@ -448,6 +448,8 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #endif
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+
+	r_error = OK;
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {
