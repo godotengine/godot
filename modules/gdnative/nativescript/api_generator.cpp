@@ -219,7 +219,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<StringName> inheriters;
 			ClassDB::get_inheriters_from_class("Reference", &inheriters);
-			bool is_reference = !!inheriters.find(class_name);
+			bool is_reference = !!inheriters.find(class_name) || class_name == "Reference";
 			// @Unclear
 			class_api.is_reference = !class_api.is_singleton && is_reference;
 		}
