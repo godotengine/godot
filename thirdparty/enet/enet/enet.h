@@ -13,7 +13,16 @@ extern "C"
 #include <stdint.h>
 #include <stdlib.h>
 
+// -- Godot start --
+#if 0
+#ifdef _WIN32
+#include "enet/win32.h"
+#else
+#include "enet/unix.h"
+#endif
+#endif
 #include "enet/godot.h"
+// -- Godot end --
 
 #include "enet/types.h"
 #include "enet/protocol.h"
@@ -69,6 +78,7 @@ typedef enum _ENetSocketShutdown
     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
 } ENetSocketShutdown;
 
+#define ENET_HOST_ANY       0
 #define ENET_HOST_BROADCAST 0xFFFFFFFFU
 #define ENET_PORT_ANY       0
 
@@ -82,13 +92,15 @@ typedef enum _ENetSocketShutdown
  * but not for enet_host_create.  Once a server responds to a broadcast, the
  * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
  */
+// -- Godot start --
+#if 0
 typedef struct _ENetAddress
 {
-   uint8_t host[16];
+   enet_uint32 host;
    enet_uint16 port;
-   uint8_t wildcard;
 } ENetAddress;
-#define enet_host_equal(host_a, host_b) (memcmp(&host_a, &host_b,16) == 0)
+#endif
+// -- Godot end --
 
 /**
  * Packet flag bit constants.
@@ -535,16 +547,6 @@ ENET_API int enet_address_set_host_ip (ENetAddress * address, const char * hostN
 */
 ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
 
-/** Sets the host field in the address parameter from ip struct.
-    @param address destination to store resolved address
-    @param ip the ip struct to read from
-    @param size the size of the ip struct.
-    @retval 0 on success
-    @retval != 0 on failure
-    @returns the address of the given ip in address on success.
-*/
-ENET_API void enet_address_set_ip(ENetAddress * address, const uint8_t * ip, size_t size);
-
 /** Gives the printable form of the IP address specified in the address parameter.
     @param address    address printed
     @param hostName   destination for name, must not be NULL
@@ -585,8 +587,6 @@ ENET_API void       enet_host_channel_limit (ENetHost *, size_t);
 ENET_API void       enet_host_bandwidth_limit (ENetHost *, enet_uint32, enet_uint32);
 extern   void       enet_host_bandwidth_throttle (ENetHost *);
 extern  enet_uint32 enet_host_random_seed (void);
-ENET_API void enet_host_dtls_server_setup (ENetHost *, void *, void *);
-ENET_API void enet_host_dtls_client_setup (ENetHost *, void *, uint8_t, const char *);
 
 ENET_API int                 enet_peer_send (ENetPeer *, enet_uint8, ENetPacket *);
 ENET_API ENetPacket *        enet_peer_receive (ENetPeer *, enet_uint8 * channelID);
@@ -615,6 +615,10 @@ ENET_API size_t enet_range_coder_compress (void *, const ENetBuffer *, size_t, s
 ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t, enet_uint8 *, size_t);
    
 extern size_t enet_protocol_command_size (enet_uint8);
+
+// -- Godot start --
+#include "enet/godot_ext.h"
+// -- Godot end --
 
 #ifdef __cplusplus
 }
