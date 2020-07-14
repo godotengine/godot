@@ -1711,6 +1711,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			preview_text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
 			preview_text->add_theme_color_override("font_color", text_color);
 			syntax_highlighter->set_symbol_color(symbol_color);
+			syntax_highlighter->clear_color_regions();
 			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 			syntax_highlighter->add_color_region("//", "", comment_color, false);
 
