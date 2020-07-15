@@ -668,6 +668,9 @@ int NetworkedMultiplayerENet::get_unique_id() const {
 void NetworkedMultiplayerENet::set_refuse_new_connections(bool p_enable) {
 
 	refuse_connections = p_enable;
+#ifdef GODOT_ENET
+	enet_host_refuse_new_connections(host, p_enable);
+#endif
 }
 
 bool NetworkedMultiplayerENet::is_refusing_new_connections() const {

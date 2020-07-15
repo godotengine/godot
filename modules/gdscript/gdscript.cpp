@@ -2020,116 +2020,114 @@ String GDScriptWarning::get_message() const {
 
 #define CHECK_SYMBOLS(m_amount) ERR_FAIL_COND_V(symbols.size() < m_amount, String());
 
-	String msg;
-
 	switch (code) {
 		case UNASSIGNED_VARIABLE_OP_ASSIGN: {
 			CHECK_SYMBOLS(1);
-			msg = "Using assignment with operation but the variable '" + symbols[0] + "' was not previously assigned a value.";
+			return "Using assignment with operation but the variable '" + symbols[0] + "' was not previously assigned a value.";
 		} break;
 		case UNASSIGNED_VARIABLE: {
 			CHECK_SYMBOLS(1);
-			msg = "The variable '" + symbols[0] + "' was used but never assigned a value.";
+			return "The variable '" + symbols[0] + "' was used but never assigned a value.";
 		} break;
 		case UNUSED_VARIABLE: {
 			CHECK_SYMBOLS(1);
-			msg = "The local variable '" + symbols[0] + "' is declared but never used in the block. If this is intended, prefix it with an underscore: '_" + symbols[0] + "'";
+			return "The local variable '" + symbols[0] + "' is declared but never used in the block. If this is intended, prefix it with an underscore: '_" + symbols[0] + "'";
 		} break;
 		case SHADOWED_VARIABLE: {
 			CHECK_SYMBOLS(2);
-			msg = "The local variable '" + symbols[0] + "' is shadowing an already-defined variable at line " + symbols[1] + ".";
+			return "The local variable '" + symbols[0] + "' is shadowing an already-defined variable at line " + symbols[1] + ".";
 		} break;
 		case UNUSED_CLASS_VARIABLE: {
 			CHECK_SYMBOLS(1);
-			msg = "The class variable '" + symbols[0] + "' is declared but never used in the script.";
+			return "The class variable '" + symbols[0] + "' is declared but never used in the script.";
 		} break;
 		case UNUSED_ARGUMENT: {
 			CHECK_SYMBOLS(2);
-			msg = "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'. If this is intended, prefix it with an underscore: '_" + symbols[1] + "'";
+			return "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'. If this is intended, prefix it with an underscore: '_" + symbols[1] + "'";
 		} break;
 		case UNREACHABLE_CODE: {
 			CHECK_SYMBOLS(1);
-			msg = "Unreachable code (statement after return) in function '" + symbols[0] + "()'.";
+			return "Unreachable code (statement after return) in function '" + symbols[0] + "()'.";
 		} break;
 		case STANDALONE_EXPRESSION: {
-			msg = "Standalone expression (the line has no effect).";
+			return "Standalone expression (the line has no effect).";
 		} break;
 		case VOID_ASSIGNMENT: {
 			CHECK_SYMBOLS(1);
-			msg = "Assignment operation, but the function '" + symbols[0] + "()' returns void.";
+			return "Assignment operation, but the function '" + symbols[0] + "()' returns void.";
 		} break;
 		case NARROWING_CONVERSION: {
-			msg = "Narrowing conversion (float is converted to int and loses precision).";
+			return "Narrowing conversion (float is converted to int and loses precision).";
 		} break;
 		case FUNCTION_MAY_YIELD: {
 			CHECK_SYMBOLS(1);
-			msg = "Assigned variable is typed but the function '" + symbols[0] + "()' may yield and return a GDScriptFunctionState instead.";
+			return "Assigned variable is typed but the function '" + symbols[0] + "()' may yield and return a GDScriptFunctionState instead.";
 		} break;
 		case VARIABLE_CONFLICTS_FUNCTION: {
 			CHECK_SYMBOLS(1);
-			msg = "Variable declaration of '" + symbols[0] + "' conflicts with a function of the same name.";
+			return "Variable declaration of '" + symbols[0] + "' conflicts with a function of the same name.";
 		} break;
 		case FUNCTION_CONFLICTS_VARIABLE: {
 			CHECK_SYMBOLS(1);
-			msg = "Function declaration of '" + symbols[0] + "()' conflicts with a variable of the same name.";
+			return "Function declaration of '" + symbols[0] + "()' conflicts with a variable of the same name.";
 		} break;
 		case FUNCTION_CONFLICTS_CONSTANT: {
 			CHECK_SYMBOLS(1);
-			msg = "Function declaration of '" + symbols[0] + "()' conflicts with a constant of the same name.";
+			return "Function declaration of '" + symbols[0] + "()' conflicts with a constant of the same name.";
 		} break;
 		case INCOMPATIBLE_TERNARY: {
-			msg = "Values of the ternary conditional are not mutually compatible.";
+			return "Values of the ternary conditional are not mutually compatible.";
 		} break;
 		case UNUSED_SIGNAL: {
 			CHECK_SYMBOLS(1);
-			msg = "The signal '" + symbols[0] + "' is declared but never emitted.";
+			return "The signal '" + symbols[0] + "' is declared but never emitted.";
 		} break;
 		case RETURN_VALUE_DISCARDED: {
 			CHECK_SYMBOLS(1);
-			msg = "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
+			return "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
 		} break;
 		case PROPERTY_USED_AS_FUNCTION: {
 			CHECK_SYMBOLS(2);
-			msg = "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a property with the same name. Did you mean to access it?";
+			return "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a property with the same name. Did you mean to access it?";
 		} break;
 		case CONSTANT_USED_AS_FUNCTION: {
 			CHECK_SYMBOLS(2);
-			msg = "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a constant with the same name. Did you mean to access it?";
+			return "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a constant with the same name. Did you mean to access it?";
 		} break;
 		case FUNCTION_USED_AS_PROPERTY: {
 			CHECK_SYMBOLS(2);
-			msg = "The property '" + symbols[0] + "' was not found in base '" + symbols[1] + "' but there's a method with the same name. Did you mean to call it?";
+			return "The property '" + symbols[0] + "' was not found in base '" + symbols[1] + "' but there's a method with the same name. Did you mean to call it?";
 		} break;
 		case INTEGER_DIVISION: {
-			msg = "Integer division, decimal part will be discarded.";
+			return "Integer division, decimal part will be discarded.";
 		} break;
 		case UNSAFE_PROPERTY_ACCESS: {
 			CHECK_SYMBOLS(2);
-			msg = "The property '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
+			return "The property '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
 		} break;
 		case UNSAFE_METHOD_ACCESS: {
 			CHECK_SYMBOLS(2);
-			msg = "The method '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
+			return "The method '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
 		} break;
 		case UNSAFE_CAST: {
 			CHECK_SYMBOLS(1);
-			msg = "The value is cast to '" + symbols[0] + "' but has an unknown type.";
+			return "The value is cast to '" + symbols[0] + "' but has an unknown type.";
 		} break;
 		case UNSAFE_CALL_ARGUMENT: {
 			CHECK_SYMBOLS(4);
-			msg = "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
+			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
 		} break;
 		case DEPRECATED_KEYWORD: {
 			CHECK_SYMBOLS(2);
-			msg = "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
+			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
 		} break;
 		case STANDALONE_TERNARY: {
-			msg = "Standalone ternary conditional operator: the return value is being discarded.";
-		} break;
+			return "Standalone ternary conditional operator: the return value is being discarded.";
+		}
 		case WARNING_MAX:
-			ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
+			break; // Can't happen, but silences warning
 	}
-	return msg + " [" + get_name() + "]";
+	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
 
 #undef CHECK_SYMBOLS
 }

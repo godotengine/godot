@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A simple server that opens a UDP socket and returns connected [PacketPeerUDP] upon receiving new packets. See also [method PacketPeerUDP.connect_to_host].
+		After starting the server ([method listen]), you will need to [method poll] it at regular intervals (e.g. inside [method Node._process]) for it to process new packets, delivering them to the appropriate [PacketPeerUDP], and taking new connections.
 		Below a small example of how it can be used:
 		[codeblock]
 		# server.gd
@@ -17,6 +18,7 @@
 		    server.listen(4242)
 
 		func _process(delta):
+		    server.poll() # Important!
 		    if server.is_connection_available():
 		        var peer : PacketPeerUDP = server.take_connection()
 		        var pkt = peer.get_packet()
@@ -57,7 +59,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if a packet with a new address/port combination is received on the socket.
+				Returns [code]true[/code] if a packet with a new address/port combination was received on the socket.
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
@@ -78,21 +80,33 @@
 				Starts the server by opening a UDP socket listening on the given port. You can optionally specify a [code]bind_address[/code] to only listen for packets sent to that address. See also [method PacketPeerUDP.listen].
 			</description>
 		</method>
+		<method name="poll">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Call this method at regular intervals (e.g. inside [method Node._process]) to process new packets. And packet from known address/port pair will be delivered to the appropriate [PacketPeerUDP], any packet received from an unknown address/port pair will be added as a pending connection (see [method is_connection_available], [method take_connection]). The maximum number of pending connection is defined via [member max_pending_connections].
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
 			<description>
-				Stops the server, closing the UDP socket if open. Will not disconnect any connected [PacketPeerUDP].
+				Stops the server, closing the UDP socket if open. Will close all connected [PacketPeerUDP] accepted via [method take_connection] (remote peers will not be notified).
 			</description>
 		</method>
 		<method name="take_connection">
 			<return type="PacketPeerUDP">
 			</return>
 			<description>
-				Returns a [PacketPeerUDP] connected to the address/port combination of the first packet in queue. Will return [code]null[/code] if no packet is in queue. See also [method PacketPeerUDP.connect_to_host].
+				Returns the first pending connection (connected to the appropriate address/port). Will return [code]null[/code] if no new connection is available. See also [method is_connection_available], [method PacketPeerUDP.connect_to_host].
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="max_pending_connections" type="int" setter="set_max_pending_connections" getter="get_max_pending_connections" default="16">
+			Define the maximum number of pending connections, during [method poll], any new pending connection exceeding that value will be automatically dropped. Setting this value to [code]0[/code] effectively prevents any new pending connection to be accepted (e.g. when all your players have connected).
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

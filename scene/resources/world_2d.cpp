@@ -228,7 +228,7 @@ struct SpatialIndexer2D {
 			List<VisibilityNotifier2D *> added;
 			List<VisibilityNotifier2D *> removed;
 
-			int visible_cells = (end.x - begin.x) * (end.y - begin.y);
+			uint64_t visible_cells = (uint64_t)(end.x - begin.x) * (uint64_t)(end.y - begin.y);
 
 			if (visible_cells > 10000) {
 

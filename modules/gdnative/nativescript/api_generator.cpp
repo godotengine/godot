@@ -219,7 +219,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<StringName> inheriters;
 			ClassDB::get_inheriters_from_class("Reference", &inheriters);
-			bool is_reference = !!inheriters.find(class_name);
+			bool is_reference = !!inheriters.find(class_name) || class_name == "Reference";
 			// @Unclear
 			class_api.is_reference = !class_api.is_singleton && is_reference;
 		}
@@ -458,6 +458,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 				source.push_back("\t\t\t\t\t{\n");
 				source.push_back("\t\t\t\t\t\t\"name\": \"" + e->get().argument_names[i] + "\",\n");
 				source.push_back("\t\t\t\t\t\t\"type\": \"" + e->get().argument_types[i] + "\",\n");
+				source.push_back(String("\t\t\t\t\t\t\"has_default_value\": ") + (e->get().default_arguments.has(i) ? "true" : "false") + ",\n");
 				source.push_back("\t\t\t\t\t\t\"default_value\": \"" + (e->get().default_arguments.has(i) ? (String)e->get().default_arguments[i] : "") + "\"\n");
 				source.push_back(String("\t\t\t\t\t}") + ((i < e->get().argument_names.size() - 1) ? "," : "") + "\n");
 			}
