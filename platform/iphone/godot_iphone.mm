@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_iphone.cpp                                                     */
+/*  godot_iphone.mm                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -38,19 +38,53 @@
 
 static OSIPhone *os = nullptr;
 
-extern "C" {
-int add_path(int p_argc, char **p_args);
-int add_cmdline(int p_argc, char **p_args);
+int add_path(int, char **);
+int add_cmdline(int, char **);
+int iphone_main(int, char **, String);
+
+int add_path(int p_argc, char **p_args) {
+	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
+	if (!str) {
+		return p_argc;
+	}
+
+	p_args[p_argc++] = (char *)"--path";
+	[str retain]; // memory leak lol (maybe make it static here and delete it in ViewController destructor? @todo
+	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
+	p_args[p_argc] = NULL;
+	[str release];
+
+	return p_argc;
 };
 
-int iphone_main(int, int, int, char **, String);
+int add_cmdline(int p_argc, char **p_args) {
+	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
+	if (!arr) {
+		return p_argc;
+	}
 
-int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
+	for (NSUInteger i = 0; i < [arr count]; i++) {
+		NSString *str = [arr objectAtIndex:i];
+		if (!str) {
+			continue;
+		}
+		[str retain]; // @todo delete these at some point
+		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
+		[str release];
+	};
+
+	p_args[p_argc] = NULL;
+
+	return p_argc;
+};
+
+int iphone_main(int argc, char **argv, String data_dir) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
-		if (argv[0][len] == '/')
+		if (argv[0][len] == '/') {
 			break;
+		}
 	}
 
 	if (len >= 0) {
@@ -65,7 +99,7 @@ int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(width, height, data_dir);
+	os = new OSIPhone(data_dir);
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
@@ -79,10 +113,14 @@ int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 	argc = add_cmdline(argc, fargv);
 
 	printf("os created\n");
+
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 	printf("setup %i\n", err);
-	if (err != OK)
+	if (err != OK) {
 		return 255;
+	}
+
+	os->initialize_modules();
 
 	return 0;
 };
