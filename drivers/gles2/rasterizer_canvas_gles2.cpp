@@ -627,15 +627,21 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 		sizeof_vert = sizeof(BatchVertexColored);
 	}
 
+	// batch tex
+	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
+
+	// make sure to set all conditionals BEFORE binding the shader
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+
+	// force repeat is set if non power of 2 texture, and repeat is needed if hardware doesn't support npot
+	if (tex.tile_mode == BatchTex::TILE_FORCE_REPEAT) {
+		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
+	}
 
 	if (state.canvas_shader.bind()) {
 		_set_uniforms();
 		state.canvas_shader.use_material((void *)p_material);
 	}
-
-	// batch tex
-	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
 
 	_bind_canvas_texture(tex.RID_texture, tex.RID_normal);
 
@@ -665,19 +671,12 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 	// may use clamped mode incorrectly.
 	bool tex_is_already_tiled = tex.flags & VS::TEXTURE_FLAG_REPEAT;
 
-	switch (tex.tile_mode) {
-		case BatchTex::TILE_FORCE_REPEAT: {
-			state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
-		} break;
-		case BatchTex::TILE_NORMAL: {
-			// if the texture is imported as tiled, no need to set GL state, as it will already be bound with repeat
-			if (!tex_is_already_tiled) {
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			}
-		} break;
-		default: {
-		} break;
+	if (tex.tile_mode == BatchTex::TILE_NORMAL) {
+		// if the texture is imported as tiled, no need to set GL state, as it will already be bound with repeat
+		if (!tex_is_already_tiled) {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
 	}
 
 	// we need to convert explicitly from pod Vec2 to Vector2 ...
