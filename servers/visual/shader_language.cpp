@@ -1081,13 +1081,13 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			} else if (na == TYPE_FLOAT && nb == TYPE_VEC4) {
 				valid = true;
 				ret_type = TYPE_VEC4;
-			} else if (p_op->op == OP_MUL && na == TYPE_FLOAT && nb == TYPE_MAT2) {
+			} else if (na == TYPE_FLOAT && nb == TYPE_MAT2) {
 				valid = true;
 				ret_type = TYPE_MAT2;
-			} else if (p_op->op == OP_MUL && na == TYPE_FLOAT && nb == TYPE_MAT3) {
+			} else if (na == TYPE_FLOAT && nb == TYPE_MAT3) {
 				valid = true;
 				ret_type = TYPE_MAT3;
-			} else if (p_op->op == OP_MUL && na == TYPE_FLOAT && nb == TYPE_MAT4) {
+			} else if (na == TYPE_FLOAT && nb == TYPE_MAT4) {
 				valid = true;
 				ret_type = TYPE_MAT4;
 			} else if (p_op->op == OP_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
@@ -1255,13 +1255,13 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			} else if (na == TYPE_VEC4 && nb == TYPE_FLOAT) {
 				valid = true;
 				ret_type = TYPE_VEC4;
-			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_MAT2 && nb == TYPE_VEC2) {
+			} else if (na == TYPE_MAT2 && nb == TYPE_FLOAT) {
 				valid = true;
 				ret_type = TYPE_MAT2;
-			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_MAT3 && nb == TYPE_VEC3) {
+			} else if (na == TYPE_MAT3 && nb == TYPE_FLOAT) {
 				valid = true;
 				ret_type = TYPE_MAT3;
-			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_MAT4 && nb == TYPE_VEC4) {
+			} else if (na == TYPE_MAT4 && nb == TYPE_FLOAT) {
 				valid = true;
 				ret_type = TYPE_MAT4;
 			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
