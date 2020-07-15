@@ -41,7 +41,8 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->
 <resources>
 	<string name="godot_project_name_string">%s</string>
-</resources>)";
+</resources>
+)";
 
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir) {
