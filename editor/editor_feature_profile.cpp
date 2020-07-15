@@ -403,10 +403,10 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			_emit_current_profile_changed();
 		} break;
 		case PROFILE_IMPORT: {
-			import_profiles->popup_centered_ratio();
+			import_profiles->popup_file_dialog();
 		} break;
 		case PROFILE_EXPORT: {
-			export_profile->popup_centered_ratio();
+			export_profile->popup_file_dialog();
 			export_profile->set_current_file(_get_selected_profile() + ".profile");
 		} break;
 		case PROFILE_NEW: {

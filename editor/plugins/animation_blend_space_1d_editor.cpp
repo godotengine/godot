@@ -375,7 +375,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 		for (List<String>::Element *E = filters.front(); E; E = E->next()) {
 			open_file->add_filter("*." + E->get());
 		}
-		open_file->popup_centered_ratio();
+		open_file->popup_file_dialog();
 		return;
 	} else if (p_index == MENU_LOAD_FILE_CONFIRM) {
 		node = file_loaded;

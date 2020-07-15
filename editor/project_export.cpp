@@ -397,7 +397,7 @@ void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, in
 		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), patches[patch_index].get_file()));
 		patch_erase->popup_centered();
 	} else {
-		patch_dialog->popup_centered_ratio();
+		patch_dialog->popup_file_dialog();
 	}
 }
 
@@ -876,7 +876,7 @@ void ProjectExportDialog::_tree_changed() {
 }
 
 void ProjectExportDialog::_export_pck_zip() {
-	export_pck_zip->popup_centered_ratio();
+	export_pck_zip->popup_file_dialog();
 }
 
 void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
@@ -952,7 +952,7 @@ void ProjectExportDialog::_export_project() {
 	}
 
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_project->popup_centered_ratio();
+	export_project->popup_file_dialog();
 }
 
 void ProjectExportDialog::_export_project_to_path(const String &p_path) {

@@ -135,6 +135,7 @@ protected:
 	static void _bind_methods();
 	//bind helpers
 public:
+	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter);
 	void set_filters(const Vector<String> &p_filters);

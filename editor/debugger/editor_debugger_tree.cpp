@@ -238,7 +238,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 			}
 
-			file_dialog->popup_centered_ratio();
+			file_dialog->popup_file_dialog();
 		} break;
 		case ITEM_MENU_COPY_NODE_PATH: {
 			String text = get_selected_path();
