@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  joypad_iphone.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef GAME_CENTER_ENABLED
+#import <GameController/GameController.h>
 
-#ifndef GAME_CENTER_H
-#define GAME_CENTER_H
+@interface JoypadIPhoneObserver : NSObject
 
-#include "core/object.h"
+- (void)startObserving;
+- (void)startProcessing;
+- (void)finishObserving;
 
-class GameCenter : public Object {
-	GDCLASS(GameCenter, Object);
+@end
 
-	static GameCenter *instance;
-	static void _bind_methods();
-
-	List<Variant> pending_events;
-
-	bool authenticated;
-
-	void return_connect_error(const char *p_error_description);
+class JoypadIPhone {
+private:
+	JoypadIPhoneObserver *observer;
 
 public:
-	void connect();
-	bool is_authenticated();
+	JoypadIPhone();
+	~JoypadIPhone();
 
-	Error post_score(Dictionary p_score);
-	Error award_achievement(Dictionary p_params);
-	void reset_achievements();
-	void request_achievements();
-	void request_achievement_descriptions();
-	Error show_game_center(Dictionary p_params);
-	Error request_identity_verification_signature();
-
-	void game_center_closed();
-
-	int get_pending_event_count();
-	Variant pop_pending_event();
-
-	static GameCenter *get_singleton();
-
-	GameCenter();
-	~GameCenter();
+	void start_processing();
 };
-
-#endif
-
-#endif
