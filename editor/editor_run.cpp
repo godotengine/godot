@@ -183,7 +183,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 
 	if (p_custom_args != "") {
 		Vector<String> cargs = p_custom_args.split(" ", false);
-		for (int i = 0; i < cargs.size(); i++) {
+		for (unsigned i = 0U; i < cargs.size(); i++) {
 			args.push_back(cargs[i].replace(" ", "%20"));
 		}
 	}
@@ -195,7 +195,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 
 		printf(" %ls", E->get().c_str());
 	};
-	puts("");
+	putc('\n');
 
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 	for (int i = 0; i < instances; i++) {
