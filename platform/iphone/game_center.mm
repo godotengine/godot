@@ -47,13 +47,15 @@ extern "C" {
 #import "app_delegate.h"
 };
 
+#import "view_controller.h"
+
 GameCenter *GameCenter::instance = NULL;
 
 void GameCenter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_authenticated"), &GameCenter::is_authenticated);
 
 	ClassDB::bind_method(D_METHOD("post_score"), &GameCenter::post_score);
-	ClassDB::bind_method(D_METHOD("award_achievement"), &GameCenter::award_achievement);
+	ClassDB::bind_method(D_METHOD("award_achievement", "achievement"), &GameCenter::award_achievement);
 	ClassDB::bind_method(D_METHOD("reset_achievements"), &GameCenter::reset_achievements);
 	ClassDB::bind_method(D_METHOD("request_achievements"), &GameCenter::request_achievements);
 	ClassDB::bind_method(D_METHOD("request_achievement_descriptions"), &GameCenter::request_achievement_descriptions);
@@ -105,7 +107,14 @@ void GameCenter::connect() {
 			ret["type"] = "authentication";
 			if (player.isAuthenticated) {
 				ret["result"] = "ok";
-				ret["player_id"] = [player.playerID UTF8String];
+				if (@available(iOS 13, *)) {
+					ret["player_id"] = [player.teamPlayerID UTF8String];
+#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
+				} else {
+					ret["player_id"] = [player.playerID UTF8String];
+#endif
+				}
+
 				GameCenter::get_singleton()->authenticated = true;
 			} else {
 				ret["result"] = "error";
@@ -123,11 +132,10 @@ bool GameCenter::is_authenticated() {
 	return authenticated;
 };
 
-Error GameCenter::post_score(Variant p_score) {
-	Dictionary params = p_score;
-	ERR_FAIL_COND_V(!params.has("score") || !params.has("category"), ERR_INVALID_PARAMETER);
-	float score = params["score"];
-	String category = params["category"];
+Error GameCenter::post_score(Dictionary p_score) {
+	ERR_FAIL_COND_V(!p_score.has("score") || !p_score.has("category"), ERR_INVALID_PARAMETER);
+	float score = p_score["score"];
+	String category = p_score["category"];
 
 	NSString *cat_str = [[[NSString alloc] initWithUTF8String:category.utf8().get_data()] autorelease];
 	GKScore *reporter = [[[GKScore alloc] initWithLeaderboardIdentifier:cat_str] autorelease];
@@ -153,11 +161,10 @@ Error GameCenter::post_score(Variant p_score) {
 	return OK;
 };
 
-Error GameCenter::award_achievement(Variant p_params) {
-	Dictionary params = p_params;
-	ERR_FAIL_COND_V(!params.has("name") || !params.has("progress"), ERR_INVALID_PARAMETER);
-	String name = params["name"];
-	float progress = params["progress"];
+Error GameCenter::award_achievement(Dictionary p_params) {
+	ERR_FAIL_COND_V(!p_params.has("name") || !p_params.has("progress"), ERR_INVALID_PARAMETER);
+	String name = p_params["name"];
+	float progress = p_params["progress"];
 
 	NSString *name_str = [[[NSString alloc] initWithUTF8String:name.utf8().get_data()] autorelease];
 	GKAchievement *achievement = [[[GKAchievement alloc] initWithIdentifier:name_str] autorelease];
@@ -167,8 +174,8 @@ Error GameCenter::award_achievement(Variant p_params) {
 
 	achievement.percentComplete = progress;
 	achievement.showsCompletionBanner = NO;
-	if (params.has("show_completion_banner")) {
-		achievement.showsCompletionBanner = params["show_completion_banner"] ? YES : NO;
+	if (p_params.has("show_completion_banner")) {
+		achievement.showsCompletionBanner = p_params["show_completion_banner"] ? YES : NO;
 	}
 
 	[GKAchievement reportAchievements:@[ achievement ]
@@ -202,7 +209,7 @@ void GameCenter::request_achievement_descriptions() {
 			Array hidden;
 			Array replayable;
 
-			for (int i = 0; i < [descriptions count]; i++) {
+			for (NSUInteger i = 0; i < [descriptions count]; i++) {
 				GKAchievementDescription *description = [descriptions objectAtIndex:i];
 
 				const char *str = [description.identifier UTF8String];
@@ -250,7 +257,7 @@ void GameCenter::request_achievements() {
 			PackedStringArray names;
 			PackedFloat32Array percentages;
 
-			for (int i = 0; i < [achievements count]; i++) {
+			for (NSUInteger i = 0; i < [achievements count]; i++) {
 				GKAchievement *achievement = [achievements objectAtIndex:i];
 				const char *str = [achievement.identifier UTF8String];
 				names.push_back(String::utf8(str != NULL ? str : ""));
@@ -285,14 +292,12 @@ void GameCenter::reset_achievements() {
 	}];
 };
 
-Error GameCenter::show_game_center(Variant p_params) {
+Error GameCenter::show_game_center(Dictionary p_params) {
 	ERR_FAIL_COND_V(!NSProtocolFromString(@"GKGameCenterControllerDelegate"), FAILED);
 
-	Dictionary params = p_params;
-
 	GKGameCenterViewControllerState view_state = GKGameCenterViewControllerStateDefault;
-	if (params.has("view")) {
-		String view_name = params["view"];
+	if (p_params.has("view")) {
+		String view_name = p_params["view"];
 		if (view_name == "default") {
 			view_state = GKGameCenterViewControllerStateDefault;
 		} else if (view_name == "leaderboards") {
@@ -306,7 +311,7 @@ Error GameCenter::show_game_center(Variant p_params) {
 		}
 	}
 
-	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc] init];
+	GKGameCenterViewController *controller = [[[GKGameCenterViewController alloc] init] autorelease];
 	ERR_FAIL_COND_V(!controller, FAILED);
 
 	ViewController *root_controller = (ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
@@ -316,8 +321,8 @@ Error GameCenter::show_game_center(Variant p_params) {
 	controller.viewState = view_state;
 	if (view_state == GKGameCenterViewControllerStateLeaderboards) {
 		controller.leaderboardIdentifier = nil;
-		if (params.has("leaderboard_name")) {
-			String name = params["leaderboard_name"];
+		if (p_params.has("leaderboard_name")) {
+			String name = p_params["leaderboard_name"];
 			NSString *name_str = [[[NSString alloc] initWithUTF8String:name.utf8().get_data()] autorelease];
 			controller.leaderboardIdentifier = name_str;
 		}
@@ -341,7 +346,13 @@ Error GameCenter::request_identity_verification_signature() {
 			ret["signature"] = [[signature base64EncodedStringWithOptions:0] UTF8String];
 			ret["salt"] = [[salt base64EncodedStringWithOptions:0] UTF8String];
 			ret["timestamp"] = timestamp;
-			ret["player_id"] = [player.playerID UTF8String];
+			if (@available(iOS 13, *)) {
+				ret["player_id"] = [player.teamPlayerID UTF8String];
+#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
+			} else {
+				ret["player_id"] = [player.playerID UTF8String];
+#endif
+			}
 		} else {
 			ret["result"] = "error";
 			ret["error_code"] = (int64_t)error.code;

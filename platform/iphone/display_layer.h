@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  display_layer.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef GAME_CENTER_ENABLED
+#import <OpenGLES/EAGLDrawable.h>
+#import <QuartzCore/QuartzCore.h>
 
-#ifndef GAME_CENTER_H
-#define GAME_CENTER_H
+@protocol DisplayLayer <NSObject>
 
-#include "core/object.h"
+- (void)renderDisplayLayer;
+- (void)initializeDisplayLayer;
+- (void)layoutDisplayLayer;
 
-class GameCenter : public Object {
-	GDCLASS(GameCenter, Object);
+@end
 
-	static GameCenter *instance;
-	static void _bind_methods();
-
-	List<Variant> pending_events;
-
-	bool authenticated;
-
-	void return_connect_error(const char *p_error_description);
-
-public:
-	void connect();
-	bool is_authenticated();
-
-	Error post_score(Dictionary p_score);
-	Error award_achievement(Dictionary p_params);
-	void reset_achievements();
-	void request_achievements();
-	void request_achievement_descriptions();
-	Error show_game_center(Dictionary p_params);
-	Error request_identity_verification_signature();
-
-	void game_center_closed();
-
-	int get_pending_event_count();
-	Variant pop_pending_event();
-
-	static GameCenter *get_singleton();
-
-	GameCenter();
-	~GameCenter();
-};
-
+// An ugly workaround for iOS simulator
+#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+#if defined(__IPHONE_13_0)
+API_AVAILABLE(ios(13.0))
+@interface GodotMetalLayer : CAMetalLayer <DisplayLayer>
+#else
+@interface GodotMetalLayer : CALayer <DisplayLayer>
 #endif
-
+#else
+@interface GodotMetalLayer : CAMetalLayer <DisplayLayer>
 #endif
+@end
+
+API_DEPRECATED("OpenGLES is deprecated", ios(2.0, 12.0))
+@interface GodotOpenGLLayer : CAEAGLLayer <DisplayLayer>
+
+@end

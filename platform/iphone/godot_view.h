@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  godot_view.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef GAME_CENTER_ENABLED
+#import <UIKit/UIKit.h>
 
-#ifndef GAME_CENTER_H
-#define GAME_CENTER_H
+class String;
 
-#include "core/object.h"
+@protocol DisplayLayer;
+@protocol GodotViewRendererProtocol;
 
-class GameCenter : public Object {
-	GDCLASS(GameCenter, Object);
+@interface GodotView : UIView <UIKeyInput>
 
-	static GameCenter *instance;
-	static void _bind_methods();
+@property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
 
-	List<Variant> pending_events;
+@property(assign, readonly, nonatomic) BOOL isActive;
 
-	bool authenticated;
+@property(assign, nonatomic) BOOL useCADisplayLink;
+@property(strong, readonly, nonatomic) CALayer<DisplayLayer> *renderingLayer;
+@property(assign, readonly, nonatomic) BOOL canRender;
 
-	void return_connect_error(const char *p_error_description);
+@property(assign, nonatomic) NSTimeInterval renderingInterval;
 
-public:
-	void connect();
-	bool is_authenticated();
+- (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
+- (void)stopRendering;
+- (void)startRendering;
 
-	Error post_score(Dictionary p_score);
-	Error award_achievement(Dictionary p_params);
-	void reset_achievements();
-	void request_achievements();
-	void request_achievement_descriptions();
-	Error show_game_center(Dictionary p_params);
-	Error request_identity_verification_signature();
+- (BOOL)becomeFirstResponderWithString:(String)p_existing;
 
-	void game_center_closed();
-
-	int get_pending_event_count();
-	Variant pop_pending_event();
-
-	static GameCenter *get_singleton();
-
-	GameCenter();
-	~GameCenter();
-};
-
-#endif
-
-#endif
+@end

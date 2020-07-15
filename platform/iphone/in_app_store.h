@@ -44,9 +44,9 @@ class InAppStore : public Object {
 	List<Variant> pending_events;
 
 public:
-	Error request_product_info(Variant p_params);
+	Error request_product_info(Dictionary p_params);
 	Error restore_purchases();
-	Error purchase(Variant p_params);
+	Error purchase(Dictionary p_params);
 
 	int get_pending_event_count();
 	Variant pop_pending_event();

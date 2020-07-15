@@ -39,8 +39,10 @@ extern "C" {
 
 bool auto_finish_transactions = true;
 NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
+static NSArray *latestProducts;
 
 @interface SKProduct (LocalizedPrice)
+
 @property(nonatomic, readonly) NSString *localizedPrice;
 @end
 
@@ -82,6 +84,8 @@ void InAppStore::_bind_methods() {
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
 	NSArray *products = response.products;
+	latestProducts = products;
+
 	Dictionary ret;
 	ret["type"] = "product_info";
 	ret["result"] = "ok";
@@ -126,11 +130,10 @@ void InAppStore::_bind_methods() {
 
 @end
 
-Error InAppStore::request_product_info(Variant p_params) {
-	Dictionary params = p_params;
-	ERR_FAIL_COND_V(!params.has("product_ids"), ERR_INVALID_PARAMETER);
+Error InAppStore::request_product_info(Dictionary p_params) {
+	ERR_FAIL_COND_V(!p_params.has("product_ids"), ERR_INVALID_PARAMETER);
 
-	PackedStringArray pids = params["product_ids"];
+	PackedStringArray pids = p_params["product_ids"];
 	printf("************ request product info! %i\n", pids.size());
 
 	NSMutableArray *array = [[[NSMutableArray alloc] initWithCapacity:pids.size()] autorelease];
@@ -198,11 +201,11 @@ Error InAppStore::restore_purchases() {
 						// which is still available in iOS 7.
 
 						// Use SKPaymentTransaction's transactionReceipt.
-						receipt = transaction.transactionReceipt;
+						receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
 					}
 
 				} else {
-					receipt = transaction.transactionReceipt;
+					receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
 				}
 
 				NSString *receipt_to_send = nil;
@@ -254,17 +257,32 @@ Error InAppStore::restore_purchases() {
 
 @end
 
-Error InAppStore::purchase(Variant p_params) {
+Error InAppStore::purchase(Dictionary p_params) {
 	ERR_FAIL_COND_V(![SKPaymentQueue canMakePayments], ERR_UNAVAILABLE);
 	if (![SKPaymentQueue canMakePayments])
 		return ERR_UNAVAILABLE;
 
 	printf("purchasing!\n");
-	Dictionary params = p_params;
-	ERR_FAIL_COND_V(!params.has("product_id"), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_params.has("product_id"), ERR_INVALID_PARAMETER);
 
-	NSString *pid = [[[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()] autorelease];
-	SKPayment *payment = [SKPayment paymentWithProductIdentifier:pid];
+	NSString *pid = [[[NSString alloc] initWithUTF8String:String(p_params["product_id"]).utf8().get_data()] autorelease];
+
+	SKProduct *product = nil;
+
+	if (latestProducts) {
+		for (SKProduct *storedProduct in latestProducts) {
+			if ([storedProduct.productIdentifier isEqualToString:pid]) {
+				product = storedProduct;
+				break;
+			}
+		}
+	}
+
+	if (!product) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	SKPayment *payment = [SKPayment paymentWithProduct:product];
 	SKPaymentQueue *defq = [SKPaymentQueue defaultQueue];
 	[defq addPayment:payment];
 	printf("purchase sent!\n");
