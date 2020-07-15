@@ -57,9 +57,6 @@ class OS_OSX : public OS_Unix {
 
 	MainLoop *main_loop;
 
-public:
-	String open_with_filename;
-
 protected:
 	virtual void initialize_core();
 	virtual void initialize();

@@ -423,7 +423,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	MAIN_PRINT("Main: Parse CMDLine");
 
 	/* argument parsing and main creation */
-	List<String> args;
+	List<String> args = OS::get_singleton()->get_cmdline_args(); // Add macOS openFiles to the args.
 	List<String> main_args;
 
 	for (int i = 0; i < argc; i++) {

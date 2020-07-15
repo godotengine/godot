@@ -68,6 +68,7 @@ public:
 	RenderingDeviceVulkan *rendering_device_vulkan;
 #endif
 
+	void _menu_callback(id p_sender) const;
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
 
@@ -160,7 +161,6 @@ public:
 
 	String rendering_driver;
 
-	id delegate;
 	id autoreleasePool;
 	CGEventSourceRef eventSource;
 

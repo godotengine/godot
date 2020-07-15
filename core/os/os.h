@@ -102,14 +102,14 @@ protected:
 	virtual void finalize() = 0;
 	virtual void finalize_core() = 0;
 
-	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
-
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
