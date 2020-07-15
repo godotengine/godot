@@ -295,6 +295,7 @@ public:
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
+	virtual void enable_editor();
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();

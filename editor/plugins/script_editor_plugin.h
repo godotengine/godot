@@ -90,6 +90,7 @@ public:
 	virtual RES get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
 	virtual void set_edited_resource(const RES &p_res) = 0;
+	virtual void enable_editor() = 0;
 	virtual void reload_text() = 0;
 	virtual String get_name() = 0;
 	virtual Ref<Texture> get_icon() = 0;
