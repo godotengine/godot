@@ -9,32 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_color_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="begin_key" type="String">
-			</argument>
-			<argument index="1" name="end_key" type="String">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<argument index="3" name="line_only" type="bool" default="false">
-			</argument>
-			<description>
-				Adds color region (given the delimiters) and its colors.
-			</description>
-		</method>
-		<method name="add_keyword_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Adds a [code]keyword[/code] and its [Color].
-			</description>
-		</method>
 		<method name="can_fold" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -49,13 +23,6 @@
 			</return>
 			<description>
 				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
-			</description>
-		</method>
-		<method name="clear_colors">
-			<return type="void">
-			</return>
-			<description>
-				Clears all custom syntax coloring information previously added with [method add_color_region] or [method add_keyword_color].
 			</description>
 		</method>
 		<method name="clear_undo_history">
@@ -152,15 +119,6 @@
 				Returns an array containing the line number of each breakpoint.
 			</description>
 		</method>
-		<method name="get_keyword_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<description>
-				Returns the [Color] of the specified [code]keyword[/code].
-			</description>
-		</method>
 		<method name="get_line" qualifiers="const">
 			<return type="String">
 			</return>
@@ -224,15 +182,6 @@
 			</return>
 			<description>
 				Returns a [String] text with the word under the mouse cursor location.
-			</description>
-		</method>
-		<method name="has_keyword_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<description>
-				Returns whether the specified [code]keyword[/code] has a color set to it or not.
 			</description>
 		</method>
 		<method name="insert_text_at_cursor">
@@ -473,8 +422,7 @@
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
 			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
 		</member>
-		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled" default="false">
-			If [code]true[/code], any custom color properties that have been set for this [TextEdit] will be visible.
+		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
@@ -506,6 +454,12 @@
 			</argument>
 			<description>
 				Emitted when the info icon is clicked.
+			</description>
+		</signal>
+		<signal name="line_edited_from">
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="request_completion">
@@ -627,8 +581,6 @@
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
-		<theme_item name="function_color" type="Color" default="Color( 0.4, 0.64, 0.81, 1 )">
-		</theme_item>
 		<theme_item name="line_number_color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
 			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
 		</theme_item>
@@ -638,12 +590,8 @@
 		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
 			Sets the [Color] of marked text.
 		</theme_item>
-		<theme_item name="member_variable_color" type="Color" default="Color( 0.9, 0.31, 0.35, 1 )">
-		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
-		</theme_item>
-		<theme_item name="number_color" type="Color" default="Color( 0.92, 0.58, 0.2, 1 )">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
@@ -654,8 +602,6 @@
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture2D">
-		</theme_item>
-		<theme_item name="symbol_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="tab" type="Texture2D">
 			Sets a custom [Texture2D] for tab text characters.

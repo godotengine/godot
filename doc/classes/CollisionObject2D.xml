@@ -216,7 +216,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable">
+		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" default="true">
 			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events.
 		</member>
 	</members>
