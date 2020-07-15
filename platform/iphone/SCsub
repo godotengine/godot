@@ -3,10 +3,8 @@
 Import("env")
 
 iphone_lib = [
-    "godot_iphone.cpp",
-    "os_iphone.cpp",
-    "semaphore_iphone.cpp",
-    "gl_view.mm",
+    "godot_iphone.mm",
+    "os_iphone.mm",
     "main.m",
     "app_delegate.mm",
     "view_controller.mm",
@@ -15,6 +13,11 @@ iphone_lib = [
     "icloud.mm",
     "ios.mm",
     "vulkan_context_iphone.mm",
+    "display_server_iphone.mm",
+    "joypad_iphone.mm",
+    "godot_view.mm",
+    "display_layer.mm",
+    "godot_view_renderer.mm",
 ]
 
 env_ios = env.Clone()
