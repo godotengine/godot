@@ -41,7 +41,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_project_name"), &EditorVCSInterface::_get_project_name);
 	ClassDB::bind_method(D_METHOD("_get_modified_files_data"), &EditorVCSInterface::_get_modified_files_data);
 	ClassDB::bind_method(D_METHOD("_commit", "msg"), &EditorVCSInterface::_commit);
-	ClassDB::bind_method(D_METHOD("_get_file_diff", "file_path"), &EditorVCSInterface::_get_file_diff);
+	ClassDB::bind_method(D_METHOD("_get_file_diff", "file_path", "area"), &EditorVCSInterface::_get_file_diff);
 	ClassDB::bind_method(D_METHOD("_stage_file", "file_path"), &EditorVCSInterface::_stage_file);
 	ClassDB::bind_method(D_METHOD("_unstage_file", "file_path"), &EditorVCSInterface::_unstage_file);
 	ClassDB::bind_method(D_METHOD("_discard_file", "file_path"), &EditorVCSInterface::_discard_file);
@@ -63,7 +63,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unstage_file", "file_path"), &EditorVCSInterface::unstage_file);
 	ClassDB::bind_method(D_METHOD("discard_file", "file_path"), &EditorVCSInterface::discard_file);
 	ClassDB::bind_method(D_METHOD("commit", "msg"), &EditorVCSInterface::commit);
-	ClassDB::bind_method(D_METHOD("get_file_diff", "file_path"), &EditorVCSInterface::get_file_diff);
+	ClassDB::bind_method(D_METHOD("get_file_diff", "file_path", "area"), &EditorVCSInterface::get_file_diff);
 	ClassDB::bind_method(D_METHOD("shut_down"), &EditorVCSInterface::shut_down);
 	ClassDB::bind_method(D_METHOD("get_project_name"), &EditorVCSInterface::get_project_name);
 	ClassDB::bind_method(D_METHOD("get_vcs_name"), &EditorVCSInterface::get_vcs_name);
@@ -74,6 +74,17 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pull"), &EditorVCSInterface::pull);
 	ClassDB::bind_method(D_METHOD("fetch"), &EditorVCSInterface::fetch);
 	ClassDB::bind_method(D_METHOD("set_up_credentials"), &EditorVCSInterface::set_up_credentials);
+
+	BIND_ENUM_CONSTANT(CHANGE_TYPE_NEW);
+	BIND_ENUM_CONSTANT(CHANGE_TYPE_MODIFIED);
+	BIND_ENUM_CONSTANT(CHANGE_TYPE_RENAMED);
+	BIND_ENUM_CONSTANT(CHANGE_TYPE_DELETED);
+	BIND_ENUM_CONSTANT(CHANGE_TYPE_TYPECHANGE);
+	BIND_ENUM_CONSTANT(CHANGE_TYPE_UNMERGED);
+
+	BIND_ENUM_CONSTANT(TREE_AREA_COMMIT);
+	BIND_ENUM_CONSTANT(TREE_AREA_STAGED);
+	BIND_ENUM_CONSTANT(TREE_AREA_UNSTAGED);
 }
 
 bool EditorVCSInterface::_initialize(String p_project_root_path) {
@@ -107,7 +118,7 @@ void EditorVCSInterface::_discard_file(String p_file_path) {
 	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
 }
 
-Array EditorVCSInterface::_get_file_diff(String p_file_path) {
+Array EditorVCSInterface::_get_file_diff(String p_identifier, TreeArea area) {
 	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
 	return Array();
 }
@@ -203,9 +214,11 @@ void EditorVCSInterface::commit(String p_msg) {
 	}
 }
 
-Array EditorVCSInterface::get_file_diff(String p_file_path) {
+Array EditorVCSInterface::get_file_diff(String p_identifier, TreeArea area) {
+
 	if (is_addon_ready()) {
-		return call("_get_file_diff", p_file_path);
+
+		return call("_get_file_diff", p_identifier, area);
 	}
 	return Array();
 }

@@ -40,10 +40,27 @@ class EditorVCSInterface : public Object {
 
 	bool is_initialized;
 
+public:
+	enum ChangeType {
+		CHANGE_TYPE_NEW = 0,
+		CHANGE_TYPE_MODIFIED = 1,
+		CHANGE_TYPE_RENAMED = 2,
+		CHANGE_TYPE_DELETED = 3,
+		CHANGE_TYPE_TYPECHANGE = 4,
+		CHANGE_TYPE_UNMERGED = 5
+	};
+
+	enum TreeArea {
+		TREE_AREA_COMMIT = 0,
+		TREE_AREA_STAGED = 1,
+		TREE_AREA_UNSTAGED = 2
+	};
+
 protected:
 	static EditorVCSInterface *singleton;
 
 	static void _bind_methods();
+	static void _bind_types();
 
 	// Implemented by addons as end points for the proxy functions
 	virtual bool _initialize(String p_project_root_path);
@@ -53,7 +70,7 @@ protected:
 	virtual void _discard_file(String p_file_path);
 	virtual void _unstage_file(String p_file_path);
 	virtual void _commit(String p_msg);
-	virtual Array _get_file_diff(String p_file_path);
+	virtual Array _get_file_diff(String p_file_path, TreeArea area);
 	virtual bool _shut_down();
 	virtual String _get_project_name();
 	virtual String _get_vcs_name();
@@ -79,7 +96,7 @@ public:
 	void unstage_file(String p_file_path);
 	void discard_file(String p_file_path);
 	void commit(String p_msg);
-	Array get_file_diff(String p_file_path);
+	Array get_file_diff(String p_identifier, TreeArea area); // area = 0 unstage, 1 = stage, 2 = commit
 	bool shut_down();
 	String get_project_name();
 	String get_vcs_name();
@@ -94,5 +111,8 @@ public:
 	EditorVCSInterface();
 	virtual ~EditorVCSInterface();
 };
+
+VARIANT_ENUM_CAST(EditorVCSInterface::ChangeType);
+VARIANT_ENUM_CAST(EditorVCSInterface::TreeArea);
 
 #endif // !EDITOR_VCS_INTERFACE_H
