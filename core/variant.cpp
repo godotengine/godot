@@ -1454,7 +1454,7 @@ Variant::operator signed long() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._real;
+			return _data._float;
 		case STRING:
 			return operator String().to_int();
 		default: {
@@ -1474,7 +1474,7 @@ Variant::operator unsigned long() const {
 		case INT:
 			return _data._int;
 		case FLOAT:
-			return _data._real;
+			return _data._float;
 		case STRING:
 			return operator String().to_int();
 		default: {
