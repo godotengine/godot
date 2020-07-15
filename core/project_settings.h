@@ -142,6 +142,7 @@ public:
 	int get_order(const String &p_name) const;
 	void set_order(const String &p_name, int p_order);
 	void set_builtin_order(const String &p_name);
+	bool is_builtin_setting(const String &p_name) const;
 
 	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 

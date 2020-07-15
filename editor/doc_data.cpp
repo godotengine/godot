@@ -316,8 +316,7 @@ void DocData::generate(bool p_basic_types) {
 
 			if (name == "ProjectSettings") {
 				// Special case for project settings, so that settings are not taken from the current project's settings
-				if (E->get().name == "script" ||
-						ProjectSettings::get_singleton()->get_order(E->get().name) >= ProjectSettings::NO_BUILTIN_ORDER_BASE) {
+				if (E->get().name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E->get().name)) {
 					continue;
 				}
 				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
