@@ -508,7 +508,7 @@ void RasterizerEffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_ro
 	}
 
 	if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
-		//blurr
+		//blur
 
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 

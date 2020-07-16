@@ -2782,7 +2782,7 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
-			if (wd.fullscreen) { //fullscreen window should be resizable, style will be applyed on exiting fs
+			if (wd.fullscreen) { //fullscreen window should be resizable, style will be applied on exiting fs
 				return;
 			}
 			if (p_enabled) {

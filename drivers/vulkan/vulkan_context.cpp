@@ -154,7 +154,7 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_n
 			}
 		}
 		if (!found) {
-			ERR_PRINT("Cant find layer: " + String(check_names[i]));
+			ERR_PRINT("Can't find layer: " + String(check_names[i]));
 			return 0;
 		}
 	}

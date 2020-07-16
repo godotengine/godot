@@ -112,7 +112,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	/*****************/
 
 	// In Vulkan, the concept of textures does not exist,
-	// intead there is the image (the memory prety much,
+	// instead there is the image (the memory pretty much,
 	// the view (how the memory is interpreted) and the
 	// sampler (how it's sampled from the shader).
 	//
@@ -327,7 +327,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	// Vertex buffers in Vulkan are similar to how
 	// they work in OpenGL, except that instead of
-	// an attribtue index, there is a buffer binding
+	// an attribute index, there is a buffer binding
 	// index (for binding the buffers in real-time)
 	// and a location index (what is used in the shader).
 	//
@@ -869,8 +869,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		VkCommandPool command_pool;
-		VkCommandBuffer setup_command_buffer; //used at the begining of every frame for set-up
-		VkCommandBuffer draw_command_buffer; //used at the begining of every frame for set-up
+		VkCommandBuffer setup_command_buffer; //used at the beginning of every frame for set-up
+		VkCommandBuffer draw_command_buffer; //used at the beginning of every frame for set-up
 
 		struct Timestamp {
 			String description;
