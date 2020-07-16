@@ -4269,35 +4269,82 @@ String String::unquote() const {
 }
 
 #ifdef TOOLS_ENABLED
-String TTR(const String &p_text) {
+String TTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->tool_translate(p_text);
+		return TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 	}
 
 	return p_text;
 }
 
-String DTR(const String &p_text) {
+String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
+	}
+
+	// Return message based on English plural rule if translation is not possible.
+	if (p_n == 1) {
+		return p_text;
+	} else {
+		return p_text_plural;
+	}
+}
+
+String DTR(const String &p_text, const String &p_context) {
 	// Comes straight from the XML, so remove indentation and any trailing whitespace.
 	const String text = p_text.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate(text);
+		return TranslationServer::get_singleton()->doc_translate(text, p_context);
 	}
 
 	return text;
 }
+
+String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+	const String text = p_text.dedent().strip_edges();
+	const String text_plural = p_text_plural.dedent().strip_edges();
+
+	if (TranslationServer::get_singleton()) {
+		return TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context);
+	}
+
+	// Return message based on English plural rule if translation is not possible.
+	if (p_n == 1) {
+		return text;
+	} else {
+		return text_plural;
+	}
+}
 #endif
 
-String RTR(const String &p_text) {
+String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		String rtr = TranslationServer::get_singleton()->tool_translate(p_text);
+		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 		if (rtr == String() || rtr == p_text) {
-			return TranslationServer::get_singleton()->translate(p_text);
+			return TranslationServer::get_singleton()->translate(p_text, p_context);
 		} else {
 			return rtr;
 		}
 	}
 
 	return p_text;
+}
+
+String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+	if (TranslationServer::get_singleton()) {
+		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
+		if (rtr == String() || rtr == p_text || rtr == p_text_plural) {
+			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
+		} else {
+			return rtr;
+		}
+	}
+
+	// Return message based on English plural rule if translation is not possible.
+	if (p_n == 1) {
+		return p_text;
+	} else {
+		return p_text_plural;
+	}
 }

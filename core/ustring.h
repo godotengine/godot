@@ -410,8 +410,10 @@ _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 // and doc translate for the class reference (DTR).
 #ifdef TOOLS_ENABLED
 // Gets parsed.
-String TTR(const String &);
-String DTR(const String &);
+String TTR(const String &p_text, const String &p_context = "");
+String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
+String DTR(const String &p_text, const String &p_context = "");
+String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 // Use for C strings.
 #define TTRC(m_value) (m_value)
 // Use to avoid parsing (for use later with C strings).
@@ -425,7 +427,8 @@ String DTR(const String &);
 #endif
 
 // Runtime translate for the public node API.
-String RTR(const String &);
+String RTR(const String &p_text, const String &p_context = "");
+String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
 bool is_symbol(CharType c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
