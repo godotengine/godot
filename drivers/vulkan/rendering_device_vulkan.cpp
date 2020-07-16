@@ -40,6 +40,33 @@
 
 #define FORCE_FULL_BARRIER
 
+// Get the Vulkan object information and possible stage access types (bitwise OR'd with incoming values)
+RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &stage_mask, VkAccessFlags &access_mask) {
+	Buffer *buffer = nullptr;
+	if (vertex_buffer_owner.owns(p_buffer)) {
+		stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+		access_mask |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+		buffer = vertex_buffer_owner.getornull(p_buffer);
+	} else if (index_buffer_owner.owns(p_buffer)) {
+		stage_mask |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+		access_mask |= VK_ACCESS_INDEX_READ_BIT;
+		buffer = index_buffer_owner.getornull(p_buffer);
+	} else if (uniform_buffer_owner.owns(p_buffer)) {
+		stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access_mask |= VK_ACCESS_UNIFORM_READ_BIT;
+		buffer = uniform_buffer_owner.getornull(p_buffer);
+	} else if (texture_buffer_owner.owns(p_buffer)) {
+		stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access_mask |= VK_ACCESS_SHADER_READ_BIT;
+		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
+	} else if (storage_buffer_owner.owns(p_buffer)) {
+		stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access_mask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		buffer = storage_buffer_owner.getornull(p_buffer);
+	}
+	return buffer;
+}
+
 void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 	if (!dependency_map.has(p_depends_on)) {
 		dependency_map[p_depends_on] = Set<RID>();
@@ -4886,31 +4913,11 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	ERR_FAIL_COND_V_MSG(draw_list && p_sync_with_draw, ERR_INVALID_PARAMETER,
 			"Updating buffers in 'sync to draw' mode is forbidden during creation of a draw list");
 
-	VkPipelineStageFlags dst_stage_mask;
-	VkAccessFlags dst_access;
+	VkPipelineStageFlags dst_stage_mask = 0;
+	VkAccessFlags dst_access = 0;
 
-	Buffer *buffer = nullptr;
-	if (vertex_buffer_owner.owns(p_buffer)) {
-		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-		dst_access = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-		buffer = vertex_buffer_owner.getornull(p_buffer);
-	} else if (index_buffer_owner.owns(p_buffer)) {
-		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-		dst_access = VK_ACCESS_INDEX_READ_BIT;
-		buffer = index_buffer_owner.getornull(p_buffer);
-	} else if (uniform_buffer_owner.owns(p_buffer)) {
-		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		dst_access = VK_ACCESS_UNIFORM_READ_BIT;
-		buffer = uniform_buffer_owner.getornull(p_buffer);
-	} else if (texture_buffer_owner.owns(p_buffer)) {
-		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		dst_access = VK_ACCESS_SHADER_READ_BIT;
-		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
-	} else if (storage_buffer_owner.owns(p_buffer)) {
-		dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		dst_access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-		buffer = storage_buffer_owner.getornull(p_buffer);
-	} else {
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, dst_stage_mask, dst_access);
+	if (!buffer) {
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer argument is not a valid buffer of any type.");
 	}
 
@@ -4934,20 +4941,20 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	_THREAD_SAFE_METHOD_
 
-	Buffer *buffer = nullptr;
-	if (vertex_buffer_owner.owns(p_buffer)) {
-		buffer = vertex_buffer_owner.getornull(p_buffer);
-	} else if (index_buffer_owner.owns(p_buffer)) {
-		buffer = index_buffer_owner.getornull(p_buffer);
-	} else if (texture_buffer_owner.owns(p_buffer)) {
-		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
-	} else if (storage_buffer_owner.owns(p_buffer)) {
-		buffer = storage_buffer_owner.getornull(p_buffer);
-	} else {
+	// It could be this buffer was just created
+	VkPipelineShaderStageCreateFlags src_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	VkAccessFlags src_access_mask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	// Get the vulkan buffer and the potential stage/access possible
+	Buffer *buffer = _get_buffer_from_owner(p_buffer, src_stage_mask, src_access_mask);
+	if (!buffer) {
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
 
+	// Make sure  no one is using the buffer -- the "false" gets us to the same command buffer as below.
+	_buffer_memory_barrier(buffer->buffer, 0, buffer->size, src_stage_mask, src_access_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT, false);
+
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
+
 	Buffer tmp_buffer;
 	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 	VkBufferCopy region;
