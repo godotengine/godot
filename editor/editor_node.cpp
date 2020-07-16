@@ -1991,10 +1991,9 @@ void EditorNode::_edit_current() {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
-			}
-
-			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
-				// update screen main_plugin
+			} else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || (ScriptEditor::get_singleton()->can_take_away_focus() || Input::get_singleton()->is_key_pressed(KEY_ALT)))) {
+				// Update screen main_plugin if plugin is different and script editor either doesnt exist, isn't visible or can lose focus.
+				// Even if script editor can't lose focus, user can override behaviour by pressing alt.
 
 				if (!changing_scene) {
 					if (editor_plugin_screen) {

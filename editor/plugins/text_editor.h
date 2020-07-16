@@ -132,7 +132,6 @@ public:
 	virtual void tag_saved_version() override;
 	virtual void update_settings() override;
 	virtual bool show_members_overview() override;
-	virtual bool can_lose_focus_on_node_selection() override { return true; }
 	virtual void set_debugger_active(bool p_active) override;
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;

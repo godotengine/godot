@@ -320,7 +320,6 @@ public:
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj) override;
 	virtual Control *get_edit_menu() override;
 	virtual void clear_edit_menu() override;
-	virtual bool can_lose_focus_on_node_selection() override { return false; }
 	virtual void validate() override;
 
 	static void register_editor();

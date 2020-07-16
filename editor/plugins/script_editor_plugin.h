@@ -155,7 +155,6 @@ public:
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
-	virtual bool can_lose_focus_on_node_selection() { return true; }
 
 	virtual bool show_members_overview() = 0;
 
@@ -483,7 +482,7 @@ public:
 
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
 
-	bool can_take_away_focus() const;
+	bool can_take_away_focus() const { return false; };
 
 	VSplitContainer *get_left_list_split() { return list_split; }
 
