@@ -65,7 +65,7 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 		dependency_map.erase(E);
 	}
 
-	//reverse depenencies must be unreferenced
+	//reverse dependencies must be unreferenced
 	E = reverse_dependency_map.find(p_id);
 
 	if (E) {
@@ -2278,8 +2278,8 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 
 					VkBufferImageCopy buffer_image_copy;
 					buffer_image_copy.bufferOffset = alloc_offset;
-					buffer_image_copy.bufferRowLength = 0; //tigthly packed
-					buffer_image_copy.bufferImageHeight = 0; //tigthly packed
+					buffer_image_copy.bufferRowLength = 0; //tightly packed
+					buffer_image_copy.bufferImageHeight = 0; //tightly packed
 
 					buffer_image_copy.imageSubresource.aspectMask = texture->read_aspect_mask;
 					buffer_image_copy.imageSubresource.mipLevel = mm_i;
@@ -2726,8 +2726,8 @@ Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID
 	ERR_FAIL_COND_V_MSG(dst_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Destination texture must be 2D (or a slice of a 3D/Cube texture).");
 	ERR_FAIL_COND_V_MSG(dst_tex->samples != TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Destination texture must not be multisampled.");
 
-	ERR_FAIL_COND_V_MSG(src_tex->format != dst_tex->format, ERR_INVALID_PARAMETER, "Source and Destionation textures must be the same format.");
-	ERR_FAIL_COND_V_MSG(src_tex->width != dst_tex->width && src_tex->height != dst_tex->height && src_tex->depth != dst_tex->depth, ERR_INVALID_PARAMETER, "Source and Destionation textures must have the same dimensions.");
+	ERR_FAIL_COND_V_MSG(src_tex->format != dst_tex->format, ERR_INVALID_PARAMETER, "Source and Destination textures must be the same format.");
+	ERR_FAIL_COND_V_MSG(src_tex->width != dst_tex->width && src_tex->height != dst_tex->height && src_tex->depth != dst_tex->depth, ERR_INVALID_PARAMETER, "Source and Destination textures must have the same dimensions.");
 
 	ERR_FAIL_COND_V_MSG(src_tex->read_aspect_mask != dst_tex->read_aspect_mask, ERR_INVALID_PARAMETER,
 			"Source and destination texture must be of the same type (color or depth).");
@@ -3531,7 +3531,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 			const uint16_t *index16 = (const uint16_t *)r;
 			for (uint32_t i = 0; i < p_index_count; i++) {
 				if (p_use_restart_indices && index16[i] == 0xFFFF) {
-					continue; //restart index, ingnore
+					continue; //restart index, ignore
 				}
 				index_buffer.max_index = MAX(index16[i], index_buffer.max_index);
 			}
@@ -3539,7 +3539,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 			const uint32_t *index32 = (const uint32_t *)r;
 			for (uint32_t i = 0; i < p_index_count; i++) {
 				if (p_use_restart_indices && index32[i] == 0xFFFFFFFF) {
-					continue; //restart index, ingnore
+					continue; //restart index, ignore
 				}
 				index_buffer.max_index = MAX(index32[i], index_buffer.max_index);
 			}
@@ -5594,7 +5594,7 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 
 	for (int i = 0; i < p_storage_textures.size(); i++) {
 		Texture *texture = texture_owner.getornull(p_storage_textures[i]);
-		ERR_CONTINUE_MSG(!(texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT), "Supplied storage texture " + itos(i) + " for draw list ist not set to be used for storage.");
+		ERR_CONTINUE_MSG(!(texture->usage_flags & TEXTURE_USAGE_STORAGE_BIT), "Supplied storage texture " + itos(i) + " for draw list is not set to be used for storage.");
 
 		if (texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT) {
 			//must change layout to general
@@ -6161,9 +6161,9 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 		//make sure format is right
 		ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format != dl->validation.vertex_format,
 				"The vertex format used to create the pipeline does not match the vertex format bound.");
-		//make sure amount of instances is valid
+		//make sure number of instances is valid
 		ERR_FAIL_COND_MSG(p_instances > dl->validation.vertex_max_instances_allowed,
-				"Amount of instances requested (" + itos(p_instances) + " is larger than the maximum amount suported by the bound vertex array (" + itos(dl->validation.vertex_max_instances_allowed) + ").");
+				"Number of instances requested (" + itos(p_instances) + " is larger than the maximum number supported by the bound vertex array (" + itos(dl->validation.vertex_max_instances_allowed) + ").");
 	}
 
 	if (dl->validation.pipeline_push_constant_size > 0) {
@@ -7359,7 +7359,7 @@ uint64_t RenderingDeviceVulkan::get_captured_timestamp_gpu_time(uint32_t p_index
 
 	// this sucks because timestampPeriod multiplier is a float, while the timestamp is 64 bits nanosecs.
 	// so, in cases like nvidia which give you enormous numbers and 1 as multiplier, multiplying is next to impossible
-	// need to do 128 bits fixed point multiplication to get the rigth value
+	// need to do 128 bits fixed point multiplication to get the right value
 
 	uint64_t shift_bits = 16;
 

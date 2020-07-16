@@ -180,7 +180,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_32(0); //dataformat
 	f->store_32(0); //mipmap limit
 
-	//reserverd
+	//reserved
 	f->store_32(0);
 	f->store_32(0);
 	f->store_32(0);

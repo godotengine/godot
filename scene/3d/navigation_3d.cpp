@@ -109,7 +109,7 @@ Navigation3D::Navigation3D() {
 	map = NavigationServer3D::get_singleton()->map_create();
 
 	set_cell_size(0.3);
-	set_edge_connection_margin(5.0); // Five meters, depends alot on the agents radius
+	set_edge_connection_margin(5.0); // Five meters, depends a lot on the agent's radius
 
 	up = Vector3(0, 1, 0);
 }
