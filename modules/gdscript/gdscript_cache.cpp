@@ -109,9 +109,12 @@ void GDScriptCache::remove_script(const String &p_path) {
 	singleton->full_gdscript_cache.erase(p_path);
 }
 
-Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error) {
+Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error, const String &p_owner) {
 	MutexLock(singleton->lock);
 	Ref<GDScriptParserRef> ref;
+	if (p_owner != String()) {
+		singleton->dependencies[p_owner].insert(p_path);
+	}
 	if (singleton->parser_map.has(p_path)) {
 		ref = singleton->parser_map[p_path];
 	} else {
@@ -120,7 +123,7 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 		ref->parser = parser;
 		ref->path = p_path;
 		singleton->parser_map[p_path] = ref;
-		ref.unref();
+		ref->unreference();
 	}
 
 	r_error = ref->raise_status(p_status);
@@ -164,7 +167,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 
 	Ref<GDScript> script;
 	script.instance();
-	script->set_path(p_path);
+	script->set_path(p_path, true);
 	script->set_script_path(p_path);
 	script->load_source_code(p_path);
 
@@ -188,9 +191,15 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	}
 	Ref<GDScript> script = get_shallow_script(p_path);
 
+	r_error = script->load_source_code(p_path);
+
+	if (r_error) {
+		return script;
+	}
+
 	r_error = script->reload();
 	if (r_error) {
-		return Ref<GDScript>();
+		return script;
 	}
 
 	singleton->full_gdscript_cache[p_path] = script;
@@ -200,6 +209,11 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 }
 
 Error GDScriptCache::finish_compiling(const String &p_owner) {
+	// Mark this as compiled.
+	Ref<GDScript> script = get_shallow_script(p_owner);
+	singleton->full_gdscript_cache[p_owner] = script;
+	singleton->shallow_gdscript_cache.erase(p_owner);
+
 	Set<String> depends = singleton->dependencies[p_owner];
 
 	Error err = OK;
@@ -212,6 +226,8 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 			err = this_err;
 		}
 	}
+
+	singleton->dependencies.erase(p_owner);
 
 	return err;
 }
