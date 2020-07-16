@@ -478,7 +478,17 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns an array of the tile's shapes.
+				Returns an array of dictionaries describing the tile's shapes.
+				[b]Dictionary structure in the array returned by this method:[/b]
+				[codeblock]
+				{
+				    "autotile_coord": Vector2,
+				    "one_way": bool,
+				    "one_way_margin": int,
+				    "shape": CollisionShape2D,
+				    "shape_transform": Transform2D,
+				}
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tile_get_texture" qualifiers="const">
