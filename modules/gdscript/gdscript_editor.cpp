@@ -171,6 +171,7 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 		}
 	}
 
+#ifdef DEBUG_ENABLED
 	if (r_safe_lines) {
 		const Set<int> &unsafe_lines = parser.get_unsafe_lines();
 		for (int i = 1; i <= parser.get_last_line_number(); i++) {
@@ -179,6 +180,7 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 			}
 		}
 	}
+#endif
 
 	return true;
 }
@@ -1994,8 +1996,8 @@ static void _find_last_return_in_block(GDScriptParser::CompletionContext &p_cont
 			} break;
 			case GDScriptParser::Node::MATCH: {
 				const GDScriptParser::MatchNode *match = static_cast<const GDScriptParser::MatchNode *>(p_context.current_suite->statements[i]);
-				for (int i = 0; i < match->branches.size(); i++) {
-					c.current_suite = match->branches[i]->block;
+				for (int j = 0; j < match->branches.size(); j++) {
+					c.current_suite = match->branches[j]->block;
 					_find_last_return_in_block(c, r_last_return_line, r_last_returned_value);
 				}
 			} break;

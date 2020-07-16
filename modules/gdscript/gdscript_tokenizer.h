@@ -121,6 +121,7 @@ public:
 			SIGNAL,
 			STATIC,
 			SUPER,
+			TRAIT,
 			VAR,
 			VOID,
 			YIELD,
