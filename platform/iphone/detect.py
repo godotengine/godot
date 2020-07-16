@@ -231,8 +231,7 @@ def configure(env):
 
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     env.Append(LINKFLAGS=["-framework", "IOSurface"])
-    if env["use_static_mvk"]:
-        env.Append(LINKFLAGS=["-framework", "MoltenVK"])
-        env["builtin_vulkan"] = False
-    elif not env["builtin_vulkan"]:
-        env.Append(LIBS=["vulkan"])
+
+    # Use Static Vulkan for iOS. Dynamic Framework works fine too.
+    env.Append(LINKFLAGS=["-framework", "MoltenVK"])
+    env["builtin_vulkan"] = False
