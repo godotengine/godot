@@ -585,7 +585,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		Ref<Script> script = current->get_edited_resource();
 		if (p_save) {
 			// Do not try to save internal scripts
-			if (!(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
+			if (!script.is_valid() || !(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
 				_menu_option(FILE_SAVE);
 			}
 		}
