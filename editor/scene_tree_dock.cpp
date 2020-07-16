@@ -1050,8 +1050,11 @@ void SceneTreeDock::_node_collapsed(Object *p_obj) {
 	if (!ti) {
 		return;
 	}
-
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	const bool should_collapse =
+			Input::get_singleton()->is_key_pressed(KEY_CONTROL) ||
+			Input::get_singleton()->is_key_pressed(KEY_SHIFT) ||
+			Input::get_singleton()->is_key_pressed(KEY_ALT);
+	if (should_collapse) {
 		_set_collapsed_recursive(ti, ti->is_collapsed());
 	}
 }
