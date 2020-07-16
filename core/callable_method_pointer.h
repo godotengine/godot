@@ -131,7 +131,7 @@ void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), con
 #ifdef DEBUG_METHODS_ENABLED
 	(p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
-	(p_instance->*p_method)(VariantCaster<P>::cast(p_args[Is])...);
+	(p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
 #endif
 }
 
@@ -228,7 +228,7 @@ void call_with_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), co
 #ifdef DEBUG_METHODS_ENABLED
 	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
-	(p_instance->*p_method)(VariantCaster<P>::cast(p_args[Is])...);
+	(p_instance->*p_method)(VariantCaster<P>::cast(*p_args[Is])...);
 #endif
 }
 
