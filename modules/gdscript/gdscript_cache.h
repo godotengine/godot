@@ -84,7 +84,7 @@ class GDScriptCache {
 	static void remove_script(const String &p_path);
 
 public:
-	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error);
+	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error, const String &p_owner = String());
 	static String get_source_code(const String &p_path);
 	static Ref<GDScript> get_shallow_script(const String &p_path, const String &p_owner = String());
 	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String());

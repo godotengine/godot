@@ -290,11 +290,11 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.script_path = path;
 
 				symbol.detail = "enum " + String(m.m_enum->identifier->name) + "{";
-				for (int i = 0; i < m.m_enum->values.size(); i++) {
-					if (i > 0) {
+				for (int j = 0; j < m.m_enum->values.size(); j++) {
+					if (j > 0) {
 						symbol.detail += ", ";
 					}
-					symbol.detail += String(m.m_enum->values[i].identifier->name) + " = " + itos(m.m_enum->values[i].value);
+					symbol.detail += String(m.m_enum->values[j].identifier->name) + " = " + itos(m.m_enum->values[j].value);
 				}
 				symbol.detail += "}";
 				r_symbol.children.push_back(symbol);

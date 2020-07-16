@@ -42,12 +42,13 @@
 #include "core/ustring.h"
 #include "core/variant.h"
 #include "core/vector.h"
+#include "gdscript_cache.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
-#include "gdscript_warning.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/string_builder.h"
+#include "gdscript_warning.h"
 #endif // DEBUG_ENABLED
 
 class GDScriptParser {
@@ -124,6 +125,7 @@ public:
 		StringName native_type;
 		StringName enum_type; // Enum name or the value name in an enum.
 		Ref<Script> script_type;
+		String script_path;
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
@@ -131,7 +133,7 @@ public:
 
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
-		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT; }
+		_FORCE_INLINE_ bool is_variant() const { return kind == VARIANT || kind == UNRESOLVED; }
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 		String to_string() const;
 
@@ -1019,12 +1021,14 @@ public:
 		COMPLETION_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
 		COMPLETION_ASSIGN, // Assignment based on type (e.g. enum values).
 		COMPLETION_ATTRIBUTE, // After id.| to look for members.
+		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
 		COMPLETION_BUILT_IN_TYPE_CONSTANT, // Constants inside a built-in type (e.g. Color.blue).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
 		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
 		COMPLETION_GET_NODE, // Get node with $ notation.
 		COMPLETION_IDENTIFIER, // List available identifiers in scope.
 		COMPLETION_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
+		COMPLETION_METHOD, // List available methods in scope.
 		COMPLETION_OVERRIDE_METHOD, // Override implementation, also for native virtuals.
 		COMPLETION_PROPERTY_DECLARATION, // Property declaration (get, set).
 		COMPLETION_PROPERTY_DECLARATION_OR_TYPE, // Property declaration (get, set) or a type hint.
@@ -1047,6 +1051,7 @@ public:
 		Variant::Type builtin_type = Variant::VARIANT_MAX;
 		Node *node = nullptr;
 		Object *base = nullptr;
+		List<Ref<GDScriptParserRef>> dependent_parsers;
 	};
 
 	struct CompletionCall {
@@ -1069,9 +1074,11 @@ private:
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
 	List<ParserError> errors;
+#ifdef DEBUG_ENABLED
 	List<GDScriptWarning> warnings;
 	Set<String> ignored_warnings;
 	Set<int> unsafe_lines;
+#endif
 
 	GDScriptTokenizer tokenizer;
 	GDScriptTokenizer::Token previous;
@@ -1142,11 +1149,28 @@ private:
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
 	template <class T>
-	T *alloc_node();
+	T *alloc_node() {
+		T *node = memnew(T);
+
+		node->next = list;
+		list = node;
+
+		// TODO: Properly set positions for all nodes.
+		node->start_line = previous.start_line;
+		node->end_line = previous.end_line;
+		node->start_column = previous.start_column;
+		node->end_column = previous.end_column;
+		node->leftmost_column = previous.leftmost_column;
+		node->rightmost_column = previous.rightmost_column;
+
+		return node;
+	}
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+#ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+#endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
 	void make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force = false);
@@ -1246,11 +1270,15 @@ public:
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 
 	const List<ParserError> &get_errors() const { return errors; }
-	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const List<String> get_dependencies() const {
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+#ifdef DEBUG_ENABLED
+	const List<GDScriptWarning> &get_warnings() const { return warnings; }
+	const Set<int> &get_unsafe_lines() const { return unsafe_lines; }
+	int get_last_line_number() const { return current.end_line; }
+#endif
 
 	GDScriptParser();
 	~GDScriptParser();

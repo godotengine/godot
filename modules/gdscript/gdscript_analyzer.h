@@ -96,13 +96,15 @@ class GDScriptAnalyzer {
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
 	bool validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);
-	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, const GDScriptParser::DataType &p_b, bool &r_valid);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false) const;
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	bool class_exists(const StringName &p_class);
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
+#ifdef DEBUG_ENABLED
+	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
+#endif
 
 public:
 	Error resolve_inheritance();
