@@ -42,6 +42,41 @@
 // - https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 // - https://lh.2xlibre.net/locales/
 
+#ifdef DEBUG_TRANSLATION
+void Translation::print_translation_map() {
+	Error err;
+	FileAccess *file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
+	if (err != OK) {
+		ERR_PRINT("Failed to open translation_map_print_test.txt");
+		return;
+	}
+
+	file->store_line("NPlural : " + String::num_int64(this->get_plural_forms()));
+	file->store_line("Plural rule : " + this->get_plural_rule());
+	file->store_line("");
+
+	List<StringName> context_l;
+	translation_map.get_key_list(&context_l);
+	for (auto E = context_l.front(); E; E = E->next()) {
+		StringName ctx = E->get();
+		file->store_line(" ===== Context: " + String::utf8(String(ctx).utf8()) + " ===== ");
+		const HashMap<StringName, Vector<StringName>> &inner_map = translation_map[ctx];
+
+		List<StringName> id_l;
+		inner_map.get_key_list(&id_l);
+		for (auto E2 = id_l.front(); E2; E2 = E2->next()) {
+			StringName id = E2->get();
+			file->store_line("msgid: " + String::utf8(String(id).utf8()));
+			for (int i = 0; i < inner_map[id].size(); i++) {
+				file->store_line("msgstr[" + String::num_int64(i) + "]: " + String::utf8(String(inner_map[id][i]).utf8()));
+			}
+			file->store_line("");
+		}
+	}
+	file->close();
+}
+#endif
+
 static const char *locale_list[] = {
 	"aa", //  Afar
 	"aa_DJ", //  Afar (Djibouti)
@@ -794,40 +829,114 @@ static const char *locale_renames[][2] = {
 
 ///////////////////////////////////////////////
 
-Vector<String> Translation::_get_messages() const {
-	Vector<String> msgs;
-	msgs.resize(translation_map.size() * 2);
-	int idx = 0;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx + 0, E->key());
-		msgs.set(idx + 1, E->get());
-		idx += 2;
+Dictionary Translation::_get_messages() const {
+	// Return translation_map as a Dictionary.
+
+	Dictionary d;
+
+	List<StringName> context_l;
+	translation_map.get_key_list(&context_l);
+	for (auto E = context_l.front(); E; E = E->next()) {
+		StringName ctx = E->get();
+		const HashMap<StringName, Vector<StringName>> &id_str_map = translation_map[ctx];
+
+		Dictionary d2;
+		List<StringName> id_l;
+		id_str_map.get_key_list(&id_l);
+		// Save list of id and strs associated with a context in a temporary dictionary.
+		for (auto E2 = id_l.front(); E2; E2 = E2->next()) {
+			StringName id = E2->get();
+			d2[id] = id_str_map[id];
+		}
+
+		d[ctx] = d2;
 	}
 
-	return msgs;
+	return d;
+}
+
+void Translation::_set_messages(const Dictionary &p_messages) {
+	// Construct translation_map from a Dictionary.
+
+	List<Variant> context_l;
+	p_messages.get_key_list(&context_l);
+	for (auto E = context_l.front(); E; E = E->next()) {
+		StringName ctx = E->get();
+		const Dictionary &id_str_map = p_messages[ctx];
+
+		HashMap<StringName, Vector<StringName>> temp_map;
+		List<Variant> id_l;
+		id_str_map.get_key_list(&id_l);
+		for (auto E2 = id_l.front(); E2; E2 = E2->next()) {
+			StringName id = E2->get();
+			temp_map[id] = id_str_map[id];
+		}
+
+		translation_map[ctx] = temp_map;
+	}
 }
 
 Vector<String> Translation::_get_message_list() const {
-	Vector<String> msgs;
-	msgs.resize(translation_map.size());
-	int idx = 0;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx, E->key());
-		idx += 1;
+	////This one I'm really not sure what the use case of this function is. So I just follow what it does before.
+	// Return all keys in translation_map.
+
+	List<StringName> msgs;
+	get_message_list(&msgs);
+
+	Vector<String> v;
+	for (auto E = msgs.front(); E; E = E->next()) {
+		v.push_back(E->get());
 	}
 
-	return msgs;
+	return v;
 }
 
-void Translation::_set_messages(const Vector<String> &p_messages) {
-	int msg_count = p_messages.size();
-	ERR_FAIL_COND(msg_count % 2);
+int Translation::_get_plural_index(int p_n) const {
+	// Apply plural rule to a p_n passed in, and get a number between [0;number of plural forms)
 
-	const String *r = p_messages.ptr();
+	Ref<Expression> expr;
+	expr.instance();
 
-	for (int i = 0; i < msg_count; i += 2) {
-		add_message(r[i + 0], r[i + 1]);
+	Vector<String> input_name;
+	input_name.push_back("n");
+
+	Array input_val;
+	input_val.push_back(p_n);
+
+	int result = _get_plural_index(plural_rule, input_name, input_val, expr);
+	ERR_FAIL_COND_V_MSG(result < 0, 0, "_get_plural_index() returns a negative number after evaluating a plural rule expression.");
+
+	return result;
+}
+
+int Translation::_get_plural_index(const String &p_plural_rule, const Vector<String> &p_input_name, const Array &p_input_value, Ref<Expression> &r_expr) const {
+	// Evaluate recursively until we find the first condition that is true.
+	// Some examples of p_plural_rule passed in can have the form:
+	// "n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5" (Arabic)
+	// "n >= 2" (French)
+	// "n != 1" (English)
+
+	// Parse expression.
+	int first_ques_mark = p_plural_rule.find("?");
+	String equi_test = p_plural_rule.substr(0, first_ques_mark);
+	Error err = r_expr->parse(equi_test, p_input_name);
+	ERR_FAIL_COND_V_MSG(err != OK, p_input_value[0], "Cannot parse expression. Error: " + r_expr->get_error_text());
+
+	// Evaluate expression.
+	Variant result = r_expr->execute(p_input_value);
+	ERR_FAIL_COND_V_MSG(r_expr->has_execute_failed(), p_input_value[0], "Cannot evaluate expression.");
+
+	// Base case of recursion. Variant result will either map to a bool or an integer, in both cases returning it will give the correct plural index.
+	if (first_ques_mark == -1) {
+		return result;
 	}
+
+	if (bool(result)) {
+		return p_plural_rule.substr(first_ques_mark + 1, p_plural_rule.find(":") - (first_ques_mark + 1)).to_int();
+	}
+
+	String after_colon = p_plural_rule.substr(p_plural_rule.find(":") + 1, p_plural_rule.length());
+	return _get_plural_index(after_colon, p_input_name, p_input_value, r_expr);
 }
 
 void Translation::set_locale(const String &p_locale) {
@@ -848,45 +957,143 @@ void Translation::set_locale(const String &p_locale) {
 	}
 }
 
-void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text) {
-	translation_map[p_src_text] = p_xlated_text;
+void Translation::set_plural_rule(const String &p_plural_rule) {
+	// Set plural_forms and plural_rule.
+	// p_plural_rule passed in has the form "Plural-Forms: nplurals=2; plural=(n >= 2);".
+
+	int first_semi_col = p_plural_rule.find(";");
+	plural_forms = p_plural_rule.substr(p_plural_rule.find("=") + 1, first_semi_col - (p_plural_rule.find("=") + 1)).to_int();
+
+	int expression_start = p_plural_rule.find("=", first_semi_col) + 1;
+	int second_semi_col = p_plural_rule.rfind(";");
+	plural_rule = p_plural_rule.substr(expression_start, second_semi_col - expression_start);
+	// Strip away '(' and ')' to ease evaluating the expression later on.
+	plural_rule = plural_rule.replacen("(", "");
+	plural_rule = plural_rule.replacen(")", "");
 }
 
-StringName Translation::get_message(const StringName &p_src_text) const {
-	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
-	if (!E) {
-		return StringName();
+void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {
+	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
+
+	if (map_id_str.has(p_src_text)) {
+		WARN_PRINT("Double translations for \"" + String(p_src_text) + "\" under the same context \"" + String(p_context) + "\" for locale \"" + get_locale() + "\".\nThere should only be one unique translation for a given string under the same context.");
+		map_id_str[p_src_text].set(0, p_xlated_text);
+	} else {
+		map_id_str[p_src_text].push_back(p_xlated_text);
+	}
+}
+
+void Translation::add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_texts, const StringName &p_context) {
+	ERR_FAIL_COND_MSG(p_plural_texts.size() != plural_forms, "Trying to add plural texts that don't match the required number of plural forms for locale \"" + get_locale() + "\"");
+
+	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
+
+	if (map_id_str.has(p_src_text)) {
+		WARN_PRINT("Double translations for \"" + p_src_text + "\" under the same context \"" + p_context + "\" for locale " + get_locale() + ".\nThere should only be one unique translation for a given string under the same context.");
+		map_id_str[p_src_text].clear();
 	}
 
-	return E->get();
+	for (int i = 0; i < p_plural_texts.size(); i++) {
+		map_id_str[p_src_text].push_back(p_plural_texts[i]);
+	}
 }
 
-void Translation::erase_message(const StringName &p_src_text) {
-	translation_map.erase(p_src_text);
+int Translation::get_plural_forms() const {
+	return plural_forms;
+}
+
+String Translation::get_plural_rule() const {
+	return plural_rule;
+}
+
+StringName Translation::get_message(const StringName &p_src_text, const StringName &p_context) const {
+	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
+		return StringName();
+	}
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please check add_message() or add_plural_message() to make sure a translation is always added.");
+
+	return translation_map[p_context][p_src_text][0];
+}
+
+StringName Translation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+	ERR_FAIL_COND_V_MSG(p_n < 0, p_src_text, "N passed into translation to get a plural message should not be negative. For negative numbers, use singular translation please. Search \"gettext PO Plural Forms\" online for the documentation on translating negative numbers.");
+
+	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
+		return StringName();
+	}
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please check add_message() or add_plural_message() to make sure a translation is always added.");
+
+	// Return based on English plural rule if locale's plural rule is not registered (normally due to missing or invalid "Plural-Forms" in PO file header).
+	if (plural_forms <= 0) {
+		if (p_n == 1) {
+			return p_src_text;
+		} else {
+			return p_plural_text;
+		}
+	}
+
+	return translation_map[p_context][p_src_text][_get_plural_index(p_n)];
+}
+
+void Translation::erase_message(const StringName &p_src_text, const StringName &p_context) {
+	if (!translation_map.has(p_context)) {
+		return;
+	}
+
+	translation_map[p_context].erase(p_src_text);
 }
 
 void Translation::get_message_list(List<StringName> *r_messages) const {
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		r_messages->push_back(E->key());
+	////This is the function that PHashTranslation uses to get the list of msgid.
+	////Right now I just return the msgid list under "" context, and make no changes to PHashTranslation at all.
+	////So PHashTranslation will be functioning like last time, it will not handle context and plurals translation.
+
+	// Return all the keys of translation_map under "" context.
+
+	List<StringName> context_l;
+	translation_map.get_key_list(&context_l);
+
+	for (auto E = context_l.front(); E; E = E->next()) {
+		if (String(E->get()) != "") {
+			continue;
+		}
+
+		List<StringName> msgid_l;
+		translation_map[E->get()].get_key_list(&msgid_l);
+
+		for (auto E2 = msgid_l.front(); E2; E2 = E2->next()) {
+			r_messages->push_back(E2->get());
+		}
 	}
 }
 
 int Translation::get_message_count() const {
-	return translation_map.size();
+	List<StringName> context_l;
+	translation_map.get_key_list(&context_l);
+
+	int count = 0;
+	for (auto E = context_l.front(); E; E = E->next()) {
+		count += translation_map[E->get()].size();
+	}
+	return count;
 }
 
 void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &Translation::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &Translation::get_locale);
-	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message"), &Translation::add_message);
-	ClassDB::bind_method(D_METHOD("get_message", "src_message"), &Translation::get_message);
-	ClassDB::bind_method(D_METHOD("erase_message", "src_message"), &Translation::erase_message);
+	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message", "context"), &Translation::add_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
+	ClassDB::bind_method(D_METHOD("get_plural_forms"), &Translation::get_plural_forms);
+	ClassDB::bind_method(D_METHOD("get_plural_rule"), &Translation::get_plural_rule);
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
@@ -1024,7 +1231,7 @@ void TranslationServer::clear() {
 	translations.clear();
 }
 
-StringName TranslationServer::translate(const StringName &p_message) const {
+StringName TranslationServer::translate(const StringName &p_message, const StringName &p_context) const {
 	// Match given message against the translation catalog for the project locale.
 
 	if (!enabled) {
@@ -1033,6 +1240,48 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 
 	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
 
+	StringName res = _get_message_from_translations(p_message, p_context, locale);
+
+	if (!res && fallback.length() >= 2) {
+		res = _get_message_from_translations(p_message, p_context, fallback);
+	}
+
+	if (!res) {
+		return p_message;
+	}
+
+	return res;
+}
+
+StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+	if (!enabled) {
+		if (p_n == 1) {
+			return p_message;
+		} else {
+			return p_message_plural;
+		}
+	}
+
+	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
+
+	StringName res = _get_message_from_translations(p_message, p_context, locale, p_message_plural, p_n);
+
+	if (!res && fallback.length() >= 2) {
+		res = _get_message_from_translations(p_message, p_context, fallback, p_message_plural, p_n);
+	}
+
+	if (!res) {
+		if (p_n == 1) {
+			return p_message;
+		} else {
+			return p_message_plural;
+		}
+	}
+
+	return res;
+}
+
+StringName TranslationServer::_get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, const String &p_message_plural, int p_n) const {
 	// Locale can be of the form 'll_CC', i.e. language code and regional code,
 	// e.g. 'en_US', 'en_GB', etc. It might also be simply 'll', e.g. 'en'.
 	// To find the relevant translation, we look for those with locale starting
@@ -1044,7 +1293,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	// logic, so be sure to propagate changes there when changing things here.
 
 	StringName res;
-	String lang = get_language_code(locale);
+	String lang = get_language_code(p_locale);
 	bool near_match = false;
 
 	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
@@ -1052,7 +1301,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();
 
-		bool exact_match = (l == locale);
+		bool exact_match = (l == p_locale);
 		if (!exact_match) {
 			if (near_match) {
 				continue; // Only near-match once, but keep looking for exact matches.
@@ -1062,7 +1311,13 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 			}
 		}
 
-		StringName r = t->get_message(p_message);
+		StringName r;
+		if (p_n == -1) {
+			r = t->get_message(p_message, p_context);
+		} else {
+			r = t->get_plural_message(p_message, p_message_plural, p_n, p_context);
+		}
+
 		if (!r) {
 			continue;
 		}
@@ -1073,44 +1328,6 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		} else {
 			near_match = true;
 		}
-	}
-
-	if (!res && fallback.length() >= 2) {
-		// Try again with the fallback locale.
-		String fallback_lang = get_language_code(fallback);
-		near_match = false;
-
-		for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
-			const Ref<Translation> &t = E->get();
-			ERR_FAIL_COND_V(t.is_null(), p_message);
-			String l = t->get_locale();
-
-			bool exact_match = (l == fallback);
-			if (!exact_match) {
-				if (near_match) {
-					continue; // Only near-match once, but keep looking for exact matches.
-				}
-				if (get_language_code(l) != fallback_lang) {
-					continue; // Language code does not match.
-				}
-			}
-
-			StringName r = t->get_message(p_message);
-			if (!r) {
-				continue;
-			}
-			res = r;
-
-			if (exact_match) {
-				break;
-			} else {
-				near_match = true;
-			}
-		}
-	}
-
-	if (!res) {
-		return p_message;
 	}
 
 	return res;
@@ -1169,28 +1386,58 @@ void TranslationServer::set_tool_translation(const Ref<Translation> &p_translati
 	tool_translation = p_translation;
 }
 
-StringName TranslationServer::tool_translate(const StringName &p_message) const {
+StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {
 	if (tool_translation.is_valid()) {
-		StringName r = tool_translation->get_message(p_message);
+		StringName r = tool_translation->get_message(p_message, p_context);
 		if (r) {
 			return r;
 		}
 	}
 	return p_message;
+}
+
+StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+	if (tool_translation.is_valid()) {
+		StringName r = tool_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
+		if (r) {
+			return r;
+		}
+	}
+
+	if (p_n == 1) {
+		return p_message;
+	} else {
+		return p_message_plural;
+	}
 }
 
 void TranslationServer::set_doc_translation(const Ref<Translation> &p_translation) {
 	doc_translation = p_translation;
 }
 
-StringName TranslationServer::doc_translate(const StringName &p_message) const {
+StringName TranslationServer::doc_translate(const StringName &p_message, const StringName &p_context) const {
 	if (doc_translation.is_valid()) {
-		StringName r = doc_translation->get_message(p_message);
+		StringName r = doc_translation->get_message(p_message, p_context);
 		if (r) {
 			return r;
 		}
 	}
 	return p_message;
+}
+
+StringName TranslationServer::doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+	if (doc_translation.is_valid()) {
+		StringName r = doc_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
+		if (r) {
+			return r;
+		}
+	}
+
+	if (p_n == 1) {
+		return p_message;
+	} else {
+		return p_message_plural;
+	}
 }
 
 void TranslationServer::_bind_methods() {
@@ -1200,6 +1447,7 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
 
 	ClassDB::bind_method(D_METHOD("translate", "message"), &TranslationServer::translate);
+	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
