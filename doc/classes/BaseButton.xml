@@ -13,7 +13,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Called when the button is pressed.
+				Called when the button is pressed. If you need to know the button's pressed state (and [member toggle_mode] is active), use [method _toggled] instead.
 			</description>
 		</method>
 		<method name="_toggled" qualifiers="virtual">
@@ -89,6 +89,7 @@
 		<signal name="pressed">
 			<description>
 				Emitted when the button is toggled or pressed. This is on [signal button_down] if [member action_mode] is [constant ACTION_MODE_BUTTON_PRESS] and on [signal button_up] otherwise.
+				If you need to know the button's pressed state (and [member toggle_mode] is active), use [signal toggled] instead.
 			</description>
 		</signal>
 		<signal name="toggled">
