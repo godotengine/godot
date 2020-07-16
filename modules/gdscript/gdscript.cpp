@@ -1873,6 +1873,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"func",
 		"preload",
 		"signal",
+		"super",
+		"trait",
 		"yield",
 		// var
 		"const",
@@ -2081,36 +2083,28 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	GDScript *script = memnew(GDScript);
+	Error err;
+	Ref<GDScript> script = GDScriptCache::get_full_script(p_path, err);
 
-	Ref<GDScript> scriptres(script);
+	// TODO: Reintroduce binary and encrypted scripts.
 
-	if (p_path.ends_with(".gde") || p_path.ends_with(".gdc")) {
-		script->set_script_path(p_original_path); // script needs this.
-		script->set_path(p_original_path);
-		Error err = script->load_byte_code(p_path);
-		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load byte code from file '" + p_path + "'.");
-
-	} else {
-		Error err = script->load_source_code(p_path);
-		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load source code from file '" + p_path + "'.");
-
-		script->set_script_path(p_original_path); // script needs this.
-		script->set_path(p_original_path);
-
-		script->reload();
+	if (script.is_null()) {
+		// Don't fail loading because of parsing error.
+		script.instance();
 	}
+
 	if (r_error) {
 		*r_error = OK;
 	}
 
-	return scriptres;
+	return script;
 }
 
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("gd");
-	p_extensions->push_back("gdc");
-	p_extensions->push_back("gde");
+	// TODO: Reintroduce binary and encrypted scripts.
+	// p_extensions->push_back("gdc");
+	// p_extensions->push_back("gde");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -2119,7 +2113,8 @@ bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "gd" || el == "gdc" || el == "gde") {
+	// TODO: Reintroduce binary and encrypted scripts.
+	if (el == "gd" /*|| el == "gdc" || el == "gde"*/) {
 		return "GDScript";
 	}
 	return "";
