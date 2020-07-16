@@ -2079,7 +2079,7 @@ Error StreamTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> 
 
 	uint32_t df = f->get_32(); //data format
 	mipmap_limit = int(f->get_32());
-	//reserverd
+	//reserved
 	f->get_32();
 	f->get_32();
 	f->get_32();

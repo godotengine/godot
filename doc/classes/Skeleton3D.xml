@@ -239,7 +239,7 @@
 			</argument>
 			<description>
 				Sets the global pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note[/b]: The pose transform needs to be in bone space. Use [method world_transform_to_bone_transform] to convert a world transform, like one you can get from a [Node3D], to bone space.
 			</description>
 		</method>

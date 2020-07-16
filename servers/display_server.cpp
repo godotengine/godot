@@ -223,7 +223,7 @@ void DisplayServer::virtual_keyboard_hide() {
 
 // returns height of the currently shown keyboard (0 if keyboard is hidden)
 int DisplayServer::virtual_keyboard_get_height() const {
-	ERR_FAIL_V_MSG(0, "Virtual keyboad not supported by this display server.");
+	ERR_FAIL_V_MSG(0, "Virtual keyboard not supported by this display server.");
 }
 
 void DisplayServer::cursor_set_shape(CursorShape p_shape) {

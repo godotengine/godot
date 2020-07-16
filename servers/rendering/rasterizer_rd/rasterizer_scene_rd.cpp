@@ -925,7 +925,7 @@ void RasterizerSceneRD::sdfgi_update(RID p_render_buffers, RID p_environment, co
 				if (i < sdfgi->cascades.size() - 1) {
 					parent_average = sdfgi->cascades[i + 1].lightprobe_average_tex;
 				} else {
-					parent_average = sdfgi->cascades[i - 1].lightprobe_average_tex; //to use something, but it wont be used
+					parent_average = sdfgi->cascades[i - 1].lightprobe_average_tex; //to use something, but it won't be used
 				}
 				u.ids.push_back(parent_average);
 				uniforms.push_back(u);
@@ -1881,7 +1881,7 @@ void RasterizerSceneRD::_update_dirty_skys() {
 			texture_set_dirty = true;
 		}
 
-		// Create subpass buffers if they havent been created already
+		// Create subpass buffers if they haven't been created already
 		if (sky->half_res_pass.is_null() && !RD::get_singleton()->texture_is_valid(sky->half_res_pass) && sky->screen_size.x >= 4 && sky->screen_size.y >= 4) {
 			RD::TextureFormat tformat;
 			tformat.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
@@ -5962,7 +5962,7 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
 		RD::get_singleton()->buffer_update(rb->sdfgi->cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data, true);
 
-		bool half_size = true; //much faster, very little differnce
+		bool half_size = true; //much faster, very little difference
 		static const int optimized_jf_group_size = 8;
 
 		if (half_size) {
@@ -6112,7 +6112,7 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 				push_constant.occlusion_index = i;
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDGIShader::PreprocessPushConstant));
 
-				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offseted, its one less probe per axis to compute
+				Vector3i groups = Vector3i(probe_size + 1, probe_size + 1, probe_size + 1) - offset; //if offset, it's one less probe per axis to compute
 				RD::get_singleton()->compute_list_dispatch(compute_list, groups.x, groups.y, groups.z);
 			}
 			RD::get_singleton()->compute_list_add_barrier(compute_list);

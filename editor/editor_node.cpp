@@ -6321,7 +6321,7 @@ EditorNode::EditorNode() {
 	right_menu_hb->add_child(video_driver);
 
 #ifndef _MSC_VER
-#warning neeeds to be reimplemented
+#warning needs to be reimplemented
 #endif
 #if 0
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
