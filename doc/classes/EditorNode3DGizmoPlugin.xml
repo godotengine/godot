@@ -136,7 +136,7 @@
 			</description>
 		</method>
 		<method name="get_priority" qualifiers="virtual">
-			<return type="String">
+			<return type="int">
 			</return>
 			<description>
 				Override this method to set the gizmo's priority. Higher values correspond to higher priority. If a gizmo with higher priority conflicts with another gizmo, only the gizmo with higher priority will be used.
