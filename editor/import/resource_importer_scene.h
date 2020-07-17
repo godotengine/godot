@@ -60,7 +60,7 @@ public:
 		IMPORT_MATERIALS_IN_INSTANCES = 1024,
 		IMPORT_USE_COMPRESSION = 2048,
 		IMPORT_USE_NAMED_SKIN_BINDS = 4096,
-
+		IMPORT_META = 8192,
 	};
 
 	virtual uint32_t get_import_flags() const;

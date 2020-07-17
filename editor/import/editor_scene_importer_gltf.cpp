@@ -30,6 +30,7 @@
 
 #include "editor_scene_importer_gltf.h"
 
+#include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
@@ -265,6 +266,9 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 		}
 		if (n.has("mesh")) {
 			node->mesh = n["mesh"];
+		}
+		if (n.has("extras")) {
+			node->extras = (Dictionary)n["extras"];
 		}
 		if (n.has("skin")) {
 			node->skin = n["skin"];
@@ -2531,6 +2535,13 @@ BoneAttachment3D *EditorSceneImporterGLTF::_generate_bone_attachment(GLTFState &
 	return bone_attachment;
 }
 
+void EditorSceneImporterGLTF::_set_meta_from_gltf_extras(GLTFState &state, Node *node, const GLTFNode *gltf_node) {
+	if (state.import_meta && !gltf_node->extras.empty()) {
+		const Dictionary &extras = gltf_node->extras;
+		node->set(CoreStringNames::get_singleton()->_meta, extras);
+	}
+}
+
 MeshInstance3D *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	const GLTFNode *gltf_node = state.nodes[node_index];
 
@@ -2541,6 +2552,8 @@ MeshInstance3D *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &stat
 
 	GLTFMesh &mesh = state.meshes.write[gltf_node->mesh];
 	mi->set_mesh(mesh.mesh);
+
+	_set_meta_from_gltf_extras(state, mi, gltf_node);
 
 	if (mesh.mesh->get_name() == "") {
 		mesh.mesh->set_name(gltf_node->name);
@@ -2613,6 +2626,8 @@ Camera3D *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scen
 	Camera3D *camera = memnew(Camera3D);
 	print_verbose("glTF: Creating camera for: " + gltf_node->name);
 
+	_set_meta_from_gltf_extras(state, camera, gltf_node);
+
 	const GLTFCamera &c = state.cameras[gltf_node->camera];
 	if (c.perspective) {
 		camera->set_perspective(c.fov_size, c.znear, c.zfar);
@@ -2623,13 +2638,15 @@ Camera3D *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scen
 	return camera;
 }
 
-Node3D *EditorSceneImporterGLTF::_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+Node3D *EditorSceneImporterGLTF::_generate_node_3d(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
 	const GLTFNode *gltf_node = state.nodes[node_index];
 
-	Node3D *spatial = memnew(Node3D);
+	Node3D *node_3d = memnew(Node3D);
 	print_verbose("glTF: Creating spatial for: " + gltf_node->name);
 
-	return spatial;
+	_set_meta_from_gltf_extras(state, node_3d, gltf_node);
+
+	return node_3d;
 }
 
 void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index) {
@@ -2681,7 +2698,7 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 		} else if (gltf_node->light >= 0) {
 			current_node = _generate_light(state, scene_parent, node_index);
 		} else {
-			current_node = _generate_spatial(state, scene_parent, node_index);
+			current_node = _generate_node_3d(state, scene_parent, node_index);
 		}
 
 		scene_parent->add_child(current_node);
@@ -3078,6 +3095,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	state.major_version = version.get_slice(".", 0).to_int();
 	state.minor_version = version.get_slice(".", 1).to_int();
 	state.use_named_skin_binds = p_flags & IMPORT_USE_NAMED_SKIN_BINDS;
+	state.import_meta = p_flags & IMPORT_META;
 
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);

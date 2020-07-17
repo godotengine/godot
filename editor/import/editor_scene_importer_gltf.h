@@ -99,6 +99,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Transform xform;
 		String name;
+		Dictionary extras;
 
 		GLTFMeshIndex mesh = -1;
 		GLTFCameraIndex camera = -1;
@@ -269,6 +270,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<uint8_t> glb_data;
 
 		bool use_named_skin_binds;
+		bool import_meta;
 
 		Vector<GLTFNode *> nodes;
 		Vector<Vector<uint8_t>> buffers;
@@ -368,11 +370,13 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
 
+	void _set_meta_from_gltf_extras(GLTFState &state, Node *node, const GLTFNode *gltf_node);
+
 	BoneAttachment3D *_generate_bone_attachment(GLTFState &state, Skeleton3D *skeleton, const GLTFNodeIndex node_index);
 	MeshInstance3D *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera3D *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Node3D *_generate_node_3d(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Light3D *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
-	Node3D *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 
 	void _generate_scene_node(GLTFState &state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
 	Node3D *_generate_scene(GLTFState &state, const int p_bake_fps);
