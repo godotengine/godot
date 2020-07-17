@@ -620,7 +620,7 @@ protected:
 		RD_BIND(Variant::INT, RDPipelineColorBlendState, logic_op);
 		RD_BIND(Variant::COLOR, RDPipelineColorBlendState, blend_constant);
 
-		ClassDB::bind_method(D_METHOD("set_attachments", "atachments"), &RDPipelineColorBlendState::set_attachments);
+		ClassDB::bind_method(D_METHOD("set_attachments", "attachments"), &RDPipelineColorBlendState::set_attachments);
 		ClassDB::bind_method(D_METHOD("get_attachments"), &RDPipelineColorBlendState::get_attachments);
 		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "attachments", PROPERTY_HINT_ARRAY_TYPE, "RDPipelineColorBlendStateAttachment"), "set_attachments", "get_attachments");
 	}
