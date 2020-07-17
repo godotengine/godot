@@ -256,7 +256,7 @@ public:
 	void dump_resources_to_file(const String &p_file);
 
 	bool has_virtual_keyboard() const;
-	void show_virtual_keyboard(const String &p_existing_text = "");
+	void show_virtual_keyboard(const String &p_existing_text = "", bool p_multiline = false);
 	void hide_virtual_keyboard();
 	int get_virtual_keyboard_height();
 

@@ -1741,7 +1741,7 @@ void TextEdit::_notification(int p_what) {
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 
 			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
+				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect(), true);
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 

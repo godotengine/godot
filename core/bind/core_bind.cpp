@@ -1068,8 +1068,8 @@ bool _OS::has_virtual_keyboard() const {
 	return OS::get_singleton()->has_virtual_keyboard();
 }
 
-void _OS::show_virtual_keyboard(const String &p_existing_text) {
-	OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2());
+void _OS::show_virtual_keyboard(const String &p_existing_text, bool p_multiline) {
+	OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2(), p_multiline);
 }
 
 void _OS::hide_virtual_keyboard() {
@@ -1372,7 +1372,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dump_memory_to_file", "file"), &_OS::dump_memory_to_file);
 	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &_OS::dump_resources_to_file);
 	ClassDB::bind_method(D_METHOD("has_virtual_keyboard"), &_OS::has_virtual_keyboard);
-	ClassDB::bind_method(D_METHOD("show_virtual_keyboard", "existing_text"), &_OS::show_virtual_keyboard, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("show_virtual_keyboard", "existing_text", "multiline"), &_OS::show_virtual_keyboard, DEFVAL(""), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("hide_virtual_keyboard"), &_OS::hide_virtual_keyboard);
 	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_height"), &_OS::get_virtual_keyboard_height);
 	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &_OS::print_resources_in_use, DEFVAL(false));

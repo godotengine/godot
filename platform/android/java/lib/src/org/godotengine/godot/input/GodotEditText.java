@@ -36,6 +36,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
@@ -58,7 +59,8 @@ public class GodotEditText extends EditText {
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
-	private int mMaxInputLength;
+	private int mMaxInputLength = Integer.MAX_VALUE;
+	private boolean mMultiline = false;
 
 	private static class EditHandler extends Handler {
 		private final WeakReference<GodotEditText> mEdit;
@@ -95,7 +97,11 @@ public class GodotEditText extends EditText {
 
 	protected void initView() {
 		this.setPadding(0, 0, 0, 0);
-		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+	}
+
+	public boolean isMultiline() {
+		return mMultiline;
 	}
 
 	private void handleMessage(final Message msg) {
@@ -114,6 +120,12 @@ public class GodotEditText extends EditText {
 					} else {
 						edit.mInputWrapper.setSelection(false);
 					}
+
+					int inputType = InputType.TYPE_CLASS_TEXT;
+					if (edit.isMultiline()) {
+						inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+					}
+					edit.setInputType(inputType);
 
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
@@ -168,7 +180,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Methods
 	// ===========================================================
-	public void showKeyboard(String p_existing_text, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	public void showKeyboard(String p_existing_text, boolean p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
 		if (p_cursor_start == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
@@ -180,6 +192,8 @@ public class GodotEditText extends EditText {
 			this.mOriginText = p_existing_text.substring(0, p_cursor_end);
 			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
 		}
+
+		this.mMultiline = p_multiline;
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;
