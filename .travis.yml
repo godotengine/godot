@@ -32,7 +32,7 @@ matrix:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - &gcc9_deps [gcc-9, g++-9]
-            - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+            - &linux_deps [libasound2-dev, libjack-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
     - name: Linux export template (release, Clang 7)

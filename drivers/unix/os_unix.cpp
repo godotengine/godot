@@ -393,6 +393,11 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
 	}
 
+	if (!FileAccess::exists(path) && p_path.is_rel_path()) {
+		//this code exists so gdnative can load .so files using the search mechanism of the dynamic linker
+		path = p_path;
+	}
+
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 	return OK;
