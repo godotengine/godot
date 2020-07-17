@@ -623,7 +623,7 @@ private:
 
 	/* ENVIRONMENT */
 
-	struct Environent {
+	struct Environment {
 		// BG
 		RS::EnvironmentBG background = RS::ENV_BG_CLEAR_COLOR;
 		RID sky;
@@ -703,7 +703,7 @@ private:
 
 	static uint64_t auto_exposure_counter;
 
-	mutable RID_Owner<Environent> environment_owner;
+	mutable RID_Owner<Environment> environment_owner;
 
 	/* CAMERA EFFECTS */
 
