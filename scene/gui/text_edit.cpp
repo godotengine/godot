@@ -1632,7 +1632,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)) {
-				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect());
+				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), true);
 			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
