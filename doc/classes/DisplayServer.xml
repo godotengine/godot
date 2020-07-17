@@ -627,12 +627,14 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
 			<return type="void">
 			</return>
 			<description>
+				Hides the virtual keyboard if it is shown, does nothing otherwise.
 			</description>
 		</method>
 		<method name="virtual_keyboard_show">
@@ -642,13 +644,23 @@
 			</argument>
 			<argument index="1" name="position" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
 			</argument>
-			<argument index="2" name="max_length" type="int" default="-1">
+			<argument index="2" name="multiline" type="bool" default="false">
 			</argument>
-			<argument index="3" name="cursor_start" type="int" default="-1">
+			<argument index="3" name="max_length" type="int" default="-1">
 			</argument>
-			<argument index="4" name="cursor_end" type="int" default="-1">
+			<argument index="4" name="cursor_start" type="int" default="-1">
+			</argument>
+			<argument index="5" name="cursor_end" type="int" default="-1">
 			</argument>
 			<description>
+				Shows the virtual keyboard if the platform has one.
+				[code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				[code]position[/code] parameter is the screen space [Rect2] of the edited text.
+				[code]multiline[/code] parameter needs to be set to [code]true[/code] to be able to enter multiple lines of text, as in [TextEdit].
+				[code]max_length[/code] limits the number of characters that can be entered if different from [code]-1[/code].
+				[code]cursor_start[/code] can optionally define the current text cursor position if [code]cursor_end[/code] is not set.
+				[code]cursor_start[/code] and [code]cursor_end[/code] can optionally define the current text selection.
+				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>
 		<method name="vsync_is_enabled" qualifiers="const">
