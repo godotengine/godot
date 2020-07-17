@@ -6693,7 +6693,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material); //, DEFVAL(Ref<EditorNode3DGizmo>()));
 
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_name"));
-	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_priority"));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "get_priority"));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_be_hidden"));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "is_selectable_when_hidden"));
 
