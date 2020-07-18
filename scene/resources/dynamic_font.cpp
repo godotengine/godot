@@ -290,6 +290,21 @@ Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const V
 	return ret;
 }
 
+String DynamicFontAtSize::get_available_chars() const {
+	String chars;
+
+	FT_UInt gindex;
+	FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+	while (gindex != 0) {
+		if (charcode != 0) {
+			chars += CharType(charcode);
+		}
+		charcode = FT_Get_Next_Char(face, charcode, &gindex);
+	}
+
+	return chars;
+}
+
 float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only, bool p_outline) const {
 	if (!valid) {
 		return 0;
@@ -849,6 +864,25 @@ Size2 DynamicFont::get_char_size(CharType p_char, CharType p_next) const {
 	return ret;
 }
 
+String DynamicFont::get_available_chars() const {
+	if (!data_at_size.is_valid()) {
+		return "";
+	}
+
+	String chars = data_at_size->get_available_chars();
+
+	for (int i = 0; i < fallback_data_at_size.size(); i++) {
+		String fallback_chars = fallback_data_at_size[i]->get_available_chars();
+		for (int j = 0; j < fallback_chars.length(); j++) {
+			if (chars.find_char(fallback_chars[j]) == -1) {
+				chars += fallback_chars[j];
+			}
+		}
+	}
+
+	return chars;
+}
+
 bool DynamicFont::is_distance_field_hint() const {
 	return false;
 }
@@ -963,6 +997,8 @@ void DynamicFont::_get_property_list(List<PropertyInfo> *p_list) const {
 void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_data", "data"), &DynamicFont::set_font_data);
 	ClassDB::bind_method(D_METHOD("get_font_data"), &DynamicFont::get_font_data);
+
+	ClassDB::bind_method(D_METHOD("get_available_chars"), &DynamicFont::get_available_chars);
 
 	ClassDB::bind_method(D_METHOD("set_size", "data"), &DynamicFont::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &DynamicFont::get_size);
