@@ -79,10 +79,29 @@ void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 	//`memdelete(tp);
 }
 
+typedef HRESULT(WINAPI *PSETTHREADDESCRIPTION)(HANDLE hThread, PCWSTR lpThreadDescription);
+static PSETTHREADDESCRIPTION lpSetThreadDescription;
+
+Error ThreadWindows::set_name_func_windows(const String &p_name) {
+	ERR_FAIL_NULL_V(lpSetThreadDescription, ERR_UNAVAILABLE);
+
+	HRESULT hr = (*lpSetThreadDescription)(GetCurrentThread(), (LPCWSTR)(p_name.utf16().get_data()));
+	ERR_FAIL_COND_V(FAILED(hr), ERR_INVALID_PARAMETER);
+	return OK;
+}
+
 void ThreadWindows::make_default() {
 	create_func = create_func_windows;
 	get_thread_id_func = get_thread_id_func_windows;
 	wait_to_finish_func = wait_to_finish_func_windows;
+
+	// SetThreadDescription is implemented in Windows 10, version 1607.
+	lpSetThreadDescription = (PSETTHREADDESCRIPTION)GetProcAddress(
+			GetModuleHandle(TEXT("kernel32.dll")),
+			"SetThreadDescription");
+	if (lpSetThreadDescription != nullptr) {
+		set_name_func = set_name_func_windows;
+	}
 }
 
 #endif
