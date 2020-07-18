@@ -384,6 +384,28 @@ int Node3DEditorViewport::get_selected_count() const {
 	return count;
 }
 
+void Node3DEditorViewport::cancel_transform() {
+	_edit.mode = TRANSFORM_NONE;
+
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		Node3D *sp = Object::cast_to<Node3D>(E->get());
+		if (!sp) {
+			continue;
+		}
+
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+		if (!se) {
+			continue;
+		}
+
+		sp->set_global_transform(se->original);
+	}
+	surface->update();
+	set_message(TTR("Transform Aborted."), 3);
+}
+
 float Node3DEditorViewport::get_znear() const {
 	return CLAMP(spatial_editor->get_znear(), MIN_Z, MAX_Z);
 }
@@ -865,6 +887,7 @@ void Node3DEditorViewport::_update_name() {
 }
 
 void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
+	_edit.original_local = spatial_editor->are_local_coords_enabled();
 	_edit.click_ray = _get_ray(p_point);
 	_edit.click_ray_pos = _get_ray_pos(p_point);
 	_edit.plane = TRANSFORM_VIEW;
@@ -1375,39 +1398,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 				if (_edit.mode != TRANSFORM_NONE && b->is_pressed()) {
-					//cancel motion
-					_edit.mode = TRANSFORM_NONE;
-
-					List<Node *> &selection = editor_selection->get_selected_node_list();
-
-					for (Node *E : selection) {
-						Node3D *sp = Object::cast_to<Node3D>(E);
-						if (!sp) {
-							continue;
-						}
-
-						Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-						if (!se) {
-							continue;
-						}
-
-						if (se->gizmo.is_valid()) {
-							Vector<int> ids;
-							Vector<Transform3D> restore;
-
-							for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
-								ids.push_back(GE.key);
-								restore.push_back(GE.value);
-							}
-
-							se->gizmo->commit_subgizmos(ids, restore, true);
-							spatial_editor->update_transform_gizmo();
-						} else {
-							sp->set_global_transform(se->original);
-						}
-					}
-					surface->update();
-					set_message(TTR("Transform Aborted."), 3);
+					cancel_transform();
 				}
 
 				if (b->is_pressed()) {
@@ -1461,6 +1452,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 			case MouseButton::LEFT: {
 				if (b->is_pressed()) {
+					if (_edit.mode != TRANSFORM_NONE && _edit.instant) {
+						commit_transform();
+						break; // just commit the edit, stop processing the event so we don't deselect the object
+					}
 					NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 					if ((nav_scheme == NAVIGATION_MAYA || nav_scheme == NAVIGATION_MODO) && b->is_alt_pressed()) {
 						break;
@@ -1567,33 +1562,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					clicked = ObjectID();
 
 					if ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
-						/* HANDLE ROTATION */
-						if (get_selected_count() == 0) {
-							break; //bye
-						}
-						//handle rotate
-						_edit.mode = TRANSFORM_ROTATE;
-						_compute_edit(b->get_position());
+						begin_transform(TRANSFORM_ROTATE, false);
 						break;
 					}
 
 					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
-						if (get_selected_count() == 0) {
-							break; //bye
-						}
-						//handle translate
-						_edit.mode = TRANSFORM_TRANSLATE;
-						_compute_edit(b->get_position());
+						begin_transform(TRANSFORM_TRANSLATE, false);
 						break;
 					}
 
 					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
-						if (get_selected_count() == 0) {
-							break; //bye
-						}
-						//handle scale
-						_edit.mode = TRANSFORM_SCALE;
-						_compute_edit(b->get_position());
+						begin_transform(TRANSFORM_SCALE, false);
 						break;
 					}
 
@@ -1648,32 +1627,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							se->gizmo->commit_subgizmos(ids, restore, false);
 							spatial_editor->update_transform_gizmo();
 						} else {
-							static const char *_transform_name[4] = {
-								TTRC("None"),
-								TTRC("Rotate"),
-								// TRANSLATORS: This refers to the movement that changes the position of an object.
-								TTRC("Translate"),
-								TTRC("Scale"),
-							};
-							undo_redo->create_action(TTRGET(_transform_name[_edit.mode]));
-
-							List<Node *> &selection = editor_selection->get_selected_node_list();
-
-							for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-								Node3D *sp = Object::cast_to<Node3D>(E->get());
-								if (!sp) {
-									continue;
-								}
-
-								Node3DEditorSelectedItem *sel_item = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-								if (!sel_item) {
-									continue;
-								}
-
-								undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
-								undo_redo->add_undo_method(sp, "set_global_transform", sel_item->original);
-							}
-							undo_redo->commit_action();
+							commit_transform();
 						}
 						_edit.mode = TRANSFORM_NONE;
 						set_message("");
@@ -1739,7 +1693,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
-		} else if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+		} else if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE || _edit.instant) {
 			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_shift_pressed()) {
@@ -1767,324 +1721,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				Vector3 ray_pos = _get_ray_pos(m->get_position());
-				Vector3 ray = _get_ray(m->get_position());
-				double snap = EDITOR_GET("interface/inspector/default_float_step");
-				int snap_step_decimals = Math::range_step_decimals(snap);
-
-				switch (_edit.mode) {
-					case TRANSFORM_SCALE: {
-						Vector3 motion_mask;
-						Plane plane;
-						bool plane_mv = false;
-
-						switch (_edit.plane) {
-							case TRANSFORM_VIEW:
-								motion_mask = Vector3(0, 0, 0);
-								plane = Plane(_get_camera_normal(), _edit.center);
-								break;
-							case TRANSFORM_X_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
-								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-								break;
-							case TRANSFORM_Y_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
-								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-								break;
-							case TRANSFORM_Z_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
-								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-								break;
-							case TRANSFORM_YZ:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
-								plane_mv = true;
-								break;
-							case TRANSFORM_XZ:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
-								plane_mv = true;
-								break;
-							case TRANSFORM_XY:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
-								plane_mv = true;
-								break;
-						}
-
-						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
-							break;
-						}
-
-						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-							break;
-						}
-
-						Vector3 motion = intersection - click;
-						if (_edit.plane != TRANSFORM_VIEW) {
-							if (!plane_mv) {
-								motion = motion_mask.dot(motion) * motion_mask;
-
-							} else {
-								// Alternative planar scaling mode
-								if (_get_key_modifier(m) != Key::SHIFT) {
-									motion = motion_mask.dot(motion) * motion_mask;
-								}
-							}
-
-						} else {
-							const real_t center_click_dist = click.distance_to(_edit.center);
-							const real_t center_inters_dist = intersection.distance_to(_edit.center);
-							if (center_click_dist == 0) {
-								break;
-							}
-
-							const real_t scale = center_inters_dist - center_click_dist;
-							motion = Vector3(scale, scale, scale);
-						}
-
-						motion /= click.distance_to(_edit.center);
-
-						// Disable local transformation for TRANSFORM_VIEW
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
-
-						if (_edit.snap || spatial_editor->is_snap_enabled()) {
-							snap = spatial_editor->get_scale_snap() / 100;
-						}
-						Vector3 motion_snapped = motion;
-						motion_snapped.snap(Vector3(snap, snap, snap));
-						// This might not be necessary anymore after issue #288 is solved (in 4.0?).
-						set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
-						motion = _edit.original.basis.inverse().xform(motion);
-
-						List<Node *> &selection = editor_selection->get_selected_node_list();
-						for (Node *E : selection) {
-							Node3D *sp = Object::cast_to<Node3D>(E);
-							if (!sp) {
-								continue;
-							}
-
-							Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-							if (!se) {
-								continue;
-							}
-
-							if (sp->has_meta("_edit_lock_")) {
-								continue;
-							}
-
-							if (se->gizmo.is_valid()) {
-								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
-									Transform3D xform = GE.value;
-									Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
-									if (!local_coords) {
-										new_xform = se->original.affine_inverse() * new_xform;
-									}
-									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
-								}
-							} else {
-								Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
-								_transform_gizmo_apply(se->sp, new_xform, local_coords);
-							}
-						}
-
-						spatial_editor->update_transform_gizmo();
-						surface->update();
-
-					} break;
-
-					case TRANSFORM_TRANSLATE: {
-						Vector3 motion_mask;
-						Plane plane;
-						bool plane_mv = false;
-
-						switch (_edit.plane) {
-							case TRANSFORM_VIEW:
-								plane = Plane(_get_camera_normal(), _edit.center);
-								break;
-							case TRANSFORM_X_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
-								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-								break;
-							case TRANSFORM_Y_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
-								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-								break;
-							case TRANSFORM_Z_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
-								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
-								break;
-							case TRANSFORM_YZ:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
-								plane_mv = true;
-								break;
-							case TRANSFORM_XZ:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
-								plane_mv = true;
-								break;
-							case TRANSFORM_XY:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
-								plane_mv = true;
-								break;
-						}
-
-						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
-							break;
-						}
-
-						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-							break;
-						}
-
-						Vector3 motion = intersection - click;
-						if (_edit.plane != TRANSFORM_VIEW) {
-							if (!plane_mv) {
-								motion = motion_mask.dot(motion) * motion_mask;
-							}
-						}
-
-						// Disable local transformation for TRANSFORM_VIEW
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
-
-						if (_edit.snap || spatial_editor->is_snap_enabled()) {
-							snap = spatial_editor->get_translate_snap();
-						}
-						Vector3 motion_snapped = motion;
-						motion_snapped.snap(Vector3(snap, snap, snap));
-						set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
-								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
-						motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
-
-						List<Node *> &selection = editor_selection->get_selected_node_list();
-						for (Node *E : selection) {
-							Node3D *sp = Object::cast_to<Node3D>(E);
-							if (!sp) {
-								continue;
-							}
-
-							Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-							if (!se) {
-								continue;
-							}
-
-							if (sp->has_meta("_edit_lock_")) {
-								continue;
-							}
-
-							if (se->gizmo.is_valid()) {
-								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
-									Transform3D xform = GE.value;
-									Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
-									new_xform = se->original.affine_inverse() * new_xform;
-									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
-								}
-							} else {
-								Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
-								_transform_gizmo_apply(se->sp, new_xform, false);
-							}
-						}
-
-						spatial_editor->update_transform_gizmo();
-						surface->update();
-
-					} break;
-
-					case TRANSFORM_ROTATE: {
-						Plane plane;
-						Vector3 axis;
-
-						switch (_edit.plane) {
-							case TRANSFORM_VIEW:
-								plane = Plane(_get_camera_normal(), _edit.center);
-								break;
-							case TRANSFORM_X_AXIS:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
-								axis = Vector3(1, 0, 0);
-								break;
-							case TRANSFORM_Y_AXIS:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
-								axis = Vector3(0, 1, 0);
-								break;
-							case TRANSFORM_Z_AXIS:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
-								axis = Vector3(0, 0, 1);
-								break;
-							case TRANSFORM_YZ:
-							case TRANSFORM_XZ:
-							case TRANSFORM_XY:
-								break;
-						}
-
-						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
-							break;
-						}
-
-						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
-							break;
-						}
-
-						Vector3 y_axis = (click - _edit.center).normalized();
-						Vector3 x_axis = plane.normal.cross(y_axis).normalized();
-
-						double angle = Math::atan2(x_axis.dot(intersection - _edit.center), y_axis.dot(intersection - _edit.center));
-
-						if (_edit.snap || spatial_editor->is_snap_enabled()) {
-							snap = spatial_editor->get_rotate_snap();
-						}
-						angle = Math::rad2deg(angle) + snap * 0.5; //else it won't reach +180
-						angle -= Math::fmod(angle, snap);
-						set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
-						angle = Math::deg2rad(angle);
-
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
-
-						List<Node *> &selection = editor_selection->get_selected_node_list();
-						for (Node *E : selection) {
-							Node3D *sp = Object::cast_to<Node3D>(E);
-							if (!sp) {
-								continue;
-							}
-
-							Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
-							if (!se) {
-								continue;
-							}
-
-							if (sp->has_meta("_edit_lock_")) {
-								continue;
-							}
-
-							Vector3 compute_axis = local_coords ? axis : plane.normal;
-							if (se->gizmo.is_valid()) {
-								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
-									Transform3D xform = GE.value;
-
-									Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords, true); // Force orthogonal with subgizmo.
-									if (!local_coords) {
-										new_xform = se->original.affine_inverse() * new_xform;
-									}
-									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
-								}
-							} else {
-								Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
-								_transform_gizmo_apply(se->sp, new_xform, local_coords);
-							}
-						}
-
-						spatial_editor->update_transform_gizmo();
-						surface->update();
-
-					} break;
-					default: {
-					}
-				}
+				update_transform(m->get_position(), _get_key_modifier(m) == Key::SHIFT);
 			}
 		} else if ((m->get_button_mask() & MouseButton::MASK_RIGHT) != MouseButton::NONE || freelook_active) {
 			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
@@ -2225,6 +1862,51 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (_edit.mode != TRANSFORM_NONE) {
+			// We're actively transforming, handle keys specially
+			TransformPlane new_plane = TRANSFORM_VIEW;
+			String new_message;
+			if (ED_IS_SHORTCUT("spatial_editor/lock_transform_x", p_event)) {
+				new_plane = TRANSFORM_X_AXIS;
+				new_message = TTR("X-Axis Transform.");
+			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_y", p_event)) {
+				new_plane = TRANSFORM_Y_AXIS;
+				new_message = TTR("Y-Axis Transform.");
+			} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_z", p_event)) {
+				new_plane = TRANSFORM_Z_AXIS;
+				new_message = TTR("Z-Axis Transform.");
+			} else if (_edit.mode != TRANSFORM_ROTATE) { // rotating on a plane doesn't make sense
+				if (ED_IS_SHORTCUT("spatial_editor/lock_transform_yz", p_event)) {
+					new_plane = TRANSFORM_YZ;
+					new_message = TTR("YZ-Plane Transform.");
+				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xz", p_event)) {
+					new_plane = TRANSFORM_XZ;
+					new_message = TTR("XZ-Plane Transform.");
+				} else if (ED_IS_SHORTCUT("spatial_editor/lock_transform_xy", p_event)) {
+					new_plane = TRANSFORM_XY;
+					new_message = TTR("XY-Plane Transform.");
+				}
+			}
+
+			if (new_plane != TRANSFORM_VIEW) {
+				if (new_plane != _edit.plane) {
+					// lock me once and get a global constraint
+					_edit.plane = new_plane;
+					spatial_editor->set_local_coords_enabled(false);
+				} else if (!spatial_editor->are_local_coords_enabled()) {
+					// lock me twice and get a local constraint
+					spatial_editor->set_local_coords_enabled(true);
+				} else {
+					// lock me thrice and we're back where we started
+					_edit.plane = TRANSFORM_VIEW;
+					spatial_editor->set_local_coords_enabled(false);
+				}
+				update_transform(_edit.mouse_pos, Input::get_singleton()->is_key_pressed(Key::SHIFT));
+				set_message(new_message, 2);
+				accept_event();
+				return;
+			}
+		}
 		if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
 			if (_edit.mode != TRANSFORM_NONE) {
 				_edit.snap = !_edit.snap;
@@ -2314,6 +1996,18 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 
 			set_message(TTR("Animation Key Inserted."));
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", p_event) && _edit.mode != TRANSFORM_NONE) {
+			cancel_transform();
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event)) {
+			begin_transform(TRANSFORM_TRANSLATE, true);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event)) {
+			begin_transform(TRANSFORM_ROTATE, true);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event)) {
+			begin_transform(TRANSFORM_SCALE, true);
 		}
 
 		// Freelook doesn't work in orthogonal mode.
@@ -3544,6 +3238,13 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
 		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+
+		axis_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(axis_gizmo_instance[i], spatial_editor->get_axis_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(axis_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_visible(axis_gizmo_instance[i], true);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(axis_gizmo_instance[i], layer);
 	}
 
 	// Rotation white outline
@@ -3563,6 +3264,7 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 		RS::get_singleton()->free(rotate_gizmo_instance[i]);
 		RS::get_singleton()->free(scale_gizmo_instance[i]);
 		RS::get_singleton()->free(scale_plane_gizmo_instance[i]);
+		RS::get_singleton()->free(axis_gizmo_instance[i]);
 	}
 	// Rotation white outline
 	RS::get_singleton()->free(rotate_gizmo_instance[3]);
@@ -3655,6 +3357,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
 		}
 		// Rotation white outline
 		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
@@ -3711,7 +3414,15 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		RenderingServer::get_singleton()->instance_set_transform(axis_gizmo_instance[i], xform);
 	}
+
+	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE;
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->instance_set_visible(axis_gizmo_instance[0], show_axes && (_edit.plane == TRANSFORM_X_AXIS || _edit.plane == TRANSFORM_XY || _edit.plane == TRANSFORM_XZ));
+	rs->instance_set_visible(axis_gizmo_instance[1], show_axes && (_edit.plane == TRANSFORM_Y_AXIS || _edit.plane == TRANSFORM_XY || _edit.plane == TRANSFORM_YZ));
+	rs->instance_set_visible(axis_gizmo_instance[2], show_axes && (_edit.plane == TRANSFORM_Z_AXIS || _edit.plane == TRANSFORM_XZ || _edit.plane == TRANSFORM_YZ));
+
 	// Rotation white outline
 	xform.orthonormalize();
 	xform.basis.scale(scale);
@@ -4299,6 +4010,372 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	_perform_drop_data();
 }
 
+void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
+	if (get_selected_count() > 0) {
+		_edit.mode = p_mode;
+		_compute_edit(_edit.mouse_pos);
+		_edit.instant = instant;
+		_edit.snap = spatial_editor->is_snap_enabled();
+	}
+}
+
+void Node3DEditorViewport::commit_transform() {
+	ERR_FAIL_COND(_edit.mode == TRANSFORM_NONE);
+	static const char *_transform_name[4] = {
+		TTRC("None"),
+		TTRC("Rotate"),
+		// TRANSLATORS: This refers to the movement that changes the position of an object.
+		TTRC("Translate"),
+		TTRC("Scale"),
+	};
+	undo_redo->create_action(_transform_name[_edit.mode]);
+
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		Node3D *sp = Object::cast_to<Node3D>(E->get());
+		if (!sp) {
+			continue;
+		}
+
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+		if (!se) {
+			continue;
+		}
+
+		undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+		undo_redo->add_undo_method(sp, "set_global_transform", se->original);
+	}
+	undo_redo->commit_action();
+	_edit.mode = TRANSFORM_NONE;
+	_edit.instant = false;
+	spatial_editor->set_local_coords_enabled(_edit.original_local);
+	set_message("");
+	spatial_editor->update_transform_gizmo();
+	surface->update();
+}
+
+void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
+	Vector3 ray_pos = _get_ray_pos(p_mousepos);
+	Vector3 ray = _get_ray(p_mousepos);
+	double snap = EDITOR_GET("interface/inspector/default_float_step");
+	int snap_step_decimals = Math::range_step_decimals(snap);
+
+	switch (_edit.mode) {
+		case TRANSFORM_SCALE: {
+			Vector3 motion_mask;
+			Plane plane;
+			bool plane_mv = false;
+
+			switch (_edit.plane) {
+				case TRANSFORM_VIEW:
+					motion_mask = Vector3(0, 0, 0);
+					plane = Plane(_get_camera_normal(), _edit.center);
+					break;
+				case TRANSFORM_X_AXIS:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
+					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					break;
+				case TRANSFORM_Y_AXIS:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					break;
+				case TRANSFORM_Z_AXIS:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
+					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					break;
+				case TRANSFORM_YZ:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
+					plane_mv = true;
+					break;
+				case TRANSFORM_XZ:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
+					plane_mv = true;
+					break;
+				case TRANSFORM_XY:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
+					plane_mv = true;
+					break;
+			}
+
+			Vector3 intersection;
+			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
+				break;
+			}
+
+			Vector3 click;
+			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
+				break;
+			}
+
+			Vector3 motion = intersection - click;
+			if (_edit.plane != TRANSFORM_VIEW) {
+				if (!plane_mv) {
+					motion = motion_mask.dot(motion) * motion_mask;
+
+				} else {
+					// Alternative planar scaling mode
+					if (p_shift) {
+						motion = motion_mask.dot(motion) * motion_mask;
+					}
+				}
+
+			} else {
+				const real_t center_click_dist = click.distance_to(_edit.center);
+				const real_t center_inters_dist = intersection.distance_to(_edit.center);
+				if (center_click_dist == 0) {
+					break;
+				}
+
+				const real_t scale = center_inters_dist - center_click_dist;
+				motion = Vector3(scale, scale, scale);
+			}
+
+			motion /= click.distance_to(_edit.center);
+
+			// Disable local transformation for TRANSFORM_VIEW
+			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
+
+			if (_edit.snap || spatial_editor->is_snap_enabled()) {
+				snap = spatial_editor->get_scale_snap() / 100;
+			}
+			Vector3 motion_snapped = motion;
+			motion_snapped.snap(Vector3(snap, snap, snap));
+			// This might not be necessary anymore after issue #288 is solved (in 4.0?).
+			set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
+					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+			motion = _edit.original.basis.inverse().xform(motion);
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
+				if (!sp) {
+					continue;
+				}
+
+				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+				if (!se) {
+					continue;
+				}
+
+				if (sp->has_meta("_edit_lock_")) {
+					continue;
+				}
+
+				if (se->gizmo.is_valid()) {
+					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+						Transform3D xform = GE.value;
+						Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
+						if (!local_coords) {
+							new_xform = se->original.affine_inverse() * new_xform;
+						}
+						se->gizmo->set_subgizmo_transform(GE.key, new_xform);
+					}
+				} else {
+					Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
+					_transform_gizmo_apply(se->sp, new_xform, local_coords);
+				}
+			}
+
+			spatial_editor->update_transform_gizmo();
+			surface->update();
+
+		} break;
+
+		case TRANSFORM_TRANSLATE: {
+			Vector3 motion_mask;
+			Plane plane;
+			bool plane_mv = false;
+
+			switch (_edit.plane) {
+				case TRANSFORM_VIEW:
+					plane = Plane(_get_camera_normal(), _edit.center);
+					break;
+				case TRANSFORM_X_AXIS:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
+					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					break;
+				case TRANSFORM_Y_AXIS:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					break;
+				case TRANSFORM_Z_AXIS:
+					motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
+					plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
+					break;
+				case TRANSFORM_YZ:
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
+					plane_mv = true;
+					break;
+				case TRANSFORM_XZ:
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
+					plane_mv = true;
+					break;
+				case TRANSFORM_XY:
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
+					plane_mv = true;
+					break;
+			}
+
+			Vector3 intersection;
+			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
+				break;
+			}
+
+			Vector3 click;
+			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
+				break;
+			}
+
+			Vector3 motion = intersection - click;
+			if (_edit.plane != TRANSFORM_VIEW) {
+				if (!plane_mv) {
+					motion = motion_mask.dot(motion) * motion_mask;
+				}
+			}
+
+			// Disable local transformation for TRANSFORM_VIEW
+			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
+
+			if (_edit.snap || spatial_editor->is_snap_enabled()) {
+				snap = spatial_editor->get_translate_snap();
+			}
+			Vector3 motion_snapped = motion;
+			motion_snapped.snap(Vector3(snap, snap, snap));
+			set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
+					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+			motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
+				if (!sp) {
+					continue;
+				}
+
+				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+				if (!se) {
+					continue;
+				}
+
+				if (sp->has_meta("_edit_lock_")) {
+					continue;
+				}
+
+				if (se->gizmo.is_valid()) {
+					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+						Transform3D xform = GE.value;
+						Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
+						new_xform = se->original.affine_inverse() * new_xform;
+						se->gizmo->set_subgizmo_transform(GE.key, new_xform);
+					}
+				} else {
+					Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
+					_transform_gizmo_apply(se->sp, new_xform, false);
+				}
+			}
+
+			spatial_editor->update_transform_gizmo();
+			surface->update();
+
+		} break;
+
+		case TRANSFORM_ROTATE: {
+			Plane plane;
+			Vector3 axis;
+
+			switch (_edit.plane) {
+				case TRANSFORM_VIEW:
+					plane = Plane(_get_camera_normal(), _edit.center);
+					break;
+				case TRANSFORM_X_AXIS:
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
+					axis = Vector3(1, 0, 0);
+					break;
+				case TRANSFORM_Y_AXIS:
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
+					axis = Vector3(0, 1, 0);
+					break;
+				case TRANSFORM_Z_AXIS:
+					plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
+					axis = Vector3(0, 0, 1);
+					break;
+				case TRANSFORM_YZ:
+				case TRANSFORM_XZ:
+				case TRANSFORM_XY:
+					break;
+			}
+
+			Vector3 intersection;
+			if (!plane.intersects_ray(ray_pos, ray, &intersection)) {
+				break;
+			}
+
+			Vector3 click;
+			if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click)) {
+				break;
+			}
+
+			Vector3 y_axis = (click - _edit.center).normalized();
+			Vector3 x_axis = plane.normal.cross(y_axis).normalized();
+
+			double angle = Math::atan2(x_axis.dot(intersection - _edit.center), y_axis.dot(intersection - _edit.center));
+
+			if (_edit.snap || spatial_editor->is_snap_enabled()) {
+				snap = spatial_editor->get_rotate_snap();
+			}
+			angle = Math::rad2deg(angle) + snap * 0.5; //else it won't reach +180
+			angle -= Math::fmod(angle, snap);
+			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
+			angle = Math::deg2rad(angle);
+
+			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
+				if (!sp) {
+					continue;
+				}
+
+				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+				if (!se) {
+					continue;
+				}
+
+				if (sp->has_meta("_edit_lock_")) {
+					continue;
+				}
+
+				Vector3 compute_axis = local_coords ? axis : plane.normal;
+				if (se->gizmo.is_valid()) {
+					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
+						Transform3D xform = GE.value;
+
+						Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords, true); // Force orthogonal with subgizmo.
+						if (!local_coords) {
+							new_xform = se->original.affine_inverse() * new_xform;
+						}
+						se->gizmo->set_subgizmo_transform(GE.key, new_xform);
+					}
+				} else {
+					Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
+					_transform_gizmo_apply(se->sp, new_xform, local_coords);
+				}
+			}
+
+			spatial_editor->update_transform_gizmo();
+			surface->update();
+
+		} break;
+		default: {
+		}
+	}
+}
+
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
 	cpu_time_history_index = 0;
 	gpu_time_history_index = 0;
@@ -4306,6 +4383,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	_edit.mode = TRANSFORM_NONE;
 	_edit.plane = TRANSFORM_VIEW;
 	_edit.snap = true;
+	_edit.instant = true;
 	_edit.gizmo_handle = -1;
 	_edit.gizmo_handle_secondary = false;
 
@@ -4465,6 +4543,16 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), Key::Q);
 	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), Key::SHIFT);
 	ED_SHORTCUT("spatial_editor/freelook_slow_modifier", TTR("Freelook Slow Modifier"), Key::ALT);
+	ED_SHORTCUT("spatial_editor/lock_transform_x", TTR("Lock Transformation to X axis"), Key::X);
+	ED_SHORTCUT("spatial_editor/lock_transform_y", TTR("Lock Transformation to Y axis"), Key::Y);
+	ED_SHORTCUT("spatial_editor/lock_transform_z", TTR("Lock Transformation to Z axis"), Key::Z);
+	ED_SHORTCUT("spatial_editor/lock_transform_yz", TTR("Lock Transformation to YZ plane"), KeyModifierMask::SHIFT | Key::X);
+	ED_SHORTCUT("spatial_editor/lock_transform_xz", TTR("Lock Transformation to XZ plane"), KeyModifierMask::SHIFT | Key::Y);
+	ED_SHORTCUT("spatial_editor/lock_transform_xy", TTR("Lock Transformation to XY plane"), KeyModifierMask::SHIFT | Key::Z);
+	ED_SHORTCUT("spatial_editor/cancel_transform", TTR("Cancel Transformation"), Key::ESCAPE);
+	ED_SHORTCUT("spatial_editor/instant_translate", TTR("Begin Translate Transformation"));
+	ED_SHORTCUT("spatial_editor/instant_rotate", TTR("Begin Rotate Transformation"));
+	ED_SHORTCUT("spatial_editor/instant_scale", TTR("Begin Scale Transformation"));
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
@@ -5854,6 +5942,7 @@ void fragment() {
 			rotate_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 			scale_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 			scale_plane_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
+			axis_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 			Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 			mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -6174,6 +6263,21 @@ void fragment() {
 				Ref<StandardMaterial3D> plane_mat_hl = plane_mat->duplicate();
 				plane_mat_hl->set_albedo(col.from_hsv(col.get_h(), 0.25, 1.0, 1));
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
+			}
+
+			// Lines to visualize transforms locked to an axis/plane
+			{
+				Ref<SurfaceTool> surftool = memnew(SurfaceTool);
+				surftool->begin(Mesh::PRIMITIVE_LINES);
+
+				Vector3 vec;
+				vec[i] = 1;
+
+				// line extending through infinity(ish)
+				surftool->add_vertex(vec * -99999);
+				surftool->add_vertex(vec * 99999);
+				surftool->set_material(mat_hl);
+				surftool->commit(axis_gizmo[i]);
 			}
 		}
 	}
