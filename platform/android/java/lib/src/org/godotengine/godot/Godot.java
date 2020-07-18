@@ -467,6 +467,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final Activity activity = getActivity();
 		Window window = activity.getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		mClipboard = (ClipboardManager)activity.getSystemService(Context.CLIPBOARD_SERVICE);
 		pluginRegistry = GodotPluginRegistry.initializePluginRegistry(this);
 
