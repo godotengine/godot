@@ -23,13 +23,14 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the main container of Godot editor's window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
+				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the current path being viewed in the [FileSystemDock].
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
@@ -43,26 +44,29 @@
 			<return type="EditorSettings">
 			</return>
 			<description>
-				Returns the [EditorSettings].
+				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
 		<method name="get_editor_viewport">
 			<return type="Control">
 			</return>
 			<description>
-				Returns the editor [Viewport].
+				Returns the editor's [Viewport] instance.
+				[b]Note:[/b] This returns the main editor viewport containing the whole editor, not the 2D or 3D viewports specifically.
 			</description>
 		</method>
 		<method name="get_file_system_dock">
 			<return type="FileSystemDock">
 			</return>
 			<description>
+				Returns the editor's [FileSystemDock] instance.
 			</description>
 		</method>
 		<method name="get_inspector" qualifiers="const">
 			<return type="EditorInspector">
 			</return>
 			<description>
+				Returns the editor's [EditorInspector] instance.
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
@@ -83,34 +87,35 @@
 			<return type="EditorFileSystem">
 			</return>
 			<description>
-				Returns the [EditorFileSystem].
+				Returns the editor's [EditorFileSystem] instance.
 			</description>
 		</method>
 		<method name="get_resource_previewer">
 			<return type="EditorResourcePreview">
 			</return>
 			<description>
-				Returns the [EditorResourcePreview].
+				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
 		<method name="get_script_editor">
 			<return type="ScriptEditor">
 			</return>
 			<description>
-				Returns the [ScriptEditor].
+				Returns the editor's [ScriptEditor] instance.
 			</description>
 		</method>
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
 			</description>
 		</method>
 		<method name="get_selection">
 			<return type="EditorSelection">
 			</return>
 			<description>
-				Returns the [EditorSelection].
+				Returns the editor's [EditorSelection] instance.
 			</description>
 		</method>
 		<method name="inspect_object">
@@ -121,14 +126,14 @@
 			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Shows the given property on the given [code]object[/code] in the Editor's Inspector dock.
+				Shows the given property on the given [code]object[/code] in the editor's Inspector dock.
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code], if a scene is currently being played; [code]false[/code] otherwise. Paused scenes are considered as being played.
+				Returns [code]true[/code] if a scene is currently being played, [code]false[/code] otherwise. Paused scenes are considered as being played.
 			</description>
 		</method>
 		<method name="is_plugin_enabled" qualifiers="const">
@@ -137,7 +142,7 @@
 			<argument index="0" name="plugin" type="String">
 			</argument>
 			<description>
-				Returns the enabled status of a plugin. The plugin name is the same as its directory name.
+				Returns [code]true[/code] if the specified [code]plugin[/code] is enabled. The plugin name is the same as its directory name.
 			</description>
 		</method>
 		<method name="make_mesh_previews">
@@ -225,6 +230,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Sets the editor's current main screen to the one specified in [code]name[/code]. [code]name[/code] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
 			</description>
 		</method>
 		<method name="set_plugin_enabled">

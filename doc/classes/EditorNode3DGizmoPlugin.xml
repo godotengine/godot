@@ -139,6 +139,8 @@
 			<return type="String">
 			</return>
 			<description>
+				Override this method to set the gizmo's priority. Higher values correspond to higher priority. If a gizmo with higher priority conflicts with another gizmo, only the gizmo with higher priority will be used.
+				All built-in editor gizmos return a priority of [code]-1[/code]. If not overridden, this method will return [code]0[/code], which means custom gizmos will automatically override built-in gizmos.
 			</description>
 		</method>
 		<method name="has_gizmo" qualifiers="virtual">

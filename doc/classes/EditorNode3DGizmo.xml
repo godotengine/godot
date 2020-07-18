@@ -15,6 +15,7 @@
 			<argument index="0" name="segments" type="PackedVector3Array">
 			</argument>
 			<description>
+				Adds the specified [code]segments[/code] to the gizmo's collision shape for picking. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_collision_triangles">
@@ -69,6 +70,7 @@
 			<argument index="3" name="material" type="Material" default="null">
 			</argument>
 			<description>
+				Adds a mesh to the gizmo with the specified [code]billboard[/code] state, [code]skeleton[/code] and [code]material[/code]. If [code]billboard[/code] is [code]true[/code], the mesh will rotate to always face the camera. Call this function during [method redraw].
 			</description>
 		</method>
 		<method name="add_unscaled_billboard">
@@ -88,6 +90,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Removes everything in the gizmo including meshes, collisions and handles.
 			</description>
 		</method>
 		<method name="commit_handle" qualifiers="virtual">
@@ -143,14 +146,14 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Gets whether a handle is highlighted or not.
+				Returns [code]true[/code] if the handle at index [code]index[/code] is highlighted by being hovered with the mouse.
 			</description>
 		</method>
 		<method name="redraw" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
-				This function is called when the Node3D this gizmo refers to changes (the [method Node3D.update_gizmo] is called).
+				This function is called when the [Node3D] this gizmo refers to changes (the [method Node3D.update_gizmo] is called).
 			</description>
 		</method>
 		<method name="set_handle" qualifiers="virtual">
@@ -173,6 +176,7 @@
 			<argument index="0" name="hidden" type="bool">
 			</argument>
 			<description>
+				Sets the gizmo's hidden state. If [code]true[/code], the gizmo will be hidden. If [code]false[/code], it will be shown.
 			</description>
 		</method>
 		<method name="set_spatial_node">
@@ -181,6 +185,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
+				Sets the reference [Node3D] node for the gizmo. [code]node[/code] must inherit from [Node3D].
 			</description>
 		</method>
 	</methods>
