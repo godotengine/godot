@@ -26,6 +26,14 @@
 				Adds a fallback font.
 			</description>
 		</method>
+		<method name="get_available_chars" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns a string containing all the characters available in the main and all the fallback fonts.
+				If a given character is included in more than one font, it appears only once in the returned string.
+			</description>
+		</method>
 		<method name="get_fallback" qualifiers="const">
 			<return type="DynamicFontData">
 			</return>
