@@ -191,6 +191,7 @@ public:
 	float get_descent() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+	String get_available_chars() const;
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only = false, bool p_outline = false) const;
 
@@ -278,6 +279,7 @@ public:
 	virtual float get_descent() const;
 
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
+	String get_available_chars() const;
 
 	virtual bool is_distance_field_hint() const;
 
