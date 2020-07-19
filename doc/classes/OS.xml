@@ -153,7 +153,18 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Returns the command line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine.
+				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
+				You can also incorporate environment variables using the [method get_environment] method.
+				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
+				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
+				[codeblock]
+				var arguments = {}
+				for argument in OS.get_cmdline_args():
+				    if argument.find("=") > -1:
+				        var key_value = argument.split("=")
+				        arguments[key_value[0].lstrip("--")] = key_value[1]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
