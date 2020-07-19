@@ -87,7 +87,7 @@ jobs:
           ${{runner.os}}-template
           ${{runner.os}}
 
-      # Use python 3.x release (works cross platform)
+    # Use python 3.x release (works cross platform)
     - name: Set up Python 3.x
       uses: actions/setup-python@v2
       with:
@@ -216,7 +216,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # install all packages (except scons)
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo cp -f misc/scripts/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
@@ -267,7 +273,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # install all packages (except scons)
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo cp -f misc/scripts/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
@@ -287,7 +299,7 @@ jobs:
             ${{runner.os}}-template
             ${{runner.os}}
 
-        # Use python 3.x release (works cross platform)
+      # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
