@@ -3597,6 +3597,8 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards) {
 
 	TreeItem *from = p_at;
+	TreeItem *loop = nullptr; // Safe-guard against infinite loop.
+
 	while (p_at) {
 
 		for (int i = 0; i < columns.size(); i++) {
@@ -3614,6 +3616,12 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 
 		if ((p_at) == from)
 			break;
+
+		if (!loop) {
+			loop = p_at;
+		} else if (loop == p_at) {
+			break;
+		}
 	}
 
 	return NULL;
