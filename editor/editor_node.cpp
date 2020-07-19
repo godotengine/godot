@@ -2408,11 +2408,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 		} break;
-		case FILE_CLOSE_ALL_AND_QUIT:
-		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE: {
+			_scene_tab_closed(editor_data.get_edited_scene());
+		} break;
+		case FILE_CLOSE_ALL_AND_QUIT:
+		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER: {
 			if (!p_confirmed) {
-				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene(false);
+				tab_closing = _next_unsaved_scene(false);
 				_scene_tab_changed(tab_closing);
 
 				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER) {
@@ -2425,8 +2427,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						break;
 					}
 				}
-			} else if (p_option == FILE_CLOSE) {
-				tab_closing = editor_data.get_edited_scene();
 			}
 			if (!editor_data.get_edited_scene_root(tab_closing)) {
 				// empty tab
