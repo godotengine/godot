@@ -115,9 +115,9 @@ private:
 	bool awaiting_scroll_offset_update;
 	List<Connection> connections;
 
-	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
+	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
 
-	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color);
+	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color);
 
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);

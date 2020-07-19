@@ -599,63 +599,28 @@ bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
 	return true;
 }
 
-template <class Vector2>
-static _FORCE_INLINE_ Vector2 _bezier_interp(real_t t, Vector2 start, Vector2 control_1, Vector2 control_2, Vector2 end) {
-	/* Formula from Wikipedia article on Bezier curves. */
-	real_t omt = (1.0 - t);
-	real_t omt2 = omt * omt;
-	real_t omt3 = omt2 * omt;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
-}
-
-void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const {
-	float mp = p_begin + (p_end - p_begin) * 0.5;
-	Vector2 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector2 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector2 end = _bezier_interp(p_end, p_a, p_a + p_out, p_b + p_in, p_b);
-
-	Vector2 na = (mid - beg).normalized();
-	Vector2 nb = (end - mid).normalized();
-	float dp = Math::rad2deg(Math::acos(na.dot(nb)));
-
-	if (p_depth >= p_min_depth && (dp < p_tol || p_depth >= p_max_depth)) {
-		points.push_back((beg + end) * 0.5);
-		colors.push_back(p_color.lerp(p_to_color, mp));
-		lines++;
-	} else {
-		_bake_segment2d(points, colors, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
-		_bake_segment2d(points, colors, mp, p_end, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
-	}
-}
-
-void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color) {
-	//cubic bezier code
-	float diff = p_to.x - p_from.x;
-	float cp_offset;
-	int cp_len = get_theme_constant("bezier_len_pos");
-	int cp_neg_len = get_theme_constant("bezier_len_neg");
-
-	if (diff > 0) {
-		cp_offset = MIN(cp_len, diff * 0.5);
-	} else {
-		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
+PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const Vector2 &p_to) {
+	if (get_script_instance() && get_script_instance()->get_script().is_valid() && get_script_instance()->has_method("_get_connection_line")) {
+		return get_script_instance()->call("_get_connection_line", p_from, p_to);
 	}
 
-	Vector2 c1 = Vector2(cp_offset * zoom, 0);
-	Vector2 c2 = Vector2(-cp_offset * zoom, 0);
-
-	int lines = 0;
-
-	Vector<Point2> points;
+	Curve2D curve;
 	Vector<Color> colors;
-	points.push_back(p_from);
-	colors.push_back(p_color);
-	_bake_segment2d(points, colors, 0, 1, p_from, c1, p_to, c2, 0, 3, 9, 3, p_color, p_to_color, lines);
-	points.push_back(p_to);
-	colors.push_back(p_to_color);
+	curve.add_point(p_from);
+	curve.set_point_out(0, Vector2(60, 0));
+	curve.add_point(p_to);
+	curve.set_point_in(1, Vector2(-60, 0));
+	return curve.tessellate();
+}
+
+void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color) {
+	Vector<Vector2> points = get_connection_line(p_from, p_to);
+	Vector<Color> colors;
+	float length = p_from.distance_to(p_to);
+	for (int i = 0; i < points.size(); i++) {
+		float d = p_from.distance_to(points[i]) / length;
+		colors.push_back(p_color.lerp(p_to_color, d));
+	}
 
 #ifdef TOOLS_ENABLED
 	p_where->draw_polyline_colors(points, colors, Math::floor(2 * EDSCALE));
@@ -707,7 +672,7 @@ void GraphEdit::_connections_layer_draw() {
 			color = color.lerp(activity_color, E->get().activity);
 			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
-		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
+		_draw_connection_line(connections_layer, frompos, topos, color, tocolor);
 	}
 
 	while (to_erase.size()) {
@@ -746,7 +711,7 @@ void GraphEdit::_top_layer_draw() {
 		if (!connecting_out) {
 			SWAP(pos, topos);
 		}
-		_draw_cos_line(top_layer, pos, topos, col, col);
+		_draw_connection_line(top_layer, pos, topos, col, col);
 	}
 
 	if (box_selecting) {
@@ -1213,6 +1178,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_node_connected", "from", "from_port", "to", "to_port"), &GraphEdit::is_node_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from", "from_port", "to", "to_port"), &GraphEdit::disconnect_node);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from", "from_port", "to", "to_port", "amount"), &GraphEdit::set_connection_activity);
+	ClassDB::bind_method(D_METHOD("get_connection_line", "from", "to"), &GraphEdit::get_connection_line);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("get_scroll_ofs"), &GraphEdit::get_scroll_ofs);
@@ -1244,6 +1210,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
+
+	BIND_VMETHOD(MethodInfo(Variant::PACKED_VECTOR2_ARRAY, "_get_connection_line", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_ofs", "get_scroll_ofs");

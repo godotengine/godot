@@ -10,6 +10,17 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_connection_line" qualifiers="virtual">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<description>
+				Virtual method which can be overridden to customize how connections are drawn.
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void">
 			</return>
@@ -89,6 +100,17 @@
 			<description>
 				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph.
 				Warning: The intended usage of this function is to allow you to reposition or add your own custom controls to the container. This is an internal control and as such should not be freed. If you wish to hide this or any of it's children use their [member CanvasItem.visible] property instead.
+			</description>
+		</method>
+		<method name="get_connection_line">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<description>
+				Returns the points which would make up a connection between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
 		<method name="is_node_connected">
