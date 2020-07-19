@@ -10,6 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_connection_line" qualifiers="virtual">
+			<return type="PackedVector2Array" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<description>
+				Virtual method which can be overridden to customize how connections are drawn.
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void" />
 			<argument index="0" name="from_type" type="int" />
@@ -62,6 +70,14 @@
 			<argument index="3" name="to_port" type="int" />
 			<description>
 				Removes the connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
+			</description>
+		</method>
+		<method name="get_connection_line">
+			<return type="PackedVector2Array" />
+			<argument index="0" name="from" type="Vector2" />
+			<argument index="1" name="to" type="Vector2" />
+			<description>
+				Returns the points which would make up a connection between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
