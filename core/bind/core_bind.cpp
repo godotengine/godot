@@ -2436,7 +2436,7 @@ String _Directory::get_current_dir() {
 	return d->get_current_dir();
 }
 Error _Directory::make_dir(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_dir);
 		Error err = d->make_dir(p_dir);
@@ -2446,7 +2446,7 @@ Error _Directory::make_dir(String p_dir) {
 	return d->make_dir(p_dir);
 }
 Error _Directory::make_dir_recursive(String p_dir) {
-	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory is not configured properly.");
 	if (!p_dir.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_dir);
 		Error err = d->make_dir_recursive(p_dir);
