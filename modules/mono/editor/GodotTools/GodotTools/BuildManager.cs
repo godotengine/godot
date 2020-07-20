@@ -6,6 +6,7 @@ using GodotTools.Build;
 using GodotTools.Ides.Rider;
 using GodotTools.Internals;
 using GodotTools.Utils;
+using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 
@@ -152,7 +153,7 @@ namespace GodotTools
             }
         }
 
-        public static bool BuildProjectBlocking(string config, IEnumerable<string> godotDefines)
+        public static bool BuildProjectBlocking(string config, [CanBeNull] string platform = null)
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return true; // No solution to build
@@ -168,29 +169,18 @@ namespace GodotTools
                 return false;
             }
 
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
-
             using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
             {
                 pr.Step("Building project solution", 0);
 
                 var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets: new[] {"Build"}, config, restore: true);
 
-                bool escapeNeedsDoubleBackslash = buildTool == BuildTool.MsBuildMono || buildTool == BuildTool.DotnetCli;
-
-                // Add Godot defines
-                string constants = !escapeNeedsDoubleBackslash ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
-
-                foreach (var godotDefine in godotDefines)
-                    constants += $"GODOT_{godotDefine.ToUpper().Replace("-", "_").Replace(" ", "_").Replace(";", "_")};";
+                // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
+                if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
+                    buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
                 if (Internal.GodotIsRealTDouble())
-                    constants += "GODOT_REAL_T_IS_DOUBLE;";
-
-                constants += !escapeNeedsDoubleBackslash ? "\"" : "\\\"";
-
-                buildInfo.CustomProperties.Add(constants);
+                    buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
 
                 if (!Build(buildInfo))
                 {
@@ -233,13 +223,7 @@ namespace GodotTools
                     return true; // Requested play from an external editor/IDE which already built the project
             }
 
-            var godotDefines = new[]
-            {
-                Godot.OS.GetName(),
-                Internal.GodotIs32Bits() ? "32" : "64"
-            };
-
-            return BuildProjectBlocking("Debug", godotDefines);
+            return BuildProjectBlocking("Debug");
         }
 
         public static void Initialize()
