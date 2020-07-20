@@ -219,7 +219,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
-          sudo cp -f misc/scripts/sources.list /etc/apt/sources.list
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
       # Install all packages (except scons)
@@ -276,7 +276,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
-          sudo cp -f misc/scripts/sources.list /etc/apt/sources.list
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
       # Install all packages (except scons)
