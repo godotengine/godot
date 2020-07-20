@@ -51,6 +51,11 @@ jobs:
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes target=release_debug
 
+      # Execute unit tests for the editor
+      - name: Unit Tests
+        run: |
+          ./bin/godot.osx.opt.tools.64 --test
+
   macos-template:
     runs-on: "macos-latest"
     name: Template (target=release, tools=no)
