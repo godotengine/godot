@@ -160,9 +160,6 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btVector3 bt_motion;
 	G_TO_B(p_motion, bt_motion);
 
-	if (bt_motion.fuzzyZero())
-		return false;
-
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
@@ -180,6 +177,10 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 
 	btTransform bt_xform_to(bt_xform_from);
 	bt_xform_to.getOrigin() += bt_motion;
+
+	if ((bt_xform_to.getOrigin() - bt_xform_from.getOrigin()).fuzzyZero()) {
+		return false;
+	}
 
 	GodotClosestConvexResultCallback btResult(bt_xform_from.getOrigin(), bt_xform_to.getOrigin(), &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btResult.m_collisionFilterGroup = 0;
@@ -969,7 +970,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		motionVec->end();
 #endif
 
-		for (int shIndex = 0; shIndex < shape_count && !motion.fuzzyZero(); ++shIndex) {
+		for (int shIndex = 0; shIndex < shape_count; ++shIndex) {
 			if (p_body->is_shape_disabled(shIndex)) {
 				continue;
 			}
@@ -990,6 +991,11 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 
 			btTransform shape_world_to(shape_world_from);
 			shape_world_to.getOrigin() += motion;
+
+			if ((shape_world_to.getOrigin() - shape_world_from.getOrigin()).fuzzyZero()) {
+				motion = btVector3(0, 0, 0);
+				break;
+			}
 
 			GodotKinClosestConvexResultCallback btResult(shape_world_from.getOrigin(), shape_world_to.getOrigin(), p_body, p_infinite_inertia);
 			btResult.m_collisionFilterGroup = p_body->get_collision_layer();
