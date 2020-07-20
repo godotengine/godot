@@ -118,7 +118,7 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the TreeItem's child items.
+				Returns the TreeItem's first child item or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_custom_bg_color" qualifiers="const">
@@ -196,7 +196,7 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the next TreeItem in the tree.
+				Returns the next TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_next_visible">
@@ -205,7 +205,7 @@
 			<argument index="0" name="wrap" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the next visible TreeItem in the tree.
+				Returns the next visible TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
@@ -213,14 +213,14 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the parent TreeItem.
+				Returns the parent TreeItem or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev">
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the previous TreeItem in the tree.
+				Returns the previous TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev_visible">
@@ -229,7 +229,7 @@
 			<argument index="0" name="wrap" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the previous visible TreeItem in the tree.
+				Returns the previous visible TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
