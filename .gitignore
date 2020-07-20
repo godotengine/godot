@@ -11,11 +11,13 @@ doc/_build/
 # CLion
 cmake-build-debug
 
+# clangd
+.clangd/
+
 # Android specific
 .gradle
 local.properties
 *.iml
-.idea
 .gradletasknamecache
 project.properties
 platform/android/java/lib/.cxx/

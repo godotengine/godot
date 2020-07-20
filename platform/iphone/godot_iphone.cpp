@@ -67,6 +67,9 @@ int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 	printf("cwd %s\n", cwd);
 	os = new OSIPhone(width, height, data_dir);
 
+	// We must override main when testing is enabled
+	TEST_MAIN_OVERRIDE
+
 	char *fargv[64];
 	for (int i = 0; i < argc; i++) {
 		fargv[i] = argv[i];

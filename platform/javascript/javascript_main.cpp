@@ -131,6 +131,10 @@ int main(int argc, char *argv[]) {
 	/* clang-format on */
 
 	os = new OS_JavaScript();
+
+	// We must override main when testing is enabled
+	TEST_MAIN_OVERRIDE
+
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	emscripten_pause_main_loop(); // Will need to wait for FS sync.
