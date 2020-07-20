@@ -45,7 +45,6 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
 #include "../utils/string_utils.h"
-#include "csharp_project.h"
 
 #define CS_INDENT "    " // 4 whitespaces
 
