@@ -2,6 +2,7 @@ using GodotTools.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Globbing;
 
@@ -32,6 +33,7 @@ namespace GodotTools.ProjectEditor
 
             return null;
         }
+
         public static ProjectItemElement FindItemOrNullAbs(this ProjectRootElement root, string itemType, string include, bool noCondition = false)
         {
             string normalizedInclude = Path.GetFullPath(include).NormalizePath();
@@ -112,6 +114,20 @@ namespace GodotTools.ProjectEditor
             }
 
             return Guid.Empty;
+        }
+
+        public static bool AreDefaultCompileItemsEnabled(this ProjectRootElement root)
+        {
+            var enableDefaultCompileItemsProps = root.PropertyGroups
+                .Where(g => string.IsNullOrEmpty(g.Condition))
+                .SelectMany(g => g.Properties
+                    .Where(p => p.Name == "EnableDefaultCompileItems" && string.IsNullOrEmpty(p.Condition)));
+
+            bool enableDefaultCompileItems = true;
+            foreach (var prop in enableDefaultCompileItemsProps)
+                enableDefaultCompileItems = prop.Value.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+            return enableDefaultCompileItems;
         }
     }
 }

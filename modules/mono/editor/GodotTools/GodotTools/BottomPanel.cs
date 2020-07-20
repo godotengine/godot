@@ -24,48 +24,50 @@ namespace GodotTools
         private ToolButton errorsBtn;
         private Button viewLogBtn;
 
+        private void _UpdateBuildTab(int index, int? currentTab)
+        {
+            var tab = (BuildTab)buildTabs.GetChild(index);
+
+            string itemName = Path.GetFileNameWithoutExtension(tab.BuildInfo.Solution);
+            itemName += " [" + tab.BuildInfo.Configuration + "]";
+
+            buildTabsList.AddItem(itemName, tab.IconTexture);
+
+            string itemTooltip = "Solution: " + tab.BuildInfo.Solution;
+            itemTooltip += "\nConfiguration: " + tab.BuildInfo.Configuration;
+            itemTooltip += "\nStatus: ";
+
+            if (tab.BuildExited)
+                itemTooltip += tab.BuildResult == BuildTab.BuildResults.Success ? "Succeeded" : "Errored";
+            else
+                itemTooltip += "Running";
+
+            if (!tab.BuildExited || tab.BuildResult == BuildTab.BuildResults.Error)
+                itemTooltip += $"\nErrors: {tab.ErrorCount}";
+
+            itemTooltip += $"\nWarnings: {tab.WarningCount}";
+
+            buildTabsList.SetItemTooltip(index, itemTooltip);
+
+            // If this tab was already selected before the changes or if no tab was selected
+            if (currentTab == null || currentTab == index)
+            {
+                buildTabsList.Select(index);
+                _BuildTabsItemSelected(index);
+            }
+        }
+
         private void _UpdateBuildTabsList()
         {
             buildTabsList.Clear();
 
-            int currentTab = buildTabs.CurrentTab;
+            int? currentTab = buildTabs.CurrentTab;
 
-            bool noCurrentTab = currentTab < 0 || currentTab >= buildTabs.GetTabCount();
+            if (currentTab < 0 || currentTab >= buildTabs.GetTabCount())
+                currentTab = null;
 
             for (int i = 0; i < buildTabs.GetChildCount(); i++)
-            {
-                var tab = (BuildTab)buildTabs.GetChild(i);
-
-                if (tab == null)
-                    continue;
-
-                string itemName = Path.GetFileNameWithoutExtension(tab.BuildInfo.Solution);
-                itemName += " [" + tab.BuildInfo.Configuration + "]";
-
-                buildTabsList.AddItem(itemName, tab.IconTexture);
-
-                string itemTooltip = "Solution: " + tab.BuildInfo.Solution;
-                itemTooltip += "\nConfiguration: " + tab.BuildInfo.Configuration;
-                itemTooltip += "\nStatus: ";
-
-                if (tab.BuildExited)
-                    itemTooltip += tab.BuildResult == BuildTab.BuildResults.Success ? "Succeeded" : "Errored";
-                else
-                    itemTooltip += "Running";
-
-                if (!tab.BuildExited || tab.BuildResult == BuildTab.BuildResults.Error)
-                    itemTooltip += $"\nErrors: {tab.ErrorCount}";
-
-                itemTooltip += $"\nWarnings: {tab.WarningCount}";
-
-                buildTabsList.SetItemTooltip(i, itemTooltip);
-
-                if (noCurrentTab || currentTab == i)
-                {
-                    buildTabsList.Select(i);
-                    _BuildTabsItemSelected(i);
-                }
-            }
+                _UpdateBuildTab(i, currentTab);
         }
 
         public BuildTab GetBuildTabFor(BuildInfo buildInfo)
@@ -160,13 +162,7 @@ namespace GodotTools
                 }
             }
 
-            var godotDefines = new[]
-            {
-                OS.GetName(),
-                Internal.GodotIs32Bits() ? "32" : "64"
-            };
-
-            bool buildSuccess = BuildManager.BuildProjectBlocking("Debug", godotDefines);
+            bool buildSuccess = BuildManager.BuildProjectBlocking("Debug");
 
             if (!buildSuccess)
                 return;
@@ -272,7 +268,7 @@ namespace GodotTools
                 };
                 panelTabs.AddChild(panelBuildsTab);
 
-                var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
+                var toolBarHBox = new HBoxContainer {SizeFlagsHorizontal = (int)SizeFlags.ExpandFill};
                 panelBuildsTab.AddChild(toolBarHBox);
 
                 var buildProjectBtn = new Button

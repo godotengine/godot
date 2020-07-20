@@ -403,6 +403,37 @@ namespace GodotTools
             return BuildManager.EditorBuildCallback();
         }
 
+        private void ApplyNecessaryChangesToSolution()
+        {
+            try
+            {
+                // Migrate solution from old configuration names to: Debug, ExportDebug and ExportRelease
+                DotNetSolution.MigrateFromOldConfigNames(GodotSharpDirs.ProjectSlnPath);
+
+                var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
+                                     ?? throw new Exception("Cannot open C# project");
+
+                // NOTE: The order in which changes are made to the project is important
+
+                // Migrate to MSBuild project Sdks style if using the old style
+                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, ProjectAssemblyName);
+
+                ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
+
+                if (msbuildProject.HasUnsavedChanges)
+                {
+                    // Save a copy of the project before replacing it
+                    FileUtils.SaveBackupCopy(GodotSharpDirs.ProjectCsProjPath);
+
+                    msbuildProject.Save();
+                }
+            }
+            catch (Exception e)
+            {
+                GD.PushError(e.ToString());
+            }
+        }
+
         public override void EnablePlugin()
         {
             base.EnablePlugin();
@@ -478,42 +509,7 @@ namespace GodotTools
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
-                try
-                {
-                    // Migrate solution from old configuration names to: Debug, ExportDebug and ExportRelease
-                    DotNetSolution.MigrateFromOldConfigNames(GodotSharpDirs.ProjectSlnPath);
-
-                    var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
-                                         ?? throw new Exception("Cannot open C# project");
-
-                    // NOTE: The order in which changes are made to the project is important
-
-                    // Migrate csproj from old configuration names to: Debug, ExportDebug and ExportRelease
-                    ProjectUtils.MigrateFromOldConfigNames(msbuildProject);
-
-                    // Apply the other fixes only after configurations have been migrated
-
-                    // Make sure the existing project has the ProjectTypeGuids property (for VisualStudio)
-                    ProjectUtils.EnsureHasProjectTypeGuids(msbuildProject);
-
-                    // Make sure the existing project has Api assembly references configured correctly
-                    ProjectUtils.FixApiHintPath(msbuildProject);
-
-                    // Make sure the existing project references the Microsoft.NETFramework.ReferenceAssemblies nuget package
-                    ProjectUtils.EnsureHasNugetNetFrameworkRefAssemblies(msbuildProject);
-
-                    if (msbuildProject.HasUnsavedChanges)
-                    {
-                        // Save a copy of the project before replacing it
-                        FileUtils.SaveBackupCopy(GodotSharpDirs.ProjectCsProjPath);
-
-                        msbuildProject.Save();
-                    }
-                }
-                catch (Exception e)
-                {
-                    GD.PushError(e.ToString());
-                }
+                ApplyNecessaryChangesToSolution();
             }
             else
             {
