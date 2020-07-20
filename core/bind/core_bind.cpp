@@ -1657,6 +1657,20 @@ void _Directory::list_dir_end() {
 	d->list_dir_end();
 }
 
+PackedStringArray _Directory::get_contents(bool p_skip_navigational, bool p_skip_hidden) {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(!is_open(), ret, "Directory must be opened before use.");
+
+	list_dir_begin(p_skip_navigational, p_skip_hidden);
+	String s = get_next();
+	while (s != String()) {
+		ret.append(s);
+		s = get_next();
+	}
+
+	return ret;
+}
+
 int _Directory::get_drive_count() {
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "Directory must be opened before use.");
 	return d->get_drive_count();
@@ -1772,6 +1786,7 @@ void _Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next"), &_Directory::get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &_Directory::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &_Directory::list_dir_end);
+	ClassDB::bind_method(D_METHOD("get_contents", "skip_navigational", "skip_hidden"), &_Directory::get_contents, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_drive_count"), &_Directory::get_drive_count);
 	ClassDB::bind_method(D_METHOD("get_drive", "idx"), &_Directory::get_drive);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &_Directory::get_current_drive);

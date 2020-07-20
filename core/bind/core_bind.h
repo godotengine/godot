@@ -472,6 +472,7 @@ public:
 	bool current_is_dir() const;
 
 	void list_dir_end();
+	PackedStringArray get_contents(bool p_skip_navigational = false, bool p_skip_hidden = false);
 
 	int get_drive_count();
 	String get_drive(int p_drive);

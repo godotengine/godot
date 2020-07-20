@@ -76,6 +76,19 @@
 				If the [Directory] is not open, the path is relative to [code]res://[/code].
 			</description>
 		</method>
+		<method name="get_contents">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="skip_navigational" type="bool" default="false">
+			</argument>
+			<argument index="1" name="skip_hidden" type="bool" default="false">
+			</argument>
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, both files and directories. Alternative to [method list_dir_begin].
+				If [code]skip_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are filtered out.
+				If [code]skip_hidden[/code] is [code]true[/code], hidden files are filtered out.
+			</description>
+		</method>
 		<method name="get_current_dir">
 			<return type="String">
 			</return>
