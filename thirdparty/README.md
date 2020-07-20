@@ -374,9 +374,8 @@ Collection of single-file libraries used in Godot components.
   * License: zlib
 - `stb_vorbis.c`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.19
+  * Version: 1.20
   * License: Public Domain (Unlicense) or MIT
-  * Modifications: `f->temp_offset += (sz+3)&~3;` changed to `f->temp_offset += (sz+7)&~7;` (needed until fixed upstream)
 
 
 ## nanosvg
