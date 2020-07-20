@@ -81,16 +81,16 @@ def configure(env):
     if "OSXCROSS_ROOT" in os.environ:
         env["osxcross"] = True
 
-    if not "osxcross" in env:  # regular native build
-        if env["arch"] == "arm64":
-            print("Building for macOS 10.15+, platform arm64.")
-            env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
-            env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
-        else:
-            print("Building for macOS 10.9+, platform x86-64.")
-            env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
-            env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
+    if env["arch"] == "arm64":
+        print("Building for macOS 10.15+, platform arm64.")
+        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+    else:
+        print("Building for macOS 10.9+, platform x86-64.")
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
 
+    if not "osxcross" in env:  # regular native build
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -111,7 +111,10 @@ def configure(env):
 
     else:  # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)
-        basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
+        if env["arch"] == "arm64":
+            basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
+        else:
+            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
         ccache_path = os.environ.get("CCACHE")
         if ccache_path is None:
