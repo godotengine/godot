@@ -120,11 +120,13 @@ public:
 		HashMap<StringName, List<StringName>> enum_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
+		HashMap<StringName, PropertyInfo> property_map;
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		Set<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
+		Map<StringName, MethodInfo> virtual_methods_map;
 		StringName category;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
@@ -328,7 +330,7 @@ public:
 	}
 
 	static void add_signal(StringName p_class, const MethodInfo &p_signal);
-	static bool has_signal(StringName p_class, StringName p_signal);
+	static bool has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance = false);
 	static bool get_signal(StringName p_class, StringName p_signal, MethodInfo *r_signal);
 	static void get_signal_list(StringName p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
 
@@ -337,6 +339,7 @@ public:
 	static void add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default);
 	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
+	static bool get_property_info(StringName p_class, StringName p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);
 	static bool get_property(Object *p_object, const StringName &p_property, Variant &r_value);
 	static bool has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance = false);
@@ -349,6 +352,7 @@ public:
 	static void set_method_flags(StringName p_class, StringName p_method, int p_flags);
 
 	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static bool get_method_info(StringName p_class, StringName p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(StringName p_class, StringName p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
@@ -357,10 +361,12 @@ public:
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
 	static int get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
+	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
+	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
 
