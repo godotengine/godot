@@ -5068,13 +5068,13 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	input_assembly_create_info.topology = topology_list[p_render_primitive];
 	input_assembly_create_info.primitiveRestartEnable = (p_render_primitive == RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX);
 
-	//tesselation
-	VkPipelineTessellationStateCreateInfo tesselation_create_info;
-	tesselation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-	tesselation_create_info.pNext = nullptr;
-	tesselation_create_info.flags = 0;
+	//tessellation
+	VkPipelineTessellationStateCreateInfo tessellation_create_info;
+	tessellation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+	tessellation_create_info.pNext = nullptr;
+	tessellation_create_info.flags = 0;
 	ERR_FAIL_COND_V(p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > limits.maxTessellationPatchSize, RID());
-	tesselation_create_info.patchControlPoints = p_rasterization_state.patch_control_points;
+	tessellation_create_info.patchControlPoints = p_rasterization_state.patch_control_points;
 
 	VkPipelineViewportStateCreateInfo viewport_state_create_info;
 	viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -5286,7 +5286,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	graphics_pipeline_create_info.pStages = shader->pipeline_stages.ptr();
 	graphics_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
 	graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
-	graphics_pipeline_create_info.pTessellationState = &tesselation_create_info;
+	graphics_pipeline_create_info.pTessellationState = &tessellation_create_info;
 	graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
 	graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
 	graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
