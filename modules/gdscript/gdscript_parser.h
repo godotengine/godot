@@ -635,6 +635,7 @@ private:
 	Node *_get_default_value_for_type(const DataType &p_type, int p_line = -1);
 
 	DataType _reduce_node_type(Node *p_node);
+	DataType _reduce_binary_op_overload_type(const OperatorNode *p_op);
 	DataType _reduce_function_call_type(const OperatorNode *p_call);
 	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line, bool p_is_indexing);
 	void _check_class_level_types(ClassNode *p_class);
