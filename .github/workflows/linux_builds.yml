@@ -62,6 +62,11 @@ jobs:
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
 
+      # Execute unit tests for the editor
+      - name: Unit Tests
+        run: |
+          ./bin/godot.linuxbsd.opt.tools.64.mono --test
+
   linux-template:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
