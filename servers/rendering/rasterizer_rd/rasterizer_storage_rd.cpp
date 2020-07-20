@@ -2520,6 +2520,11 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 		mesh->bone_aabbs = p_surface.bone_aabbs;
 		mesh->aabb = p_surface.aabb;
 	} else {
+		// Make sure the bone array is large enough to merge data
+		if (mesh->bone_aabbs.size() < p_surface.bone_aabbs.size()) {
+			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
+		}
+
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			mesh->bone_aabbs.write[i].merge_with(p_surface.bone_aabbs[i]);
 		}
