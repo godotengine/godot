@@ -520,7 +520,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		int from_slot = connecting_index;
 		String to = connecting_target_to;
 		int to_slot = connecting_target_index;
-		
+
 		if (just_disconnected) {
 			emit_signal("disconnection_request", from, from_slot, last_connecting_target, last_target_index, false);
 		}
@@ -533,7 +533,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			emit_signal("connection_request", from, from_slot, to, to_slot);
 
 		} else if (!just_disconnected) {
-      			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
+			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
 			if (!connecting_out) {
 				emit_signal("connection_from_empty", from, from_slot, ofs);
 			} else {
