@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  animation_blend_space_1d.h                                           */
+/*  animation_blend_space_cyclic_1d.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,87 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_BLEND_SPACE_1D_H
-#define ANIMATION_BLEND_SPACE_1D_H
+#ifndef ANIMATION_BLEND_SPACE_CYCLIC_1D_H
+#define ANIMATION_BLEND_SPACE_CYCLIC_1D_H
 
-#include "scene/animation/animation_tree.h"
+#include "scene/animation/animation_blend_space_1d.h"
 
-class AnimationNodeBlendSpace1D : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
+/**
+	@author Marios Staikopoulos <marios@staik.net>
+*/
 
-protected:
-	enum {
-		MAX_BLEND_POINTS = 64
-	};
+class AnimationNodeBlendSpaceCyclic1D : public AnimationNodeBlendSpace1D {
+	GDCLASS(AnimationNodeBlendSpaceCyclic1D, AnimationNodeBlendSpace1D);
 
-	struct BlendPoint {
-		StringName name;
-		Ref<AnimationRootNode> node;
-		float position;
-	};
-
-	BlendPoint blend_points[MAX_BLEND_POINTS];
-	int blend_points_used;
-
-	float max_space;
-	float min_space;
-
-	float snap;
-
-	String value_label;
-
-	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
-
-	void _tree_changed();
-
-	StringName blend_position;
-
-	struct BlendWeights {
-		int points[2] = { -1, -1 };
-		float weights[2] = { 0 };
-	};
-
-	BlendWeights get_blend_values(const float p_blend_pos) const;
+private:
+	const Ref<Animation> get_animation_for_point(const int p_point);
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
-	static void _bind_methods();
+	StringName cycle;
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
-
-	virtual void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
-	virtual void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
-
-	void set_blend_point_position(int p_point, float p_position);
-
-	float get_blend_point_position(int p_point) const;
-	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
-	void remove_blend_point(int p_point);
-	int get_blend_point_count() const;
-
-	void set_min_space(float p_min);
-	float get_min_space() const;
-
-	void set_max_space(float p_max);
-	float get_max_space() const;
-
-	void set_snap(float p_snap);
-	float get_snap() const;
-
-	void set_value_label(const String &p_label);
-	String get_value_label() const;
+	virtual void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1) override;
+	virtual void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) override;
 
 	virtual float process(float p_time, bool p_seek) override;
 	virtual String get_caption() const override;
 
-	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
-
-	AnimationNodeBlendSpace1D();
-	~AnimationNodeBlendSpace1D();
+	AnimationNodeBlendSpaceCyclic1D(){};
+	~AnimationNodeBlendSpaceCyclic1D(){};
 };
 
-#endif // ANIMATION_BLEND_SPACE_1D_H
+#endif // ANIMATION_BLEND_SPACE_CYCLIC_1D_H

@@ -87,6 +87,16 @@ protected:
 
 	void _tree_changed();
 
+	struct TriangleWeights {
+		int triangle = -1;
+		float weights[3] = { 0 };
+		int points[3] = { -1, -1, -1 };
+	};
+
+	TriangleWeights get_triangle_blends(const Vector2 &p_blend_pos);
+
+	void clamp_points(const Vector2 &min_space, const Vector2 &max_space);
+
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
@@ -97,9 +107,10 @@ public:
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
-	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
+	virtual void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
+	virtual void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
-	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
 	Vector2 get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
 	void remove_blend_point(int p_point);
