@@ -4,10 +4,12 @@
 		3D transformation (3×4 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [member basis] and an [member origin]. It is similar to a 3×4 matrix.
+		3×4 matrix (3 rows, 4 columns) used for 3D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of a [member basis] (first 3 columns) and a [Vector3] for the [member origin] (last column).
+		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
 	<methods>
@@ -23,7 +25,7 @@
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Constructs the Transform from four [Vector3]. Each axis corresponds to local basis vectors (some of which may be scaled).
+				Constructs a Transform from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="Transform">
@@ -34,7 +36,7 @@
 			<argument index="1" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Constructs the Transform from a [Basis] and [Vector3].
+				Constructs a Transform from a [Basis] and [Vector3].
 			</description>
 		</method>
 		<method name="Transform">
@@ -43,7 +45,7 @@
 			<argument index="0" name="from" type="Transform2D">
 			</argument>
 			<description>
-				Constructs the Transform from a [Transform2D].
+				Constructs a Transform from a [Transform2D].
 			</description>
 		</method>
 		<method name="Transform">
@@ -52,7 +54,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Constructs the Transform from a [Quat]. The origin will be Vector3(0, 0, 0).
+				Constructs a Transform from a [Quat]. The origin will be [code]Vector3(0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="Transform">
@@ -79,7 +81,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Interpolates the transform to other Transform by weight amount (0-1).
+				Interpolates the transform to other Transform by weight amount (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse">
@@ -172,7 +174,7 @@
 			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
 		<member name="origin" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			The translation offset of the transform.
+			The translation offset of the transform (column 3, the fourth column). Equivalent to array index [code]3[/code].
 		</member>
 	</members>
 	<constants>

@@ -68,8 +68,6 @@ godot_plane GDAPI godot_plane_normalized(const godot_plane *p_self);
 
 godot_vector3 GDAPI godot_plane_center(const godot_plane *p_self);
 
-godot_vector3 GDAPI godot_plane_get_any_point(const godot_plane *p_self);
-
 godot_bool GDAPI godot_plane_is_point_over(const godot_plane *p_self, const godot_vector3 *p_point);
 
 godot_real GDAPI godot_plane_distance_to(const godot_plane *p_self, const godot_vector3 *p_point);

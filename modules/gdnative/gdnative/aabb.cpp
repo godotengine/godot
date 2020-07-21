@@ -81,6 +81,13 @@ godot_string GDAPI godot_aabb_as_string(const godot_aabb *p_self) {
 	return ret;
 }
 
+godot_aabb GDAPI godot_aabb_abs(const godot_aabb *p_self) {
+	godot_aabb dest;
+	const AABB *self = (const AABB *)p_self;
+	*((AABB *)&dest) = self->abs();
+	return dest;
+}
+
 godot_real GDAPI godot_aabb_get_area(const godot_aabb *p_self) {
 	const AABB *self = (const AABB *)p_self;
 	return self->get_area();
