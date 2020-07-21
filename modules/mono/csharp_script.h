@@ -179,7 +179,7 @@ public:
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 	virtual void update_exports();
 
-	void get_members(Set<StringName> *p_members) override;
+	virtual void get_members(Set<StringName> *p_members);
 
 	virtual bool is_tool() const { return tool; }
 	virtual bool is_valid() const { return valid; }
