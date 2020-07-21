@@ -92,7 +92,7 @@ private:
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
-	String last _connecting_target;
+	String last_connecting_target;
 	int last_target_index;
 	bool just_disconnected;
 	bool connecting_valid;
