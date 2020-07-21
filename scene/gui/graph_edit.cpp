@@ -396,6 +396,8 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_target = false;
 									connecting_to = pos;
 									just_disconnected = true;
+									last_connecting_target = E->get().to;
+									last_target_index = E->get().to_port;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port, true);
 									to = get_node(String(connecting_from)); //maybe it was erased
@@ -438,6 +440,8 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_target = false;
 									connecting_to = pos;
 									just_disconnected = true;
+									last_connecting_target = E->get().to;
+									last_target_index = E->get().to_port;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port, true);
 									fr = get_node(String(connecting_from)); //maybe it was erased
@@ -516,6 +520,10 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		int from_slot = connecting_index;
 		String to = connecting_target_to;
 		int to_slot = connecting_target_index;
+		
+		if (just_disconnected) {
+			emit_signal("disconnection_request", from, from_slot, to, to_slot, false);
+		}
 
 		if (connecting && connecting_target) {
 			if (!connecting_out) {
@@ -525,15 +533,13 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			emit_signal("connection_request", from, from_slot, to, to_slot);
 
 		} else if (!just_disconnected) {
-      Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
+      			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
 			if (!connecting_out) {
 				emit_signal("connection_from_empty", from, from_slot, ofs);
 			} else {
 				emit_signal("connection_to_empty", from, from_slot, ofs);
 			}
-		} else {
-			emit_signal("disconnection_request", from, from_slot, to, to_slot, false);
-		}
+		} 
 
 		connecting = false;
 		top_layer->update();
