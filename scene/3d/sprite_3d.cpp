@@ -592,12 +592,14 @@ void Sprite3D::_draw() {
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 2 * 2);
 	}
-	set_aabb(aabb);
 
 	write_buffer.release();
 
 	RID mesh = get_mesh();
 	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
+
+	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
+	set_aabb(aabb);
 
 	set_base(mesh);
 
@@ -950,12 +952,14 @@ void AnimatedSprite3D::_draw() {
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 2 * 2);
 	}
-	set_aabb(aabb);
 
 	write_buffer.release();
 
 	RID mesh = get_mesh();
 	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
+
+	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
+	set_aabb(aabb);
 
 	set_base(mesh);
 
