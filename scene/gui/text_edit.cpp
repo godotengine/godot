@@ -1740,7 +1740,7 @@ void TextEdit::_notification(int p_what) {
 			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 
-			if (OS::get_singleton()->has_virtual_keyboard())
+			if (!is_readonly() && OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
