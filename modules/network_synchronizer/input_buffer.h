@@ -44,8 +44,14 @@ public:
 	enum DataType {
 		DATA_TYPE_BOOL,
 		DATA_TYPE_INT,
+		DATA_TYPE_REAL,
+		DATA_TYPE_PRECISE_REAL,
 		DATA_TYPE_UNIT_REAL,
+		DATA_TYPE_VECTOR2,
+		DATA_TYPE_PRECISE_VECTOR2,
 		DATA_TYPE_NORMALIZED_VECTOR2,
+		DATA_TYPE_VECTOR3,
+		DATA_TYPE_PRECISE_VECTOR3,
 		DATA_TYPE_NORMALIZED_VECTOR3
 	};
 
@@ -54,14 +60,32 @@ public:
 	/// Depending on the data type and the compression level used the amount of
 	/// bits used and loss change.
 	///
+	///
 	/// ## Bool
 	/// Always use 1 bit
+	///
 	///
 	/// ## Int
 	/// COMPRESSION_LEVEL_0: 64 bits are used - Stores integers -9223372036854775808 / 9223372036854775807
 	/// COMPRESSION_LEVEL_1: 32 bits are used - Stores integers -2147483648 / 2147483647
 	/// COMPRESSION_LEVEL_2: 16 bits are used - Stores integers -32768 / 32767
 	/// COMPRESSION_LEVEL_3: 8 bits are used - Stores integers -128 / 127
+	///
+	///
+	/// ## Real
+	/// The floating point part has a precision of ~0.3%
+	/// COMPRESSION_LEVEL_0: 72 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 40 bits are used - The integral part has a range of -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 24 bits are used - The integral part has a range of -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 16 bits are used - The integral part has a range of -128 / 127
+	///
+	///
+	/// ## Precise Real
+	/// The floating point part has a precision of ~0.09%
+	/// COMPRESSION_LEVEL_0: 74 bits are used - The integral part has a range of -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 42 bits are used - The integral part has a range of -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 26 bits are used - The integral part has a range of -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 18 bits are used - The integral part has a range of -128 / 127
 	///
 	///
 	/// ## Unit real
@@ -72,12 +96,45 @@ public:
 	///
 	///
 	/// ## Vector2
+	/// The floating point part has a precision of ~0.3% per axis.
+	/// COMPRESSION_LEVEL_0: 72 * 2 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 40 * 2 bits are used - Max vector size -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 24 * 2 bits are used - Max vector size -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 16 * 2 bits are used - Max vector size -128 / 127
+	///
+	///
+	/// ## Precise Vector2
+	/// The floating point part has a precision of ~0.09% per axis.
+	/// COMPRESSION_LEVEL_0: 74 * 2 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 42 * 2 bits are used - Max vector size -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 28 * 2 bits are used - Max vector size -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 18 * 2 bits are used - Max vector size -128 / 127
+	///
+	///
+	/// ## Normalized Vector2
 	/// COMPRESSION_LEVEL_0: 11 bits are used - Max loss 0.17°
 	/// COMPRESSION_LEVEL_1: 10 bits are used - Max loss 0.35°
 	/// COMPRESSION_LEVEL_2: 9 bits are used - Max loss 0.7°
 	/// COMPRESSION_LEVEL_3: 8 bits are used - Max loss 1.1°
 	///
+	///
 	/// ## Vector3
+	/// The floating point part has a precision of ~0.3% per axis.
+	/// COMPRESSION_LEVEL_0: 72 * 3 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 40 * 3 bits are used - Max vector size -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 24 * 3 bits are used - Max vector size -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 16 * 3 bits are used - Max vector size -128 / 127
+	///
+	///
+	/// ## Precise Vector3
+	/// The floating point part has a precision of ~0.09% per axis.
+	/// COMPRESSION_LEVEL_0: 74 * 3 bits are used - Max vector size -9223372036854775808 / 9223372036854775807
+	/// COMPRESSION_LEVEL_1: 42 * 3 bits are used - Max vector size -2147483648 / 2147483647
+	/// COMPRESSION_LEVEL_2: 28 * 3 bits are used - Max vector size -32768 / 32767
+	/// COMPRESSION_LEVEL_3: 18 * 3 bits are used - Max vector size -128 / 127
+	///
+	///
+	/// ## Normalized Vector3
 	/// COMPRESSION_LEVEL_0: 11 * 3 bits are used - Max loss 0.02 per axis
 	/// COMPRESSION_LEVEL_1: 10 * 3 bits are used - Max loss 0.09% per axis
 	/// COMPRESSION_LEVEL_2: 8 * 3 bits are used - Max loss 0.3 per axis
@@ -136,6 +193,28 @@ public:
 	/// Parse the next data as int.
 	int64_t read_int(CompressionLevel p_compression_level);
 
+	/// Add a real into the buffer. Depending on the compression level is possible
+	/// to store different range level.
+	/// The fractional part has a precision of ~0.3%
+	///
+	/// Returns the compressed value so both the client and the peers can use
+	/// the same data.
+	real_t add_real(real_t p_input, CompressionLevel p_compression_level);
+
+	/// Parse the following data as a real.
+	real_t read_real(CompressionLevel p_compression_level);
+
+	/// Add a real into the buffer. Depending on the compression level is possible
+	/// to store different range level.
+	/// The fractional part has a precision of ~0.09%
+	///
+	/// Returns the compressed value so both the client and the peers can use
+	/// the same data.
+	real_t add_precise_real(real_t p_input, CompressionLevel p_compression_level);
+
+	/// Parse the following data as a precise real.
+	real_t read_precise_real(CompressionLevel p_compression_level);
+
 	/// Add a unit real into the buffer.
 	///
 	/// **Note:** Not unitary values lead to unexpected behaviour.
@@ -144,7 +223,7 @@ public:
 	/// the same data.
 	real_t add_unit_real(real_t p_input, CompressionLevel p_compression_level);
 
-	/// Returns the unit real.
+	/// Parse the following data as an unit real.
 	real_t read_unit_real(CompressionLevel p_compression_level);
 
 	/// Add a normalized vector2 into the buffer.
@@ -158,6 +237,17 @@ public:
 	/// Parse next data as normalized vector from the input buffer.
 	Vector2 read_normalized_vector2(CompressionLevel p_compression_level);
 
+	/// Add a vector3 into the buffer.
+	/// Note: This kind of vector occupies more space than the normalized verison.
+	/// Consider use a normalized vector to save bandwidth if possible.
+	///
+	/// Returns the decompressed vector so both the client and the peers can use
+	/// the same data.
+	Vector3 add_vector3(Vector3 p_input, CompressionLevel p_compression_level);
+
+	/// Parse next data as vector3 from the input buffer.
+	Vector3 read_vector3(CompressionLevel p_compression_level);
+
 	/// Add a normalized vector3 into the buffer.
 	/// Note: The compression algorithm rely on the fact that this is a
 	/// normalized vector. The behaviour is unexpected for not normalized vectors.
@@ -166,7 +256,7 @@ public:
 	/// the same data.
 	Vector3 add_normalized_vector3(Vector3 p_input, CompressionLevel p_compression_level);
 
-	/// Parse next data as normalized vector from the input buffer.
+	/// Parse next data as normalized vector3 from the input buffer.
 	Vector3 read_normalized_vector3(CompressionLevel p_compression_level);
 
 	// Puts all the bytes to 0.

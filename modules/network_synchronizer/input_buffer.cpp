@@ -141,6 +141,48 @@ int64_t InputsBuffer::read_int(CompressionLevel p_compression_level) {
 	}
 }
 
+real_t InputsBuffer::add_real(real_t p_input, CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == true, p_input);
+
+	const real_t integral = Math::floor(p_input);
+	const real_t fractional = p_input - integral;
+
+	add_int(integral, p_compression_level);
+	add_unit_real(fractional, COMPRESSION_LEVEL_1);
+
+	return integral + fractional;
+}
+
+real_t InputsBuffer::read_real(CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == false, 0.0);
+
+	const real_t integral = read_int(p_compression_level);
+	const real_t fractional = read_unit_real(COMPRESSION_LEVEL_1);
+
+	return integral + fractional;
+}
+
+real_t InputsBuffer::add_precise_real(real_t p_input, CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == true, p_input);
+
+	const real_t integral = Math::floor(p_input);
+	const real_t fractional = p_input - integral;
+
+	const real_t ri = add_int(integral, p_compression_level);
+	const real_t rf = add_unit_real(fractional, COMPRESSION_LEVEL_0);
+
+	return ri + rf;
+}
+
+real_t InputsBuffer::read_precise_real(CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == false, 0.0);
+
+	const real_t integral = read_int(p_compression_level);
+	const real_t fractional = read_unit_real(COMPRESSION_LEVEL_0);
+
+	return integral + fractional;
+}
+
 real_t InputsBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
@@ -171,6 +213,9 @@ real_t InputsBuffer::read_unit_real(CompressionLevel p_compression_level) {
 }
 
 Vector2 InputsBuffer::add_normalized_vector2(Vector2 p_input, CompressionLevel p_compression_level) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V(p_input.is_normalized() == false, p_input);
+#endif
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const int bits = get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR2, p_compression_level);
@@ -216,7 +261,25 @@ Vector2 InputsBuffer::read_normalized_vector2(CompressionLevel p_compression_lev
 	return Vector2(x, y) * is_not_zero;
 }
 
+Vector3 InputsBuffer::add_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == true, p_input);
+
+	const real_t integral_x = Math::floor(p_input[0]);
+	const real_t fractional_x = p_input[0] - integral_x;
+
+	add_int(integral_x, p_compression_level);
+	add_unit_real(fractional_x, COMPRESSION_LEVEL_1);
+}
+
+Vector3 InputsBuffer::read_vector3(CompressionLevel p_compression_level){
+	const real_t integral
+
+}
+
 Vector3 InputsBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V(p_input.is_normalized() == false, p_input);
+#endif
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
 	const int bits = get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR3, p_compression_level);
@@ -268,6 +331,7 @@ void InputsBuffer::zero() {
 	buffer.zero();
 }
 
+// TODO please add an unit test to make sure the returned data are right.
 int InputsBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compression) {
 	switch (p_data_type) {
 		case DATA_TYPE_BOOL:
@@ -288,6 +352,14 @@ int InputsBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compres
 					CRASH_NOW_MSG("Compression level not supported!");
 			}
 		} break;
+		case DATA_TYPE_REAL: {
+			return get_bit_taken(DATA_TYPE_INT, p_compression) +
+				   get_bit_taken(DATA_TYPE_UNIT_REAL, COMPRESSION_LEVEL_1);
+		} break;
+		case DATA_TYPE_PRECISE_REAL: {
+			return get_bit_taken(DATA_TYPE_INT, p_compression) +
+				   get_bit_taken(DATA_TYPE_UNIT_REAL, COMPRESSION_LEVEL_0);
+		} break;
 		case DATA_TYPE_UNIT_REAL: {
 			switch (p_compression) {
 				case COMPRESSION_LEVEL_0:
@@ -307,6 +379,12 @@ int InputsBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compres
 					CRASH_NOW_MSG("Compression level not supported!");
 			}
 		} break;
+		case DATA_TYPE_VECTOR2: {
+			return get_bit_taken(DATA_TYPE_REAL, p_compression) * 2;
+		} break;
+		case DATA_TYPE_PRECISE_VECTOR2: {
+			return get_bit_taken(DATA_TYPE_PRECISE_REAL, p_compression) * 2;
+		} break;
 		case DATA_TYPE_NORMALIZED_VECTOR2: {
 			// +1 bit to know if the vector is 0 or a direction
 			switch (p_compression) {
@@ -323,6 +401,12 @@ int InputsBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compres
 					// Max loss 1.1°
 					return 8 + 1;
 			}
+		} break;
+		case DATA_TYPE_VECTOR3: {
+			return get_bit_taken(DATA_TYPE_REAL, p_compression) * 3;
+		} break;
+		case DATA_TYPE_PRECISE_VECTOR3: {
+			return get_bit_taken(DATA_TYPE_PRECISE_REAL, p_compression) * 3;
 		} break;
 		case DATA_TYPE_NORMALIZED_VECTOR3: {
 			switch (p_compression) {
