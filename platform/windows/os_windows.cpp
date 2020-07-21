@@ -1733,7 +1733,7 @@ void OS_Windows::set_clipboard(const String &p_text) {
 
 	// Convert LF line endings to CRLF in clipboard content
 	// Otherwise, line endings won't be visible when pasted in other software
-	String text = p_text.replace("\n", "\r\n");
+	String text = p_text.replace("\r\n", "\n").replace("\n", "\r\n"); // avoid \r\r\n
 
 	if (!OpenClipboard(hWnd)) {
 		ERR_FAIL_MSG("Unable to open clipboard.");
