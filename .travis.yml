@@ -67,9 +67,10 @@ install:
       misc/ci/android-tools-linux.sh;
     fi
   - if [ "$PLATFORM" = "javascript" ]; then
-      git clone --depth 1 --branch 1.39.19 https://github.com/emscripten-core/emsdk;
+      git clone --depth 1 https://github.com/emscripten-core/emsdk;
       ./emsdk/emsdk install latest;
-      ./emsdk/emsdk activate --no-embedded latest;
+      ./emsdk/emsdk activate latest;
+      source ./emsdk/emsdk_env.sh;
     fi
 
 before_script:
