@@ -9,32 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_color_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="begin_key" type="String">
-			</argument>
-			<argument index="1" name="end_key" type="String">
-			</argument>
-			<argument index="2" name="color" type="Color">
-			</argument>
-			<argument index="3" name="line_only" type="bool" default="false">
-			</argument>
-			<description>
-				Adds color region (given the delimiters) and its colors.
-			</description>
-		</method>
-		<method name="add_keyword_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Adds a [code]keyword[/code] and its [Color].
-			</description>
-		</method>
 		<method name="can_fold" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -48,13 +22,7 @@
 			<return type="void">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="clear_colors">
-			<return type="void">
-			</return>
-			<description>
-				Clears all custom syntax coloring information previously added with [method add_color_region] or [method add_keyword_color].
+				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
 		<method name="clear_undo_history">
@@ -151,15 +119,6 @@
 				Returns an array containing the line number of each breakpoint.
 			</description>
 		</method>
-		<method name="get_keyword_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<description>
-				Returns the [Color] of the specified [code]keyword[/code].
-			</description>
-		</method>
 		<method name="get_line" qualifiers="const">
 			<return type="String">
 			</return>
@@ -223,15 +182,6 @@
 			</return>
 			<description>
 				Returns a [String] text with the word under the mouse cursor location.
-			</description>
-		</method>
-		<method name="has_keyword_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="keyword" type="String">
-			</argument>
-			<description>
-				Returns whether the specified [code]keyword[/code] has a color set to it or not.
 			</description>
 		</method>
 		<method name="insert_text_at_cursor">
@@ -299,7 +249,7 @@
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="PackedInt32Array">
+			<return type="Dictionary">
 			</return>
 			<argument index="0" name="key" type="String">
 			</argument>
@@ -311,13 +261,13 @@
 			</argument>
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
-				Returns an empty [code]PackedInt32Array[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [enum SearchResult] enum, e.g:
+				Returns an empty [code]Dictionary[/code] if no result was found. Otherwise, returns a [code]Dictionary[/code] containing [code]line[/code] and [code]column[/code] entries, e.g:
 				[codeblock]
 				var result = search(key, flags, line, column)
-				if result.size() &gt; 0:
+				if !result.empty():
 				    # Result found.
-				    var res_line = result[TextEdit.SEARCH_RESULT_LINE]
-				    var res_column = result[TextEdit.SEARCH_RESULT_COLUMN]
+				    var line_number = result.line
+				    var column_number = result.column
 				[/codeblock]
 			</description>
 		</method>
@@ -334,6 +284,7 @@
 			</argument>
 			<description>
 				Perform selection, from line/column to line/column.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="select_all">
@@ -341,6 +292,18 @@
 			</return>
 			<description>
 				Select all the text.
+				If [member selecting_enabled] is [code]false[/code], no selection will occur.
+			</description>
+		</method>
+		<method name="set_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="new_text" type="String">
+			</argument>
+			<description>
+				Sets the text for a specific line.
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
@@ -428,11 +391,14 @@
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
 		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
+			If [code]true[/code], a minimap is shown, providing an outline of your source code.
 		</member>
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
+			The width, in pixels, of the minimap.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
+			If [code]true[/code], custom [code]font_color_selected[/code] will be used for selected text.
 		</member>
 		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly" default="false">
 			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
@@ -444,8 +410,11 @@
 			The current vertical scroll value.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
+			If [code]true[/code], text can be selected.
+			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
 		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled" default="false">
 			If [code]true[/code], line numbers are displayed to the left of the text.
@@ -453,8 +422,7 @@
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
 			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
 		</member>
-		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled" default="false">
-			If [code]true[/code], any custom color properties that have been set for this [TextEdit] will be visible.
+		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
@@ -486,6 +454,12 @@
 			</argument>
 			<description>
 				Emitted when the info icon is clicked.
+			</description>
+		</signal>
+		<signal name="line_edited_from">
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="request_completion">
@@ -523,12 +497,6 @@
 		</constant>
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
-		</constant>
-		<constant name="SEARCH_RESULT_COLUMN" value="0" enum="SearchResult">
-			Used to access the result column from [method search].
-		</constant>
-		<constant name="SEARCH_RESULT_LINE" value="1" enum="SearchResult">
-			Used to access the result line from [method search].
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
@@ -611,8 +579,7 @@
 		<theme_item name="font_color_readonly" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
-		</theme_item>
-		<theme_item name="function_color" type="Color" default="Color( 0.4, 0.64, 0.81, 1 )">
+			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
 		<theme_item name="line_number_color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
 			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
@@ -623,12 +590,8 @@
 		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
 			Sets the [Color] of marked text.
 		</theme_item>
-		<theme_item name="member_variable_color" type="Color" default="Color( 0.9, 0.31, 0.35, 1 )">
-		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
-		</theme_item>
-		<theme_item name="number_color" type="Color" default="Color( 0.92, 0.58, 0.2, 1 )">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
@@ -639,8 +602,6 @@
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture2D">
-		</theme_item>
-		<theme_item name="symbol_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="tab" type="Texture2D">
 			Sets a custom [Texture2D] for tab text characters.

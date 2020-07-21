@@ -32,11 +32,14 @@
 
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/editor_debugger_server.h"
 #include "editor/editor_node.h"
 #include "editor/fileserver/editor_file_server.h"
 #include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_debug_menu) {
+	EditorDebuggerServer::initialize();
+
 	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11);
 	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
@@ -65,13 +68,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
 	p->add_separator();
-	//those are now on by default, since they are harmless
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Sync Scene Changes")), RUN_LIVE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->set_item_checked(p->get_item_count() - 1, true);
 	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->set_item_checked(p->get_item_count() - 1, true);
 
 	// Multi-instance, start/stop
 	instances_menu = memnew(PopupMenu);
@@ -96,6 +96,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 }
 
 DebuggerEditorPlugin::~DebuggerEditorPlugin() {
+	EditorDebuggerServer::deinitialize();
 	memdelete(file_server);
 }
 
@@ -110,7 +111,6 @@ void DebuggerEditorPlugin::_select_run_count(int p_index) {
 void DebuggerEditorPlugin::_menu_option(int p_option) {
 	switch (p_option) {
 		case RUN_FILE_SERVER: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER));
 
 			if (ischecked) {
@@ -124,7 +124,6 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_LIVE_DEBUG: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG));
 
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG), !ischecked);
@@ -133,28 +132,24 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_DEPLOY_REMOTE_DEBUG: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
 
 		} break;
 		case RUN_DEBUG_COLLISONS: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
 
 		} break;
 		case RUN_DEBUG_NAVIGATION: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
 
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
 
@@ -166,8 +161,9 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 }
 
 void DebuggerEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY)
+	if (p_what == NOTIFICATION_READY) {
 		_update_debug_options();
+	}
 }
 
 void DebuggerEditorPlugin::_update_debug_options() {
@@ -175,16 +171,28 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
-	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", false);
-	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", false);
+	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
+	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 
-	if (check_deploy_remote) _menu_option(RUN_DEPLOY_REMOTE_DEBUG);
-	if (check_file_server) _menu_option(RUN_FILE_SERVER);
-	if (check_debug_collisions) _menu_option(RUN_DEBUG_COLLISONS);
-	if (check_debug_navigation) _menu_option(RUN_DEBUG_NAVIGATION);
-	if (check_live_debug) _menu_option(RUN_LIVE_DEBUG);
-	if (check_reload_scripts) _menu_option(RUN_RELOAD_SCRIPTS);
+	if (check_deploy_remote) {
+		_menu_option(RUN_DEPLOY_REMOTE_DEBUG);
+	}
+	if (check_file_server) {
+		_menu_option(RUN_FILE_SERVER);
+	}
+	if (check_debug_collisions) {
+		_menu_option(RUN_DEBUG_COLLISONS);
+	}
+	if (check_debug_navigation) {
+		_menu_option(RUN_DEBUG_NAVIGATION);
+	}
+	if (check_live_debug) {
+		_menu_option(RUN_LIVE_DEBUG);
+	}
+	if (check_reload_scripts) {
+		_menu_option(RUN_RELOAD_SCRIPTS);
+	}
 
 	int len = instances_menu->get_item_count();
 	for (int idx = 0; idx < len; idx++) {

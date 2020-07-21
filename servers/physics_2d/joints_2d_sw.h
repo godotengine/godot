@@ -35,7 +35,6 @@
 #include "constraint_2d_sw.h"
 
 class Joint2DSW : public Constraint2DSW {
-
 	real_t max_force;
 	real_t bias;
 	real_t max_bias;
@@ -59,7 +58,6 @@ public:
 };
 
 class PinJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -91,7 +89,6 @@ public:
 };
 
 class GrooveJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -126,7 +123,6 @@ public:
 };
 
 class DampedSpringJoint2DSW : public Joint2DSW {
-
 	union {
 		struct {
 			Body2DSW *A;
@@ -155,8 +151,8 @@ public:
 	virtual bool setup(real_t p_step);
 	virtual void solve(real_t p_step);
 
-	void set_param(PhysicsServer2D::DampedStringParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer2D::DampedStringParam p_param) const;
+	void set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer2D::DampedSpringParam p_param) const;
 
 	DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, Body2DSW *p_body_a, Body2DSW *p_body_b);
 	~DampedSpringJoint2DSW();

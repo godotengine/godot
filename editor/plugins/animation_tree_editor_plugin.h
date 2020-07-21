@@ -49,14 +49,13 @@ public:
 };
 
 class AnimationTreeEditor : public VBoxContainer {
-
 	GDCLASS(AnimationTreeEditor, VBoxContainer);
 
 	ScrollContainer *path_edit;
 	HBoxContainer *path_hb;
 
 	AnimationTree *tree;
-	PanelContainer *editor_base;
+	MarginContainer *editor_base;
 
 	Vector<String> button_path;
 	Vector<String> edited_path;
@@ -95,7 +94,6 @@ public:
 };
 
 class AnimationTreeEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
 	AnimationTreeEditor *anim_tree_editor;
@@ -103,11 +101,11 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "AnimationTree"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "AnimationTree"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	AnimationTreeEditorPlugin(EditorNode *p_node);
 	~AnimationTreeEditorPlugin();

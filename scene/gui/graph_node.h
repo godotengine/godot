@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class GraphNode : public Container {
-
 	GDCLASS(GraphNode, Container);
 
 public:
@@ -110,7 +109,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	bool has_point(const Point2 &p_point) const;
+	bool has_point(const Point2 &p_point) const override;
 
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
 	void clear_slot(int p_idx);
@@ -155,7 +154,7 @@ public:
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	bool is_resizing() const { return resizing; }
 

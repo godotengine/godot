@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_aabb) == sizeof(AABB), "AABB size mismatch");
+
 void GDAPI godot_aabb_new(godot_aabb *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size) {
 	const Vector3 *pos = (const Vector3 *)p_pos;
 	const Vector3 *size = (const Vector3 *)p_size;
@@ -77,6 +79,13 @@ godot_string GDAPI godot_aabb_as_string(const godot_aabb *p_self) {
 	const AABB *self = (const AABB *)p_self;
 	memnew_placement(&ret, String(*self));
 	return ret;
+}
+
+godot_aabb GDAPI godot_aabb_abs(const godot_aabb *p_self) {
+	godot_aabb dest;
+	const AABB *self = (const AABB *)p_self;
+	*((AABB *)&dest) = self->abs();
+	return dest;
 }
 
 godot_real GDAPI godot_aabb_get_area(const godot_aabb *p_self) {

@@ -34,10 +34,10 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/main/window.h"
+#include "scene/resources/camera_effects.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
-
 	GDCLASS(Camera3D, Node3D);
 
 public:
@@ -97,7 +97,7 @@ protected:
 	void _update_camera_mode();
 
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &p_property) const;
+	virtual void _validate_property(PropertyInfo &p_property) const override;
 
 	static void _bind_methods();
 
@@ -184,7 +184,6 @@ VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
 
 class ClippedCamera3D : public Camera3D {
-
 	GDCLASS(ClippedCamera3D, Camera3D);
 
 public:
@@ -209,7 +208,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual Transform get_camera_transform() const;
+	virtual Transform get_camera_transform() const override;
 
 public:
 	void set_clip_to_areas(bool p_clip);

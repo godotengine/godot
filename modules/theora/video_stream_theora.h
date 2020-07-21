@@ -45,7 +45,6 @@
 //#define THEORA_USE_THREAD_STREAMING
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
 	enum {
@@ -63,7 +62,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	int buffer_data();
 	int queue_page(ogg_page *page);
-	void video_write(void);
+	void video_write();
 	float get_time() const;
 
 	bool theora_eos;
@@ -126,42 +125,41 @@ protected:
 	void clear();
 
 public:
-	virtual void play();
-	virtual void stop();
-	virtual bool is_playing() const;
+	virtual void play() override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	virtual void set_paused(bool p_paused);
-	virtual bool is_paused() const;
+	virtual void set_paused(bool p_paused) override;
+	virtual bool is_paused() const override;
 
-	virtual void set_loop(bool p_enable);
-	virtual bool has_loop() const;
+	virtual void set_loop(bool p_enable) override;
+	virtual bool has_loop() const override;
 
-	virtual float get_length() const;
+	virtual float get_length() const override;
 
 	virtual String get_stream_name() const;
 
 	virtual int get_loop_count() const;
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
 	void set_file(const String &p_file);
 
-	virtual Ref<Texture2D> get_texture() const;
-	virtual void update(float p_delta);
+	virtual Ref<Texture2D> get_texture() const override;
+	virtual void update(float p_delta) override;
 
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata);
-	virtual int get_channels() const;
-	virtual int get_mix_rate() const;
+	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) override;
+	virtual int get_channels() const override;
+	virtual int get_mix_rate() const override;
 
-	virtual void set_audio_track(int p_idx);
+	virtual void set_audio_track(int p_idx) override;
 
 	VideoStreamPlaybackTheora();
 	~VideoStreamPlaybackTheora();
 };
 
 class VideoStreamTheora : public VideoStream {
-
 	GDCLASS(VideoStreamTheora, VideoStream);
 
 	String file;
@@ -171,7 +169,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<VideoStreamPlayback> instance_playback() {
+	Ref<VideoStreamPlayback> instance_playback() override {
 		Ref<VideoStreamPlaybackTheora> pb = memnew(VideoStreamPlaybackTheora);
 		pb->set_audio_track(audio_track);
 		pb->set_file(file);
@@ -180,14 +178,14 @@ public:
 
 	void set_file(const String &p_file) { file = p_file; }
 	String get_file() { return file; }
-	void set_audio_track(int p_track) { audio_track = p_track; }
+	void set_audio_track(int p_track) override { audio_track = p_track; }
 
 	VideoStreamTheora() { audio_track = 0; }
 };
 
 class ResourceFormatLoaderTheora : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

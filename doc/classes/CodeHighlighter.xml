@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CodeHighlighter" inherits="SyntaxHighlighter" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_color_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_start_key" type="String">
+			</argument>
+			<argument index="1" name="p_end_key" type="String">
+			</argument>
+			<argument index="2" name="p_color" type="Color">
+			</argument>
+			<argument index="3" name="p_line_only" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_keyword_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="keyword" type="String">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_member_keyword_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="member_keyword" type="String">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_color_regions">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_keyword_colors">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_member_keyword_colors">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_keyword_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="keyword" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_member_keyword_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="member_keyword" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_color_region" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="p_start_key" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_keyword_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="keyword" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_member_keyword_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="member_keyword" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_color_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_start_key" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_keyword_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="keyword" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_member_keyword_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="member_keyword" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color_regions" type="Dictionary" setter="set_color_regions" getter="get_color_regions" default="{}">
+		</member>
+		<member name="function_color" type="Color" setter="set_function_color" getter="get_function_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="keyword_colors" type="Dictionary" setter="set_keyword_colors" getter="get_keyword_colors" default="{}">
+		</member>
+		<member name="member_keyword_colors" type="Dictionary" setter="set_member_keyword_colors" getter="get_member_keyword_colors" default="{}">
+		</member>
+		<member name="member_variable_color" type="Color" setter="set_member_variable_color" getter="get_member_variable_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="number_color" type="Color" setter="set_number_color" getter="get_number_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="symbol_color" type="Color" setter="set_symbol_color" getter="get_symbol_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

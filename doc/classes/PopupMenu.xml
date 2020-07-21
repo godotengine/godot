@@ -242,6 +242,12 @@
 				Removes all items from the [PopupMenu].
 			</description>
 		</method>
+		<method name="get_current_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_accelerator" qualifiers="const">
 			<return type="int">
 			</return>
@@ -585,7 +591,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="false">
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
 		</member>
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">

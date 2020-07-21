@@ -34,16 +34,15 @@
 #include "editor/editor_scale.h"
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
-
 	String name = p_name;
 	int idx = name.get_slice("/", 0).to_int();
 	String what = name.get_slice("/", 1);
 
-	if (what == "text")
+	if (what == "text") {
 		set_item_text(idx, p_value);
-	else if (what == "icon")
+	} else if (what == "icon") {
 		set_item_icon(idx, p_value);
-	else if (what == "checkable") {
+	} else if (what == "checkable") {
 		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
 		switch ((int)p_value) {
 			case 0:
@@ -54,54 +53,54 @@ bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 				set_item_radio_checkable(idx, true);
 				break;
 		}
-	} else if (what == "checked")
+	} else if (what == "checked") {
 		set_item_checked(idx, p_value);
-	else if (what == "id")
+	} else if (what == "id") {
 		set_item_id(idx, p_value);
-	else if (what == "enabled")
+	} else if (what == "enabled") {
 		set_item_enabled(idx, p_value);
-	else if (what == "separator")
+	} else if (what == "separator") {
 		set_item_separator(idx, p_value);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool ItemListPlugin::_get(const StringName &p_name, Variant &r_ret) const {
-
 	String name = p_name;
 	int idx = name.get_slice("/", 0).to_int();
 	String what = name.get_slice("/", 1);
 
-	if (what == "text")
+	if (what == "text") {
 		r_ret = get_item_text(idx);
-	else if (what == "icon")
+	} else if (what == "icon") {
 		r_ret = get_item_icon(idx);
-	else if (what == "checkable") {
+	} else if (what == "checkable") {
 		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
 		if (!is_item_checkable(idx)) {
 			r_ret = 0;
 		} else {
 			r_ret = is_item_radio_checkable(idx) ? 2 : 1;
 		}
-	} else if (what == "checked")
+	} else if (what == "checked") {
 		r_ret = is_item_checked(idx);
-	else if (what == "id")
+	} else if (what == "id") {
 		r_ret = get_item_id(idx);
-	else if (what == "enabled")
+	} else if (what == "enabled") {
 		r_ret = is_item_enabled(idx);
-	else if (what == "separator")
+	} else if (what == "separator") {
 		r_ret = is_item_separator(idx);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
+
 void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	for (int i = 0; i < get_item_count(); i++) {
-
 		String base = itos(i) + "/";
 
 		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
@@ -114,14 +113,17 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
 		}
 
-		if (flags & FLAG_ID)
+		if (flags & FLAG_ID) {
 			p_list->push_back(PropertyInfo(Variant::INT, base + "id", PROPERTY_HINT_RANGE, "-1,4096"));
+		}
 
-		if (flags & FLAG_ENABLE)
+		if (flags & FLAG_ENABLE) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "enabled"));
+		}
 
-		if (flags & FLAG_SEPARATOR)
+		if (flags & FLAG_SEPARATOR) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "separator"));
+		}
 	}
 }
 
@@ -130,120 +132,100 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 ///////////////////////////////////////////////////////////////
 
 void ItemListOptionButtonPlugin::set_object(Object *p_object) {
-
 	ob = Object::cast_to<OptionButton>(p_object);
 }
 
 bool ItemListOptionButtonPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("OptionButton");
 }
 
 int ItemListOptionButtonPlugin::get_flags() const {
-
 	return FLAG_ICON | FLAG_ID | FLAG_ENABLE;
 }
 
 void ItemListOptionButtonPlugin::add_item() {
-
 	ob->add_item(vformat(TTR("Item %d"), ob->get_item_count()));
 	_change_notify();
 }
 
 int ItemListOptionButtonPlugin::get_item_count() const {
-
 	return ob->get_item_count();
 }
 
 void ItemListOptionButtonPlugin::erase(int p_idx) {
-
 	ob->remove_item(p_idx);
 	_change_notify();
 }
 
 ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
-
 	ob = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
 
 void ItemListPopupMenuPlugin::set_object(Object *p_object) {
-
-	if (p_object->is_class("MenuButton"))
+	if (p_object->is_class("MenuButton")) {
 		pp = Object::cast_to<MenuButton>(p_object)->get_popup();
-	else
+	} else {
 		pp = Object::cast_to<PopupMenu>(p_object);
+	}
 }
 
 bool ItemListPopupMenuPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("PopupMenu") || p_object->is_class("MenuButton");
 }
 
 int ItemListPopupMenuPlugin::get_flags() const {
-
 	return FLAG_ICON | FLAG_CHECKABLE | FLAG_ID | FLAG_ENABLE | FLAG_SEPARATOR;
 }
 
 void ItemListPopupMenuPlugin::add_item() {
-
 	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
 	_change_notify();
 }
 
 int ItemListPopupMenuPlugin::get_item_count() const {
-
 	return pp->get_item_count();
 }
 
 void ItemListPopupMenuPlugin::erase(int p_idx) {
-
 	pp->remove_item(p_idx);
 	_change_notify();
 }
 
 ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
-
 	pp = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
 
 void ItemListItemListPlugin::set_object(Object *p_object) {
-
 	pp = Object::cast_to<ItemList>(p_object);
 }
 
 bool ItemListItemListPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("ItemList");
 }
 
 int ItemListItemListPlugin::get_flags() const {
-
 	return FLAG_ICON | FLAG_ENABLE;
 }
 
 void ItemListItemListPlugin::add_item() {
-
 	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
 	_change_notify();
 }
 
 int ItemListItemListPlugin::get_item_count() const {
-
 	return pp->get_item_count();
 }
 
 void ItemListItemListPlugin::erase(int p_idx) {
-
 	pp->remove_item(p_idx);
 	_change_notify();
 }
 
 ItemListItemListPlugin::ItemListItemListPlugin() {
-
 	pp = nullptr;
 }
 
@@ -252,7 +234,6 @@ ItemListItemListPlugin::ItemListItemListPlugin() {
 ///////////////////////////////////////////////////////////////
 
 void ItemListEditor::_node_removed(Node *p_node) {
-
 	if (p_node == item_list) {
 		item_list = nullptr;
 		hide();
@@ -261,34 +242,32 @@ void ItemListEditor::_node_removed(Node *p_node) {
 }
 
 void ItemListEditor::_notification(int p_notification) {
-
 	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
-
 		add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
 		del_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
 	} else if (p_notification == NOTIFICATION_READY) {
-
 		get_tree()->connect("node_removed", callable_mp(this, &ItemListEditor::_node_removed));
 	}
 }
 
 void ItemListEditor::_add_pressed() {
-
-	if (selected_idx == -1)
+	if (selected_idx == -1) {
 		return;
+	}
 
 	item_plugins[selected_idx]->add_item();
 }
 
 void ItemListEditor::_delete_pressed() {
-
-	if (selected_idx == -1)
+	if (selected_idx == -1) {
 		return;
+	}
 
 	String current_selected = (String)property_editor->get_selected_path();
 
-	if (current_selected == "")
+	if (current_selected == "") {
 		return;
+	}
 
 	// FIXME: Currently relying on selecting a *property* to derive what item to delete
 	// e.g. you select "1/enabled" to delete item 1.
@@ -301,12 +280,10 @@ void ItemListEditor::_delete_pressed() {
 }
 
 void ItemListEditor::_edit_items() {
-
 	dialog->popup_centered_clamped(Vector2(425, 1200) * EDSCALE, 0.8);
 }
 
 void ItemListEditor::edit(Node *p_item_list) {
-
 	item_list = p_item_list;
 
 	if (!item_list) {
@@ -317,7 +294,6 @@ void ItemListEditor::edit(Node *p_item_list) {
 
 	for (int i = 0; i < item_plugins.size(); i++) {
 		if (item_plugins[i]->handles(p_item_list)) {
-
 			item_plugins[i]->set_object(p_item_list);
 			property_editor->edit(item_plugins[i]);
 
@@ -333,7 +309,6 @@ void ItemListEditor::edit(Node *p_item_list) {
 }
 
 bool ItemListEditor::handles(Object *p_object) const {
-
 	for (int i = 0; i < item_plugins.size(); i++) {
 		if (item_plugins[i]->handles(p_object)) {
 			return true;
@@ -347,11 +322,11 @@ void ItemListEditor::_bind_methods() {
 }
 
 ItemListEditor::ItemListEditor() {
-
 	selected_idx = -1;
 	item_list = nullptr;
 
-	toolbar_button = memnew(ToolButton);
+	toolbar_button = memnew(Button);
+	toolbar_button->set_flat(true);
 	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
 	toolbar_button->connect("pressed", callable_mp(this, &ItemListEditor::_edit_items));
@@ -386,34 +361,29 @@ ItemListEditor::ItemListEditor() {
 }
 
 ItemListEditor::~ItemListEditor() {
-
-	for (int i = 0; i < item_plugins.size(); i++)
+	for (int i = 0; i < item_plugins.size(); i++) {
 		memdelete(item_plugins[i]);
+	}
 }
 
 void ItemListEditorPlugin::edit(Object *p_object) {
-
 	item_list_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool ItemListEditorPlugin::handles(Object *p_object) const {
-
 	return item_list_editor->handles(p_object);
 }
 
 void ItemListEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		item_list_editor->show();
 	} else {
-
 		item_list_editor->hide();
 		item_list_editor->edit(nullptr);
 	}
 }
 
 ItemListEditorPlugin::ItemListEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	item_list_editor = memnew(ItemListEditor);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(item_list_editor);

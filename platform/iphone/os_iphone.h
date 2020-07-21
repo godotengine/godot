@@ -33,7 +33,7 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "game_center.h"
@@ -50,7 +50,6 @@
 #endif
 
 class OSIPhone : public OS_Unix {
-
 private:
 	enum {
 		MAX_MOUSE_COUNT = 8,
@@ -99,7 +98,6 @@ private:
 	virtual void finalize();
 
 	struct MouseList {
-
 		bool pressed[MAX_MOUSE_COUNT];
 		MouseList() {
 			for (int i = 0; i < MAX_MOUSE_COUNT; i++)
@@ -172,7 +170,7 @@ public:
 	virtual bool can_draw() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1);
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 	virtual int get_virtual_keyboard_height() const;
 

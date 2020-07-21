@@ -65,7 +65,6 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 }
 
 void SoftBodyRenderingServerHandler::clear() {
-
 	if (mesh.is_valid()) {
 		buffer.resize(0);
 	}
@@ -97,9 +96,7 @@ void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, p_aabb);
 }
 
-SoftBody3D::PinnedPoint::PinnedPoint() :
-		point_index(-1),
-		spatial_attachment(nullptr) {
+SoftBody3D::PinnedPoint::PinnedPoint() {
 }
 
 SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
@@ -118,8 +115,9 @@ SoftBody3D::PinnedPoint SoftBody3D::PinnedPoint::operator=(const PinnedPoint &ob
 }
 
 void SoftBody3D::_update_pickable() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 	bool pickable = ray_pickable && is_visible_in_tree();
 	PhysicsServer3D::get_singleton()->soft_body_set_ray_pickable(physics_rid, pickable);
 }
@@ -129,11 +127,9 @@ bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
 	String which = name.get_slicec('/', 0);
 
 	if ("pinned_points" == which) {
-
 		return _set_property_pinned_points_indices(p_value);
 
 	} else if ("attachments" == which) {
-
 		int idx = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
 
@@ -161,7 +157,6 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 
 	} else if ("attachments" == which) {
-
 		int idx = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
 
@@ -172,7 +167,6 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	const int pinned_points_indices_size = pinned_points.size();
 
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "pinned_points"));
@@ -185,7 +179,6 @@ void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
-
 	const int p_indices_size = p_indices.size();
 
 	{ // Remove the pined points on physics server that will be removed by resize
@@ -204,8 +197,9 @@ bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
 	for (int i = 0; i < p_indices_size; ++i) {
 		point_index = p_indices.get(i);
 		if (w[i].point_index != point_index) {
-			if (-1 != w[i].point_index)
+			if (-1 != w[i].point_index) {
 				pin_point(w[i].point_index, false);
+			}
 			w[i].point_index = point_index;
 			pin_point(w[i].point_index, true);
 		}
@@ -264,23 +258,21 @@ void SoftBody3D::_changed_callback(Object *p_changed, const char *p_prop) {
 void SoftBody3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-
 			if (Engine::get_singleton()->is_editor_hint()) {
-
 				add_change_receptor(this);
 			}
 
-			RID space = get_world()->get_space();
+			RID space = get_world_3d()->get_space();
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, space);
 			prepare_physics_server();
 		} break;
 		case NOTIFICATION_READY: {
-			if (!parent_collision_ignore.is_empty())
+			if (!parent_collision_ignore.is_empty()) {
 				add_collision_exception_with(get_node(parent_collision_ignore));
+			}
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			if (Engine::get_singleton()->is_editor_hint()) {
 				_reset_points_offsets();
 				return;
@@ -296,12 +288,10 @@ void SoftBody3D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			_update_pickable();
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, RID());
 
 		} break;
@@ -319,7 +309,6 @@ void SoftBody3D::_notification(int p_what) {
 }
 
 void SoftBody3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &SoftBody3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SoftBody3D::get_collision_mask);
 
@@ -388,20 +377,21 @@ void SoftBody3D::_bind_methods() {
 }
 
 String SoftBody3D::get_configuration_warning() const {
-
 	String warning = MeshInstance3D::get_configuration_warning();
 
 	if (get_mesh().is_null()) {
-		if (!warning.empty())
+		if (!warning.empty()) {
 			warning += "\n\n";
+		}
 
 		warning += TTR("This body will be ignored until you set a mesh.");
 	}
 
 	Transform t = get_transform();
 	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (!warning.empty())
+		if (!warning.empty()) {
 			warning += "\n\n";
+		}
 
 		warning += TTR("Size changes to SoftBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
@@ -410,8 +400,9 @@ String SoftBody3D::get_configuration_warning() const {
 }
 
 void SoftBody3D::_update_physics_server() {
-	if (!simulation_started)
+	if (!simulation_started) {
 		return;
+	}
 
 	_update_cache_pin_points_datas();
 	// Submit bone attachment
@@ -425,11 +416,11 @@ void SoftBody3D::_update_physics_server() {
 }
 
 void SoftBody3D::_draw_soft_mesh() {
-	if (get_mesh().is_null())
+	if (get_mesh().is_null()) {
 		return;
+	}
 
 	if (!rendering_server_handler.is_ready()) {
-
 		rendering_server_handler.prepare(get_mesh()->get_rid(), 0);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
@@ -448,24 +439,21 @@ void SoftBody3D::_draw_soft_mesh() {
 }
 
 void SoftBody3D::prepare_physics_server() {
-
 	if (Engine::get_singleton()->is_editor_hint()) {
-
-		if (get_mesh().is_valid())
+		if (get_mesh().is_valid()) {
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
-		else
+		} else {
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
+		}
 
 		return;
 	}
 
 	if (get_mesh().is_valid()) {
-
 		become_mesh_owner();
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 	} else {
-
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
@@ -474,8 +462,9 @@ void SoftBody3D::prepare_physics_server() {
 }
 
 void SoftBody3D::become_mesh_owner() {
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return;
+	}
 
 	if (!mesh_owner) {
 		mesh_owner = true;
@@ -515,6 +504,7 @@ void SoftBody3D::set_collision_mask(uint32_t p_mask) {
 uint32_t SoftBody3D::get_collision_mask() const {
 	return collision_mask;
 }
+
 void SoftBody3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
 	PhysicsServer3D::get_singleton()->soft_body_set_collision_layer(physics_rid, p_layer);
@@ -526,10 +516,11 @@ uint32_t SoftBody3D::get_collision_layer() const {
 
 void SoftBody3D::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -539,10 +530,11 @@ bool SoftBody3D::get_collision_mask_bit(int p_bit) const {
 
 void SoftBody3D::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t layer = get_collision_layer();
-	if (p_value)
+	if (p_value) {
 		layer |= 1 << p_bit;
-	else
+	} else {
 		layer &= ~(1 << p_bit);
+	}
 	set_collision_layer(layer);
 }
 
@@ -691,25 +683,16 @@ bool SoftBody3D::is_point_pinned(int p_point_index) const {
 }
 
 void SoftBody3D::set_ray_pickable(bool p_ray_pickable) {
-
 	ray_pickable = p_ray_pickable;
 	_update_pickable();
 }
 
 bool SoftBody3D::is_ray_pickable() const {
-
 	return ray_pickable;
 }
 
 SoftBody3D::SoftBody3D() :
-		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()),
-		mesh_owner(false),
-		collision_mask(1),
-		collision_layer(1),
-		simulation_started(false),
-		pinned_points_cache_dirty(true),
-		ray_pickable(true) {
-
+		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()) {
 	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }
 
@@ -730,14 +713,14 @@ void SoftBody3D::_make_cache_dirty() {
 }
 
 void SoftBody3D::_update_cache_pin_points_datas() {
-	if (!pinned_points_cache_dirty)
+	if (!pinned_points_cache_dirty) {
 		return;
+	}
 
 	pinned_points_cache_dirty = false;
 
 	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
-
 		if (!w[i].spatial_attachment_path.is_empty()) {
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(w[i].spatial_attachment_path));
 		}
@@ -754,7 +737,6 @@ void SoftBody3D::_pin_point_on_physics_server(int p_point_index, bool pin) {
 void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path) {
 	SoftBody3D::PinnedPoint *pinned_point;
 	if (-1 == _get_pinned_point(p_point_index, pinned_point)) {
-
 		// Create new
 		PinnedPoint pp;
 		pp.point_index = p_point_index;
@@ -768,7 +750,6 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 		pinned_points.push_back(pp);
 
 	} else {
-
 		pinned_point->point_index = p_point_index;
 		pinned_point->spatial_attachment_path = p_spatial_attachment_path;
 
@@ -780,19 +761,20 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 }
 
 void SoftBody3D::_reset_points_offsets() {
-
-	if (!Engine::get_singleton()->is_editor_hint())
+	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	const PinnedPoint *r = pinned_points.ptr();
 	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
-
-		if (!r[i].spatial_attachment)
+		if (!r[i].spatial_attachment) {
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(r[i].spatial_attachment_path));
+		}
 
-		if (!r[i].spatial_attachment)
+		if (!r[i].spatial_attachment) {
 			continue;
+		}
 
 		w[i].offset = (r[i].spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, r[i].point_index));
 	}

@@ -36,7 +36,6 @@
 #include "servers/audio_server.h"
 
 class AudioStreamPlayer2D : public Node2D {
-
 	GDCLASS(AudioStreamPlayer2D, Node2D);
 
 private:
@@ -47,7 +46,6 @@ private:
 	};
 
 	struct Output {
-
 		AudioFrame vol;
 		int bus_index;
 		Viewport *viewport; //pointer only used for reference to previous mix
@@ -91,7 +89,7 @@ private:
 	float attenuation;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

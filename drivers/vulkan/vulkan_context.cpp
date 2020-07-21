@@ -49,7 +49,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		void *pUserData) {
-
 	// This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors.
 	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != nullptr &&
 			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != nullptr) {
@@ -155,7 +154,7 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_n
 			}
 		}
 		if (!found) {
-			ERR_PRINT("Cant find layer: " + String(check_names[i]));
+			ERR_PRINT("Can't find layer: " + String(check_names[i]));
 			return 0;
 		}
 	}
@@ -163,18 +162,18 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_n
 }
 
 Error VulkanContext::_create_validation_layers() {
-
 	VkResult err;
+	const char *instance_validation_layers_alt1[] = { "VK_LAYER_KHRONOS_validation" };
+	const char *instance_validation_layers_alt2[] = { "VK_LAYER_LUNARG_standard_validation" };
+	const char *instance_validation_layers_alt3[] = { "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects" };
+
 	uint32_t instance_layer_count = 0;
-	uint32_t validation_layer_count = 0;
-	const char *instance_validation_layers_alt1[] = { "VK_LAYER_LUNARG_standard_validation" };
-	const char *instance_validation_layers_alt2[] = { "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation",
-		"VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation",
-		"VK_LAYER_GOOGLE_unique_objects" };
-	VkBool32 validation_found = 0;
 	err = vkEnumerateInstanceLayerProperties(&instance_layer_count, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	const char **instance_validation_layers = instance_validation_layers_alt1;
+
+	VkBool32 validation_found = 0;
+	uint32_t validation_layer_count = 0;
+	const char **instance_validation_layers = nullptr;
 	if (instance_layer_count > 0) {
 		VkLayerProperties *instance_layers = (VkLayerProperties *)malloc(sizeof(VkLayerProperties) * instance_layer_count);
 		err = vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers);
@@ -183,27 +182,33 @@ Error VulkanContext::_create_validation_layers() {
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 
-		validation_found = _check_layers(ARRAY_SIZE(instance_validation_layers_alt1), instance_validation_layers,
-				instance_layer_count, instance_layers);
-		if (validation_found) {
-			enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt1);
-			enabled_layers[0] = "VK_LAYER_LUNARG_standard_validation";
-			validation_layer_count = 1;
-		} else {
-			// use alternative set of validation layers
-			instance_validation_layers = instance_validation_layers_alt2;
-			enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-			validation_found = _check_layers(ARRAY_SIZE(instance_validation_layers_alt2), instance_validation_layers,
-					instance_layer_count, instance_layers);
+		validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt1);
+		instance_validation_layers = instance_validation_layers_alt1;
+		validation_found = _check_layers(validation_layer_count, instance_validation_layers, instance_layer_count, instance_layers);
+
+		// use alternative (deprecated, removed in SDK 1.1.126.0) set of validation layers
+		if (!validation_found) {
 			validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-			for (uint32_t i = 0; i < validation_layer_count; i++) {
-				enabled_layers[i] = instance_validation_layers[i];
-			}
+			instance_validation_layers = instance_validation_layers_alt2;
+			validation_found = _check_layers(validation_layer_count, instance_validation_layers, instance_layer_count, instance_layers);
 		}
+
+		// use alternative (deprecated, removed in SDK 1.1.121.1) set of validation layers
+		if (!validation_found) {
+			validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt3);
+			instance_validation_layers = instance_validation_layers_alt3;
+			validation_found = _check_layers(validation_layer_count, instance_validation_layers, instance_layer_count, instance_layers);
+		}
+
 		free(instance_layers);
 	}
 
-	if (!validation_found) {
+	if (validation_found) {
+		enabled_layer_count = validation_layer_count;
+		for (uint32_t i = 0; i < validation_layer_count; i++) {
+			enabled_layers[i] = instance_validation_layers[i];
+		}
+	} else {
 		return ERR_CANT_CREATE;
 	}
 
@@ -211,7 +216,6 @@ Error VulkanContext::_create_validation_layers() {
 }
 
 Error VulkanContext::_initialize_extensions() {
-
 	VkResult err;
 	uint32_t instance_extension_count = 0;
 
@@ -268,7 +272,6 @@ Error VulkanContext::_initialize_extensions() {
 }
 
 Error VulkanContext::_create_physical_device() {
-
 	/* Look for validation layers */
 	if (use_validation_layers) {
 		_create_validation_layers();
@@ -340,6 +343,8 @@ Error VulkanContext::_create_physical_device() {
 			"Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
 			"Please look at the Getting Started guide for additional information.\n"
 			"vkCreateInstance Failure");
+
+	inst_initialized = true;
 
 	/* Make initial call to query gpu_count, then second call for gpu info*/
 	err = vkEnumeratePhysicalDevices(inst, &gpu_count, nullptr);
@@ -506,7 +511,6 @@ Error VulkanContext::_create_physical_device() {
 }
 
 Error VulkanContext::_create_device() {
-
 	VkResult err;
 	float queue_priorities[1] = { 0.0 };
 	VkDeviceQueueCreateInfo queues[2];
@@ -545,7 +549,6 @@ Error VulkanContext::_create_device() {
 }
 
 Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
-
 	// Iterate over each queue to learn whether it supports presenting:
 	VkBool32 *supportsPresent = (VkBool32 *)malloc(queue_family_count * sizeof(VkBool32));
 	for (uint32_t i = 0; i < queue_family_count; i++) {
@@ -594,12 +597,13 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 	_create_device();
 
 	static PFN_vkGetDeviceProcAddr g_gdpa = nullptr;
-#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                              \
-	{                                                                                                      \
-		if (!g_gdpa) g_gdpa = (PFN_vkGetDeviceProcAddr)vkGetInstanceProcAddr(inst, "vkGetDeviceProcAddr"); \
-		fp##entrypoint = (PFN_vk##entrypoint)g_gdpa(dev, "vk" #entrypoint);                                \
-		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                                    \
-				"vkGetDeviceProcAddr failed to find vk" #entrypoint);                                      \
+#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                     \
+	{                                                                                             \
+		if (!g_gdpa)                                                                              \
+			g_gdpa = (PFN_vkGetDeviceProcAddr)vkGetInstanceProcAddr(inst, "vkGetDeviceProcAddr"); \
+		fp##entrypoint = (PFN_vk##entrypoint)g_gdpa(dev, "vk" #entrypoint);                       \
+		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                           \
+				"vkGetDeviceProcAddr failed to find vk" #entrypoint);                             \
 	}
 
 	GET_DEVICE_PROC_ADDR(device, CreateSwapchainKHR);
@@ -697,7 +701,6 @@ Error VulkanContext::_create_semaphores() {
 }
 
 Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfaceKHR p_surface, int p_width, int p_height) {
-
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	if (!queues_initialized) {
@@ -758,7 +761,6 @@ void VulkanContext::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 Error VulkanContext::_clean_up_swap_chain(Window *window) {
-
 	if (!window->swapchain) {
 		return OK;
 	}
@@ -1128,12 +1130,12 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 }
 
 Error VulkanContext::initialize() {
-
 	Error err = _create_physical_device();
 	if (err) {
 		return err;
 	}
 
+	device_initialized = true;
 	return OK;
 }
 
@@ -1142,7 +1144,6 @@ void VulkanContext::set_setup_buffer(const VkCommandBuffer &pCommandBuffer) {
 }
 
 void VulkanContext::append_command_buffer(const VkCommandBuffer &pCommandBuffer) {
-
 	if (command_buffer_queue.size() <= command_buffer_count) {
 		command_buffer_queue.resize(command_buffer_count + 1);
 	}
@@ -1152,14 +1153,12 @@ void VulkanContext::append_command_buffer(const VkCommandBuffer &pCommandBuffer)
 }
 
 void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
-
 	// ensure everything else pending is executed
 	vkDeviceWaitIdle(device);
 
 	//flush the pending setup buffer
 
 	if (p_flush_setup && command_buffer_queue[0]) {
-
 		//use a fence to wait for everything done
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1178,7 +1177,6 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 	}
 
 	if (p_flush_pending && command_buffer_count > 1) {
-
 		//use a fence to wait for everything done
 
 		VkSubmitInfo submit_info;
@@ -1200,7 +1198,6 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 }
 
 Error VulkanContext::prepare_buffers() {
-
 	if (!queues_initialized) {
 		return OK;
 	}
@@ -1212,7 +1209,6 @@ Error VulkanContext::prepare_buffers() {
 	vkResetFences(device, 1, &fences[frame_index]);
 
 	for (Map<int, Window>::Element *E = windows.front(); E; E = E->next()) {
-
 		Window *w = &E->get();
 
 		if (w->swapchain == VK_NULL_HANDLE) {
@@ -1248,7 +1244,6 @@ Error VulkanContext::prepare_buffers() {
 }
 
 Error VulkanContext::swap_buffers() {
-
 	if (!queues_initialized) {
 		return OK;
 	}
@@ -1467,9 +1462,11 @@ VkDevice VulkanContext::get_device() {
 VkPhysicalDevice VulkanContext::get_physical_device() {
 	return gpu;
 }
+
 int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
+
 uint32_t VulkanContext::get_graphics_queue() const {
 	return graphics_queue_family_index;
 }
@@ -1499,19 +1496,112 @@ VulkanContext::VulkanContext() {
 	swapchainImageCount = 0;
 }
 
+RID VulkanContext::local_device_create() {
+	LocalDevice ld;
+
+	{ //create device
+		VkResult err;
+		float queue_priorities[1] = { 0.0 };
+		VkDeviceQueueCreateInfo queues[2];
+		queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queues[0].pNext = nullptr;
+		queues[0].queueFamilyIndex = graphics_queue_family_index;
+		queues[0].queueCount = 1;
+		queues[0].pQueuePriorities = queue_priorities;
+		queues[0].flags = 0;
+
+		VkDeviceCreateInfo sdevice = {
+			/*sType =*/VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+			/*pNext */ nullptr,
+			/*flags */ 0,
+			/*queueCreateInfoCount */ 1,
+			/*pQueueCreateInfos */ queues,
+			/*enabledLayerCount */ 0,
+			/*ppEnabledLayerNames */ nullptr,
+			/*enabledExtensionCount */ enabled_extension_count,
+			/*ppEnabledExtensionNames */ (const char *const *)extension_names,
+			/*pEnabledFeatures */ &physical_device_features, // If specific features are required, pass them in here
+		};
+		err = vkCreateDevice(gpu, &sdevice, nullptr, &ld.device);
+		ERR_FAIL_COND_V(err, RID());
+	}
+
+	{ //create graphics queue
+
+		vkGetDeviceQueue(ld.device, graphics_queue_family_index, 0, &ld.queue);
+	}
+
+	return local_device_owner.make_rid(ld);
+}
+
+VkDevice VulkanContext::local_device_get_vk_device(RID p_local_device) {
+	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	return ld->device;
+}
+
+void VulkanContext::local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
+	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	ERR_FAIL_COND(ld->waiting);
+
+	VkSubmitInfo submit_info;
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.pNext = nullptr;
+	submit_info.pWaitDstStageMask = nullptr;
+	submit_info.waitSemaphoreCount = 0;
+	submit_info.pWaitSemaphores = nullptr;
+	submit_info.commandBufferCount = p_count;
+	submit_info.pCommandBuffers = p_buffers;
+	submit_info.signalSemaphoreCount = 0;
+	submit_info.pSignalSemaphores = nullptr;
+
+	VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
+	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
+		print_line("out of host memory");
+	}
+	if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		print_line("out of device memory");
+	}
+	if (err == VK_ERROR_DEVICE_LOST) {
+		print_line("device lost");
+	}
+	ERR_FAIL_COND(err);
+
+	ld->waiting = true;
+}
+
+void VulkanContext::local_device_sync(RID p_local_device) {
+	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	ERR_FAIL_COND(!ld->waiting);
+
+	vkDeviceWaitIdle(ld->device);
+	ld->waiting = false;
+}
+
+void VulkanContext::local_device_free(RID p_local_device) {
+	LocalDevice *ld = local_device_owner.getornull(p_local_device);
+	vkDestroyDevice(ld->device, nullptr);
+	local_device_owner.free(p_local_device);
+}
+
 VulkanContext::~VulkanContext() {
 	if (queue_props) {
 		free(queue_props);
 	}
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		vkDestroyFence(device, fences[i], nullptr);
-		vkDestroySemaphore(device, image_acquired_semaphores[i], nullptr);
-		vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
-		if (separate_present_queue) {
-			vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
+	if (device_initialized) {
+		for (uint32_t i = 0; i < FRAME_LAG; i++) {
+			vkDestroyFence(device, fences[i], nullptr);
+			vkDestroySemaphore(device, image_acquired_semaphores[i], nullptr);
+			vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
+			if (separate_present_queue) {
+				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
+			}
 		}
+		if (inst_initialized) {
+			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
+		}
+		vkDestroyDevice(device, nullptr);
 	}
-	DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
-	vkDestroyDevice(device, nullptr);
-	vkDestroyInstance(inst, nullptr);
+	if (inst_initialized) {
+		vkDestroyInstance(inst, nullptr);
+	}
 }

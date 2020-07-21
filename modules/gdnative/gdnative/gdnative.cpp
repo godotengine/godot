@@ -56,14 +56,12 @@ godot_object GDAPI *godot_global_get_singleton(char *p_name) {
 // MethodBind API
 
 godot_method_bind GDAPI *godot_method_bind_get_method(const char *p_classname, const char *p_methodname) {
-
 	MethodBind *mb = ClassDB::get_method(StringName(p_classname), StringName(p_methodname));
 	// MethodBind *mb = ClassDB::get_method("Node", "get_name");
 	return (godot_method_bind *)mb;
 }
 
 void GDAPI godot_method_bind_ptrcall(godot_method_bind *p_method_bind, godot_object *p_instance, const void **p_args, void *p_ret) {
-
 	MethodBind *mb = (MethodBind *)p_method_bind;
 	Object *o = (Object *)p_instance;
 	mb->ptrcall(o, p_args, p_ret);
@@ -93,8 +91,9 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 
 godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classname) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
-	if (class_info)
+	if (class_info) {
 		return (godot_class_constructor)class_info->creation_func;
+	}
 	return nullptr;
 }
 
@@ -166,7 +165,7 @@ void _gdnative_report_loading_error(const godot_object *p_library, const char *p
 	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
 }
 
-godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id) {
+godot_object GDAPI *godot_instance_from_id(uint64_t p_instance_id) {
 	return (godot_object *)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
@@ -177,10 +176,17 @@ void *godot_get_class_tag(const godot_string_name *p_class) {
 }
 
 godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_tag) {
-	if (!p_object) return nullptr;
+	if (!p_object) {
+		return nullptr;
+	}
 	Object *o = (Object *)p_object;
 
 	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : nullptr;
+}
+
+uint64_t GDAPI godot_object_get_instance_id(const godot_object *p_object) {
+	const Object *o = (const Object *)p_object;
+	return (uint64_t)o->get_instance_id();
 }
 
 #ifdef __cplusplus

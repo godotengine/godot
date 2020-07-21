@@ -51,27 +51,22 @@
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
 void ContextGL_Windows::release_current() {
-
 	wglMakeCurrent(hDC, nullptr);
 }
 
 void ContextGL_Windows::make_current() {
-
 	wglMakeCurrent(hDC, hRC);
 }
 
 int ContextGL_Windows::get_window_width() {
-
 	return OS::get_singleton()->get_video_mode().width;
 }
 
 int ContextGL_Windows::get_window_height() {
-
 	return OS::get_singleton()->get_video_mode().height;
 }
 
 bool ContextGL_Windows::should_vsync_via_compositor() {
-
 	if (OS::get_singleton()->is_window_fullscreen() || !OS::get_singleton()->is_vsync_via_compositor_enabled()) {
 		return false;
 	}
@@ -88,7 +83,6 @@ bool ContextGL_Windows::should_vsync_via_compositor() {
 }
 
 void ContextGL_Windows::swap_buffers() {
-
 	SwapBuffers(hDC);
 
 	if (use_vsync) {
@@ -108,7 +102,6 @@ void ContextGL_Windows::swap_buffers() {
 }
 
 void ContextGL_Windows::set_use_vsync(bool p_use) {
-
 	vsync_via_compositor = p_use && should_vsync_via_compositor();
 
 	if (wglSwapIntervalEXT) {
@@ -120,14 +113,12 @@ void ContextGL_Windows::set_use_vsync(bool p_use) {
 }
 
 bool ContextGL_Windows::is_using_vsync() const {
-
 	return use_vsync;
 }
 
 #define _WGL_CONTEXT_DEBUG_BIT_ARB 0x0001
 
 Error ContextGL_Windows::initialize() {
-
 	static PIXELFORMATDESCRIPTOR pfd = {
 		sizeof(PIXELFORMATDESCRIPTOR), // Size Of This Pixel Format Descriptor
 		1,
@@ -175,7 +166,6 @@ Error ContextGL_Windows::initialize() {
 	wglMakeCurrent(hDC, hRC);
 
 	if (opengl_3_context) {
-
 		int attribs[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
 			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
@@ -217,7 +207,6 @@ Error ContextGL_Windows::initialize() {
 }
 
 ContextGL_Windows::ContextGL_Windows(HWND hwnd, bool p_opengl_3_context) {
-
 	opengl_3_context = p_opengl_3_context;
 	hWnd = hwnd;
 	use_vsync = false;

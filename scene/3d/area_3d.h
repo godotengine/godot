@@ -35,7 +35,6 @@
 #include "scene/3d/collision_object_3d.h"
 
 class Area3D : public CollisionObject3D {
-
 	GDCLASS(Area3D, CollisionObject3D);
 
 public:
@@ -68,14 +67,14 @@ private:
 	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
-
 		int body_shape;
 		int area_shape;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return area_shape < p_sp.area_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -86,7 +85,6 @@ private:
 	};
 
 	struct BodyState {
-
 		int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
@@ -100,14 +98,14 @@ private:
 	void _area_exit_tree(ObjectID p_id);
 
 	struct AreaShapePair {
-
 		int area_shape;
 		int self_shape;
 		bool operator<(const AreaShapePair &p_sp) const {
-			if (area_shape == p_sp.area_shape)
+			if (area_shape == p_sp.area_shape) {
 				return self_shape < p_sp.self_shape;
-			else
+			} else {
 				return area_shape < p_sp.area_shape;
+			}
 		}
 
 		AreaShapePair() {}
@@ -118,7 +116,6 @@ private:
 	};
 
 	struct AreaState {
-
 		int rc;
 		bool in_tree;
 		VSet<AreaShapePair> shapes;
@@ -135,7 +132,7 @@ private:
 	float reverb_amount;
 	float reverb_uniformity;
 
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 protected:
 	void _notification(int p_what);
@@ -184,8 +181,8 @@ public:
 	void set_collision_layer_bit(int p_bit, bool p_value);
 	bool get_collision_layer_bit(int p_bit) const;
 
-	Array get_overlapping_bodies() const;
-	Array get_overlapping_areas() const; //function for script
+	TypedArray<Node3D> get_overlapping_bodies() const;
+	TypedArray<Area3D> get_overlapping_areas() const; //function for script
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;

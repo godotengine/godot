@@ -34,7 +34,6 @@
 #include "scene/3d/skeleton_3d.h"
 
 class BoneAttachment3D : public Node3D {
-
 	GDCLASS(BoneAttachment3D, Node3D);
 
 	bool bound;
@@ -44,7 +43,7 @@ class BoneAttachment3D : public Node3D {
 	void _check_unbind();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 
 	static void _bind_methods();

@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "mobile_vr_interface.h"
-#include "core/input/input_filter.h"
+
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -60,13 +61,25 @@ Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	};
 
 	// adjust our min and max
-	if (mag_raw.x > mag_next_max.x) mag_next_max.x = mag_raw.x;
-	if (mag_raw.y > mag_next_max.y) mag_next_max.y = mag_raw.y;
-	if (mag_raw.z > mag_next_max.z) mag_next_max.z = mag_raw.z;
+	if (mag_raw.x > mag_next_max.x) {
+		mag_next_max.x = mag_raw.x;
+	}
+	if (mag_raw.y > mag_next_max.y) {
+		mag_next_max.y = mag_raw.y;
+	}
+	if (mag_raw.z > mag_next_max.z) {
+		mag_next_max.z = mag_raw.z;
+	}
 
-	if (mag_raw.x < mag_next_min.x) mag_next_min.x = mag_raw.x;
-	if (mag_raw.y < mag_next_min.y) mag_next_min.y = mag_raw.y;
-	if (mag_raw.z < mag_next_min.z) mag_next_min.z = mag_raw.z;
+	if (mag_raw.x < mag_next_min.x) {
+		mag_next_min.x = mag_raw.x;
+	}
+	if (mag_raw.y < mag_next_min.y) {
+		mag_next_min.y = mag_raw.y;
+	}
+	if (mag_raw.z < mag_next_min.z) {
+		mag_next_min.z = mag_raw.z;
+	}
 
 	// scale our x, y and z
 	if (!(mag_current_max.x - mag_current_min.x)) {
@@ -118,7 +131,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	float delta_time = (double)ticks_elapsed / 1000000.0;
 
 	// few things we need
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
 	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
@@ -434,12 +447,6 @@ void MobileVRInterface::process() {
 		set_position_from_sensors();
 	};
 };
-
-void MobileVRInterface::notification(int p_what){
-	_THREAD_SAFE_METHOD_
-
-	// nothing to do here, I guess we could pauze our sensors...
-}
 
 MobileVRInterface::MobileVRInterface() {
 	initialized = false;

@@ -37,11 +37,9 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/tool_button.h"
 #include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
-
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
 	Label *line_label;
@@ -49,7 +47,7 @@ class GotoLineDialog : public ConfirmationDialog {
 
 	TextEdit *text_editor;
 
-	virtual void ok_pressed();
+	virtual void ok_pressed() override;
 
 public:
 	void popup_find_line(TextEdit *p_edit);
@@ -60,13 +58,12 @@ public:
 };
 
 class FindReplaceBar : public HBoxContainer {
-
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
 	Label *matches_label;
-	ToolButton *find_prev;
-	ToolButton *find_next;
+	Button *find_prev;
+	Button *find_next;
 	CheckBox *case_sensitive;
 	CheckBox *whole_words;
 	TextureButton *hide_button;
@@ -138,15 +135,14 @@ public:
 typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
-
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
 
-	ToolButton *toggle_scripts_button;
-	ToolButton *warning_button;
+	Button *toggle_scripts_button;
+	Button *warning_button;
 	Label *warning_count_label;
 
 	Label *line_and_col_txt;
@@ -178,6 +174,9 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_changed();
 	void _reset_zoom();
 
+	Color completion_font_color;
+	Color completion_string_color;
+	Color completion_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 

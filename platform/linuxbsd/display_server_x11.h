@@ -35,8 +35,7 @@
 
 #include "servers/display_server.h"
 
-#include "core/input/input_filter.h"
-
+#include "core/input/input.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
@@ -140,6 +139,8 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
+		bool focused = false;
+		bool minimized = false;
 	};
 
 	Map<WindowID, WindowData> windows;
@@ -165,15 +166,20 @@ class DisplayServerX11 : public DisplayServer {
 	uint64_t last_click_ms;
 	int last_click_button_index;
 	uint32_t last_button_state;
+	bool app_focused = false;
+	uint64_t time_since_no_focus = 0;
 
 	struct {
 		int opcode;
 		Vector<int> touch_devices;
 		Map<int, Vector2> absolute_devices;
-		Map<int, Vector3> pen_devices;
+		Map<int, Vector2> pen_pressure_range;
+		Map<int, Vector2> pen_tilt_x_range;
+		Map<int, Vector2> pen_tilt_y_range;
 		XIEventMask all_event_mask;
 		Map<int, Vector2> state;
 		double pressure;
+		bool pressure_supported;
 		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;
@@ -193,8 +199,8 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, bool p_echo = false);
 
-	bool minimized;
-	bool window_has_focus;
+	//bool minimized;
+	//bool window_has_focus;
 	bool do_mouse_warp;
 
 	const char *cursor_theme;
@@ -208,7 +214,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool layered_window;
 
 	String rendering_driver;
-	bool window_focused;
+	//bool window_focused;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
@@ -228,6 +234,7 @@ class DisplayServerX11 : public DisplayServer {
 	static Property _read_property(Display *p_display, Window p_window, Atom p_property);
 
 	void _update_real_mouse_position(const WindowData &wd);
+	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 
@@ -324,7 +331,11 @@ public:
 	virtual CursorShape cursor_get_shape() const;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
-	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+	virtual int keyboard_get_layout_count() const;
+	virtual int keyboard_get_current_layout() const;
+	virtual void keyboard_set_current_layout(int p_index);
+	virtual String keyboard_get_layout_language(int p_index) const;
+	virtual String keyboard_get_layout_name(int p_index) const;
 
 	virtual void process_events();
 

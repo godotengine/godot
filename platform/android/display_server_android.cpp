@@ -155,12 +155,12 @@ bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
 	return true;
 }
 
-void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_length) {
+void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_COND(!godot_io_java);
 
 	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text, p_max_length);
+		godot_io_java->show_vk(p_existing_text, p_max_length, p_cursor_start, p_cursor_end);
 	} else {
 		ERR_PRINT("Virtual keyboard not available");
 	}
@@ -360,11 +360,34 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 }
 
 DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	if (r_error != OK) {
+		ds->alert("Your video card driver does not support any of the supported Vulkan versions.", "Unable to initialize Video driver");
+	}
+	return ds;
 }
 
 void DisplayServerAndroid::register_android_driver() {
 	register_create_function("android", create_func, get_rendering_drivers_func);
+}
+
+void DisplayServerAndroid::reset_window() {
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+		ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
+		ERR_FAIL_COND(!native_window);
+
+		ERR_FAIL_COND(!context_vulkan);
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
+
+		Size2i display_size = OS_Android::get_singleton()->get_display_size();
+		if (context_vulkan->window_create(native_window, display_size.width, display_size.height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = nullptr;
+			ERR_FAIL_MSG("Failed to reset Vulkan window.");
+		}
+	}
+#endif
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
@@ -424,7 +447,9 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 	}
 #endif
 
-	InputFilter::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+
+	r_error = OK;
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {
@@ -445,20 +470,27 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p_event) {
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
-			InputFilter::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
+			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
 			break;
 		case JOY_EVENT_AXIS:
-			InputFilter::JoyAxis value;
+			Input::JoyAxis value;
 			value.min = -1;
 			value.value = p_event.value;
-			InputFilter::get_singleton()->joy_axis(p_event.device, p_event.index, value);
+			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);
 			break;
 		case JOY_EVENT_HAT:
-			InputFilter::get_singleton()->joy_hat(p_event.device, p_event.hat);
+			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
 			break;
 		default:
 			return;
 	}
+}
+
+void DisplayServerAndroid::_set_key_modifier_state(Ref<InputEventWithModifiers> ev) {
+	ev->set_shift(shift_mem);
+	ev->set_alt(alt_mem);
+	ev->set_metakey(meta_mem);
+	ev->set_control(control_mem);
 }
 
 void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
@@ -467,10 +499,26 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 	int val = p_unicode_char;
 	int keycode = android_get_keysym(p_keycode);
 	int phy_keycode = android_get_keysym(p_scancode);
+
+	if (keycode == KEY_SHIFT) {
+		shift_mem = p_pressed;
+	}
+	if (keycode == KEY_ALT) {
+		alt_mem = p_pressed;
+	}
+	if (keycode == KEY_CONTROL) {
+		control_mem = p_pressed;
+	}
+	if (keycode == KEY_META) {
+		meta_mem = p_pressed;
+	}
+
 	ev->set_keycode(keycode);
 	ev->set_physical_keycode(phy_keycode);
 	ev->set_unicode(val);
 	ev->set_pressed(p_pressed);
+
+	_set_key_modifier_state(ev);
 
 	if (val == '\n') {
 		ev->set_keycode(KEY_ENTER);
@@ -484,7 +532,7 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 		OS_Android::get_singleton()->main_loop_request_go_back();
 	}
 
-	InputFilter::get_singleton()->parse_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector<DisplayServerAndroid::TouchPos> &p_points) {
@@ -493,13 +541,12 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			if (touch.size()) {
 				//end all if exist
 				for (int i = 0; i < touch.size(); i++) {
-
 					Ref<InputEventScreenTouch> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 				}
 			}
 
@@ -511,13 +558,12 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
-
 				Ref<InputEventScreenTouch> ev;
 				ev.instance();
 				ev->set_index(touch[i].id);
 				ev->set_pressed(true);
 				ev->set_position(touch[i].pos);
-				InputFilter::get_singleton()->parse_input_event(ev);
+				Input::get_singleton()->parse_input_event(ev);
 			}
 
 		} break;
@@ -525,10 +571,8 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
 			for (int i = 0; i < touch.size(); i++) {
-
 				int idx = -1;
 				for (int j = 0; j < p_points.size(); j++) {
-
 					if (touch[i].id == p_points[j].id) {
 						idx = j;
 						break;
@@ -545,7 +589,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 				ev->set_index(touch[i].id);
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				InputFilter::get_singleton()->parse_input_event(ev);
+				Input::get_singleton()->parse_input_event(ev);
 				touch.write[i].pos = p_points[idx].pos;
 			}
 
@@ -554,13 +598,12 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			if (touch.size()) {
 				//end all if exist
 				for (int i = 0; i < touch.size(); i++) {
-
 					Ref<InputEventScreenTouch> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 				}
 				touch.clear();
 			}
@@ -577,7 +620,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 					ev->set_index(tp.id);
 					ev->set_pressed(true);
 					ev->set_position(tp.pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 
 					break;
 				}
@@ -586,13 +629,12 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 		case 4: { // remove touch
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
-
 					Ref<InputEventScreenTouch> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 					touch.remove(i);
 
 					break;
@@ -610,10 +652,11 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 		case 10: { // hover exit
 			Ref<InputEventMouseMotion> ev;
 			ev.instance();
+			_set_key_modifier_state(ev);
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
-			InputFilter::get_singleton()->parse_input_event(ev);
+			Input::get_singleton()->parse_input_event(ev);
 			hover_prev_pos = p_pos;
 		} break;
 	}
@@ -622,34 +665,36 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 void DisplayServerAndroid::process_double_tap(Point2 p_pos) {
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
+	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
 	ev->set_pressed(false);
 	ev->set_doubleclick(true);
-	InputFilter::get_singleton()->parse_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 void DisplayServerAndroid::process_scroll(Point2 p_pos) {
 	Ref<InputEventPanGesture> ev;
 	ev.instance();
+	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_delta(p_pos - scroll_prev_pos);
-	InputFilter::get_singleton()->parse_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 	scroll_prev_pos = p_pos;
 }
 
 void DisplayServerAndroid::process_accelerometer(const Vector3 &p_accelerometer) {
-	InputFilter::get_singleton()->set_accelerometer(p_accelerometer);
+	Input::get_singleton()->set_accelerometer(p_accelerometer);
 }
 
 void DisplayServerAndroid::process_gravity(const Vector3 &p_gravity) {
-	InputFilter::get_singleton()->set_gravity(p_gravity);
+	Input::get_singleton()->set_gravity(p_gravity);
 }
 
 void DisplayServerAndroid::process_magnetometer(const Vector3 &p_magnetometer) {
-	InputFilter::get_singleton()->set_magnetometer(p_magnetometer);
+	Input::get_singleton()->set_magnetometer(p_magnetometer);
 }
 
 void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
-	InputFilter::get_singleton()->set_gyroscope(p_gyroscope);
+	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }

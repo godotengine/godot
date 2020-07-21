@@ -35,34 +35,31 @@
 #include "core/version.h"
 
 static uint64_t _align(uint64_t p_n, int p_alignment) {
-
-	if (p_alignment == 0)
+	if (p_alignment == 0) {
 		return p_n;
+	}
 
 	uint64_t rest = p_n % p_alignment;
-	if (rest == 0)
+	if (rest == 0) {
 		return p_n;
-	else
+	} else {
 		return p_n + (p_alignment - rest);
-};
+	}
+}
 
 static void _pad(FileAccess *p_file, int p_bytes) {
-
 	for (int i = 0; i < p_bytes; i++) {
-
 		p_file->store_8(0);
-	};
-};
+	}
+}
 
 void PCKPacker::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment"), &PCKPacker::pck_start, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path"), &PCKPacker::add_file);
 	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
-};
+}
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
-
 	if (file != nullptr) {
 		memdelete(file);
 	}
@@ -80,21 +77,19 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 	file->store_32(VERSION_PATCH);
 
 	for (int i = 0; i < 16; i++) {
-
 		file->store_32(0); // reserved
-	};
+	}
 
 	files.clear();
 
 	return OK;
-};
+}
 
 Error PCKPacker::add_file(const String &p_file, const String &p_src) {
-
 	FileAccess *f = FileAccess::open(p_src, FileAccess::READ);
 	if (!f) {
 		return ERR_FILE_CANT_OPEN;
-	};
+	}
 
 	File pf;
 	pf.path = p_file;
@@ -108,10 +103,9 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src) {
 	memdelete(f);
 
 	return OK;
-};
+}
 
 Error PCKPacker::flush(bool p_verbose) {
-
 	ERR_FAIL_COND_V_MSG(!file, ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	// write the index
@@ -119,7 +113,6 @@ Error PCKPacker::flush(bool p_verbose) {
 	file->store_32(files.size());
 
 	for (int i = 0; i < files.size(); i++) {
-
 		file->store_pascal_string(files[i].path);
 		files.write[i].offset_offset = file->get_position();
 		file->store_64(0); // offset
@@ -130,7 +123,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		file->store_32(0);
 		file->store_32(0);
 		file->store_32(0);
-	};
+	}
 
 	uint64_t ofs = file->get_position();
 	ofs = _align(ofs, alignment);
@@ -142,15 +135,13 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	int count = 0;
 	for (int i = 0; i < files.size(); i++) {
-
 		FileAccess *src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 		while (to_write > 0) {
-
 			int read = src->get_buffer(buf, MIN(to_write, buf_max));
 			file->store_buffer(buf, read);
 			to_write -= read;
-		};
+		}
 
 		uint64_t pos = file->get_position();
 		file->seek(files[i].offset_offset); // go back to store the file's offset
@@ -167,27 +158,23 @@ Error PCKPacker::flush(bool p_verbose) {
 			if (count % 100 == 0) {
 				printf("%i/%i (%.2f)\r", count, files.size(), float(count) / files.size() * 100);
 				fflush(stdout);
-			};
-		};
-	};
+			}
+		}
+	}
 
-	if (p_verbose)
+	if (p_verbose) {
 		printf("\n");
+	}
 
 	file->close();
 	memdelete_arr(buf);
 
 	return OK;
-};
-
-PCKPacker::PCKPacker() {
-
-	file = nullptr;
-};
+}
 
 PCKPacker::~PCKPacker() {
 	if (file != nullptr) {
 		memdelete(file);
-	};
+	}
 	file = nullptr;
-};
+}

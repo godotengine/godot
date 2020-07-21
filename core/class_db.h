@@ -48,7 +48,6 @@
 #ifdef DEBUG_METHODS_ENABLED
 
 struct MethodDefinition {
-
 	StringName name;
 	Vector<StringName> args;
 	MethodDefinition() {}
@@ -103,7 +102,6 @@ public:
 
 public:
 	struct PropertySetGet {
-
 		int index;
 		StringName setter;
 		StringName getter;
@@ -113,31 +111,34 @@ public:
 	};
 
 	struct ClassInfo {
+		APIType api = API_NONE;
+		ClassInfo *inherits_ptr = nullptr;
+		void *class_ptr = nullptr;
 
-		APIType api;
-		ClassInfo *inherits_ptr;
-		void *class_ptr;
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
 		HashMap<StringName, List<StringName>> enum_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
+		HashMap<StringName, PropertyInfo> property_map;
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
 		Set<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
+		Map<StringName, MethodInfo> virtual_methods_map;
 		StringName category;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
 
 		StringName inherits;
 		StringName name;
-		bool disabled;
-		bool exposed;
-		Object *(*creation_func)();
-		ClassInfo();
-		~ClassInfo();
+		bool disabled = false;
+		bool exposed = false;
+		Object *(*creation_func)() = nullptr;
+
+		ClassInfo() {}
+		~ClassInfo() {}
 	};
 
 	template <class T>
@@ -167,13 +168,11 @@ public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
 	template <class T>
 	static void _add_class() {
-
 		_add_class2(T::get_class_static(), T::get_parent_class_static());
 	}
 
 	template <class T>
 	static void register_class() {
-
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -186,7 +185,6 @@ public:
 
 	template <class T>
 	static void register_virtual_class() {
-
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -198,13 +196,11 @@ public:
 
 	template <class T>
 	static Object *_create_ptr_func() {
-
 		return T::create();
 	}
 
 	template <class T>
 	static void register_custom_instance_class() {
-
 		GLOBAL_LOCK_FUNCTION;
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
@@ -231,7 +227,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method) {
-
 		MethodBind *bind = create_method_bind(p_method);
 
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, nullptr, 0); //use static function, much smaller binary usage
@@ -239,7 +234,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[1] = { &p_def1 };
 
@@ -248,7 +242,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[2] = { &p_def1, &p_def2 };
 
@@ -257,7 +250,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[3] = { &p_def1, &p_def2, &p_def3 };
 
@@ -266,7 +258,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[4] = { &p_def1, &p_def2, &p_def3, &p_def4 };
 
@@ -275,7 +266,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[5] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5 };
 
@@ -284,7 +274,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[6] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6 };
 
@@ -293,7 +282,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[7] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7 };
 
@@ -302,7 +290,6 @@ public:
 
 	template <class N, class M>
 	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7, const Variant &p_def8) {
-
 		MethodBind *bind = create_method_bind(p_method);
 		const Variant *ptr[8] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7, &p_def8 };
 
@@ -311,7 +298,6 @@ public:
 
 	template <class M>
 	static MethodBind *bind_vararg_method(uint32_t p_flags, StringName p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
-
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
@@ -344,7 +330,7 @@ public:
 	}
 
 	static void add_signal(StringName p_class, const MethodInfo &p_signal);
-	static bool has_signal(StringName p_class, StringName p_signal);
+	static bool has_signal(StringName p_class, StringName p_signal, bool p_no_inheritance = false);
 	static bool get_signal(StringName p_class, StringName p_signal, MethodInfo *r_signal);
 	static void get_signal_list(StringName p_class, List<MethodInfo> *p_signals, bool p_no_inheritance = false);
 
@@ -353,6 +339,7 @@ public:
 	static void add_property(StringName p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index = -1);
 	static void set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default);
 	static void get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance = false, const Object *p_validator = nullptr);
+	static bool get_property_info(StringName p_class, StringName p_property, PropertyInfo *r_info, bool p_no_inheritance = false, const Object *p_validator = nullptr);
 	static bool set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid = nullptr);
 	static bool get_property(Object *p_object, const StringName &p_property, Variant &r_value);
 	static bool has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance = false);
@@ -365,6 +352,7 @@ public:
 	static void set_method_flags(StringName p_class, StringName p_method, int p_flags);
 
 	static void get_method_list(StringName p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static bool get_method_info(StringName p_class, StringName p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static MethodBind *get_method(StringName p_class, StringName p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true);
@@ -373,10 +361,12 @@ public:
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
 	static int get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
+	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 	static void get_enum_list(const StringName &p_class, List<StringName> *p_enums, bool p_no_inheritance = false);
 	static void get_enum_constants(const StringName &p_class, const StringName &p_enum, List<StringName> *p_constants, bool p_no_inheritance = false);
+	static bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static Variant class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
 

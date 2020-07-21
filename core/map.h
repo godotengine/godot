@@ -39,7 +39,6 @@
 
 template <class K, class V, class C = Comparator<K>, class A = DefaultAllocator>
 class Map {
-
 	enum Color {
 		RED,
 		BLACK
@@ -48,67 +47,54 @@ class Map {
 
 public:
 	class Element {
-
 	private:
 		friend class Map<K, V, C, A>;
-		int color;
-		Element *right;
-		Element *left;
-		Element *parent;
-		Element *_next;
-		Element *_prev;
+		int color = RED;
+		Element *right = nullptr;
+		Element *left = nullptr;
+		Element *parent = nullptr;
+		Element *_next = nullptr;
+		Element *_prev = nullptr;
 		K _key;
 		V _value;
 		//_Data *data;
 
 	public:
 		const Element *next() const {
-
 			return _next;
 		}
 		Element *next() {
-
 			return _next;
 		}
 		const Element *prev() const {
-
 			return _prev;
 		}
 		Element *prev() {
-
 			return _prev;
 		}
 		const K &key() const {
 			return _key;
-		};
+		}
 		V &value() {
 			return _value;
-		};
+		}
 		const V &value() const {
 			return _value;
-		};
+		}
 		V &get() {
 			return _value;
-		};
+		}
 		const V &get() const {
 			return _value;
-		};
-		Element() {
-			color = RED;
-			right = nullptr;
-			left = nullptr;
-			parent = nullptr;
-			_next = nullptr;
-			_prev = nullptr;
-		};
+		}
+		Element() {}
 	};
 
 private:
 	struct _Data {
-
-		Element *_root;
+		Element *_root = nullptr;
 		Element *_nil;
-		int size_cache;
+		int size_cache = 0;
 
 		_FORCE_INLINE_ _Data() {
 #ifdef GLOBALNIL_DISABLED
@@ -118,19 +104,15 @@ private:
 #else
 			_nil = (Element *)&_GlobalNilClass::_nil;
 #endif
-			_root = nullptr;
-			size_cache = 0;
 		}
 
 		void _create_root() {
-
 			_root = memnew_allocator(Element, A);
 			_root->parent = _root->left = _root->right = _nil;
 			_root->color = BLACK;
 		}
 
 		void _free_root() {
-
 			if (_root) {
 				memdelete_allocator<Element, A>(_root);
 				_root = nullptr;
@@ -138,7 +120,6 @@ private:
 		}
 
 		~_Data() {
-
 			_free_root();
 
 #ifdef GLOBALNIL_DISABLED
@@ -150,62 +131,61 @@ private:
 	_Data _data;
 
 	inline void _set_color(Element *p_node, int p_color) {
-
 		ERR_FAIL_COND(p_node == _data._nil && p_color == RED);
 		p_node->color = p_color;
 	}
 
 	inline void _rotate_left(Element *p_node) {
-
 		Element *r = p_node->right;
 		p_node->right = r->left;
-		if (r->left != _data._nil)
+		if (r->left != _data._nil) {
 			r->left->parent = p_node;
+		}
 		r->parent = p_node->parent;
-		if (p_node == p_node->parent->left)
+		if (p_node == p_node->parent->left) {
 			p_node->parent->left = r;
-		else
+		} else {
 			p_node->parent->right = r;
+		}
 
 		r->left = p_node;
 		p_node->parent = r;
 	}
 
 	inline void _rotate_right(Element *p_node) {
-
 		Element *l = p_node->left;
 		p_node->left = l->right;
-		if (l->right != _data._nil)
+		if (l->right != _data._nil) {
 			l->right->parent = p_node;
+		}
 		l->parent = p_node->parent;
-		if (p_node == p_node->parent->right)
+		if (p_node == p_node->parent->right) {
 			p_node->parent->right = l;
-		else
+		} else {
 			p_node->parent->left = l;
+		}
 
 		l->right = p_node;
 		p_node->parent = l;
 	}
 
 	inline Element *_successor(Element *p_node) const {
-
 		Element *node = p_node;
 
 		if (node->right != _data._nil) {
-
 			node = node->right;
 			while (node->left != _data._nil) { /* returns the minimum of the right subtree of node */
 				node = node->left;
 			}
 			return node;
 		} else {
-
 			while (node == node->parent->right) {
 				node = node->parent;
 			}
 
-			if (node->parent == _data._root)
+			if (node->parent == _data._root) {
 				return nullptr; // No successor, as p_node = last node
+			}
 			return node->parent;
 		}
 	}
@@ -214,43 +194,41 @@ private:
 		Element *node = p_node;
 
 		if (node->left != _data._nil) {
-
 			node = node->left;
 			while (node->right != _data._nil) { /* returns the minimum of the left subtree of node */
 				node = node->right;
 			}
 			return node;
 		} else {
-
 			while (node == node->parent->left) {
 				node = node->parent;
 			}
 
-			if (node == _data._root)
+			if (node == _data._root) {
 				return nullptr; // No predecessor, as p_node = first node
+			}
 			return node->parent;
 		}
 	}
 
 	Element *_find(const K &p_key) const {
-
 		Element *node = _data._root->left;
 		C less;
 
 		while (node != _data._nil) {
-			if (less(p_key, node->_key))
+			if (less(p_key, node->_key)) {
 				node = node->left;
-			else if (less(node->_key, p_key))
+			} else if (less(node->_key, p_key)) {
 				node = node->right;
-			else
+			} else {
 				return node; // found
+			}
 		}
 
 		return nullptr;
 	}
 
 	Element *_find_closest(const K &p_key) const {
-
 		Element *node = _data._root->left;
 		Element *prev = nullptr;
 		C less;
@@ -258,25 +236,27 @@ private:
 		while (node != _data._nil) {
 			prev = node;
 
-			if (less(p_key, node->_key))
+			if (less(p_key, node->_key)) {
 				node = node->left;
-			else if (less(node->_key, p_key))
+			} else if (less(node->_key, p_key)) {
 				node = node->right;
-			else
+			} else {
 				return node; // found
+			}
 		}
 
-		if (prev == nullptr)
+		if (prev == nullptr) {
 			return nullptr; // tree empty
+		}
 
-		if (less(p_key, prev->_key))
+		if (less(p_key, prev->_key)) {
 			prev = prev->_prev;
+		}
 
 		return prev;
 	}
 
 	void _insert_rb_fix(Element *p_new_node) {
-
 		Element *node = p_new_node;
 		Element *nparent = node->parent;
 		Element *ngrand_parent;
@@ -325,20 +305,18 @@ private:
 	}
 
 	Element *_insert(const K &p_key, const V &p_value) {
-
 		Element *new_parent = _data._root;
 		Element *node = _data._root->left;
 		C less;
 
 		while (node != _data._nil) {
-
 			new_parent = node;
 
-			if (less(p_key, node->_key))
+			if (less(p_key, node->_key)) {
 				node = node->left;
-			else if (less(node->_key, p_key))
+			} else if (less(node->_key, p_key)) {
 				node = node->right;
-			else {
+			} else {
 				node->_value = p_value;
 				return node; // Return existing node with new value
 			}
@@ -360,10 +338,12 @@ private:
 
 		new_node->_next = _successor(new_node);
 		new_node->_prev = _predecessor(new_node);
-		if (new_node->_next)
+		if (new_node->_next) {
 			new_node->_next->_prev = new_node;
-		if (new_node->_prev)
+		}
+		if (new_node->_prev) {
 			new_node->_prev->_next = new_node;
+		}
 
 		_data.size_cache++;
 		_insert_rb_fix(new_node);
@@ -371,7 +351,6 @@ private:
 	}
 
 	void _erase_fix_rb(Element *p_node) {
-
 		Element *root = _data._root->left;
 		Element *node = _data._nil;
 		Element *sibling = p_node;
@@ -433,7 +412,6 @@ private:
 	}
 
 	void _erase(Element *p_node) {
-
 		Element *rp = ((p_node->left == _data._nil) || (p_node->right == _data._nil)) ? p_node : p_node->_next;
 		Element *node = (rp->left == _data._nil) ? rp->right : rp->left;
 
@@ -454,17 +432,18 @@ private:
 		}
 
 		if (rp != p_node) {
-
 			ERR_FAIL_COND(rp == _data._nil);
 
 			rp->left = p_node->left;
 			rp->right = p_node->right;
 			rp->parent = p_node->parent;
 			rp->color = p_node->color;
-			if (p_node->left != _data._nil)
+			if (p_node->left != _data._nil) {
 				p_node->left->parent = rp;
-			if (p_node->right != _data._nil)
+			}
+			if (p_node->right != _data._nil) {
 				p_node->right->parent = rp;
+			}
 
 			if (p_node == p_node->parent->left) {
 				p_node->parent->left = rp;
@@ -473,10 +452,12 @@ private:
 			}
 		}
 
-		if (p_node->_next)
+		if (p_node->_next) {
 			p_node->_next->_prev = p_node->_prev;
-		if (p_node->_prev)
+		}
+		if (p_node->_prev) {
 			p_node->_prev->_next = p_node->_next;
+		}
 
 		memdelete_allocator<Element, A>(p_node);
 		_data.size_cache--;
@@ -484,21 +465,22 @@ private:
 	}
 
 	void _calculate_depth(Element *p_element, int &max_d, int d) const {
-
-		if (p_element == _data._nil)
+		if (p_element == _data._nil) {
 			return;
+		}
 
 		_calculate_depth(p_element->left, max_d, d + 1);
 		_calculate_depth(p_element->right, max_d, d + 1);
 
-		if (d > max_d)
+		if (d > max_d) {
 			max_d = d;
+		}
 	}
 
 	void _cleanup_tree(Element *p_element) {
-
-		if (p_element == _data._nil)
+		if (p_element == _data._nil) {
 			return;
+		}
 
 		_cleanup_tree(p_element->left);
 		_cleanup_tree(p_element->right);
@@ -506,91 +488,90 @@ private:
 	}
 
 	void _copy_from(const Map &p_map) {
-
 		clear();
 		// not the fastest way, but safeset to write.
 		for (Element *I = p_map.front(); I; I = I->next()) {
-
 			insert(I->key(), I->value());
 		}
 	}
 
 public:
 	const Element *find(const K &p_key) const {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		const Element *res = _find(p_key);
 		return res;
 	}
 
 	Element *find(const K &p_key) {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *res = _find(p_key);
 		return res;
 	}
 
 	const Element *find_closest(const K &p_key) const {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		const Element *res = _find_closest(p_key);
 		return res;
 	}
 
 	Element *find_closest(const K &p_key) {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *res = _find_closest(p_key);
 		return res;
 	}
 
 	bool has(const K &p_key) const {
-
 		return find(p_key) != nullptr;
 	}
 
 	Element *insert(const K &p_key, const V &p_value) {
-
-		if (!_data._root)
+		if (!_data._root) {
 			_data._create_root();
+		}
 		return _insert(p_key, p_value);
 	}
 
 	void erase(Element *p_element) {
-
-		if (!_data._root || !p_element)
+		if (!_data._root || !p_element) {
 			return;
+		}
 
 		_erase(p_element);
-		if (_data.size_cache == 0 && _data._root)
+		if (_data.size_cache == 0 && _data._root) {
 			_data._free_root();
+		}
 	}
 
 	bool erase(const K &p_key) {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return false;
+		}
 
 		Element *e = find(p_key);
-		if (!e)
+		if (!e) {
 			return false;
+		}
 
 		_erase(e);
-		if (_data.size_cache == 0 && _data._root)
+		if (_data.size_cache == 0 && _data._root) {
 			_data._free_root();
+		}
 		return true;
 	}
 
 	const V &operator[](const K &p_key) const {
-
 		CRASH_COND(!_data._root);
 		const Element *e = find(p_key);
 		CRASH_COND(!e);
@@ -598,43 +579,48 @@ public:
 	}
 
 	V &operator[](const K &p_key) {
-
-		if (!_data._root)
+		if (!_data._root) {
 			_data._create_root();
+		}
 
 		Element *e = find(p_key);
-		if (!e)
+		if (!e) {
 			e = insert(p_key, V());
+		}
 
 		return e->_value;
 	}
 
 	Element *front() const {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *e = _data._root->left;
-		if (e == _data._nil)
+		if (e == _data._nil) {
 			return nullptr;
+		}
 
-		while (e->left != _data._nil)
+		while (e->left != _data._nil) {
 			e = e->left;
+		}
 
 		return e;
 	}
 
 	Element *back() const {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return nullptr;
+		}
 
 		Element *e = _data._root->left;
-		if (e == _data._nil)
+		if (e == _data._nil) {
 			return nullptr;
+		}
 
-		while (e->right != _data._nil)
+		while (e->right != _data._nil) {
 			e = e->right;
+		}
 
 		return e;
 	}
@@ -644,8 +630,9 @@ public:
 
 	int calculate_depth() const {
 		// used for debug mostly
-		if (!_data._root)
+		if (!_data._root) {
 			return 0;
+		}
 
 		int max_d = 0;
 		_calculate_depth(_data._root->left, max_d, 0);
@@ -653,9 +640,9 @@ public:
 	}
 
 	void clear() {
-
-		if (!_data._root)
+		if (!_data._root) {
 			return;
+		}
 
 		_cleanup_tree(_data._root->left);
 		_data._root->left = _data._nil;
@@ -664,20 +651,16 @@ public:
 	}
 
 	void operator=(const Map &p_map) {
-
 		_copy_from(p_map);
 	}
 
 	Map(const Map &p_map) {
-
 		_copy_from(p_map);
 	}
 
-	_FORCE_INLINE_ Map() {
-	}
+	_FORCE_INLINE_ Map() {}
 
 	~Map() {
-
 		clear();
 	}
 };

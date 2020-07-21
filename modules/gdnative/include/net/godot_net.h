@@ -45,7 +45,6 @@ extern "C" {
 #define GODOT_NET_API_MINOR 1
 
 typedef struct {
-
 	godot_gdnative_api_version version; /* version of our API */
 	godot_object *data; /* User reference */
 

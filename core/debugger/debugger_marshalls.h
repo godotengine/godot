@@ -35,18 +35,14 @@
 #include "servers/rendering_server.h"
 
 struct DebuggerMarshalls {
-
 	// Memory usage
 	struct ResourceInfo {
 		String path;
 		String format;
 		String type;
 		RID id;
-		int vram;
+		int vram = 0;
 		bool operator<(const ResourceInfo &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
-		ResourceInfo() {
-			vram = 0;
-		}
 	};
 
 	struct ResourceUsage {
@@ -119,10 +115,7 @@ struct DebuggerMarshalls {
 	struct ScriptStackVariable {
 		String name;
 		Variant value;
-		int type;
-		ScriptStackVariable() {
-			type = -1;
-		}
+		int type = -1;
 
 		Array serialize(int max_size = 1 << 20); // 1 MiB default.
 		bool deserialize(const Array &p_arr);
@@ -137,26 +130,17 @@ struct DebuggerMarshalls {
 	};
 
 	struct OutputError {
-		int hr;
-		int min;
-		int sec;
-		int msec;
+		int hr = -1;
+		int min = -1;
+		int sec = -1;
+		int msec = -1;
 		String source_file;
 		String source_func;
-		int source_line;
+		int source_line = -1;
 		String error;
 		String error_descr;
-		bool warning;
+		bool warning = false;
 		Vector<ScriptLanguage::StackInfo> callstack;
-
-		OutputError() {
-			hr = -1;
-			min = -1;
-			sec = -1;
-			msec = -1;
-			source_line = -1;
-			warning = false;
-		}
 
 		Array serialize();
 		bool deserialize(const Array &p_arr);

@@ -123,7 +123,7 @@ protected:
 	void _notification(int p_what);
 
 	void _visibility_changed();
-	void custom_action(const String &p_action);
+	void custom_action(const String &p_action) override;
 	static void _bind_methods();
 
 private:
@@ -191,8 +191,7 @@ private:
 		int line_number;
 		int begin;
 		int end;
-		float draw_begin;
-		float draw_width;
+		int begin_trimmed;
 	};
 
 	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);

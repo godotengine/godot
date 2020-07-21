@@ -48,8 +48,9 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	MonoDelegate *delegate_b = (MonoDelegate *)b->delegate_handle.get_target();
 
 	if (!delegate_a || !delegate_b) {
-		if (!delegate_a && !delegate_b)
+		if (!delegate_a && !delegate_b) {
 			return true;
+		}
 		return false;
 	}
 
@@ -58,8 +59,9 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 }
 
 bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	if (compare_equal(p_a, p_b))
+	if (compare_equal(p_a, p_b)) {
 		return false;
+	}
 	return p_a < p_b;
 }
 
@@ -82,6 +84,7 @@ CallableCustom::CompareLessFunc ManagedCallable::get_compare_less_func() const {
 }
 
 ObjectID ManagedCallable::get_object() const {
+	// TODO: If the delegate target extends Godot.Object, use that instead!
 	return CSharpLanguage::get_singleton()->get_managed_callable_middleman()->get_instance_id();
 }
 

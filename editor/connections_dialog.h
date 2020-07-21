@@ -50,7 +50,6 @@ class PopupMenu;
 class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
-
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
 public:
@@ -103,7 +102,7 @@ private:
 
 	Label *error_label;
 
-	void ok_pressed();
+	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
 	void _text_entered(const String &_text);
@@ -142,12 +141,10 @@ public:
 // Custom Tree needed to use a RichTextLabel as tooltip control
 // when display signal documentation.
 class ConnectionsDockTree : public Tree {
-
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
 
 class ConnectionsDock : public VBoxContainer {
-
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
 	//Right-click Pop-up Menu Options.

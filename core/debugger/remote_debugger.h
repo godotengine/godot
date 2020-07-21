@@ -40,6 +40,11 @@
 #include "core/ustring.h"
 
 class RemoteDebugger : public EngineDebugger {
+public:
+	enum MessageType {
+		MESSAGE_TYPE_LOG,
+		MESSAGE_TYPE_ERROR,
+	};
 
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
@@ -57,7 +62,11 @@ private:
 
 	Ref<RemoteDebuggerPeer> peer;
 
-	List<String> output_strings;
+	struct OutputString {
+		String message;
+		MessageType type;
+	};
+	List<OutputString> output_strings;
 	List<ErrorMessage> errors;
 
 	int n_messages_dropped = 0;
@@ -99,8 +108,6 @@ private:
 	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
 
 public:
-	static RemoteDebugger *create_for_uri(const String &p_uri);
-
 	// Overrides
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);

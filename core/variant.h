@@ -67,13 +67,6 @@ typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 
-// Temporary workaround until c++11 alignas()
-#ifdef __GNUC__
-#define GCC_ALIGNED_8 __attribute__((aligned(8)))
-#else
-#define GCC_ALIGNED_8
-#endif
-
 class Variant {
 public:
 	// If this changes the table in variant_op must be updated
@@ -130,10 +123,9 @@ private:
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 
-	Type type;
+	Type type = NIL;
 
 	struct ObjData {
-
 		ObjectID id;
 		Object *obj;
 	};
@@ -211,7 +203,7 @@ private:
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
-	} _data GCC_ALIGNED_8;
+	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
 	void clear();
@@ -227,10 +219,10 @@ public:
 	bool is_ref() const;
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
-	};
+	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
-	};
+	}
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;
@@ -410,7 +402,6 @@ public:
 	static String get_operator_name(Operator p_op);
 	static void evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b, Variant &r_ret, bool &r_valid);
 	static _FORCE_INLINE_ Variant evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b) {
-
 		bool valid = true;
 		Variant res;
 		evaluate(p_op, p_a, p_b, res, valid);
@@ -476,12 +467,13 @@ public:
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
+
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() {
-		type = NIL;
-	}
+	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
-		if (type != Variant::NIL) clear();
+		if (type != Variant::NIL) {
+			clear();
+		}
 	}
 };
 
@@ -496,22 +488,18 @@ Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Varia
 Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
 
 struct VariantHasher {
-
 	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
 };
 
 struct VariantComparator {
-
 	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 Variant::ObjData &Variant::_get_obj() {
-
 	return *reinterpret_cast<ObjData *>(&_data._mem[0]);
 }
 
 const Variant::ObjData &Variant::_get_obj() const {
-
 	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
 }
 

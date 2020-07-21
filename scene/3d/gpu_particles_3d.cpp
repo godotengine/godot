@@ -36,16 +36,14 @@
 #include "servers/rendering_server.h"
 
 AABB GPUParticles3D::get_aabb() const {
-
 	return AABB();
 }
-Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
 
+Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
 void GPUParticles3D::set_emitting(bool p_emitting) {
-
 	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 
 	if (p_emitting && one_shot) {
@@ -56,157 +54,149 @@ void GPUParticles3D::set_emitting(bool p_emitting) {
 }
 
 void GPUParticles3D::set_amount(int p_amount) {
-
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
 	RS::get_singleton()->particles_set_amount(particles, amount);
 }
-void GPUParticles3D::set_lifetime(float p_lifetime) {
 
+void GPUParticles3D::set_lifetime(float p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
 
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
-
 	one_shot = p_one_shot;
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
-
 		set_process_internal(true);
-		if (!one_shot)
+		if (!one_shot) {
 			RenderingServer::get_singleton()->particles_restart(particles);
+		}
 	}
 
-	if (!one_shot)
+	if (!one_shot) {
 		set_process_internal(false);
+	}
 }
 
 void GPUParticles3D::set_pre_process_time(float p_time) {
-
 	pre_process_time = p_time;
 	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
-void GPUParticles3D::set_explosiveness_ratio(float p_ratio) {
 
+void GPUParticles3D::set_explosiveness_ratio(float p_ratio) {
 	explosiveness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
 }
-void GPUParticles3D::set_randomness_ratio(float p_ratio) {
 
+void GPUParticles3D::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
-void GPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
 
+void GPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
 	visibility_aabb = p_aabb;
 	RS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
 	update_gizmo();
 	_change_notify("visibility_aabb");
 }
-void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
 
+void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
 }
-void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 
+void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	RID material_rid;
-	if (process_material.is_valid())
+	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warning();
 }
 
 void GPUParticles3D::set_speed_scale(float p_scale) {
-
 	speed_scale = p_scale;
 	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
 bool GPUParticles3D::is_emitting() const {
-
 	return RS::get_singleton()->particles_get_emitting(particles);
 }
-int GPUParticles3D::get_amount() const {
 
+int GPUParticles3D::get_amount() const {
 	return amount;
 }
-float GPUParticles3D::get_lifetime() const {
 
+float GPUParticles3D::get_lifetime() const {
 	return lifetime;
 }
-bool GPUParticles3D::get_one_shot() const {
 
+bool GPUParticles3D::get_one_shot() const {
 	return one_shot;
 }
 
 float GPUParticles3D::get_pre_process_time() const {
-
 	return pre_process_time;
 }
-float GPUParticles3D::get_explosiveness_ratio() const {
 
+float GPUParticles3D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
-float GPUParticles3D::get_randomness_ratio() const {
 
+float GPUParticles3D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
-AABB GPUParticles3D::get_visibility_aabb() const {
 
+AABB GPUParticles3D::get_visibility_aabb() const {
 	return visibility_aabb;
 }
-bool GPUParticles3D::get_use_local_coordinates() const {
 
+bool GPUParticles3D::get_use_local_coordinates() const {
 	return local_coords;
 }
-Ref<Material> GPUParticles3D::get_process_material() const {
 
+Ref<Material> GPUParticles3D::get_process_material() const {
 	return process_material;
 }
 
 float GPUParticles3D::get_speed_scale() const {
-
 	return speed_scale;
 }
 
 void GPUParticles3D::set_draw_order(DrawOrder p_order) {
-
 	draw_order = p_order;
 	RS::get_singleton()->particles_set_draw_order(particles, RS::ParticlesDrawOrder(p_order));
 }
 
 GPUParticles3D::DrawOrder GPUParticles3D::get_draw_order() const {
-
 	return draw_order;
 }
 
 void GPUParticles3D::set_draw_passes(int p_count) {
-
 	ERR_FAIL_COND(p_count < 1);
 	draw_passes.resize(p_count);
 	RS::get_singleton()->particles_set_draw_passes(particles, p_count);
 	_change_notify();
 }
-int GPUParticles3D::get_draw_passes() const {
 
+int GPUParticles3D::get_draw_passes() const {
 	return draw_passes.size();
 }
 
 void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
-
 	ERR_FAIL_INDEX(p_pass, draw_passes.size());
 
 	draw_passes.write[p_pass] = p_mesh;
 
 	RID mesh_rid;
-	if (p_mesh.is_valid())
+	if (p_mesh.is_valid()) {
 		mesh_rid = p_mesh->get_rid();
+	}
 
 	RS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
 
@@ -214,7 +204,6 @@ void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 }
 
 Ref<Mesh> GPUParticles3D::get_draw_pass_mesh(int p_pass) const {
-
 	ERR_FAIL_INDEX_V(p_pass, draw_passes.size(), Ref<Mesh>());
 
 	return draw_passes[p_pass];
@@ -239,7 +228,6 @@ bool GPUParticles3D::get_fractional_delta() const {
 }
 
 String GPUParticles3D::get_configuration_warning() const {
-
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose.");
 	}
@@ -257,7 +245,9 @@ String GPUParticles3D::get_configuration_warning() const {
 				StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(draw_passes[i]->surface_get_material(j).ptr());
 				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 			}
-			if (anim_material_found) break;
+			if (anim_material_found) {
+				break;
+			}
 		}
 	}
 
@@ -266,22 +256,25 @@ String GPUParticles3D::get_configuration_warning() const {
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
 	if (!meshes_found) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("Nothing is visible because meshes have not been assigned to draw passes.");
 	}
 
 	if (process_material.is_null()) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
 	} else {
 		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
 		if (!anim_material_found && process &&
 				(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-			if (warnings != String())
+			if (warnings != String()) {
 				warnings += "\n";
+			}
 			warnings += "- " + TTR("Particles animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
 		}
 	}
@@ -290,18 +283,15 @@ String GPUParticles3D::get_configuration_warning() const {
 }
 
 void GPUParticles3D::restart() {
-
 	RenderingServer::get_singleton()->particles_restart(particles);
 	RenderingServer::get_singleton()->particles_set_emitting(particles, true);
 }
 
 AABB GPUParticles3D::capture_aabb() const {
-
 	return RS::get_singleton()->particles_get_current_aabb(particles);
 }
 
 void GPUParticles3D::_validate_property(PropertyInfo &property) const {
-
 	if (property.name.begins_with("draw_pass_")) {
 		int index = property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
@@ -312,12 +302,10 @@ void GPUParticles3D::_validate_property(PropertyInfo &property) const {
 }
 
 void GPUParticles3D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
 		if (can_process()) {
 			RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
 		} else {
-
 			RS::get_singleton()->particles_set_speed_scale(particles, 0);
 		}
 	}
@@ -325,7 +313,6 @@ void GPUParticles3D::_notification(int p_what) {
 	// Use internal process when emitting and one_shot are on so that when
 	// the shot ends the editor can properly update
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-
 		if (one_shot && !is_emitting()) {
 			_change_notify();
 			set_process_internal(false);
@@ -341,7 +328,6 @@ void GPUParticles3D::_notification(int p_what) {
 }
 
 void GPUParticles3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles3D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &GPUParticles3D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &GPUParticles3D::set_lifetime);
@@ -403,7 +389,6 @@ void GPUParticles3D::_bind_methods() {
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
-
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
 	}
 
@@ -415,7 +400,6 @@ void GPUParticles3D::_bind_methods() {
 }
 
 GPUParticles3D::GPUParticles3D() {
-
 	particles = RS::get_singleton()->particles_create();
 	set_base(particles);
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
@@ -436,6 +420,5 @@ GPUParticles3D::GPUParticles3D() {
 }
 
 GPUParticles3D::~GPUParticles3D() {
-
 	RS::get_singleton()->free(particles);
 }

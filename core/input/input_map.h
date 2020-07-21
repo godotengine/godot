@@ -35,7 +35,6 @@
 #include "core/object.h"
 
 class InputMap : public Object {
-
 	GDCLASS(InputMap, Object);
 
 public:
@@ -57,7 +56,7 @@ private:
 
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed = nullptr, float *p_strength = nullptr) const;
 
-	Array _get_action_list(const StringName &p_action);
+	Array _action_get_events(const StringName &p_action);
 	Array _get_actions();
 
 protected:
@@ -77,7 +76,7 @@ public:
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	void action_erase_events(const StringName &p_action);
 
-	const List<Ref<InputEvent>> *get_action_list(const StringName &p_action);
+	const List<Ref<InputEvent>> *action_get_events(const StringName &p_action);
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
 	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed = nullptr, float *p_strength = nullptr) const;
 

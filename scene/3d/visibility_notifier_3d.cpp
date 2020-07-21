@@ -37,7 +37,6 @@
 #include "scene/scene_string_names.h"
 
 void VisibilityNotifier3D::_enter_camera(Camera3D *p_camera) {
-
 	ERR_FAIL_COND(cameras.has(p_camera));
 	cameras.insert(p_camera);
 	if (cameras.size() == 1) {
@@ -49,7 +48,6 @@ void VisibilityNotifier3D::_enter_camera(Camera3D *p_camera) {
 }
 
 void VisibilityNotifier3D::_exit_camera(Camera3D *p_camera) {
-
 	ERR_FAIL_COND(!cameras.has(p_camera));
 	cameras.erase(p_camera);
 
@@ -62,13 +60,13 @@ void VisibilityNotifier3D::_exit_camera(Camera3D *p_camera) {
 }
 
 void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
-
-	if (aabb == p_aabb)
+	if (aabb == p_aabb) {
 		return;
+	}
 	aabb = p_aabb;
 
 	if (is_inside_world()) {
-		get_world()->_update_notifier(this, get_global_transform().xform(aabb));
+		get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
 	}
 
 	_change_notify("aabb");
@@ -76,35 +74,28 @@ void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
 }
 
 AABB VisibilityNotifier3D::get_aabb() const {
-
 	return aabb;
 }
 
 void VisibilityNotifier3D::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-
-			get_world()->_register_notifier(this, get_global_transform().xform(aabb));
+			get_world_3d()->_register_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
-			get_world()->_update_notifier(this, get_global_transform().xform(aabb));
+			get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-
-			get_world()->_remove_notifier(this);
+			get_world_3d()->_remove_notifier(this);
 		} break;
 	}
 }
 
 bool VisibilityNotifier3D::is_on_screen() const {
-
 	return cameras.size() != 0;
 }
 
 void VisibilityNotifier3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibilityNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &VisibilityNotifier3D::get_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibilityNotifier3D::is_on_screen);
@@ -118,7 +109,6 @@ void VisibilityNotifier3D::_bind_methods() {
 }
 
 VisibilityNotifier3D::VisibilityNotifier3D() {
-
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	set_notify_transform(true);
 }
@@ -126,9 +116,7 @@ VisibilityNotifier3D::VisibilityNotifier3D() {
 //////////////////////////////////////
 
 void VisibilityEnabler3D::_screen_enter() {
-
 	for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
-
 		_change_node_state(E->key(), true);
 	}
 
@@ -136,9 +124,7 @@ void VisibilityEnabler3D::_screen_enter() {
 }
 
 void VisibilityEnabler3D::_screen_exit() {
-
 	for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
-
 		_change_node_state(E->key(), false);
 	}
 
@@ -146,14 +132,12 @@ void VisibilityEnabler3D::_screen_exit() {
 }
 
 void VisibilityEnabler3D::_find_nodes(Node *p_node) {
-
 	bool add = false;
 	Variant meta;
 
 	{
 		RigidBody3D *rb = Object::cast_to<RigidBody3D>(p_node);
 		if (rb && ((rb->get_mode() == RigidBody3D::MODE_CHARACTER || rb->get_mode() == RigidBody3D::MODE_RIGID))) {
-
 			add = true;
 			meta = rb->get_mode();
 		}
@@ -167,7 +151,6 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 	}
 
 	if (add) {
-
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &VisibilityEnabler3D::_node_removed), varray(p_node), CONNECT_ONESHOT);
 		nodes[p_node] = meta;
 		_change_node_state(p_node, false);
@@ -175,37 +158,38 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		if (c->get_filename() != String())
+		if (c->get_filename() != String()) {
 			continue; //skip, instance
+		}
 
 		_find_nodes(c);
 	}
 }
 
 void VisibilityEnabler3D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
-		if (Engine::get_singleton()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 
 		Node *from = this;
 		//find where current scene starts
-		while (from->get_parent() && from->get_filename() == String())
+		while (from->get_parent() && from->get_filename() == String()) {
 			from = from->get_parent();
+		}
 
 		_find_nodes(from);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
-		if (Engine::get_singleton()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
-
-			if (!visible)
+			if (!visible) {
 				_change_node_state(E->key(), true);
+			}
 			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &VisibilityEnabler3D::_node_removed));
 		}
 
@@ -214,35 +198,32 @@ void VisibilityEnabler3D::_notification(int p_what) {
 }
 
 void VisibilityEnabler3D::_change_node_state(Node *p_node, bool p_enabled) {
-
 	ERR_FAIL_COND(!nodes.has(p_node));
 
 	if (enabler[ENABLER_FREEZE_BODIES]) {
 		RigidBody3D *rb = Object::cast_to<RigidBody3D>(p_node);
-		if (rb)
-
+		if (rb) {
 			rb->set_sleeping(!p_enabled);
+		}
 	}
 
 	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		if (ap) {
-
 			ap->set_active(p_enabled);
 		}
 	}
 }
 
 void VisibilityEnabler3D::_node_removed(Node *p_node) {
-
-	if (!visible)
+	if (!visible) {
 		_change_node_state(p_node, true);
+	}
 	nodes.erase(p_node);
 }
 
 void VisibilityEnabler3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_enabler", "enabler", "enabled"), &VisibilityEnabler3D::set_enabler);
 	ClassDB::bind_method(D_METHOD("is_enabler_enabled", "enabler"), &VisibilityEnabler3D::is_enabler_enabled);
 
@@ -255,20 +236,19 @@ void VisibilityEnabler3D::_bind_methods() {
 }
 
 void VisibilityEnabler3D::set_enabler(Enabler p_enabler, bool p_enable) {
-
 	ERR_FAIL_INDEX(p_enabler, ENABLER_MAX);
 	enabler[p_enabler] = p_enable;
 }
-bool VisibilityEnabler3D::is_enabler_enabled(Enabler p_enabler) const {
 
+bool VisibilityEnabler3D::is_enabler_enabled(Enabler p_enabler) const {
 	ERR_FAIL_INDEX_V(p_enabler, ENABLER_MAX, false);
 	return enabler[p_enabler];
 }
 
 VisibilityEnabler3D::VisibilityEnabler3D() {
-
-	for (int i = 0; i < ENABLER_MAX; i++)
+	for (int i = 0; i < ENABLER_MAX; i++) {
 		enabler[i] = true;
+	}
 
 	visible = false;
 }

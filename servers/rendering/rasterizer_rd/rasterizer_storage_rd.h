@@ -64,7 +64,6 @@ public:
 	typedef ShaderData *(*ShaderDataRequestFunction)();
 
 	struct MaterialData {
-
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
 		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
@@ -92,6 +91,8 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_2D_UINT,
 		DEFAULT_RD_TEXTURE_MAX
 	};
 
@@ -110,7 +111,6 @@ public:
 private:
 	/* TEXTURE API */
 	struct Texture {
-
 		enum Type {
 			TYPE_2D,
 			TYPE_LAYERED,
@@ -118,6 +118,7 @@ private:
 		};
 
 		Type type;
+		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
 
 		RenderingDevice::TextureType rd_type;
 		RID rd_texture;
@@ -147,6 +148,7 @@ private:
 
 		RID proxy_to;
 		Vector<RID> proxies;
+		Set<RID> lightmap_users;
 
 		RS::TextureDetectCallback detect_3d_callback = nullptr;
 		void *detect_3d_callback_ud = nullptr;
@@ -187,7 +189,6 @@ private:
 
 	struct DecalAtlas {
 		struct Texture {
-
 			int panorama_to_dp_users;
 			int users;
 			Rect2 uv_rect;
@@ -271,7 +272,6 @@ private:
 	/* Mesh */
 
 	struct Mesh {
-
 		struct Surface {
 			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
 			uint32_t format = 0;
@@ -413,7 +413,6 @@ private:
 	/* LIGHT */
 
 	struct Light {
-
 		RS::LightType type;
 		float param[RS::LIGHT_PARAM_MAX];
 		Color color = Color(1, 1, 1, 1);
@@ -422,7 +421,8 @@ private:
 		bool shadow = false;
 		bool negative = false;
 		bool reverse_cull = false;
-		bool use_gi = true;
+		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
+		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
@@ -438,13 +438,12 @@ private:
 	/* REFLECTION PROBE */
 
 	struct ReflectionProbe {
-
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
 		int resolution = 256;
 		float intensity = 1.0;
-		Color interior_ambient;
-		float interior_ambient_energy = 1.0;
-		float interior_ambient_probe_contrib = 0.0;
+		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
+		Color ambient_color;
+		float ambient_color_energy = 1.0;
 		float max_distance = 0;
 		Vector3 extents = Vector3(1, 1, 1);
 		Vector3 origin_offset;
@@ -461,7 +460,6 @@ private:
 	/* DECAL */
 
 	struct Decal {
-
 		Vector3 extents = Vector3(1, 1, 1);
 		RID textures[RS::DECAL_TEXTURE_MAX];
 		float emission_energy = 1.0;
@@ -483,7 +481,6 @@ private:
 	/* GI PROBE */
 
 	struct GIProbe {
-
 		RID octree_buffer;
 		RID data_buffer;
 		RID sdf_texture;
@@ -524,10 +521,42 @@ private:
 
 	mutable RID_Owner<GIProbe> gi_probe_owner;
 
+	/* REFLECTION PROBE */
+
+	struct Lightmap {
+		RID light_texture;
+		bool uses_spherical_harmonics = false;
+		bool interior = false;
+		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
+		int32_t array_index = -1; //unassigned
+		PackedVector3Array points;
+		PackedColorArray point_sh;
+		PackedInt32Array tetrahedra;
+		PackedInt32Array bsp_tree;
+
+		struct BSP {
+			static const int32_t EMPTY_LEAF = INT32_MIN;
+			float plane[4];
+			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
+		};
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	bool using_lightmap_array; //high end uses this
+	/* for high end */
+
+	Vector<RID> lightmap_textures;
+
+	uint64_t lightmap_array_version = 0;
+
+	mutable RID_Owner<Lightmap> lightmap_owner;
+
+	float lightmap_probe_capture_update_speed = 4;
+
 	/* RENDER TARGET */
 
 	struct RenderTarget {
-
 		Size2i size;
 		RID framebuffer;
 		RID color;
@@ -568,7 +597,6 @@ private:
 	/* GLOBAL SHADER VARIABLES */
 
 	struct GlobalVariables {
-
 		enum {
 			BUFFER_DIRTY_REGION_SIZE = 1024
 		};
@@ -653,7 +681,7 @@ public:
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create();
-	virtual RID texture_2d_layered_placeholder_create();
+	virtual RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type);
 	virtual RID texture_3d_placeholder_create();
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const;
@@ -1015,7 +1043,8 @@ public:
 	void light_set_negative(RID p_light, bool p_enable);
 	void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
-	void light_set_use_gi(RID p_light, bool p_enabled);
+	void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode);
+	void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade);
 
 	void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode);
 
@@ -1037,7 +1066,6 @@ public:
 	AABB light_get_aabb(RID p_light) const;
 
 	_FORCE_INLINE_ float light_get_param(RID p_light, RS::LightParam p_param) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
@@ -1045,7 +1073,6 @@ public:
 	}
 
 	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, RID());
 
@@ -1053,7 +1080,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Color light_get_color(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
@@ -1061,7 +1087,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
@@ -1069,7 +1094,6 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
@@ -1077,7 +1101,6 @@ public:
 	}
 
 	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
@@ -1085,7 +1108,6 @@ public:
 	}
 
 	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
@@ -1093,14 +1115,14 @@ public:
 	}
 
 	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 	}
 
-	bool light_get_use_gi(RID p_light);
+	RS::LightBakeMode light_get_bake_mode(RID p_light);
+	uint32_t light_get_max_sdfgi_cascade(RID p_light);
 	uint64_t light_get_version(RID p_light) const;
 
 	/* PROBE API */
@@ -1109,9 +1131,9 @@ public:
 
 	void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode);
 	void reflection_probe_set_intensity(RID p_probe, float p_intensity);
-	void reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient);
-	void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy);
-	void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib);
+	void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode);
+	void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color);
+	void reflection_probe_set_ambient_energy(RID p_probe, float p_energy);
 	void reflection_probe_set_max_distance(RID p_probe, float p_distance);
 	void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents);
 	void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset);
@@ -1133,9 +1155,9 @@ public:
 	float reflection_probe_get_intensity(RID p_probe) const;
 	bool reflection_probe_is_interior(RID p_probe) const;
 	bool reflection_probe_is_box_projection(RID p_probe) const;
-	Color reflection_probe_get_interior_ambient(RID p_probe) const;
-	float reflection_probe_get_interior_ambient_energy(RID p_probe) const;
-	float reflection_probe_get_interior_ambient_probe_contribution(RID p_probe) const;
+	RS::ReflectionProbeAmbientMode reflection_probe_get_ambient_mode(RID p_probe) const;
+	Color reflection_probe_get_ambient_color(RID p_probe) const;
+	float reflection_probe_get_ambient_color_energy(RID p_probe) const;
 
 	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance);
 	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance);
@@ -1270,23 +1292,47 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
-	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
-	void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) {}
-	RID lightmap_capture_create() {
-		return RID();
+	virtual RID lightmap_create();
+
+	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics);
+	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds);
+	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior);
+	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree);
+	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const;
+	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const;
+	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const;
+	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const;
+	virtual AABB lightmap_get_aabb(RID p_lightmap) const;
+	virtual bool lightmap_is_interior(RID p_lightmap) const;
+	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh);
+	virtual void lightmap_set_probe_capture_update_speed(float p_speed);
+	_FORCE_INLINE_ float lightmap_get_probe_capture_update_speed() const {
+		return lightmap_probe_capture_update_speed;
 	}
-	Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
-		return Vector<uint8_t>();
+
+	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
+		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays
+		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		return lm->array_index;
 	}
-	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
-	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const { return Transform(); }
-	void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) {}
-	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
-	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
-	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		return nullptr;
+	_FORCE_INLINE_ bool lightmap_uses_spherical_harmonics(RID p_lightmap) const {
+		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
+		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		return lm->uses_spherical_harmonics;
+	}
+	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
+		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
+		return lightmap_array_version;
+	}
+
+	_FORCE_INLINE_ int lightmap_array_get_size() const {
+		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
+		return lightmap_textures.size();
+	}
+
+	_FORCE_INLINE_ const Vector<RID> &lightmap_array_get_textures() const {
+		ERR_FAIL_COND_V(!using_lightmap_array, lightmap_textures); //only for arrays
+		return lightmap_textures;
 	}
 
 	/* PARTICLES */

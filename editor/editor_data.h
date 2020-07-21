@@ -39,14 +39,12 @@
 #include "scene/resources/texture.h"
 
 class EditorHistory {
-
 	enum {
 
 		HISTORY_MAX = 64
 	};
 
 	struct Obj {
-
 		REF ref;
 		ObjectID object;
 		String property;
@@ -54,7 +52,6 @@ class EditorHistory {
 	};
 
 	struct History {
-
 		Vector<Obj> path;
 		int level;
 	};
@@ -66,7 +63,6 @@ class EditorHistory {
 	//Vector<EditorPlugin*> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -106,10 +102,8 @@ public:
 class EditorSelection;
 
 class EditorData {
-
 public:
 	struct CustomType {
-
 		String name;
 		Ref<Script> script;
 		Ref<Texture2D> icon;
@@ -131,7 +125,6 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 
 	struct PropertyData {
-
 		String name;
 		Variant value;
 	};
@@ -234,7 +227,6 @@ public:
 };
 
 class EditorSelection : public Object {
-
 	GDCLASS(EditorSelection, Object);
 
 private:
@@ -257,15 +249,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	Array get_selected_nodes();
+	TypedArray<Node> get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;
 
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
-		if (!selection.has(p_node))
+		if (!selection.has(p_node)) {
 			return nullptr;
+		}
 		return Object::cast_to<T>(selection[p_node]);
 	}
 

@@ -35,7 +35,6 @@
 // #import <UIKit/UIKit.h>
 
 class VulkanContextIPhone : public VulkanContext {
-
 	virtual const char *_get_platform_surface_extension() const;
 
 public:

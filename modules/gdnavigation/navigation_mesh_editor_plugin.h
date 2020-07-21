@@ -46,8 +46,8 @@ class NavigationMeshEditor : public Control {
 	AcceptDialog *err_dialog;
 
 	HBoxContainer *bake_hbox;
-	ToolButton *button_bake;
-	ToolButton *button_reset;
+	Button *button_bake;
+	Button *button_reset;
 	Label *bake_info;
 
 	NavigationRegion3D *node;
@@ -67,18 +67,17 @@ public:
 };
 
 class NavigationMeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
 
 	NavigationMeshEditor *navigation_mesh_editor;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "NavigationMesh"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "NavigationMesh"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	NavigationMeshEditorPlugin(EditorNode *p_node);
 	~NavigationMeshEditorPlugin();

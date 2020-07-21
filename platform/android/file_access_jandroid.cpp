@@ -44,12 +44,10 @@ jmethodID FileAccessJAndroid::_file_eof = 0;
 jmethodID FileAccessJAndroid::_file_close = 0;
 
 FileAccess *FileAccessJAndroid::create_jandroid() {
-
 	return memnew(FileAccessJAndroid);
 }
 
 Error FileAccessJAndroid::_open(const String &p_path, int p_mode_flags) {
-
 	if (is_open())
 		close();
 
@@ -75,7 +73,6 @@ Error FileAccessJAndroid::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessJAndroid::close() {
-
 	if (!is_open())
 		return;
 
@@ -86,12 +83,10 @@ void FileAccessJAndroid::close() {
 }
 
 bool FileAccessJAndroid::is_open() const {
-
 	return id != 0;
 }
 
 void FileAccessJAndroid::seek(size_t p_position) {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	ERR_FAIL_COND_MSG(!is_open(), "File must be opened before use.");
@@ -99,42 +94,37 @@ void FileAccessJAndroid::seek(size_t p_position) {
 }
 
 void FileAccessJAndroid::seek_end(int64_t p_position) {
-
 	ERR_FAIL_COND_MSG(!is_open(), "File must be opened before use.");
 
 	seek(get_len());
 }
 
 size_t FileAccessJAndroid::get_position() const {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	return env->CallIntMethod(io, _file_tell, id);
 }
 
 size_t FileAccessJAndroid::get_len() const {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	return env->CallIntMethod(io, _file_get_size, id);
 }
 
 bool FileAccessJAndroid::eof_reached() const {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	return env->CallIntMethod(io, _file_eof, id);
 }
 
 uint8_t FileAccessJAndroid::get_8() const {
-
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	uint8_t byte;
 	get_buffer(&byte, 1);
 	return byte;
 }
-int FileAccessJAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 
+int FileAccessJAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	if (p_length == 0)
 		return 0;
@@ -150,7 +140,6 @@ int FileAccessJAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 }
 
 Error FileAccessJAndroid::get_error() const {
-
 	if (eof_reached())
 		return ERR_FILE_EOF;
 	return OK;
@@ -163,7 +152,6 @@ void FileAccessJAndroid::store_8(uint8_t p_dest) {
 }
 
 bool FileAccessJAndroid::file_exists(const String &p_path) {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	String path = fix_path(p_path).simplify_path();
@@ -184,7 +172,6 @@ bool FileAccessJAndroid::file_exists(const String &p_path) {
 }
 
 void FileAccessJAndroid::setup(jobject p_io) {
-
 	io = p_io;
 	JNIEnv *env = ThreadAndroid::get_env();
 
@@ -201,12 +188,10 @@ void FileAccessJAndroid::setup(jobject p_io) {
 }
 
 FileAccessJAndroid::FileAccessJAndroid() {
-
 	id = 0;
 }
 
 FileAccessJAndroid::~FileAccessJAndroid() {
-
 	if (is_open())
 		close();
 }

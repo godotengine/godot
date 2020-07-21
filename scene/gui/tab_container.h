@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
 class TabContainer : public Container {
-
 	GDCLASS(TabContainer, Container);
 
 public:
@@ -58,7 +57,7 @@ private:
 	TabAlign align;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
-	Popup *popup;
+	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled;
 	bool use_hidden_tabs_for_min_size;
 	int tabs_rearrange_group;
@@ -66,6 +65,7 @@ private:
 	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
 	void _on_theme_changed();
+	void _repaint();
 	void _on_mouse_exited();
 	void _update_current_tab();
 
@@ -73,12 +73,12 @@ protected:
 	void _child_renamed_callback();
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
-	virtual void add_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 
-	Variant get_drag_data(const Point2 &p_point);
-	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	void drop_data(const Point2 &p_point, const Variant &p_data);
+	Variant get_drag_data(const Point2 &p_point) override;
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 	static void _bind_methods();
@@ -110,9 +110,9 @@ public:
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const;
+	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;

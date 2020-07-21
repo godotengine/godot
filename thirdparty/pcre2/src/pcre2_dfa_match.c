@@ -173,6 +173,8 @@ static const uint8_t coptable[] = {
   0,                             /* Assert not                             */
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
+  0,                             /* NA assert                              */
+  0,                             /* NA assert behind                       */
   0,                             /* ONCE                                   */
   0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
@@ -248,6 +250,8 @@ static const uint8_t poptable[] = {
   0,                             /* Assert not                             */
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
+  0,                             /* NA assert                              */
+  0,                             /* NA assert behind                       */
   0,                             /* ONCE                                   */
   0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
@@ -962,7 +966,7 @@ for (;;)
       if (ptr >= end_subject)
         {
         if ((mb->moptions & PCRE2_PARTIAL_HARD) != 0)
-          could_continue = TRUE;
+          return PCRE2_ERROR_PARTIAL;
         else { ADD_ACTIVE(state_offset + 1, 0); }
         }
       break;
@@ -1011,10 +1015,12 @@ for (;;)
 
       /*-----------------------------------------------------------------*/
       case OP_EODN:
-      if (clen == 0 && (mb->moptions & PCRE2_PARTIAL_HARD) != 0)
-        could_continue = TRUE;
-      else if (clen == 0 || (IS_NEWLINE(ptr) && ptr == end_subject - mb->nllen))
-        { ADD_ACTIVE(state_offset + 1, 0); }
+      if (clen == 0 || (IS_NEWLINE(ptr) && ptr == end_subject - mb->nllen))
+        {
+        if ((mb->moptions & PCRE2_PARTIAL_HARD) != 0)
+          return PCRE2_ERROR_PARTIAL;
+        ADD_ACTIVE(state_offset + 1, 0);
+        }
       break;
 
       /*-----------------------------------------------------------------*/
@@ -3152,8 +3158,8 @@ for (;;)
 
   /* We have finished the processing at the current subject character. If no
   new states have been set for the next character, we have found all the
-  matches that we are going to find. If we are at the top level and partial
-  matching has been requested, check for appropriate conditions.
+  matches that we are going to find. If partial matching has been requested,
+  check for appropriate conditions.
 
   The "forced_ fail" variable counts the number of (*F) encountered for the
   character. If it is equal to the original active_count (saved in
@@ -3165,22 +3171,24 @@ for (;;)
 
   if (new_count <= 0)
     {
-    if (rlevel == 1 &&                               /* Top level, and */
-        could_continue &&                            /* Some could go on, and */
+    if (could_continue &&                            /* Some could go on, and */
         forced_fail != workspace[1] &&               /* Not all forced fail & */
         (                                            /* either... */
         (mb->moptions & PCRE2_PARTIAL_HARD) != 0      /* Hard partial */
         ||                                           /* or... */
         ((mb->moptions & PCRE2_PARTIAL_SOFT) != 0 &&  /* Soft partial and */
-         match_count < 0)                            /* no matches */
+         match_count < 0)                             /* no matches */
         ) &&                                         /* And... */
         (
-        partial_newline ||                           /* Either partial NL */
-          (                                          /* or ... */
-          ptr >= end_subject &&                /* End of subject and */
-          ptr > mb->start_used_ptr)            /* Inspected non-empty string */
+        partial_newline ||                   /* Either partial NL */
+          (                                  /* or ... */
+          ptr >= end_subject &&              /* End of subject and */
+            (                                  /* either */
+            ptr > mb->start_used_ptr ||        /* Inspected non-empty string */
+            mb->allowemptypartial              /* or pattern has lookbehind */
+            )                                  /* or could match empty */
           )
-        )
+        ))
       match_count = PCRE2_ERROR_PARTIAL;
     break;  /* Exit from loop along the subject string */
     }
@@ -3246,6 +3254,11 @@ BOOL utf, anchored, startline, firstline;
 BOOL has_first_cu = FALSE;
 BOOL has_req_cu = FALSE;
 
+#if PCRE2_CODE_UNIT_WIDTH == 8
+BOOL memchr_not_found_first_cu = FALSE;
+BOOL memchr_not_found_first_cu2 = FALSE;
+#endif
+
 PCRE2_UCHAR first_cu = 0;
 PCRE2_UCHAR first_cu2 = 0;
 PCRE2_UCHAR req_cu = 0;
@@ -3294,6 +3307,11 @@ time. */
 if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0 &&
    ((re->overall_options | options) & PCRE2_ENDANCHORED) != 0)
   return PCRE2_ERROR_BADOPTION;
+
+/* Invalid UTF support is not available for DFA matching. */
+
+if ((re->overall_options & PCRE2_MATCH_INVALID_UTF) != 0)
+  return PCRE2_ERROR_DFA_UINVALID_UTF;
 
 /* Check that the first field in the block is the magic number. If it is not,
 return with PCRE2_ERROR_BADMAGIC. */
@@ -3404,6 +3422,8 @@ mb->tables = re->tables;
 mb->start_subject = subject;
 mb->end_subject = end_subject;
 mb->start_offset = start_offset;
+mb->allowemptypartial = (re->max_lookbehind > 0) ||
+  (re->flags & PCRE2_MATCH_EMPTY) != 0;
 mb->moptions = options;
 mb->poptions = re->overall_options;
 mb->match_call_count = 0;
@@ -3619,7 +3639,10 @@ for (;;)
     /* Not anchored. Advance to a unique first code unit if there is one. In
     8-bit mode, the use of memchr() gives a big speed up, even though we have
     to call it twice in caseless mode, in order to find the earliest occurrence
-    of the character in either of its cases. */
+    of the character in either of its cases. If a call to memchr() that
+    searches the rest of the subject fails to find one case, remember that in
+    order not to keep on repeating the search. This can make a huge difference
+    when the strings are very long and only one case is present. */
 
     else
       {
@@ -3633,11 +3656,29 @@ for (;;)
                 (smc = UCHAR21TEST(start_match)) != first_cu &&
                   smc != first_cu2)
             start_match++;
+
 #else  /* 8-bit code units */
-          PCRE2_SPTR pp1 =
-            memchr(start_match, first_cu, end_subject-start_match);
-          PCRE2_SPTR pp2 =
-            memchr(start_match, first_cu2, end_subject-start_match);
+          PCRE2_SPTR pp1 = NULL;
+          PCRE2_SPTR pp2 = NULL;
+          PCRE2_SIZE cu2size = end_subject - start_match;
+
+          if (!memchr_not_found_first_cu)
+            {
+            pp1 = memchr(start_match, first_cu, end_subject - start_match);
+            if (pp1 == NULL) memchr_not_found_first_cu = TRUE;
+              else cu2size = pp1 - start_match;
+            }
+
+          /* If pp1 is not NULL, we have arranged to search only as far as pp1,
+          to see if the other case is earlier, so we can set "not found" only
+          when both searches have returned NULL. */
+
+          if (!memchr_not_found_first_cu2)
+            {
+            pp2 = memchr(start_match, first_cu2, cu2size);
+            memchr_not_found_first_cu2 = (pp2 == NULL && pp1 == NULL);
+            }
+
           if (pp1 == NULL)
             start_match = (pp2 == NULL)? end_subject : pp2;
           else
@@ -3653,7 +3694,7 @@ for (;;)
           while (start_match < end_subject && UCHAR21TEST(start_match) !=
                  first_cu)
             start_match++;
-#else
+#else  /* 8-bit code units */
           start_match = memchr(start_match, first_cu, end_subject - start_match);
           if (start_match == NULL) start_match = end_subject;
 #endif
@@ -3740,6 +3781,8 @@ for (;;)
 
     if ((mb->moptions & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) == 0)
       {
+      PCRE2_SPTR p;
+
       /* The minimum matching length is a lower bound; no actual string of that
       length may actually match the pattern. Although the value is, strictly,
       in characters, we treat it as code units to avoid spending too much time
@@ -3753,37 +3796,63 @@ for (;;)
       point. This optimization can save a huge amount of backtracking in
       patterns with nested unlimited repeats that aren't going to match.
       Writing separate code for cased/caseless versions makes it go faster, as
-      does using an autoincrement and backing off on a match.
+      does using an autoincrement and backing off on a match. As in the case of
+      the first code unit, using memchr() in the 8-bit library gives a big
+      speed up. Unlike the first_cu check above, we do not need to call
+      memchr() twice in the caseless case because we only need to check for the
+      presence of the character in either case, not find the first occurrence.
+
+      The search can be skipped if the code unit was found later than the
+      current starting point in a previous iteration of the bumpalong loop.
 
       HOWEVER: when the subject string is very, very long, searching to its end
       can take a long time, and give bad performance on quite ordinary
       patterns. This showed up when somebody was matching something like
       /^\d+C/ on a 32-megabyte string... so we don't do this when the string is
-      sufficiently long. */
+      sufficiently long, but it's worth searching a lot more for unanchored
+      patterns. */
 
-      if (has_req_cu && end_subject - start_match < REQ_CU_MAX)
+      p = start_match + (has_first_cu? 1:0);
+      if (has_req_cu && p > req_cu_ptr)
         {
-        PCRE2_SPTR p = start_match + (has_first_cu? 1:0);
+        PCRE2_SIZE check_length = end_subject - start_match;
 
-        /* We don't need to repeat the search if we haven't yet reached the
-        place we found it at last time. */
-
-        if (p > req_cu_ptr)
+        if (check_length < REQ_CU_MAX ||
+              (!anchored && check_length < REQ_CU_MAX * 1000))
           {
-          if (req_cu != req_cu2)
+          if (req_cu != req_cu2)  /* Caseless */
             {
+#if PCRE2_CODE_UNIT_WIDTH != 8
             while (p < end_subject)
               {
               uint32_t pp = UCHAR21INCTEST(p);
               if (pp == req_cu || pp == req_cu2) { p--; break; }
               }
+#else  /* 8-bit code units */
+            PCRE2_SPTR pp = p;
+            p = memchr(pp, req_cu, end_subject - pp);
+            if (p == NULL)
+              {
+              p = memchr(pp, req_cu2, end_subject - pp);
+              if (p == NULL) p = end_subject;
+              }
+#endif /* PCRE2_CODE_UNIT_WIDTH != 8 */
             }
+
+          /* The caseful case */
+
           else
             {
+#if PCRE2_CODE_UNIT_WIDTH != 8
             while (p < end_subject)
               {
               if (UCHAR21INCTEST(p) == req_cu) { p--; break; }
               }
+
+#else  /* 8-bit code units */
+            p = memchr(p, req_cu, end_subject - p);
+            if (p == NULL) p = end_subject;
+#endif
             }
 
           /* If we can't find the required code unit, break the matching loop,

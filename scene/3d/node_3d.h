@@ -35,7 +35,6 @@
 #include "scene/main/scene_tree.h"
 
 class Node3DGizmo : public Reference {
-
 	GDCLASS(Node3DGizmo, Reference);
 
 public:
@@ -50,7 +49,6 @@ public:
 };
 
 class Node3D : public Node {
-
 	GDCLASS(Node3D, Node);
 	OBJ_CATEGORY("3D");
 
@@ -64,7 +62,6 @@ class Node3D : public Node {
 	mutable SelfList<Node> xform_change;
 
 	struct Data {
-
 		mutable Transform global_transform;
 		mutable Transform local_transform;
 		mutable Vector3 rotation;
@@ -124,7 +121,7 @@ public:
 
 	Node3D *get_parent_spatial() const;
 
-	Ref<World3D> get_world() const;
+	Ref<World3D> get_world_3d() const;
 
 	void set_translation(const Vector3 &p_translation);
 	void set_rotation(const Vector3 &p_euler_rad);

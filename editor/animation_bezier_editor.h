@@ -34,7 +34,6 @@
 #include "animation_track_editor.h"
 
 class AnimationBezierTrackEdit : public Control {
-
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
 	enum HandleMode {
@@ -112,7 +111,6 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-
 		int track;
 		float time;
 		Variant key;
@@ -145,12 +143,12 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	Ref<Animation> get_animation() const;
 
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);

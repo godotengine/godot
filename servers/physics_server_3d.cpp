@@ -37,7 +37,6 @@
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
 
 void PhysicsDirectBodyState3D::integrate_forces() {
-
 	real_t step = get_step();
 	Vector3 lv = get_linear_velocity();
 	lv += get_total_gravity() * step;
@@ -46,13 +45,15 @@ void PhysicsDirectBodyState3D::integrate_forces() {
 
 	float linear_damp = 1.0 - step * get_total_linear_damp();
 
-	if (linear_damp < 0) // reached zero in the given time
+	if (linear_damp < 0) { // reached zero in the given time
 		linear_damp = 0;
+	}
 
 	float angular_damp = 1.0 - step * get_total_angular_damp();
 
-	if (angular_damp < 0) // reached zero in the given time
+	if (angular_damp < 0) { // reached zero in the given time
 		angular_damp = 0;
+	}
 
 	lv *= linear_damp;
 	av *= angular_damp;
@@ -62,19 +63,16 @@ void PhysicsDirectBodyState3D::integrate_forces() {
 }
 
 Object *PhysicsDirectBodyState3D::get_contact_collider_object(int p_contact_idx) const {
-
 	ObjectID objid = get_contact_collider_id(p_contact_idx);
 	Object *obj = ObjectDB::get_instance(objid);
 	return obj;
 }
 
 PhysicsServer3D *PhysicsServer3D::get_singleton() {
-
 	return singleton;
 }
 
 void PhysicsDirectBodyState3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_total_gravity"), &PhysicsDirectBodyState3D::get_total_gravity);
 	ClassDB::bind_method(D_METHOD("get_total_linear_damp"), &PhysicsDirectBodyState3D::get_total_linear_damp);
 	ClassDB::bind_method(D_METHOD("get_total_angular_damp"), &PhysicsDirectBodyState3D::get_total_angular_damp);
@@ -94,12 +92,12 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &PhysicsDirectBodyState3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &PhysicsDirectBodyState3D::get_transform);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState3D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState3D::add_force);
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState3D::add_central_force, Vector3());
+	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState3D::add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState3D::add_torque);
-	ClassDB::bind_method(D_METHOD("apply_central_impulse", "j"), &PhysicsDirectBodyState3D::apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "j"), &PhysicsDirectBodyState3D::apply_impulse);
-	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "j"), &PhysicsDirectBodyState3D::apply_torque_impulse);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicsDirectBodyState3D::apply_central_impulse, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &PhysicsDirectBodyState3D::apply_impulse, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &PhysicsDirectBodyState3D::apply_torque_impulse);
 
 	ClassDB::bind_method(D_METHOD("set_sleep_state", "enabled"), &PhysicsDirectBodyState3D::set_sleep_state);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &PhysicsDirectBodyState3D::is_sleeping);
@@ -138,59 +136,59 @@ PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
 
 ///////////////////////////////////////////////////////
 
-void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape) {
+void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape_ref) {
+	ERR_FAIL_COND(p_shape_ref.is_null());
+	shape_ref = p_shape_ref;
+	shape = p_shape_ref->get_rid();
+}
 
-	ERR_FAIL_COND(p_shape.is_null());
-	shape = p_shape->get_rid();
+RES PhysicsShapeQueryParameters3D::get_shape() const {
+	return shape_ref;
 }
 
 void PhysicsShapeQueryParameters3D::set_shape_rid(const RID &p_shape) {
-
-	shape = p_shape;
+	if (shape != p_shape) {
+		shape_ref = RES();
+		shape = p_shape;
+	}
 }
 
 RID PhysicsShapeQueryParameters3D::get_shape_rid() const {
-
 	return shape;
 }
 
 void PhysicsShapeQueryParameters3D::set_transform(const Transform &p_transform) {
-
 	transform = p_transform;
 }
-Transform PhysicsShapeQueryParameters3D::get_transform() const {
 
+Transform PhysicsShapeQueryParameters3D::get_transform() const {
 	return transform;
 }
 
 void PhysicsShapeQueryParameters3D::set_margin(float p_margin) {
-
 	margin = p_margin;
 }
 
 float PhysicsShapeQueryParameters3D::get_margin() const {
-
 	return margin;
 }
 
 void PhysicsShapeQueryParameters3D::set_collision_mask(int p_collision_mask) {
-
 	collision_mask = p_collision_mask;
 }
-int PhysicsShapeQueryParameters3D::get_collision_mask() const {
 
+int PhysicsShapeQueryParameters3D::get_collision_mask() const {
 	return collision_mask;
 }
 
 void PhysicsShapeQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
-
 	exclude.clear();
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 }
 
 Vector<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
-
 	Vector<RID> ret;
 	ret.resize(exclude.size());
 	int idx = 0;
@@ -217,8 +215,8 @@ bool PhysicsShapeQueryParameters3D::is_collide_with_areas_enabled() const {
 }
 
 void PhysicsShapeQueryParameters3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &PhysicsShapeQueryParameters3D::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"), &PhysicsShapeQueryParameters3D::get_shape);
 	ClassDB::bind_method(D_METHOD("set_shape_rid", "shape"), &PhysicsShapeQueryParameters3D::set_shape_rid);
 	ClassDB::bind_method(D_METHOD("get_shape_rid"), &PhysicsShapeQueryParameters3D::get_shape_rid);
 
@@ -243,7 +241,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_NONE, itos(Variant::_RID) + ":"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01"), "set_margin", "get_margin");
-	//ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", ""); // FIXME: Lacks a getter
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "shape_rid"), "set_shape_rid", "get_shape_rid");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
@@ -251,7 +249,6 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 }
 
 PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
-
 	margin = 0;
 	collision_mask = 0x7FFFFFFF;
 	collide_with_bodies = true;
@@ -261,16 +258,17 @@ PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
 /////////////////////////////////////
 
 Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-
 	RayResult inters;
 	Set<RID> exclude;
-	for (int i = 0; i < p_exclude.size(); i++)
+	for (int i = 0; i < p_exclude.size(); i++) {
 		exclude.insert(p_exclude[i]);
+	}
 
 	bool res = intersect_ray(p_from, p_to, inters, exclude, p_collision_mask, p_collide_with_bodies, p_collide_with_areas);
 
-	if (!res)
+	if (!res) {
 		return Dictionary();
+	}
 
 	Dictionary d;
 	d["position"] = inters.position;
@@ -284,7 +282,6 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Vector3 &p_from, cons
 }
 
 Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
 	Vector<ShapeResult> sr;
@@ -293,7 +290,6 @@ Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 	Array ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
-
 		Dictionary d;
 		d["rid"] = sr[i].rid;
 		d["collider_id"] = sr[i].collider_id;
@@ -306,45 +302,48 @@ Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 }
 
 Array PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, const Vector3 &p_motion) {
-
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
-	float closest_safe, closest_unsafe;
+	float closest_safe = 1.0f, closest_unsafe = 1.0f;
 	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res)
+	if (!res) {
 		return Array();
+	}
 	Array ret;
 	ret.resize(2);
 	ret[0] = closest_safe;
 	ret[1] = closest_unsafe;
 	return ret;
 }
-Array PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
 
+Array PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
 	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
-	if (!res)
+	if (!res) {
 		return Array();
+	}
 	Array r;
 	r.resize(rc * 2);
-	for (int i = 0; i < rc * 2; i++)
+	for (int i = 0; i < rc * 2; i++) {
 		r[i] = ret[i];
+	}
 	return r;
 }
-Dictionary PhysicsDirectSpaceState3D::_get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
 
+Dictionary PhysicsDirectSpaceState3D::_get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
 
 	ShapeRestInfo sri;
 
 	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
 	Dictionary r;
-	if (!res)
+	if (!res) {
 		return r;
+	}
 
 	r["point"] = sri.point;
 	r["normal"] = sri.normal;
@@ -360,7 +359,6 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState3D::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "shape", "motion"), &PhysicsDirectSpaceState3D::_cast_motion);
@@ -369,23 +367,22 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 }
 
 int PhysicsShapeQueryResult3D::get_result_count() const {
-
 	return result.size();
 }
-RID PhysicsShapeQueryResult3D::get_result_rid(int p_idx) const {
 
+RID PhysicsShapeQueryResult3D::get_result_rid(int p_idx) const {
 	return result[p_idx].rid;
 }
-ObjectID PhysicsShapeQueryResult3D::get_result_object_id(int p_idx) const {
 
+ObjectID PhysicsShapeQueryResult3D::get_result_object_id(int p_idx) const {
 	return result[p_idx].collider_id;
 }
-Object *PhysicsShapeQueryResult3D::get_result_object(int p_idx) const {
 
+Object *PhysicsShapeQueryResult3D::get_result_object(int p_idx) const {
 	return result[p_idx].collider;
 }
-int PhysicsShapeQueryResult3D::get_result_object_shape(int p_idx) const {
 
+int PhysicsShapeQueryResult3D::get_result_object_shape(int p_idx) const {
 	return result[p_idx].shape;
 }
 
@@ -393,7 +390,6 @@ PhysicsShapeQueryResult3D::PhysicsShapeQueryResult3D() {
 }
 
 void PhysicsShapeQueryResult3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_result_count"), &PhysicsShapeQueryResult3D::get_result_count);
 	ClassDB::bind_method(D_METHOD("get_result_rid", "idx"), &PhysicsShapeQueryResult3D::get_result_rid);
 	ClassDB::bind_method(D_METHOD("get_result_object_id", "idx"), &PhysicsShapeQueryResult3D::get_result_object_id);
@@ -404,7 +400,6 @@ void PhysicsShapeQueryResult3D::_bind_methods() {
 ///////////////////////////////////////
 
 void PhysicsServer3D::_bind_methods() {
-
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("shape_create", "type"), &PhysicsServer3D::shape_create);
@@ -500,11 +495,11 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer3D::body_get_state);
 
 	ClassDB::bind_method(D_METHOD("body_add_central_force", "body", "force"), &PhysicsServer3D::body_add_central_force);
-	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer3D::body_add_force);
+	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer3D::body_add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("body_add_torque", "body", "torque"), &PhysicsServer3D::body_add_torque);
 
 	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &PhysicsServer3D::body_apply_central_impulse);
-	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "position", "impulse"), &PhysicsServer3D::body_apply_impulse);
+	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "impulse", "position"), &PhysicsServer3D::body_apply_impulse, Vector3());
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer3D::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &PhysicsServer3D::body_set_axis_velocity);
 
@@ -724,13 +719,11 @@ void PhysicsServer3D::_bind_methods() {
 }
 
 PhysicsServer3D::PhysicsServer3D() {
-
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
 
 PhysicsServer3D::~PhysicsServer3D() {
-
 	singleton = nullptr;
 }
 
@@ -740,7 +733,6 @@ int PhysicsServer3DManager::default_server_priority = -1;
 const String PhysicsServer3DManager::setting_property_name("physics/3d/physics_engine");
 
 void PhysicsServer3DManager::on_servers_changed() {
-
 	String physics_servers2("DEFAULT");
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
 		physics_servers2 += "," + get_server_name(i);
@@ -749,7 +741,6 @@ void PhysicsServer3DManager::on_servers_changed() {
 }
 
 void PhysicsServer3DManager::register_server(const String &p_name, CreatePhysicsServer3DCallback p_creat_callback) {
-
 	ERR_FAIL_COND(!p_creat_callback);
 	ERR_FAIL_COND(find_server_id(p_name) != -1);
 	physics_servers.push_back(ClassInfo(p_name, p_creat_callback));
@@ -757,7 +748,6 @@ void PhysicsServer3DManager::register_server(const String &p_name, CreatePhysics
 }
 
 void PhysicsServer3DManager::set_default_server(const String &p_name, int p_priority) {
-
 	const int id = find_server_id(p_name);
 	ERR_FAIL_COND(id == -1); // Not found
 	if (default_server_priority < p_priority) {
@@ -767,7 +757,6 @@ void PhysicsServer3DManager::set_default_server(const String &p_name, int p_prio
 }
 
 int PhysicsServer3DManager::find_server_id(const String &p_name) {
-
 	for (int i = physics_servers.size() - 1; 0 <= i; --i) {
 		if (p_name == physics_servers[i].name) {
 			return i;

@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-/* clang-format on */
 
 #define FLAG_HORIZONTAL (1 << 0)
 #define FLAG_USE_BLUR_SECTION (1 << 1)
@@ -39,7 +37,13 @@ layout(push_constant, binding = 1, std430) uniform Params {
 }
 params;
 
+#ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA
+layout(set = 0, binding = 0) uniform samplerCubeArray source_color;
+#elif defined(MODE_CUBEMAP_TO_PANORAMA)
+layout(set = 0, binding = 0) uniform samplerCube source_color;
+#else
 layout(set = 0, binding = 0) uniform sampler2D source_color;
+#endif
 
 #ifdef GLOW_USE_AUTO_EXPOSURE
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
@@ -54,10 +58,9 @@ layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_bu
 #endif
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThan(pos, params.section.zw))) { //too large, do nothing
+	if (any(greaterThanEqual(pos, params.section.zw))) { //too large, do nothing
 		return;
 	}
 
@@ -78,7 +81,6 @@ void main() {
 	//Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
 
 	if (bool(params.flags & FLAG_HORIZONTAL)) {
-
 		ivec2 base_pos = (pos + params.section.xy) << 1;
 		vec4 color = texelFetch(source_color, base_pos + ivec2(0, 0), 0) * 0.214607;
 		color += texelFetch(source_color, base_pos + ivec2(1, 0), 0) * 0.189879;
@@ -89,7 +91,6 @@ void main() {
 		color += texelFetch(source_color, base_pos + ivec2(-3, 0), 0) * 0.071303;
 		imageStore(dest_buffer, pos + params.target, color);
 	} else {
-
 		ivec2 base_pos = (pos + params.section.xy);
 		vec4 color = texelFetch(source_color, base_pos + ivec2(0, 0), 0) * 0.38774;
 		color += texelFetch(source_color, base_pos + ivec2(0, 1), 0) * 0.24477;
@@ -115,7 +116,6 @@ void main() {
 	vec4 color = vec4(0.0);
 
 	if (bool(params.flags & FLAG_HORIZONTAL)) {
-
 		ivec2 base_pos = (pos + params.section.xy) << 1;
 		ivec2 section_begin = params.section.xy << 1;
 		ivec2 section_end = section_begin + (params.section.zw << 1);
@@ -129,7 +129,6 @@ void main() {
 		GLOW_ADD(ivec2(-3, 0), 0.106595);
 		color *= params.glow_strength;
 	} else {
-
 		ivec2 base_pos = pos + params.section.xy;
 		ivec2 section_begin = params.section.xy;
 		ivec2 section_end = section_begin + params.section.zw;
@@ -215,6 +214,27 @@ void main() {
 		pos.y = params.section.w - pos.y - 1;
 	}
 
+	imageStore(dest_buffer, pos + params.target, color);
+#endif
+
+#if defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
+
+	const float PI = 3.14159265359;
+	vec2 uv = vec2(pos) / vec2(params.section.zw);
+	uv.y = 1.0 - uv.y;
+	float phi = uv.x * 2.0 * PI;
+	float theta = uv.y * PI;
+
+	vec3 normal;
+	normal.x = sin(phi) * sin(theta) * -1.0;
+	normal.y = cos(theta);
+	normal.z = cos(phi) * sin(theta) * -1.0;
+
+#ifdef MODE_CUBEMAP_TO_PANORAMA
+	vec4 color = textureLod(source_color, normal, params.camera_z_far); //the biggest the lod the least the acne
+#else
+	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
+#endif
 	imageStore(dest_buffer, pos + params.target, color);
 #endif
 }

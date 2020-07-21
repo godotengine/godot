@@ -1,15 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
-
-
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
-/* clang-format on */
 
 #ifdef USE_25_SAMPLES
 const int kernel_size = 13;
@@ -93,7 +88,6 @@ const vec4 skin_kernel[kernel_size] = vec4[](
 #endif //USE_11_SAMPLES
 
 layout(push_constant, binding = 1, std430) uniform Params {
-
 	ivec2 screen_size;
 	float camera_z_far;
 	float camera_z_near;
@@ -113,7 +107,6 @@ layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_im
 layout(set = 2, binding = 0) uniform sampler2D source_depth;
 
 void do_filter(inout vec3 color_accum, inout vec3 divisor, vec2 uv, vec2 step, bool p_skin) {
-
 	// Accumulate the other samples:
 	for (int i = 1; i < kernel_size; i++) {
 		// Fetch color and depth for current sample:
@@ -138,11 +131,10 @@ void do_filter(inout vec3 color_accum, inout vec3 divisor, vec2 uv, vec2 step, b
 }
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
-	if (any(greaterThan(ssC, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
 		return;
 	}
 
@@ -153,7 +145,6 @@ void main() {
 	float strength = abs(base_color.a);
 
 	if (strength > 0.0) {
-
 		vec2 dir = params.vertical ? vec2(0.0, 1.0) : vec2(1.0, 0.0);
 
 		// Fetch linear depth of current pixel:

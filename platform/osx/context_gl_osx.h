@@ -41,7 +41,6 @@
 #include <CoreVideo/CoreVideo.h>
 
 class ContextGL_OSX {
-
 	bool opengl_3_context;
 	bool use_vsync;
 

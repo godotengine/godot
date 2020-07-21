@@ -70,7 +70,6 @@ public:
 };
 
 class SceneTree : public MainLoop {
-
 	_THREAD_SAFE_CLASS_
 
 	GDCLASS(SceneTree, MainLoop);
@@ -80,7 +79,6 @@ public:
 
 private:
 	struct Group {
-
 		Vector<Node *> nodes;
 		//uint64_t last_tree_version;
 		bool changed;
@@ -112,14 +110,12 @@ private:
 	StringName node_renamed_name;
 
 	int64_t current_frame;
-	int64_t current_event;
 	int node_count;
 
 #ifdef TOOLS_ENABLED
 	Node *edited_scene_root;
 #endif
 	struct UGCall {
-
 		StringName group;
 		StringName call;
 
@@ -242,12 +238,12 @@ public:
 
 	void flush_transform_notifications();
 
-	virtual void init();
+	virtual void init() override;
 
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
+	virtual bool iteration(float p_time) override;
+	virtual bool idle(float p_time) override;
 
-	virtual void finish();
+	virtual void finish() override;
 
 	void set_auto_accept_quit(bool p_enable);
 	void set_quit_on_go_back(bool p_enable);
@@ -303,7 +299,6 @@ public:
 	int get_collision_debug_contact_count() { return collision_debug_contacts; }
 
 	int64_t get_frame() const;
-	int64_t get_event_count() const;
 
 	int get_node_count() const;
 
@@ -331,7 +326,7 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	//network API
 

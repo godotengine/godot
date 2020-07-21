@@ -35,7 +35,6 @@
 #include "scene/3d/physics_body_3d.h"
 
 class Joint3D : public Node3D {
-
 	GDCLASS(Joint3D, Node3D);
 
 	RID ba, bb;
@@ -77,7 +76,6 @@ public:
 ///////////////////////////////////////////
 
 class PinJoint3D : public Joint3D {
-
 	GDCLASS(PinJoint3D, Joint3D);
 
 public:
@@ -89,7 +87,7 @@ public:
 
 protected:
 	float params[3];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -102,7 +100,6 @@ public:
 VARIANT_ENUM_CAST(PinJoint3D::Param);
 
 class HingeJoint3D : public Joint3D {
-
 	GDCLASS(HingeJoint3D, Joint3D);
 
 public:
@@ -127,7 +124,7 @@ public:
 protected:
 	float params[PARAM_MAX];
 	bool flags[FLAG_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 	void _set_upper_limit(float p_limit);
@@ -150,7 +147,6 @@ VARIANT_ENUM_CAST(HingeJoint3D::Param);
 VARIANT_ENUM_CAST(HingeJoint3D::Flag);
 
 class SliderJoint3D : public Joint3D {
-
 	GDCLASS(SliderJoint3D, Joint3D);
 
 public:
@@ -190,7 +186,7 @@ protected:
 	float _get_lower_limit_angular() const;
 
 	float params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -203,7 +199,6 @@ public:
 VARIANT_ENUM_CAST(SliderJoint3D::Param);
 
 class ConeTwistJoint3D : public Joint3D {
-
 	GDCLASS(ConeTwistJoint3D, Joint3D);
 
 public:
@@ -225,7 +220,7 @@ protected:
 	float _get_twist_span() const;
 
 	float params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -238,7 +233,6 @@ public:
 VARIANT_ENUM_CAST(ConeTwistJoint3D::Param);
 
 class Generic6DOFJoint3D : public Joint3D {
-
 	GDCLASS(Generic6DOFJoint3D, Joint3D);
 
 public:
@@ -305,9 +299,9 @@ protected:
 	float params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
-	int precision;
+	int precision = 1;
 
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:

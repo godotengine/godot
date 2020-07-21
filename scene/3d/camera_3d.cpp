@@ -35,20 +35,18 @@
 #include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
+
 void Camera3D::_update_audio_listener_state() {
 }
 
 void Camera3D::_request_camera_update() {
-
 	_update_camera();
 }
 
 void Camera3D::_update_camera_mode() {
-
 	force_change = true;
 	switch (mode) {
 		case PROJECTION_PERSPECTIVE: {
-
 			set_perspective(fov, near, far);
 
 		} break;
@@ -78,9 +76,9 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void Camera3D::_update_camera() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	RenderingServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 
@@ -90,22 +88,20 @@ void Camera3D::_update_camera() {
 		get_viewport()->_camera_transform_changed_notify();
 	*/
 
-	if (get_tree()->is_node_being_edited(this) || !is_current())
+	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
+	}
 
 	get_viewport()->_camera_transform_changed_notify();
 
-	if (get_world().is_valid()) {
-		get_world()->_update_camera(this);
+	if (get_world_3d().is_valid()) {
+		get_world_3d()->_update_camera(this);
 	}
 }
 
 void Camera3D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_WORLD: {
-
 			// Needs to track the Viewport  because it's needed on NOTIFICATION_EXIT_WORLD
 			// and Spatial will handle it first, including clearing its reference to the Viewport,
 			// therefore making it impossible to subclasses to access it
@@ -113,19 +109,18 @@ void Camera3D::_notification(int p_what) {
 			ERR_FAIL_COND(!viewport);
 
 			bool first_camera = viewport->_camera_add(this);
-			if (current || first_camera)
+			if (current || first_camera) {
 				viewport->_camera_set(this);
+			}
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
 					clear_current();
@@ -144,19 +139,18 @@ void Camera3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_BECAME_CURRENT: {
 			if (viewport) {
-				viewport->find_world()->_register_camera(this);
+				viewport->find_world_3d()->_register_camera(this);
 			}
 		} break;
 		case NOTIFICATION_LOST_CURRENT: {
 			if (viewport) {
-				viewport->find_world()->_remove_camera(this);
+				viewport->find_world_3d()->_remove_camera(this);
 			}
 		} break;
 	}
 }
 
 Transform Camera3D::get_camera_transform() const {
-
 	Transform tr = get_global_transform().orthonormalized();
 	tr.origin += tr.basis.get_axis(1) * v_offset;
 	tr.origin += tr.basis.get_axis(0) * h_offset;
@@ -164,9 +158,9 @@ Transform Camera3D::get_camera_transform() const {
 }
 
 void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
-
-	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE)
+	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE) {
 		return;
+	}
 
 	fov = p_fovy_degrees;
 	near = p_z_near;
@@ -177,10 +171,11 @@ void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_f
 	update_gizmo();
 	force_change = false;
 }
-void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 
-	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL)
+void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
+	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL) {
 		return;
+	}
 
 	size = p_size;
 
@@ -194,8 +189,9 @@ void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 }
 
 void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
-	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM)
+	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM) {
 		return;
+	}
 
 	size = p_size;
 	frustum_offset = p_offset;
@@ -218,16 +214,15 @@ void Camera3D::set_projection(Camera3D::Projection p_mode) {
 }
 
 RID Camera3D::get_camera() const {
-
 	return camera;
 };
 
 void Camera3D::make_current() {
-
 	current = true;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	get_viewport()->_camera_set(this);
 
@@ -235,10 +230,10 @@ void Camera3D::make_current() {
 }
 
 void Camera3D::clear_current(bool p_enable_next) {
-
 	current = false;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (get_viewport()->get_camera() == this) {
 		get_viewport()->_camera_set(nullptr);
@@ -258,27 +253,23 @@ void Camera3D::set_current(bool p_current) {
 }
 
 bool Camera3D::is_current() const {
-
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
-
 		return get_viewport()->get_camera() == this;
-	} else
+	} else {
 		return current;
+	}
 }
 
 bool Camera3D::_can_gizmo_scale() const {
-
 	return false;
 }
 
 Vector3 Camera3D::project_ray_normal(const Point2 &p_pos) const {
-
 	Vector3 ray = project_local_ray_normal(p_pos);
 	return get_camera_transform().basis.xform(ray).normalized();
 };
 
 Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
-
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
@@ -286,7 +277,6 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
-
 		ray = Vector3(0, 0, -1);
 	} else {
 		CameraMatrix cm;
@@ -299,7 +289,6 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 };
 
 Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
-
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
@@ -307,10 +296,8 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
 
 	if (mode == PROJECTION_PERSPECTIVE) {
-
 		return get_camera_transform().origin;
 	} else {
-
 		Vector2 pos = cpos / viewport_size;
 		float vsize, hsize;
 		if (keep_aspect == KEEP_WIDTH) {
@@ -331,10 +318,9 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 };
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
-
 	Transform t = get_global_transform();
-	Vector3 eyedir = -get_global_transform().basis.get_axis(2).normalized();
-	return eyedir.dot(p_pos) < (eyedir.dot(t.origin) + near);
+	Vector3 eyedir = -t.basis.get_axis(2).normalized();
+	return eyedir.dot(p_pos - t.origin) < near;
 }
 
 Vector<Vector3> Camera3D::get_near_plane_points() const {
@@ -344,10 +330,11 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 
 	CameraMatrix cm;
 
-	if (mode == PROJECTION_ORTHOGONAL)
+	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	Vector3 endpoints[8];
 	cm.get_endpoints(Transform(), endpoints);
@@ -361,17 +348,17 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 }
 
 Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
-
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	CameraMatrix cm;
 
-	if (mode == PROJECTION_ORTHOGONAL)
+	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -386,7 +373,6 @@ Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 }
 
 Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const {
-
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	if (p_z_depth == 0 && mode != PROJECTION_ORTHOGONAL) {
@@ -396,10 +382,11 @@ Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const
 
 	CameraMatrix cm;
 
-	if (mode == PROJECTION_ORTHOGONAL)
+	if (mode == PROJECTION_ORTHOGONAL) {
 		cm.set_orthogonal(size, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_perspective(fov, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -414,32 +401,30 @@ Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const
 }
 
 void Camera3D::set_environment(const Ref<Environment> &p_environment) {
-
 	environment = p_environment;
-	if (environment.is_valid())
+	if (environment.is_valid()) {
 		RS::get_singleton()->camera_set_environment(camera, environment->get_rid());
-	else
+	} else {
 		RS::get_singleton()->camera_set_environment(camera, RID());
+	}
 	_update_camera_mode();
 }
 
 Ref<Environment> Camera3D::get_environment() const {
-
 	return environment;
 }
 
 void Camera3D::set_effects(const Ref<CameraEffects> &p_effects) {
-
 	effects = p_effects;
-	if (effects.is_valid())
+	if (effects.is_valid()) {
 		RS::get_singleton()->camera_set_camera_effects(camera, effects->get_rid());
-	else
+	} else {
 		RS::get_singleton()->camera_set_camera_effects(camera, RID());
+	}
 	_update_camera_mode();
 }
 
 Ref<CameraEffects> Camera3D::get_effects() const {
-
 	return effects;
 }
 
@@ -451,14 +436,13 @@ void Camera3D::set_keep_aspect_mode(KeepAspect p_aspect) {
 }
 
 Camera3D::KeepAspect Camera3D::get_keep_aspect_mode() const {
-
 	return keep_aspect;
 }
 
 void Camera3D::set_doppler_tracking(DopplerTracking p_tracking) {
-
-	if (doppler_tracking == p_tracking)
+	if (doppler_tracking == p_tracking) {
 		return;
+	}
 
 	doppler_tracking = p_tracking;
 	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
@@ -475,7 +459,6 @@ Camera3D::DopplerTracking Camera3D::get_doppler_tracking() const {
 }
 
 void Camera3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("project_ray_normal", "screen_point"), &Camera3D::project_ray_normal);
 	ClassDB::bind_method(D_METHOD("project_local_ray_normal", "screen_point"), &Camera3D::project_local_ray_normal);
 	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera3D::project_ray_origin);
@@ -552,17 +535,14 @@ void Camera3D::_bind_methods() {
 }
 
 float Camera3D::get_fov() const {
-
 	return fov;
 }
 
 float Camera3D::get_size() const {
-
 	return size;
 }
 
 float Camera3D::get_znear() const {
-
 	return near;
 }
 
@@ -571,12 +551,10 @@ Vector2 Camera3D::get_frustum_offset() const {
 }
 
 float Camera3D::get_zfar() const {
-
 	return far;
 }
 
 Camera3D::Projection Camera3D::get_projection() const {
-
 	return mode;
 }
 
@@ -616,7 +594,6 @@ void Camera3D::set_cull_mask(uint32_t p_layers) {
 }
 
 uint32_t Camera3D::get_cull_mask() const {
-
 	return layers;
 }
 
@@ -635,27 +612,25 @@ bool Camera3D::get_cull_mask_bit(int p_layer) const {
 }
 
 Vector<Plane> Camera3D::get_frustum() const {
-
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm;
-	if (mode == PROJECTION_PERSPECTIVE)
+	if (mode == PROJECTION_PERSPECTIVE) {
 		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	else
+	} else {
 		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	}
 
 	return cm.get_projection_planes(get_camera_transform());
 }
 
 void Camera3D::set_v_offset(float p_offset) {
-
 	v_offset = p_offset;
 	_update_camera();
 }
 
 float Camera3D::get_v_offset() const {
-
 	return v_offset;
 }
 
@@ -665,20 +640,18 @@ void Camera3D::set_h_offset(float p_offset) {
 }
 
 float Camera3D::get_h_offset() const {
-
 	return h_offset;
 }
 
 Vector3 Camera3D::get_doppler_tracked_velocity() const {
-
 	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 		return velocity_tracker->get_tracked_linear_velocity();
 	} else {
 		return Vector3();
 	}
 }
-Camera3D::Camera3D() {
 
+Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
 	size = 1;
 	fov = 0;
@@ -689,7 +662,7 @@ Camera3D::Camera3D() {
 	viewport = nullptr;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
-	set_perspective(70.0, 0.05, 100.0);
+	set_perspective(75.0, 0.05, 100.0);
 	keep_aspect = KEEP_HEIGHT;
 	layers = 0xfffff;
 	v_offset = 0;
@@ -703,7 +676,6 @@ Camera3D::Camera3D() {
 }
 
 Camera3D::~Camera3D() {
-
 	RenderingServer::get_singleton()->free(camera);
 }
 
@@ -712,11 +684,12 @@ Camera3D::~Camera3D() {
 void ClippedCamera3D::set_margin(float p_margin) {
 	margin = p_margin;
 }
+
 float ClippedCamera3D::get_margin() const {
 	return margin;
 }
-void ClippedCamera3D::set_process_mode(ProcessMode p_mode) {
 
+void ClippedCamera3D::set_process_mode(ProcessMode p_mode) {
 	if (process_mode == p_mode) {
 		return;
 	}
@@ -724,12 +697,12 @@ void ClippedCamera3D::set_process_mode(ProcessMode p_mode) {
 	set_process_internal(process_mode == CLIP_PROCESS_IDLE);
 	set_physics_process_internal(process_mode == CLIP_PROCESS_PHYSICS);
 }
+
 ClippedCamera3D::ProcessMode ClippedCamera3D::get_process_mode() const {
 	return process_mode;
 }
 
 Transform ClippedCamera3D::get_camera_transform() const {
-
 	Transform t = Camera3D::get_camera_transform();
 	t.origin += -t.basis.get_axis(Vector3::AXIS_Z).normalized() * clip_offset;
 	return t;
@@ -737,13 +710,12 @@ Transform ClippedCamera3D::get_camera_transform() const {
 
 void ClippedCamera3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-
 		Node3D *parent = Object::cast_to<Node3D>(get_parent());
 		if (!parent) {
 			return;
 		}
 
-		PhysicsDirectSpaceState3D *dspace = get_world()->get_direct_space_state();
+		PhysicsDirectSpaceState3D *dspace = get_world_3d()->get_direct_space_state();
 		ERR_FAIL_COND(!dspace); // most likely physics set to threads
 
 		Vector3 cam_fw = -get_global_transform().basis.get_axis(Vector3::AXIS_Z).normalized();
@@ -783,9 +755,9 @@ void ClippedCamera3D::_notification(int p_what) {
 		xf.origin = ray_from;
 		xf.orthonormalize();
 
-		float csafe, cunsafe;
-		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
-			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * csafe);
+		float closest_safe = 1.0f, closest_unsafe = 1.0f;
+		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, closest_safe, closest_unsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
+			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * closest_safe);
 		}
 
 		_update_camera();
@@ -797,90 +769,78 @@ void ClippedCamera3D::_notification(int p_what) {
 }
 
 void ClippedCamera3D::set_collision_mask(uint32_t p_mask) {
-
 	collision_mask = p_mask;
 }
 
 uint32_t ClippedCamera3D::get_collision_mask() const {
-
 	return collision_mask;
 }
 
 void ClippedCamera3D::set_collision_mask_bit(int p_bit, bool p_value) {
-
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
 bool ClippedCamera3D::get_collision_mask_bit(int p_bit) const {
-
 	return get_collision_mask() & (1 << p_bit);
 }
 
 void ClippedCamera3D::add_exception_rid(const RID &p_rid) {
-
 	exclude.insert(p_rid);
 }
 
 void ClippedCamera3D::add_exception(const Object *p_object) {
-
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co)
+	if (!co) {
 		return;
+	}
 	add_exception_rid(co->get_rid());
 }
 
 void ClippedCamera3D::remove_exception_rid(const RID &p_rid) {
-
 	exclude.erase(p_rid);
 }
 
 void ClippedCamera3D::remove_exception(const Object *p_object) {
-
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co)
+	if (!co) {
 		return;
+	}
 	remove_exception_rid(co->get_rid());
 }
 
 void ClippedCamera3D::clear_exceptions() {
-
 	exclude.clear();
 }
 
 float ClippedCamera3D::get_clip_offset() const {
-
 	return clip_offset;
 }
 
 void ClippedCamera3D::set_clip_to_areas(bool p_clip) {
-
 	clip_to_areas = p_clip;
 }
 
 bool ClippedCamera3D::is_clip_to_areas_enabled() const {
-
 	return clip_to_areas;
 }
 
 void ClippedCamera3D::set_clip_to_bodies(bool p_clip) {
-
 	clip_to_bodies = p_clip;
 }
 
 bool ClippedCamera3D::is_clip_to_bodies_enabled() const {
-
 	return clip_to_bodies;
 }
 
 void ClippedCamera3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &ClippedCamera3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &ClippedCamera3D::get_margin);
 
@@ -920,6 +880,7 @@ void ClippedCamera3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(CLIP_PROCESS_IDLE);
 }
+
 ClippedCamera3D::ClippedCamera3D() {
 	margin = 0;
 	clip_offset = 0;
@@ -932,6 +893,7 @@ ClippedCamera3D::ClippedCamera3D() {
 	clip_to_areas = false;
 	clip_to_bodies = true;
 }
+
 ClippedCamera3D::~ClippedCamera3D() {
 	PhysicsServer3D::get_singleton()->free(pyramid_shape);
 }

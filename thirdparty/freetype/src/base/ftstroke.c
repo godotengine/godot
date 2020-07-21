@@ -4,7 +4,7 @@
  *
  *   FreeType path stroker (body).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -540,63 +540,52 @@
                           FT_Angle         angle_start,
                           FT_Angle         angle_diff )
   {
-    FT_Angle   total, angle, step, rotate, next, theta;
-    FT_Vector  a, b, a2, b2;
-    FT_Fixed   length;
+    FT_Fixed   coef;
+    FT_Vector  a0, a1, a2, a3;
+    FT_Int     i, arcs = 1;
     FT_Error   error = FT_Err_Ok;
 
 
-    /* compute start point */
-    FT_Vector_From_Polar( &a, radius, angle_start );
-    a.x += center->x;
-    a.y += center->y;
+    /* number of cubic arcs to draw */
+    while (  angle_diff > FT_ARC_CUBIC_ANGLE * arcs ||
+            -angle_diff > FT_ARC_CUBIC_ANGLE * arcs )
+      arcs++;
 
-    total  = angle_diff;
-    angle  = angle_start;
-    rotate = ( angle_diff >= 0 ) ? FT_ANGLE_PI2 : -FT_ANGLE_PI2;
+    /* control tangents */
+    coef  = FT_Tan( angle_diff / ( 4 * arcs ) );
+    coef += coef / 3;
 
-    while ( total != 0 )
+    /* compute start and first control point */
+    FT_Vector_From_Polar( &a0, radius, angle_start );
+    a1.x = FT_MulFix( -a0.y, coef );
+    a1.y = FT_MulFix(  a0.x, coef );
+
+    a0.x += center->x;
+    a0.y += center->y;
+    a1.x += a0.x;
+    a1.y += a0.y;
+
+    for ( i = 1; i <= arcs; i++ )
     {
-      step = total;
-      if ( step > FT_ARC_CUBIC_ANGLE )
-        step = FT_ARC_CUBIC_ANGLE;
+      /* compute end and second control point */
+      FT_Vector_From_Polar( &a3, radius,
+                            angle_start + i * angle_diff / arcs );
+      a2.x = FT_MulFix(  a3.y, coef );
+      a2.y = FT_MulFix( -a3.x, coef );
 
-      else if ( step < -FT_ARC_CUBIC_ANGLE )
-        step = -FT_ARC_CUBIC_ANGLE;
-
-      next  = angle + step;
-      theta = step;
-      if ( theta < 0 )
-        theta = -theta;
-
-      theta >>= 1;
-
-      /* compute end point */
-      FT_Vector_From_Polar( &b, radius, next );
-      b.x += center->x;
-      b.y += center->y;
-
-      /* compute first and second control points */
-      length = FT_MulDiv( radius, FT_Sin( theta ) * 4,
-                          ( 0x10000L + FT_Cos( theta ) ) * 3 );
-
-      FT_Vector_From_Polar( &a2, length, angle + rotate );
-      a2.x += a.x;
-      a2.y += a.y;
-
-      FT_Vector_From_Polar( &b2, length, next - rotate );
-      b2.x += b.x;
-      b2.y += b.y;
+      a3.x += center->x;
+      a3.y += center->y;
+      a2.x += a3.x;
+      a2.y += a3.y;
 
       /* add cubic arc */
-      error = ft_stroke_border_cubicto( border, &a2, &b2, &b );
+      error = ft_stroke_border_cubicto( border, &a1, &a2, &a3 );
       if ( error )
         break;
 
-      /* process the rest of the arc ?? */
-      a      = b;
-      total -= step;
-      angle  = next;
+      /* a0 = a3; */
+      a1.x = a3.x - a2.x + a3.x;
+      a1.y = a3.y - a2.y + a3.y;
     }
 
     return error;
@@ -934,55 +923,40 @@
 
       error = ft_stroker_arcto( stroker, side );
     }
-    else if ( stroker->line_cap == FT_STROKER_LINECAP_SQUARE )
+    else
     {
-      /* add a square cap */
-      FT_Vector        delta, delta2;
-      FT_Angle         rotate = FT_SIDE_TO_ROTATE( side );
+      /* add a square or butt cap */
+      FT_Vector        middle, delta;
       FT_Fixed         radius = stroker->radius;
       FT_StrokeBorder  border = stroker->borders + side;
 
 
-      FT_Vector_From_Polar( &delta2, radius, angle + rotate );
-      FT_Vector_From_Polar( &delta,  radius, angle );
+      /* compute middle point and first angle point */
+      FT_Vector_From_Polar( &middle, radius, angle );
+      delta.x = side ?  middle.y : -middle.y;
+      delta.y = side ? -middle.x :  middle.x;
 
-      delta.x += stroker->center.x + delta2.x;
-      delta.y += stroker->center.y + delta2.y;
+      if ( stroker->line_cap == FT_STROKER_LINECAP_SQUARE )
+      {
+        middle.x += stroker->center.x;
+        middle.y += stroker->center.y;
+      }
+      else  /* FT_STROKER_LINECAP_BUTT */
+      {
+        middle.x  = stroker->center.x;
+        middle.y  = stroker->center.y;
+      }
+
+      delta.x  += middle.x;
+      delta.y  += middle.y;
 
       error = ft_stroke_border_lineto( border, &delta, FALSE );
       if ( error )
         goto Exit;
 
-      FT_Vector_From_Polar( &delta2, radius, angle - rotate );
-      FT_Vector_From_Polar( &delta,  radius, angle );
-
-      delta.x += delta2.x + stroker->center.x;
-      delta.y += delta2.y + stroker->center.y;
-
-      error = ft_stroke_border_lineto( border, &delta, FALSE );
-    }
-    else if ( stroker->line_cap == FT_STROKER_LINECAP_BUTT )
-    {
-      /* add a butt ending */
-      FT_Vector        delta;
-      FT_Angle         rotate = FT_SIDE_TO_ROTATE( side );
-      FT_Fixed         radius = stroker->radius;
-      FT_StrokeBorder  border = stroker->borders + side;
-
-
-      FT_Vector_From_Polar( &delta, radius, angle + rotate );
-
-      delta.x += stroker->center.x;
-      delta.y += stroker->center.y;
-
-      error = ft_stroke_border_lineto( border, &delta, FALSE );
-      if ( error )
-        goto Exit;
-
-      FT_Vector_From_Polar( &delta, radius, angle - rotate );
-
-      delta.x += stroker->center.x;
-      delta.y += stroker->center.y;
+      /* compute second angle point */
+      delta.x = middle.x - delta.x + middle.x;
+      delta.y = middle.y - delta.y + middle.y;
 
       error = ft_stroke_border_lineto( border, &delta, FALSE );
     }
@@ -1000,8 +974,8 @@
   {
     FT_StrokeBorder  border = stroker->borders + side;
     FT_Angle         phi, theta, rotate;
-    FT_Fixed         length, thcos;
-    FT_Vector        delta;
+    FT_Fixed         length;
+    FT_Vector        sigma, delta;
     FT_Error         error = FT_Err_Ok;
     FT_Bool          intersect;          /* use intersection of lines? */
 
@@ -1019,9 +993,12 @@
     else
     {
       /* compute minimum required length of lines */
-      FT_Fixed  min_length = ft_pos_abs( FT_MulFix( stroker->radius,
-                                                    FT_Tan( theta ) ) );
+      FT_Fixed  min_length;
 
+
+      FT_Vector_Unit( &sigma, theta );
+      min_length =
+        ft_pos_abs( FT_MulDiv( stroker->radius, sigma.y, sigma.x ) );
 
       intersect = FT_BOOL( min_length                         &&
                            stroker->line_length >= min_length &&
@@ -1040,13 +1017,11 @@
     else
     {
       /* compute median angle */
-      phi = stroker->angle_in + theta;
+      phi = stroker->angle_in + theta + rotate;
 
-      thcos = FT_Cos( theta );
+      length = FT_DivFix( stroker->radius, sigma.x );
 
-      length = FT_DivFix( stroker->radius, thcos );
-
-      FT_Vector_From_Polar( &delta, length, phi + rotate );
+      FT_Vector_From_Polar( &delta, length, phi );
       delta.x += stroker->center.x;
       delta.y += stroker->center.y;
     }
@@ -1073,10 +1048,10 @@
     else
     {
       /* this is a mitered (pointed) or beveled (truncated) corner */
-      FT_Fixed  sigma = 0, radius = stroker->radius;
-      FT_Angle  theta = 0, phi = 0;
-      FT_Fixed  thcos = 0;
-      FT_Bool   bevel, fixed_bevel;
+      FT_Fixed   radius = stroker->radius;
+      FT_Vector  sigma;
+      FT_Angle   theta = 0, phi = 0;
+      FT_Bool    bevel, fixed_bevel;
 
 
       rotate = FT_SIDE_TO_ROTATE( side );
@@ -1087,26 +1062,20 @@
       fixed_bevel =
         FT_BOOL( stroker->line_join != FT_STROKER_LINEJOIN_MITER_VARIABLE );
 
+      /* check miter limit first */
       if ( !bevel )
       {
-        theta = FT_Angle_Diff( stroker->angle_in, stroker->angle_out );
+        theta = FT_Angle_Diff( stroker->angle_in, stroker->angle_out ) / 2;
 
-        if ( theta == FT_ANGLE_PI )
-        {
-          theta = rotate;
-          phi   = stroker->angle_in;
-        }
-        else
-        {
-          theta /= 2;
-          phi    = stroker->angle_in + theta + rotate;
-        }
+        if ( theta == FT_ANGLE_PI2 )
+          theta = -rotate;
 
-        thcos = FT_Cos( theta );
-        sigma = FT_MulFix( stroker->miter_limit, thcos );
+        phi    = stroker->angle_in + theta + rotate;
+
+        FT_Vector_From_Polar( &sigma, stroker->miter_limit, theta );
 
         /* is miter limit exceeded? */
-        if ( sigma < 0x10000L )
+        if ( sigma.x < 0x10000L )
         {
           /* don't create variable bevels for very small deviations; */
           /* FT_Sin(x) = 0 for x <= 57                               */
@@ -1133,36 +1102,34 @@
           border->movable = FALSE;
           error = ft_stroke_border_lineto( border, &delta, FALSE );
         }
-        else /* variable bevel */
+        else /* variable bevel or clipped miter */
         {
           /* the miter is truncated */
           FT_Vector  middle, delta;
-          FT_Fixed   length;
+          FT_Fixed   coef;
 
 
-          /* compute middle point */
+          /* compute middle point and first angle point */
           FT_Vector_From_Polar( &middle,
                                 FT_MulFix( radius, stroker->miter_limit ),
                                 phi );
+
+          coef    = FT_DivFix(  0x10000L - sigma.x, sigma.y );
+          delta.x = FT_MulFix(  middle.y, coef );
+          delta.y = FT_MulFix( -middle.x, coef );
+
           middle.x += stroker->center.x;
           middle.y += stroker->center.y;
-
-          /* compute first angle point */
-          length = FT_MulDiv( radius, 0x10000L - sigma,
-                              ft_pos_abs( FT_Sin( theta ) ) );
-
-          FT_Vector_From_Polar( &delta, length, phi + rotate );
-          delta.x += middle.x;
-          delta.y += middle.y;
+          delta.x  += middle.x;
+          delta.y  += middle.y;
 
           error = ft_stroke_border_lineto( border, &delta, FALSE );
           if ( error )
             goto Exit;
 
           /* compute second angle point */
-          FT_Vector_From_Polar( &delta, length, phi - rotate );
-          delta.x += middle.x;
-          delta.y += middle.y;
+          delta.x = middle.x - delta.x + middle.x;
+          delta.y = middle.y - delta.y + middle.y;
 
           error = ft_stroke_border_lineto( border, &delta, FALSE );
           if ( error )
@@ -1189,7 +1156,7 @@
         FT_Vector  delta;
 
 
-        length = FT_DivFix( stroker->radius, thcos );
+        length = FT_MulDiv( stroker->radius, stroker->miter_limit, sigma.x );
 
         FT_Vector_From_Polar( &delta, length, phi );
         delta.x += stroker->center.x;

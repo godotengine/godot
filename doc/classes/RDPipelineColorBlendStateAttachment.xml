@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineColorBlendStateAttachment" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_as_mix">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alpha_blend_op" type="int" setter="set_alpha_blend_op" getter="get_alpha_blend_op" enum="RenderingDevice.BlendOperation" default="0">
+		</member>
+		<member name="color_blend_op" type="int" setter="set_color_blend_op" getter="get_color_blend_op" enum="RenderingDevice.BlendOperation" default="0">
+		</member>
+		<member name="dst_alpha_blend_factor" type="int" setter="set_dst_alpha_blend_factor" getter="get_dst_alpha_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+		</member>
+		<member name="dst_color_blend_factor" type="int" setter="set_dst_color_blend_factor" getter="get_dst_color_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+		</member>
+		<member name="enable_blend" type="bool" setter="set_enable_blend" getter="get_enable_blend" default="false">
+		</member>
+		<member name="src_alpha_blend_factor" type="int" setter="set_src_alpha_blend_factor" getter="get_src_alpha_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+		</member>
+		<member name="src_color_blend_factor" type="int" setter="set_src_color_blend_factor" getter="get_src_color_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+		</member>
+		<member name="write_a" type="bool" setter="set_write_a" getter="get_write_a" default="true">
+		</member>
+		<member name="write_b" type="bool" setter="set_write_b" getter="get_write_b" default="true">
+		</member>
+		<member name="write_g" type="bool" setter="set_write_g" getter="get_write_g" default="true">
+		</member>
+		<member name="write_r" type="bool" setter="set_write_r" getter="get_write_r" default="true">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

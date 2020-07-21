@@ -48,8 +48,9 @@ void SceneDebugger::deinitialize() {
 #ifdef DEBUG_ENABLED
 	if (LiveEditor::singleton) {
 		// Should be removed automatically when deiniting debugger, but just in case
-		if (EngineDebugger::has_capture("scene"))
+		if (EngineDebugger::has_capture("scene")) {
 			EngineDebugger::unregister_message_capture("scene");
+		}
 		memdelete(LiveEditor::singleton);
 		LiveEditor::singleton = nullptr;
 	}
@@ -59,11 +60,13 @@ void SceneDebugger::deinitialize() {
 #ifdef DEBUG_ENABLED
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return ERR_UNCONFIGURED;
+	}
 	LiveEditor *live_editor = LiveEditor::get_singleton();
-	if (!live_editor)
+	if (!live_editor) {
 		return ERR_UNCONFIGURED;
+	}
 
 	r_captured = true;
 	if (p_msg == "request_scene_tree") { // Scene tree
@@ -193,8 +196,9 @@ void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 
 void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {
 	SceneDebuggerObject obj(p_id);
-	if (obj.id.is_null())
+	if (obj.id.is_null()) {
 		return;
+	}
 
 	Array arr;
 	obj.serialize(arr);
@@ -202,10 +206,10 @@ void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {
 }
 
 void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
-	if (!obj)
+	if (!obj) {
 		return;
+	}
 
 	String prop_name = p_property;
 	if (p_property.begins_with("Members/")) {
@@ -218,17 +222,20 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 
 void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 	LiveEditor *debugger = LiveEditor::get_singleton();
-	if (!debugger)
+	if (!debugger) {
 		return;
+	}
 
 	if (EngineDebugger::get_script_debugger() && p_filename != String()) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
 }
+
 void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	LiveEditor *debugger = LiveEditor::get_singleton();
-	if (!debugger)
+	if (!debugger) {
 		return;
+	}
 
 	Map<String, Set<Node *>> &edit_cache = debugger->live_scene_edit_cache;
 	Map<String, Set<Node *>>::Element *E = edit_cache.find(p_filename);
@@ -243,7 +250,6 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	Map<Node *, Map<ObjectID, Node *>>::Element *F = remove_list.find(p_node);
 	if (F) {
 		for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
-
 			memdelete(G->get());
 		}
 		remove_list.erase(F);
@@ -254,8 +260,9 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 	id = ObjectID();
 	Object *obj = ObjectDB::get_instance(p_id);
-	if (!obj)
+	if (!obj) {
 		return;
+	}
 
 	id = p_id;
 	class_name = obj->get_class();
@@ -354,15 +361,6 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		RES res = var;
 
-		if (var.get_type() == Variant::OBJECT && var.is_ref()) {
-			REF r = var;
-			if (r.is_valid()) {
-				res = *r;
-			} else {
-				res = RES();
-			}
-		}
-
 		Array prop;
 		prop.push_back(pi.name);
 		prop.push_back(pi.type);
@@ -403,7 +401,6 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 	Array props = p_arr[2];
 
 	for (int i = 0; i < props.size(); i++) {
-
 		CHECK_TYPE(props[i], ARRAY);
 		Array prop = props[i];
 
@@ -485,8 +482,9 @@ LiveEditor *LiveEditor::get_singleton() {
 
 void LiveEditor::_send_tree() {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Array arr;
 	// Encoded as a flat list depth fist.
@@ -496,42 +494,44 @@ void LiveEditor::_send_tree() {
 }
 
 void LiveEditor::_node_path_func(const NodePath &p_path, int p_id) {
-
 	live_edit_node_path_cache[p_id] = p_path;
 }
 
 void LiveEditor::_res_path_func(const String &p_path, int p_id) {
-
 	live_edit_resource_cache[p_id] = p_path;
 }
 
 void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Variant &p_value) {
-
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
-	if (!live_edit_node_path_cache.has(p_id))
+	if (!live_edit_node_path_cache.has(p_id)) {
 		return;
+	}
 
 	NodePath np = live_edit_node_path_cache[p_id];
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(np))
+		if (!n->has_node(np)) {
 			continue;
+		}
 		Node *n2 = n->get_node(np);
 
 		n2->set(p_prop, p_value);
@@ -539,110 +539,126 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 }
 
 void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
-
 	RES r = ResourceLoader::load(p_value);
-	if (!r.is_valid())
+	if (!r.is_valid()) {
 		return;
+	}
 	_node_set_func(p_id, p_prop, r);
 }
+
 void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
-	if (!live_edit_node_path_cache.has(p_id))
+	}
+	if (!live_edit_node_path_cache.has(p_id)) {
 		return;
+	}
 
 	NodePath np = live_edit_node_path_cache[p_id];
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(np))
+		if (!n->has_node(np)) {
 			continue;
+		}
 		Node *n2 = n->get_node(np);
 
 		n2->call(p_method, VARIANT_ARG_PASS);
 	}
 }
-void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant &p_value) {
 
-	if (!live_edit_resource_cache.has(p_id))
+void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant &p_value) {
+	if (!live_edit_resource_cache.has(p_id)) {
 		return;
+	}
 
 	String resp = live_edit_resource_cache[p_id];
 
-	if (!ResourceCache::has(resp))
+	if (!ResourceCache::has(resp)) {
 		return;
+	}
 
 	RES r = ResourceCache::get(resp);
-	if (!r.is_valid())
+	if (!r.is_valid()) {
 		return;
+	}
 
 	r->set(p_prop, p_value);
 }
-void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
 
+void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
 	RES r = ResourceLoader::load(p_value);
-	if (!r.is_valid())
+	if (!r.is_valid()) {
 		return;
+	}
 	_res_set_func(p_id, p_prop, r);
 }
-void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 
-	if (!live_edit_resource_cache.has(p_id))
+void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+	if (!live_edit_resource_cache.has(p_id)) {
 		return;
+	}
 
 	String resp = live_edit_resource_cache[p_id];
 
-	if (!ResourceCache::has(resp))
+	if (!ResourceCache::has(resp)) {
 		return;
+	}
 
 	RES r = ResourceCache::get(resp);
-	if (!r.is_valid())
+	if (!r.is_valid()) {
 		return;
+	}
 
 	r->call(p_method, VARIANT_ARG_PASS);
 }
 
 void LiveEditor::_root_func(const NodePath &p_scene_path, const String &p_scene_from) {
-
 	live_edit_root = p_scene_path;
 	live_edit_scene = p_scene_from;
 }
 
 void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_type, const String &p_name) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_parent))
+		if (!n->has_node(p_parent)) {
 			continue;
+		}
 		Node *n2 = n->get_node(p_parent);
 
 		Node *no = Object::cast_to<Node>(ClassDB::instance(p_type));
@@ -654,33 +670,39 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 		n2->add_child(no);
 	}
 }
+
 void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Ref<PackedScene> ps = ResourceLoader::load(p_path);
 
-	if (!ps.is_valid())
+	if (!ps.is_valid()) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_parent))
+		if (!n->has_node(p_parent)) {
 			continue;
+		}
 		Node *n2 = n->get_node(p_parent);
 
 		Node *no = ps->instance();
@@ -692,30 +714,35 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 		n2->add_child(no);
 	}
 }
+
 void LiveEditor::_remove_node_func(const NodePath &p_at) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
-
 		Set<Node *>::Element *N = F->next();
 
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_at))
+		if (!n->has_node(p_at)) {
 			continue;
+		}
 		Node *n2 = n->get_node(p_at);
 
 		memdelete(n2);
@@ -723,30 +750,35 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		F = N;
 	}
 }
+
 void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_keep_id) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
-
 		Set<Node *>::Element *N = F->next();
 
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_at))
+		if (!n->has_node(p_at)) {
 			continue;
+		}
 
 		Node *n2 = n->get_node(p_at);
 
@@ -757,41 +789,48 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		F = N;
 	}
 }
+
 void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
-
 		Set<Node *>::Element *N = F->next();
 
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_at))
+		if (!n->has_node(p_at)) {
 			continue;
+		}
 		Node *n2 = n->get_node(p_at);
 
 		Map<Node *, Map<ObjectID, Node *>>::Element *EN = live_edit_remove_list.find(n);
 
-		if (!EN)
+		if (!EN) {
 			continue;
+		}
 
 		Map<ObjectID, Node *>::Element *FN = EN->get().find(p_id);
 
-		if (!FN)
+		if (!FN) {
 			continue;
+		}
 		n2->add_child(FN->get());
 
 		EN->get().erase(FN);
@@ -803,73 +842,86 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 		F = N;
 	}
 }
+
 void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_name) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_at))
+		if (!n->has_node(p_at)) {
 			continue;
+		}
 		Node *n2 = n->get_node(p_at);
 
 		Node *dup = n2->duplicate(Node::DUPLICATE_SIGNALS | Node::DUPLICATE_GROUPS | Node::DUPLICATE_SCRIPTS);
 
-		if (!dup)
+		if (!dup) {
 			continue;
+		}
 
 		dup->set_name(p_new_name);
 		n2->get_parent()->add_child(dup);
 	}
 }
+
 void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree)
+	if (!scene_tree) {
 		return;
+	}
 
 	Node *base = nullptr;
-	if (scene_tree->root->has_node(live_edit_root))
+	if (scene_tree->root->has_node(live_edit_root)) {
 		base = scene_tree->root->get_node(live_edit_root);
+	}
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
-	if (!E)
+	if (!E) {
 		return; //scene not editable
+	}
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
-		if (base && !base->is_a_parent_of(n))
+		if (base && !base->is_a_parent_of(n)) {
 			continue;
+		}
 
-		if (!n->has_node(p_at))
+		if (!n->has_node(p_at)) {
 			continue;
+		}
 		Node *nfrom = n->get_node(p_at);
 
-		if (!n->has_node(p_new_place))
+		if (!n->has_node(p_new_place)) {
 			continue;
+		}
 		Node *nto = n->get_node(p_new_place);
 
 		nfrom->get_parent()->remove_child(nfrom);
 		nfrom->set_name(p_new_name);
 
 		nto->add_child(nfrom);
-		if (p_at_pos >= 0)
+		if (p_at_pos >= 0) {
 			nto->move_child(nfrom, p_at_pos);
+		}
 	}
 }
 

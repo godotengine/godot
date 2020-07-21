@@ -30,7 +30,7 @@
 
 #include "export_template_manager.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
@@ -42,7 +42,6 @@
 #include "scene/gui/link_button.h"
 
 void ExportTemplateManager::_update_template_list() {
-
 	while (current_hb->get_child_count()) {
 		memdelete(current_hb->get_child(0));
 	}
@@ -57,7 +56,6 @@ void ExportTemplateManager::_update_template_list() {
 	Set<String> templates;
 	d->list_dir_begin();
 	if (err == OK) {
-
 		String c = d->get_next();
 		while (c != String()) {
 			if (d->current_is_dir() && !c.begins_with(".")) {
@@ -118,7 +116,6 @@ void ExportTemplateManager::_update_template_list() {
 	}
 
 	for (Set<String>::Element *E = templates.back(); E; E = E->prev()) {
-
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		Label *version = memnew(Label);
 		version->set_modulate(current->get_theme_color("disabled_font_color", "Editor"));
@@ -141,7 +138,6 @@ void ExportTemplateManager::_update_template_list() {
 }
 
 void ExportTemplateManager::_download_template(const String &p_version) {
-
 	while (template_list->get_child_count()) {
 		memdelete(template_list->get_child(0));
 	}
@@ -155,14 +151,12 @@ void ExportTemplateManager::_download_template(const String &p_version) {
 }
 
 void ExportTemplateManager::_uninstall_template(const String &p_version) {
-
 	remove_confirm->set_text(vformat(TTR("Remove template version '%s'?"), p_version));
 	remove_confirm->popup_centered();
 	to_remove = p_version;
 }
 
 void ExportTemplateManager::_uninstall_template_confirm() {
-
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	const String &templates_dir = EditorSettings::get_singleton()->get_templates_dir();
 	Error err = da->change_dir(templates_dir);
@@ -181,7 +175,6 @@ void ExportTemplateManager::_uninstall_template_confirm() {
 }
 
 bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_progress) {
-
 	// unzClose() will take care of closing the file stored in the unzFile,
 	// so we don't need to `memdelete(fa)` in this method.
 	FileAccess *fa = nullptr;
@@ -189,7 +182,6 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
 	if (!pkg) {
-
 		EditorNode::get_singleton()->show_warning(TTR("Can't open export templates zip."));
 		return false;
 	}
@@ -200,7 +192,6 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	String contents_dir;
 
 	while (ret == UNZ_OK) {
-
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
@@ -208,7 +199,6 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		String file = fname;
 
 		if (file.ends_with("version.txt")) {
-
 			Vector<uint8_t> data;
 			data.resize(info.uncompressed_size);
 
@@ -266,7 +256,6 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	fc = 0;
 
 	while (ret == UNZ_OK) {
-
 		//get filename
 		unz_file_info info;
 		char fname[16384];
@@ -340,18 +329,15 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 }
 
 void ExportTemplateManager::popup_manager() {
-
 	_update_template_list();
 	popup_centered(Size2(400, 400) * EDSCALE);
 }
 
 void ExportTemplateManager::ok_pressed() {
-
-	template_open->popup_centered_ratio();
+	template_open->popup_file_dialog();
 }
 
 void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-
 	if (p_status != HTTPRequest::RESULT_SUCCESS || p_code != 200) {
 		EditorNode::get_singleton()->show_warning(TTR("Error getting the list of mirrors."));
 		return;
@@ -396,10 +382,9 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 		return;
 	}
 }
+
 void ExportTemplateManager::_http_download_templates_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-
 	switch (p_status) {
-
 		case HTTPRequest::RESULT_CANT_RESOLVE: {
 			template_list_state->set_text(TTR("Can't resolve."));
 		} break;
@@ -445,8 +430,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 }
 
 void ExportTemplateManager::_begin_template_download(const String &p_url) {
-
-	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		OS::get_singleton()->shell_open(p_url);
 		return;
 	}
@@ -482,14 +466,12 @@ void ExportTemplateManager::_window_template_downloader_closed() {
 }
 
 void ExportTemplateManager::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (!is_visible()) {
 			set_process(false);
 		}
 	}
 	if (p_what == NOTIFICATION_PROCESS) {
-
 		update_countdown -= get_process_delta_time();
 
 		if (update_countdown > 0) {
@@ -504,18 +486,26 @@ void ExportTemplateManager::_notification(int p_what) {
 				status = TTR("Disconnected");
 				errored = true;
 				break;
-			case HTTPClient::STATUS_RESOLVING: status = TTR("Resolving"); break;
+			case HTTPClient::STATUS_RESOLVING:
+				status = TTR("Resolving");
+				break;
 			case HTTPClient::STATUS_CANT_RESOLVE:
 				status = TTR("Can't Resolve");
 				errored = true;
 				break;
-			case HTTPClient::STATUS_CONNECTING: status = TTR("Connecting..."); break;
+			case HTTPClient::STATUS_CONNECTING:
+				status = TTR("Connecting...");
+				break;
 			case HTTPClient::STATUS_CANT_CONNECT:
 				status = TTR("Can't Connect");
 				errored = true;
 				break;
-			case HTTPClient::STATUS_CONNECTED: status = TTR("Connected"); break;
-			case HTTPClient::STATUS_REQUESTING: status = TTR("Requesting..."); break;
+			case HTTPClient::STATUS_CONNECTED:
+				status = TTR("Connected");
+				break;
+			case HTTPClient::STATUS_REQUESTING:
+				status = TTR("Requesting...");
+				break;
 			case HTTPClient::STATUS_BODY:
 				status = TTR("Downloading");
 				if (download_templates->get_body_size() > 0) {
@@ -544,13 +534,11 @@ void ExportTemplateManager::_notification(int p_what) {
 }
 
 bool ExportTemplateManager::can_install_android_template() {
-
 	const String templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
 	return FileAccess::exists(templates_dir.plus_file("android_source.zip"));
 }
 
 Error ExportTemplateManager::install_android_template() {
-
 	// To support custom Android builds, we install the Java source code and buildsystem
 	// from android_source.zip to the project's res://android folder.
 
@@ -607,7 +595,6 @@ Error ExportTemplateManager::install_android_template() {
 	Set<String> dirs_tested;
 	int idx = 0;
 	while (ret == UNZ_OK) {
-
 		// Get file path.
 		unz_file_info info;
 		char fpath[16384];
@@ -659,7 +646,6 @@ void ExportTemplateManager::_bind_methods() {
 }
 
 ExportTemplateManager::ExportTemplateManager() {
-
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
 

@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -28,7 +27,6 @@ VERSION_DEFINES
 #define BLOCK_SIZE 8
 
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
 
@@ -46,26 +44,31 @@ void get_dir_0(out vec3 dir, in float u, in float v) {
 	dir[1] = v;
 	dir[2] = -u;
 }
+
 void get_dir_1(out vec3 dir, in float u, in float v) {
 	dir[0] = -1.0;
 	dir[1] = v;
 	dir[2] = u;
 }
+
 void get_dir_2(out vec3 dir, in float u, in float v) {
 	dir[0] = u;
 	dir[1] = 1.0;
 	dir[2] = -v;
 }
+
 void get_dir_3(out vec3 dir, in float u, in float v) {
 	dir[0] = u;
 	dir[1] = -1.0;
 	dir[2] = v;
 }
+
 void get_dir_4(out vec3 dir, in float u, in float v) {
 	dir[0] = u;
 	dir[1] = v;
 	dir[2] = 1.0;
 }
+
 void get_dir_5(out vec3 dir, in float u, in float v) {
 	dir[0] = -u;
 	dir[1] = v;

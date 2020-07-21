@@ -36,7 +36,6 @@
 #include "core/set.h"
 
 class ProjectSettings : public Object {
-
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
@@ -48,44 +47,45 @@ public:
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
 
+	struct AutoloadInfo {
+		StringName name;
+		String path;
+		bool is_singleton = false;
+	};
+
 protected:
 	struct VariantContainer {
-		int order;
-		bool persist;
+		int order = 0;
+		bool persist = false;
 		Variant variant;
 		Variant initial;
-		bool hide_from_editor;
-		bool overridden;
-		bool restart_if_changed;
-		VariantContainer() :
-				order(0),
-				persist(false),
-				hide_from_editor(false),
-				overridden(false),
-				restart_if_changed(false) {
-		}
+		bool hide_from_editor = false;
+		bool overridden = false;
+		bool restart_if_changed = false;
+
+		VariantContainer() {}
+
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),
 				persist(p_persist),
-				variant(p_variant),
-				hide_from_editor(false),
-				overridden(false),
-				restart_if_changed(false) {
+				variant(p_variant) {
 		}
 	};
 
-	bool registering_order;
-	int last_order;
-	int last_builtin_order;
+	bool registering_order = true;
+	int last_order = 0;
+	int last_builtin_order = NO_BUILTIN_ORDER_BASE;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
-	bool disable_feature_overrides;
-	bool using_datapack;
+	bool disable_feature_overrides = false;
+	bool using_datapack = false;
 	List<String> input_presets;
 
 	Set<String> custom_features;
 	Map<StringName, StringName> feature_overrides;
+
+	Map<StringName, AutoloadInfo> autoloads;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -104,7 +104,7 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, const String &p_destination = "");
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
@@ -155,6 +155,12 @@ public:
 	void set_registering_order(bool p_enable);
 
 	bool has_custom_feature(const String &p_feature) const;
+
+	Map<StringName, AutoloadInfo> get_autoload_list() const;
+	void add_autoload(const AutoloadInfo &p_autoload);
+	void remove_autoload(const StringName &p_autoload);
+	bool has_autoload(const StringName &p_autoload) const;
+	AutoloadInfo get_autoload(const StringName &p_name) const;
 
 	ProjectSettings();
 	~ProjectSettings();

@@ -51,13 +51,13 @@ GDMonoLog *GDMonoLog::singleton = nullptr;
 #ifdef GD_MONO_LOG_ENABLED
 
 static int get_log_level_id(const char *p_log_level) {
-
 	const char *valid_log_levels[] = { "error", "critical", "warning", "message", "info", "debug", nullptr };
 
 	int i = 0;
 	while (valid_log_levels[i]) {
-		if (!strcmp(valid_log_levels[i], p_log_level))
+		if (!strcmp(valid_log_levels[i], p_log_level)) {
 			return i;
+		}
 		i++;
 	}
 
@@ -65,7 +65,6 @@ static int get_log_level_id(const char *p_log_level) {
 }
 
 void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
-
 	FileAccess *f = GDMonoLog::get_singleton()->log_file;
 
 	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
@@ -94,7 +93,6 @@ void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level,
 }
 
 bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
-
 	if (!DirAccess::exists(p_logs_dir)) {
 		DirAccessRef diraccess = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		ERR_FAIL_COND_V(!diraccess, false);
@@ -106,7 +104,6 @@ bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 }
 
 void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
-
 	static const uint64_t MAX_SECS = 5 * 86400; // 5 days
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -119,10 +116,12 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 
 	String current;
 	while ((current = da->get_next()).length()) {
-		if (da->current_is_dir())
+		if (da->current_is_dir()) {
 			continue;
-		if (!current.ends_with(".txt"))
+		}
+		if (!current.ends_with(".txt")) {
 			continue;
+		}
 
 		uint64_t modified_time = FileAccess::get_modified_time(da->get_current_dir().plus_file(current));
 
@@ -135,7 +134,6 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 }
 
 void GDMonoLog::initialize() {
-
 	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
 
 	if (log_level.length() != 0 && get_log_level_id(log_level.get_data()) == -1) {
@@ -175,7 +173,7 @@ void GDMonoLog::initialize() {
 	log_level_id = get_log_level_id(log_level.get_data());
 
 	if (log_file) {
-		OS::get_singleton()->print("Mono: Logfile is: %s\n", log_file_path.utf8().get_data());
+		OS::get_singleton()->print("Mono: Log file is: '%s'\n", log_file_path.utf8().get_data());
 		mono_trace_set_log_handler(mono_log_callback, this);
 	} else {
 		OS::get_singleton()->printerr("Mono: No log file, using default log handler\n");
@@ -183,14 +181,12 @@ void GDMonoLog::initialize() {
 }
 
 GDMonoLog::GDMonoLog() {
-
 	singleton = this;
 
 	log_level_id = -1;
 }
 
 GDMonoLog::~GDMonoLog() {
-
 	singleton = nullptr;
 
 	if (log_file) {
@@ -207,12 +203,10 @@ void GDMonoLog::initialize() {
 }
 
 GDMonoLog::GDMonoLog() {
-
 	singleton = this;
 }
 
 GDMonoLog::~GDMonoLog() {
-
 	singleton = nullptr;
 }
 

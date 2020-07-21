@@ -1,123 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{27B00618-A6F2-4828-B922-05CAEB08C286}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>GodotTools</RootNamespace>
-    <AssemblyName>GodotTools</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.2</LangVersion>
+    <GodotApiConfiguration>Debug</GodotApiConfiguration> <!-- The Godot editor uses the Debug Godot API assemblies -->
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
-    <DataDirToolsOutputPath>$(GodotSourceRootPath)/bin/GodotSharp/Tools</DataDirToolsOutputPath>
-    <GodotApiConfiguration>Debug</GodotApiConfiguration>
-    <LangVersion>7</LangVersion>
+    <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
+    <GodotApiAssembliesDir>$(GodotOutputDataDir)/Api/$(GodotApiConfiguration)</GodotApiAssembliesDir>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>portable</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+  <PropertyGroup Condition=" Exists('$(GodotApiAssembliesDir)/GodotSharp.dll') ">
+    <!-- The project is part of the Godot source tree -->
+    <!-- Use the Godot source tree output folder instead of '$(ProjectDir)/bin' -->
+    <OutputPath>$(GodotOutputDataDir)/Tools</OutputPath>
+    <!-- Must not append '$(TargetFramework)' to the output path in this case -->
+    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=2019.1.3.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
-      <HintPath>..\packages\JetBrains.Annotations.2019.1.3\lib\net20\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
+    <PackageReference Include="JetBrains.Annotations" Version="2019.1.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <Reference Include="GodotSharp">
-      <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharp.dll</HintPath>
+      <HintPath>$(GodotApiAssembliesDir)/GodotSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="GodotSharpEditor">
-      <HintPath>$(GodotSourceRootPath)/bin/GodotSharp/Api/$(GodotApiConfiguration)/GodotSharpEditor.dll</HintPath>
+      <HintPath>$(GodotApiAssembliesDir)/GodotSharpEditor.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Build\MsBuildFinder.cs" />
-    <Compile Include="Export\AotBuilder.cs" />
-    <Compile Include="Export\ExportPlugin.cs" />
-    <Compile Include="Export\XcodeHelper.cs" />
-    <Compile Include="ExternalEditorId.cs" />
-    <Compile Include="Ides\GodotIdeManager.cs" />
-    <Compile Include="Ides\GodotIdeServer.cs" />
-    <Compile Include="Ides\MonoDevelop\EditorId.cs" />
-    <Compile Include="Ides\MonoDevelop\Instance.cs" />
-    <Compile Include="Ides\Rider\RiderPathLocator.cs" />
-    <Compile Include="Ides\Rider\RiderPathManager.cs" />
-    <Compile Include="Internals\EditorProgress.cs" />
-    <Compile Include="Internals\GodotSharpDirs.cs" />
-    <Compile Include="Internals\Internal.cs" />
-    <Compile Include="Internals\ScriptClassParser.cs" />
-    <Compile Include="Internals\Globals.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Build\BuildSystem.cs" />
-    <Compile Include="Utils\Directory.cs" />
-    <Compile Include="Utils\File.cs" />
-    <Compile Include="Utils\NotifyAwaiter.cs" />
-    <Compile Include="Utils\OS.cs" />
-    <Compile Include="GodotSharpEditor.cs" />
-    <Compile Include="BuildManager.cs" />
-    <Compile Include="HotReloadAssemblyWatcher.cs" />
-    <Compile Include="BuildInfo.cs" />
-    <Compile Include="BuildTab.cs" />
-    <Compile Include="BottomPanel.cs" />
-    <Compile Include="CsProjOperations.cs" />
-    <Compile Include="Utils\CollectionExtensions.cs" />
-    <Compile Include="Utils\User32Dll.cs" />
+    <ProjectReference Include="..\GodotTools.BuildLogger\GodotTools.BuildLogger.csproj" />
+    <ProjectReference Include="..\GodotTools.IdeMessaging\GodotTools.IdeMessaging.csproj" />
+    <ProjectReference Include="..\GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj" />
+    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+    <!-- Include it if this is an SCons build targeting Windows, or if it's not an SCons build but we're on Windows -->
+    <ProjectReference Include="..\GodotTools.OpenVisualStudio\GodotTools.OpenVisualStudio.csproj" Condition=" '$(GodotPlatform)' == 'windows' Or ( '$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT' ) " />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GodotTools.BuildLogger\GodotTools.BuildLogger.csproj">
-      <Project>{6ce9a984-37b1-4f8a-8fe9-609f05f071b3}</Project>
-      <Name>GodotTools.BuildLogger</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GodotTools.IdeConnection\GodotTools.IdeConnection.csproj">
-      <Project>{92600954-25f0-4291-8e11-1fee9fc4be20}</Project>
-      <Name>GodotTools.IdeConnection</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj">
-      <Project>{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}</Project>
-      <Name>GodotTools.ProjectEditor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj">
-      <Project>{639E48BD-44E5-4091-8EDD-22D36DC0768D}</Project>
-      <Name>GodotTools.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Target Name="CopyToDataDir" AfterTargets="Build">
-    <ItemGroup>
-      <GodotToolsCopy Include="$(OutputPath)\GodotTools*.dll" />
-      <GodotToolsCopy Include="$(OutputPath)\Newtonsoft.Json.dll" />
-      <GodotToolsCopy Include="$(OutputPath)\DotNet.Glob.dll" />
-    </ItemGroup>
-    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <GodotToolsCopy Include="$(OutputPath)\GodotTools*.pdb" />
-    </ItemGroup>
-    <Copy SourceFiles="@(GodotToolsCopy)" DestinationFolder="$(DataDirToolsOutputPath)" ContinueOnError="false" />
-  </Target>
-  <Target Name="BuildAlwaysCopyToDataDir">
-    <!-- Custom target run by SCons to make sure the CopyToDataDir target is always executed, without having to use DisableFastUpToDateCheck -->
-    <CallTarget Targets="Build" />
-    <CallTarget Targets="CopyToDataDir" />
-  </Target>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

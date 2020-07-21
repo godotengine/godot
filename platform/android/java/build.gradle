@@ -97,13 +97,6 @@ task copyReleaseAARToAppModule(type: Copy) {
     include('godot-lib.release.aar')
 }
 
-task copyGodotPaymentPluginToAppModule(type: Copy) {
-    dependsOn ':plugins:godotpayment:assembleRelease'
-    from('plugins/godotpayment/build/outputs/aar')
-    into('app/libs/plugins')
-    include('GodotPayment.release.aar')
-}
-
 /**
  * Copy the Godot android library archive release file into the root bin directory.
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
@@ -140,7 +133,7 @@ task generateGodotTemplates(type: GradleBuild) {
         startParameter.excludedTaskNames += ":lib:" + getSconsTaskName(buildType)
     }
 
-    tasks = ["copyGodotPaymentPluginToAppModule"]
+    tasks = []
 
     // Only build the apks and aar files for which we have native shared libraries.
     for (String target : supportedTargets) {
@@ -192,4 +185,6 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/android_source.zip")
     delete("$binDir/godot-lib.debug.aar")
     delete("$binDir/godot-lib.release.aar")
+
+    finalizedBy getTasksByName("clean", true)
 }

@@ -144,15 +144,15 @@ typedef void godot_object;
 
 #include <gdnative/string_name.h>
 
-////// Vector2
+////// Vector2 & Vector2i
 
 #include <gdnative/vector2.h>
 
-////// Rect2
+////// Rect2 & Rect2i
 
 #include <gdnative/rect2.h>
 
-////// Vector3
+////// Vector3 & Vector3i
 
 #include <gdnative/vector3.h>
 
@@ -192,6 +192,10 @@ typedef void godot_object;
 
 #include <gdnative/rid.h>
 
+/////// Callable & Signal
+
+#include <gdnative/callable.h>
+
 /////// Dictionary
 
 #include <gdnative/dictionary.h>
@@ -200,8 +204,8 @@ typedef void godot_object;
 
 #include <gdnative/array.h>
 
-// single API file for Pool*Array
-#include <gdnative/pool_arrays.h>
+// single API file for Packed*Array
+#include <gdnative/packed_arrays.h>
 
 void GDAPI godot_object_destroy(godot_object *p_o);
 
@@ -289,7 +293,9 @@ void GDAPI *godot_get_class_tag(const godot_string_name *p_class);
 godot_object GDAPI *godot_object_cast_to(const godot_object *p_object, void *p_class_tag);
 
 // equivalent of GDScript's instance_from_id
-godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id);
+godot_object GDAPI *godot_instance_from_id(uint64_t p_instance_id);
+
+uint64_t GDAPI godot_object_get_instance_id(const godot_object *p_object);
 
 #ifdef __cplusplus
 }

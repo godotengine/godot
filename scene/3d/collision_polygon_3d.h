@@ -36,7 +36,6 @@
 
 class CollisionObject3D;
 class CollisionPolygon3D : public Node3D {
-
 	GDCLASS(CollisionPolygon3D, Node3D);
 
 protected:
@@ -71,7 +70,7 @@ public:
 
 	virtual AABB get_item_rect() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	CollisionPolygon3D();
 };

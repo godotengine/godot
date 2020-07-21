@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gdscript_language_server.h"
+
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_log.h"
@@ -48,7 +49,6 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 }
 
 void GDScriptLanguageServer::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 			start();

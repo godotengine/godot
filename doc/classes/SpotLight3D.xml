@@ -12,6 +12,8 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.02" />
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" override="true" default="1.0" />
 		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
 			The spotlight's angle in degrees.
 		</member>
@@ -22,7 +24,7 @@
 			The spotlight's light energy attenuation curve.
 		</member>
 		<member name="spot_range" type="float" setter="set_param" getter="get_param" default="5.0">
-			The maximal range that can be reached by the spotlight.
+			The maximal range that can be reached by the spotlight. Note that the effectively lit area may appear to be smaller depending on the [member spot_attenuation] in use. No matter the [member spot_attenuation] in use, the light will never reach anything outside this range.
 		</member>
 	</members>
 	<constants>

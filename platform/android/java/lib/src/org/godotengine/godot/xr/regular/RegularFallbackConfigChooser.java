@@ -30,15 +30,16 @@
 
 package org.godotengine.godot.xr.regular;
 
+import org.godotengine.godot.utils.GLUtils;
+
 import android.util.Log;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
-import org.godotengine.godot.utils.GLUtils;
 
 /* Fallback if 32bit View is not supported*/
 public class RegularFallbackConfigChooser extends RegularConfigChooser {
-
 	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
 	private RegularConfigChooser fallback;

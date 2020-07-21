@@ -32,6 +32,7 @@
 #define EDITOR_NODE_H
 
 #include "editor/editor_data.h"
+#include "editor/editor_export.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_run.h"
 #include "editor/inspector_dock.h"
@@ -70,7 +71,6 @@ class ImportDock;
 class MenuButton;
 class NodeDock;
 class OrphanResourcesDialog;
-class PaneDrag;
 class Panel;
 class PanelContainer;
 class PluginConfigDialog;
@@ -82,13 +82,12 @@ class ScriptCreateDialog;
 class TabContainer;
 class Tabs;
 class TextureProgress;
-class ToolButton;
+class Button;
 class VSplitContainer;
 class Window;
 class SubViewport;
 
 class EditorNode : public Node {
-
 	GDCLASS(EditorNode, Node);
 
 public:
@@ -152,7 +151,7 @@ private:
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
 		EDIT_REDO,
-		EDIT_REVERT,
+		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
@@ -161,7 +160,6 @@ private:
 
 		RUN_STOP,
 		RUN_PLAY_SCENE,
-		RUN_PLAY_NATIVE,
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SCENE_SETTINGS,
 		RUN_SETTINGS,
@@ -256,7 +254,6 @@ private:
 	VSplitContainer *top_split;
 	HBoxContainer *bottom_hb;
 	Control *vp_base;
-	PaneDrag *pd;
 
 	HBoxContainer *menu_hb;
 	Control *viewport;
@@ -266,15 +263,15 @@ private:
 	MenuButton *settings_menu;
 	MenuButton *help_menu;
 	PopupMenu *tool_menu;
-	ToolButton *export_button;
-	ToolButton *prev_scene;
-	ToolButton *play_button;
-	ToolButton *pause_button;
-	ToolButton *stop_button;
-	ToolButton *run_settings_button;
-	ToolButton *play_scene_button;
-	ToolButton *play_custom_scene_button;
-	ToolButton *search_button;
+	Button *export_button;
+	Button *prev_scene;
+	Button *play_button;
+	Button *pause_button;
+	Button *stop_button;
+	Button *run_settings_button;
+	Button *play_scene_button;
+	Button *play_custom_scene_button;
+	Button *search_button;
 	TextureProgress *audio_vu;
 
 	Timer *screenshot_timer;
@@ -337,7 +334,7 @@ private:
 	EditorQuickOpen *quick_run;
 
 	HBoxContainer *main_editor_button_vb;
-	Vector<ToolButton *> main_editor_buttons;
+	Vector<Button *> main_editor_buttons;
 	Vector<EditorPlugin *> editor_table;
 
 	AudioStreamPreviewGenerator *preview_gen;
@@ -359,15 +356,15 @@ private:
 	PopupPanel *dock_select_popup;
 	Control *dock_select;
 	Button *dock_float;
-	ToolButton *dock_tab_move_left;
-	ToolButton *dock_tab_move_right;
+	Button *dock_tab_move_left;
+	Button *dock_tab_move_right;
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
 	bool docks_visible;
 
 	HBoxContainer *tabbar_container;
-	ToolButton *distraction_free;
-	ToolButton *scene_tab_add;
+	Button *distraction_free;
+	Button *scene_tab_add;
 
 	bool scene_distraction;
 	bool script_distraction;
@@ -413,7 +410,7 @@ private:
 	struct BottomPanelItem {
 		String name;
 		Control *control;
-		ToolButton *button;
+		Button *button;
 	};
 
 	Vector<BottomPanelItem> bottom_panel_items;
@@ -423,7 +420,7 @@ private:
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
 	Label *version_label;
-	ToolButton *bottom_panel_raise;
+	Button *bottom_panel_raise;
 
 	void _bottom_panel_raise_toggled(bool);
 
@@ -492,6 +489,7 @@ private:
 	void _quick_run();
 
 	void _run(bool p_current = false, const String &p_custom = "");
+	void _run_native(const Ref<EditorExportPreset> &p_preset);
 
 	void _save_optimized();
 	void _import_action(const String &p_action);
@@ -547,8 +545,9 @@ private:
 
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
 		EditorNode *en = (EditorNode *)ud;
-		if (!en->dependency_errors.has(p_path))
+		if (!en->dependency_errors.has(p_path)) {
 			en->dependency_errors[p_path] = Set<String>();
+		}
 		en->dependency_errors[p_path].insert(p_dep + "::" + p_type);
 	}
 
@@ -686,13 +685,15 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
+	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
+
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
 	void set_docks_visible(bool p_show);
 	bool get_docks_visible() const;
 
 	void set_distraction_free_mode(bool p_enter);
-	bool get_distraction_free_mode() const;
+	bool is_distraction_free_mode_enabled() const;
 
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);
@@ -801,10 +802,11 @@ public:
 	static void progress_end_task_bg(const String &p_task);
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
-		if (p_with_preview)
+		if (p_with_preview) {
 			_save_scene_with_preview(p_file);
-		else
+		} else {
 			_save_scene(p_file);
+		}
 	}
 
 	bool is_scene_in_use(const String &p_path);
@@ -819,9 +821,9 @@ public:
 
 	bool is_exiting() const { return exiting; }
 
-	ToolButton *get_pause_button() { return pause_button; }
+	Button *get_pause_button() { return pause_button; }
 
-	ToolButton *add_bottom_panel_item(String p_text, Control *p_item);
+	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	bool are_bottom_panels_hidden() const;
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);
@@ -863,11 +865,14 @@ public:
 	bool ensure_main_scene(bool p_from_native);
 
 	void run_play();
+	void run_play_current();
+	void run_play_custom(const String &p_custom);
 	void run_stop();
+	bool is_run_playing() const;
+	String get_run_playing_scene() const;
 };
 
 struct EditorProgress {
-
 	String task;
 	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) { return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh); }
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false) {
@@ -908,7 +913,6 @@ public:
 };
 
 struct EditorProgressBG {
-
 	String task;
 	void step(int p_step = -1) { EditorNode::progress_task_step_bg(task, p_step); }
 	EditorProgressBG(const String &p_task, const String &p_label, int p_amount) {

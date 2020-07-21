@@ -37,7 +37,6 @@
 class PhysicsDirectSpaceState3D;
 
 class PhysicsDirectBodyState3D : public Object {
-
 	GDCLASS(PhysicsDirectBodyState3D, Object);
 
 protected:
@@ -64,11 +63,11 @@ public:
 	virtual Transform get_transform() const = 0;
 
 	virtual void add_central_force(const Vector3 &p_force) = 0;
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) = 0;
+	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
 	virtual void add_torque(const Vector3 &p_torque) = 0;
-	virtual void apply_central_impulse(const Vector3 &p_j) = 0;
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) = 0;
-	virtual void apply_torque_impulse(const Vector3 &p_j) = 0;
+	virtual void apply_central_impulse(const Vector3 &p_impulse) = 0;
+	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
+	virtual void apply_torque_impulse(const Vector3 &p_impulse) = 0;
 
 	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
@@ -98,10 +97,10 @@ public:
 class PhysicsShapeQueryResult3D;
 
 class PhysicsShapeQueryParameters3D : public Reference {
-
 	GDCLASS(PhysicsShapeQueryParameters3D, Reference);
 	friend class PhysicsDirectSpaceState3D;
 
+	RES shape_ref;
 	RID shape;
 	Transform transform;
 	float margin;
@@ -115,7 +114,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_shape(const RES &p_shape);
+	void set_shape(const RES &p_shape_ref);
+	RES get_shape() const;
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const;
 
@@ -141,7 +141,6 @@ public:
 };
 
 class PhysicsDirectSpaceState3D : public Object {
-
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
 private:
@@ -156,7 +155,6 @@ protected:
 
 public:
 	struct ShapeResult {
-
 		RID rid;
 		ObjectID collider_id;
 		Object *collider;
@@ -166,7 +164,6 @@ public:
 	virtual int intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct RayResult {
-
 		Vector3 position;
 		Vector3 normal;
 		RID rid;
@@ -180,7 +177,6 @@ public:
 	virtual int intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct ShapeRestInfo {
-
 		Vector3 point;
 		Vector3 normal;
 		RID rid;
@@ -201,7 +197,6 @@ public:
 };
 
 class PhysicsShapeQueryResult3D : public Reference {
-
 	GDCLASS(PhysicsShapeQueryResult3D, Reference);
 
 	Vector<PhysicsDirectSpaceState3D::ShapeResult> result;
@@ -222,7 +217,6 @@ public:
 };
 
 class PhysicsServer3D : public Object {
-
 	GDCLASS(PhysicsServer3D, Object);
 
 	static PhysicsServer3D *singleton;
@@ -437,11 +431,11 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const = 0;
 
 	virtual void body_add_central_force(RID p_body, const Vector3 &p_force) = 0;
-	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) = 0;
+	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
 	virtual void body_add_torque(RID p_body, const Vector3 &p_torque) = 0;
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
-	virtual void body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) = 0;
+	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
 
@@ -481,7 +475,6 @@ public:
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) = 0;
 
 	struct MotionResult {
-
 		Vector3 motion;
 		Vector3 remainder;
 
@@ -503,7 +496,6 @@ public:
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
-
 		float collision_depth;
 		Vector3 collision_point;
 		Vector3 collision_normal;
@@ -781,11 +773,9 @@ typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();
 class PhysicsServer3DManager {
 	struct ClassInfo {
 		String name;
-		CreatePhysicsServer3DCallback create_callback;
+		CreatePhysicsServer3DCallback create_callback = nullptr;
 
-		ClassInfo() :
-				name(""),
-				create_callback(nullptr) {}
+		ClassInfo() {}
 
 		ClassInfo(String p_name, CreatePhysicsServer3DCallback p_create_callback) :
 				name(p_name),

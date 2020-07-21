@@ -41,6 +41,15 @@
 				Removes all events from an action.
 			</description>
 		</method>
+		<method name="action_get_events">
+			<return type="Array">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns an array of [InputEvent]s associated with a given action.
+			</description>
+		</method>
 		<method name="action_has_event">
 			<return type="bool">
 			</return>
@@ -93,15 +102,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
-			</description>
-		</method>
-		<method name="get_action_list">
-			<return type="Array">
-			</return>
-			<argument index="0" name="action" type="StringName">
-			</argument>
-			<description>
-				Returns an array of [InputEvent]s associated with a given action.
 			</description>
 		</method>
 		<method name="get_actions">

@@ -33,6 +33,7 @@
 void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
 }
+
 Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0;
 }
@@ -167,7 +168,6 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 }
 
 int AnimationNodeBlendSpace1D::get_blend_point_count() const {
-
 	return blend_points_used;
 }
 
@@ -220,7 +220,6 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 }
 
 float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
-
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
@@ -241,7 +240,6 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 
 	// find the closest two points to blend between
 	for (int i = 0; i < blend_points_used; i++) {
-
 		float pos = blend_points[i].position;
 
 		if (pos <= blend_pos) {
@@ -276,7 +274,6 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 
 		weights[point_lower] = 1.0;
 	} else {
-
 		// we are between two points.
 		// figure out weights, then blend the animations
 
@@ -311,7 +308,6 @@ String AnimationNodeBlendSpace1D::get_caption() const {
 }
 
 AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {
-
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		blend_points[i].name = itos(i);
 	}

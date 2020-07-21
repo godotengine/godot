@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LIGHT_H
-#define LIGHT_H
+#ifndef LIGHT_3D_H
+#define LIGHT_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
 
 class Light3D : public VisualInstance3D {
-
 	GDCLASS(Light3D, VisualInstance3D);
 	OBJ_CATEGORY("3D Light Nodes");
 
@@ -65,8 +64,8 @@ public:
 
 	enum BakeMode {
 		BAKE_DISABLED,
-		BAKE_INDIRECT,
-		BAKE_ALL
+		BAKE_DYNAMIC,
+		BAKE_STATIC
 	};
 
 private:
@@ -92,7 +91,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	Light3D(RenderingServer::LightType p_type);
 
@@ -129,8 +128,8 @@ public:
 	void set_projector(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_projector() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	Light3D();
 	~Light3D();
@@ -140,14 +139,13 @@ VARIANT_ENUM_CAST(Light3D::Param);
 VARIANT_ENUM_CAST(Light3D::BakeMode);
 
 class DirectionalLight3D : public Light3D {
-
 	GDCLASS(DirectionalLight3D, Light3D);
 
 public:
 	enum ShadowMode {
 		SHADOW_ORTHOGONAL,
 		SHADOW_PARALLEL_2_SPLITS,
-		SHADOW_PARALLEL_4_SPLITS
+		SHADOW_PARALLEL_4_SPLITS,
 	};
 
 	enum ShadowDepthRange {
@@ -180,7 +178,6 @@ VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowDepthRange)
 
 class OmniLight3D : public Light3D {
-
 	GDCLASS(OmniLight3D, Light3D);
 
 public:
@@ -200,7 +197,7 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	OmniLight3D();
 };
@@ -208,17 +205,16 @@ public:
 VARIANT_ENUM_CAST(OmniLight3D::ShadowMode)
 
 class SpotLight3D : public Light3D {
-
 	GDCLASS(SpotLight3D, Light3D);
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	SpotLight3D() :
 			Light3D(RenderingServer::LIGHT_SPOT) {}
 };
 
-#endif
+#endif // LIGHT_3D_H

@@ -14,8 +14,16 @@
 		    add_child(http_request)
 		    http_request.connect("request_completed", self, "_http_request_completed")
 
-		    # Perform the HTTP request. The URL below returns some JSON as of writing.
+		    # Perform a GET request. The URL below returns JSON as of writing.
 		    var error = http_request.request("https://httpbin.org/get")
+		    if error != OK:
+		        push_error("An error occurred in the HTTP request.")
+
+		    # Perform a POST request. The URL below returns JSON as of writing.
+		    # Note: Don't make simultaneous requests using a single HTTPRequest node.
+		    # The snippet below is provided for reference only.
+		    var body = {"name": "Godette"}
+		    var error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
 
@@ -56,6 +64,7 @@
 		    add_child(texture_rect)
 		    texture_rect.texture = texture
 		[/codeblock]
+		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>

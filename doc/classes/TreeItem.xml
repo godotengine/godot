@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
+		You can remove a [TreeItem] by using [method Object.free].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -248,6 +249,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_suffix" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
@@ -350,7 +359,7 @@
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
-				Removes the given child TreeItem.
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>
 		</method>
 		<method name="select">
@@ -569,6 +578,16 @@
 			</argument>
 			<description>
 				If [code]true[/code], the given column is selectable.
+			</description>
+		</method>
+		<method name="set_suffix">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_text">

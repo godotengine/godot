@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This object holds information of all resources in the filesystem, their types, etc.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_resource_filesystem].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -96,6 +97,7 @@
 			<argument index="0" name="resources" type="PackedStringArray">
 			</argument>
 			<description>
+				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
 		<signal name="sources_changed">

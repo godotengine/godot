@@ -40,7 +40,6 @@
 class ShaderCompilerGLES2 {
 public:
 	struct IdentifierActions {
-
 		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
@@ -50,7 +49,6 @@ public:
 	};
 
 	struct GeneratedCode {
-
 		Vector<CharString> custom_defines;
 		Vector<StringName> uniforms;
 		Vector<StringName> texture_uniforms;
@@ -71,14 +69,13 @@ private:
 	ShaderLanguage parser;
 
 	struct DefaultIdentifierActions {
-
 		Map<StringName, String> renames;
 		Map<StringName, String> render_mode_defines;
 		Map<StringName, String> usage_defines;
 	};
 
 	void _dump_function_deps(ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, StringBuilder &r_to_add, Set<StringName> &r_added);
-	String _dump_node_code(ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning);
+	String _dump_node_code(ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope = true);
 
 	StringName current_func_name;
 	StringName vertex_name;

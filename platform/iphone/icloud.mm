@@ -58,12 +58,10 @@ void ICloud::_bind_methods() {
 };
 
 int ICloud::get_pending_event_count() {
-
 	return pending_events.size();
 };
 
 Variant ICloud::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 
@@ -284,6 +282,7 @@ Error ICloud::synchronize_key_values() {
 		return FAILED;
 	}
 }
+
 /*
 Error ICloud::initial_sync() {
 	//you sometimes have to write something to the store to get it to download new data.  go apple!
@@ -298,6 +297,7 @@ Error ICloud::initial_sync() {
 		}
 		return synchronize();
 }
+
 */
 ICloud::ICloud() {
 	ERR_FAIL_COND(instance != NULL);
@@ -354,6 +354,6 @@ ICloud::ICloud() {
 					}];
 }
 
-ICloud::~ICloud(){};
+ICloud::~ICloud() {}
 
 #endif

@@ -78,16 +78,6 @@ public:
 	return 0;
 }
 
-App::App() :
-		mWindowClosed(false),
-		mWindowVisible(true),
-		mWindowWidth(0),
-		mWindowHeight(0),
-		mEglDisplay(EGL_NO_DISPLAY),
-		mEglContext(EGL_NO_CONTEXT),
-		mEglSurface(EGL_NO_SURFACE) {
-}
-
 // The first method called when the IFrameworkView is being created.
 void App::Initialize(CoreApplicationView ^ applicationView) {
 	// Register event handlers for app lifecycle. This example includes Activated, so that we
@@ -156,7 +146,6 @@ void App::SetWindow(CoreWindow ^ p_window) {
 }
 
 static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
-
 	using namespace Windows::UI::Input;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
@@ -207,7 +196,6 @@ static bool _is_touch(Windows::UI::Input::PointerPoint ^ pointerPoint) {
 }
 
 static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windows::Foundation::Point rawPosition, OS *os) {
-
 	Windows::Foundation::Point outputPosition;
 
 // Compute coordinates normalized from 0..1.
@@ -247,17 +235,14 @@ static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windo
 };
 
 static int _get_finger(uint32_t p_touch_id) {
-
 	return p_touch_id % 31; // for now
 };
 
 void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args, bool p_pressed, bool p_is_wheel) {
-
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
 	int but = _get_button(point);
 	if (_is_touch(point)) {
-
 		Ref<InputEventScreenTouch> screen_touch;
 		screen_touch.instance();
 		screen_touch->set_device(0);
@@ -270,7 +255,6 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 
 		os->input_event(screen_touch);
 	} else {
-
 		Ref<InputEventMouseButton> mouse_button;
 		mouse_button.instance();
 		mouse_button->set_device(0);
@@ -301,22 +285,18 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 };
 
 void App::OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
-
 	pointer_event(sender, args, true);
 };
 
 void App::OnPointerReleased(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
-
 	pointer_event(sender, args, false);
 };
 
 void App::OnPointerWheelChanged(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
-
 	pointer_event(sender, args, true, true);
 }
 
 void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ signalNotifier, bool timedOut) {
-
 	OS::MouseMode mode = os->get_mouse_mode();
 	SignalNotifier ^ notifier = mouseChangedNotifier;
 
@@ -325,12 +305,10 @@ void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ 
 			ref new DispatchedHandler(
 					[mode, notifier, this]() {
 						if (mode == OS::MOUSE_MODE_CAPTURED) {
-
 							this->MouseMovedToken = MouseDevice::GetForCurrentView()->MouseMoved +=
 									ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &App::OnMouseMoved);
 
 						} else {
-
 							MouseDevice::GetForCurrentView()->MouseMoved -= MouseMovedToken;
 						}
 
@@ -341,12 +319,10 @@ void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ 
 }
 
 void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
-
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
 
 	if (_is_touch(point)) {
-
 		Ref<InputEventScreenDrag> screen_drag;
 		screen_drag.instance();
 		screen_drag->set_device(0);
@@ -356,7 +332,6 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 		os->input_event(screen_drag);
 	} else {
-
 		// In case the mouse grabbed, MouseMoved will handle this
 		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
 			return;
@@ -375,7 +350,6 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 }
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
-
 	// In case the mouse isn't grabbed, PointerMoved will handle this
 	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED)
 		return;
@@ -397,7 +371,6 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 }
 
 void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs ^ key_args, Windows::UI::Core::CharacterReceivedEventArgs ^ char_args) {
-
 	OS_UWP::KeyEvent ke;
 
 	ke.control = sender->GetAsyncKeyState(VirtualKey::Control) == CoreVirtualKeyStates::Down;
@@ -407,7 +380,6 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 	ke.pressed = p_pressed;
 
 	if (key_args != nullptr) {
-
 		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.keycode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
@@ -415,7 +387,6 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
-
 		ke.type = OS_UWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
 		ke.keycode = 0;
@@ -425,6 +396,7 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 
 	os->queue_key_event(ke);
 }
+
 void App::OnKeyDown(CoreWindow ^ sender, KeyEventArgs ^ args) {
 	key_event(sender, true, args);
 }
@@ -506,14 +478,12 @@ void App::UpdateWindowSize(Size size) {
 }
 
 char **App::get_command_line(unsigned int *out_argc) {
-
 	static char *fail_cl[] = { "--path", "game", nullptr };
 	*out_argc = 2;
 
 	FILE *f = _wfopen(L"__cl__.cl", L"rb");
 
 	if (f == nullptr) {
-
 		wprintf(L"Couldn't open command line file.\n");
 		return fail_cl;
 	}
@@ -535,7 +505,6 @@ char **App::get_command_line(unsigned int *out_argc) {
 	int argc = READ_LE_4(len);
 
 	for (int i = 0; i < argc; i++) {
-
 		r = fread(len, sizeof(uint8_t), 4, f);
 
 		if (r < 4) {
@@ -557,7 +526,6 @@ char **App::get_command_line(unsigned int *out_argc) {
 		arg[strlen] = '\0';
 
 		if (r == strlen) {
-
 			int warg_size = MultiByteToWideChar(CP_UTF8, 0, arg, -1, nullptr, 0);
 			wchar_t *warg = new wchar_t[warg_size];
 
@@ -566,7 +534,6 @@ char **App::get_command_line(unsigned int *out_argc) {
 			cl.Append(ref new Platform::String(warg, warg_size));
 
 		} else {
-
 			delete[] arg;
 			fclose(f);
 			wprintf(L"Error reading command.\n");
@@ -582,7 +549,6 @@ char **App::get_command_line(unsigned int *out_argc) {
 	char **ret = new char *[cl.Size + 1];
 
 	for (int i = 0; i < cl.Size; i++) {
-
 		int arg_size = WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, nullptr, 0, nullptr, nullptr);
 		char *arg = new char[arg_size];
 

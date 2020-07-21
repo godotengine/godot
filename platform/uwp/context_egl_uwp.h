@@ -41,7 +41,6 @@
 using namespace Windows::UI::Core;
 
 class ContextEGL_UWP {
-
 public:
 	enum Driver {
 		GLES_2_0,

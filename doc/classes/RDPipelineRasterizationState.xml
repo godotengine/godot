@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineRasterizationState" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="RenderingDevice.PolygonCullMode" default="0">
+		</member>
+		<member name="depth_bias_clamp" type="float" setter="set_depth_bias_clamp" getter="get_depth_bias_clamp" default="0.0">
+		</member>
+		<member name="depth_bias_constant_factor" type="float" setter="set_depth_bias_constant_factor" getter="get_depth_bias_constant_factor" default="0.0">
+		</member>
+		<member name="depth_bias_enable" type="bool" setter="set_depth_bias_enable" getter="get_depth_bias_enable" default="false">
+		</member>
+		<member name="depth_bias_slope_factor" type="float" setter="set_depth_bias_slope_factor" getter="get_depth_bias_slope_factor" default="0.0">
+		</member>
+		<member name="discard_primitives" type="bool" setter="set_discard_primitives" getter="get_discard_primitives" default="false">
+		</member>
+		<member name="enable_depth_clamp" type="bool" setter="set_enable_depth_clamp" getter="get_enable_depth_clamp" default="false">
+		</member>
+		<member name="front_face" type="int" setter="set_front_face" getter="get_front_face" enum="RenderingDevice.PolygonFrontFace" default="0">
+		</member>
+		<member name="line_width" type="float" setter="set_line_width" getter="get_line_width" default="1.0">
+		</member>
+		<member name="patch_control_points" type="int" setter="set_patch_control_points" getter="get_patch_control_points" default="1">
+		</member>
+		<member name="wireframe" type="bool" setter="set_wireframe" getter="get_wireframe" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

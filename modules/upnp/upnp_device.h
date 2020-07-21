@@ -34,7 +34,6 @@
 #include "core/reference.h"
 
 class UPNPDevice : public Reference {
-
 	GDCLASS(UPNPDevice, Reference);
 
 public:

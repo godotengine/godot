@@ -35,7 +35,6 @@
 #include "scene/resources/curve.h"
 
 class Path2D : public Node2D {
-
 	GDCLASS(Path2D, Node2D);
 
 	Ref<Curve2D> curve;
@@ -48,19 +47,18 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	void set_curve(const Ref<Curve2D> &p_curve);
 	Ref<Curve2D> get_curve() const;
 
-	Path2D();
+	Path2D() {}
 };
 
 class PathFollow2D : public Node2D {
-
 	GDCLASS(PathFollow2D, Node2D);
 
 public:
@@ -77,7 +75,7 @@ private:
 	void _update_transform();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -107,7 +105,7 @@ public:
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	PathFollow2D();
 };

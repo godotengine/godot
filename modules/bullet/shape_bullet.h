@@ -31,7 +31,7 @@
 #ifndef SHAPE_BULLET_H
 #define SHAPE_BULLET_H
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/variant.h"
 #include "rid_bullet.h"
 #include "servers/physics_server_3d.h"
@@ -50,9 +50,12 @@ class ShapeOwnerBullet;
 class btBvhTriangleMeshShape;
 
 class ShapeBullet : public RIDBullet {
-
 	Map<ShapeOwnerBullet *, int> owners;
-	real_t margin;
+	real_t margin = 0.04;
+
+	// Contains the default shape.
+	btCollisionShape *default_shape = nullptr;
+	btCollisionShape *old_default_shape = nullptr;
 
 protected:
 	/// return self
@@ -64,7 +67,11 @@ public:
 	virtual ~ShapeBullet();
 
 	btCollisionShape *create_bt_shape(const Vector3 &p_implicit_scale, real_t p_extra_edge = 0);
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0) = 0;
+	btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+
+	void destroy_bt_shape(btCollisionShape *p_shape) const;
+
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0) = 0;
 
 	void add_owner(ShapeOwnerBullet *p_owner);
 	void remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody = false);
@@ -95,7 +102,6 @@ public:
 };
 
 class PlaneShapeBullet : public ShapeBullet {
-
 	Plane plane;
 
 public:
@@ -104,14 +110,13 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(const Plane &p_plane);
 };
 
 class SphereShapeBullet : public ShapeBullet {
-
 	real_t radius;
 
 public:
@@ -121,14 +126,13 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(real_t p_radius);
 };
 
 class BoxShapeBullet : public ShapeBullet {
-
 	btVector3 half_extents;
 
 public:
@@ -138,14 +142,13 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(const Vector3 &p_half_extents);
 };
 
 class CapsuleShapeBullet : public ShapeBullet {
-
 	real_t height;
 	real_t radius;
 
@@ -157,14 +160,13 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(real_t p_height, real_t p_radius);
 };
 
 class CylinderShapeBullet : public ShapeBullet {
-
 	real_t height;
 	real_t radius;
 
@@ -176,14 +178,13 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
 
 private:
 	void setup(real_t p_height, real_t p_radius);
 };
 
 class ConvexPolygonShapeBullet : public ShapeBullet {
-
 public:
 	btAlignedObjectArray<btVector3> vertices;
 
@@ -193,14 +194,14 @@ public:
 	void get_vertices(Vector<Vector3> &out_vertices);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(const Vector<Vector3> &p_vertices);
 };
 
 class ConcavePolygonShapeBullet : public ShapeBullet {
-	class btBvhTriangleMeshShape *meshShape;
+	class btBvhTriangleMeshShape *meshShape = nullptr;
 
 public:
 	Vector<Vector3> faces;
@@ -211,14 +212,13 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(Vector<Vector3> p_faces);
 };
 
 class HeightMapShapeBullet : public ShapeBullet {
-
 public:
 	Vector<real_t> heights;
 	int width;
@@ -231,24 +231,23 @@ public:
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 };
 
 class RayShapeBullet : public ShapeBullet {
-
 public:
-	real_t length;
-	bool slips_on_slope;
+	real_t length = 1;
+	bool slips_on_slope = false;
 
 	RayShapeBullet();
 
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
 	virtual PhysicsServer3D::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
+	virtual btCollisionShape *internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
 	void setup(real_t p_length, bool p_slips_on_slope);

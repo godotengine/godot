@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderFile" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bytecode" qualifiers="const">
+			<return type="RDShaderBytecode">
+			</return>
+			<argument index="0" name="version" type="StringName" default="@&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_version_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bytecode">
+			<return type="void">
+			</return>
+			<argument index="0" name="bytecode" type="RDShaderBytecode">
+			</argument>
+			<argument index="1" name="version" type="StringName" default="@&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_error" type="String" setter="set_base_error" getter="get_base_error" default="&quot;&quot;">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

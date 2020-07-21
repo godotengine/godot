@@ -50,7 +50,6 @@
 #include "scene/main/http_request.h"
 
 class EditorAssetLibraryItem : public PanelContainer {
-
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
 
 	TextureButton *icon;
@@ -81,7 +80,6 @@ public:
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
-
 	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
 	EditorAssetLibraryItem *item;
@@ -129,7 +127,6 @@ public:
 };
 
 class EditorAssetLibraryItemDownload : public PanelContainer {
-
 	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
 
 	TextureRect *icon;
@@ -237,7 +234,6 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	struct ImageQueue {
-
 		bool active;
 		int queue_id;
 		ImageType image_type;
@@ -309,18 +305,17 @@ public:
 };
 
 class AssetLibraryEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
 	EditorAssetLibrary *addon_library;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "AssetLib"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_object) {}
-	virtual bool handles(Object *p_object) const { return false; }
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "AssetLib"; }
+	bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override {}
+	virtual bool handles(Object *p_object) const override { return false; }
+	virtual void make_visible(bool p_visible) override;
 	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
 	//virtual Dictionary get_state() const;
 	//virtual void set_state(const Dictionary& p_state);

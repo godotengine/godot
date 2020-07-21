@@ -50,15 +50,14 @@ public:
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback();
-	virtual String get_stream_name() const;
+	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual String get_stream_name() const override;
 
-	virtual float get_length() const;
+	virtual float get_length() const override;
 	AudioStreamGenerator();
 };
 
 class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
-
 	GDCLASS(AudioStreamGeneratorPlayback, AudioStreamPlaybackResampled);
 	friend class AudioStreamGenerator;
 	RingBuffer<AudioFrame> buffer;
@@ -68,20 +67,20 @@ class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
 	AudioStreamGenerator *generator;
 
 protected:
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames);
-	virtual float get_stream_sampling_rate();
+	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual float get_stream_sampling_rate() override;
 
 	static void _bind_methods();
 
 public:
-	virtual void start(float p_from_pos = 0.0);
-	virtual void stop();
-	virtual bool is_playing() const;
+	virtual void start(float p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	virtual int get_loop_count() const; //times it looped
+	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
 	bool push_frame(const Vector2 &p_frame);
 	bool can_push_buffer(int p_frames) const;

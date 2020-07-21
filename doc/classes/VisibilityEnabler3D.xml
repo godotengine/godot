@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisibilityEnabler3D" inherits="VisibilityNotifier3D" version="4.0">
 	<brief_description>
-		Enables certain nodes only when visible.
+		Enables certain nodes only when approximately visible.
 	</brief_description>
 	<description>
 		The VisibilityEnabler3D will disable [RigidBody3D] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler3D itself.
-		Note that VisibilityEnabler3D will not affect nodes added after scene initialization.
+		If you just want to receive notifications, use [VisibilityNotifier3D] instead.
+		[b]Note:[/b] VisibilityEnabler3D uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account. The heuristic is an implementation detail and may change in future versions. If you need precise visibility checking, use another method such as adding an [Area3D] node as a child of a [Camera3D] node and/or [method Vector3.dot].
+		[b]Note:[/b] VisibilityEnabler3D will not affect nodes added after scene initialization.
 	</description>
 	<tutorials>
 	</tutorials>

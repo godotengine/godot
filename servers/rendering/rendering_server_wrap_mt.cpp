@@ -34,32 +34,26 @@
 #include "servers/display_server.h"
 
 void RenderingServerWrapMT::thread_exit() {
-
 	exit = true;
 }
 
 void RenderingServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
-
 	if (!atomic_decrement(&draw_pending)) {
-
 		rendering_server->draw(p_swap_buffers, frame_step);
 	}
 }
 
 void RenderingServerWrapMT::thread_flush() {
-
 	atomic_decrement(&draw_pending);
 }
 
 void RenderingServerWrapMT::_thread_callback(void *_instance) {
-
 	RenderingServerWrapMT *vsmt = reinterpret_cast<RenderingServerWrapMT *>(_instance);
 
 	vsmt->thread_loop();
 }
 
 void RenderingServerWrapMT::thread_loop() {
-
 	server_thread = Thread::get_caller_id();
 
 	DisplayServer::get_singleton()->make_rendering_thread();
@@ -81,33 +75,25 @@ void RenderingServerWrapMT::thread_loop() {
 /* EVENT QUEUING */
 
 void RenderingServerWrapMT::sync() {
-
 	if (create_thread) {
-
 		atomic_increment(&draw_pending);
 		command_queue.push_and_sync(this, &RenderingServerWrapMT::thread_flush);
 	} else {
-
 		command_queue.flush_all(); //flush all pending from other threads
 	}
 }
 
 void RenderingServerWrapMT::draw(bool p_swap_buffers, double frame_step) {
-
 	if (create_thread) {
-
 		atomic_increment(&draw_pending);
 		command_queue.push(this, &RenderingServerWrapMT::thread_draw, p_swap_buffers, frame_step);
 	} else {
-
 		rendering_server->draw(p_swap_buffers, frame_step);
 	}
 }
 
 void RenderingServerWrapMT::init() {
-
 	if (create_thread) {
-
 		print_verbose("RenderingServerWrapMT: Creating render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
 		if (create_thread) {
@@ -119,13 +105,11 @@ void RenderingServerWrapMT::init() {
 		}
 		print_verbose("RenderingServerWrapMT: Finished render thread");
 	} else {
-
 		rendering_server->init();
 	}
 }
 
 void RenderingServerWrapMT::finish() {
-
 	sky_free_cached_ids();
 	shader_free_cached_ids();
 	material_free_cached_ids();
@@ -138,7 +122,7 @@ void RenderingServerWrapMT::finish() {
 	spot_light_free_cached_ids();
 	reflection_probe_free_cached_ids();
 	gi_probe_free_cached_ids();
-	lightmap_capture_free_cached_ids();
+	lightmap_free_cached_ids();
 	particles_free_cached_ids();
 	camera_free_cached_ids();
 	viewport_free_cached_ids();
@@ -152,7 +136,6 @@ void RenderingServerWrapMT::finish() {
 	canvas_occluder_polygon_free_cached_ids();
 
 	if (thread) {
-
 		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
@@ -164,7 +147,6 @@ void RenderingServerWrapMT::finish() {
 }
 
 void RenderingServerWrapMT::set_use_vsync_callback(bool p_enable) {
-
 	singleton_mt->call_set_use_vsync(p_enable);
 }
 
@@ -172,7 +154,6 @@ RenderingServerWrapMT *RenderingServerWrapMT::singleton_mt = nullptr;
 
 RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
-
 	singleton_mt = this;
 	DisplayServer::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly
 
@@ -191,7 +172,6 @@ RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool 
 }
 
 RenderingServerWrapMT::~RenderingServerWrapMT() {
-
 	memdelete(rendering_server);
 	//finish();
 }

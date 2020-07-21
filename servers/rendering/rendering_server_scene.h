@@ -33,7 +33,8 @@
 
 #include "servers/rendering/rasterizer.h"
 
-#include "core/math/geometry.h"
+#include "core/local_vector.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -51,6 +52,7 @@ public:
 		MAX_DECALS_CULLED = 4096,
 		MAX_GI_PROBES_CULLED = 4096,
 		MAX_ROOM_CULL = 32,
+		MAX_LIGHTMAPS_CULLED = 4096,
 		MAX_EXTERIOR_PORTALS = 128,
 	};
 
@@ -61,7 +63,6 @@ public:
 	/* CAMERA API */
 
 	struct Camera {
-
 		enum Type {
 			PERSPECTIVE,
 			ORTHOGONAL,
@@ -80,9 +81,8 @@ public:
 		Transform transform;
 
 		Camera() {
-
 			visible_layers = 0xFFFFFFFF;
-			fov = 70;
+			fov = 75;
 			type = PERSPECTIVE;
 			znear = 0.05;
 			zfar = 100;
@@ -109,7 +109,6 @@ public:
 	struct Instance;
 
 	struct Scenario {
-
 		RS::ScenarioDebugMode debug;
 		RID self;
 
@@ -123,6 +122,8 @@ public:
 		RID reflection_atlas;
 
 		SelfList<Instance>::List instances;
+
+		LocalVector<RID> dynamic_lights;
 
 		Scenario() { debug = RS::SCENARIO_DEBUG_DISABLED; }
 	};
@@ -143,12 +144,10 @@ public:
 	/* INSTANCING API */
 
 	struct InstanceBaseData {
-
 		virtual ~InstanceBaseData() {}
 	};
 
 	struct Instance : RasterizerScene::InstanceBase {
-
 		RID self;
 		//scenario stuff
 		OctreeElementID octree_id;
@@ -170,6 +169,8 @@ public:
 		float lod_begin_hysteresis;
 		float lod_end_hysteresis;
 		RID lod_instance;
+
+		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
 
 		uint64_t last_render_pass;
 		uint64_t last_frame_pass;
@@ -195,7 +196,6 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-
 			octree_id = 0;
 			scenario = nullptr;
 
@@ -220,11 +220,12 @@ public:
 		}
 
 		~Instance() {
-
-			if (base_data)
+			if (base_data) {
 				memdelete(base_data);
-			if (custom_aabb)
+			}
+			if (custom_aabb) {
 				memdelete(custom_aabb);
+			}
 		}
 	};
 
@@ -232,7 +233,6 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
-
 		List<Instance *> lighting;
 		bool lighting_dirty;
 		bool can_cast_shadows;
@@ -250,7 +250,6 @@ public:
 		List<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
-
 			lighting_dirty = false;
 			reflection_dirty = true;
 			can_cast_shadows = true;
@@ -261,7 +260,6 @@ public:
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-
 		Instance *owner;
 
 		struct PairInfo {
@@ -278,14 +276,12 @@ public:
 
 		InstanceReflectionProbeData() :
 				update_list(this) {
-
 			reflection_dirty = true;
 			render_step = -1;
 		}
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
-
 		Instance *owner;
 		RID instance;
 
@@ -302,7 +298,6 @@ public:
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
 
 	struct InstanceLightData : public InstanceBaseData {
-
 		struct PairInfo {
 			List<Instance *>::Element *L; //light iterator in geometry
 			Instance *geometry;
@@ -318,8 +313,13 @@ public:
 
 		Instance *baked_light;
 
-		InstanceLightData() {
+		RS::LightBakeMode bake_mode;
+		uint32_t max_sdfgi_cascade = 2;
 
+		uint64_t sdfgi_cascade_light_pass = 0;
+
+		InstanceLightData() {
+			bake_mode = RS::LIGHT_BAKE_DISABLED;
 			shadow_dirty = true;
 			D = nullptr;
 			last_version = 0;
@@ -328,7 +328,6 @@ public:
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
-
 		Instance *owner;
 
 		struct PairInfo {
@@ -342,7 +341,6 @@ public:
 		Set<Instance *> lights;
 
 		struct LightCache {
-
 			RS::LightType type;
 			Transform transform;
 			Color color;
@@ -374,8 +372,7 @@ public:
 
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
-	struct InstanceLightmapCaptureData : public InstanceBaseData {
-
+	struct InstanceLightmapData : public InstanceBaseData {
 		struct PairInfo {
 			List<Instance *>::Element *L; //iterator in geometry
 			Instance *geometry;
@@ -384,7 +381,7 @@ public:
 
 		Set<Instance *> users;
 
-		InstanceLightmapCaptureData() {
+		InstanceLightmapData() {
 		}
 	};
 
@@ -392,7 +389,9 @@ public:
 	Instance *instance_cull_result[MAX_INSTANCE_CULL];
 	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
 	Instance *light_cull_result[MAX_LIGHTS_CULLED];
+	RID sdfgi_light_cull_result[MAX_LIGHTS_CULLED];
 	RID light_instance_cull_result[MAX_LIGHTS_CULLED];
+	uint64_t sdfgi_light_cull_pass = 0;
 	int light_cull_count;
 	int directional_light_count;
 	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
@@ -401,6 +400,8 @@ public:
 	int decal_cull_count;
 	RID gi_probe_instance_cull_result[MAX_GI_PROBES_CULLED];
 	int gi_probe_cull_count;
+	Instance *lightmap_cull_result[MAX_LIGHTS_CULLED];
+	int lightmap_cull_count;
 
 	RID_PtrOwner<Instance> instance_owner;
 
@@ -414,7 +415,6 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
-	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -434,6 +434,7 @@ public:
 
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin);
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance);
+	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 
 	void _update_instance_shader_parameters_from_material(Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
 
@@ -449,9 +450,11 @@ public:
 
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario);
 
+	RID _render_get_environment(RID p_camera, RID p_scenario);
+
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
-	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
+	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
@@ -459,6 +462,8 @@ public:
 	void update_dirty_instances();
 
 	void render_probes();
+
+	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);
 
 	bool free(RID p_rid);
 

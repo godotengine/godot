@@ -29,17 +29,11 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
+
 #include "core/engine.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "servers/physics_server_3d.h"
-
-SpringArm3D::SpringArm3D() :
-		spring_length(1),
-		current_spring_length(0),
-		keep_child_basis(false),
-		mask(1),
-		margin(0.01) {}
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
@@ -60,7 +54,6 @@ void SpringArm3D::_notification(int p_what) {
 }
 
 void SpringArm3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_hit_length"), &SpringArm3D::get_hit_length);
 
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SpringArm3D::set_length);
@@ -90,8 +83,9 @@ float SpringArm3D::get_length() const {
 }
 
 void SpringArm3D::set_length(float p_length) {
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
 		update_gizmo();
+	}
 
 	spring_length = p_length;
 }
@@ -147,7 +141,7 @@ void SpringArm3D::process_spring() {
 	if (shape.is_null()) {
 		motion = Vector3(cast_direction * (spring_length));
 		PhysicsDirectSpaceState3D::RayResult r;
-		bool intersected = get_world()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
+		bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
 		if (intersected) {
 			float dist = get_global_transform().origin.distance_to(r.position);
 			dist -= margin;
@@ -155,7 +149,7 @@ void SpringArm3D::process_spring() {
 		}
 	} else {
 		motion = Vector3(cast_direction * spring_length);
-		get_world()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
+		get_world_3d()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
 	}
 
 	current_spring_length = spring_length * motion_delta;
@@ -163,7 +157,6 @@ void SpringArm3D::process_spring() {
 	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
-
 		Node3D *child = Object::cast_to<Node3D>(get_child(i));
 		if (child) {
 			childs_transform.basis = child->get_global_transform().basis;

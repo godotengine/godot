@@ -117,7 +117,6 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
 #include "scene/main/canvas_item.h"
@@ -132,6 +131,7 @@
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/box_shape_3d.h"
+#include "scene/resources/camera_effects.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/circle_shape_2d.h"
@@ -154,6 +154,7 @@
 #include "scene/resources/physics_material.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
+#include "scene/resources/ray_shape_2d.h"
 #include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
@@ -162,6 +163,7 @@
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
@@ -193,6 +195,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
+#include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
@@ -225,8 +228,8 @@ static Ref<ResourceFormatLoaderText> resource_loader_text;
 
 static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
 
-static Ref<ResourceFormatLoaderStreamTexture> resource_loader_stream_texture;
-static Ref<ResourceFormatLoaderTextureLayered> resource_loader_texture_layered;
+static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
 
 static Ref<ResourceFormatLoaderBMFont> resource_loader_bmfont;
 
@@ -234,7 +237,6 @@ static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
 void register_scene_types() {
-
 	SceneStringNames::create();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -305,7 +307,6 @@ void register_scene_types() {
 	ClassDB::register_class<MenuButton>();
 	ClassDB::register_class<CheckBox>();
 	ClassDB::register_class<CheckButton>();
-	ClassDB::register_class<ToolButton>();
 	ClassDB::register_class<LinkButton>();
 	ClassDB::register_class<Panel>();
 	ClassDB::register_virtual_class<Range>();
@@ -346,6 +347,8 @@ void register_scene_types() {
 	ClassDB::register_class<Tree>();
 
 	ClassDB::register_class<TextEdit>();
+	ClassDB::register_class<SyntaxHighlighter>();
+	ClassDB::register_class<CodeHighlighter>();
 
 	ClassDB::register_virtual_class<TreeItem>();
 	ClassDB::register_class<OptionButton>();
@@ -369,7 +372,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(DisplayServer::get_singleton()->get_swap_ok_cancel())));
+	AcceptDialog::set_swap_cancel_ok(GLOBAL_DEF("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok())));
 #endif
 
 	/* REGISTER 3D */
@@ -432,8 +435,10 @@ void register_scene_types() {
 	ClassDB::register_class<Decal>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
-	//ClassDB::register_class<BakedLightmap>();
-	//ClassDB::register_class<BakedLightmapData>();
+	ClassDB::register_class<BakedLightmap>();
+	ClassDB::register_class<BakedLightmapData>();
+	ClassDB::register_class<LightmapProbe>();
+	ClassDB::register_virtual_class<Lightmapper>();
 	ClassDB::register_class<GPUParticles3D>();
 	ClassDB::register_class<CPUParticles3D>();
 	ClassDB::register_class<Position3D>();
@@ -538,6 +543,8 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
 	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
 	ClassDB::register_class<VisualShaderNodeTexture>();
+	ClassDB::register_virtual_class<VisualShaderNodeSample3D>();
+	ClassDB::register_class<VisualShaderNodeTexture2DArray>();
 	ClassDB::register_class<VisualShaderNodeCubemap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
 	ClassDB::register_class<VisualShaderNodeFloatUniform>();
@@ -548,6 +555,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTransformUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniformTriplanar>();
+	ClassDB::register_class<VisualShaderNodeTexture2DArrayUniform>();
 	ClassDB::register_class<VisualShaderNodeCubemapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
@@ -557,6 +565,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeGlobalExpression>();
 	ClassDB::register_class<VisualShaderNodeIs>();
 	ClassDB::register_class<VisualShaderNodeCompare>();
+	ClassDB::register_class<VisualShaderNodeMultiplyAdd>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
@@ -675,7 +684,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<Texture2D>();
 	ClassDB::register_class<Sky>();
-	ClassDB::register_class<StreamTexture>();
+	ClassDB::register_class<StreamTexture2D>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
 	ClassDB::register_class<MeshTexture>();
@@ -686,9 +695,15 @@ void register_scene_types() {
 	ClassDB::register_class<AnimatedTexture>();
 	ClassDB::register_class<CameraTexture>();
 	ClassDB::register_virtual_class<TextureLayered>();
+	ClassDB::register_virtual_class<ImageTextureLayered>();
 	ClassDB::register_class<Cubemap>();
 	ClassDB::register_class<CubemapArray>();
 	ClassDB::register_class<Texture2DArray>();
+	ClassDB::register_virtual_class<StreamTextureLayered>();
+	ClassDB::register_class<StreamCubemap>();
+	ClassDB::register_class<StreamCubemapArray>();
+	ClassDB::register_class<StreamTexture2DArray>();
+
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
@@ -755,10 +770,19 @@ void register_scene_types() {
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
+	ClassDB::add_compatibility_class("ToolButton", "Button");
 
 	// Renamed in 4.0.
+	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
 	ClassDB::add_compatibility_class("AnimatedSprite", "AnimatedSprite2D");
 	ClassDB::add_compatibility_class("Area", "Area3D");
+	ClassDB::add_compatibility_class("ARVRCamera", "XRCamera3D");
+	ClassDB::add_compatibility_class("ARVRController", "XRController3D");
+	ClassDB::add_compatibility_class("ARVRAnchor", "XRAnchor3D");
+	ClassDB::add_compatibility_class("ARVRInterface", "XRInterface");
+	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
+	ClassDB::add_compatibility_class("ARVRPositionalTracker", "XRPositionalTracker");
+	ClassDB::add_compatibility_class("ARVRServer", "XRServer");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
 	ClassDB::add_compatibility_class("BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D");
@@ -806,6 +830,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
 	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
 	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
+	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");
 	ClassDB::add_compatibility_class("Path", "Path3D");
@@ -827,6 +852,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D");
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
 	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape3D");
+	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
 	ClassDB::add_compatibility_class("RayShape", "RayShape3D");
@@ -857,12 +883,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("World", "World3D");
-	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
-	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
-	ClassDB::add_compatibility_class("ARVRCamera", "XRCamera3D");
-	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
-	ClassDB::add_compatibility_class("ARVRController", "XRController3D");
-	ClassDB::add_compatibility_class("ARVRAnchor", "XRAnchor3D");
+	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 
 #endif
 
@@ -908,7 +929,6 @@ void register_scene_types() {
 }
 
 void unregister_scene_types() {
-
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 

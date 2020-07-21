@@ -36,7 +36,6 @@
 #include "scene/gui/tree.h"
 
 class EditorSubScene : public ConfirmationDialog {
-
 	GDCLASS(EditorSubScene, ConfirmationDialog);
 
 	List<Node *> selection;
@@ -54,7 +53,7 @@ class EditorSubScene : public ConfirmationDialog {
 	void _remove_selection_child(Node *p_node);
 	void _reown(Node *p_node, List<Node *> *p_to_reown);
 
-	void ok_pressed();
+	void ok_pressed() override;
 
 protected:
 	void _notification(int p_what);

@@ -18,7 +18,7 @@
 			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
+				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member axis_lock_motion_x], [member axis_lock_motion_y] and [member axis_lock_motion_z].
 			</description>
 		</method>
 		<method name="get_floor_normal" qualifiers="const">
@@ -106,9 +106,9 @@
 			<description>
 				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
-				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity. 
+				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
 				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall.
-				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
+				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes when you include gravity in [code]linear_velocity[/code] and the body is standing still.
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
 				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody3D] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody3D] nodes like with [StaticBody3D].
@@ -145,7 +145,7 @@
 			<argument index="1" name="lock" type="bool">
 			</argument>
 			<description>
-				Locks or unlocks the specified [code]axis[/code] depending on the value of [code]lock[/code]. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
+				Locks or unlocks the specified [code]axis[/code] depending on the value of [code]lock[/code]. See also [member axis_lock_motion_x], [member axis_lock_motion_y] and [member axis_lock_motion_z].
 			</description>
 		</method>
 		<method name="test_move">
@@ -163,17 +163,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
-			If the body is at least this close to another body, this body will consider them to be colliding.
-		</member>
-		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+		<member name="axis_lock_motion_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's X axis movement.
 		</member>
-		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+		<member name="axis_lock_motion_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's Y axis movement.
 		</member>
-		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+		<member name="axis_lock_motion_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's Z axis movement.
+		</member>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
+			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 	</members>
 	<constants>

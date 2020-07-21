@@ -46,11 +46,11 @@ int add_cmdline(int p_argc, char **p_args);
 int iphone_main(int, int, int, char **, String);
 
 int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
-
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
-		if (argv[0][len] == '/') break;
+		if (argv[0][len] == '/')
+			break;
 	}
 
 	if (len >= 0) {
@@ -85,7 +85,6 @@ int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 };
 
 void iphone_finish() {
-
 	printf("iphone_finish\n");
 	Main::cleanup();
 	delete os;

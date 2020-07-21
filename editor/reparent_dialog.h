@@ -41,7 +41,6 @@
 @author Juan Linietsky <reduzio@gmail.com>
 */
 class ReparentDialog : public ConfirmationDialog {
-
 	GDCLASS(ReparentDialog, ConfirmationDialog);
 
 	SceneTreeEditor *tree;

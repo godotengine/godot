@@ -33,28 +33,23 @@
 #include "core/error_macros.h"
 
 Error FileAccessBuffered::set_error(Error p_error) const {
-
 	return (last_error = p_error);
 }
 
 void FileAccessBuffered::set_cache_size(int p_size) {
-
 	cache_size = p_size;
 }
 
 int FileAccessBuffered::get_cache_size() {
-
 	return cache_size;
 }
 
 int FileAccessBuffered::cache_data_left() const {
-
 	if (file.offset >= file.size) {
 		return 0;
 	}
 
 	if (cache.offset == -1 || file.offset < cache.offset || file.offset >= cache.offset + cache.buffer.size()) {
-
 		return read_data_block(file.offset, cache_size);
 	}
 
@@ -62,37 +57,30 @@ int FileAccessBuffered::cache_data_left() const {
 }
 
 void FileAccessBuffered::seek(size_t p_position) {
-
 	file.offset = p_position;
 }
 
 void FileAccessBuffered::seek_end(int64_t p_position) {
-
 	file.offset = file.size + p_position;
 }
 
 size_t FileAccessBuffered::get_position() const {
-
 	return file.offset;
 }
 
 size_t FileAccessBuffered::get_len() const {
-
 	return file.size;
 }
 
 bool FileAccessBuffered::eof_reached() const {
-
 	return file.offset > file.size;
 }
 
 uint8_t FileAccessBuffered::get_8() const {
-
 	ERR_FAIL_COND_V_MSG(!file.open, 0, "Can't get data, when file is not opened.");
 
 	uint8_t byte = 0;
 	if (cache_data_left() >= 1) {
-
 		byte = cache.buffer[file.offset - cache.offset];
 	}
 
@@ -102,15 +90,12 @@ uint8_t FileAccessBuffered::get_8() const {
 }
 
 int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
-
 	ERR_FAIL_COND_V_MSG(!file.open, -1, "Can't get buffer, when file is not opened.");
 
 	if (p_length > cache_size) {
-
 		int total_read = 0;
 
 		if (!(cache.offset == -1 || file.offset < cache.offset || file.offset >= cache.offset + cache.buffer.size())) {
-
 			int size = (cache.buffer.size() - (file.offset - cache.offset));
 			size = size - (size % 4);
 			//const uint8_t* read = cache.buffer.ptr();
@@ -134,7 +119,6 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 	int to_read = p_length;
 	int total_read = 0;
 	while (to_read > 0) {
-
 		int left = cache_data_left();
 		if (left == 0) {
 			file.offset += to_read;
@@ -158,19 +142,9 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 }
 
 bool FileAccessBuffered::is_open() const {
-
 	return file.open;
 }
 
 Error FileAccessBuffered::get_error() const {
-
 	return last_error;
-}
-
-FileAccessBuffered::FileAccessBuffered() {
-
-	cache_size = DEFAULT_CACHE_SIZE;
-}
-
-FileAccessBuffered::~FileAccessBuffered() {
 }

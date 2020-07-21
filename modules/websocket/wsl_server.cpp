@@ -60,10 +60,11 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i]);
 		String name = header[0].to_lower();
 		String value = header[1].strip_edges();
-		if (headers.has(name))
+		if (headers.has(name)) {
 			headers[name] += "," + value;
-		else
+		} else {
 			headers[name] = value;
+		}
 	}
 #define _WSL_CHECK(NAME, VALUE)                                                         \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
@@ -83,44 +84,52 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 			String proto = protos[i].strip_edges();
 			// Check if we have the given protocol
 			for (int j = 0; j < p_protocols.size(); j++) {
-				if (proto != p_protocols[j])
+				if (proto != p_protocols[j]) {
 					continue;
+				}
 				protocol = proto;
 				break;
 			}
 			// Found a protocol
-			if (protocol != "")
+			if (protocol != "") {
 				break;
+			}
 		}
-		if (protocol == "") // Invalid protocol(s) requested
+		if (protocol == "") { // Invalid protocol(s) requested
 			return false;
-	} else if (p_protocols.size() > 0) // No protocol requested, but we need one
+		}
+	} else if (p_protocols.size() > 0) { // No protocol requested, but we need one
 		return false;
+	}
 	return true;
 }
 
 Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
-	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
+	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT) {
 		return ERR_TIMEOUT;
+	}
 	if (use_ssl) {
 		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL>>(connection);
-		if (ssl.is_null())
+		if (ssl.is_null()) {
 			return FAILED;
+		}
 		ssl->poll();
-		if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING)
+		if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
-		else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED)
+		} else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
 			return FAILED;
+		}
 	}
 	if (!has_request) {
 		int read = 0;
 		while (true) {
 			ERR_FAIL_COND_V_MSG(req_pos >= WSL_MAX_HEADER_SIZE, ERR_OUT_OF_MEMORY, "Response headers too big.");
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK) // Got an error
+			if (err != OK) { // Got an error
 				return FAILED;
-			else if (read != 1) // Busy, wait next poll
+			} else if (read != 1) { // Busy, wait next poll
 				return ERR_BUSY;
+			}
 			char *r = (char *)req_buf;
 			int l = req_pos;
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
@@ -132,8 +141,9 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 				s += "Upgrade: websocket\r\n";
 				s += "Connection: Upgrade\r\n";
 				s += "Sec-WebSocket-Accept: " + WSLPeer::compute_key_response(key) + "\r\n";
-				if (protocol != "")
+				if (protocol != "") {
 					s += "Sec-WebSocket-Protocol: " + protocol + "\r\n";
+				}
 				s += "\r\n";
 				response = s.utf8();
 				has_request = true;
@@ -150,8 +160,9 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 		}
 		response_sent += sent;
 	}
-	if (response_sent < response.size() - 1)
+	if (response_sent < response.size() - 1) {
 		return ERR_BUSY;
+	}
 	return OK;
 }
 
@@ -169,7 +180,6 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 }
 
 void WSLServer::poll() {
-
 	List<int> remove_ids;
 	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		Ref<WSLPeer> peer = (WSLPeer *)E->get().ptr();
@@ -217,13 +227,15 @@ void WSLServer::poll() {
 	}
 	remove_peers.clear();
 
-	if (!_server->is_listening())
+	if (!_server->is_listening()) {
 		return;
+	}
 
 	while (_server->is_connection_available()) {
 		Ref<StreamPeerTCP> conn = _server->take_connection();
-		if (is_refusing_new_connections())
+		if (is_refusing_new_connections()) {
 			continue; // Conn will go out-of-scope and be closed.
+		}
 
 		Ref<PendingPeer> peer = memnew(PendingPeer);
 		if (private_key.is_valid() && ssl_cert.is_valid()) {
@@ -298,10 +310,10 @@ Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer
 }
 
 WSLServer::WSLServer() {
-	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSS_IN_BUF) - 1) + 10;
-	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_IN_PKT) - 1);
-	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSS_OUT_BUF) - 1) + 10;
-	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_OUT_PKT) - 1);
+	_in_buf_size = DEF_BUF_SHIFT;
+	_in_pkt_size = DEF_PKT_SHIFT;
+	_out_buf_size = DEF_BUF_SHIFT;
+	_out_pkt_size = DEF_PKT_SHIFT;
 	_server.instance();
 }
 

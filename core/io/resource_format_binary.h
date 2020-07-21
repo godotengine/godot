@@ -36,17 +36,16 @@
 #include "core/os/file_access.h"
 
 class ResourceLoaderBinary {
-
-	bool translation_remapped;
+	bool translation_remapped = false;
 	String local_path;
 	String res_path;
 	String type;
 	Ref<Resource> resource;
-	uint32_t ver_format;
+	uint32_t ver_format = 0;
 
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
-	uint64_t importmd_ofs;
+	uint64_t importmd_ofs = 0;
 
 	Vector<char> str_buf;
 	List<RES> resource_cache;
@@ -61,8 +60,8 @@ class ResourceLoaderBinary {
 		RES cache;
 	};
 
-	bool use_sub_threads;
-	float *progress;
+	bool use_sub_threads = false;
+	float *progress = nullptr;
 	Vector<ExtResource> external_resources;
 
 	struct IntResource {
@@ -71,12 +70,15 @@ class ResourceLoaderBinary {
 	};
 
 	Vector<IntResource> internal_resources;
+	Map<String, RES> internal_index_cache;
 
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
 
 	Map<String, String> remaps;
-	Error error;
+	Error error = OK;
+
+	bool use_nocache = false;
 
 	friend class ResourceFormatLoaderBinary;
 
@@ -95,13 +97,13 @@ public:
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 
-	ResourceLoaderBinary();
+	ResourceLoaderBinary() {}
 	~ResourceLoaderBinary();
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -111,7 +113,6 @@ public:
 };
 
 class ResourceFormatSaverBinaryInstance {
-
 	String local_path;
 	String path;
 
@@ -144,7 +145,6 @@ class ResourceFormatSaverBinaryInstance {
 	};
 
 	struct ResourceData {
-
 		String type;
 		List<Property> properties;
 	};

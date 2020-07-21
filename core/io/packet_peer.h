@@ -36,7 +36,6 @@
 #include "core/ring_buffer.h"
 
 class PacketPeer : public Reference {
-
 	GDCLASS(PacketPeer, Reference);
 
 	Variant _bnd_get_var(bool p_allow_objects = false);
@@ -47,9 +46,9 @@ class PacketPeer : public Reference {
 	Vector<uint8_t> _get_packet();
 	Error _get_packet_error() const;
 
-	mutable Error last_get_error;
+	mutable Error last_get_error = OK;
 
-	int encode_buffer_max_size;
+	int encode_buffer_max_size = 8 * 1024 * 1024;
 	Vector<uint8_t> encode_buffer;
 
 public:
@@ -70,12 +69,11 @@ public:
 	void set_encode_buffer_max_size(int p_max_size);
 	int get_encode_buffer_max_size() const;
 
-	PacketPeer();
+	PacketPeer() {}
 	~PacketPeer() {}
 };
 
 class PacketPeerStream : public PacketPeer {
-
 	GDCLASS(PacketPeerStream, PacketPeer);
 
 	//the way the buffers work sucks, will change later
@@ -92,11 +90,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
-	virtual int get_max_packet_size() const;
+	virtual int get_max_packet_size() const override;
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	Ref<StreamPeer> get_stream_peer() const;

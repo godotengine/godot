@@ -40,7 +40,6 @@
 #include "servers/rendering_server.h"
 
 class RenderingServerRaster : public RenderingServer {
-
 	enum {
 
 		MAX_INSTANCE_CULL = 8192,
@@ -61,7 +60,6 @@ class RenderingServerRaster : public RenderingServer {
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {
-
 		ObjectID object;
 		StringName method;
 		Variant param;
@@ -108,8 +106,12 @@ public:
 	m_r m_name(m_type1 arg1, m_type2 arg2) { return BINDBASE->m_name(arg1, arg2); }
 #define BIND2RC(m_r, m_name, m_type1, m_type2) \
 	m_r m_name(m_type1 arg1, m_type2 arg2) const { return BINDBASE->m_name(arg1, arg2); }
+#define BIND3R(m_r, m_name, m_type1, m_type2, m_type3) \
+	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3) { return BINDBASE->m_name(arg1, arg2, arg3); }
 #define BIND3RC(m_r, m_name, m_type1, m_type2, m_type3) \
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3) const { return BINDBASE->m_name(arg1, arg2, arg3); }
+#define BIND4R(m_r, m_name, m_type1, m_type2, m_type3, m_type4) \
+	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
 #define BIND4RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4) \
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
 
@@ -170,7 +172,7 @@ public:
 
 	//these also go pass-through
 	BIND0R(RID, texture_2d_placeholder_create)
-	BIND0R(RID, texture_2d_layered_placeholder_create)
+	BIND1R(RID, texture_2d_layered_placeholder_create, TextureLayeredType)
 	BIND0R(RID, texture_3d_placeholder_create)
 
 	BIND1RC(Ref<Image>, texture_2d_get, RID)
@@ -320,7 +322,8 @@ public:
 	BIND2(light_set_negative, RID, bool)
 	BIND2(light_set_cull_mask, RID, uint32_t)
 	BIND2(light_set_reverse_cull_face_mode, RID, bool)
-	BIND2(light_set_use_gi, RID, bool)
+	BIND2(light_set_bake_mode, RID, LightBakeMode)
+	BIND2(light_set_max_sdfgi_cascade, RID, uint32_t)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 
@@ -334,9 +337,9 @@ public:
 
 	BIND2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	BIND2(reflection_probe_set_intensity, RID, float)
-	BIND2(reflection_probe_set_interior_ambient, RID, const Color &)
-	BIND2(reflection_probe_set_interior_ambient_energy, RID, float)
-	BIND2(reflection_probe_set_interior_ambient_probe_contribution, RID, float)
+	BIND2(reflection_probe_set_ambient_color, RID, const Color &)
+	BIND2(reflection_probe_set_ambient_energy, RID, float)
+	BIND2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)
 	BIND2(reflection_probe_set_max_distance, RID, float)
 	BIND2(reflection_probe_set_extents, RID, const Vector3 &)
 	BIND2(reflection_probe_set_origin_offset, RID, const Vector3 &)
@@ -404,23 +407,19 @@ public:
 	BIND2(gi_probe_set_anisotropy_strength, RID, float)
 	BIND1RC(float, gi_probe_get_anisotropy_strength, RID)
 
-	/* LIGHTMAP CAPTURE */
+	/* LIGHTMAP */
 
-	BIND0R(RID, lightmap_capture_create)
+	BIND0R(RID, lightmap_create)
 
-	BIND2(lightmap_capture_set_bounds, RID, const AABB &)
-	BIND1RC(AABB, lightmap_capture_get_bounds, RID)
-
-	BIND2(lightmap_capture_set_octree, RID, const Vector<uint8_t> &)
-	BIND1RC(Vector<uint8_t>, lightmap_capture_get_octree, RID)
-
-	BIND2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
-	BIND1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
-	BIND2(lightmap_capture_set_octree_cell_subdiv, RID, int)
-	BIND1RC(int, lightmap_capture_get_octree_cell_subdiv, RID)
-
-	BIND2(lightmap_capture_set_energy, RID, float)
-	BIND1RC(float, lightmap_capture_get_energy, RID)
+	BIND3(lightmap_set_textures, RID, RID, bool)
+	BIND2(lightmap_set_probe_bounds, RID, const AABB &)
+	BIND2(lightmap_set_probe_interior, RID, bool)
+	BIND5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
+	BIND1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
+	BIND1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
+	BIND1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
+	BIND1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
+	BIND1(lightmap_set_probe_capture_update_speed, float)
 
 	/* PARTICLES */
 
@@ -525,6 +524,7 @@ public:
 #define BINDBASE RSG::scene_render
 
 	BIND1(directional_shadow_atlas_set_size, int)
+	BIND1(gi_probe_set_quality, GIProbeQuality)
 
 	/* SKY API */
 
@@ -532,6 +532,7 @@ public:
 	BIND2(sky_set_radiance_size, RID, int)
 	BIND2(sky_set_mode, RID, SkyMode)
 	BIND2(sky_set_material, RID, RID)
+	BIND4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
 	BIND0R(RID, environment_create)
 
@@ -565,7 +566,13 @@ public:
 	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
-	BIND2(screen_space_roughness_limiter_set_active, bool, float)
+	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
+	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
+	BIND1(environment_set_sdfgi_frames_to_converge, EnvironmentSDFGIFramesToConverge)
+
+	BIND3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
+
+	BIND3(screen_space_roughness_limiter_set_active, bool, float, float)
 	BIND1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
 	BIND2(sub_surface_scattering_set_scale, float, float)
 
@@ -605,7 +612,6 @@ public:
 	BIND3(instance_set_blend_shape_weight, RID, int, float)
 	BIND3(instance_set_surface_material, RID, int, RID)
 	BIND2(instance_set_visible, RID, bool)
-	BIND3(instance_set_use_lightmap, RID, RID, RID)
 
 	BIND2(instance_set_custom_aabb, RID, AABB)
 
@@ -625,11 +631,14 @@ public:
 
 	BIND5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	BIND2(instance_geometry_set_as_instance_lod, RID, RID)
+	BIND4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 
 	BIND3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
 	BIND2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
 	BIND2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+
+	BIND3R(TypedArray<Image>, bake_render_uv2, RID, const Vector<RID> &, const Size2i &)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -789,6 +798,8 @@ public:
 	virtual void call_set_use_vsync(bool p_enable);
 
 	virtual bool is_low_end() const;
+
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
 
 	RenderingServerRaster();
 	~RenderingServerRaster();

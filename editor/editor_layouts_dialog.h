@@ -37,7 +37,6 @@ class LineEdit;
 class ItemList;
 
 class EditorLayoutsDialog : public ConfirmationDialog {
-
 	GDCLASS(EditorLayoutsDialog, ConfirmationDialog);
 
 	LineEdit *name;
@@ -48,8 +47,8 @@ class EditorLayoutsDialog : public ConfirmationDialog {
 
 protected:
 	static void _bind_methods();
-	virtual void ok_pressed();
-	virtual void _post_popup();
+	virtual void ok_pressed() override;
+	virtual void _post_popup() override;
 
 public:
 	EditorLayoutsDialog();

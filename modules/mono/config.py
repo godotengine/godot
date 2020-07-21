@@ -30,12 +30,12 @@ def configure(env):
     )
     envvars.Add(BoolVariable("mono_static", "Statically link mono", default_mono_static))
     envvars.Add(BoolVariable("mono_glue", "Build with the mono glue sources", True))
+    envvars.Add(BoolVariable("build_cil", "Build C# solutions", True))
     envvars.Add(
         BoolVariable(
             "copy_mono_root", "Make a copy of the mono installation directory to bundle with the editor", False
         )
     )
-    envvars.Add(BoolVariable("xbuild_fallback", "If MSBuild is not found, fallback to xbuild", False))
 
     # TODO: It would be great if this could be detected automatically instead
     envvars.Add(
@@ -57,7 +57,6 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "@C#",
         "CSharpScript",
         "GodotSharp",
     ]

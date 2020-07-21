@@ -40,7 +40,7 @@
 #include <ForceFeedback/ForceFeedbackConstants.h>
 #include <IOKit/hid/IOHIDLib.h>
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 
 struct rec_element {
 	IOHIDElementRef ref;
@@ -88,13 +88,12 @@ struct joypad {
 };
 
 class JoypadOSX {
-
 	enum {
 		JOYPADS_MAX = 16,
 	};
 
 private:
-	InputFilter *input;
+	Input *input;
 	IOHIDManagerRef hid_manager;
 
 	Vector<joypad> device_list;
@@ -118,7 +117,7 @@ public:
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
 	void _device_removed(IOReturn p_res, IOHIDDeviceRef p_device);
 
-	JoypadOSX(InputFilter *in);
+	JoypadOSX(Input *in);
 	~JoypadOSX();
 };
 

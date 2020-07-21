@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Range : public Control {
-
 	GDCLASS(Range, Control);
 
 	struct Shared {
@@ -95,7 +94,7 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	Range();
 	~Range();

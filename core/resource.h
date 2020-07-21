@@ -40,16 +40,19 @@
 #define RES_BASE_EXTENSION(m_ext)                                                                                   \
 public:                                                                                                             \
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
-	virtual String get_base_extension() const { return m_ext; }                                                     \
+	virtual String get_base_extension() const override { return m_ext; }                                            \
                                                                                                                     \
 private:
 
 class Resource : public Reference {
-
 	GDCLASS(Resource, Reference);
 	OBJ_CATEGORY("Resources");
-	RES_BASE_EXTENSION("res");
 
+public:
+	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
+	virtual String get_base_extension() const { return "res"; }
+
+private:
 	Set<ObjectID> owners;
 
 	friend class ResBase;
@@ -57,19 +60,19 @@ class Resource : public Reference {
 
 	String name;
 	String path_cache;
-	int subindex;
+	int subindex = 0;
 
 	virtual bool _use_builtin_script() const { return true; }
 
 #ifdef TOOLS_ENABLED
-	uint64_t last_modified_time;
-	uint64_t import_last_modified_time;
+	uint64_t last_modified_time = 0;
+	uint64_t import_last_modified_time = 0;
 	String import_path;
 #endif
 
-	bool local_to_scene;
+	bool local_to_scene = false;
 	friend class SceneState;
-	Node *local_scene;
+	Node *local_scene = nullptr;
 
 	SelfList<Resource> remapped_list;
 

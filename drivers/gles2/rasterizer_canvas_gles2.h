@@ -59,7 +59,6 @@ public:
 	};
 
 	struct Data {
-
 		GLuint canvas_quad_vertices;
 		GLuint polygon_buffer;
 		GLuint polygon_index_buffer;

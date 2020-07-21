@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface_gdnative.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_positional_tracker.h"
 
@@ -80,7 +80,6 @@ void XRInterfaceGDNative::set_interface(const godot_xr_interface_gdnative *p_int
 }
 
 StringName XRInterfaceGDNative::get_name() const {
-
 	ERR_FAIL_COND_V(interface == nullptr, StringName());
 
 	godot_string result = interface->get_name(data);
@@ -103,21 +102,18 @@ int XRInterfaceGDNative::get_capabilities() const {
 }
 
 bool XRInterfaceGDNative::get_anchor_detection_is_enabled() const {
-
 	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	return interface->get_anchor_detection_is_enabled(data);
 }
 
 void XRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
-
 	ERR_FAIL_COND(interface == nullptr);
 
 	interface->set_anchor_detection_is_enabled(data, p_enable);
 }
 
 int XRInterfaceGDNative::get_camera_feed_id() {
-
 	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	return (unsigned int)interface->get_camera_feed_id(data);
@@ -134,7 +130,6 @@ bool XRInterfaceGDNative::is_stereo() {
 }
 
 bool XRInterfaceGDNative::is_initialized() const {
-
 	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	return interface->is_initialized(data);
@@ -170,7 +165,6 @@ void XRInterfaceGDNative::uninitialize() {
 }
 
 Size2 XRInterfaceGDNative::get_render_targetsize() {
-
 	ERR_FAIL_COND_V(interface == nullptr, Size2());
 
 	godot_vector2 result = interface->get_render_targetsize(data);
@@ -202,14 +196,12 @@ CameraMatrix XRInterfaceGDNative::get_projection_for_eye(XRInterface::Eyes p_eye
 }
 
 unsigned int XRInterfaceGDNative::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
-
 	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	return (unsigned int)interface->get_external_texture_for_eye(data, (godot_int)p_eye);
 }
 
 void XRInterfaceGDNative::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-
 	ERR_FAIL_COND(interface == nullptr);
 
 	interface->commit_for_eye(data, (godot_int)p_eye, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
@@ -306,7 +298,7 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL_V(input, 0);
 
 	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
@@ -345,7 +337,7 @@ void GDAPI godot_xr_remove_controller(godot_int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	XRPositionalTracker *remove_tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
@@ -383,7 +375,7 @@ void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
@@ -399,14 +391,14 @@ void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_a
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
 	if (tracker != nullptr) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
-			InputFilter::JoyAxis jx;
+			Input::JoyAxis jx;
 			jx.min = p_can_be_negative ? -1 : 0;
 			jx.value = p_value;
 			input->joy_axis(joyid, p_axis, jx);

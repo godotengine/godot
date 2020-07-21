@@ -75,7 +75,6 @@ void GameCenter::return_connect_error(const char *p_error_description) {
 }
 
 void GameCenter::connect() {
-
 	//if this class isn't available, game center isn't implemented
 	if ((NSClassFromString(@"GKLocalPlayer")) == nil) {
 		return_connect_error("GameCenter not available");
@@ -125,7 +124,6 @@ bool GameCenter::is_authenticated() {
 };
 
 Error GameCenter::post_score(Variant p_score) {
-
 	Dictionary params = p_score;
 	ERR_FAIL_COND_V(!params.has("score") || !params.has("category"), ERR_INVALID_PARAMETER);
 	float score = params["score"];
@@ -156,7 +154,6 @@ Error GameCenter::post_score(Variant p_score) {
 };
 
 Error GameCenter::award_achievement(Variant p_params) {
-
 	Dictionary params = p_params;
 	ERR_FAIL_COND_V(!params.has("name") || !params.has("progress"), ERR_INVALID_PARAMETER);
 	String name = params["name"];
@@ -192,7 +189,6 @@ Error GameCenter::award_achievement(Variant p_params) {
 };
 
 void GameCenter::request_achievement_descriptions() {
-
 	[GKAchievementDescription loadAchievementDescriptionsWithCompletionHandler:^(NSArray *descriptions, NSError *error) {
 		Dictionary ret;
 		ret["type"] = "achievement_descriptions";
@@ -207,7 +203,6 @@ void GameCenter::request_achievement_descriptions() {
 			Array replayable;
 
 			for (int i = 0; i < [descriptions count]; i++) {
-
 				GKAchievementDescription *description = [descriptions objectAtIndex:i];
 
 				const char *str = [description.identifier UTF8String];
@@ -247,7 +242,6 @@ void GameCenter::request_achievement_descriptions() {
 };
 
 void GameCenter::request_achievements() {
-
 	[GKAchievement loadAchievementsWithCompletionHandler:^(NSArray *achievements, NSError *error) {
 		Dictionary ret;
 		ret["type"] = "achievements";
@@ -257,7 +251,6 @@ void GameCenter::request_achievements() {
 			PackedFloat32Array percentages;
 
 			for (int i = 0; i < [achievements count]; i++) {
-
 				GKAchievement *achievement = [achievements objectAtIndex:i];
 				const char *str = [achievement.identifier UTF8String];
 				names.push_back(String::utf8(str != NULL ? str : ""));
@@ -278,7 +271,6 @@ void GameCenter::request_achievements() {
 };
 
 void GameCenter::reset_achievements() {
-
 	[GKAchievement resetAchievementsWithCompletionHandler:^(NSError *error) {
 		Dictionary ret;
 		ret["type"] = "reset_achievements";
@@ -294,7 +286,6 @@ void GameCenter::reset_achievements() {
 };
 
 Error GameCenter::show_game_center(Variant p_params) {
-
 	ERR_FAIL_COND_V(!NSProtocolFromString(@"GKGameCenterControllerDelegate"), FAILED);
 
 	Dictionary params = p_params;
@@ -338,7 +329,6 @@ Error GameCenter::show_game_center(Variant p_params) {
 };
 
 Error GameCenter::request_identity_verification_signature() {
-
 	ERR_FAIL_COND_V(!is_authenticated(), ERR_UNAUTHORIZED);
 
 	GKLocalPlayer *player = [GKLocalPlayer localPlayer];
@@ -365,7 +355,6 @@ Error GameCenter::request_identity_verification_signature() {
 };
 
 void GameCenter::game_center_closed() {
-
 	Dictionary ret;
 	ret["type"] = "show_game_center";
 	ret["result"] = "ok";
@@ -373,12 +362,10 @@ void GameCenter::game_center_closed() {
 }
 
 int GameCenter::get_pending_event_count() {
-
 	return pending_events.size();
 };
 
 Variant GameCenter::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 
@@ -395,6 +382,6 @@ GameCenter::GameCenter() {
 	authenticated = false;
 };
 
-GameCenter::~GameCenter(){};
+GameCenter::~GameCenter() {}
 
 #endif

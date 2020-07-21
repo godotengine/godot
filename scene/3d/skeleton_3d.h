@@ -66,18 +66,12 @@ public:
 };
 
 class Skeleton3D : public Node3D {
-
 	GDCLASS(Skeleton3D, Node3D);
 
 private:
 	friend class SkinReference;
 
-	Set<SkinReference *> skin_bindings;
-
-	void _skin_changed();
-
 	struct Bone {
-
 		String name;
 
 		bool enabled;
@@ -118,6 +112,10 @@ private:
 		}
 	};
 
+	Set<SkinReference *> skin_bindings;
+
+	void _skin_changed();
+
 	bool animate_physical_bones;
 	Vector<Bone> bones;
 	Vector<int> process_order;
@@ -130,13 +128,11 @@ private:
 
 	// bind helpers
 	Array _get_bound_child_nodes_to_bone(int p_bone) const {
-
 		Array bound;
 		List<Node *> children;
 		get_bound_child_nodes_to_bone(p_bone, &children);
 
 		for (int i = 0; i < children.size(); i++) {
-
 			bound.push_back(children[i]);
 		}
 		return bound;
@@ -200,8 +196,13 @@ public:
 
 	void localize_rests(); // used for loaders and tools
 	int get_process_order(int p_idx);
+	Vector<int> get_bone_process_orders();
 
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
+
+	// Helper functions
+	Transform bone_transform_to_world_transform(Transform p_transform);
+	Transform world_transform_to_bone_transform(Transform p_transform);
 
 #ifndef _3D_DISABLED
 	// Physical bone API
@@ -216,13 +217,13 @@ public:
 	PhysicalBone3D *get_physical_bone_parent(int p_bone);
 
 private:
-	/// This is a slow API os it's cached
+	/// This is a slow API, so it's cached
 	PhysicalBone3D *_get_physical_bone_parent(int p_bone);
 	void _rebuild_physical_bones_cache();
 
 public:
 	void physical_bones_stop_simulation();
-	void physical_bones_start_simulation_on(const Array &p_bones);
+	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
 #endif // _3D_DISABLED

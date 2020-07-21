@@ -40,7 +40,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "mono_gd/support/mono-support.h"
+#include "mono_gd/support/android_support.h"
 #endif
 
 #include "mono_gd/gd_mono.h"
@@ -86,7 +86,6 @@ String _get_mono_user_dir() {
 }
 
 class _GodotSharpDirs {
-
 public:
 	String res_data_dir;
 	String res_metadata_dir;

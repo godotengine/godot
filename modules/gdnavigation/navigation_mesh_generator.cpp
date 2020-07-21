@@ -74,8 +74,9 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		current_vertex_count = p_verticies.size() / 3;
 
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 
 		int index_count = 0;
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
@@ -94,7 +95,6 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 		const Vector3 *vr = mesh_vertices.ptr();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
-
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
 			const int *ir = mesh_indices.ptr();
 
@@ -139,9 +139,7 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 }
 
 void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
-
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
@@ -151,7 +149,6 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 
 #ifdef MODULE_CSG_ENABLED
 	if (Object::cast_to<CSGShape3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-
 		CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_node);
 		Array meshes = csg_shape->get_meshes();
 		if (!meshes.empty()) {
@@ -167,7 +164,6 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
 
 		if (static_body->get_collision_layer() & p_collision_mask) {
-
 			for (int i = 0; i < p_node->get_child_count(); ++i) {
 				Node *child = p_node->get_child(i);
 				if (Object::cast_to<CollisionShape3D>(child)) {
@@ -222,7 +218,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 					ConvexPolygonShape3D *convex_polygon = Object::cast_to<ConvexPolygonShape3D>(*s);
 					if (convex_polygon) {
 						Vector<Vector3> varr = Variant(convex_polygon->get_points());
-						Geometry::MeshData md;
+						Geometry3D::MeshData md;
 
 						Error err = QuickHull::build(varr, md);
 
@@ -230,7 +226,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 							PackedVector3Array faces;
 
 							for (int j = 0; j < md.faces.size(); ++j) {
-								Geometry::MeshData::Face face = md.faces[j];
+								Geometry3D::MeshData::Face face = md.faces[j];
 
 								for (int k = 2; k < face.indices.size(); ++k) {
 									faces.push_back(md.vertices[face.indices[0]]);
@@ -278,7 +274,6 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 }
 
 void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh) {
-
 	Vector<Vector3> nav_vertices;
 
 	for (int i = 0; i < p_detail_mesh->nverts; i++) {
@@ -320,8 +315,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	rcContext ctx;
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Setting up Configuration..."), 1);
+	}
 #endif
 
 	const float *verts = vertices.ptr();
@@ -357,14 +353,16 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[2] = bmax[2];
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Calculating grid size..."), 2);
+	}
 #endif
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Creating heightfield..."), 3);
+	}
 #endif
 	hf = rcAllocHeightfield();
 
@@ -372,8 +370,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Marking walkable triangles..."), 4);
+	}
 #endif
 	{
 		Vector<unsigned char> tri_areas;
@@ -387,16 +386,20 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		ERR_FAIL_COND(!rcRasterizeTriangles(&ctx, verts, nverts, tris, tri_areas.ptr(), ntris, *hf, cfg.walkableClimb));
 	}
 
-	if (p_nav_mesh->get_filter_low_hanging_obstacles())
+	if (p_nav_mesh->get_filter_low_hanging_obstacles()) {
 		rcFilterLowHangingWalkableObstacles(&ctx, cfg.walkableClimb, *hf);
-	if (p_nav_mesh->get_filter_ledge_spans())
+	}
+	if (p_nav_mesh->get_filter_ledge_spans()) {
 		rcFilterLedgeSpans(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf);
-	if (p_nav_mesh->get_filter_walkable_low_height_spans())
+	}
+	if (p_nav_mesh->get_filter_walkable_low_height_spans()) {
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
+	}
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Constructing compact heightfield..."), 5);
+	}
 #endif
 
 	chf = rcAllocCompactHeightfield();
@@ -408,15 +411,17 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	hf = nullptr;
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Eroding walkable area..."), 6);
+	}
 #endif
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Partitioning..."), 7);
+	}
 #endif
 
 	if (p_nav_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
@@ -429,8 +434,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	}
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Creating contours..."), 8);
+	}
 #endif
 
 	cset = rcAllocContourSet();
@@ -439,8 +445,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Creating polymesh..."), 9);
+	}
 #endif
 
 	poly_mesh = rcAllocPolyMesh();
@@ -457,8 +464,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cset = nullptr;
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Converting to native navigation mesh..."), 10);
+	}
 #endif
 
 	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_nav_mesh);
@@ -481,7 +489,6 @@ NavigationMeshGenerator::~NavigationMeshGenerator() {
 }
 
 void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-
 	ERR_FAIL_COND(!p_nav_mesh.is_valid());
 
 #ifdef TOOLS_ENABLED
@@ -490,8 +497,9 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
 	}
 
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Parsing Geometry..."), 0);
+	}
 #endif
 
 	Vector<float> vertices;
@@ -514,7 +522,6 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
-
 		rcHeightfield *hf = nullptr;
 		rcCompactHeightfield *chf = nullptr;
 		rcContourSet *cset = nullptr;
@@ -551,11 +558,13 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	}
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Done!"), 11);
+	}
 
-	if (ep)
+	if (ep) {
 		memdelete(ep);
+	}
 #endif
 }
 

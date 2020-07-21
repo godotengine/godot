@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gd_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
 #include "core/array.h"
@@ -40,6 +38,7 @@
 #include "core/variant_parser.h"
 
 #include "../mono_gd/gd_mono_cache.h"
+#include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects) {
@@ -91,7 +90,6 @@ void godot_icall_GD_print(MonoArray *p_what) {
 }
 
 void godot_icall_GD_printerr(MonoArray *p_what) {
-
 	String str;
 	int length = mono_array_length(p_what);
 
@@ -148,8 +146,9 @@ void godot_icall_GD_prints(MonoArray *p_what) {
 			return;
 		}
 
-		if (i)
+		if (i) {
 			str += " ";
+		}
 
 		str += elem_str;
 	}
@@ -172,8 +171,9 @@ void godot_icall_GD_printt(MonoArray *p_what) {
 			return;
 		}
 
-		if (i)
+		if (i) {
 			str += "\t";
+		}
 
 		str += elem_str;
 	}
@@ -198,7 +198,7 @@ double godot_icall_GD_rand_range(double from, double to) {
 }
 
 uint32_t godot_icall_GD_rand_seed(uint64_t seed, uint64_t *newSeed) {
-	int ret = Math::rand_from_seed(&seed);
+	uint32_t ret = Math::rand_from_seed(&seed);
 	*newSeed = seed;
 	return ret;
 }
@@ -214,10 +214,11 @@ MonoString *godot_icall_GD_str(MonoArray *p_what) {
 	for (int i = 0; i < what.size(); i++) {
 		String os = what[i].operator String();
 
-		if (i == 0)
+		if (i == 0) {
 			str = os;
-		else
+		} else {
 			str += os;
+		}
 	}
 
 	return GDMonoMarshal::mono_string_from_godot(str);

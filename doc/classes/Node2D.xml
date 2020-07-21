@@ -92,7 +92,7 @@
 			<argument index="0" name="local_point" type="Vector2">
 			</argument>
 			<description>
-				Converts a local point's coordinates to global coordinates.
+				Transforms the provided local position into a position in global coordinate space. The input is expected to be local relative to the [Node2D] it is called on. e.g. Applying this method to the positions of child nodes will correctly transform their positions into the global coordinate space, but applying it to a node's own position will give an incorrect result, as it will incorporate the node's own transformation into its global position.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
@@ -101,7 +101,7 @@
 			<argument index="0" name="global_point" type="Vector2">
 			</argument>
 			<description>
-				Converts a global point's coordinates to local coordinates.
+				Transforms the provided global position into a position in local coordinate space. The output will be local relative to the [Node2D] it is called on. e.g. It is appropriate for determining the positions of child nodes, but it is not appropriate for determining its own position relative to its parent.
 			</description>
 		</method>
 		<method name="translate">
@@ -141,6 +141,10 @@
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
 			The node's scale. Unscaled value: [code](1, 1)[/code].
+		</member>
+		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">
+		</member>
+		<member name="skew_degrees" type="float" setter="set_skew_degrees" getter="get_skew_degrees" default="0.0">
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].

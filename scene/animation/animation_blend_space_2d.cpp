@@ -29,13 +29,15 @@
 /*************************************************************************/
 
 #include "animation_blend_space_2d.h"
-#include "core/math/delaunay.h"
+
+#include "core/math/geometry_2d.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", 0));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", 0));
 }
+
 Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName &p_parameter) const {
 	if (p_parameter == closest) {
 		return -1;
@@ -90,6 +92,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_position(int p_point, const Vect
 	blend_points[p_point].position = p_position;
 	_queue_auto_triangles();
 }
+
 void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	ERR_FAIL_COND(p_node.is_null());
@@ -102,14 +105,17 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 
 	emit_signal("tree_changed");
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, blend_points_used, Vector2());
 	return blend_points[p_point].position;
 }
+
 Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
 	return blend_points[p_point].node;
 }
+
 void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
@@ -141,12 +147,10 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 }
 
 int AnimationNodeBlendSpace2D::get_blend_point_count() const {
-
 	return blend_points_used;
 }
 
 bool AnimationNodeBlendSpace2D::has_triangle(int p_x, int p_y, int p_z) const {
-
 	ERR_FAIL_INDEX_V(p_x, blend_points_used, false);
 	ERR_FAIL_INDEX_V(p_y, blend_points_used, false);
 	ERR_FAIL_INDEX_V(p_z, blend_points_used, false);
@@ -167,15 +171,15 @@ bool AnimationNodeBlendSpace2D::has_triangle(int p_x, int p_y, int p_z) const {
 				break;
 			}
 		}
-		if (all_equal)
+		if (all_equal) {
 			return true;
+		}
 	}
 
 	return false;
 }
 
 void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at_index) {
-
 	ERR_FAIL_INDEX(p_x, blend_points_used);
 	ERR_FAIL_INDEX(p_y, blend_points_used);
 	ERR_FAIL_INDEX(p_z, blend_points_used);
@@ -207,14 +211,15 @@ void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at
 		triangles.insert(p_at_index, t);
 	}
 }
-int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 
+int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 	_update_triangles();
 
 	ERR_FAIL_INDEX_V(p_point, 3, -1);
 	ERR_FAIL_INDEX_V(p_triangle, triangles.size(), -1);
 	return triangles[p_triangle].points[p_point];
 }
+
 void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
@@ -226,7 +231,6 @@ int AnimationNodeBlendSpace2D::get_triangle_count() const {
 }
 
 void AnimationNodeBlendSpace2D::set_min_space(const Vector2 &p_min) {
-
 	min_space = p_min;
 	if (min_space.x >= max_space.x) {
 		min_space.x = max_space.x - 1;
@@ -235,12 +239,12 @@ void AnimationNodeBlendSpace2D::set_min_space(const Vector2 &p_min) {
 		min_space.y = max_space.y - 1;
 	}
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_min_space() const {
 	return min_space;
 }
 
 void AnimationNodeBlendSpace2D::set_max_space(const Vector2 &p_max) {
-
 	max_space = p_max;
 	if (max_space.x <= min_space.x) {
 		max_space.x = min_space.x + 1;
@@ -249,6 +253,7 @@ void AnimationNodeBlendSpace2D::set_max_space(const Vector2 &p_max) {
 		max_space.y = min_space.y + 1;
 	}
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_max_space() const {
 	return max_space;
 }
@@ -256,6 +261,7 @@ Vector2 AnimationNodeBlendSpace2D::get_max_space() const {
 void AnimationNodeBlendSpace2D::set_snap(const Vector2 &p_snap) {
 	snap = p_snap;
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_snap() const {
 	return snap;
 }
@@ -263,6 +269,7 @@ Vector2 AnimationNodeBlendSpace2D::get_snap() const {
 void AnimationNodeBlendSpace2D::set_x_label(const String &p_label) {
 	x_label = p_label;
 }
+
 String AnimationNodeBlendSpace2D::get_x_label() const {
 	return x_label;
 }
@@ -270,6 +277,7 @@ String AnimationNodeBlendSpace2D::get_x_label() const {
 void AnimationNodeBlendSpace2D::set_y_label(const String &p_label) {
 	y_label = p_label;
 }
+
 String AnimationNodeBlendSpace2D::get_y_label() const {
 	return y_label;
 }
@@ -283,9 +291,9 @@ void AnimationNodeBlendSpace2D::_add_blend_point(int p_index, const Ref<Animatio
 }
 
 void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
-
-	if (auto_triangles)
+	if (auto_triangles) {
 		return;
+	}
 	ERR_FAIL_COND(p_triangles.size() % 3 != 0);
 	for (int i = 0; i < p_triangles.size(); i += 3) {
 		add_triangle(p_triangles[i + 0], p_triangles[i + 1], p_triangles[i + 2]);
@@ -293,10 +301,10 @@ void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
 }
 
 Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
-
 	Vector<int> t;
-	if (auto_triangles && trianges_dirty)
+	if (auto_triangles && trianges_dirty) {
 		return t;
+	}
 
 	t.resize(triangles.size() * 3);
 	for (int i = 0; i < triangles.size(); i++) {
@@ -317,9 +325,9 @@ void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
 }
 
 void AnimationNodeBlendSpace2D::_update_triangles() {
-
-	if (!auto_triangles || !trianges_dirty)
+	if (!auto_triangles || !trianges_dirty) {
 		return;
+	}
 
 	trianges_dirty = false;
 	triangles.clear();
@@ -343,11 +351,11 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
-
 	_update_triangles();
 
-	if (triangles.size() == 0)
+	if (triangles.size() == 0) {
 		return Vector2();
+	}
 
 	Vector2 best_point;
 	bool first = true;
@@ -358,8 +366,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 			points[j] = get_blend_point_position(get_triangle_point(i, j));
 		}
 
-		if (Geometry::is_point_in_triangle(p_point, points[0], points[1], points[2])) {
-
+		if (Geometry2D::is_point_in_triangle(p_point, points[0], points[1], points[2])) {
 			return p_point;
 		}
 
@@ -368,7 +375,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 				points[j],
 				points[(j + 1) % 3]
 			};
-			Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, s);
+			Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, s);
 			if (first || closest.distance_to(p_point) < best_point.distance_to(p_point)) {
 				best_point = closest;
 				first = false;
@@ -380,7 +387,6 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 }
 
 void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vector2 *p_points, float *r_weights) {
-
 	if (p_pos.distance_squared_to(p_points[0]) < CMP_EPSILON2) {
 		r_weights[0] = 1;
 		r_weights[1] = 0;
@@ -426,7 +432,6 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 }
 
 float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
-
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
@@ -435,9 +440,9 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 	float mind = 0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
-
-		if (triangles.size() == 0)
+		if (triangles.size() == 0) {
 			return 0;
+		}
 
 		Vector2 best_point;
 		bool first = true;
@@ -450,8 +455,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 				points[j] = get_blend_point_position(get_triangle_point(i, j));
 			}
 
-			if (Geometry::is_point_in_triangle(blend_pos, points[0], points[1], points[2])) {
-
+			if (Geometry2D::is_point_in_triangle(blend_pos, points[0], points[1], points[2])) {
 				blend_triangle = i;
 				_blend_triangle(blend_pos, points, blend_weights);
 				break;
@@ -462,7 +466,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 					points[j],
 					points[(j + 1) % 3]
 				};
-				Vector2 closest2 = Geometry::get_closest_point_to_segment_2d(blend_pos, s);
+				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, s);
 				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
 					best_point = closest2;
 					blend_triangle = i;
@@ -493,7 +497,6 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 		first = true;
 
 		for (int i = 0; i < blend_points_used; i++) {
-
 			bool found = false;
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
@@ -514,22 +517,18 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			}
 		}
 	} else {
-
 		int new_closest = -1;
 		float new_closest_dist = 1e20;
 
 		for (int i = 0; i < blend_points_used; i++) {
-
 			float d = blend_points[i].position.distance_squared_to(blend_pos);
 			if (d < new_closest_dist) {
-
 				new_closest = i;
 				new_closest_dist = d;
 			}
 		}
 
 		if (new_closest != closest && new_closest != -1) {
-
 			float from = 0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
 				//see how much animation remains
@@ -556,7 +555,6 @@ String AnimationNodeBlendSpace2D::get_caption() const {
 }
 
 void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const {
-
 	if (auto_triangles && property.name == "triangles") {
 		property.usage = 0;
 	}
@@ -600,7 +598,6 @@ AnimationNodeBlendSpace2D::BlendMode AnimationNodeBlendSpace2D::get_blend_mode()
 }
 
 void AnimationNodeBlendSpace2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_blend_point", "node", "pos", "at_index"), &AnimationNodeBlendSpace2D::add_blend_point, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_blend_point_position", "point", "pos"), &AnimationNodeBlendSpace2D::set_blend_point_position);
 	ClassDB::bind_method(D_METHOD("get_blend_point_position", "point"), &AnimationNodeBlendSpace2D::get_blend_point_position);
@@ -665,7 +662,6 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 }
 
 AnimationNodeBlendSpace2D::AnimationNodeBlendSpace2D() {
-
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
 		blend_points[i].name = itos(i);
 	}

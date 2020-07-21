@@ -38,12 +38,12 @@
 #include <winuser.h>
 
 class KeyMappingWindows {
-
-	KeyMappingWindows(){};
+	KeyMappingWindows() {}
 
 public:
 	static unsigned int get_keysym(unsigned int p_code);
 	static unsigned int get_scansym(unsigned int p_code, bool p_extended);
+	static bool is_extended_key(unsigned int p_code);
 };
 
 #endif // KEY_MAPPING_WINDOWS_H

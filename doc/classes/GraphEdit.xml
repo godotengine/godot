@@ -240,7 +240,7 @@
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Emitted when the user presses [code]Ctrl + C[/code].
+				Emitted when the user presses [kbd]Ctrl + C[/kbd].
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
@@ -273,9 +273,15 @@
 				Emitted when a GraphNode is selected.
 			</description>
 		</signal>
+		<signal name="node_unselected">
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Emitted when the user presses [code]Ctrl + V[/code].
+				Emitted when the user presses [kbd]Ctrl + V[/kbd].
 			</description>
 		</signal>
 		<signal name="popup_request">

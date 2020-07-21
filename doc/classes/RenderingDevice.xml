@@ -7,7 +7,1619 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="buffer_get_data">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="buffer" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="buffer_update">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="int">
+			</argument>
+			<argument index="2" name="size_bytes" type="int">
+			</argument>
+			<argument index="3" name="data" type="PackedByteArray">
+			</argument>
+			<argument index="4" name="sync_with_draw" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="capture_timestamp">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="sync_to_draw" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_add_barrier">
+			<return type="void">
+			</return>
+			<argument index="0" name="compute_list" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_begin">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_bind_compute_pipeline">
+			<return type="void">
+			</return>
+			<argument index="0" name="compute_list" type="int">
+			</argument>
+			<argument index="1" name="compute_pipeline" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_bind_uniform_set">
+			<return type="void">
+			</return>
+			<argument index="0" name="compute_list" type="int">
+			</argument>
+			<argument index="1" name="uniform_set" type="RID">
+			</argument>
+			<argument index="2" name="set_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_dispatch">
+			<return type="void">
+			</return>
+			<argument index="0" name="compute_list" type="int">
+			</argument>
+			<argument index="1" name="x_groups" type="int">
+			</argument>
+			<argument index="2" name="y_groups" type="int">
+			</argument>
+			<argument index="3" name="z_groups" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_end">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="compute_list_set_push_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="compute_list" type="int">
+			</argument>
+			<argument index="1" name="buffer" type="PackedByteArray">
+			</argument>
+			<argument index="2" name="size_bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_pipeline_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="compute_pipeline_is_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="compute_pieline" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_local_device">
+			<return type="RenderingDevice">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_begin">
+			<return type="int">
+			</return>
+			<argument index="0" name="framebuffer" type="RID">
+			</argument>
+			<argument index="1" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction">
+			</argument>
+			<argument index="2" name="final_color_action" type="int" enum="RenderingDevice.FinalAction">
+			</argument>
+			<argument index="3" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction">
+			</argument>
+			<argument index="4" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
+			</argument>
+			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray(  )">
+			</argument>
+			<argument index="6" name="clear_depth" type="float" default="1.0">
+			</argument>
+			<argument index="7" name="clear_stencil" type="int" default="0">
+			</argument>
+			<argument index="8" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="9" name="storage_textures" type="Array" default="[  ]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_begin_for_screen">
+			<return type="int">
+			</return>
+			<argument index="0" name="screen" type="int" default="0">
+			</argument>
+			<argument index="1" name="clear_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_begin_split">
+			<return type="PackedInt64Array">
+			</return>
+			<argument index="0" name="framebuffer" type="RID">
+			</argument>
+			<argument index="1" name="splits" type="int">
+			</argument>
+			<argument index="2" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction">
+			</argument>
+			<argument index="3" name="final_color_action" type="int" enum="RenderingDevice.FinalAction">
+			</argument>
+			<argument index="4" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction">
+			</argument>
+			<argument index="5" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
+			</argument>
+			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray(  )">
+			</argument>
+			<argument index="7" name="clear_depth" type="float" default="1.0">
+			</argument>
+			<argument index="8" name="clear_stencil" type="int" default="0">
+			</argument>
+			<argument index="9" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="10" name="storage_textures" type="RID[]" default="[  ]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_bind_index_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="index_array" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_bind_render_pipeline">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="render_pipeline" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_bind_uniform_set">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="uniform_set" type="RID">
+			</argument>
+			<argument index="2" name="set_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_bind_vertex_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="vertex_array" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_disable_scissor">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="use_indices" type="bool">
+			</argument>
+			<argument index="2" name="instances" type="int">
+			</argument>
+			<argument index="3" name="procedural_vertex_count" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_enable_scissor">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="rect" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_end">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="draw_list_set_push_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_list" type="int">
+			</argument>
+			<argument index="1" name="buffer" type="PackedByteArray">
+			</argument>
+			<argument index="2" name="size_bytes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="textures" type="Array">
+			</argument>
+			<argument index="1" name="validate_with_format" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_create_empty">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
+			</argument>
+			<argument index="1" name="validate_with_format" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_format_create">
+			<return type="int">
+			</return>
+			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_format_create_empty">
+			<return type="int">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_format_get_texture_samples">
+			<return type="int" enum="RenderingDevice.TextureSamples">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="framebuffer_get_format">
+			<return type="int">
+			</return>
+			<argument index="0" name="framebuffer" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="free">
+			<return type="void">
+			</return>
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_captured_timestamp_gpu_time" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_captured_timestamp_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_captured_timestamps_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_captured_timestamps_frame" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_frame_delay" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="index_array_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="index_buffer" type="RID">
+			</argument>
+			<argument index="1" name="index_offset" type="int">
+			</argument>
+			<argument index="2" name="index_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="index_buffer_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size_indices" type="int">
+			</argument>
+			<argument index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat">
+			</argument>
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<argument index="3" name="arg3" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="limit_get">
+			<return type="int">
+			</return>
+			<argument index="0" name="limit" type="int" enum="RenderingDevice.Limit">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="render_pipeline_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<argument index="1" name="framebuffer_format" type="int">
+			</argument>
+			<argument index="2" name="vertex_format" type="int">
+			</argument>
+			<argument index="3" name="primitive" type="int" enum="RenderingDevice.RenderPrimitive">
+			</argument>
+			<argument index="4" name="rasterization_state" type="RDPipelineRasterizationState">
+			</argument>
+			<argument index="5" name="multisample_state" type="RDPipelineMultisampleState">
+			</argument>
+			<argument index="6" name="stencil_state" type="RDPipelineDepthStencilState">
+			</argument>
+			<argument index="7" name="color_blend_state" type="RDPipelineColorBlendState">
+			</argument>
+			<argument index="8" name="dynamic_state_flags" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="render_pipeline_is_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="render_pipeline" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="sampler_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="state" type="RDSamplerState">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_framebuffer_format" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="screen" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="screen" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_compile_from_source">
+			<return type="RDShaderBytecode">
+			</return>
+			<argument index="0" name="shader_source" type="RDShaderSource">
+			</argument>
+			<argument index="1" name="allow_cache" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="shader_data" type="RDShaderBytecode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_get_vertex_input_attribute_mask">
+			<return type="int">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="storage_buffer_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size_bytes" type="int">
+			</argument>
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<argument index="2" name="usage" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="submit">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="sync">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="texture_buffer_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size_bytes" type="int">
+			</argument>
+			<argument index="1" name="format" type="int" enum="RenderingDevice.DataFormat">
+			</argument>
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_clear">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="base_mipmap" type="int">
+			</argument>
+			<argument index="3" name="mipmap_count" type="int">
+			</argument>
+			<argument index="4" name="base_layer" type="int">
+			</argument>
+			<argument index="5" name="layer_count" type="int">
+			</argument>
+			<argument index="6" name="sync_with_draw" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_copy">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="from_texture" type="RID">
+			</argument>
+			<argument index="1" name="to_texture" type="RID">
+			</argument>
+			<argument index="2" name="from_pos" type="Vector3">
+			</argument>
+			<argument index="3" name="to_pos" type="Vector3">
+			</argument>
+			<argument index="4" name="size" type="Vector3">
+			</argument>
+			<argument index="5" name="src_mipmap" type="int">
+			</argument>
+			<argument index="6" name="dst_mipmap" type="int">
+			</argument>
+			<argument index="7" name="src_layer" type="int">
+			</argument>
+			<argument index="8" name="dst_layer" type="int">
+			</argument>
+			<argument index="9" name="sync_with_draw" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="format" type="RDTextureFormat">
+			</argument>
+			<argument index="1" name="view" type="RDTextureView">
+			</argument>
+			<argument index="2" name="data" type="PackedByteArray[]" default="[  ]">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_create_shared">
+			<return type="RID">
+			</return>
+			<argument index="0" name="view" type="RDTextureView">
+			</argument>
+			<argument index="1" name="with_texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_create_shared_from_slice">
+			<return type="RID">
+			</return>
+			<argument index="0" name="view" type="RDTextureView">
+			</argument>
+			<argument index="1" name="with_texture" type="RID">
+			</argument>
+			<argument index="2" name="layer" type="int">
+			</argument>
+			<argument index="3" name="mipmap" type="int">
+			</argument>
+			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_get_data">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_is_format_supported_for_usage" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
+			</argument>
+			<argument index="1" name="usage_flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_is_shared">
+			<return type="bool">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_is_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_resolve_multisample">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="from_texture" type="RID">
+			</argument>
+			<argument index="1" name="to_texture" type="RID">
+			</argument>
+			<argument index="2" name="sync_with_draw" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_update">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<argument index="2" name="data" type="PackedByteArray">
+			</argument>
+			<argument index="3" name="sync_with_draw" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="uniform_buffer_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size_bytes" type="int">
+			</argument>
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="uniform_set_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="uniforms" type="Array">
+			</argument>
+			<argument index="1" name="shader" type="RID">
+			</argument>
+			<argument index="2" name="shader_set" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="uniform_set_is_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="uniform_set" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="vertex_buffer_create">
+			<return type="RID">
+			</return>
+			<argument index="0" name="size_bytes" type="int">
+			</argument>
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="vertex_format_create">
+			<return type="int">
+			</return>
+			<argument index="0" name="vertex_descriptions" type="RDVertexAttribute[]">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R4G4B4A4_UNORM_PACK16" value="1" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B4G4R4A4_UNORM_PACK16" value="2" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R5G6B5_UNORM_PACK16" value="3" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B5G6R5_UNORM_PACK16" value="4" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R5G5B5A1_UNORM_PACK16" value="5" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B5G5R5A1_UNORM_PACK16" value="6" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A1R5G5B5_UNORM_PACK16" value="7" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_UNORM" value="8" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_SNORM" value="9" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_USCALED" value="10" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_SSCALED" value="11" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_UINT" value="12" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_SINT" value="13" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8_SRGB" value="14" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_UNORM" value="15" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_SNORM" value="16" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_USCALED" value="17" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_SSCALED" value="18" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_UINT" value="19" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_SINT" value="20" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8_SRGB" value="21" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_UNORM" value="22" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_SNORM" value="23" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_USCALED" value="24" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_SSCALED" value="25" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_UINT" value="26" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_SINT" value="27" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8_SRGB" value="28" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_UNORM" value="29" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_SNORM" value="30" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_USCALED" value="31" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_SSCALED" value="32" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_UINT" value="33" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_SINT" value="34" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8_SRGB" value="35" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_UNORM" value="36" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_SNORM" value="37" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_USCALED" value="38" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_SSCALED" value="39" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_UINT" value="40" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_SINT" value="41" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R8G8B8A8_SRGB" value="42" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_UNORM" value="43" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_SNORM" value="44" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_USCALED" value="45" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_SSCALED" value="46" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_UINT" value="47" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_SINT" value="48" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8A8_SRGB" value="49" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_UNORM_PACK32" value="50" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_SNORM_PACK32" value="51" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_USCALED_PACK32" value="52" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_SSCALED_PACK32" value="53" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_UINT_PACK32" value="54" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_SINT_PACK32" value="55" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A8B8G8R8_SRGB_PACK32" value="56" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2R10G10B10_UNORM_PACK32" value="57" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2R10G10B10_SNORM_PACK32" value="58" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2R10G10B10_USCALED_PACK32" value="59" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2R10G10B10_SSCALED_PACK32" value="60" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2R10G10B10_UINT_PACK32" value="61" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2R10G10B10_SINT_PACK32" value="62" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2B10G10R10_UNORM_PACK32" value="63" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2B10G10R10_SNORM_PACK32" value="64" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2B10G10R10_USCALED_PACK32" value="65" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2B10G10R10_SSCALED_PACK32" value="66" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2B10G10R10_UINT_PACK32" value="67" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_A2B10G10R10_SINT_PACK32" value="68" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_UNORM" value="69" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_SNORM" value="70" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_USCALED" value="71" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_SSCALED" value="72" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_UINT" value="73" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_SINT" value="74" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16_SFLOAT" value="75" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_UNORM" value="76" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_SNORM" value="77" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_USCALED" value="78" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_SSCALED" value="79" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_UINT" value="80" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_SINT" value="81" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16_SFLOAT" value="82" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_UNORM" value="83" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_SNORM" value="84" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_USCALED" value="85" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_SSCALED" value="86" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_UINT" value="87" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_SINT" value="88" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16_SFLOAT" value="89" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_UNORM" value="90" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_SNORM" value="91" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_USCALED" value="92" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_SSCALED" value="93" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_UINT" value="94" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_SINT" value="95" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R16G16B16A16_SFLOAT" value="96" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32_UINT" value="97" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32_SINT" value="98" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32_SFLOAT" value="99" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32_UINT" value="100" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32_SINT" value="101" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32_SFLOAT" value="102" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32B32_UINT" value="103" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32B32_SINT" value="104" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32B32_SFLOAT" value="105" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32B32A32_UINT" value="106" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32B32A32_SINT" value="107" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R32G32B32A32_SFLOAT" value="108" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64_UINT" value="109" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64_SINT" value="110" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64_SFLOAT" value="111" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64_UINT" value="112" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64_SINT" value="113" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64_SFLOAT" value="114" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64B64_UINT" value="115" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64B64_SINT" value="116" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64B64_SFLOAT" value="117" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64B64A64_UINT" value="118" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64B64A64_SINT" value="119" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R64G64B64A64_SFLOAT" value="120" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B10G11R11_UFLOAT_PACK32" value="121" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32" value="122" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_D16_UNORM" value="123" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_X8_D24_UNORM_PACK32" value="124" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_D32_SFLOAT" value="125" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_S8_UINT" value="126" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_D16_UNORM_S8_UINT" value="127" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_D24_UNORM_S8_UINT" value="128" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_D32_SFLOAT_S8_UINT" value="129" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC1_RGB_UNORM_BLOCK" value="130" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC1_RGB_SRGB_BLOCK" value="131" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC1_RGBA_UNORM_BLOCK" value="132" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC1_RGBA_SRGB_BLOCK" value="133" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC2_UNORM_BLOCK" value="134" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC2_SRGB_BLOCK" value="135" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC3_UNORM_BLOCK" value="136" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC3_SRGB_BLOCK" value="137" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC4_UNORM_BLOCK" value="138" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC4_SNORM_BLOCK" value="139" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC5_UNORM_BLOCK" value="140" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC5_SNORM_BLOCK" value="141" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC6H_UFLOAT_BLOCK" value="142" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC6H_SFLOAT_BLOCK" value="143" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC7_UNORM_BLOCK" value="144" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_BC7_SRGB_BLOCK" value="145" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK" value="146" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK" value="147" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK" value="148" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK" value="149" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK" value="150" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK" value="151" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_EAC_R11_UNORM_BLOCK" value="152" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_EAC_R11_SNORM_BLOCK" value="153" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_EAC_R11G11_UNORM_BLOCK" value="154" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_EAC_R11G11_SNORM_BLOCK" value="155" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_4x4_UNORM_BLOCK" value="156" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_4x4_SRGB_BLOCK" value="157" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x4_UNORM_BLOCK" value="158" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x4_SRGB_BLOCK" value="159" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x5_UNORM_BLOCK" value="160" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x5_SRGB_BLOCK" value="161" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x5_UNORM_BLOCK" value="162" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x5_SRGB_BLOCK" value="163" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x6_UNORM_BLOCK" value="164" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x6_SRGB_BLOCK" value="165" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x5_UNORM_BLOCK" value="166" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x5_SRGB_BLOCK" value="167" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x6_UNORM_BLOCK" value="168" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x6_SRGB_BLOCK" value="169" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x8_UNORM_BLOCK" value="170" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x8_SRGB_BLOCK" value="171" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x5_UNORM_BLOCK" value="172" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x5_SRGB_BLOCK" value="173" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x6_UNORM_BLOCK" value="174" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x6_SRGB_BLOCK" value="175" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x8_UNORM_BLOCK" value="176" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x8_SRGB_BLOCK" value="177" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x10_UNORM_BLOCK" value="178" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x10_SRGB_BLOCK" value="179" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x10_UNORM_BLOCK" value="180" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x10_SRGB_BLOCK" value="181" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x12_UNORM_BLOCK" value="182" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x12_SRGB_BLOCK" value="183" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G8B8G8R8_422_UNORM" value="184" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B8G8R8G8_422_UNORM" value="185" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G8_B8_R8_3PLANE_420_UNORM" value="186" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM" value="187" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G8_B8_R8_3PLANE_422_UNORM" value="188" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G8_B8R8_2PLANE_422_UNORM" value="189" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G8_B8_R8_3PLANE_444_UNORM" value="190" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R10X6_UNORM_PACK16" value="191" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R10X6G10X6_UNORM_2PACK16" value="192" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16" value="193" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16" value="194" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16" value="195" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16" value="196" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16" value="197" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16" value="198" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16" value="199" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16" value="200" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R12X4_UNORM_PACK16" value="201" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R12X4G12X4_UNORM_2PACK16" value="202" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16" value="203" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16" value="204" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16" value="205" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16" value="206" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16" value="207" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16" value="208" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16" value="209" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16" value="210" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G16B16G16R16_422_UNORM" value="211" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_B16G16R16G16_422_UNORM" value="212" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_420_UNORM" value="213" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G16_B16R16_2PLANE_420_UNORM" value="214" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM" value="215" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM" value="216" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG" value="218" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG" value="219" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG" value="220" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG" value="221" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG" value="222" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG" value="223" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG" value="224" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG" value="225" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_MAX" value="226" enum="DataFormat">
+		</constant>
+		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_2D" value="1" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_3D" value="2" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_CUBE" value="3" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_1D_ARRAY" value="4" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_2D_ARRAY" value="5" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_CUBE_ARRAY" value="6" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_MAX" value="7" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_1" value="0" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_2" value="1" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_4" value="2" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_8" value="3" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_16" value="4" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_32" value="5" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_64" value="6" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_SAMPLES_MAX" value="7" enum="TextureSamples">
+		</constant>
+		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_ZERO" value="1" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_ONE" value="2" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_R" value="3" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_G" value="4" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_B" value="5" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_A" value="6" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SWIZZLE_MAX" value="7" enum="TextureSwizzle">
+		</constant>
+		<constant name="TEXTURE_SLICE_2D" value="0" enum="TextureSliceType">
+		</constant>
+		<constant name="TEXTURE_SLICE_CUBEMAP" value="1" enum="TextureSliceType">
+		</constant>
+		<constant name="TEXTURE_SLICE_3D" value="2" enum="TextureSliceType">
+		</constant>
+		<constant name="SAMPLER_FILTER_NEAREST" value="0" enum="SamplerFilter">
+		</constant>
+		<constant name="SAMPLER_FILTER_LINEAR" value="1" enum="SamplerFilter">
+		</constant>
+		<constant name="SAMPLER_REPEAT_MODE_REPEAT" value="0" enum="SamplerRepeatMode">
+		</constant>
+		<constant name="SAMPLER_REPEAT_MODE_MIRRORED_REPEAT" value="1" enum="SamplerRepeatMode">
+		</constant>
+		<constant name="SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE" value="2" enum="SamplerRepeatMode">
+		</constant>
+		<constant name="SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER" value="3" enum="SamplerRepeatMode">
+		</constant>
+		<constant name="SAMPLER_REPEAT_MODE_MIRROR_CLAMP_TO_EDGE" value="4" enum="SamplerRepeatMode">
+		</constant>
+		<constant name="SAMPLER_REPEAT_MODE_MAX" value="5" enum="SamplerRepeatMode">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK" value="0" enum="SamplerBorderColor">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_INT_TRANSPARENT_BLACK" value="1" enum="SamplerBorderColor">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK" value="2" enum="SamplerBorderColor">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_INT_OPAQUE_BLACK" value="3" enum="SamplerBorderColor">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_WHITE" value="4" enum="SamplerBorderColor">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_INT_OPAQUE_WHITE" value="5" enum="SamplerBorderColor">
+		</constant>
+		<constant name="SAMPLER_BORDER_COLOR_MAX" value="6" enum="SamplerBorderColor">
+		</constant>
+		<constant name="VERTEX_FREQUENCY_VERTEX" value="0" enum="VertexFrequency">
+		</constant>
+		<constant name="VERTEX_FREQUENCY_INSTANCE" value="1" enum="VertexFrequency">
+		</constant>
+		<constant name="INDEX_BUFFER_FORMAT_UINT16" value="0" enum="IndexBufferFormat">
+		</constant>
+		<constant name="INDEX_BUFFER_FORMAT_UINT32" value="1" enum="IndexBufferFormat">
+		</constant>
+		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage">
+		</constant>
+		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_SAMPLER_WITH_TEXTURE" value="1" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_TEXTURE" value="2" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_IMAGE" value="3" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_TEXTURE_BUFFER" value="4" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER" value="5" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_IMAGE_BUFFER" value="6" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_UNIFORM_BUFFER" value="7" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_STORAGE_BUFFER" value="8" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_INPUT_ATTACHMENT" value="9" enum="UniformType">
+		</constant>
+		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_LINES" value="1" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_LINES_WITH_ADJACENCY" value="2" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_LINESTRIPS" value="3" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_LINESTRIPS_WITH_ADJACENCY" value="4" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_TRIANGLES" value="5" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_TRIANGLES_WITH_ADJACENCY" value="6" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS" value="7" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY" value="8" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX" value="9" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_TESSELATION_PATCH" value="10" enum="RenderPrimitive">
+		</constant>
+		<constant name="RENDER_PRIMITIVE_MAX" value="11" enum="RenderPrimitive">
+		</constant>
+		<constant name="POLYGON_CULL_DISABLED" value="0" enum="PolygonCullMode">
+		</constant>
+		<constant name="POLYGON_CULL_FRONT" value="1" enum="PolygonCullMode">
+		</constant>
+		<constant name="POLYGON_CULL_BACK" value="2" enum="PolygonCullMode">
+		</constant>
+		<constant name="POLYGON_FRONT_FACE_CLOCKWISE" value="0" enum="PolygonFrontFace">
+		</constant>
+		<constant name="POLYGON_FRONT_FACE_COUNTER_CLOCKWISE" value="1" enum="PolygonFrontFace">
+		</constant>
+		<constant name="STENCIL_OP_KEEP" value="0" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_ZERO" value="1" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_REPLACE" value="2" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_INCREMENT_AND_CLAMP" value="3" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_DECREMENT_AND_CLAMP" value="4" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_INVERT" value="5" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_INCREMENT_AND_WRAP" value="6" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_DECREMENT_AND_WRAP" value="7" enum="StencilOperation">
+		</constant>
+		<constant name="STENCIL_OP_MAX" value="8" enum="StencilOperation">
+		</constant>
+		<constant name="COMPARE_OP_NEVER" value="0" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_LESS" value="1" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_EQUAL" value="2" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_LESS_OR_EQUAL" value="3" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_GREATER" value="4" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_NOT_EQUAL" value="5" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_GREATER_OR_EQUAL" value="6" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_ALWAYS" value="7" enum="CompareOperator">
+		</constant>
+		<constant name="COMPARE_OP_MAX" value="8" enum="CompareOperator">
+		</constant>
+		<constant name="LOGIC_OP_CLEAR" value="0" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_AND" value="1" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_AND_REVERSE" value="2" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_COPY" value="3" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_AND_INVERTED" value="4" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_NO_OP" value="5" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_XOR" value="6" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_OR" value="7" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_NOR" value="8" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_EQUIVALENT" value="9" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_INVERT" value="10" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_OR_REVERSE" value="11" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_COPY_INVERTED" value="12" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_OR_INVERTED" value="13" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_NAND" value="14" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_SET" value="15" enum="LogicOperation">
+		</constant>
+		<constant name="LOGIC_OP_MAX" value="16" enum="LogicOperation">
+		</constant>
+		<constant name="BLEND_FACTOR_ZERO" value="0" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE" value="1" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_SRC_COLOR" value="2" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_SRC_COLOR" value="3" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_DST_COLOR" value="4" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_DST_COLOR" value="5" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_SRC_ALPHA" value="6" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_SRC_ALPHA" value="7" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_DST_ALPHA" value="8" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_DST_ALPHA" value="9" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_CONSTANT_COLOR" value="10" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR" value="11" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_CONSTANT_ALPHA" value="12" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA" value="13" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_SRC_ALPHA_SATURATE" value="14" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_SRC1_COLOR" value="15" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_SRC1_COLOR" value="16" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_SRC1_ALPHA" value="17" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA" value="18" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_FACTOR_MAX" value="19" enum="BlendFactor">
+		</constant>
+		<constant name="BLEND_OP_ADD" value="0" enum="BlendOperation">
+		</constant>
+		<constant name="BLEND_OP_SUBTRACT" value="1" enum="BlendOperation">
+		</constant>
+		<constant name="BLEND_OP_REVERSE_SUBTRACT" value="2" enum="BlendOperation">
+		</constant>
+		<constant name="BLEND_OP_MINIMUM" value="3" enum="BlendOperation">
+		</constant>
+		<constant name="BLEND_OP_MAXIMUM" value="4" enum="BlendOperation">
+		</constant>
+		<constant name="BLEND_OP_MAX" value="5" enum="BlendOperation">
+		</constant>
+		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags">
+		</constant>
+		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_KEEP" value="1" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_DROP" value="2" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_CONTINUE" value="3" enum="InitialAction">
+		</constant>
+		<constant name="INITIAL_ACTION_MAX" value="4" enum="InitialAction">
+		</constant>
+		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction">
+		</constant>
+		<constant name="FINAL_ACTION_DISCARD" value="1" enum="FinalAction">
+		</constant>
+		<constant name="FINAL_ACTION_CONTINUE" value="2" enum="FinalAction">
+		</constant>
+		<constant name="FINAL_ACTION_MAX" value="3" enum="FinalAction">
+		</constant>
+		<constant name="SHADER_STAGE_VERTEX" value="0" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_FRAGMENT" value="1" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_TESSELATION_CONTROL" value="2" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_TESSELATION_EVALUATION" value="3" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_COMPUTE" value="4" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_MAX" value="5" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_VERTEX_BIT" value="1" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_FRAGMENT_BIT" value="2" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_TESSELATION_CONTROL_BIT" value="4" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_TESSELATION_EVALUATION_BIT" value="8" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_STAGE_COMPUTE_BIT" value="16" enum="ShaderStage">
+		</constant>
+		<constant name="SHADER_LANGUAGE_GLSL" value="0" enum="ShaderLanguage">
+		</constant>
+		<constant name="SHADER_LANGUAGE_HLSL" value="1" enum="ShaderLanguage">
+		</constant>
+		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS" value="1" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURES_PER_UNIFORM_SET" value="2" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET" value="3" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET" value="4" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET" value="5" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET" value="6" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_DRAW_INDEXED_INDEX" value="7" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_FRAMEBUFFER_HEIGHT" value="8" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_FRAMEBUFFER_WIDTH" value="9" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURE_ARRAY_LAYERS" value="10" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURE_SIZE_1D" value="11" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURE_SIZE_2D" value="12" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURE_SIZE_3D" value="13" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURE_SIZE_CUBE" value="14" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_TEXTURES_PER_SHADER_STAGE" value="15" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE" value="16" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE" value="17" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE" value="18" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE" value="19" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_PUSH_CONSTANT_SIZE" value="20" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_UNIFORM_BUFFER_SIZE" value="21" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET" value="22" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES" value="23" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_VERTEX_INPUT_BINDINGS" value="24" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE" value="25" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT" value="26" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE" value="27" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X" value="28" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y" value="29" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z" value="30" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS" value="31" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X" value="32" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y" value="33" enum="Limit">
+		</constant>
+		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z" value="34" enum="Limit">
+		</constant>
+		<constant name="INVALID_ID" value="-1">
+		</constant>
+		<constant name="INVALID_FORMAT_ID" value="-1">
+		</constant>
 	</constants>
 </class>

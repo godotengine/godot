@@ -38,7 +38,6 @@
 #include "servers/display_server.h"
 
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
-
 	updating = true;
 
 	String path = p_dir->get_path();
@@ -49,7 +48,6 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	if (!p_item->get_parent()) {
 		p_item->set_text(0, "res://");
 	} else {
-
 		if (!opened_paths.has(path) && (p_select_path == String() || !p_select_path.begins_with(path))) {
 			p_item->set_collapsed(true);
 		}
@@ -61,14 +59,12 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	//bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-
 		TreeItem *ti = tree->create_item(p_item);
 		_update_dir(ti, p_dir->get_subdir(i));
 	}
 }
 
 void EditorDirDialog::reload(const String &p_path) {
-
 	if (!is_visible()) {
 		must_reload = true;
 		return;
@@ -82,7 +78,6 @@ void EditorDirDialog::reload(const String &p_path) {
 }
 
 void EditorDirDialog::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload), make_binds(""));
 		reload();
@@ -110,16 +105,17 @@ void EditorDirDialog::_notification(int p_what) {
 }
 
 void EditorDirDialog::_item_collapsed(Object *p_item) {
-
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
-	if (updating)
+	if (updating) {
 		return;
+	}
 
-	if (item->is_collapsed())
+	if (item->is_collapsed()) {
 		opened_paths.erase(item->get_metadata(0));
-	else
+	} else {
 		opened_paths.insert(item->get_metadata(0));
+	}
 }
 
 void EditorDirDialog::_item_activated() {
@@ -127,10 +123,10 @@ void EditorDirDialog::_item_activated() {
 }
 
 void EditorDirDialog::ok_pressed() {
-
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String dir = ti->get_metadata(0);
 	emit_signal("dir_selected", dir);
@@ -138,7 +134,6 @@ void EditorDirDialog::ok_pressed() {
 }
 
 void EditorDirDialog::_make_dir() {
-
 	TreeItem *ti = tree->get_selected();
 	if (!ti) {
 		mkdirerr->set_text(TTR("Please select a base directory first."));
@@ -151,10 +146,10 @@ void EditorDirDialog::_make_dir() {
 }
 
 void EditorDirDialog::_make_dir_confirm() {
-
 	TreeItem *ti = tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String dir = ti->get_metadata(0);
 
@@ -173,12 +168,10 @@ void EditorDirDialog::_make_dir_confirm() {
 }
 
 void EditorDirDialog::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
 }
 
 EditorDirDialog::EditorDirDialog() {
-
 	updating = false;
 
 	set_title(TTR("Choose a Directory"));
@@ -189,7 +182,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 
-	makedir = add_button(TTR("Create Folder"), DisplayServer::get_singleton()->get_swap_ok_cancel(), "makedir");
+	makedir = add_button(TTR("Create Folder"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "makedir");
 	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));
 
 	makedialog = memnew(ConfirmationDialog);

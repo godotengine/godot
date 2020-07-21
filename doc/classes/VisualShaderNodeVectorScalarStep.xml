@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorScalarStep" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Calculates a vector Step function within the visual shader graph.
 	</brief_description>
 	<description>
+		Translates to [code]step(edge, x)[/code] in the shader language.
+		Returns [code]0.0[/code] if [code]x[/code] is smaller than [code]edge[/code] and [code]1.0[/code] otherwise.
 	</description>
 	<tutorials>
 	</tutorials>

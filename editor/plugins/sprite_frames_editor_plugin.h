@@ -41,25 +41,24 @@
 #include "scene/gui/tree.h"
 
 class SpriteFramesEditor : public HSplitContainer {
-
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
-	ToolButton *load;
-	ToolButton *load_sheet;
-	ToolButton *_delete;
-	ToolButton *copy;
-	ToolButton *paste;
-	ToolButton *empty;
-	ToolButton *empty2;
-	ToolButton *move_up;
-	ToolButton *move_down;
+	Button *load;
+	Button *load_sheet;
+	Button *_delete;
+	Button *copy;
+	Button *paste;
+	Button *empty;
+	Button *empty2;
+	Button *move_up;
+	Button *move_down;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
 	HSplitContainer *split;
-	ToolButton *new_anim;
-	ToolButton *remove_anim;
+	Button *new_anim;
+	Button *remove_anim;
 
 	Tree *animations;
 	SpinBox *anim_speed;
@@ -134,7 +133,6 @@ public:
 };
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor;
@@ -142,11 +140,11 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "SpriteFrames"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "SpriteFrames"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	SpriteFramesEditorPlugin(EditorNode *p_node);
 	~SpriteFramesEditorPlugin();

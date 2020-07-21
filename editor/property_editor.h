@@ -51,7 +51,6 @@ class CreateDialog;
 class PropertySelector;
 
 class EditorResourceConversionPlugin : public Reference {
-
 	GDCLASS(EditorResourceConversionPlugin, Reference);
 
 protected:
@@ -64,7 +63,6 @@ public:
 };
 
 class CustomPropertyEditor : public PopupPanel {
-
 	GDCLASS(CustomPropertyEditor, PopupPanel);
 
 	enum {
@@ -102,6 +100,8 @@ class CustomPropertyEditor : public PopupPanel {
 	List<String> field_names;
 	int hint;
 	String hint_text;
+	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4];
+	VBoxContainer *value_vbox;
 	LineEdit *value_editor[MAX_VALUE_EDITORS];
 	int focused_value_editor;
 	Label *value_label[MAX_VALUE_EDITORS];

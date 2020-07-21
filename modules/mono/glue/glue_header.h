@@ -30,13 +30,16 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "base_object_glue.h"
-#include "collections_glue.h"
-#include "gd_glue.h"
-#include "nodepath_glue.h"
-#include "rid_glue.h"
-#include "string_glue.h"
-#include "string_name_glue.h"
+#include "../mono_gd/gd_mono_marshal.h"
+
+void godot_register_collections_icalls();
+void godot_register_gd_icalls();
+void godot_register_string_name_icalls();
+void godot_register_nodepath_icalls();
+void godot_register_object_icalls();
+void godot_register_rid_icalls();
+void godot_register_string_icalls();
+void godot_register_scene_tree_icalls();
 
 /**
  * Registers internal calls that were not generated. This function is called
@@ -50,6 +53,7 @@ void godot_register_glue_header_icalls() {
 	godot_register_object_icalls();
 	godot_register_rid_icalls();
 	godot_register_string_icalls();
+	godot_register_scene_tree_icalls();
 }
 
 // Used by the generated glue

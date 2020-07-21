@@ -37,8 +37,9 @@
 extern "C" {
 #endif
 
-void GDAPI godot_plane_new_with_reals(godot_plane *r_dest, const godot_real p_a, const godot_real p_b, const godot_real p_c, const godot_real p_d) {
+static_assert(sizeof(godot_plane) == sizeof(Plane), "Plane size mismatch");
 
+void GDAPI godot_plane_new_with_reals(godot_plane *r_dest, const godot_real p_a, const godot_real p_b, const godot_real p_c, const godot_real p_d) {
 	Plane *dest = (Plane *)r_dest;
 	*dest = Plane(p_a, p_b, p_c, p_d);
 }
@@ -75,13 +76,6 @@ godot_vector3 GDAPI godot_plane_center(const godot_plane *p_self) {
 	godot_vector3 dest;
 	const Plane *self = (const Plane *)p_self;
 	*((Vector3 *)&dest) = self->center();
-	return dest;
-}
-
-godot_vector3 GDAPI godot_plane_get_any_point(const godot_plane *p_self) {
-	godot_vector3 dest;
-	const Plane *self = (const Plane *)p_self;
-	*((Vector3 *)&dest) = self->get_any_point();
 	return dest;
 }
 

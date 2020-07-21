@@ -43,7 +43,6 @@ struct NSVGrasterizer;
 struct NSVGimage;
 
 class SVGRasterizer {
-
 	NSVGrasterizer *rasterizer;
 
 public:

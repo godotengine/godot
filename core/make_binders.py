@@ -75,7 +75,7 @@ public:
 #endif
 
 		$ifret _set_returns(true); $
-	};
+	}
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -170,7 +170,7 @@ public:
 		$ifret _set_returns(true); $
 
 
-	};
+	}
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -266,7 +266,7 @@ public:
 #endif
 
 		$ifret _set_returns(true); $
-	};
+	}
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>

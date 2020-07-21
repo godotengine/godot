@@ -31,7 +31,7 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_windows.h"
@@ -63,7 +63,6 @@
 
 class JoypadWindows;
 class OS_Windows : public OS {
-
 #ifdef STDOUT_FILE
 	FILE *stdo;
 #endif
@@ -73,6 +72,9 @@ class OS_Windows : public OS {
 
 	HINSTANCE hInstance;
 	MainLoop *main_loop;
+
+	String tablet_driver;
+	Vector<String> tablet_drivers;
 
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
@@ -100,8 +102,9 @@ protected:
 	virtual void finalize_core();
 	virtual String get_stdin_string(bool p_block);
 
-	struct ProcessInfo {
+	String _quote_command_line_argument(const String &p_text) const;
 
+	struct ProcessInfo {
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};
@@ -116,14 +119,17 @@ public:
 
 	virtual String get_name() const;
 
+	virtual int get_tablet_driver_count() const;
+	virtual String get_tablet_driver_name(int p_driver) const;
+	virtual String get_current_tablet_driver() const;
+	virtual void set_current_tablet_driver(const String &p_driver);
+
 	virtual void initialize_joypads() {}
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
-	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_secs() const;
-	virtual uint64_t get_system_time_msecs() const;
+	virtual double get_unix_time() const;
 
 	virtual Error set_cwd(const String &p_cwd);
 

@@ -52,7 +52,6 @@ Written by: Marcus Hennix
 #include "cone_twist_joint_3d_sw.h"
 
 static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
-
 	if (Math::abs(n.z) > Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = n[1] * n[1] + n[2] * n[2];
@@ -87,7 +86,6 @@ static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
 
 ConeTwistJoint3DSW::ConeTwistJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
 		Joint3DSW(_arr, 2) {
-
 	A = rbA;
 	B = rbB;
 
@@ -238,7 +236,6 @@ bool ConeTwistJoint3DSW::setup(real_t p_timestep) {
 }
 
 void ConeTwistJoint3DSW::solve(real_t p_timestep) {
-
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
 
@@ -264,8 +261,8 @@ void ConeTwistJoint3DSW::solve(real_t p_timestep) {
 			real_t impulse = depth * tau / p_timestep * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
-			A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
-			B->apply_impulse(pivotBInW - B->get_transform().origin, -impulse_vector);
+			A->apply_impulse(impulse_vector, pivotAInW - A->get_transform().origin);
+			B->apply_impulse(-impulse_vector, pivotBInW - B->get_transform().origin);
 		}
 	}
 
@@ -309,57 +306,47 @@ void ConeTwistJoint3DSW::solve(real_t p_timestep) {
 }
 
 void ConeTwistJoint3DSW::set_param(PhysicsServer3D::ConeTwistJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
 		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN: {
-
 			m_swingSpan1 = p_value;
 			m_swingSpan2 = p_value;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN: {
-
 			m_twistSpan = p_value;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
-
 			m_biasFactor = p_value;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
-
 			m_limitSoftness = p_value;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
-
 			m_relaxationFactor = p_value;
 		} break;
-		case PhysicsServer3D::CONE_TWIST_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::CONE_TWIST_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 
 real_t ConeTwistJoint3DSW::get_param(PhysicsServer3D::ConeTwistJointParam p_param) const {
-
 	switch (p_param) {
 		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN: {
-
 			return m_swingSpan1;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN: {
-
 			return m_twistSpan;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
-
 			return m_biasFactor;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
-
 			return m_limitSoftness;
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
-
 			return m_relaxationFactor;
 		} break;
-		case PhysicsServer3D::CONE_TWIST_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::CONE_TWIST_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return 0;

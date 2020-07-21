@@ -58,12 +58,10 @@
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
-
 	return 2;
 };
 
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
-
 	switch (p_driver) {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
@@ -72,14 +70,12 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 };
 
 OSIPhone *OSIPhone::get_singleton() {
-
 	return (OSIPhone *)OS::get_singleton();
 };
 
 extern int gl_view_base_fb; // from gl_view.mm
 
 void OSIPhone::set_data_dir(String p_dir) {
-
 	DirAccess *da = DirAccess::open(p_dir);
 
 	data_dir = da->get_current_dir();
@@ -88,17 +84,14 @@ void OSIPhone::set_data_dir(String p_dir) {
 };
 
 void OSIPhone::set_unique_id(String p_id) {
-
 	unique_id = p_id;
 };
 
 String OSIPhone::get_unique_id() const {
-
 	return unique_id;
 };
 
 void OSIPhone::initialize_core() {
-
 	OS_Unix::initialize_core();
 
 	set_data_dir(data_dir);
@@ -174,12 +167,10 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
-
 	return main_loop;
 };
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
-
 	main_loop = p_main_loop;
 
 	if (main_loop) {
@@ -189,13 +180,11 @@ void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 };
 
 bool OSIPhone::iterate() {
-
 	if (!main_loop)
 		return true;
 
 	if (main_loop) {
 		for (int i = 0; i < event_count; i++) {
-
 			input->parse_input_event(event_queue[i]);
 		};
 	};
@@ -205,7 +194,6 @@ bool OSIPhone::iterate() {
 };
 
 void OSIPhone::key(uint32_t p_key, bool p_pressed) {
-
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(false);
@@ -217,7 +205,6 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 };
 
 void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
-
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
 		ev.instance();
@@ -232,9 +219,7 @@ void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_d
 };
 
 void OSIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
-
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
-
 		Ref<InputEventScreenDrag> ev;
 		ev.instance();
 		ev->set_index(p_idx);
@@ -245,18 +230,14 @@ void OSIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 };
 
 void OSIPhone::queue_event(const Ref<InputEvent> &p_event) {
-
 	ERR_FAIL_INDEX(event_count, MAX_EVENTS);
 
 	event_queue[event_count++] = p_event;
 };
 
 void OSIPhone::touches_cancelled() {
-
 	for (int i = 0; i < MAX_MOUSE_COUNT; i++) {
-
 		if (touch_list.pressed[i]) {
-
 			// send a mouse_up outside the screen
 			touch_press(i, -1, -1, false, false);
 		};
@@ -270,7 +251,6 @@ void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
 };
 
 void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
-
 	// Found out the Z should not be negated! Pass as is!
 	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
 
@@ -333,7 +313,6 @@ void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p
 };
 
 void OSIPhone::delete_main_loop() {
-
 	if (main_loop) {
 		main_loop->finish();
 		memdelete(main_loop);
@@ -343,7 +322,6 @@ void OSIPhone::delete_main_loop() {
 };
 
 void OSIPhone::finalize() {
-
 	delete_main_loop();
 
 	memdelete(input);
@@ -372,28 +350,24 @@ void OSIPhone::finalize() {
 	event_count = 0;
 };
 
-void OSIPhone::set_mouse_show(bool p_show){};
-void OSIPhone::set_mouse_grab(bool p_grab){};
+void OSIPhone::set_mouse_show(bool p_show) {}
+void OSIPhone::set_mouse_grab(bool p_grab) {}
 
 bool OSIPhone::is_mouse_grab_enabled() const {
-
 	return true;
 };
 
 Point2 OSIPhone::get_mouse_position() const {
-
 	return Point2();
 };
 
 int OSIPhone::get_mouse_button_state() const {
-
 	return 0;
 };
 
-void OSIPhone::set_window_title(const String &p_title){};
+void OSIPhone::set_window_title(const String &p_title) {}
 
 void OSIPhone::alert(const String &p_alert, const String &p_title) {
-
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
@@ -431,22 +405,18 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 }
 
 void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
-
 	video_mode = p_video_mode;
 };
 
 OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
-
 	return video_mode;
 };
 
 void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-
 	p_list->push_back(video_mode);
 };
 
 bool OSIPhone::can_draw() const {
-
 	if (native_video_is_playing())
 		return false;
 	return true;
@@ -471,7 +441,7 @@ extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
 
-void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
+void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 	_show_keyboard(p_existing_text);
 };
 
@@ -497,17 +467,14 @@ void OSIPhone::set_keep_screen_on(bool p_enabled) {
 };
 
 String OSIPhone::get_user_data_dir() const {
-
 	return data_dir;
 };
 
 String OSIPhone::get_name() const {
-
 	return "iOS";
 };
 
 String OSIPhone::get_model_name() const {
-
 	String model = ios->get_model();
 	if (model != "")
 		return model;
@@ -516,7 +483,6 @@ String OSIPhone::get_model_name() const {
 }
 
 Size2 OSIPhone::get_window_size() const {
-
 	return Vector2(video_mode.width, video_mode.height);
 }
 
@@ -527,7 +493,6 @@ Rect2 OSIPhone::get_window_safe_area() const {
 }
 
 bool OSIPhone::has_touchscreen_ui_hint() const {
-
 	return true;
 }
 
@@ -600,7 +565,6 @@ void OSIPhone::vibrate_handheld(int p_duration_ms) {
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
-
 	return p_feature == "mobile";
 }
 

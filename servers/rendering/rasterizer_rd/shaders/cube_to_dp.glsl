@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
@@ -23,7 +21,6 @@ params;
 layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D depth_buffer;
 
 void main() {
-
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThan(pos, params.screen_size))) { //too large, do nothing
 		return;

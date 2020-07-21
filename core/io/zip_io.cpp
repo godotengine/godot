@@ -33,7 +33,6 @@
 #include "core/os/copymem.h"
 
 void *zipio_open(void *data, const char *p_fname, int mode) {
-
 	FileAccess *&f = *(FileAccess **)data;
 
 	String fname;
@@ -42,42 +41,37 @@ void *zipio_open(void *data, const char *p_fname, int mode) {
 	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
 		f = FileAccess::open(fname, FileAccess::WRITE);
 	} else {
-
 		f = FileAccess::open(fname, FileAccess::READ);
 	}
 
-	if (!f)
+	if (!f) {
 		return nullptr;
+	}
 
 	return data;
 }
 
 uLong zipio_read(void *data, void *fdata, void *buf, uLong size) {
-
 	FileAccess *f = *(FileAccess **)data;
 	return f->get_buffer((uint8_t *)buf, size);
 }
 
 uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
-
 	FileAccess *f = *(FileAccess **)opaque;
 	f->store_buffer((uint8_t *)buf, size);
 	return size;
 }
 
 long zipio_tell(voidpf opaque, voidpf stream) {
-
 	FileAccess *f = *(FileAccess **)opaque;
 	return f->get_position();
 }
 
 long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-
 	FileAccess *f = *(FileAccess **)opaque;
 
 	int pos = offset;
 	switch (origin) {
-
 		case ZLIB_FILEFUNC_SEEK_CUR:
 			pos = f->get_position() + offset;
 			break;
@@ -86,14 +80,13 @@ long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 			break;
 		default:
 			break;
-	};
+	}
 
 	f->seek(pos);
 	return 0;
 }
 
 int zipio_close(voidpf opaque, voidpf stream) {
-
 	FileAccess *&f = *(FileAccess **)opaque;
 	if (f) {
 		f->close();
@@ -104,25 +97,21 @@ int zipio_close(voidpf opaque, voidpf stream) {
 }
 
 int zipio_testerror(voidpf opaque, voidpf stream) {
-
 	FileAccess *f = *(FileAccess **)opaque;
 	return (f && f->get_error() != OK) ? 1 : 0;
 }
 
 voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
-
 	voidpf ptr = memalloc(items * size);
 	zeromem(ptr, items * size);
 	return ptr;
 }
 
 void zipio_free(voidpf opaque, voidpf address) {
-
 	memfree(address);
 }
 
 zlib_filefunc_def zipio_create_io_from_file(FileAccess **p_file) {
-
 	zlib_filefunc_def io;
 	io.opaque = p_file;
 	io.zopen_file = zipio_open;

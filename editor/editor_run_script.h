@@ -35,7 +35,6 @@
 #include "editor_plugin.h"
 class EditorNode;
 class EditorScript : public Reference {
-
 	GDCLASS(EditorScript, Reference);
 
 	EditorNode *editor;

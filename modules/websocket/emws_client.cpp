@@ -65,7 +65,6 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int 
 }
 
 Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
-
 	String proto_string;
 	for (int i = 0; i < p_protocols.size(); i++) {
 		if (i != 0)
@@ -142,14 +141,14 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 
 			}
 			var len = buffer.length*buffer.BYTES_PER_ELEMENT;
-			var out = Module._malloc(len);
-			Module.HEAPU8.set(buffer, out);
+			var out = _malloc(len);
+			HEAPU8.set(buffer, out);
 			ccall("_esws_on_message",
 				"void",
 				["number", "number", "number", "number"],
 				[c_ptr, out, len, is_string]
 			);
-			Module._free(out);
+			_free(out);
 		});
 
 		socket.addEventListener("error", function (event) {
@@ -190,12 +189,10 @@ void EMWSClient::poll() {
 }
 
 Ref<WebSocketPeer> EMWSClient::get_peer(int p_peer_id) const {
-
 	return _peer;
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() const {
-
 	if (_peer->is_connected_to_host()) {
 		if (_is_connecting)
 			return CONNECTION_CONNECTING;
@@ -206,17 +203,14 @@ NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() c
 };
 
 void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
-
 	_peer->close(p_code, p_reason);
 };
 
 IP_Address EMWSClient::get_connected_host() const {
-
 	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 };
 
 uint16_t EMWSClient::get_connected_port() const {
-
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
 
@@ -231,8 +225,9 @@ Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffe
 }
 
 EMWSClient::EMWSClient() {
-	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
-	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
+	_in_buf_size = DEF_BUF_SHIFT;
+	_in_pkt_size = DEF_PKT_SHIFT;
+
 	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
 	/* clang-format off */
@@ -243,7 +238,6 @@ EMWSClient::EMWSClient() {
 };
 
 EMWSClient::~EMWSClient() {
-
 	disconnect_from_host();
 	_peer = Ref<EMWSPeer>();
 	/* clang-format off */

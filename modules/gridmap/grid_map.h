@@ -40,7 +40,6 @@
 //should scale better with hardware that supports instancing
 
 class GridMap : public Node3D {
-
 	GDCLASS(GridMap, Node3D);
 
 	enum {
@@ -49,7 +48,6 @@ class GridMap : public Node3D {
 	};
 
 	union IndexKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -58,10 +56,18 @@ class GridMap : public Node3D {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
+		_FORCE_INLINE_ operator Vector3i() const {
+			return Vector3i(x, y, z);
+		}
+
+		IndexKey(Vector3i p_vector) {
+			x = (int16_t)p_vector.x;
+			y = (int16_t)p_vector.y;
+			z = (int16_t)p_vector.z;
+		}
 		IndexKey() { key = 0; }
 	};
 
@@ -69,7 +75,6 @@ class GridMap : public Node3D {
 	 * @brief A Cell is a single cell in the cube map space; it is defined by its coordinates and the populating Item, identified by int id.
 	 */
 	union Cell {
-
 		struct {
 			unsigned int item : 16;
 			unsigned int rot : 5;
@@ -89,7 +94,6 @@ class GridMap : public Node3D {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
-
 		struct NavMesh {
 			RID region;
 			Transform xform;
@@ -118,7 +122,6 @@ class GridMap : public Node3D {
 	};
 
 	union OctantKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -129,7 +132,6 @@ class GridMap : public Node3D {
 		uint64_t key;
 
 		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
-
 			return key < p_key.key;
 		}
 
@@ -165,7 +167,6 @@ class GridMap : public Node3D {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-
 		RS::LightType type;
 		Vector3 pos;
 		Vector3 dir;
@@ -173,7 +174,6 @@ class GridMap : public Node3D {
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
-
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
@@ -243,12 +243,12 @@ public:
 	void set_center_z(bool p_enable);
 	bool get_center_z() const;
 
-	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0);
-	int get_cell_item(int p_x, int p_y, int p_z) const;
-	int get_cell_item_orientation(int p_x, int p_y, int p_z) const;
+	void set_cell_item(const Vector3i &p_position, int p_item, int p_rot = 0);
+	int get_cell_item(const Vector3i &p_position) const;
+	int get_cell_item_orientation(const Vector3i &p_position) const;
 
-	Vector3 world_to_map(const Vector3 &p_world_pos) const;
-	Vector3 map_to_world(int p_x, int p_y, int p_z) const;
+	Vector3i world_to_map(const Vector3 &p_world_position) const;
+	Vector3 map_to_world(const Vector3i &p_map_position) const;
 
 	void set_clip(bool p_enabled, bool p_clip_above = true, int p_floor = 0, Vector3::Axis p_axis = Vector3::AXIS_X);
 

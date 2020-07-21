@@ -36,16 +36,14 @@
 #include "scene/resources/texture.h"
 
 String ResourceImporterImage::get_importer_name() const {
-
 	return "image";
 }
 
 String ResourceImporterImage::get_visible_name() const {
-
 	return "Image";
 }
-void ResourceImporterImage::get_recognized_extensions(List<String> *p_extensions) const {
 
+void ResourceImporterImage::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
 
@@ -54,20 +52,18 @@ String ResourceImporterImage::get_save_extension() const {
 }
 
 String ResourceImporterImage::get_resource_type() const {
-
 	return "Image";
 }
 
 bool ResourceImporterImage::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
 	return true;
 }
 
 int ResourceImporterImage::get_preset_count() const {
 	return 0;
 }
-String ResourceImporterImage::get_preset_name(int p_idx) const {
 
+String ResourceImporterImage::get_preset_name(int p_idx) const {
 	return String();
 }
 
@@ -75,7 +71,6 @@ void ResourceImporterImage::get_import_options(List<ImportOption> *r_options, in
 }
 
 Error ResourceImporterImage::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-
 	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
 
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");

@@ -52,10 +52,10 @@ class ItemList;
 class EditorProfiler;
 class EditorVisualProfiler;
 class EditorNetworkProfiler;
+class EditorPerformanceProfiler;
 class SceneDebuggerTree;
 
 class ScriptEditorDebugger : public MarginContainer {
-
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 	friend class EditorDebuggerNode;
@@ -88,6 +88,11 @@ private:
 	PopupMenu *item_menu;
 
 	EditorFileDialog *file_dialog;
+	enum FileDialogPurpose {
+		SAVE_MONITORS_CSV,
+		SAVE_VRAM_CSV,
+	};
+	FileDialogPurpose file_dialog_purpose;
 
 	int error_count;
 	int warning_count;
@@ -109,18 +114,11 @@ private:
 	// Each debugger should have it's tree in the future I guess.
 	const Tree *editor_remote_tree = nullptr;
 
-	List<Vector<float>> perf_history;
-	Vector<float> perf_max;
-	Vector<TreeItem *> perf_items;
-
 	Map<int, String> profiler_signature;
-
-	Tree *perf_monitors;
-	Control *perf_draw;
-	Label *info_message;
 
 	Tree *vmem_tree;
 	Button *vmem_refresh;
+	Button *vmem_export;
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
@@ -136,6 +134,7 @@ private:
 	EditorProfiler *profiler;
 	EditorVisualProfiler *visual_profiler;
 	EditorNetworkProfiler *network_profiler;
+	EditorPerformanceProfiler *performance_profiler;
 
 	EditorNode *editor;
 
@@ -147,8 +146,6 @@ private:
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
-	void _performance_draw();
-	void _performance_select();
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);
@@ -160,6 +157,7 @@ private:
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
+	void _video_mem_export();
 
 	int _get_node_path_cache(const NodePath &p_path);
 
@@ -254,7 +252,7 @@ public:
 
 	bool is_skip_breakpoints();
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };

@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import android.app.Activity;
 import android.hardware.SensorEvent;
 import android.view.Surface;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -40,7 +41,6 @@ import javax.microedition.khronos.opengles.GL10;
  * Wrapper for native library
  */
 public class GodotLib {
-
 	public static GodotIO io;
 
 	static {
@@ -50,13 +50,13 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void initialize(Activity activity, Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
-	 * @see Activity#onDestroy()
+	 * @see androidx.fragment.app.Fragment#onDestroy()
 	 */
-	public static native void ondestroy(Godot p_instance);
+	public static native void ondestroy();
 
 	/**
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
@@ -66,11 +66,12 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
-	 * @param width
-	 * @param height
+	 * @param p_surface
+	 * @param p_width
+	 * @param p_height
 	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
-	public static native void resize(int width, int height);
+	public static native void resize(Surface p_surface, int p_width, int p_height);
 
 	/**
 	 * Invoked on the render thread when the underlying Android surface is created or recreated.
@@ -160,14 +161,14 @@ public class GodotLib {
 	public static native void joyconnectionchanged(int p_device, boolean p_connected, String p_name);
 
 	/**
-	 * Invoked when the Android activity resumes.
-	 * @see Activity#onResume()
+	 * Invoked when the Android app resumes.
+	 * @see androidx.fragment.app.Fragment#onResume()
 	 */
 	public static native void focusin();
 
 	/**
-	 * Invoked when the Android activity pauses.
-	 * @see Activity#onPause()
+	 * Invoked when the Android app pauses.
+	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
 
@@ -189,7 +190,7 @@ public class GodotLib {
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
-	public static native void callobject(int p_id, String p_method, Object[] p_params);
+	public static native void callobject(long p_id, String p_method, Object[] p_params);
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id| during idle time.
@@ -197,7 +198,7 @@ public class GodotLib {
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
-	public static native void calldeferred(int p_id, String p_method, Object[] p_params);
+	public static native void calldeferred(long p_id, String p_method, Object[] p_params);
 
 	/**
 	 * Forward the results from a permission request.

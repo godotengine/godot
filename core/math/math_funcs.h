@@ -41,7 +41,6 @@
 #include <math.h>
 
 class Math {
-
 	static RandomPCG default_rand;
 
 public:
@@ -233,12 +232,16 @@ public:
 	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 
 	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_weight) {
-		if (is_equal_approx(p_from, p_to)) return p_from;
+		if (is_equal_approx(p_from, p_to)) {
+			return p_from;
+		}
 		double x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0, 1.0);
 		return x * x * (3.0 - 2.0 * x);
 	}
 	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_weight) {
-		if (is_equal_approx(p_from, p_to)) return p_from;
+		if (is_equal_approx(p_from, p_to)) {
+			return p_from;
+		}
 		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return x * x * (3.0f - 2.0f * x);
 	}
@@ -326,7 +329,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {
-
 		union {
 			float f;
 			uint32_t i;
@@ -338,7 +340,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double absd(double g) {
-
 		union {
 			double d;
 			uint64_t i;
@@ -350,7 +351,6 @@ public:
 
 	//this function should be as fast as possible and rounding mode should not matter
 	static _ALWAYS_INLINE_ int fast_ftoi(float a) {
-
 		static int b;
 
 #if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
@@ -405,7 +405,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float halfptr_to_float(const uint16_t *h) {
-
 		union {
 			uint32_t u32;
 			float f32;
@@ -420,7 +419,6 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ uint16_t make_half_float(float f) {
-
 		union {
 			float fv;
 			uint32_t ui;
@@ -451,7 +449,6 @@ public:
 		}
 		// check if exponent is <= -15
 		else if (exp <= 0x38000000) {
-
 			/*// store a denorm half-float value or zero
 		exp = (0x38000000 - exp) >> 23;
 		mantissa >>= (14 + exp);
@@ -476,10 +473,11 @@ public:
 		if (p_step != 0) {
 			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
 			float b = a;
-			if (p_target >= 0)
+			if (p_target >= 0) {
 				b -= p_separation;
-			else
+			} else {
 				b += p_step;
+			}
 			return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
 		}
 		return p_target;

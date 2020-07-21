@@ -35,7 +35,6 @@
 #include "core/os/thread_safe.h"
 
 class MessageQueue {
-
 	_THREAD_SAFE_CLASS_
 
 	enum {
@@ -53,7 +52,6 @@ class MessageQueue {
 	};
 
 	struct Message {
-
 		Callable callable;
 		int16_t type;
 		union {
@@ -63,15 +61,15 @@ class MessageQueue {
 	};
 
 	uint8_t *buffer;
-	uint32_t buffer_end;
-	uint32_t buffer_max_used;
+	uint32_t buffer_end = 0;
+	uint32_t buffer_max_used = 0;
 	uint32_t buffer_size;
 
 	void _call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error);
 
 	static MessageQueue *singleton;
 
-	bool flushing;
+	bool flushing = false;
 
 public:
 	static MessageQueue *get_singleton();
@@ -81,6 +79,7 @@ public:
 	Error push_notification(ObjectID p_id, int p_notification);
 	Error push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value);
 	Error push_callable(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	Error push_callable(const Callable &p_callable, VARIANT_ARG_LIST);
 
 	Error push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
 	Error push_notification(Object *p_object, int p_notification);

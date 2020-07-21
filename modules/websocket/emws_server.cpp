@@ -34,7 +34,6 @@
 #include "core/os/os.h"
 
 Error EMWSServer::listen(int p_port, Vector<String> p_protocols, bool gd_mp_api) {
-
 	return FAILED;
 }
 
@@ -60,12 +59,10 @@ Vector<String> EMWSServer::get_protocols() const {
 }
 
 IP_Address EMWSServer::get_peer_address(int p_peer_id) const {
-
 	return IP_Address();
 }
 
 int EMWSServer::get_peer_port(int p_peer_id) const {
-
 	return 0;
 }
 

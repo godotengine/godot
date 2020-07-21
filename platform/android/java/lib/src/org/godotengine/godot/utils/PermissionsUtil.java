@@ -31,20 +31,24 @@
 package org.godotengine.godot.utils;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
+import android.util.Log;
+
+import androidx.core.content.ContextCompat;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.godotengine.godot.Godot;
 
 /**
  * This class includes utility functions for Android permissions related operations.
  * @author Cagdas Caglak <cagdascaglak@gmail.com>
  */
 public final class PermissionsUtil {
+	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
@@ -60,7 +64,7 @@ public final class PermissionsUtil {
 	 * @param activity the caller activity for this method.
 	 * @return true/false. "true" if permission was granted otherwise returns "false".
 	 */
-	public static boolean requestPermission(String name, Godot activity) {
+	public static boolean requestPermission(String name, Activity activity) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			// Not necessary, asked on install already
 			return true;
@@ -88,7 +92,7 @@ public final class PermissionsUtil {
 	 * @param activity the caller activity for this method.
 	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
 	 */
-	public static boolean requestManifestPermissions(Godot activity) {
+	public static boolean requestManifestPermissions(Activity activity) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true;
 		}
@@ -113,8 +117,8 @@ public final class PermissionsUtil {
 					dangerousPermissions.add(manifestPermission);
 				}
 			} catch (PackageManager.NameNotFoundException e) {
-				e.printStackTrace();
-				return false;
+				// Skip this permission and continue.
+				Log.w(TAG, "Unable to identify permission " + manifestPermission, e);
 			}
 		}
 
@@ -133,7 +137,7 @@ public final class PermissionsUtil {
 	 * @param activity the caller activity for this method.
 	 * @return granted permissions list
 	 */
-	public static String[] getGrantedPermissions(Godot activity) {
+	public static String[] getGrantedPermissions(Activity activity) {
 		String[] manifestPermissions;
 		try {
 			manifestPermissions = getManifestPermissions(activity);
@@ -153,8 +157,8 @@ public final class PermissionsUtil {
 					dangerousPermissions.add(manifestPermission);
 				}
 			} catch (PackageManager.NameNotFoundException e) {
-				e.printStackTrace();
-				return new String[0];
+				// Skip this permission and continue.
+				Log.w(TAG, "Unable to identify permission " + manifestPermission, e);
 			}
 		}
 
@@ -167,7 +171,7 @@ public final class PermissionsUtil {
 	 * @param permission the permession to look for in the manifest file.
 	 * @return "true" if the permission is in the manifest file of the activity, "false" otherwise.
 	 */
-	public static boolean hasManifestPermission(Godot activity, String permission) {
+	public static boolean hasManifestPermission(Activity activity, String permission) {
 		try {
 			for (String p : getManifestPermissions(activity)) {
 				if (permission.equals(p))
@@ -185,7 +189,7 @@ public final class PermissionsUtil {
 	 * @return manifest permissions list
 	 * @throws PackageManager.NameNotFoundException the exception is thrown when a given package, application, or component name cannot be found.
 	 */
-	private static String[] getManifestPermissions(Godot activity) throws PackageManager.NameNotFoundException {
+	private static String[] getManifestPermissions(Activity activity) throws PackageManager.NameNotFoundException {
 		PackageManager packageManager = activity.getPackageManager();
 		PackageInfo packageInfo = packageManager.getPackageInfo(activity.getPackageName(), PackageManager.GET_PERMISSIONS);
 		if (packageInfo.requestedPermissions == null)
@@ -200,7 +204,7 @@ public final class PermissionsUtil {
 	 * @return permission info object
 	 * @throws PackageManager.NameNotFoundException the exception is thrown when a given package, application, or component name cannot be found.
 	 */
-	private static PermissionInfo getPermissionInfo(Godot activity, String permission) throws PackageManager.NameNotFoundException {
+	private static PermissionInfo getPermissionInfo(Activity activity, String permission) throws PackageManager.NameNotFoundException {
 		PackageManager packageManager = activity.getPackageManager();
 		return packageManager.getPermissionInfo(permission, 0);
 	}

@@ -67,7 +67,6 @@
 
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
-
 	String sln_path = GodotSharpDirs::get_project_sln_path();
 	String csproj_path = GodotSharpDirs::get_project_csproj_path();
 
@@ -85,28 +84,23 @@ static bool _create_project_solution_if_needed() {
 CSharpLanguage *CSharpLanguage::singleton = nullptr;
 
 String CSharpLanguage::get_name() const {
-
 	return "C#";
 }
 
 String CSharpLanguage::get_type() const {
-
 	return "CSharpScript";
 }
 
 String CSharpLanguage::get_extension() const {
-
 	return "cs";
 }
 
 Error CSharpLanguage::execute_file(const String &p_path) {
-
 	// ??
 	return OK;
 }
 
 void CSharpLanguage::init() {
-
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
 		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
@@ -131,8 +125,9 @@ void CSharpLanguage::init() {
 	print_line("Run this binary with '--generate-mono-glue path/to/modules/mono/glue'");
 #endif
 
-	if (gdmono->is_runtime_initialized())
+	if (gdmono->is_runtime_initialized()) {
 		gdmono->initialize_load_assemblies();
+	}
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&_editor_init_callback);
@@ -140,9 +135,13 @@ void CSharpLanguage::init() {
 }
 
 void CSharpLanguage::finish() {
+	finalize();
+}
 
-	if (finalized)
+void CSharpLanguage::finalize() {
+	if (finalized) {
 		return;
+	}
 
 	finalizing = true;
 
@@ -184,7 +183,6 @@ void CSharpLanguage::finish() {
 }
 
 void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
-
 	static const char *_reserved_words[] = {
 		// Reserved keywords
 		"abstract",
@@ -295,7 +293,7 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 		"when",
 		"where",
 		"yield",
-		0
+		nullptr
 	};
 
 	const char **w = _reserved_words;
@@ -307,13 +305,11 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 }
 
 void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
-
 	p_delimiters->push_back("//"); // single-line comment
 	p_delimiters->push_back("/* */"); // delimited comment
 }
 
 void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
-
 	p_delimiters->push_back("' '"); // character literal
 	p_delimiters->push_back("\" \""); // regular string literal
 	// Verbatim string literals (`@" "`) don't render correctly, so don't highlight them.
@@ -321,7 +317,6 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
-
 	String base_class = p_base_class_name;
 	if (p_class_name == base_class) {
 		base_class = "Godot." + base_class;
@@ -330,7 +325,6 @@ static String get_base_class_name(const String &p_base_class_name, const String 
 }
 
 Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-
 	String script_template = "using " BINDINGS_NAMESPACE ";\n"
 							 "using System;\n"
 							 "\n"
@@ -366,12 +360,10 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 }
 
 bool CSharpLanguage::is_using_templates() {
-
 	return true;
 }
 
 void CSharpLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-
 	String src = p_script->get_source_code();
 	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
 	src = src.replace("%BASE%", base_class_name)
@@ -381,7 +373,6 @@ void CSharpLanguage::make_template(const String &p_class_name, const String &p_b
 }
 
 String CSharpLanguage::validate_path(const String &p_path) const {
-
 	String class_name = p_path.get_file().get_basename();
 	List<String> keywords;
 	get_reserved_words(&keywords);
@@ -392,32 +383,30 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 }
 
 Script *CSharpLanguage::create_script() const {
-
 	return memnew(CSharpScript);
 }
 
 bool CSharpLanguage::has_named_classes() const {
-
 	return false;
 }
 
 bool CSharpLanguage::supports_builtin_mode() const {
-
 	return false;
 }
 
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
-
-	if (p_var_type_name.empty())
+	if (p_var_type_name.empty()) {
 		return "object";
+	}
 
 	if (!ClassDB::class_exists(p_var_type_name)) {
 		return p_var_type_name;
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT))
+	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT)) {
 		return "Godot.Object";
+	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::FLOAT)) {
 #ifdef REAL_T_IS_DOUBLE
@@ -427,36 +416,49 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 #endif
 	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::STRING))
+	if (p_var_type_name == Variant::get_type_name(Variant::STRING)) {
 		return "string"; // I prefer this one >:[
+	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::DICTIONARY))
+	if (p_var_type_name == Variant::get_type_name(Variant::DICTIONARY)) {
 		return "Collections.Dictionary";
+	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::ARRAY)) {
 		return "Collections.Array";
+	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY))
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY)) {
 		return "byte[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT32_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT32_ARRAY)) {
 		return "int[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT64_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_INT64_ARRAY)) {
 		return "long[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY)) {
 		return "float[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT64_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_FLOAT64_ARRAY)) {
 		return "double[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_STRING_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_STRING_ARRAY)) {
 		return "string[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY)) {
 		return "Vector2[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR3_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_VECTOR3_ARRAY)) {
 		return "Vector3[]";
-	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY))
+	}
+	if (p_var_type_name == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY)) {
 		return "Color[]";
+	}
 
-	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL))
+	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL)) {
 		return "SignalInfo";
+	}
 
 	Variant::Type var_types[] = {
 		Variant::BOOL,
@@ -481,8 +483,9 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	};
 
 	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(Variant::Type); i++) {
-		if (p_var_type_name == Variant::get_type_name(var_types[i]))
+		if (p_var_type_name == Variant::get_type_name(var_types[i])) {
 			return p_var_type_name;
+		}
 	}
 
 	return "object";
@@ -496,8 +499,9 @@ String CSharpLanguage::make_function(const String &, const String &p_name, const
 	for (int i = 0; i < p_args.size(); i++) {
 		const String &arg = p_args[i];
 
-		if (i > 0)
+		if (i > 0) {
 			s += ", ";
+		}
 
 		s += variant_type_to_managed_name(arg.get_slice(":", 1)) + " " + escape_csharp_keyword(arg.get_slice(":", 0));
 	}
@@ -531,60 +535,60 @@ String CSharpLanguage::_get_indentation() const {
 }
 
 String CSharpLanguage::debug_get_error() const {
-
 	return _debug_error;
 }
 
 int CSharpLanguage::debug_get_stack_level_count() const {
-
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return 1;
+	}
 
 	// TODO: StackTrace
 	return 1;
 }
 
 int CSharpLanguage::debug_get_stack_level_line(int p_level) const {
-
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return _debug_parse_err_line;
+	}
 
 	// TODO: StackTrace
 	return 1;
 }
 
 String CSharpLanguage::debug_get_stack_level_function(int p_level) const {
-
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return String();
+	}
 
 	// TODO: StackTrace
 	return String();
 }
 
 String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
-
-	if (_debug_parse_err_line >= 0)
+	if (_debug_parse_err_line >= 0) {
 		return _debug_parse_err_file;
+	}
 
 	// TODO: StackTrace
 	return String();
 }
 
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
-
 #ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
 	static thread_local bool _recursion_flag_ = false;
-	if (_recursion_flag_)
+	if (_recursion_flag_) {
 		return Vector<StackInfo>();
+	}
 	_recursion_flag_ = true;
 	SCOPE_EXIT { _recursion_flag_ = false; };
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
-	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated)
+	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated) {
 		return Vector<StackInfo>();
+	}
 
 	MonoObject *stack_trace = mono_object_new(mono_domain_get(), CACHED_CLASS(System_Diagnostics_StackTrace)->get_mono_ptr());
 
@@ -604,11 +608,11 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 
 #ifdef DEBUG_ENABLED
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObject *p_stack_trace) {
-
 	// Printing an error here will result in endless recursion, so we must be careful
 	static thread_local bool _recursion_flag_ = false;
-	if (_recursion_flag_)
+	if (_recursion_flag_) {
 		return Vector<StackInfo>();
+	}
 	_recursion_flag_ = true;
 	SCOPE_EXIT { _recursion_flag_ = false; };
 
@@ -625,8 +629,9 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 
 	int frame_count = mono_array_length(frames);
 
-	if (frame_count <= 0)
+	if (frame_count <= 0) {
 		return Vector<StackInfo>();
+	}
 
 	Vector<StackInfo> si;
 	si.resize(frame_count);
@@ -672,13 +677,13 @@ void CSharpLanguage::pre_unsafe_unreference(Object *p_obj) {
 	ObjectID id = p_obj->get_instance_id();
 	Map<ObjectID, int>::Element *elem = unsafe_object_references.find(id);
 	ERR_FAIL_NULL(elem);
-	if (--elem->value() == 0)
+	if (--elem->value() == 0) {
 		unsafe_object_references.erase(elem);
+	}
 #endif
 }
 
 void CSharpLanguage::frame() {
-
 	if (gdmono && gdmono->is_runtime_initialized() && gdmono->get_core_api_assembly() != nullptr) {
 		const Ref<MonoGCHandleRef> &task_scheduler_handle = GDMonoCache::cached_data.task_scheduler_handle;
 
@@ -698,11 +703,11 @@ void CSharpLanguage::frame() {
 }
 
 struct CSharpScriptDepSort {
-
 	// must support sorting so inheritance works properly (parent must be reloaded first)
 	bool operator()(const Ref<CSharpScript> &A, const Ref<CSharpScript> &B) const {
-		if (A == B)
+		if (A == B) {
 			return false; // shouldn't happen but..
+		}
 		GDMonoClass *I = B->base;
 		while (I) {
 			if (I == A->script_class) {
@@ -718,7 +723,6 @@ struct CSharpScriptDepSort {
 };
 
 void CSharpLanguage::reload_all_scripts() {
-
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
 		GD_MONO_SCOPE_THREAD_ATTACH;
@@ -728,7 +732,6 @@ void CSharpLanguage::reload_all_scripts() {
 }
 
 void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
-
 	(void)p_script; // UNUSED
 
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
@@ -747,9 +750,9 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 #ifdef GD_MONO_HOT_RELOAD
 bool CSharpLanguage::is_assembly_reloading_needed() {
-
-	if (!gdmono->is_runtime_initialized())
+	if (!gdmono->is_runtime_initialized()) {
 		return false;
+	}
 
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
@@ -767,24 +770,27 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 		if (!FileAccess::exists(proj_asm_path)) {
 			// Maybe it wasn't loaded from the default path, so check this as well
 			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe);
-			if (!FileAccess::exists(proj_asm_path))
+			if (!FileAccess::exists(proj_asm_path)) {
 				return false; // No assembly to load
+			}
 		}
 
-		if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time())
+		if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time()) {
 			return false; // Already up to date
+		}
 	} else {
-		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe)))
+		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe))) {
 			return false; // No assembly to load
+		}
 	}
 
 	return true;
 }
 
 void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
-
-	if (!gdmono->is_runtime_initialized())
+	if (!gdmono->is_runtime_initialized()) {
 		return;
+	}
 
 	// There is no soft reloading with Mono. It's always hard reloading.
 
@@ -850,7 +856,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload.push_back(script);
 
 		if (script->get_path().empty()) {
-			script->tied_class_name_for_reload = script->script_class->get_name();
+			script->tied_class_name_for_reload = script->script_class->get_name_for_lookup();
 			script->tied_class_namespace_for_reload = script->script_class->get_namespace();
 		}
 
@@ -890,8 +896,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
 
 			// Call OnBeforeSerialize
-			if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener)))
+			if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener))) {
 				obj->get_script_instance()->call_multilevel(string_names.on_before_serialize);
+			}
 
 			// Save instance info
 			CSharpScript::StateBackup state;
@@ -926,8 +933,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			for (const Map<ObjectID, CSharpScript::StateBackup>::Element *F = scr->pending_reload_state.front(); F; F = F->next()) {
 				Object *obj = ObjectDB::get_instance(F->key());
 
-				if (!obj)
+				if (!obj) {
 					continue;
+				}
 
 				ObjectID obj_id = obj->get_instance_id();
 
@@ -1124,8 +1132,9 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				}
 
 				// Call OnAfterDeserialization
-				if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener)))
+				if (csi->script->script_class->implements_interface(CACHED_CLASS(ISerializationListener))) {
 					obj->get_script_instance()->call_multilevel(string_names.on_after_deserialize);
+				}
 			}
 		}
 
@@ -1173,7 +1182,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 void CSharpLanguage::_load_scripts_metadata() {
-
 	scripts_metadata.clear();
 
 	String scripts_metadata_filename = "scripts_metadata.";
@@ -1218,24 +1226,20 @@ void CSharpLanguage::_load_scripts_metadata() {
 }
 
 void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("cs");
 }
 
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
-
 	return (Error)(int)get_godotsharp_editor()->call("OpenInExternalEditor", p_script, p_line, p_col);
 }
 
 bool CSharpLanguage::overrides_external_editor() {
-
 	return get_godotsharp_editor()->call("OverridesExternalEditor");
 }
 #endif
 
 void CSharpLanguage::thread_enter() {
-
 #if 0
 	if (gdmono->is_runtime_initialized()) {
 		GDMonoUtils::attach_current_thread();
@@ -1244,7 +1248,6 @@ void CSharpLanguage::thread_enter() {
 }
 
 void CSharpLanguage::thread_exit() {
-
 #if 0
 	if (gdmono->is_runtime_initialized()) {
 		GDMonoUtils::detach_current_thread();
@@ -1253,7 +1256,6 @@ void CSharpLanguage::thread_exit() {
 }
 
 bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
-
 	// Not a parser error in our case, but it's still used for other type of errors
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = p_line;
@@ -1267,7 +1269,6 @@ bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const S
 }
 
 bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
-
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
@@ -1286,6 +1287,7 @@ void CSharpLanguage::_on_scripts_domain_unloaded() {
 		script_binding.inited = false;
 	}
 
+#ifdef GD_MONO_HOT_RELOAD
 	{
 		MutexLock lock(ManagedCallable::instances_mutex);
 
@@ -1295,13 +1297,13 @@ void CSharpLanguage::_on_scripts_domain_unloaded() {
 			managed_callable->delegate_invoke = nullptr;
 		}
 	}
+#endif
 
 	scripts_metadata_invalidated = true;
 }
 
 #ifdef TOOLS_ENABLED
 void CSharpLanguage::_editor_init_callback() {
-
 	register_editor_internal_calls();
 
 	// Initialize GodotSharpEditor
@@ -1316,7 +1318,8 @@ void CSharpLanguage::_editor_init_callback() {
 	GDMonoUtils::runtime_object_init(mono_object, editor_klass, &exc);
 	UNHANDLED_EXCEPTION(exc);
 
-	EditorPlugin *godotsharp_editor = Object::cast_to<EditorPlugin>(GDMonoMarshal::mono_object_to_variant(mono_object));
+	EditorPlugin *godotsharp_editor = Object::cast_to<EditorPlugin>(
+			GDMonoMarshal::mono_object_to_variant(mono_object).operator Object *());
 	CRASH_COND(godotsharp_editor == nullptr);
 
 	// Enable it as a plugin
@@ -1328,13 +1331,11 @@ void CSharpLanguage::_editor_init_callback() {
 #endif
 
 void CSharpLanguage::set_language_index(int p_idx) {
-
 	ERR_FAIL_COND(lang_idx != -1);
 	lang_idx = p_idx;
 }
 
 void CSharpLanguage::release_script_gchandle(MonoGCHandleData &p_gchandle) {
-
 	if (!p_gchandle.is_released()) { // Do not lock unnecessarily
 		MutexLock lock(get_singleton()->script_gchandle_release_mutex);
 		p_gchandle.release();
@@ -1342,7 +1343,6 @@ void CSharpLanguage::release_script_gchandle(MonoGCHandleData &p_gchandle) {
 }
 
 void CSharpLanguage::release_script_gchandle(MonoObject *p_expected_obj, MonoGCHandleData &p_gchandle) {
-
 	uint32_t pinned_gchandle = GDMonoUtils::new_strong_gchandle_pinned(p_expected_obj); // We might lock after this, so pin it
 
 	if (!p_gchandle.is_released()) { // Do not lock unnecessarily
@@ -1363,19 +1363,16 @@ void CSharpLanguage::release_script_gchandle(MonoObject *p_expected_obj, MonoGCH
 }
 
 CSharpLanguage::CSharpLanguage() {
-
 	ERR_FAIL_COND_MSG(singleton, "C# singleton already exist.");
 	singleton = this;
 }
 
 CSharpLanguage::~CSharpLanguage() {
-
-	finish();
+	finalize();
 	singleton = nullptr;
 }
 
 bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object) {
-
 #ifdef DEBUG_ENABLED
 	// I don't trust you
 	if (p_object->get_script_instance()) {
@@ -1388,8 +1385,9 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 
 	// ¯\_(ツ)_/¯
 	const ClassDB::ClassInfo *classinfo = ClassDB::classes.getptr(type_name);
-	while (classinfo && !classinfo->exposed)
+	while (classinfo && !classinfo->exposed) {
 		classinfo = classinfo->inherits_ptr;
+	}
 	ERR_FAIL_NULL_V(classinfo, false);
 	type_name = classinfo->name;
 
@@ -1424,28 +1422,27 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 }
 
 void *CSharpLanguage::alloc_instance_binding_data(Object *p_object) {
-
 	MutexLock lock(language_bind_mutex);
 
 	Map<Object *, CSharpScriptBinding>::Element *match = script_bindings.find(p_object);
-	if (match)
+	if (match) {
 		return (void *)match;
+	}
 
 	CSharpScriptBinding script_binding;
 
-	if (!setup_csharp_script_binding(script_binding, p_object))
+	if (!setup_csharp_script_binding(script_binding, p_object)) {
 		return nullptr;
+	}
 
 	return (void *)insert_script_binding(p_object, script_binding);
 }
 
 Map<Object *, CSharpScriptBinding>::Element *CSharpLanguage::insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding) {
-
 	return script_bindings.insert(p_object, p_script_binding);
 }
 
 void CSharpLanguage::free_instance_binding_data(void *p_data) {
-
 	if (GDMono::get_singleton() == nullptr) {
 #ifdef DEBUG_ENABLED
 		CRASH_COND(!script_bindings.empty());
@@ -1454,8 +1451,9 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 		return;
 	}
 
-	if (finalizing)
+	if (finalizing) {
 		return; // inside CSharpLanguage::finish(), all the gchandle bindings are released there
+	}
 
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
@@ -1481,7 +1479,6 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 }
 
 void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
-
 	Reference *ref_owner = Object::cast_to<Reference>(p_object);
 
 #ifdef DEBUG_ENABLED
@@ -1495,8 +1492,9 @@ void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
-	if (!script_binding.inited)
+	if (!script_binding.inited) {
 		return;
+	}
 
 	if (ref_owner->reference_get_count() > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
 		GD_MONO_SCOPE_THREAD_ATTACH;
@@ -1506,8 +1504,9 @@ void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
 		// so the owner must hold the managed side alive again to avoid it from being GCed.
 
 		MonoObject *target = gchandle.get_target();
-		if (!target)
+		if (!target) {
 			return; // Called after the managed side was collected, so nothing to do here
+		}
 
 		// Release the current weak handle and replace it with a strong handle.
 		MonoGCHandleData strong_gchandle = MonoGCHandleData::new_strong_handle(target);
@@ -1517,7 +1516,6 @@ void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
 }
 
 bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
-
 	Reference *ref_owner = Object::cast_to<Reference>(p_object);
 
 #ifdef DEBUG_ENABLED
@@ -1533,8 +1531,9 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 
 	int refcount = ref_owner->reference_get_count();
 
-	if (!script_binding.inited)
+	if (!script_binding.inited) {
 		return refcount == 0;
+	}
 
 	if (refcount == 1 && !gchandle.is_released() && !gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
 		GD_MONO_SCOPE_THREAD_ATTACH;
@@ -1543,8 +1542,9 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 		// the managed instance takes responsibility of deleting the owner when GCed.
 
 		MonoObject *target = gchandle.get_target();
-		if (!target)
+		if (!target) {
 			return refcount == 0; // Called after the managed side was collected, so nothing to do here
+		}
 
 		// Release the current strong handle and replace it with a weak handle.
 		MonoGCHandleData weak_gchandle = MonoGCHandleData::new_weak_handle(target);
@@ -1558,7 +1558,6 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 }
 
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle) {
-
 	CSharpInstance *instance = memnew(CSharpInstance(Ref<CSharpScript>(p_script)));
 
 	Reference *ref = Object::cast_to<Reference>(p_owner);
@@ -1567,8 +1566,9 @@ CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpS
 	instance->owner = p_owner;
 	instance->gchandle = p_gchandle;
 
-	if (instance->base_ref)
+	if (instance->base_ref) {
 		instance->_reference_owner_unsafe();
+	}
 
 	p_script->instances.insert(p_owner);
 
@@ -1576,7 +1576,6 @@ CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpS
 }
 
 MonoObject *CSharpInstance::get_mono_object() const {
-
 	ERR_FAIL_COND_V(gchandle.is_released(), nullptr);
 	return gchandle.get_target();
 }
@@ -1586,7 +1585,6 @@ Object *CSharpInstance::get_owner() {
 }
 
 bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
-
 	ERR_FAIL_COND_V(!script.is_valid(), false);
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
@@ -1627,8 +1625,9 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 			MonoObject *ret = method->invoke(mono_object, args);
 
-			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret))
+			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret)) {
 				return true;
+			}
 
 			break;
 		}
@@ -1640,7 +1639,6 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
-
 	ERR_FAIL_COND_V(!script.is_valid(), false);
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
@@ -1704,7 +1702,6 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state) {
-
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
 
@@ -1715,8 +1712,9 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 		ManagedType managedType;
 
 		GDMonoField *field = script->script_class->get_field(state_pair.first);
-		if (!field)
+		if (!field) {
 			continue; // Properties ignored. We get the property baking fields instead.
+		}
 
 		managedType = field->get_type();
 
@@ -1729,7 +1727,6 @@ void CSharpInstance::get_properties_state_for_reloading(List<Pair<StringName, Va
 }
 
 void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName, Array>> &r_state) {
-
 	MonoObject *owner_managed = get_mono_object();
 	ERR_FAIL_NULL(owner_managed);
 
@@ -1737,8 +1734,9 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 		const CSharpScript::EventSignal &event_signal = E->value();
 
 		MonoDelegate *delegate_field_value = (MonoDelegate *)event_signal.field->get_value(owner_managed);
-		if (!delegate_field_value)
+		if (!delegate_field_value) {
 			continue; // Empty
+		}
 
 		Array serialized_data;
 		MonoObject *managed_serialized_data = GDMonoMarshal::variant_to_mono_object(serialized_data);
@@ -1760,7 +1758,6 @@ void CSharpInstance::get_event_signals_state_for_reloading(List<Pair<StringName,
 }
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
-
 	for (Map<StringName, PropertyInfo>::Element *E = script->member_info.front(); E; E = E->next()) {
 		p_properties->push_back(E->value());
 	}
@@ -1784,8 +1781,9 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 			if (ret) {
 				Array array = Array(GDMonoMarshal::mono_object_to_variant(ret));
-				for (int i = 0, size = array.size(); i < size; i++)
+				for (int i = 0, size = array.size(); i < size; i++) {
 					p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
+				}
 				return;
 			}
 
@@ -1797,23 +1795,24 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 }
 
 Variant::Type CSharpInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
-
 	if (script->member_info.has(p_name)) {
-		if (r_is_valid)
+		if (r_is_valid) {
 			*r_is_valid = true;
+		}
 		return script->member_info[p_name].type;
 	}
 
-	if (r_is_valid)
+	if (r_is_valid) {
 		*r_is_valid = false;
+	}
 
 	return Variant::NIL;
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
-
-	if (!script.is_valid())
+	if (!script.is_valid()) {
 		return false;
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -1831,7 +1830,6 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 }
 
 Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-
 	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
@@ -1869,7 +1867,6 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 }
 
 void CSharpInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	if (script.is_valid()) {
@@ -1882,7 +1879,6 @@ void CSharpInstance::call_multilevel(const StringName &p_method, const Variant *
 }
 
 void CSharpInstance::_call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount) {
-
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	GDMonoClass *top = script->script_class;
@@ -1900,14 +1896,12 @@ void CSharpInstance::_call_multilevel(MonoObject *p_mono_object, const StringNam
 }
 
 void CSharpInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-
 	// Sorry, the method is the one that controls the call order
 
 	call_multilevel(p_method, p_args, p_argcount);
 }
 
 bool CSharpInstance::_reference_owner_unsafe() {
-
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
 	CRASH_COND(owner == nullptr);
@@ -1929,14 +1923,14 @@ bool CSharpInstance::_reference_owner_unsafe() {
 }
 
 bool CSharpInstance::_unreference_owner_unsafe() {
-
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
 	CRASH_COND(owner == nullptr);
 #endif
 
-	if (!unsafe_referenced)
+	if (!unsafe_referenced) {
 		return false; // Already unreferenced
+	}
 
 	unsafe_referenced = false;
 
@@ -1969,7 +1963,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 
 		bool die = _unreference_owner_unsafe();
 		// Not ok for the owner to die here. If there is a situation where this can happen, it will be considered a bug.
-		CRASH_COND(die == true);
+		CRASH_COND(die);
 
 		owner = nullptr;
 
@@ -1979,8 +1973,9 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	// Tie managed to unmanaged
 	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
-	if (base_ref)
+	if (base_ref) {
 		_reference_owner_unsafe(); // Here, after assigning the gchandle (for the refcount_incremented callback)
+	}
 
 	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, owner);
 
@@ -1991,7 +1986,6 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 }
 
 void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
-
 	disconnect_event_signals();
 
 #ifdef DEBUG_ENABLED
@@ -2002,7 +1996,6 @@ void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 }
 
 void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance) {
-
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
 	CRASH_COND(gchandle.is_released());
@@ -2063,7 +2056,6 @@ void CSharpInstance::disconnect_event_signals() {
 }
 
 void CSharpInstance::refcount_incremented() {
-
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
 	CRASH_COND(owner == nullptr);
@@ -2086,7 +2078,6 @@ void CSharpInstance::refcount_incremented() {
 }
 
 bool CSharpInstance::refcount_decremented() {
-
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
 	CRASH_COND(owner == nullptr);
@@ -2156,7 +2147,6 @@ MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variab
 }
 
 void CSharpInstance::notification(int p_notification) {
-
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
@@ -2195,7 +2185,6 @@ void CSharpInstance::notification(int p_notification) {
 }
 
 void CSharpInstance::_call_notification(int p_notification) {
-
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	MonoObject *mono_object = get_mono_object();
@@ -2203,7 +2192,7 @@ void CSharpInstance::_call_notification(int p_notification) {
 
 	// Custom version of _call_multilevel, optimized for _notification
 
-	uint32_t arg = p_notification;
+	int32_t arg = p_notification;
 	void *args[1] = { &arg };
 	StringName method_name = CACHED_STRING_NAME(_notification);
 
@@ -2227,8 +2216,9 @@ String CSharpInstance::to_string(bool *r_valid) {
 	MonoObject *mono_object = get_mono_object();
 
 	if (mono_object == nullptr) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return String();
 	}
 
@@ -2237,14 +2227,16 @@ String CSharpInstance::to_string(bool *r_valid) {
 
 	if (exc) {
 		GDMonoUtils::set_pending_exception(exc);
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return String();
 	}
 
 	if (result == nullptr) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return String();
 	}
 
@@ -2252,12 +2244,10 @@ String CSharpInstance::to_string(bool *r_valid) {
 }
 
 Ref<Script> CSharpInstance::get_script() const {
-
 	return script;
 }
 
 ScriptLanguage *CSharpInstance::get_language() {
-
 	return CSharpLanguage::get_singleton();
 }
 
@@ -2266,7 +2256,6 @@ CSharpInstance::CSharpInstance(const Ref<CSharpScript> &p_script) :
 }
 
 CSharpInstance::~CSharpInstance() {
-
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	destructing_script_instance = true;
@@ -2309,7 +2298,7 @@ CSharpInstance::~CSharpInstance() {
 		// Unreference the owner here, before the new "instance binding" references it.
 		// Otherwise, the unsafe reference debug checks will incorrectly detect a bug.
 		bool die = _unreference_owner_unsafe();
-		CRASH_COND(die == true); // `owner_keep_alive` holds a reference, so it can't die
+		CRASH_COND(die); // `owner_keep_alive` holds a reference, so it can't die
 
 		void *data = owner->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 		CRASH_COND(data == nullptr);
@@ -2348,14 +2337,12 @@ CSharpInstance::~CSharpInstance() {
 
 #ifdef TOOLS_ENABLED
 void CSharpScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
-
 	placeholders.erase(p_placeholder);
 }
 #endif
 
 #ifdef TOOLS_ENABLED
 void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames) {
-
 	if (base_cache.is_valid()) {
 		base_cache->_update_exports_values(values, propnames);
 	}
@@ -2370,7 +2357,6 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 }
 
 void CSharpScript::_update_member_info_no_exports() {
-
 	if (exports_invalidated) {
 		GD_MONO_ASSERT_THREAD_ATTACHED;
 
@@ -2419,60 +2405,71 @@ void CSharpScript::_update_member_info_no_exports() {
 #endif
 
 bool CSharpScript::_update_exports() {
-
 #ifdef TOOLS_ENABLED
-	if (!Engine::get_singleton()->is_editor_hint())
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
+		placeholder_fallback_enabled = true; // until proven otherwise
+	}
+#endif
+	if (!valid) {
 		return false;
-
-	placeholder_fallback_enabled = true; // until proven otherwise
-
-	if (!valid)
-		return false;
+	}
 
 	bool changed = false;
 
-	if (exports_invalidated) {
+#ifdef TOOLS_ENABLED
+	if (exports_invalidated)
+#endif
+	{
 		GD_MONO_SCOPE_THREAD_ATTACH;
-
-		exports_invalidated = false;
 
 		changed = true;
 
 		member_info.clear();
-		exported_members_cache.clear();
-		exported_members_defval_cache.clear();
 
-		// Here we create a temporary managed instance of the class to get the initial values
+#ifdef TOOLS_ENABLED
+		MonoObject *tmp_object = nullptr;
+		Object *tmp_native = nullptr;
+		uint32_t tmp_pinned_gchandle = 0;
 
-		MonoObject *tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
+		if (is_editor) {
+			exports_invalidated = false;
 
-		if (!tmp_object) {
-			ERR_PRINT("Failed to allocate temporary MonoObject.");
-			return false;
+			exported_members_cache.clear();
+			exported_members_defval_cache.clear();
+
+			// Here we create a temporary managed instance of the class to get the initial values
+			tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
+
+			if (!tmp_object) {
+				ERR_PRINT("Failed to allocate temporary MonoObject.");
+				return false;
+			}
+
+			tmp_pinned_gchandle = GDMonoUtils::new_strong_gchandle_pinned(tmp_object); // pin it (not sure if needed)
+
+			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
+
+			ERR_FAIL_NULL_V_MSG(ctor, false,
+					"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
+
+			MonoException *ctor_exc = nullptr;
+			ctor->invoke(tmp_object, nullptr, &ctor_exc);
+
+			tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
+
+			if (ctor_exc) {
+				// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
+
+				GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
+				tmp_object = nullptr;
+
+				ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
+				GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
+				return false;
+			}
 		}
-
-		uint32_t tmp_pinned_gchandle = GDMonoUtils::new_strong_gchandle_pinned(tmp_object); // pin it (not sure if needed)
-
-		GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
-
-		ERR_FAIL_NULL_V_MSG(ctor, false,
-				"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
-
-		MonoException *ctor_exc = nullptr;
-		ctor->invoke(tmp_object, nullptr, &ctor_exc);
-
-		Object *tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
-
-		if (ctor_exc) {
-			// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
-
-			GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
-			tmp_object = nullptr;
-
-			ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
-			GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
-			return false;
-		}
+#endif
 
 		GDMonoClass *top = script_class;
 
@@ -2488,15 +2485,22 @@ bool CSharpScript::_update_exports() {
 				if (_get_member_export(field, /* inspect export: */ true, prop_info, exported)) {
 					StringName member_name = field->get_name();
 
-					if (exported) {
-						member_info[member_name] = prop_info;
-						exported_members_cache.push_front(prop_info);
+					member_info[member_name] = prop_info;
 
-						if (tmp_object) {
-							exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					if (exported) {
+#ifdef TOOLS_ENABLED
+						if (is_editor) {
+							exported_members_cache.push_front(prop_info);
+
+							if (tmp_object) {
+								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+							}
 						}
-					} else {
-						member_info[member_name] = prop_info;
+#endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+						exported_members_names.insert(member_name);
+#endif
 					}
 				}
 			}
@@ -2509,22 +2513,28 @@ bool CSharpScript::_update_exports() {
 				if (_get_member_export(property, /* inspect export: */ true, prop_info, exported)) {
 					StringName member_name = property->get_name();
 
-					if (exported) {
-						member_info[member_name] = prop_info;
-						exported_members_cache.push_front(prop_info);
+					member_info[member_name] = prop_info;
 
-						if (tmp_object) {
-							MonoException *exc = nullptr;
-							MonoObject *ret = property->get_value(tmp_object, &exc);
-							if (exc) {
-								exported_members_defval_cache[member_name] = Variant();
-								GDMonoUtils::debug_print_unhandled_exception(exc);
-							} else {
-								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
+					if (exported) {
+#ifdef TOOLS_ENABLED
+						if (is_editor) {
+							exported_members_cache.push_front(prop_info);
+							if (tmp_object) {
+								MonoException *exc = nullptr;
+								MonoObject *ret = property->get_value(tmp_object, &exc);
+								if (exc) {
+									exported_members_defval_cache[member_name] = Variant();
+									GDMonoUtils::debug_print_unhandled_exception(exc);
+								} else {
+									exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
+								}
 							}
 						}
-					} else {
-						member_info[member_name] = prop_info;
+#endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+						exported_members_names.insert(member_name);
+#endif
 					}
 				}
 			}
@@ -2532,52 +2542,57 @@ bool CSharpScript::_update_exports() {
 			top = top->get_parent_class();
 		}
 
-		// Need to check this here, before disposal
-		bool base_ref = Object::cast_to<Reference>(tmp_native) != nullptr;
+#ifdef TOOLS_ENABLED
+		if (is_editor) {
+			// Need to check this here, before disposal
+			bool base_ref = Object::cast_to<Reference>(tmp_native) != nullptr;
 
-		// Dispose the temporary managed instance
+			// Dispose the temporary managed instance
 
-		MonoException *exc = nullptr;
-		GDMonoUtils::dispose(tmp_object, &exc);
+			MonoException *exc = nullptr;
+			GDMonoUtils::dispose(tmp_object, &exc);
 
-		if (exc) {
-			ERR_PRINT("Exception thrown from method Dispose() of temporary MonoObject:");
-			GDMonoUtils::debug_print_unhandled_exception(exc);
+			if (exc) {
+				ERR_PRINT("Exception thrown from method Dispose() of temporary MonoObject:");
+				GDMonoUtils::debug_print_unhandled_exception(exc);
+			}
+
+			GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
+			tmp_object = nullptr;
+
+			if (tmp_native && !base_ref) {
+				Node *node = Object::cast_to<Node>(tmp_native);
+				if (node && node->is_inside_tree()) {
+					ERR_PRINT("Temporary instance was added to the scene tree.");
+				} else {
+					memdelete(tmp_native);
+				}
+			}
 		}
+#endif
+	}
 
-		GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
-		tmp_object = nullptr;
+#ifdef TOOLS_ENABLED
+	if (is_editor) {
+		placeholder_fallback_enabled = false;
 
-		if (tmp_native && !base_ref) {
-			Node *node = Object::cast_to<Node>(tmp_native);
-			if (node && node->is_inside_tree()) {
-				ERR_PRINT("Temporary instance was added to the scene tree.");
-			} else {
-				memdelete(tmp_native);
+		if (placeholders.size()) {
+			// Update placeholders if any
+			Map<StringName, Variant> values;
+			List<PropertyInfo> propnames;
+			_update_exports_values(values, propnames);
+
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->update(propnames, values);
 			}
 		}
 	}
-
-	placeholder_fallback_enabled = false;
-
-	if (placeholders.size()) {
-		// Update placeholders if any
-		Map<StringName, Variant> values;
-		List<PropertyInfo> propnames;
-		_update_exports_values(values, propnames);
-
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propnames, values);
-		}
-	}
+#endif
 
 	return changed;
-#endif
-	return false;
 }
 
 void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class) {
-
 	// no need to load the script's signals more than once
 	if (!signals_invalidated) {
 		return;
@@ -2595,8 +2610,9 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 		for (int i = delegates.size() - 1; i >= 0; --i) {
 			GDMonoClass *delegate = delegates[i];
 
-			if (!delegate->has_attribute(CACHED_CLASS(SignalAttribute)))
+			if (!delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
 				continue;
+			}
 
 			// Arguments are accessibles as arguments of .Invoke method
 			GDMonoMethod *invoke_method = delegate->get_method(mono_get_delegate_invoke(delegate->get_mono_ptr()));
@@ -2629,11 +2645,13 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 
 			GDMonoClass *field_class = field->get_type().type_class;
 
-			if (!mono_class_is_delegate(field_class->get_mono_ptr()))
+			if (!mono_class_is_delegate(field_class->get_mono_ptr())) {
 				continue;
+			}
 
-			if (!found_event_signals.find(field->get_name()))
+			if (!found_event_signals.find(field->get_name())) {
 				continue;
+			}
 
 			GDMonoMethod *invoke_method = field_class->get_method(mono_get_delegate_invoke(field_class->get_mono_ptr()));
 
@@ -2679,13 +2697,11 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_in
 	return true;
 }
 
-#ifdef TOOLS_ENABLED
 /**
  * Returns false if there was an error, otherwise true.
  * If there was an error, r_prop_info and r_exported are not assigned any value.
  */
 bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported) {
-
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	// Goddammit, C++. All I wanted was some nested functions.
@@ -2693,13 +2709,17 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	(m_member->get_enclosing_class()->get_full_name() + "." + (String)m_member->get_name())
 
 	if (p_member->is_static()) {
-		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
+#ifdef TOOLS_ENABLED
+		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
 			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+		}
+#endif
 		return false;
 	}
 
-	if (member_info.has(p_member->get_name()))
+	if (member_info.has(p_member->get_name())) {
 		return false;
+	}
 
 	ManagedType type;
 
@@ -2716,13 +2736,19 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
 		if (!property->has_getter()) {
-			if (exported)
+#ifdef TOOLS_ENABLED
+			if (exported) {
 				ERR_PRINT("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+			}
+#endif
 			return false;
 		}
 		if (!property->has_setter()) {
-			if (exported)
+#ifdef TOOLS_ENABLED
+			if (exported) {
 				ERR_PRINT("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+			}
+#endif
 			return false;
 		}
 	}
@@ -2736,16 +2762,21 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		return true;
 	}
 
+#ifdef TOOLS_ENABLED
 	MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+#endif
 
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 
 	if (variant_type == Variant::NIL && !nil_is_variant) {
+#ifdef TOOLS_ENABLED
 		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+#endif
 		return false;
 	}
 
+#ifdef TOOLS_ENABLED
 	int hint_res = _try_get_member_export_hint(p_member, type, variant_type, /* allow_generics: */ true, hint, hint_string);
 
 	ERR_FAIL_COND_V_MSG(hint_res == -1, false,
@@ -2756,6 +2787,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
 	}
+#endif
 
 	uint32_t prop_usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE;
 
@@ -2772,8 +2804,8 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 #undef MEMBER_FULL_QUALIFIED_NAME
 }
 
+#ifdef TOOLS_ENABLED
 int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string) {
-
 	if (p_variant_type == Variant::NIL) {
 		// System.Object (Variant)
 		return 1;
@@ -2844,8 +2876,9 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 
 		ManagedType elem_type;
 
-		if (!GDMonoMarshal::try_get_array_element_type(p_type, elem_type))
+		if (!GDMonoMarshal::try_get_array_element_type(p_type, elem_type)) {
 			return 0;
+		}
 
 		Variant::Type elem_variant_type = GDMonoMarshal::managed_to_variant_type(elem_type);
 
@@ -2872,18 +2905,7 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 }
 #endif
 
-void CSharpScript::_clear() {
-
-	tool = false;
-	valid = false;
-
-	base = nullptr;
-	native = nullptr;
-	script_class = nullptr;
-}
-
 Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-
 	if (unlikely(GDMono::get_singleton() == nullptr)) {
 		// Probably not the best error but eh.
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -2915,18 +2937,11 @@ Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, i
 }
 
 void CSharpScript::_resource_path_changed() {
-
-	String path = get_path();
-
-	if (!path.empty()) {
-		name = get_path().get_file().get_basename();
-	}
+	_update_name();
 }
 
 bool CSharpScript::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (p_name == CSharpLanguage::singleton->string_names._script_source) {
-
 		r_ret = get_source_code();
 		return true;
 	}
@@ -2935,9 +2950,7 @@ bool CSharpScript::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
-
 	if (p_name == CSharpLanguage::singleton->string_names._script_source) {
-
 		set_source_code(p_value);
 		reload();
 		return true;
@@ -2947,17 +2960,14 @@ bool CSharpScript::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
-
 	p_properties->push_back(PropertyInfo(Variant::STRING, CSharpLanguage::singleton->string_names._script_source, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void CSharpScript::_bind_methods() {
-
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, MethodInfo("new"));
 }
 
 Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native) {
-
 	// This method should not fail, only assertions allowed
 
 	CRASH_COND(p_class == nullptr);
@@ -2971,7 +2981,6 @@ Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GD
 }
 
 void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native) {
-
 	// This method should not fail, only assertions allowed
 
 	CRASH_COND(p_class == nullptr);
@@ -2984,8 +2993,9 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 
 	GDMonoClass *base = p_script->script_class->get_parent_class();
 
-	if (base != p_script->native)
+	if (base != p_script->native) {
 		p_script->base = base;
+	}
 
 	p_script->valid = true;
 	p_script->tool = p_script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
@@ -3011,8 +3021,9 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 		while (native_top) {
 			native_top->fetch_methods_with_godot_api_checks(p_script->native);
 
-			if (native_top == CACHED_CLASS(GodotObject))
+			if (native_top == CACHED_CLASS(GodotObject)) {
 				break;
+			}
 
 			native_top = native_top->get_parent_class();
 		}
@@ -3035,7 +3046,6 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 }
 
 bool CSharpScript::can_instance() const {
-
 #ifdef TOOLS_ENABLED
 	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
 #else
@@ -3059,15 +3069,14 @@ bool CSharpScript::can_instance() const {
 }
 
 StringName CSharpScript::get_instance_base_type() const {
-
-	if (native)
+	if (native) {
 		return native->get_name();
-	else
+	} else {
 		return StringName();
+	}
 }
 
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error) {
-
 	GD_MONO_ASSERT_THREAD_ATTACHED;
 
 	/* STEP 1, CREATE */
@@ -3127,7 +3136,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 		bool die = instance->_unreference_owner_unsafe();
 		// Not ok for the owner to die here. If there is a situation where this can happen, it will be considered a bug.
-		CRASH_COND(die == true);
+		CRASH_COND(die);
 
 		p_owner->set_script_instance(nullptr);
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -3137,8 +3146,9 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 	// Tie managed to unmanaged
 	instance->gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
-	if (instance->base_ref)
+	if (instance->base_ref) {
 		instance->_reference_owner_unsafe(); // Here, after assigning the gchandle (for the refcount_incremented callback)
+	}
 
 	{
 		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
@@ -3157,7 +3167,6 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 }
 
 Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-
 	if (!valid) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
@@ -3193,7 +3202,6 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 }
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
-
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!valid);
 #endif
@@ -3218,7 +3226,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 }
 
 PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_this) {
-
 #ifdef TOOLS_ENABLED
 	PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
 	placeholders.insert(si);
@@ -3230,25 +3237,22 @@ PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_t
 }
 
 bool CSharpScript::instance_has(const Object *p_this) const {
-
 	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
 	return instances.has((Object *)p_this);
 }
 
 bool CSharpScript::has_source_code() const {
-
 	return !source.empty();
 }
 
 String CSharpScript::get_source_code() const {
-
 	return source;
 }
 
 void CSharpScript::set_source_code(const String &p_code) {
-
-	if (source == p_code)
+	if (source == p_code) {
 		return;
+	}
 	source = p_code;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
@@ -3256,9 +3260,9 @@ void CSharpScript::set_source_code(const String &p_code) {
 }
 
 void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
-
-	if (!script_class)
+	if (!script_class) {
 		return;
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3270,9 +3274,9 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 }
 
 bool CSharpScript::has_method(const StringName &p_method) const {
-
-	if (!script_class)
+	if (!script_class) {
 		return false;
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3280,9 +3284,9 @@ bool CSharpScript::has_method(const StringName &p_method) const {
 }
 
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
-
-	if (!script_class)
+	if (!script_class) {
 		return MethodInfo();
+	}
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
@@ -3301,7 +3305,6 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
-
 	bool has_instances;
 	{
 		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
@@ -3323,9 +3326,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 			ERR_FAIL_NULL_V(namespace_, ERR_BUG);
 			ERR_FAIL_NULL_V(class_name, ERR_BUG);
 			GDMonoClass *klass = project_assembly->get_class(namespace_->operator String(), class_name->operator String());
-			if (klass) {
-				bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(klass);
-				ERR_FAIL_COND_V(!obj_type, ERR_BUG);
+			if (klass && CACHED_CLASS(GodotObject)->is_assignable_from(klass)) {
 				script_class = klass;
 			}
 		} else {
@@ -3359,8 +3360,9 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 			GDMonoClass *base_class = script_class->get_parent_class();
 
-			if (base_class != native)
+			if (base_class != native) {
 				base = base_class;
+			}
 
 #ifdef DEBUG_ENABLED
 			// For debug builds, we must fetch from all native base methods as well.
@@ -3372,8 +3374,9 @@ Error CSharpScript::reload(bool p_keep_state) {
 				while (native_top) {
 					native_top->fetch_methods_with_godot_api_checks(native);
 
-					if (native_top == CACHED_CLASS(GodotObject))
+					if (native_top == CACHED_CLASS(GodotObject)) {
 						break;
+					}
 
 					native_top = native_top->get_parent_class();
 				}
@@ -3463,12 +3466,10 @@ Error CSharpScript::reload(bool p_keep_state) {
 }
 
 ScriptLanguage *CSharpScript::get_language() const {
-
 	return CSharpLanguage::get_singleton();
 }
 
 bool CSharpScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
-
 #ifdef TOOLS_ENABLED
 
 	const Map<StringName, Variant>::Element *E = exported_members_defval_cache.find(p_property);
@@ -3486,7 +3487,6 @@ bool CSharpScript::get_property_default_value(const StringName &p_property, Vari
 }
 
 void CSharpScript::update_exports() {
-
 #ifdef TOOLS_ENABLED
 	_update_exports();
 #endif
@@ -3497,7 +3497,6 @@ bool CSharpScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-
 	for (const Map<StringName, Vector<SignalParameter>>::Element *E = _signals.front(); E; E = E->next()) {
 		MethodInfo mi;
 		mi.name = E->key();
@@ -3507,8 +3506,9 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 			const SignalParameter &param = params[i];
 
 			PropertyInfo arg_info = PropertyInfo(param.type, param.name);
-			if (param.type == Variant::NIL && param.nil_is_variant)
+			if (param.type == Variant::NIL && param.nil_is_variant) {
 				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
 
 			mi.arguments.push_back(arg_info);
 		}
@@ -3526,8 +3526,9 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 			const SignalParameter &param = params[i];
 
 			PropertyInfo arg_info = PropertyInfo(param.type, param.name);
-			if (param.type == Variant::NIL && param.nil_is_variant)
+			if (param.type == Variant::NIL && param.nil_is_variant) {
 				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
 
 			mi.arguments.push_back(arg_info);
 		}
@@ -3536,39 +3537,58 @@ void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	}
 }
 
-Ref<Script> CSharpScript::get_base_script() const {
+bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
+	Ref<CSharpScript> cs = p_script;
+	if (cs.is_null()) {
+		return false;
+	}
 
+	if (script_class == nullptr || cs->script_class == nullptr) {
+		return false;
+	}
+
+	if (script_class == cs->script_class) {
+		return true;
+	}
+
+	return cs->script_class->is_assignable_from(script_class);
+}
+
+Ref<Script> CSharpScript::get_base_script() const {
 	// TODO search in metadata file once we have it, not important any way?
 	return Ref<Script>();
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {
-
 	for (Map<StringName, PropertyInfo>::Element *E = member_info.front(); E; E = E->next()) {
 		p_list->push_back(E->value());
 	}
 }
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
-
 	// TODO omnisharp
 	return -1;
 }
 
 MultiplayerAPI::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
-
-	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute)))
+	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute))) {
 		return MultiplayerAPI::RPC_MODE_REMOTE;
-	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute)))
+	}
+	if (p_member->has_attribute(CACHED_CLASS(MasterAttribute))) {
 		return MultiplayerAPI::RPC_MODE_MASTER;
-	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute)))
+	}
+	if (p_member->has_attribute(CACHED_CLASS(PuppetAttribute))) {
 		return MultiplayerAPI::RPC_MODE_PUPPET;
-	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute)))
+	}
+	if (p_member->has_attribute(CACHED_CLASS(RemoteSyncAttribute))) {
 		return MultiplayerAPI::RPC_MODE_REMOTESYNC;
-	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute)))
+	}
+	if (p_member->has_attribute(CACHED_CLASS(MasterSyncAttribute))) {
 		return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-	if (p_member->has_attribute(CACHED_CLASS(PuppetSyncAttribute)))
+	}
+	if (p_member->has_attribute(CACHED_CLASS(PuppetSyncAttribute))) {
 		return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
+	}
 
 	return MultiplayerAPI::RPC_MODE_DISABLED;
 }
@@ -3628,7 +3648,6 @@ MultiplayerAPI::RPCMode CSharpScript::get_rset_mode(const StringName &p_variable
 }
 
 Error CSharpScript::load_source_code(const String &p_path) {
-
 	Error ferr = read_all_file_utf8(p_path, source);
 
 	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
@@ -3644,16 +3663,27 @@ Error CSharpScript::load_source_code(const String &p_path) {
 	return OK;
 }
 
-StringName CSharpScript::get_script_name() const {
+void CSharpScript::_update_name() {
+	String path = get_path();
 
-	return name;
+	if (!path.empty()) {
+		name = get_path().get_file().get_basename();
+	}
+}
+
+void CSharpScript::_clear() {
+	tool = false;
+	valid = false;
+
+	base = nullptr;
+	native = nullptr;
+	script_class = nullptr;
 }
 
 CSharpScript::CSharpScript() {
-
 	_clear();
 
-	_resource_path_changed();
+	_update_name();
 
 #ifdef DEBUG_ENABLED
 	{
@@ -3664,19 +3694,28 @@ CSharpScript::CSharpScript() {
 }
 
 CSharpScript::~CSharpScript() {
-
 #ifdef DEBUG_ENABLED
 	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
 	CSharpLanguage::get_singleton()->script_list.remove(&this->script_list);
 #endif
 }
 
+void CSharpScript::get_members(Set<StringName> *p_members) {
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	if (p_members) {
+		for (Set<StringName>::Element *E = exported_members_names.front(); E; E = E->next()) {
+			p_members->insert(E->get());
+		}
+	}
+#endif
+}
+
 /*************** RESOURCE ***************/
 
-RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
-
-	if (r_error)
+RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
+	}
 
 	// TODO ignore anything inside bin/ and obj/ in tools builds?
 
@@ -3693,29 +3732,26 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 
 	script->reload();
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return scriptres;
 }
 
 void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("cs");
 }
 
 bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const {
-
 	return p_type == "Script" || p_type == CSharpLanguage::get_singleton()->get_type();
 }
 
 String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path) const {
-
 	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
 }
 
 Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-
 	Ref<CSharpScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 
@@ -3759,19 +3795,16 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 }
 
 void ResourceFormatSaverCSharpScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-
 	if (Object::cast_to<CSharpScript>(p_resource.ptr())) {
 		p_extensions->push_back("cs");
 	}
 }
 
 bool ResourceFormatSaverCSharpScript::recognize(const RES &p_resource) const {
-
 	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
 }
 
 CSharpLanguage::StringNameCache::StringNameCache() {
-
 	_signal_callback = StaticCString::create("_signal_callback");
 	_set = StaticCString::create("_set");
 	_get = StaticCString::create("_get");

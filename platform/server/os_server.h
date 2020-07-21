@@ -31,7 +31,7 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
 #ifdef __APPLE__
@@ -47,7 +47,6 @@
 #undef CursorShape
 
 class OS_Server : public OS_Unix {
-
 	RenderingServer *rendering_server;
 	VideoMode current_videomode;
 	List<String> args;

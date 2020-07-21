@@ -32,6 +32,7 @@ package org.godotengine.godot.xr.ovr;
 
 import android.opengl.EGLExt;
 import android.opengl.GLSurfaceView;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
@@ -40,7 +41,6 @@ import javax.microedition.khronos.egl.EGLDisplay;
  * EGL config chooser for the Oculus Mobile VR SDK.
  */
 public class OvrConfigChooser implements GLSurfaceView.EGLConfigChooser {
-
 	private static final int[] CONFIG_ATTRIBS = {
 		EGL10.EGL_RED_SIZE, 8,
 		EGL10.EGL_GREEN_SIZE, 8,

@@ -47,8 +47,8 @@ class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
 	LineEdit *search_text;
-	ToolButton *find_prev;
-	ToolButton *find_next;
+	Button *find_prev;
+	Button *find_next;
 	Label *matches_label;
 	TextureButton *hide_button;
 	String prev_search;
@@ -88,7 +88,6 @@ public:
 };
 
 class EditorHelp : public VBoxContainer {
-
 	GDCLASS(EditorHelp, VBoxContainer);
 
 	enum Page {
@@ -193,7 +192,6 @@ public:
 };
 
 class EditorHelpBit : public MarginContainer {
-
 	GDCLASS(EditorHelpBit, MarginContainer);
 
 	RichTextLabel *rich_text;

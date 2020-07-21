@@ -35,13 +35,11 @@
 #include "scene/resources/packed_scene.h"
 
 void EditorSubScene::_path_selected(const String &p_path) {
-
 	path->set_text(p_path);
 	_path_changed(p_path);
 }
 
 void EditorSubScene::_path_changed(const String &p_path) {
-
 	tree->clear();
 
 	if (scene) {
@@ -49,29 +47,30 @@ void EditorSubScene::_path_changed(const String &p_path) {
 		scene = nullptr;
 	}
 
-	if (p_path == "")
+	if (p_path == "") {
 		return;
+	}
 
 	Ref<PackedScene> ps = ResourceLoader::load(p_path, "PackedScene");
 
-	if (ps.is_null())
+	if (ps.is_null()) {
 		return;
+	}
 
 	scene = ps->instance();
-	if (!scene)
+	if (!scene) {
 		return;
+	}
 
 	_fill_tree(scene, nullptr);
 }
 
 void EditorSubScene::_path_browse() {
-
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }
 
 void EditorSubScene::_notification(int p_what) {
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		if (is_visible() && scene == nullptr) {
 			_path_browse();
 		}
@@ -79,7 +78,6 @@ void EditorSubScene::_notification(int p_what) {
 }
 
 void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
-
 	TreeItem *it = tree->create_item(p_parent);
 	it->set_metadata(0, p_node);
 	it->set_text(0, p_node->get_name());
@@ -88,10 +86,10 @@ void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
 	it->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_node, "Node"));
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-
 		Node *c = p_node->get_child(i);
-		if (c->get_owner() != scene)
+		if (c->get_owner() != scene) {
 			continue;
+		}
 		_fill_tree(c, it);
 	}
 }
@@ -114,8 +112,9 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 
 		Node *n = item->get_metadata(0);
 
-		if (!n)
+		if (!n) {
 			return;
+		}
 		if (p_selected) {
 			if (n == scene) {
 				is_root = true;
@@ -125,8 +124,9 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 		} else {
 			List<Node *>::Element *E = selection.find(n);
 
-			if (E)
+			if (E) {
 				selection.erase(E);
+			}
 		}
 	}
 }
@@ -165,13 +165,10 @@ void EditorSubScene::ok_pressed() {
 }
 
 void EditorSubScene::_reown(Node *p_node, List<Node *> *p_to_reown) {
-
 	if (p_node == scene) {
-
 		scene->set_filename("");
 		p_to_reown->push_back(p_node);
 	} else if (p_node->get_owner() == scene) {
-
 		p_to_reown->push_back(p_node);
 	}
 
@@ -214,18 +211,15 @@ void EditorSubScene::move(Node *p_new_parent, Node *p_new_owner) {
 }
 
 void EditorSubScene::clear() {
-
 	path->set_text("");
 	_path_changed("");
 }
 
 void EditorSubScene::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("subscene_selected"));
 }
 
 EditorSubScene::EditorSubScene() {
-
 	scene = nullptr;
 	is_root = false;
 
@@ -262,7 +256,6 @@ EditorSubScene::EditorSubScene() {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-
 		file_dialog->add_filter("*." + E->get());
 	}
 

@@ -35,7 +35,6 @@
 #include "scene/gui/shortcut.h"
 
 class PopupMenu : public Popup {
-
 	GDCLASS(PopupMenu, Popup);
 
 	struct Item {
@@ -88,7 +87,7 @@ class PopupMenu : public Popup {
 	Rect2 parent_rect;
 	String _get_accel_text(int p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
-	virtual Size2 _get_contents_minimum_size() const;
+	virtual Size2 _get_contents_minimum_size() const override;
 	void _scroll(float p_factor, const Point2 &p_over);
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int over);
@@ -178,6 +177,7 @@ public:
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	int get_current_index() const;
 	int get_item_count() const;
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
@@ -193,7 +193,7 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const;
+	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();

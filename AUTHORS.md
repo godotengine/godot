@@ -95,6 +95,7 @@ name is available.
     Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
+    James Buck (jbuck3)
     Jérôme Gully (Nutriz)
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
@@ -109,10 +110,13 @@ name is available.
     Leon Krause (eska014)
     Lucien Menassol (Kanabenki)
     m4nu3lf
+    Maganty Rushyendra (mrushyendra)
     Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
+    Marcus Brummer (mbrlabs)
+    Marcus (MCrafterzz)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Capitanio (capnm)

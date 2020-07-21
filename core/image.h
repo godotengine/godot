@@ -33,7 +33,6 @@
 
 #include "core/color.h"
 #include "core/math/rect2.h"
-
 #include "core/resource.h"
 
 /**
@@ -136,6 +135,7 @@ public:
 	static ImageMemLoadFunc _png_mem_loader_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
+	static ImageMemLoadFunc _tga_mem_loader_func;
 
 	static void (*_image_compress_bc_func)(Image *, float, UsedChannels p_channels);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, UsedChannels p_channels);
@@ -172,10 +172,11 @@ private:
 		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
 	}
 
-	Format format;
+	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
-	int width, height;
-	bool mipmaps;
+	int width = 0;
+	int height = 0;
+	bool mipmaps = false;
 
 	void _copy_internals_from(const Image &p_image) {
 		format = p_image.format;
@@ -235,7 +236,6 @@ public:
 	void resize_to_po2(bool p_square = false);
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
-	void expand_x2_hq2x();
 	bool is_size_po2() const;
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
@@ -286,7 +286,7 @@ public:
 	/**
 	 * create an empty image
 	 */
-	Image();
+	Image() {}
 	/**
 	 * create an empty image of a specific size and format
 	 */
@@ -295,6 +295,8 @@ public:
 	 * import an image of a specific size and format from a pointer
 	 */
 	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+
+	~Image() {}
 
 	enum AlphaMode {
 		ALPHA_NONE,
@@ -359,6 +361,7 @@ public:
 	Error load_png_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
@@ -366,7 +369,7 @@ public:
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
 
-	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+	virtual Ref<Resource> duplicate(bool p_subresources = false) const override;
 
 	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC);
 	void optimize_channels();
@@ -376,6 +379,8 @@ public:
 	void set_pixelv(const Point2 &p_dst, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
+	void set_as_black();
+
 	void copy_internals_from(const Ref<Image> &p_image) {
 		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
 		format = p_image->format;
@@ -384,8 +389,6 @@ public:
 		mipmaps = p_image->mipmaps;
 		data = p_image->data;
 	}
-
-	~Image();
 };
 
 VARIANT_ENUM_CAST(Image::Format)

@@ -583,52 +583,6 @@ void btMultiBody::compTreeLinkVelocities(btVector3 *omega, btVector3 *vel) const
 	}
 }
 
-btScalar btMultiBody::getKineticEnergy() const
-{
-	int num_links = getNumLinks();
-	// TODO: would be better not to allocate memory here
-	btAlignedObjectArray<btVector3> omega;
-	omega.resize(num_links + 1);
-	btAlignedObjectArray<btVector3> vel;
-	vel.resize(num_links + 1);
-	compTreeLinkVelocities(&omega[0], &vel[0]);
-
-	// we will do the factor of 0.5 at the end
-	btScalar result = m_baseMass * vel[0].dot(vel[0]);
-	result += omega[0].dot(m_baseInertia * omega[0]);
-
-	for (int i = 0; i < num_links; ++i)
-	{
-		result += m_links[i].m_mass * vel[i + 1].dot(vel[i + 1]);
-		result += omega[i + 1].dot(m_links[i].m_inertiaLocal * omega[i + 1]);
-	}
-
-	return 0.5f * result;
-}
-
-btVector3 btMultiBody::getAngularMomentum() const
-{
-	int num_links = getNumLinks();
-	// TODO: would be better not to allocate memory here
-	btAlignedObjectArray<btVector3> omega;
-	omega.resize(num_links + 1);
-	btAlignedObjectArray<btVector3> vel;
-	vel.resize(num_links + 1);
-	btAlignedObjectArray<btQuaternion> rot_from_world;
-	rot_from_world.resize(num_links + 1);
-	compTreeLinkVelocities(&omega[0], &vel[0]);
-
-	rot_from_world[0] = m_baseQuat;
-	btVector3 result = quatRotate(rot_from_world[0].inverse(), (m_baseInertia * omega[0]));
-
-	for (int i = 0; i < num_links; ++i)
-	{
-		rot_from_world[i + 1] = m_links[i].m_cachedRotParentToThis * rot_from_world[m_links[i].m_parent + 1];
-		result += (quatRotate(rot_from_world[i + 1].inverse(), (m_links[i].m_inertiaLocal * omega[i + 1])));
-	}
-
-	return result;
-}
 
 void btMultiBody::clearConstraintForces()
 {

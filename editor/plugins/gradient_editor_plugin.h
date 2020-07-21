@@ -48,7 +48,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void set_gradient(const Ref<Gradient> &p_gradient);
 	GradientEditor();
 };
@@ -57,16 +57,15 @@ class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class GradientEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "ColorRamp"; }
+	virtual String get_name() const override { return "ColorRamp"; }
 
 	GradientEditorPlugin(EditorNode *p_node);
 };

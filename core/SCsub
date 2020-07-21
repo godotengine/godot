@@ -49,9 +49,9 @@ thirdparty_misc_dir = "#thirdparty/misc/"
 thirdparty_misc_sources = [
     # C sources
     "fastlz.c",
+    "r128.c",
     "smaz.c",
     # C++ sources
-    "hq2x.cpp",
     "pcg.cpp",
     "triangulator.cpp",
     "clipper.cpp",

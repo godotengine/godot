@@ -9,13 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_flag" qualifiers="const">
-			<return type="bool">
+		<method name="get_shader_instance_uniform" qualifiers="const">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance3D.Flags">
+			<argument index="0" name="uniform" type="StringName">
 			</argument>
 			<description>
-				Returns the [enum GeometryInstance3D.Flags] that have been set for this object.
 			</description>
 		</method>
 		<method name="set_custom_aabb">
@@ -27,15 +26,14 @@
 				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
 			</description>
 		</method>
-		<method name="set_flag">
+		<method name="set_shader_instance_uniform">
 			<return type="void">
 			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance3D.Flags">
+			<argument index="0" name="uniform" type="StringName">
 			</argument>
-			<argument index="1" name="value" type="bool">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the [enum GeometryInstance3D.Flags] specified. See [enum GeometryInstance3D.Flags] for options.
 			</description>
 		</method>
 	</methods>
@@ -45,6 +43,10 @@
 		</member>
 		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
 			The extra distance added to the GeometryInstance3D's bounding box ([AABB]) to increase its cull box.
+		</member>
+		<member name="gi_lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance3D.LightmapScale" default="0">
+		</member>
+		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" enum="GeometryInstance3D.GIMode" default="0">
 		</member>
 		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
 			The GeometryInstance3D's max LOD distance.
@@ -66,11 +68,6 @@
 			The material override for the whole geometry.
 			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.
 		</member>
-		<member name="use_dynamic_gi" type="bool" setter="set_flag" getter="get_flag" default="false">
-		</member>
-		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], this GeometryInstance3D will be used when baking lights using a [GIProbe].
-		</member>
 	</members>
 	<constants>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
@@ -88,16 +85,21 @@
 			Will only show the shadows casted from this object.
 			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
 		</constant>
-		<constant name="FLAG_USE_BAKED_LIGHT" value="0" enum="Flags">
-			Will allow the GeometryInstance3D to be used when baking lights using a [GIProbe].
+		<constant name="GI_MODE_DISABLED" value="0" enum="GIMode">
 		</constant>
-		<constant name="FLAG_USE_DYNAMIC_GI" value="1" enum="Flags">
+		<constant name="GI_MODE_BAKED" value="1" enum="GIMode">
 		</constant>
-		<constant name="FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="Flags">
-			Unused in this class, exposed for consistency with [enum RenderingServer.InstanceFlags].
+		<constant name="GI_MODE_DYNAMIC" value="2" enum="GIMode">
 		</constant>
-		<constant name="FLAG_MAX" value="3" enum="Flags">
-			Represents the size of the [enum Flags] enum.
+		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale">
+		</constant>
+		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale">
+		</constant>
+		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale">
+		</constant>
+		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale">
+		</constant>
+		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale">
 		</constant>
 	</constants>
 </class>

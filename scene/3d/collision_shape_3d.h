@@ -35,7 +35,6 @@
 #include "scene/resources/shape_3d.h"
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
-
 	GDCLASS(CollisionShape3D, Node3D);
 	OBJ_CATEGORY("3D Physics Nodes");
 
@@ -69,7 +68,7 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	CollisionShape3D();
 	~CollisionShape3D();

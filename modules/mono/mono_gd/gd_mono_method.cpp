@@ -30,12 +30,13 @@
 
 #include "gd_mono_method.h"
 
+#include <mono/metadata/attrdefs.h>
+#include <mono/metadata/debug-helpers.h>
+
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
-
-#include <mono/metadata/attrdefs.h>
 
 void GDMonoMethod::_update_signature() {
 	// Apparently MonoMethodSignature needs not to be freed.
@@ -154,11 +155,13 @@ MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, Mono
 bool GDMonoMethod::has_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, false);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return false;
+	}
 
 	return mono_custom_attrs_has_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -166,11 +169,13 @@ bool GDMonoMethod::has_attribute(GDMonoClass *p_attr_class) {
 MonoObject *GDMonoMethod::get_attribute(GDMonoClass *p_attr_class) {
 	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 
-	if (!attrs_fetched)
+	if (!attrs_fetched) {
 		fetch_attributes();
+	}
 
-	if (!attributes)
+	if (!attributes) {
 		return nullptr;
+	}
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
@@ -244,14 +249,14 @@ void GDMonoMethod::get_parameter_types(Vector<ManagedType> &types) const {
 }
 
 const MethodInfo &GDMonoMethod::get_method_info() {
-
 	if (!method_info_fetched) {
 		method_info.name = name;
 
 		bool nil_is_variant = false;
 		method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type, &nil_is_variant), "");
-		if (method_info.return_val.type == Variant::NIL && nil_is_variant)
+		if (method_info.return_val.type == Variant::NIL && nil_is_variant) {
 			method_info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		}
 
 		Vector<StringName> names;
 		get_parameter_names(names);
@@ -259,8 +264,9 @@ const MethodInfo &GDMonoMethod::get_method_info() {
 		for (int i = 0; i < params_count; ++i) {
 			nil_is_variant = false;
 			PropertyInfo arg_info = PropertyInfo(GDMonoMarshal::managed_to_variant_type(param_types[i], &nil_is_variant), names[i]);
-			if (arg_info.type == Variant::NIL && nil_is_variant)
+			if (arg_info.type == Variant::NIL && nil_is_variant) {
 				arg_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+			}
 
 			method_info.arguments.push_back(arg_info);
 		}

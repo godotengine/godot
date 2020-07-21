@@ -37,7 +37,6 @@
 class CollisionObject2D;
 
 class CollisionShape2D : public Node2D {
-
 	GDCLASS(CollisionShape2D, Node2D);
 	Ref<Shape2D> shape;
 	Rect2 rect;
@@ -55,7 +54,11 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#else
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+#endif // TOOLS_ENABLED
 
 	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;
@@ -69,7 +72,7 @@ public:
 	void set_one_way_collision_margin(float p_margin);
 	float get_one_way_collision_margin() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	CollisionShape2D();
 };

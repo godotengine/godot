@@ -55,6 +55,7 @@
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -66,6 +67,7 @@
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -77,6 +79,7 @@
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -99,6 +102,7 @@
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -111,6 +115,7 @@
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
 			</description>
 		</method>
 		<method name="add_child">
@@ -129,21 +134,19 @@
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/codeblock]
-				If you need the child node to be added below a specific node in the list of children, use [method add_child_below_node] instead of this method.
+				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
 				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
-		<method name="add_child_below_node">
+		<method name="add_sibling">
 			<return type="void">
 			</return>
-			<argument index="0" name="preceding_node" type="Node">
+			<argument index="0" name="sibling" type="Node">
 			</argument>
-			<argument index="1" name="node" type="Node">
-			</argument>
-			<argument index="2" name="legible_unique_name" type="bool" default="false">
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a child node below the [code]preceding_node[/code].
+				Adds a [code]sibling[/code] node to current's node parent, at the the same level as that node, right below it.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
@@ -221,7 +224,7 @@
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
-			<return type="Array">
+			<return type="Node[]">
 			</return>
 			<description>
 				Returns an array of references to node's children.
@@ -305,7 +308,7 @@
 			<return type="Node">
 			</return>
 			<description>
-				Returns the parent node of the current node, or an empty [Node] if the node lacks a parent.
+				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -923,16 +926,14 @@
 			Notification received from the OS when the mouse leaves the game window.
 			Implemented on desktop and web platforms.
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
-			Notification received from the OS when the game window is focused.
-			Implemented on all platforms.
+		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_IN" value="1004">
+			Notification received from the OS when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
-			Notification received from the OS when the game window is unfocused.
-			Implemented on all platforms.
+		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_OUT" value="1005">
+			Notification received from the OS when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
 		</constant>
 		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
-			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or Alt+F4).
+			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
 			Implemented on desktop platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
@@ -960,13 +961,21 @@
 			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
 			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_RESUMED" value="2014">
-			Notification received from the OS when the app is resumed.
+		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
+			Notification received from the OS when the application is resumed.
 			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_APP_PAUSED" value="2015">
-			Notification received from the OS when the app is paused.
+		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
+			Notification received from the OS when the application is paused.
 			Specific to the Android platform.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
+			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
+			Implemented on desktop platforms.
+		</constant>
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
+			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
+			Implemented on desktop platforms.
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to [constant PAUSE_MODE_STOP]. Default.

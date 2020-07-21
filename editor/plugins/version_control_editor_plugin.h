@@ -39,7 +39,6 @@
 #include "scene/gui/tree.h"
 
 class VersionControlEditorPlugin : public EditorPlugin {
-
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
 public:
@@ -91,7 +90,7 @@ private:
 	Label *commit_status;
 
 	PanelContainer *version_control_dock;
-	ToolButton *version_control_dock_button;
+	Button *version_control_dock_button;
 	VBoxContainer *diff_vbc;
 	HBoxContainer *diff_hbc;
 	Button *diff_refresh_button;
@@ -122,7 +121,7 @@ public:
 	static VersionControlEditorPlugin *get_singleton();
 
 	void popup_vcs_set_up_dialog(const Control *p_gui_base);
-	void set_version_control_tool_button(ToolButton *p_button) { version_control_dock_button = p_button; }
+	void set_version_control_tool_button(Button *p_button) { version_control_dock_button = p_button; }
 
 	PopupMenu *get_version_control_actions_panel() const { return version_control_actions; }
 	VBoxContainer *get_version_commit_dock() const { return version_commit_dock; }

@@ -53,9 +53,9 @@ public:
 	void deactivate_feed();
 };
 
-CameraFeedWindows::CameraFeedWindows(){
+CameraFeedWindows::CameraFeedWindows() {
 	///@TODO implement this, should store information about our available camera
-};
+}
 
 CameraFeedWindows::~CameraFeedWindows() {
 	// make sure we stop recording if we are!
@@ -75,24 +75,20 @@ bool CameraFeedWindows::activate_feed() {
 ///@TODO we should probably have a callback method here that is being called by the
 // camera API which provides frames and call back into the CameraServer to update our texture
 
-void CameraFeedWindows::deactivate_feed(){
+void CameraFeedWindows::deactivate_feed() {
 	///@TODO this should deactivate our camera and stop the process of capturing frames
-};
+}
 
 //////////////////////////////////////////////////////////////////////////
 // CameraWindows - Subclass for our camera server on windows
 
-void CameraWindows::add_active_cameras(){
+void CameraWindows::add_active_cameras() {
 	///@TODO scan through any active cameras and create CameraFeedWindows objects for them
-};
+}
 
 CameraWindows::CameraWindows() {
 	// Find cameras active right now
 	add_active_cameras();
 
 	// need to add something that will react to devices being connected/removed...
-};
-
-CameraWindows::~CameraWindows(){
-
 };

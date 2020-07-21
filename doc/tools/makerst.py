@@ -287,6 +287,8 @@ def main():  # type: () -> None
     )
     args = parser.parse_args()
 
+    print("Checking for errors in the XML class reference...")
+
     file_list = []  # type: List[str]
 
     for path in args.path:
@@ -345,7 +347,10 @@ def main():  # type: () -> None
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
-    if state.errored:
+    if not state.errored:
+        print("No errors found.")
+    else:
+        print("Errors were found in the class reference XML. Please check the messages above.")
         exit(1)
 
 
@@ -559,71 +564,6 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                     f.write(rstize_text(m.description.strip(), state) + "\n\n")
 
                 index += 1
-
-
-def make_class_list(class_list, columns):  # type: (List[str], int) -> None
-    # This function is no longer used.
-    f = open("class_list.rst", "w", encoding="utf-8")
-    col_max = len(class_list) // columns + 1
-    print(("col max is ", col_max))
-    fit_columns = []  # type: List[List[str]]
-
-    for _ in range(0, columns):
-        fit_columns.append([])
-
-    indexers = []  # type List[str]
-    last_initial = ""
-
-    for idx, name in enumerate(class_list):
-        col = idx // col_max
-        if col >= columns:
-            col = columns - 1
-        fit_columns[col].append(name)
-        idx += 1
-        if name[:1] != last_initial:
-            indexers.append(name)
-        last_initial = name[:1]
-
-    row_max = 0
-    f.write("\n")
-
-    for n in range(0, columns):
-        if len(fit_columns[n]) > row_max:
-            row_max = len(fit_columns[n])
-
-    f.write("| ")
-    for n in range(0, columns):
-        f.write(" | |")
-
-    f.write("\n")
-    f.write("+")
-    for n in range(0, columns):
-        f.write("--+-------+")
-    f.write("\n")
-
-    for r in range(0, row_max):
-        s = "+ "
-        for c in range(0, columns):
-            if r >= len(fit_columns[c]):
-                continue
-
-            classname = fit_columns[c][r]
-            initial = classname[0]
-            if classname in indexers:
-                s += "**" + initial + "** | "
-            else:
-                s += " | "
-
-            s += "[" + classname + "](class_" + classname.lower() + ") | "
-
-        s += "\n"
-        f.write(s)
-
-    for n in range(0, columns):
-        f.write("--+-------+")
-    f.write("\n")
-
-    f.close()
 
 
 def escape_rst(text, until_pos=-1):  # type: (str) -> str
@@ -901,6 +841,12 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_text = "``"
                 tag_depth += 1
                 inside_code = True
+            elif cmd == "kbd":
+                tag_text = ":kbd:`"
+                tag_depth += 1
+            elif cmd == "/kbd":
+                tag_text = "`"
+                tag_depth -= 1
             elif cmd.startswith("enum "):
                 tag_text = make_enum(cmd[5:], state)
                 escape_post = True
@@ -973,11 +919,14 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
     f.write("\n")
 
 
-def make_type(t, state):  # type: (str, State) -> str
-    if t in state.classes:
-        return ":ref:`{0}<class_{0}>`".format(t)
-    print_error("Unresolved type '{}', file: {}".format(t, state.current_class), state)
-    return t
+def make_type(klass, state):  # type: (str, State) -> str
+    link_type = klass
+    if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
+        link_type = link_type[:-2]
+    if link_type in state.classes:
+        return ":ref:`{}<class_{}>`".format(klass, link_type)
+    print_error("Unresolved type '{}', file: {}".format(klass, state.current_class), state)
+    return klass
 
 
 def make_enum(t, state):  # type: (str, State) -> str

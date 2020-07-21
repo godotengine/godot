@@ -38,7 +38,7 @@ class Navigation3D;
 class NavigationObstacle3D : public Node {
 	GDCLASS(NavigationObstacle3D, Node);
 
-	Navigation3D *navigation;
+	Navigation3D *navigation = nullptr;
 
 	RID agent;
 
@@ -62,7 +62,7 @@ public:
 		return agent;
 	}
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 private:
 	void update_agent_shape();

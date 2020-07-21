@@ -52,7 +52,6 @@ public:
 	};
 
 	struct JoypadEvent {
-
 		int device;
 		int type;
 		int index;
@@ -63,6 +62,11 @@ public:
 
 private:
 	String rendering_driver;
+
+	bool alt_mem = false;
+	bool shift_mem = false;
+	bool control_mem = false;
+	bool meta_mem = false;
 
 	bool keep_screen_on;
 
@@ -84,6 +88,8 @@ private:
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
 
 public:
 	static DisplayServerAndroid *get_singleton();
@@ -107,7 +113,7 @@ public:
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 
-	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_length = -1);
+	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();
 	virtual int virtual_keyboard_get_height() const;
 
@@ -166,6 +172,8 @@ public:
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
+
+	void reset_window();
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();

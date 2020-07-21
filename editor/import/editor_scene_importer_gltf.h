@@ -32,6 +32,7 @@
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
 #include "editor/import/resource_importer_scene.h"
+#include "scene/3d/light_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
@@ -40,7 +41,6 @@ class BoneAttachment3D;
 class MeshInstance3D;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
-
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
 
 	typedef int GLTFAccessorIndex;
@@ -51,6 +51,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	typedef int GLTFImageIndex;
 	typedef int GLTFMaterialIndex;
 	typedef int GLTFMeshIndex;
+	typedef int GLTFLightIndex;
 	typedef int GLTFNodeIndex;
 	typedef int GLTFSkeletonIndex;
 	typedef int GLTFSkinIndex;
@@ -92,92 +93,61 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	String _get_type_name(const GLTFType p_component);
 
 	struct GLTFNode {
-
 		//matrices need to be transformed to this
-		GLTFNodeIndex parent;
-		int height;
+		GLTFNodeIndex parent = -1;
+		int height = -1;
 
 		Transform xform;
 		String name;
 
-		GLTFMeshIndex mesh;
-		GLTFCameraIndex camera;
-		GLTFSkinIndex skin;
+		GLTFMeshIndex mesh = -1;
+		GLTFCameraIndex camera = -1;
+		GLTFSkinIndex skin = -1;
 
-		GLTFSkeletonIndex skeleton;
-		bool joint;
+		GLTFSkeletonIndex skeleton = -1;
+		bool joint = false;
 
 		Vector3 translation;
 		Quat rotation;
-		Vector3 scale;
+		Vector3 scale = Vector3(1, 1, 1);
 
 		Vector<int> children;
 
-		GLTFNodeIndex fake_joint_parent;
+		GLTFNodeIndex fake_joint_parent = -1;
 
-		GLTFNode() :
-				parent(-1),
-				height(-1),
-				mesh(-1),
-				camera(-1),
-				skin(-1),
-				skeleton(-1),
-				joint(false),
-				translation(0, 0, 0),
-				scale(Vector3(1, 1, 1)),
-				fake_joint_parent(-1) {}
+		GLTFLightIndex light = -1;
+
+		GLTFNode() {}
 	};
 
 	struct GLTFBufferView {
-
-		GLTFBufferIndex buffer;
-		int byte_offset;
-		int byte_length;
-		int byte_stride;
-		bool indices;
+		GLTFBufferIndex buffer = -1;
+		int byte_offset = 0;
+		int byte_length = 0;
+		int byte_stride = 0;
+		bool indices = false;
 		//matrices need to be transformed to this
 
-		GLTFBufferView() :
-				buffer(-1),
-				byte_offset(0),
-				byte_length(0),
-				byte_stride(0),
-				indices(false) {
-		}
+		GLTFBufferView() {}
 	};
 
 	struct GLTFAccessor {
-
-		GLTFBufferViewIndex buffer_view;
-		int byte_offset;
-		int component_type;
-		bool normalized;
-		int count;
+		GLTFBufferViewIndex buffer_view = 0;
+		int byte_offset = 0;
+		int component_type = 0;
+		bool normalized = false;
+		int count = 0;
 		GLTFType type;
-		float min;
-		float max;
-		int sparse_count;
-		int sparse_indices_buffer_view;
-		int sparse_indices_byte_offset;
-		int sparse_indices_component_type;
-		int sparse_values_buffer_view;
-		int sparse_values_byte_offset;
+		float min = 0;
+		float max = 0;
+		int sparse_count = 0;
+		int sparse_indices_buffer_view = 0;
+		int sparse_indices_byte_offset = 0;
+		int sparse_indices_component_type = 0;
+		int sparse_values_buffer_view = 0;
+		int sparse_values_byte_offset = 0;
 
-		GLTFAccessor() {
-			buffer_view = 0;
-			byte_offset = 0;
-			component_type = 0;
-			normalized = false;
-			count = 0;
-			min = 0;
-			max = 0;
-			sparse_count = 0;
-			sparse_indices_buffer_view = 0;
-			sparse_indices_byte_offset = 0;
-			sparse_indices_component_type = 0;
-			sparse_values_buffer_view = 0;
-			sparse_values_byte_offset = 0;
-		}
+		GLTFAccessor() {}
 	};
 	struct GLTFTexture {
 		GLTFImageIndex src_image;
@@ -192,21 +162,19 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFNodeIndex> roots;
 
 		// The created Skeleton for the scene
-		Skeleton3D *godot_skeleton;
+		Skeleton3D *godot_skeleton = nullptr;
 
 		// Set of unique bone names for the skeleton
 		Set<String> unique_names;
 
-		GLTFSkeleton() :
-				godot_skeleton(nullptr) {
-		}
+		GLTFSkeleton() {}
 	};
 
 	struct GLTFSkin {
 		String name;
 
 		// The "skeleton" property defined in the gltf spec. -1 = Scene Root
-		GLTFNodeIndex skin_root;
+		GLTFNodeIndex skin_root = -1;
 
 		Vector<GLTFNodeIndex> joints_original;
 		Vector<Transform> inverse_binds;
@@ -226,7 +194,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFNodeIndex> roots;
 
 		// The GLTF Skeleton this Skin points to (after we determine skeletons)
-		GLTFSkeletonIndex skeleton;
+		GLTFSkeletonIndex skeleton = -1;
 
 		// A mapping from the joint indices (in the order of joints_original) to the
 		// Godot Skeleton's bone_indices
@@ -237,9 +205,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		// to the generated skeleton for the mesh instances.
 		Ref<Skin> godot_skin;
 
-		GLTFSkin() :
-				skin_root(-1),
-				skeleton(-1) {}
+		GLTFSkin() {}
 	};
 
 	struct GLTFMesh {
@@ -248,18 +214,23 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFCamera {
+		bool perspective = true;
+		float fov_size = 64;
+		float zfar = 500;
+		float znear = 0.1;
 
-		bool perspective;
-		float fov_size;
-		float zfar;
-		float znear;
+		GLTFCamera() {}
+	};
 
-		GLTFCamera() {
-			perspective = true;
-			fov_size = 65;
-			zfar = 500;
-			znear = 0.1;
-		}
+	struct GLTFLight {
+		Color color = Color(1.0f, 1.0f, 1.0f);
+		float intensity = 1.0f;
+		String type = "";
+		float range = Math_INF;
+		float inner_cone_angle = 0.0f;
+		float outer_cone_angle = Math_PI / 4.0;
+
+		GLTFLight() {}
 	};
 
 	struct GLTFAnimation {
@@ -280,7 +251,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		};
 
 		struct Track {
-
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
@@ -293,7 +263,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFState {
-
 		Dictionary json;
 		int major_version;
 		int minor_version;
@@ -317,6 +286,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Vector<GLTFSkin> skins;
 		Vector<GLTFCamera> cameras;
+		Vector<GLTFLight> lights;
 
 		Set<String> unique_names;
 
@@ -324,6 +294,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFAnimation> animations;
 
 		Map<GLTFNodeIndex, Node *> scene_nodes;
+
+		// EditorSceneImporter::ImportFlags
+		uint32_t import_flags;
 
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -392,12 +365,13 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	void _remove_duplicate_skins(GLTFState &state);
 
 	Error _parse_cameras(GLTFState &state);
-
+	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
 
 	BoneAttachment3D *_generate_bone_attachment(GLTFState &state, Skeleton3D *skeleton, const GLTFNodeIndex node_index);
 	MeshInstance3D *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Camera3D *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Light3D *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 	Node3D *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
 
 	void _generate_scene_node(GLTFState &state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
@@ -413,10 +387,10 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	void _import_animation(GLTFState &state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps);
 
 public:
-	virtual uint32_t get_import_flags() const;
-	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) override;
 
 	EditorSceneImporterGLTF();
 };

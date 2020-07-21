@@ -52,21 +52,17 @@ namespace Marshal {
 
 bool type_is_generic_array(MonoReflectionType *p_reftype);
 bool type_is_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_system_generic_list(MonoReflectionType *p_reftype);
+bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
+bool type_is_generic_icollection(MonoReflectionType *p_reftype);
+bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
 
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
-
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
-
-Array enumerable_to_array(MonoObject *p_enumerable);
-Dictionary idictionary_to_dictionary(MonoObject *p_idictionary);
-Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary);
 
 } // namespace Marshal
 
@@ -87,10 +83,6 @@ void detach_current_thread();
 void detach_current_thread(MonoThread *p_mono_thread);
 MonoThread *get_current_thread();
 bool is_thread_attached();
-
-_FORCE_INLINE_ bool is_main_thread() {
-	return mono_domain_get() != nullptr && mono_thread_get_main() == mono_thread_current();
-}
 
 uint32_t new_strong_gchandle(MonoObject *p_object);
 uint32_t new_strong_gchandle_pinned(MonoObject *p_object);
@@ -115,8 +107,10 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
 MonoDomain *create_domain(const String &p_friendly_name);
 
+String get_type_desc(MonoType *p_type);
+String get_type_desc(MonoReflectionType *p_reftype);
+
 String get_exception_name_and_message(MonoException *p_exc);
-void set_exception_message(MonoException *p_exc, String message);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);
@@ -135,6 +129,7 @@ extern thread_local int current_invoke_count;
 _FORCE_INLINE_ int get_runtime_invoke_count() {
 	return current_invoke_count;
 }
+
 _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }
@@ -156,7 +151,7 @@ struct ScopeThreadAttach {
 	~ScopeThreadAttach();
 
 private:
-	MonoThread *mono_thread;
+	MonoThread *mono_thread = nullptr;
 };
 
 StringName get_native_godot_class_name(GDMonoClass *p_class);

@@ -44,11 +44,10 @@
 */
 
 class RenameDialog : public ConfirmationDialog {
-
 	GDCLASS(RenameDialog, ConfirmationDialog);
 
-	virtual void ok_pressed() { rename(); };
-	void _cancel_pressed(){};
+	virtual void ok_pressed() override { rename(); };
+	void _cancel_pressed() {}
 	void _features_toggled(bool pressed);
 	void _insert_text(String text);
 	void _update_substitute();
@@ -104,14 +103,14 @@ class RenameDialog : public ConfirmationDialog {
 
 protected:
 	static void _bind_methods();
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 public:
 	void reset();
 	void rename();
 
 	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = nullptr);
-	~RenameDialog(){};
+	~RenameDialog() {}
 };
 
 #endif

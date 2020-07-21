@@ -43,13 +43,58 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/text_file.h"
 
-class ScriptEditorQuickOpen : public ConfirmationDialog {
+class EditorSyntaxHighlighter : public SyntaxHighlighter {
+	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
 
+private:
+	REF edited_resourse;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String _get_name() const;
+	virtual Array _get_supported_languages() const;
+
+	void _set_edited_resource(const RES &p_res) { edited_resourse = p_res; }
+	REF _get_edited_resource() { return edited_resourse; }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const;
+};
+
+class EditorStandardSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorStandardSyntaxHighlighter, EditorSyntaxHighlighter)
+
+private:
+	Ref<CodeHighlighter> highlighter;
+
+public:
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+
+	virtual String _get_name() const override { return TTR("Standard"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	EditorStandardSyntaxHighlighter() { highlighter.instance(); }
+};
+
+class EditorPlainTextSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorPlainTextSyntaxHighlighter, EditorSyntaxHighlighter)
+
+public:
+	virtual String _get_name() const override { return TTR("Plain Text"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class ScriptEditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
@@ -76,15 +121,14 @@ public:
 class EditorDebuggerNode;
 
 class ScriptEditorBase : public VBoxContainer {
-
 	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
-	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
+	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
+	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 
 	virtual void apply_code() = 0;
 	virtual RES get_edited_resource() const = 0;
@@ -123,7 +167,6 @@ public:
 	ScriptEditorBase() {}
 };
 
-typedef SyntaxHighlighter *(*CreateSyntaxHighlighterFunc)();
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
 
 class EditorScriptCodeCompletionCache;
@@ -131,7 +174,6 @@ class FindInFilesDialog;
 class FindInFilesPanel;
 
 class ScriptEditor : public PanelContainer {
-
 	GDCLASS(ScriptEditor, PanelContainer);
 
 	EditorNode *editor;
@@ -214,7 +256,7 @@ class ScriptEditor : public PanelContainer {
 	VBoxContainer *overview_vbox;
 	HBoxContainer *buttons_hbox;
 	Label *filename;
-	ToolButton *members_overview_alphabeta_sort_button;
+	Button *members_overview_alphabeta_sort_button;
 	bool members_overview_enabled;
 	ItemList *help_overview;
 	bool help_overview_enabled;
@@ -224,15 +266,15 @@ class ScriptEditor : public PanelContainer {
 	AcceptDialog *error_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptCreateDialog *script_create_dialog;
-	ToolButton *scripts_visible;
+	Button *scripts_visible;
 
 	String current_theme;
 
 	TextureRect *script_icon;
 	Label *script_name_label;
 
-	ToolButton *script_back;
-	ToolButton *script_forward;
+	Button *script_back;
+	Button *script_forward;
 
 	FindInFilesDialog *find_in_files_dialog;
 	FindInFilesPanel *find_in_files;
@@ -240,17 +282,14 @@ class ScriptEditor : public PanelContainer {
 
 	enum {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
-		SYNTAX_HIGHLIGHTER_FUNC_MAX = 32
 	};
 
 	static int script_editor_func_count;
 	static CreateScriptEditorFunc script_editor_funcs[SCRIPT_EDITOR_FUNC_MAX];
 
-	static int syntax_highlighters_func_count;
-	static CreateSyntaxHighlighterFunc syntax_highlighters_funcs[SYNTAX_HIGHLIGHTER_FUNC_MAX];
+	Vector<Ref<EditorSyntaxHighlighter>> syntax_highlighters;
 
 	struct ScriptHistory {
-
 		Control *control;
 		Variant state;
 	};
@@ -327,6 +366,7 @@ class ScriptEditor : public PanelContainer {
 	void _script_created(Ref<Script> p_script);
 
 	ScriptEditorBase *_get_current_editor() const;
+	Array _get_open_script_editors() const;
 
 	void _save_layout();
 	void _editor_settings_changed();
@@ -446,7 +486,9 @@ public:
 
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
-	static void register_create_syntax_highlighter_function(CreateSyntaxHighlighterFunc p_func);
+	void register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter);
+	void unregister_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter);
+
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(EditorNode *p_editor);
@@ -454,32 +496,31 @@ public:
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "Script"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	virtual void selected_notify();
+	virtual String get_name() const override { return "Script"; }
+	bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	virtual void selected_notify() override;
 
-	virtual void save_external_data();
-	virtual void apply_changes();
+	virtual void save_external_data() override;
+	virtual void apply_changes() override;
 
-	virtual void restore_global_state();
-	virtual void save_global_state();
+	virtual void restore_global_state() override;
+	virtual void save_global_state() override;
 
-	virtual void set_window_layout(Ref<ConfigFile> p_layout);
-	virtual void get_window_layout(Ref<ConfigFile> p_layout);
+	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
+	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 
-	virtual void get_breakpoints(List<String> *p_breakpoints);
+	virtual void get_breakpoints(List<String> *p_breakpoints) override;
 
-	virtual void edited_scene_changed();
+	virtual void edited_scene_changed() override;
 
 	ScriptEditorPlugin(EditorNode *p_node);
 	~ScriptEditorPlugin();

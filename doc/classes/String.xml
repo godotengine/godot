@@ -325,14 +325,15 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the string with escaped characters replaced by their meanings according to the C language standard.
+				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\?[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
+				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
 		<method name="capitalize">
 			<return type="String">
 			</return>
 			<description>
-				Changes the case of some letters. Replaces underscores with spaces, converts all letters to lowercase, then capitalizes first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
+				Changes the case of some letters. Replaces underscores with spaces, adds spaces before in-word uppercase characters, converts all letters to lowercase, then capitalizes the first letter and every letter following a space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camel Case Mixed With Underscores[/code].
 			</description>
 		</method>
 		<method name="casecmp_to">
@@ -381,7 +382,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the string is empty.
+				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
 		<method name="ends_with">
@@ -412,16 +413,13 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
-			</description>
-		</method>
-		<method name="find_last">
-			<return type="int">
-			</return>
-			<argument index="0" name="what" type="String">
-			</argument>
-			<description>
-				Finds the last occurrence of a substring. Returns the starting position of the substring or -1 if not found.
+				Returns the index of the [b]first[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
+				[b]Note:[/b] If you just want to know whether a string contains a substring, use the [code]in[/code] operator as follows:
+				[codeblock]
+				# Will evaluate to `false`.
+				if "i" in "team":
+				    pass
+				[/codeblock]
 			</description>
 		</method>
 		<method name="findn">
@@ -432,7 +430,7 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<description>
-				Finds the first occurrence of a substring, ignoring case. Returns the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
+				Returns the index of the [b]first[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the end of the string.
 			</description>
 		</method>
 		<method name="format">
@@ -620,6 +618,19 @@
 				Returns [code]true[/code] if this string contains a valid IP address.
 			</description>
 		</method>
+		<method name="join">
+			<return type="String">
+			</return>
+			<argument index="0" name="parts" type="PackedStringArray">
+			</argument>
+			<description>
+				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Example:
+				[codeblock]
+				print(", ".join(["One", "Two", "Three", "Four"]))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="json_escape">
 			<return type="String">
 			</return>
@@ -782,7 +793,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a case-sensitive search for a substring, but starts from the end of the string instead of the beginning.
+				Returns the index of the [b]last[/b] case-sensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
 		<method name="rfindn">
@@ -793,7 +804,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a case-insensitive search for a substring, but starts from the end of the string instead of the beginning.
+				Returns the index of the [b]last[/b] case-insensitive occurrence of the specified string in this instance, or [code]-1[/code]. Optionally, the starting search index can be specified, continuing to the beginning of the string.
 			</description>
 		</method>
 		<method name="right">
@@ -934,7 +945,7 @@
 			<argument index="1" name="len" type="int" default="-1">
 			</argument>
 			<description>
-				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using -1 will return remaining characters from given position.
+				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii">

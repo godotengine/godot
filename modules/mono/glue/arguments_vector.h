@@ -35,14 +35,13 @@
 
 template <typename T, int POOL_SIZE = 5>
 struct ArgumentsVector {
-
 private:
 	T pool[POOL_SIZE];
 	T *_ptr;
 	int size;
 
-	ArgumentsVector();
-	ArgumentsVector(const ArgumentsVector &);
+	ArgumentsVector() = delete;
+	ArgumentsVector(const ArgumentsVector &) = delete;
 
 public:
 	T *ptr() { return _ptr; }

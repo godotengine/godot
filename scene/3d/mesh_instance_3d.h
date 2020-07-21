@@ -37,7 +37,6 @@
 #include "scene/resources/skin.h"
 
 class MeshInstance3D : public GeometryInstance3D {
-
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
 
 protected:
@@ -48,7 +47,6 @@ protected:
 	NodePath skeleton_path;
 
 	struct BlendShapeTrack {
-
 		int idx;
 		float value;
 		BlendShapeTrack() {
@@ -94,8 +92,8 @@ public:
 
 	void create_debug_tangents();
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	MeshInstance3D();
 	~MeshInstance3D();

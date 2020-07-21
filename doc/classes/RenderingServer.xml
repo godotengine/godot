@@ -4,12 +4,12 @@
 		Server for anything visible.
 	</brief_description>
 	<description>
-		Server for anything visible. The visual server is the API backend for everything visible. The whole scene system mounts on it to display.
-		The visual server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
-		The visual server can be used to bypass the scene system entirely.
+		Server for anything visible. The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
+		The rendering server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
+		The rendering server can be used to bypass the scene system entirely.
 		Resources are created using the [code]*_create[/code] functions.
 		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
-		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the visual server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world]. Otherwise, a scenario can be created with [method scenario_create].
+		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world_3d]. Otherwise, a scenario can be created with [method scenario_create].
 		Similarly in 2D, a canvas is needed to draw all canvas items.
 		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
@@ -947,6 +947,58 @@
 				Returns the id of a white texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="global_variable_add">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="int" enum="RenderingServer.GlobalVariableType">
+			</argument>
+			<argument index="2" name="default_value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_get" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_get_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_get_type" qualifiers="const">
+			<return type="int" enum="RenderingServer.GlobalVariableType">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_remove">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_set">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_changed" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -1113,7 +1165,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Initializes the visual server. This function is called internally by platform-dependent code during engine initialization. If called from a running game, it will not do anything.
+				Initializes the rendering server. This function is called internally by platform-dependent code during engine initialization. If called from a running game, it will not do anything.
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">
@@ -1230,7 +1282,7 @@
 			<argument index="1" name="base" type="RID">
 			</argument>
 			<description>
-				Sets the base of the instance. A base can be any of the 3D objects that are created in the RenderingServer that can be displayed. For example, any of the light types, mesh, multimesh, immediate geometry, particle system, reflection probe, lightmap capture, and the GI probe are all types that can be set as the base of an instance in order to be displayed in the scenario.
+				Sets the base of the instance. A base can be any of the 3D objects that are created in the RenderingServer that can be displayed. For example, any of the light types, mesh, multimesh, immediate geometry, particle system, reflection probe, lightmap, and the GI probe are all types that can be set as the base of an instance in order to be displayed in the scenario.
 			</description>
 		</method>
 		<method name="instance_set_blend_shape_weight">
@@ -1323,19 +1375,6 @@
 			</argument>
 			<description>
 				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
-			</description>
-		</method>
-		<method name="instance_set_use_lightmap">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="RID">
-			</argument>
-			<argument index="1" name="lightmap_instance" type="RID">
-			</argument>
-			<argument index="2" name="lightmap" type="RID">
-			</argument>
-			<description>
-				Sets the lightmap to use with this instance.
 			</description>
 		</method>
 		<method name="instance_set_visible">
@@ -1431,6 +1470,16 @@
 				Sets whether to use a dual paraboloid or a cubemap for the shadow map. Dual paraboloid is faster but may suffer from artifacts. Equivalent to [member OmniLight3D.omni_shadow_mode].
 			</description>
 		</method>
+		<method name="light_set_bake_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="bake_mode" type="int" enum="RenderingServer.LightBakeMode">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="light_set_color">
 			<return type="void">
 			</return>
@@ -1519,126 +1568,6 @@
 			</argument>
 			<description>
 				Sets the color of the shadow cast by the light. Equivalent to [member Light3D.shadow_color].
-			</description>
-		</method>
-		<method name="light_set_use_gi">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets whether GI probes capture light information from this light.
-			</description>
-		</method>
-		<method name="lightmap_capture_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates a lightmap capture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]lightmap_capture_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
-				To place in a scene, attach this lightmap capture to an instance using [method instance_set_base] using the returned RID.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_bounds" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the size of the lightmap capture area.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_energy" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the energy multiplier used by the lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_octree" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the octree used by the lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_octree_cell_subdiv" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the cell subdivision amount used by this lightmap capture's octree.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_octree_cell_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the cell transform for this lightmap capture's octree.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_bounds">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="bounds" type="AABB">
-			</argument>
-			<description>
-				Sets the size of the area covered by the lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_energy">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="energy" type="float">
-			</argument>
-			<description>
-				Sets the energy multiplier for this lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_octree">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="octree" type="PackedByteArray">
-			</argument>
-			<description>
-				Sets the octree to be used by this lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_octree_cell_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="subdiv" type="int">
-			</argument>
-			<description>
-				Sets the subdivision level of this lightmap capture's octree.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_octree_cell_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="xform" type="Transform">
-			</argument>
-			<description>
-				Sets the octree cell transform for this lightmap capture's octree.
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -2362,6 +2291,36 @@
 				To place in a scene, attach this reflection probe to an instance using [method instance_set_base] using the returned RID.
 			</description>
 		</method>
+		<method name="reflection_probe_set_ambient_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_ambient_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_ambient_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="probe" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="RenderingServer.ReflectionProbeAmbientMode">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="reflection_probe_set_as_interior">
 			<return type="void">
 			</return>
@@ -2370,7 +2329,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], reflections will ignore sky contribution. Equivalent to [member ReflectionProbe.interior_enable].
+				If [code]true[/code], reflections will ignore sky contribution. Equivalent to [member ReflectionProbe.interior].
 			</description>
 		</method>
 		<method name="reflection_probe_set_cull_mask">
@@ -2426,39 +2385,6 @@
 			</argument>
 			<description>
 				Sets the intensity of the reflection probe. Intensity modulates the strength of the reflection. Equivalent to [member ReflectionProbe.intensity].
-			</description>
-		</method>
-		<method name="reflection_probe_set_interior_ambient">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the ambient light color for this reflection probe when set to interior mode. Equivalent to [member ReflectionProbe.interior_ambient_color].
-			</description>
-		</method>
-		<method name="reflection_probe_set_interior_ambient_energy">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="energy" type="float">
-			</argument>
-			<description>
-				Sets the energy multiplier for this reflection probes ambient light contribution when set to interior mode. Equivalent to [member ReflectionProbe.interior_ambient_energy].
-			</description>
-		</method>
-		<method name="reflection_probe_set_interior_ambient_probe_contribution">
-			<return type="void">
-			</return>
-			<argument index="0" name="probe" type="RID">
-			</argument>
-			<argument index="1" name="contrib" type="float">
-			</argument>
-			<description>
-				Sets the contribution value for how much the reflection affects the ambient light for this reflection probe when set to interior mode. Useful so that ambient light matches the color of the room. Equivalent to [member ReflectionProbe.interior_ambient_contrib].
 			</description>
 		</method>
 		<method name="reflection_probe_set_max_distance">
@@ -3079,6 +3005,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="render_loop_enabled" type="bool" setter="set_render_loop_enabled" getter="is_render_loop_enabled">
+			If [code]false[/code], disables rendering completely, but the engine logic is still being processed. You can call [method force_draw] to draw a frame even with rendering disabled.
+		</member>
+	</members>
 	<signals>
 		<signal name="frame_post_draw">
 			<description>
@@ -3109,12 +3040,6 @@
 		</constant>
 		<constant name="MAX_CURSORS" value="8">
 			Unused enum in Godot 3.x.
-		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
-			The minimum renderpriority of all materials.
-		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
-			The maximum renderpriority of all materials.
 		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 		</constant>
@@ -3148,6 +3073,12 @@
 		</constant>
 		<constant name="SHADER_MAX" value="4" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
+		</constant>
+		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
+			The minimum renderpriority of all materials.
+		</constant>
+		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
+			The maximum renderpriority of all materials.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array is a vertex array.
@@ -3224,13 +3155,13 @@
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 			Flag used to mark a compressed index array.
 		</constant>
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
+		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="1048576" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -3307,6 +3238,7 @@
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="12" enum="LightParam">
+			Proportion of shadow max distance where the shadow will start to fade out.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="13" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
@@ -3314,11 +3246,22 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="14" enum="LightParam">
 			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
-			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
+		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="15" enum="LightParam">
+			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
+			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
+		</constant>
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="17" enum="LightParam">
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="18" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
+		</constant>
+		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
+		</constant>
+		<constant name="LIGHT_BAKE_DYNAMIC" value="1" enum="LightBakeMode">
+		</constant>
+		<constant name="LIGHT_BAKE_STATIC" value="2" enum="LightBakeMode">
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.
@@ -3346,6 +3289,22 @@
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
 			Reflection probe will update each frame. This mode is necessary to capture moving objects.
+		</constant>
+		<constant name="REFLECTION_PROBE_AMBIENT_DISABLED" value="0" enum="ReflectionProbeAmbientMode">
+		</constant>
+		<constant name="REFLECTION_PROBE_AMBIENT_ENVIRONMENT" value="1" enum="ReflectionProbeAmbientMode">
+		</constant>
+		<constant name="REFLECTION_PROBE_AMBIENT_COLOR" value="2" enum="ReflectionProbeAmbientMode">
+		</constant>
+		<constant name="DECAL_TEXTURE_ALBEDO" value="0" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_NORMAL" value="1" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_ORM" value="2" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_EMISSION" value="3" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_MAX" value="4" enum="DecalTexture">
 		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
 			Draw particles in the order that they appear in the particles array.
@@ -3383,22 +3342,24 @@
 			Multisample antialiasing is disabled.
 		</constant>
 		<constant name="VIEWPORT_MSAA_2X" value="1" enum="ViewportMSAA">
-			Multisample antialiasing is set to 2×.
+			Multisample antialiasing uses 2 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_MSAA_4X" value="2" enum="ViewportMSAA">
-			Multisample antialiasing is set to 4×.
+			Multisample antialiasing uses 4 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_MSAA_8X" value="3" enum="ViewportMSAA">
-			Multisample antialiasing is set to 8×.
+			Multisample antialiasing uses 8 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
-			Multisample antialiasing is set to 16×.
+			Multisample antialiasing uses 16 samples per pixel.
 		</constant>
-		<constant name="VIEWPORT_MSAA_EXT_2X" value="5" enum="ViewportMSAA">
-			Multisample antialiasing is set to 2× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
+		<constant name="VIEWPORT_MSAA_MAX" value="5" enum="ViewportMSAA">
 		</constant>
-		<constant name="VIEWPORT_MSAA_EXT_4X" value="6" enum="ViewportMSAA">
-			Multisample antialiasing is set to 4× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_DISABLED" value="0" enum="ViewportScreenSpaceAA">
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_FXAA" value="1" enum="ViewportScreenSpaceAA">
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="2" enum="ViewportScreenSpaceAA">
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 			Number of objects drawn in a single frame.
@@ -3425,37 +3386,57 @@
 			Debug draw is disabled. Default setting.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1" enum="ViewportDebugDraw">
-			Debug draw sets objects to unshaded.
+			Objects are displayed without light information.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_LIGHTING" value="2" enum="ViewportDebugDraw">
+			Objects are displayed with only light information.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="3" enum="ViewportDebugDraw">
-			Overwrites clear color to [code](0,0,0,0)[/code].
+			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
+			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="ViewportDebugDraw">
+			Objects are displayed with only the albedo value from [GIProbe]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="ViewportDebugDraw">
+			Objects are displayed with only the lighting value from [GIProbe]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="ViewportDebugDraw">
+			Objects are displayed with only the emission color from [GIProbe]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
+			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
+			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
+			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER" value="13" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="13" enum="ViewportDebugDraw">
+			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
 		</constant>
-		<constant name="SKY_MODE_QUALITY" value="0" enum="SkyMode">
+		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="14" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="SKY_MODE_REALTIME" value="1" enum="SkyMode">
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="15" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="16" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="17" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/quality/reflections/ggx_samples].
+		</constant>
+		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
+			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.
+			[b]Note:[/b] The fast filtering algorithm is limited to 256x256 cubemaps, so [member Sky.radiance_size] must be set to [constant Sky.RADIANCE_SIZE_256].
 		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
 			Use the clear color as background.
@@ -3479,28 +3460,40 @@
 			Represents the size of the [enum EnvironmentBG] enum.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_BG" value="0" enum="EnvironmentAmbientSource">
+			Gather ambient light from whichever source is specified as the background.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_DISABLED" value="1" enum="EnvironmentAmbientSource">
+			Disable ambient light.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_COLOR" value="2" enum="EnvironmentAmbientSource">
+			Specify a specific [Color] for ambient light.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_SKY" value="3" enum="EnvironmentAmbientSource">
+			Gather ambient light from the [Sky] regardless of what the background is.
 		</constant>
 		<constant name="ENV_REFLECTION_SOURCE_BG" value="0" enum="EnvironmentReflectionSource">
+			Use the background for reflections.
 		</constant>
 		<constant name="ENV_REFLECTION_SOURCE_DISABLED" value="1" enum="EnvironmentReflectionSource">
+			Disable reflections.
 		</constant>
 		<constant name="ENV_REFLECTION_SOURCE_SKY" value="2" enum="EnvironmentReflectionSource">
+			Use the [Sky] for reflections regardless of what the background is.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
+			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
+			Screen glow blending mode. Increases brightness, used frequently with bloom.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
+			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights (vivid bloom).
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
+			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_MIX" value="4" enum="EnvironmentGlowBlendMode">
+			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
 			Output color as they came in.
@@ -3513,6 +3506,14 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the ACES tonemapper.
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_LOW" value="1" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_MEDIUM" value="2" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
 		</constant>
 		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
 			Disables the blur set for SSAO. Will make SSAO look noisier.
@@ -3533,23 +3534,51 @@
 			Medium quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
+			High quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion.
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_LOW" value="1" enum="SubSurfaceScatteringQuality">
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_MEDIUM" value="2" enum="SubSurfaceScatteringQuality">
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_HIGH" value="3" enum="SubSurfaceScatteringQuality">
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_VERY_LOW" value="0" enum="DOFBlurQuality">
+			Lowest quality DOF blur. This is the fastest setting, but you may be able to see filtering artifacts.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_LOW" value="1" enum="DOFBlurQuality">
+			Low quality DOF blur.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_MEDIUM" value="2" enum="DOFBlurQuality">
+			Medium quality DOF blur.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_HIGH" value="3" enum="DOFBlurQuality">
+			Highest quality DOF blur. Results in the smoothest looking blur by taking the most samples, but is also significantly slower.
 		</constant>
 		<constant name="DOF_BOKEH_BOX" value="0" enum="DOFBokehShape">
+			Calculate the DOF blur using a box filter. The fastest option, but results in obvious lines in blur pattern.
 		</constant>
 		<constant name="DOF_BOKEH_HEXAGON" value="1" enum="DOFBokehShape">
+			Calculates DOF blur using a hexagon shaped filter.
 		</constant>
 		<constant name="DOF_BOKEH_CIRCLE" value="2" enum="DOFBokehShape">
+			Calculates DOF blur using a circle shaped filter. Best quality and most realistic, but slowest. Use only for areas where a lot of performance can be dedicated to post-processing (e.g. cutscenes).
+		</constant>
+		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_LOW" value="1" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_MEDIUM" value="2" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_HIGH" value="3" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_ULTRA" value="4" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_MAX" value="5" enum="ShadowQuality">
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 			Do not use a debug mode.
@@ -3584,13 +3613,16 @@
 		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="7" enum="InstanceType">
+		<constant name="INSTANCE_DECAL" value="7" enum="InstanceType">
+			The instance is a decal.
+		</constant>
+		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="8" enum="InstanceType">
-			The instance is a lightmap capture.
+		<constant name="INSTANCE_LIGHTMAP" value="9" enum="InstanceType">
+			The instance is a lightmap.
 		</constant>
-		<constant name="INSTANCE_MAX" value="9" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="10" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
@@ -3600,6 +3632,7 @@
 			Allows the instance to be used in baked lighting.
 		</constant>
 		<constant name="INSTANCE_FLAG_USE_DYNAMIC_GI" value="1" enum="InstanceFlags">
+			Allows the instance to be used with dynamic global illumination.
 		</constant>
 		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="InstanceFlags">
 			When set, manually requests to draw geometry on next frame.
@@ -3629,30 +3662,43 @@
 			The nine patch gets filled with tiles where needed and stretches them a bit if needed.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_DEFAULT" value="0" enum="CanvasItemTextureFilter">
+			Uses the default filter mode for this [Viewport].
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="1" enum="CanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="2" enum="CanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="CanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="CanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="CanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="CanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_MAX" value="7" enum="CanvasItemTextureFilter">
+			Max value for [enum CanvasItemTextureFilter] enum.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT" value="0" enum="CanvasItemTextureRepeat">
+			Uses the default repeat mode for this [Viewport].
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="1" enum="CanvasItemTextureRepeat">
+			Disables textures repeating. Instead, when reading UVs outside the 0-1 range, the value will be clamped to the edge of the texture, resulting in a stretched out look at the borders of the texture.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="2" enum="CanvasItemTextureRepeat">
+			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="3" enum="CanvasItemTextureRepeat">
+			Flip the texture when repeating so that the edge lines up instead of abruptly changing.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4" enum="CanvasItemTextureRepeat">
+			Max value for [enum CanvasItemTextureRepeat] enum.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
 			Adds light color additive to the canvas.
@@ -3676,6 +3722,7 @@
 			Use PCF13 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_MAX" value="3" enum="CanvasLightShadowFilter">
+			Max value of the [enum CanvasLightShadowFilter] enum.
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is disabled.
@@ -3685,6 +3732,64 @@
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is counterclockwise.
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalVariableType">
 		</constant>
 		<constant name="INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 			The amount of objects in the frame.

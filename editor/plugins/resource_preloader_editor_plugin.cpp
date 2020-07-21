@@ -39,13 +39,11 @@ void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void ResourcePreloaderEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		load->set_icon(get_theme_icon("Folder", "EditorIcons"));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
-
 		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
@@ -54,9 +52,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 }
 
 void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths) {
-
 	for (int i = 0; i < p_paths.size(); i++) {
-
 		String path = p_paths[i];
 
 		RES resource;
@@ -89,24 +85,23 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths)
 }
 
 void ResourcePreloaderEditor::_load_pressed() {
-
 	loading_scene = false;
 
 	file->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensions);
-	for (int i = 0; i < extensions.size(); i++)
+	for (int i = 0; i < extensions.size(); i++) {
 		file->add_filter("*." + extensions[i]);
+	}
 
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-
-	file->popup_centered_ratio();
+	file->popup_file_dialog();
 }
 
 void ResourcePreloaderEditor::_item_edited() {
-
-	if (!tree->get_selected())
+	if (!tree->get_selected()) {
 		return;
+	}
 
 	TreeItem *s = tree->get_selected();
 
@@ -114,11 +109,11 @@ void ResourcePreloaderEditor::_item_edited() {
 		// renamed
 		String old_name = s->get_metadata(0);
 		String new_name = s->get_text(0);
-		if (old_name == new_name)
+		if (old_name == new_name) {
 			return;
+		}
 
 		if (new_name == "" || new_name.find("\\") != -1 || new_name.find("/") != -1 || preloader->has_resource(new_name)) {
-
 			s->set_text(0, old_name);
 			return;
 		}
@@ -136,7 +131,6 @@ void ResourcePreloaderEditor::_item_edited() {
 }
 
 void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
-
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(preloader, "remove_resource", p_to_remove);
 	undo_redo->add_undo_method(preloader, "add_resource", p_to_remove, preloader->get_resource(p_to_remove));
@@ -146,7 +140,6 @@ void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
 }
 
 void ResourcePreloaderEditor::_paste_pressed() {
-
 	RES r = EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
 		dialog->set_text(TTR("Resource clipboard is empty!"));
@@ -157,10 +150,12 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	}
 
 	String name = r->get_name();
-	if (name == "")
+	if (name == "") {
 		name = r->get_path().get_file();
-	if (name == "")
+	}
+	if (name == "") {
 		name = r->get_class();
+	}
 
 	String basename = name;
 	int counter = 1;
@@ -178,7 +173,6 @@ void ResourcePreloaderEditor::_paste_pressed() {
 }
 
 void ResourcePreloaderEditor::_update_library() {
-
 	tree->clear();
 	tree->set_hide_root(true);
 	TreeItem *root = tree->create_item(nullptr);
@@ -194,7 +188,6 @@ void ResourcePreloaderEditor::_update_library() {
 	names.sort();
 
 	for (List<String>::Element *E = names.front(); E; E = E->next()) {
-
 		TreeItem *ti = tree->create_item(root);
 		ti->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
 		ti->set_editable(0, true);
@@ -226,7 +219,6 @@ void ResourcePreloaderEditor::_update_library() {
 }
 
 void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
-
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);
 
@@ -244,42 +236,42 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 }
 
 void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
-
 	preloader = p_preloader;
 
 	if (p_preloader) {
 		_update_library();
 	} else {
-
 		hide();
 		set_physics_process(false);
 	}
 }
 
 Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-
 	TreeItem *ti = tree->get_item_at_position(p_point);
-	if (!ti)
+	if (!ti) {
 		return Variant();
+	}
 
 	String name = ti->get_metadata(0);
 
 	RES res = preloader->get_resource(name);
-	if (!res.is_valid())
+	if (!res.is_valid()) {
 		return Variant();
+	}
 
 	return EditorNode::get_singleton()->drag_resource(res, p_from);
 }
 
 bool ResourcePreloaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-
 	Dictionary d = p_data;
 
-	if (!d.has("type"))
+	if (!d.has("type")) {
 		return false;
+	}
 
-	if (d.has("from") && (Object *)(d["from"]) == tree)
+	if (d.has("from") && (Object *)(d["from"]) == tree) {
 		return false;
+	}
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
@@ -288,7 +280,6 @@ bool ResourcePreloaderEditor::can_drop_data_fw(const Point2 &p_point, const Vari
 	}
 
 	if (String(d["type"]) == "files") {
-
 		Vector<String> files = d["files"];
 
 		return files.size() != 0;
@@ -297,20 +288,20 @@ bool ResourcePreloaderEditor::can_drop_data_fw(const Point2 &p_point, const Vari
 }
 
 void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-
-	if (!can_drop_data_fw(p_point, p_data, p_from))
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
+	}
 
 	Dictionary d = p_data;
 
-	if (!d.has("type"))
+	if (!d.has("type")) {
 		return;
+	}
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
 
 		if (r.is_valid()) {
-
 			String basename;
 			if (r->get_name() != "") {
 				basename = r->get_name();
@@ -337,7 +328,6 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 	}
 
 	if (String(d["type"]) == "files") {
-
 		Vector<String> files = d["files"];
 
 		_files_load_request(files);
@@ -345,7 +335,6 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 }
 
 void ResourcePreloaderEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ResourcePreloaderEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
@@ -356,7 +345,6 @@ void ResourcePreloaderEditor::_bind_methods() {
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
-
 	//add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel","Panel"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -399,31 +387,29 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 }
 
 void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
-
 	preloader_editor->set_undo_redo(&get_undo_redo());
 	ResourcePreloader *s = Object::cast_to<ResourcePreloader>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	preloader_editor->edit(s);
 }
 
 bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("ResourcePreloader");
 }
 
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
 		editor->make_bottom_panel_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
-
-		if (preloader_editor->is_visible_in_tree())
+		if (preloader_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		button->hide();
 		//preloader_editor->hide();
 		//preloader_editor->set_process(false);
@@ -431,7 +417,6 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 }
 
 ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);

@@ -41,18 +41,15 @@
 #include "scene/resources/packed_scene.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
-
 	mesh_library = p_mesh_library;
-	if (mesh_library.is_valid())
+	if (mesh_library.is_valid()) {
 		menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), !mesh_library->has_meta("_editor_source_scene"));
+	}
 }
 
 void MeshLibraryEditor::_menu_confirm() {
-
 	switch (option) {
-
 		case MENU_OPTION_REMOVE_ITEM: {
-
 			mesh_library->remove_item(to_erase);
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
@@ -67,14 +64,13 @@ void MeshLibraryEditor::_menu_confirm() {
 }
 
 void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge) {
-
-	if (!p_merge)
+	if (!p_merge) {
 		p_library->clear();
+	}
 
 	Map<int, MeshInstance3D *> mesh_instances;
 
 	for (int i = 0; i < p_scene->get_child_count(); i++) {
-
 		Node *child = p_scene->get_child(i);
 
 		if (!Object::cast_to<MeshInstance3D>(child)) {
@@ -84,14 +80,16 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-			} else
+			} else {
 				continue;
+			}
 		}
 
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(child);
 		Ref<Mesh> mesh = mi->get_mesh();
-		if (mesh.is_null())
+		if (mesh.is_null()) {
 			continue;
+		}
 
 		mesh = mesh->duplicate();
 		for (int j = 0; j < mesh->get_surface_count(); ++j) {
@@ -104,7 +102,6 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		int id = p_library->find_item_by_name(mi->get_name());
 		if (id < 0) {
-
 			id = p_library->get_last_unused_item_id();
 			p_library->create_item(id);
 			p_library->set_item_name(id, mi->get_name());
@@ -116,28 +113,29 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Vector<MeshLibrary::ShapeData> collisions;
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
-
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<StaticBody3D>(child2))
+			if (!Object::cast_to<StaticBody3D>(child2)) {
 				continue;
+			}
 
 			StaticBody3D *sb = Object::cast_to<StaticBody3D>(child2);
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 
 			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
-				if (sb->is_shape_owner_disabled(E->get()))
+				if (sb->is_shape_owner_disabled(E->get())) {
 					continue;
+				}
 
 				//Transform shape_transform = sb->shape_owner_get_transform(E->get());
 
 				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
-
 					Ref<Shape3D> collision = sb->shape_owner_get_shape(E->get(), k);
-					if (!collision.is_valid())
+					if (!collision.is_valid()) {
 						continue;
+					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
 					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E->get());
@@ -152,13 +150,15 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Transform navmesh_transform;
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<NavigationRegion3D>(child2))
+			if (!Object::cast_to<NavigationRegion3D>(child2)) {
 				continue;
+			}
 			NavigationRegion3D *sb = Object::cast_to<NavigationRegion3D>(child2);
 			navmesh = sb->get_navigation_mesh();
 			navmesh_transform = sb->get_transform();
-			if (!navmesh.is_null())
+			if (!navmesh.is_null()) {
 				break;
+			}
 		}
 		if (!navmesh.is_null()) {
 			p_library->set_item_navmesh(id, navmesh);
@@ -168,15 +168,12 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 	//generate previews!
 
-	if (1) {
-
+	if (true) {
 		Vector<Ref<Mesh>> meshes;
 		Vector<Transform> transforms;
 		Vector<int> ids = p_library->get_item_list();
 		for (int i = 0; i < ids.size(); i++) {
-
 			if (mesh_instances.find(ids[i])) {
-
 				meshes.push_back(p_library->get_item_mesh(ids[i]));
 				transforms.push_back(mesh_instances[ids[i]]->get_transform());
 			}
@@ -185,9 +182,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		Vector<Ref<Texture2D>> textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EditorSettings::get_singleton()->get("editors/grid_map/preview_size"));
 		int j = 0;
 		for (int i = 0; i < ids.size(); i++) {
-
 			if (mesh_instances.find(ids[i])) {
-
 				p_library->set_item_preview(ids[i], textures[j]);
 				j++;
 			}
@@ -196,7 +191,6 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 }
 
 void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
-
 	Ref<PackedScene> ps = ResourceLoader::load(p_str, "PackedScene");
 	ERR_FAIL_COND(ps.is_null());
 	Node *scene = ps->instance();
@@ -211,36 +205,28 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 }
 
 Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge) {
-
 	_import_scene(p_base_scene, ml, p_merge);
 	return OK;
 }
 
 void MeshLibraryEditor::_menu_cbk(int p_option) {
-
 	option = p_option;
 	switch (p_option) {
-
 		case MENU_OPTION_ADD_ITEM: {
-
 			mesh_library->create_item(mesh_library->get_last_unused_item_id());
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
-
 			String p = editor->get_inspector()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
-
 				to_erase = p.get_slice("/", 3).to_int();
 				cd->set_text(vformat(TTR("Remove item %d?"), to_erase));
 				cd->popup_centered(Size2(300, 60));
 			}
 		} break;
 		case MENU_OPTION_IMPORT_FROM_SCENE: {
-
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
-
 			cd->set_text(vformat(TTR("Update from existing scene?:\n%s"), String(mesh_library->get_meta("_editor_source_scene"))));
 			cd->popup_centered(Size2(500, 60));
 		} break;
@@ -251,7 +237,6 @@ void MeshLibraryEditor::_bind_methods() {
 }
 
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
-
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
@@ -260,7 +245,6 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
 	for (int i = 0; i < extensions.size(); i++) {
-
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 	}
 	add_child(file);
@@ -287,21 +271,19 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {
-
 	if (Object::cast_to<MeshLibrary>(p_node)) {
 		mesh_library_editor->edit(Object::cast_to<MeshLibrary>(p_node));
 		mesh_library_editor->show();
-	} else
+	} else {
 		mesh_library_editor->hide();
+	}
 }
 
 bool MeshLibraryEditorPlugin::handles(Object *p_node) const {
-
 	return p_node->is_class("MeshLibrary");
 }
 
 void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		mesh_library_editor->show();
 		mesh_library_editor->get_menu_button()->show();
@@ -312,7 +294,6 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 }
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
-
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 	mesh_library_editor = memnew(MeshLibraryEditor(p_node));
 

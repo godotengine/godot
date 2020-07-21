@@ -35,7 +35,6 @@
 
 class Camera3D;
 class VisibilityNotifier3D : public Node3D {
-
 	GDCLASS(VisibilityNotifier3D, Node3D);
 
 	Set<Camera3D *> cameras;
@@ -62,7 +61,6 @@ public:
 };
 
 class VisibilityEnabler3D : public VisibilityNotifier3D {
-
 	GDCLASS(VisibilityEnabler3D, VisibilityNotifier3D);
 
 public:
@@ -73,8 +71,8 @@ public:
 	};
 
 protected:
-	virtual void _screen_enter();
-	virtual void _screen_exit();
+	virtual void _screen_enter() override;
+	virtual void _screen_exit() override;
 
 	bool visible;
 

@@ -70,7 +70,6 @@ private:
 	};
 
 	struct dinput_gamepad {
-
 		int id;
 		bool attached;
 		bool confirmed;
@@ -93,7 +92,6 @@ private:
 	};
 
 	struct xinput_gamepad {
-
 		int id;
 		bool attached;
 		bool vibrating;
@@ -117,9 +115,10 @@ private:
 	HWND *hWnd;
 	HANDLE xinput_dll;
 	LPDIRECTINPUT8 dinput;
-	InputFilter *input;
+	Input *input;
 
 	int id_to_change;
+	int slider_count;
 	int joypad_count;
 	bool attached_joypads[JOYPADS_MAX];
 	dinput_gamepad d_joypads[JOYPADS_MAX];
@@ -141,7 +140,7 @@ private:
 	void joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
-	InputFilter::JoyAxis axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
+	Input::JoyAxis axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
 	XInputGetState_t xinput_get_state;
 	XInputSetState_t xinput_set_state;
 };

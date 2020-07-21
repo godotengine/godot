@@ -37,8 +37,12 @@
 extern "C" {
 #endif
 
-void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y) {
+static_assert(sizeof(godot_vector2) == sizeof(Vector2), "Vector2 size mismatch");
+static_assert(sizeof(godot_vector2i) == sizeof(Vector2i), "Vector2i size mismatch");
 
+// Vector2
+
+void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y) {
 	Vector2 *dest = (Vector2 *)r_dest;
 	*dest = Vector2(p_x, p_y);
 }
@@ -48,6 +52,13 @@ godot_string GDAPI godot_vector2_as_string(const godot_vector2 *p_self) {
 	const Vector2 *self = (const Vector2 *)p_self;
 	memnew_placement(&ret, String(*self));
 	return ret;
+}
+
+godot_vector2i GDAPI godot_vector2_as_vector2i(const godot_vector2 *p_self) {
+	godot_vector2i dest;
+	const Vector2 *self = (const Vector2 *)p_self;
+	*((Vector2i *)&dest) = Vector2i(*self);
+	return dest;
 }
 
 godot_vector2 GDAPI godot_vector2_normalized(const godot_vector2 *p_self) {
@@ -109,11 +120,11 @@ godot_real GDAPI godot_vector2_angle_to_point(const godot_vector2 *p_self, const
 	return self->angle_to_point(*to);
 }
 
-godot_vector2 GDAPI godot_vector2_linear_interpolate(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_real p_t) {
+godot_vector2 GDAPI godot_vector2_lerp(const godot_vector2 *p_self, const godot_vector2 *p_b, const godot_real p_t) {
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;
 	const Vector2 *b = (const Vector2 *)p_b;
-	*((Vector2 *)&dest) = self->linear_interpolate(*b, p_t);
+	*((Vector2 *)&dest) = self->lerp(*b, p_t);
 	return dest;
 }
 
@@ -154,6 +165,13 @@ godot_vector2 GDAPI godot_vector2_floor(const godot_vector2 *p_self) {
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;
 	*((Vector2 *)&dest) = self->floor();
+	return dest;
+}
+
+godot_vector2 GDAPI godot_vector2_sign(const godot_vector2 *p_self) {
+	godot_vector2 dest;
+	const Vector2 *self = (const Vector2 *)p_self;
+	*((Vector2 *)&dest) = self->sign();
 	return dest;
 }
 
@@ -304,6 +322,138 @@ godot_real GDAPI godot_vector2_get_x(const godot_vector2 *p_self) {
 
 godot_real GDAPI godot_vector2_get_y(const godot_vector2 *p_self) {
 	const Vector2 *self = (const Vector2 *)p_self;
+	return self->y;
+}
+
+// Vector2i
+
+void GDAPI godot_vector2i_new(godot_vector2i *r_dest, const godot_int p_x, const godot_int p_y) {
+	Vector2i *dest = (Vector2i *)r_dest;
+	*dest = Vector2i(p_x, p_y);
+}
+
+godot_string GDAPI godot_vector2i_as_string(const godot_vector2i *p_self) {
+	godot_string ret;
+	const Vector2i *self = (const Vector2i *)p_self;
+	memnew_placement(&ret, String(*self));
+	return ret;
+}
+
+godot_vector2 GDAPI godot_vector2i_as_vector2(const godot_vector2i *p_self) {
+	godot_vector2 dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	*((Vector2 *)&dest) = Vector2(*self);
+	return dest;
+}
+
+godot_real GDAPI godot_vector2i_aspect(const godot_vector2i *p_self) {
+	const Vector2i *self = (const Vector2i *)p_self;
+	return self->aspect();
+}
+
+godot_vector2i GDAPI godot_vector2i_abs(const godot_vector2i *p_self) {
+	godot_vector2i dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	*((Vector2i *)&dest) = self->abs();
+	return dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_sign(const godot_vector2i *p_self) {
+	godot_vector2i dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	*((Vector2i *)&dest) = self->sign();
+	return dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_add(const godot_vector2i *p_self, const godot_vector2i *p_b) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	const Vector2i *b = (const Vector2i *)p_b;
+	*dest = *self + *b;
+	return raw_dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_subtract(const godot_vector2i *p_self, const godot_vector2i *p_b) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	const Vector2i *b = (const Vector2i *)p_b;
+	*dest = *self - *b;
+	return raw_dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_multiply_vector(const godot_vector2i *p_self, const godot_vector2i *p_b) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	const Vector2i *b = (const Vector2i *)p_b;
+	*dest = *self * *b;
+	return raw_dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_multiply_scalar(const godot_vector2i *p_self, const godot_int p_b) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	*dest = *self * p_b;
+	return raw_dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_divide_vector(const godot_vector2i *p_self, const godot_vector2i *p_b) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	const Vector2i *b = (const Vector2i *)p_b;
+	*dest = *self / *b;
+	return raw_dest;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_divide_scalar(const godot_vector2i *p_self, const godot_int p_b) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	*dest = *self / p_b;
+	return raw_dest;
+}
+
+godot_bool GDAPI godot_vector2i_operator_equal(const godot_vector2i *p_self, const godot_vector2i *p_b) {
+	const Vector2i *self = (const Vector2i *)p_self;
+	const Vector2i *b = (const Vector2i *)p_b;
+	return *self == *b;
+}
+
+godot_bool GDAPI godot_vector2i_operator_less(const godot_vector2i *p_self, const godot_vector2i *p_b) {
+	const Vector2i *self = (const Vector2i *)p_self;
+	const Vector2i *b = (const Vector2i *)p_b;
+	return *self < *b;
+}
+
+godot_vector2i GDAPI godot_vector2i_operator_neg(const godot_vector2i *p_self) {
+	godot_vector2i raw_dest;
+	Vector2i *dest = (Vector2i *)&raw_dest;
+	const Vector2i *self = (const Vector2i *)p_self;
+	*dest = -(*self);
+	return raw_dest;
+}
+
+void GDAPI godot_vector2i_set_x(godot_vector2i *p_self, const godot_int p_x) {
+	Vector2i *self = (Vector2i *)p_self;
+	self->x = p_x;
+}
+
+void GDAPI godot_vector2i_set_y(godot_vector2i *p_self, const godot_int p_y) {
+	Vector2i *self = (Vector2i *)p_self;
+	self->y = p_y;
+}
+
+godot_int GDAPI godot_vector2i_get_x(const godot_vector2i *p_self) {
+	const Vector2i *self = (const Vector2i *)p_self;
+	return self->x;
+}
+
+godot_int GDAPI godot_vector2i_get_y(const godot_vector2i *p_self) {
+	const Vector2i *self = (const Vector2i *)p_self;
 	return self->y;
 }
 

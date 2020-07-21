@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_ssao;
 layout(set = 1, binding = 0) uniform sampler2D source_depth;
@@ -46,10 +44,9 @@ const float gaussian[R + 1] =
 //float[](0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108); // stddev = 3.0
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
-	if (any(greaterThan(ssC, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
 		return;
 	}
 
@@ -122,7 +119,6 @@ void main() {
 		// We already handled the zero case above.  This loop should be unrolled and the static branch optimized out,
 		// so the IF statement has no runtime cost
 		if (r != 0) {
-
 			ivec2 ppos = ssC + params.axis * (r * params.filter_scale);
 			float value = texelFetch(source_ssao, clamp(ppos, ivec2(0), clamp_limit), 0).r;
 			ivec2 rpos = clamp(ppos, ivec2(0), clamp_limit);

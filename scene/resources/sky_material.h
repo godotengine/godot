@@ -35,7 +35,6 @@
 #define SKY_MATERIAL_H
 
 class ProceduralSkyMaterial : public Material {
-
 	GDCLASS(ProceduralSkyMaterial, Material);
 
 private:
@@ -56,7 +55,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_sky_top_color(const Color &p_sky_top);
@@ -89,7 +88,7 @@ public:
 	void set_sun_curve(float p_curve);
 	float get_sun_curve() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 	RID get_shader_rid() const;
 
 	ProceduralSkyMaterial();
@@ -108,13 +107,13 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
 	Ref<Texture2D> get_panorama() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 	RID get_shader_rid() const;
 
 	PanoramaSkyMaterial();
@@ -140,10 +139,11 @@ private:
 	Color ground_color;
 	float exposure;
 	float dither_strength;
+	Ref<Texture2D> night_sky;
 
 protected:
 	static void _bind_methods();
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 public:
 	void set_rayleigh_coefficient(float p_rayleigh);
@@ -176,7 +176,10 @@ public:
 	void set_dither_strength(float p_dither_strength);
 	float get_dither_strength() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	void set_night_sky(const Ref<Texture2D> &p_night_sky);
+	Ref<Texture2D> get_night_sky() const;
+
+	virtual Shader::Mode get_shader_mode() const override;
 	RID get_shader_rid() const;
 
 	PhysicalSkyMaterial();
