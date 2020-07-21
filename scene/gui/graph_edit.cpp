@@ -539,7 +539,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			} else {
 				emit_signal("connection_to_empty", from, from_slot, ofs);
 			}
-		} 
+		}
 
 		connecting = false;
 		top_layer->update();
