@@ -522,7 +522,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		int to_slot = connecting_target_index;
 		
 		if (just_disconnected) {
-			emit_signal("disconnection_request", from, from_slot, last_connecting_target, last_index_target, false);
+			emit_signal("disconnection_request", from, from_slot, last_connecting_target, last_target_index, false);
 		}
 
 		if (connecting && connecting_target) {
