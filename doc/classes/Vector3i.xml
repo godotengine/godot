@@ -38,14 +38,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants.
+				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
 		<method name="min_axis">
 			<return type="int">
 			</return>
 			<description>
-				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants.
+				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
 			</description>
 		</method>
 		<method name="sign">
@@ -78,16 +78,16 @@
 			Enumerated value for the Z axis.
 		</constant>
 		<constant name="ZERO" value="Vector3i( 0, 0, 0 )">
-			Zero vector.
+			Zero vector, a vector with all components set to [code]0[/code].
 		</constant>
 		<constant name="ONE" value="Vector3i( 1, 1, 1 )">
-			One vector.
+			One vector, a vector with all components set to [code]1[/code].
 		</constant>
 		<constant name="LEFT" value="Vector3i( -1, 0, 0 )">
-			Left unit vector.
+			Left unit vector. Represents the local direction of left, and the global direction of west.
 		</constant>
 		<constant name="RIGHT" value="Vector3i( 1, 0, 0 )">
-			Right unit vector.
+			Right unit vector. Represents the local direction of right, and the global direction of east.
 		</constant>
 		<constant name="UP" value="Vector3i( 0, 1, 0 )">
 			Up unit vector.
@@ -96,10 +96,10 @@
 			Down unit vector.
 		</constant>
 		<constant name="FORWARD" value="Vector3i( 0, 0, -1 )">
-			Forward unit vector.
+			Forward unit vector. Represents the local direction of forward, and the global direction of north.
 		</constant>
 		<constant name="BACK" value="Vector3i( 0, 0, 1 )">
-			Back unit vector.
+			Back unit vector. Represents the local direction of back, and the global direction of south.
 		</constant>
 	</constants>
 </class>

@@ -4,10 +4,13 @@
 		3×3 matrix datatype.
 	</brief_description>
 	<description>
-		3×3 matrix used for 3D rotation and scale. Contains 3 vector fields X, Y and Z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized (due to scaling). Almost always used as an orthogonal basis for a [Transform].
-		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
+		3×3 matrix used for 3D rotation and scale. Almost always used as an orthogonal basis for a Transform.
+		Contains 3 vector fields X, Y and Z as its columns, which are typically interpreted as the local basis vectors of a transformation. For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
+		Can also be accessed as array of 3D vectors. These vectors are normally orthogonal to each other, but are not necessarily normalized (due to scaling).
+		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
 	<methods>
@@ -17,7 +20,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Create a rotation matrix from the given quaternion.
+				Constructs a pure rotation basis matrix from the given quaternion.
 			</description>
 		</method>
 		<method name="Basis">
@@ -26,7 +29,8 @@
 			<argument index="0" name="from" type="Vector3">
 			</argument>
 			<description>
-				Create a rotation matrix (in the YXZ convention: first Z, then X, and Y last) from the specified Euler angles, given in the vector format as (X angle, Y angle, Z angle).
+				Constructs a pure rotation basis matrix from the given Euler angles (in the YXZ convention: when *composing*, first Y, then X, and Z last), given in the vector format as (X angle, Y angle, Z angle).
+				Consider using the [Quat] constructor instead, which uses a quaternion instead of Euler angles.
 			</description>
 		</method>
 		<method name="Basis">
@@ -37,7 +41,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Create a rotation matrix which rotates around the given axis by the specified angle, in radians. The axis must be a normalized vector.
+				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]phi[/code], in radians. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="Basis">
@@ -50,28 +54,30 @@
 			<argument index="2" name="z_axis" type="Vector3">
 			</argument>
 			<description>
-				Create a matrix from 3 axis vectors.
+				Constructs a basis matrix from 3 axis vectors (matrix columns).
 			</description>
 		</method>
 		<method name="determinant">
 			<return type="float">
 			</return>
 			<description>
-				Returns the determinant of the matrix.
+				Returns the determinant of the basis matrix. If the basis is uniformly scaled, its determinant is the square of the scale.
+				A negative determinant means the basis has a negative scale. A zero determinant means the basis isn't invertible, and is usually considered invalid.
 			</description>
 		</method>
 		<method name="get_euler">
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns the basis's rotation in the form of Euler angles (in the YXZ convention: first Z, then X, and Y last). The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle). See [method get_rotation_quat] if you need a quaternion instead.
+				Returns the basis's rotation in the form of Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last). The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
+				Consider using the [method get_rotation_quat] method instead, which returns a [Quat] quaternion instead of Euler angles.
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
 			<return type="int">
 			</return>
 			<description>
-				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to the Godot source code.
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the [GridMap] editor. For further details, refer to the Godot source code.
 			</description>
 		</method>
 		<method name="get_rotation_quat">
@@ -193,25 +199,26 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Returns a vector transformed (multiplied) by the transposed matrix.
+				Returns a vector transformed (multiplied) by the transposed basis matrix.
 				[b]Note:[/b] This results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="x" type="Vector3" setter="" getter="" default="Vector3( 1, 0, 0 )">
-			The basis matrix's X vector.
+			The basis matrix's X vector (column 0). Equivalent to array index [code]0[/code].
 		</member>
 		<member name="y" type="Vector3" setter="" getter="" default="Vector3( 0, 1, 0 )">
-			The basis matrix's Y vector.
+			The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
 		</member>
 		<member name="z" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 1 )">
-			The basis matrix's Z vector.
+			The basis matrix's Z vector (column 2). Equivalent to array index [code]2[/code].
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
-			The identity basis. This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer.
+			The identity basis, with no rotation or scaling applied.
+			This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.
 		</constant>
 		<constant name="FLIP_X" value="Basis( -1, 0, 0, 0, 1, 0, 0, 0, 1 )">
 			The basis that will flip something along the X axis when used in a transformation.

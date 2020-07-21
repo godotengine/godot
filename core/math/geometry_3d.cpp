@@ -648,7 +648,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		Vector<Vector3> vertices;
 
-		Vector3 center = p.get_any_point();
+		Vector3 center = p.center();
 		// make a quad clockwise
 		vertices.push_back(center - up * subplane_size + right * subplane_size);
 		vertices.push_back(center - up * subplane_size - right * subplane_size);
