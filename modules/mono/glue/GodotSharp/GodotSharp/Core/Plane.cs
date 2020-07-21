@@ -20,8 +20,9 @@ namespace Godot
         private Vector3 _normal;
 
         /// <summary>
-        /// The normal of the plane (in the plane equation: a, b, and c).
-        /// The normal vector must be normalized.
+        /// The normal of the plane, which must be normalized.
+        /// In the scalar equation of the plane `ax + by + cz = d`, this is
+        /// the vector `(a, b, c)`, where `d` is the <see cref="D"> property.
         /// </summary>
         /// <value>Equivalent to `x`, `y`, and `z`.</value>
         public Vector3 Normal
@@ -81,6 +82,9 @@ namespace Godot
         /// <summary>
         /// The distance from the origin to the plane (in the direction of
         /// <see cref="Normal"/>). This value is typically non-negative.
+        /// In the scalar equation of the plane `ax + by + cz = d`,
+        /// this is `d`, while the `(a, b, c)` coordinates are represented
+        /// by the <see cref="Normal"> property.
         /// </summary>
         /// <value>The plane's distance from the origin.</value>
         public real_t D { get; set; }

@@ -455,7 +455,6 @@ struct _VariantCall {
 
 	VCALL_LOCALMEM0R(Plane, normalized);
 	VCALL_LOCALMEM0R(Plane, center);
-	VCALL_LOCALMEM0R(Plane, get_any_point);
 	VCALL_LOCALMEM1R(Plane, is_equal_approx);
 	VCALL_LOCALMEM1R(Plane, is_point_over);
 	VCALL_LOCALMEM1R(Plane, distance_to);
@@ -843,6 +842,7 @@ struct _VariantCall {
 #define VCALL_PTR5R(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = reinterpret_cast<m_type *>(p_self._data._ptr)->m_method(*p_args[0], *p_args[1], *p_args[2], *p_args[3], *p_args[4]); }
 
+	VCALL_PTR0R(AABB, abs);
 	VCALL_PTR0R(AABB, get_area);
 	VCALL_PTR0R(AABB, has_no_area);
 	VCALL_PTR0R(AABB, has_no_surface);
@@ -1980,7 +1980,6 @@ void register_variant_methods() {
 
 	ADDFUNC0R(PLANE, PLANE, Plane, normalized, varray());
 	ADDFUNC0R(PLANE, VECTOR3, Plane, center, varray());
-	ADDFUNC0R(PLANE, VECTOR3, Plane, get_any_point, varray());
 	ADDFUNC1R(PLANE, BOOL, Plane, is_equal_approx, PLANE, "plane", varray());
 	ADDFUNC1R(PLANE, BOOL, Plane, is_point_over, VECTOR3, "point", varray());
 	ADDFUNC1R(PLANE, FLOAT, Plane, distance_to, VECTOR3, "point", varray());
@@ -2220,6 +2219,7 @@ void register_variant_methods() {
 
 	//pointerbased
 
+	ADDFUNC0R(AABB, AABB, AABB, abs, varray());
 	ADDFUNC0R(AABB, FLOAT, AABB, get_area, varray());
 	ADDFUNC0R(AABB, BOOL, AABB, has_no_area, varray());
 	ADDFUNC0R(AABB, BOOL, AABB, has_no_surface, varray());

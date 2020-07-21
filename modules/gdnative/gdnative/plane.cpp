@@ -79,13 +79,6 @@ godot_vector3 GDAPI godot_plane_center(const godot_plane *p_self) {
 	return dest;
 }
 
-godot_vector3 GDAPI godot_plane_get_any_point(const godot_plane *p_self) {
-	godot_vector3 dest;
-	const Plane *self = (const Plane *)p_self;
-	*((Vector3 *)&dest) = self->get_any_point();
-	return dest;
-}
-
 godot_bool GDAPI godot_plane_is_point_over(const godot_plane *p_self, const godot_vector3 *p_point) {
 	const Plane *self = (const Plane *)p_self;
 	const Vector3 *point = (const Vector3 *)p_point;

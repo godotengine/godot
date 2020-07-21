@@ -486,7 +486,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from RGB values on the range of 0 to 1.
+        /// Constructs a color from RGBA values on the range of 0 to 1.
         /// </summary>
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
         /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
