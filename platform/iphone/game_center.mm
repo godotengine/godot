@@ -50,6 +50,7 @@ extern "C" {
 GameCenter *GameCenter::instance = NULL;
 
 void GameCenter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("authenticate"), &GameCenter::authenticate);
 	ClassDB::bind_method(D_METHOD("is_authenticated"), &GameCenter::is_authenticated);
 
 	ClassDB::bind_method(D_METHOD("post_score"), &GameCenter::post_score);
@@ -64,35 +65,18 @@ void GameCenter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pop_pending_event"), &GameCenter::pop_pending_event);
 };
 
-void GameCenter::return_connect_error(const char *p_error_description) {
-	authenticated = false;
-	Dictionary ret;
-	ret["type"] = "authentication";
-	ret["result"] = "error";
-	ret["error_code"] = 0;
-	ret["error_description"] = p_error_description;
-	pending_events.push_back(ret);
-}
-
-void GameCenter::connect() {
+Error GameCenter::authenticate() {
 
 	//if this class isn't available, game center isn't implemented
 	if ((NSClassFromString(@"GKLocalPlayer")) == nil) {
-		return_connect_error("GameCenter not available");
-		return;
+		return ERR_UNAVAILABLE;
 	}
 
 	GKLocalPlayer *player = [GKLocalPlayer localPlayer];
-	if (![player respondsToSelector:@selector(authenticateHandler)]) {
-		return_connect_error("GameCenter doesn't respond to 'authenticateHandler'");
-		return;
-	}
+	ERR_FAIL_COND_V(![player respondsToSelector:@selector(authenticateHandler)], ERR_UNAVAILABLE);
 
 	ViewController *root_controller = (ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
-	if (!root_controller) {
-		return_connect_error("Window doesn't have root ViewController");
-		return;
-	}
+	ERR_FAIL_COND_V(!root_controller, FAILED);
 
 	// This handler is called several times.  First when the view needs to be shown, then again
 	// after the view is cancelled or the user logs in.  Or if the user's already logged in, it's
@@ -118,6 +102,8 @@ void GameCenter::connect() {
 			pending_events.push_back(ret);
 		};
 	});
+
+	return OK;
 };
 
 bool GameCenter::is_authenticated() {
