@@ -120,6 +120,13 @@
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
+		<method name="get_inverse_inertia_tensor">
+			<return type="Basis">
+			</return>
+			<description>
+				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the RigidBody.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
