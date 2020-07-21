@@ -30,6 +30,7 @@
 
 #include "image.h"
 
+#include "core/error_macros.h"
 #include "core/hash_map.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -678,34 +679,35 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	enum {
 		FRAC_BITS = 8,
 		FRAC_LEN = (1 << FRAC_BITS),
+		FRAC_HALF = (FRAC_LEN >> 1),
 		FRAC_MASK = FRAC_LEN - 1
-
 	};
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
-		uint32_t src_yofs_up_fp = (i * p_src_height * FRAC_LEN / p_dst_height);
-		uint32_t src_yofs_frac = src_yofs_up_fp & FRAC_MASK;
-		uint32_t src_yofs_up = src_yofs_up_fp >> FRAC_BITS;
-
-		uint32_t src_yofs_down = (i + 1) * p_src_height / p_dst_height;
+		// Add 0.5 in order to interpolate based on pixel center
+		uint32_t src_yofs_up_fp = (i + 0.5) * p_src_height * FRAC_LEN / p_dst_height;
+		// Calculate nearest src pixel center above current, and truncate to get y index
+		uint32_t src_yofs_up = src_yofs_up_fp >= FRAC_HALF ? (src_yofs_up_fp - FRAC_HALF) >> FRAC_BITS : 0;
+		uint32_t src_yofs_down = (src_yofs_up_fp + FRAC_HALF) >> FRAC_BITS;
 		if (src_yofs_down >= p_src_height) {
 			src_yofs_down = p_src_height - 1;
 		}
-
-		//src_yofs_up*=CC;
-		//src_yofs_down*=CC;
+		// Calculate distance to pixel center of src_yofs_up
+		uint32_t src_yofs_frac = src_yofs_up_fp & FRAC_MASK;
+		src_yofs_frac = src_yofs_frac >= FRAC_HALF ? src_yofs_frac - FRAC_HALF : src_yofs_frac + FRAC_HALF;
 
 		uint32_t y_ofs_up = src_yofs_up * p_src_width * CC;
 		uint32_t y_ofs_down = src_yofs_down * p_src_width * CC;
 
 		for (uint32_t j = 0; j < p_dst_width; j++) {
-			uint32_t src_xofs_left_fp = (j * p_src_width * FRAC_LEN / p_dst_width);
-			uint32_t src_xofs_frac = src_xofs_left_fp & FRAC_MASK;
-			uint32_t src_xofs_left = src_xofs_left_fp >> FRAC_BITS;
-			uint32_t src_xofs_right = (j + 1) * p_src_width / p_dst_width;
+			uint32_t src_xofs_left_fp = (j + 0.5) * p_src_width * FRAC_LEN / p_dst_width;
+			uint32_t src_xofs_left = src_xofs_left_fp >= FRAC_HALF ? (src_xofs_left_fp - FRAC_HALF) >> FRAC_BITS : 0;
+			uint32_t src_xofs_right = (src_xofs_left_fp + FRAC_HALF) >> FRAC_BITS;
 			if (src_xofs_right >= p_src_width) {
 				src_xofs_right = p_src_width - 1;
 			}
+			uint32_t src_xofs_frac = src_xofs_left_fp & FRAC_MASK;
+			src_xofs_frac = src_xofs_frac >= FRAC_HALF ? src_xofs_frac - FRAC_HALF : src_xofs_frac + FRAC_HALF;
 
 			src_xofs_left *= CC;
 			src_xofs_right *= CC;
@@ -1893,8 +1895,10 @@ Vector<uint8_t> Image::get_data() const {
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
-	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	int mm = 0;
@@ -1913,8 +1917,10 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
-	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
 
 	int mm;
@@ -2628,6 +2634,7 @@ void Image::fill(const Color &c) {
 ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
@@ -3057,6 +3064,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -3386,6 +3394,11 @@ Error Image::load_jpg_from_buffer(const Vector<uint8_t> &p_array) {
 
 Error Image::load_webp_from_buffer(const Vector<uint8_t> &p_array) {
 	return _load_from_buffer(p_array, _webp_mem_loader_func);
+}
+
+Error Image::load_tga_from_buffer(const Vector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(_tga_mem_loader_func, ERR_UNAVAILABLE, "TGA module was not installed.");
+	return _load_from_buffer(p_array, _tga_mem_loader_func);
 }
 
 void Image::convert_rg_to_ra_rgba8() {

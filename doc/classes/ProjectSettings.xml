@@ -256,6 +256,9 @@
 		<member name="audio/output_latency" type="int" setter="" getter="" default="15">
 			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
 		</member>
+		<member name="audio/output_latency.web" type="int" setter="" getter="" default="50">
+			Safer override for [member audio/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
+		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
@@ -469,8 +472,8 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
-		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
+		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 		</member>
@@ -799,10 +802,12 @@
 		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], logs all output to files.
 		</member>
-		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/log.txt&quot;">
+		<member name="logging/file_logging/enable_file_logging.pc" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="logging/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
 		</member>
-		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="10">
+		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="1024">
@@ -1078,13 +1083,13 @@
 		</member>
 		<member name="rendering/quality/screen_filters/screen_space_aa" type="int" setter="" getter="" default="0">
 			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
-			Another way to combat specular aliasing is to enable [member rendering/quality/screen_filters/screen_space_roughness_limiter].
+			Another way to combat specular aliasing is to enable [member rendering/quality/screen_filters/screen_space_roughness_limiter_enabled].
 		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter" type="int" setter="" getter="" default="0">
-			Enables the screen-space roughness limiter which increases material roughness in areas with a high normal frequency (i.e. when normals change a lot from pixel to pixel). This helps to reduce the amount of specular aliasing in a scene. Specular aliasing looks like random bright pixels that occur in reflections.
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_amount" type="float" setter="" getter="" default="0.25">
 		</member>
-		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_curve" type="float" setter="" getter="" default="1.0">
-			Curves the amount of the roughness limited effect. A higher value limits the effect to very sharply curved surfaces, while a lower threshold extends the effect to smoother surfaces.
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_enabled" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_limit" type="float" setter="" getter="" default="0.18">
 		</member>
 		<member name="rendering/quality/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
 			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
@@ -1151,6 +1156,10 @@
 		</member>
 		<member name="rendering/quality/texture_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
+		</member>
+		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="2">
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.

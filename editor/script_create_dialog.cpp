@@ -78,7 +78,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 
 void ScriptCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
-		int filename_start_pos = initial_bp.find_last("/") + 1;
+		int filename_start_pos = initial_bp.rfind("/") + 1;
 		int filename_end_pos = initial_bp.length();
 
 		if (!is_built_in) {
@@ -540,7 +540,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	}
 
 	file_browse->set_current_path(file_path->get_text());
-	file_browse->popup_centered_ratio();
+	file_browse->popup_file_dialog();
 }
 
 void ScriptCreateDialog::_file_selected(const String &p_file) {
@@ -553,7 +553,7 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 		_path_changed(p);
 
 		String filename = p.get_file().get_basename();
-		int select_start = p.find_last(filename);
+		int select_start = p.rfind(filename);
 		file_path->select(select_start, select_start + filename.length());
 		file_path->set_cursor_position(select_start + filename.length());
 		file_path->grab_focus();

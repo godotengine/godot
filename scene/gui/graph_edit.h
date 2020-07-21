@@ -46,7 +46,7 @@ class GraphEditFilter : public Control {
 
 	friend class GraphEdit;
 	GraphEdit *ge;
-	virtual bool has_point(const Point2 &p_point) const;
+	virtual bool has_point(const Point2 &p_point) const override;
 
 public:
 	GraphEditFilter(GraphEdit *p_edit);
@@ -93,6 +93,8 @@ private:
 	String connecting_target_to;
 	int connecting_target_index;
 	bool just_disconnected;
+	bool connecting_valid;
+	Vector2 click_pos;
 
 	bool dragging;
 	bool just_selected;
@@ -172,10 +174,10 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void add_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
-	virtual bool clips_input() const;
+	virtual bool clips_input() const override;
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);

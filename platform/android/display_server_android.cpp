@@ -360,7 +360,11 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 }
 
 DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+	if (r_error != OK) {
+		ds->alert("Your video card driver does not support any of the supported Vulkan versions.", "Unable to initialize Video driver");
+	}
+	return ds;
 }
 
 void DisplayServerAndroid::register_android_driver() {
@@ -444,6 +448,8 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #endif
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+
+	r_error = OK;
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {

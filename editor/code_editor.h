@@ -47,7 +47,7 @@ class GotoLineDialog : public ConfirmationDialog {
 
 	TextEdit *text_editor;
 
-	virtual void ok_pressed();
+	virtual void ok_pressed() override;
 
 public:
 	void popup_find_line(TextEdit *p_edit);
@@ -174,6 +174,9 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_changed();
 	void _reset_zoom();
 
+	Color completion_font_color;
+	Color completion_string_color;
+	Color completion_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 

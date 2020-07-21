@@ -68,16 +68,16 @@ public:
 	void set_viewport_path_in_scene(const NodePath &p_path);
 	NodePath get_viewport_path_in_scene() const;
 
-	virtual void setup_local_to_scene();
+	virtual void setup_local_to_scene() override;
 
-	virtual int get_width() const;
-	virtual int get_height() const;
-	virtual Size2 get_size() const;
-	virtual RID get_rid() const;
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual Size2 get_size() const override;
+	virtual RID get_rid() const override;
 
-	virtual bool has_alpha() const;
+	virtual bool has_alpha() const override;
 
-	virtual Ref<Image> get_data() const;
+	virtual Ref<Image> get_data() const override;
 
 	ViewportTexture();
 	~ViewportTexture();
@@ -137,9 +137,11 @@ public:
 		DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		DEBUG_DRAW_SCENE_LUMINANCE,
 		DEBUG_DRAW_SSAO,
-		DEBUG_DRAW_ROUGHNESS_LIMITER,
 		DEBUG_DRAW_PSSM_SPLITS,
-		DEBUG_DRAW_DECAL_ATLAS
+		DEBUG_DRAW_DECAL_ATLAS,
+		DEBUG_DRAW_SDFGI,
+		DEBUG_DRAW_SDFGI_PROBES,
+		DEBUG_DRAW_GI_BUFFER,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -390,6 +392,7 @@ private:
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 
+	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_remove_focus();
 	void _gui_unfocus_control(Control *p_control);
 	bool _gui_control_has_focus(const Control *p_control);
@@ -439,6 +442,9 @@ private:
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
+	virtual bool _can_consume_input_events() const { return true; }
+	uint64_t event_count = 0;
+
 protected:
 	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
 
@@ -448,9 +454,11 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
+	uint64_t get_processed_events_count() const { return event_count; }
+
 	Listener3D *get_listener() const;
 	Camera3D *get_camera() const;
 
@@ -537,7 +545,7 @@ public:
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
@@ -568,6 +576,7 @@ public:
 	bool is_embedding_subwindows() const;
 
 	Viewport *get_parent_viewport() const;
+	Window *get_base_window() const;
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 
@@ -602,7 +611,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual DisplayServer::WindowID get_window_id() const;
+	virtual DisplayServer::WindowID get_window_id() const override;
 	Transform2D _stretch_transform();
 	void _notification(int p_what);
 

@@ -35,6 +35,7 @@ doc_classes/*        @godotengine/documentation
 /modules/mbedtls/    @godotengine/network
 /modules/mobile_vr/  @BastiaanOlij
 /modules/mono/       @neikeq
+/modules/mono/glue/GodotSharp @aaronfranke
 /modules/opensimplex/ @JFonS
 /modules/regex/      @LeeZH
 /modules/upnp/       @godotengine/network

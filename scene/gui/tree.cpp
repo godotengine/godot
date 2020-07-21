@@ -1786,7 +1786,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			case TreeItem::CELL_MODE_STRING: {
 				//nothing in particular
 
-				if (select_mode == SELECT_MULTI && (get_tree()->get_event_count() == focus_in_id || !already_cursor)) {
+				if (select_mode == SELECT_MULTI && (get_viewport()->get_processed_events_count() == focus_in_id || !already_cursor)) {
 					bring_up_editor = false;
 				}
 
@@ -1861,7 +1861,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 					} else {
 						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
-						if (select_mode == SELECT_MULTI && get_tree()->get_event_count() == focus_in_id) {
+						if (select_mode == SELECT_MULTI && get_viewport()->get_processed_events_count() == focus_in_id) {
 							bring_up_editor = false;
 						}
 					}
@@ -2787,7 +2787,7 @@ int Tree::_get_title_button_height() const {
 
 void Tree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		focus_in_id = get_tree()->get_event_count();
+		focus_in_id = get_viewport()->get_processed_events_count();
 	}
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
 		if (cache.hover_type != Cache::CLICK_NONE) {
@@ -3410,7 +3410,7 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 
 	const Rect2 r = get_item_rect(p_item);
 
-	if (r.position.y < v_scroll->get_value()) {
+	if (r.position.y <= v_scroll->get_value()) {
 		v_scroll->set_value(r.position.y);
 	} else if (r.position.y + r.size.y + 2 * cache.vseparation > v_scroll->get_value() + get_size().y) {
 		v_scroll->set_value(r.position.y + r.size.y + 2 * cache.vseparation - get_size().y);
@@ -3419,6 +3419,8 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 
 TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards) {
 	TreeItem *from = p_at;
+	TreeItem *loop = nullptr; // Safe-guard against infinite loop.
+
 	while (p_at) {
 		for (int i = 0; i < columns.size(); i++) {
 			if (p_at->get_text(i).findn(p_find) == 0 && (!p_selectable || p_at->is_selectable(i))) {
@@ -3436,6 +3438,12 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 		}
 
 		if ((p_at) == from) {
+			break;
+		}
+
+		if (!loop) {
+			loop = p_at;
+		} else if (loop == p_at) {
 			break;
 		}
 	}
@@ -3621,6 +3629,47 @@ TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 	}
 
 	return nullptr;
+}
+
+int Tree::get_button_id_at_position(const Point2 &p_pos) const {
+	if (root) {
+		Point2 pos = p_pos;
+		pos -= cache.bg->get_offset();
+		pos.y -= _get_title_button_height();
+		if (pos.y < 0) {
+			return -1;
+		}
+
+		if (h_scroll->is_visible_in_tree()) {
+			pos.x += h_scroll->get_value();
+		}
+		if (v_scroll->is_visible_in_tree()) {
+			pos.y += v_scroll->get_value();
+		}
+
+		int col, h, section;
+		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+		if (it) {
+			const TreeItem::Cell &c = it->cells[col];
+			int col_width = get_column_width(col);
+
+			for (int i = 0; i < col; i++) {
+				pos.x -= get_column_width(i);
+			}
+
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
+				if (pos.x > col_width - size.width) {
+					return c.buttons[j].id;
+				}
+				col_width -= size.width;
+			}
+		}
+	}
+
+	return -1;
 }
 
 String Tree::get_tooltip(const Point2 &p_pos) const {
@@ -3839,7 +3888,7 @@ Tree::Tree() {
 	add_child(popup_menu);
 	//	popup_menu->set_as_toplevel(true);
 
-	popup_editor = memnew(PopupPanel);
+	popup_editor = memnew(Popup);
 	popup_editor->set_wrap_controls(true);
 	add_child(popup_editor);
 	popup_editor_vb = memnew(VBoxContainer);

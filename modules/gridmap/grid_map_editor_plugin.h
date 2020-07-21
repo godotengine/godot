@@ -33,7 +33,6 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "editor/pane_drag.h"
 #include "grid_map.h"
 
 class Node3DEditorPlugin;
@@ -85,7 +84,7 @@ class GridMapEditor : public VBoxContainer {
 	Label *spin_box_label;
 
 	struct SetItem {
-		Vector3 pos;
+		Vector3i position;
 		int new_value;
 		int new_orientation;
 		int old_value;
@@ -256,12 +255,12 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
-	virtual String get_name() const { return "GridMap"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
+	virtual String get_name() const override { return "GridMap"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	GridMapEditorPlugin(EditorNode *p_node);
 	~GridMapEditorPlugin();

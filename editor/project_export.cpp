@@ -397,7 +397,7 @@ void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, in
 		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), patches[patch_index].get_file()));
 		patch_erase->popup_centered();
 	} else {
-		patch_dialog->popup_centered_ratio();
+		patch_dialog->popup_file_dialog();
 	}
 }
 
@@ -876,7 +876,7 @@ void ProjectExportDialog::_tree_changed() {
 }
 
 void ProjectExportDialog::_export_pck_zip() {
-	export_pck_zip->popup_centered_ratio();
+	export_pck_zip->popup_file_dialog();
 }
 
 void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
@@ -952,7 +952,7 @@ void ProjectExportDialog::_export_project() {
 	}
 
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_project->popup_centered_ratio();
+	export_project->popup_file_dialog();
 }
 
 void ProjectExportDialog::_export_project_to_path(const String &p_path) {
@@ -1248,7 +1248,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	get_cancel()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Export PCK/Zip"));
-	export_button = add_button(TTR("Export Project"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "export");
+	export_button = add_button(TTR("Export Project"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
@@ -1263,7 +1263,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
 
-	export_all_button = add_button(TTR("Export All"), !DisplayServer::get_singleton()->get_swap_ok_cancel(), "export");
+	export_all_button = add_button(TTR("Export All"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 

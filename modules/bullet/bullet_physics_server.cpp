@@ -561,14 +561,14 @@ void BulletPhysicsServer3D::body_clear_shapes(RID p_body) {
 }
 
 void BulletPhysicsServer3D::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
-	CollisionObjectBullet *body = get_collisin_object(p_body);
+	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_id);
 }
 
 ObjectID BulletPhysicsServer3D::body_get_object_instance_id(RID p_body) const {
-	CollisionObjectBullet *body = get_collisin_object(p_body);
+	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND_V(!body, ObjectID());
 
 	return body->get_instance_id();
@@ -707,11 +707,11 @@ void BulletPhysicsServer3D::body_add_central_force(RID p_body, const Vector3 &p_
 	body->apply_central_force(p_force);
 }
 
-void BulletPhysicsServer3D::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
+void BulletPhysicsServer3D::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_force(p_force, p_pos);
+	body->apply_force(p_force, p_position);
 }
 
 void BulletPhysicsServer3D::body_add_torque(RID p_body, const Vector3 &p_torque) {
@@ -728,11 +728,11 @@ void BulletPhysicsServer3D::body_apply_central_impulse(RID p_body, const Vector3
 	body->apply_central_impulse(p_impulse);
 }
 
-void BulletPhysicsServer3D::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
+void BulletPhysicsServer3D::body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position) {
 	RigidBodyBullet *body = rigid_body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_impulse(p_pos, p_impulse);
+	body->apply_impulse(p_impulse, p_position);
 }
 
 void BulletPhysicsServer3D::body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) {
@@ -1557,6 +1557,13 @@ void BulletPhysicsServer3D::sync() {
 }
 
 void BulletPhysicsServer3D::flush_queries() {
+	if (!active) {
+		return;
+	}
+
+	for (int i = 0; i < active_spaces_count; ++i) {
+		active_spaces[i]->flush_queries();
+	}
 }
 
 void BulletPhysicsServer3D::finish() {
@@ -1567,7 +1574,17 @@ int BulletPhysicsServer3D::get_process_info(ProcessInfo p_info) {
 	return 0;
 }
 
-CollisionObjectBullet *BulletPhysicsServer3D::get_collisin_object(RID p_object) const {
+SpaceBullet *BulletPhysicsServer3D::get_space(RID p_rid) const {
+	ERR_FAIL_COND_V_MSG(space_owner.owns(p_rid) == false, nullptr, "The RID is not valid.");
+	return space_owner.getornull(p_rid);
+}
+
+ShapeBullet *BulletPhysicsServer3D::get_shape(RID p_rid) const {
+	ERR_FAIL_COND_V_MSG(shape_owner.owns(p_rid) == false, nullptr, "The RID is not valid.");
+	return shape_owner.getornull(p_rid);
+}
+
+CollisionObjectBullet *BulletPhysicsServer3D::get_collision_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
 	}
@@ -1577,15 +1594,20 @@ CollisionObjectBullet *BulletPhysicsServer3D::get_collisin_object(RID p_object) 
 	if (soft_body_owner.owns(p_object)) {
 		return soft_body_owner.getornull(p_object);
 	}
-	return nullptr;
+	ERR_FAIL_V_MSG(nullptr, "The RID is no valid.");
 }
 
-RigidCollisionObjectBullet *BulletPhysicsServer3D::get_rigid_collisin_object(RID p_object) const {
+RigidCollisionObjectBullet *BulletPhysicsServer3D::get_rigid_collision_object(RID p_object) const {
 	if (rigid_body_owner.owns(p_object)) {
 		return rigid_body_owner.getornull(p_object);
 	}
 	if (area_owner.owns(p_object)) {
 		return area_owner.getornull(p_object);
 	}
-	return nullptr;
+	ERR_FAIL_V_MSG(nullptr, "The RID is no valid.");
+}
+
+JointBullet *BulletPhysicsServer3D::get_joint(RID p_rid) const {
+	ERR_FAIL_COND_V_MSG(joint_owner.owns(p_rid) == false, nullptr, "The RID is not valid.");
+	return joint_owner.getornull(p_rid);
 }

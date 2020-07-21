@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  geometry.cpp                                                         */
+/*  geometry_3d.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -992,6 +992,8 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 			w[i] = uint32_t(Math::sqrt(work_memory[i]));
 		}
 	}
+
+	memdelete_arr(work_memory);
 
 	return ret;
 }

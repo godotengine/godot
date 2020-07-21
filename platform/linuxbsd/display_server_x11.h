@@ -36,7 +36,6 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
-
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
@@ -140,6 +139,8 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
+		bool focused = false;
+		bool minimized = false;
 	};
 
 	Map<WindowID, WindowData> windows;
@@ -165,6 +166,8 @@ class DisplayServerX11 : public DisplayServer {
 	uint64_t last_click_ms;
 	int last_click_button_index;
 	uint32_t last_button_state;
+	bool app_focused = false;
+	uint64_t time_since_no_focus = 0;
 
 	struct {
 		int opcode;
@@ -196,8 +199,8 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, bool p_echo = false);
 
-	bool minimized;
-	bool window_has_focus;
+	//bool minimized;
+	//bool window_has_focus;
 	bool do_mouse_warp;
 
 	const char *cursor_theme;
@@ -211,7 +214,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool layered_window;
 
 	String rendering_driver;
-	bool window_focused;
+	//bool window_focused;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
@@ -231,6 +234,7 @@ class DisplayServerX11 : public DisplayServer {
 	static Property _read_property(Display *p_display, Window p_window, Atom p_property);
 
 	void _update_real_mouse_position(const WindowData &wd);
+	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 

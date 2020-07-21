@@ -51,7 +51,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 	if (b.is_valid()) {
 		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
-			menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+			menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			//menu->set_scale(get_global_transform().get_scale());
 			menu->popup();
@@ -688,12 +688,12 @@ void LineEdit::_notification(int p_what) {
 			update_placeholder_width();
 			update();
 		} break;
-		case NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();

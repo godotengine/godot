@@ -324,7 +324,7 @@ MonoObject *godot_icall_Internal_GetScriptsMetadataOrNothing(MonoReflectionType 
 
 	MonoType *dict_type = mono_reflection_type_get_type(p_dict_reftype);
 
-	uint32_t type_encoding = mono_type_get_type(dict_type);
+	int type_encoding = mono_type_get_type(dict_type);
 	MonoClass *type_class_raw = mono_class_from_mono_type(dict_type);
 	GDMonoClass *type_class = GDMono::get_singleton()->get_class(type_class_raw);
 

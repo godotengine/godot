@@ -46,18 +46,22 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation_parser.h"
 #include "editor/gdscript_highlighter.h"
+#include "editor/gdscript_translation_parser_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
 #include "core/engine.h"
 #include "language_server/gdscript_language_server.h"
 #endif // !GDSCRIPT_NO_LSP
 
+Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
+
 class EditorExportGDScript : public EditorExportPlugin {
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
 public:
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) override {
 		int script_mode = EditorExportPreset::MODE_SCRIPT_COMPILED;
 		String script_key;
 
@@ -138,6 +142,12 @@ static void _editor_init() {
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
 
+#ifdef TOOLS_ENABLED
+	Ref<GDScriptSyntaxHighlighter> gdscript_syntax_highlighter;
+	gdscript_syntax_highlighter.instance();
+	ScriptEditor::get_singleton()->register_syntax_highlighter(gdscript_syntax_highlighter);
+#endif
+
 #ifndef GDSCRIPT_NO_LSP
 	register_lsp_types();
 	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
@@ -162,8 +172,10 @@ void register_gdscript_types() {
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
 
 #ifdef TOOLS_ENABLED
-	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
+
+	gdscript_translation_parser_plugin.instance();
+	EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 #endif // TOOLS_ENABLED
 }
 
@@ -179,4 +191,9 @@ void unregister_gdscript_types() {
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_gd);
 	resource_saver_gd.unref();
+
+#ifdef TOOLS_ENABLED
+	EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+	gdscript_translation_parser_plugin.unref();
+#endif // TOOLS_ENABLED
 }

@@ -63,11 +63,11 @@ public:
 	virtual Transform get_transform() const = 0;
 
 	virtual void add_central_force(const Vector3 &p_force) = 0;
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) = 0;
+	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
 	virtual void add_torque(const Vector3 &p_torque) = 0;
-	virtual void apply_central_impulse(const Vector3 &p_j) = 0;
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) = 0;
-	virtual void apply_torque_impulse(const Vector3 &p_j) = 0;
+	virtual void apply_central_impulse(const Vector3 &p_impulse) = 0;
+	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
+	virtual void apply_torque_impulse(const Vector3 &p_impulse) = 0;
 
 	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
@@ -100,6 +100,7 @@ class PhysicsShapeQueryParameters3D : public Reference {
 	GDCLASS(PhysicsShapeQueryParameters3D, Reference);
 	friend class PhysicsDirectSpaceState3D;
 
+	RES shape_ref;
 	RID shape;
 	Transform transform;
 	float margin;
@@ -113,7 +114,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_shape(const RES &p_shape);
+	void set_shape(const RES &p_shape_ref);
+	RES get_shape() const;
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const;
 
@@ -429,11 +431,11 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const = 0;
 
 	virtual void body_add_central_force(RID p_body, const Vector3 &p_force) = 0;
-	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) = 0;
+	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
 	virtual void body_add_torque(RID p_body, const Vector3 &p_torque) = 0;
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
-	virtual void body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) = 0;
+	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
 

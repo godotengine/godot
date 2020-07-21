@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorTranslationParserPlugin" inherits="Reference" version="4.0">
+	<brief_description>
+		Plugin for adding custom parsers to extract strings that are to be translated from custom files (.csv, .json etc.).
+	</brief_description>
+	<description>
+		Plugins are registered via [method EditorPlugin.add_translation_parser_plugin] method. To define the parsing and string extraction logic, override the [method parse_file] method in script.
+		The extracted strings will be written into a POT file selected by user under "POT Generation" in "Localization" tab in "Project Settings" menu.
+		Below shows an example of a custom parser that extracts strings in a CSV file to write into a POT.
+		[codeblock]
+		tool
+		extends EditorTranslationParserPlugin
+
+
+		func parse_file(path, extracted_strings):
+		    var file = File.new()
+		    file.open(path, File.READ)
+		    var text = file.get_as_text()
+		    var split_strs = text.split(",", false, 0)
+		    for s in split_strs:
+		        extracted_strings.append(s)
+		        #print("Extracted string: " + s)
+
+
+		func get_recognized_extensions():
+		    return ["csv"]
+		[/codeblock]
+		[b]Note:[/b] If you override parsing logic for standard script types (GDScript, C#, etc.), it would be better to load the [code]path[/code] argument using [method ResourceLoader.load]. This is because built-in scripts are loaded as [Resource] type, not [File] type.
+		For example:
+		[codeblock]
+		func parse_file(path, extracted_strings):
+		    var res = ResourceLoader.load(path, "Script")
+		    var text = res.get_source_code()
+		    # Parsing logic.
+
+
+		func get_recognized_extensions():
+		    return ["gd"]			
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_recognized_extensions" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Gets the list of file extensions to associate with this parser, e.g. [code]["csv"][/code].
+			</description>
+		</method>
+		<method name="parse_file" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="extracted_strings" type="Array">
+			</argument>
+			<description>
+				Override this method to define a custom parsing logic to extract the translatable strings.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

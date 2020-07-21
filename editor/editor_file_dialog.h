@@ -185,7 +185,7 @@ private:
 	void _go_back();
 	void _go_forward();
 
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 	void _save_to_recent();
 	//callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load
@@ -203,6 +203,7 @@ protected:
 	static void _bind_methods();
 	//bind helpers
 public:
+	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter);
 

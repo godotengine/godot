@@ -237,7 +237,7 @@ public:
 	CCDMode get_continuous_collision_detection_mode() const;
 
 	void apply_central_impulse(const Vector2 &p_impulse);
-	void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse);
+	void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2());
 	void apply_torque_impulse(float p_torque);
 
 	void set_applied_force(const Vector2 &p_force);
@@ -247,12 +247,12 @@ public:
 	float get_applied_torque() const;
 
 	void add_central_force(const Vector2 &p_force);
-	void add_force(const Vector2 &p_offset, const Vector2 &p_force);
+	void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
 	void add_torque(float p_torque);
 
 	TypedArray<Node2D> get_colliding_bodies() const; //function for script
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	RigidBody2D();
 	~RigidBody2D();

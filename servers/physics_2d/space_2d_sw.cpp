@@ -34,8 +34,9 @@
 #include "core/os/os.h"
 #include "core/pair.h"
 #include "physics_server_2d_sw.h"
-_FORCE_INLINE_ static bool _can_collide_with(CollisionObject2DSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	if (!(p_object->get_collision_layer() & p_collision_mask)) {
+
+_FORCE_INLINE_ static bool _can_collide_with(CollisionObject2DSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_ignore_layers = false) {
+	if (!p_ignore_layers && !(p_object->get_collision_layer() & p_collision_mask)) {
 		return false;
 	}
 
@@ -64,7 +65,7 @@ int PhysicsDirectSpaceState2DSW::_intersect_point_impl(const Vector2 &p_point, S
 	int cc = 0;
 
 	for (int i = 0; i < amount; i++) {
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas, p_filter_by_canvas)) {
 			continue;
 		}
 

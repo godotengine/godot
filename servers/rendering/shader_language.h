@@ -554,6 +554,7 @@ public:
 			TextureRepeat tex_argument_repeat;
 			bool tex_builtin_check;
 			StringName tex_builtin;
+			bool is_const;
 
 			Map<StringName, Set<int>> tex_argument_connect;
 		};

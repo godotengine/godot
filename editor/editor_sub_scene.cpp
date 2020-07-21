@@ -66,7 +66,7 @@ void EditorSubScene::_path_changed(const String &p_path) {
 }
 
 void EditorSubScene::_path_browse() {
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }
 
 void EditorSubScene::_notification(int p_what) {

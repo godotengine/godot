@@ -255,9 +255,8 @@ bool BodyPair2DSW::setup(real_t p_step) {
 	if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_SHAPE) {
 		motion_B = B->get_motion();
 	}
-	//faster to set than to check..
 
-	//bool prev_collided=collided;
+	bool prev_collided = collided;
 
 	collided = CollisionSolver2DSW::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
@@ -285,8 +284,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		return false;
 	}
 
-	//if (!prev_collided) {
-	{
+	if (!prev_collided) {
 		if (A->is_shape_set_as_one_way_collision(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
@@ -427,10 +425,9 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
-			A->apply_impulse(c.rA, -P);
-			B->apply_impulse(c.rB, P);
+			A->apply_impulse(-P, c.rA);
+			B->apply_impulse(P, c.rB);
 		}
-
 #endif
 
 		c.bounce = combine_bounce(A, B);
@@ -497,8 +494,8 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
-		A->apply_impulse(c.rA, -j);
-		B->apply_impulse(c.rB, j);
+		A->apply_impulse(-j, c.rA);
+		B->apply_impulse(j, c.rB);
 	}
 }
 

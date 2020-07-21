@@ -587,9 +587,11 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_OS_IME_UPDATE:
 		case NOTIFICATION_WM_ABOUT:
 		case NOTIFICATION_CRASH:
-		case NOTIFICATION_APP_RESUMED:
-		case NOTIFICATION_APP_PAUSED: {
-			get_root()->propagate_notification(p_notification);
+		case NOTIFICATION_APPLICATION_RESUMED:
+		case NOTIFICATION_APPLICATION_PAUSED:
+		case NOTIFICATION_APPLICATION_FOCUS_IN:
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			get_root()->propagate_notification(p_notification); //pass these to nodes, since they are mirrored
 		} break;
 
 		default:
@@ -935,10 +937,6 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable:
 
 int64_t SceneTree::get_frame() const {
 	return current_frame;
-}
-
-int64_t SceneTree::get_event_count() const {
-	return current_event;
 }
 
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
@@ -1360,7 +1358,6 @@ SceneTree::SceneTree() {
 	root = nullptr;
 	pause = false;
 	current_frame = 0;
-	current_event = 0;
 	tree_changed_name = "tree_changed";
 	node_added_name = "node_added";
 	node_removed_name = "node_removed";

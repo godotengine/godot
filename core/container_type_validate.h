@@ -38,7 +38,7 @@ struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
-	const char *where = "conatiner";
+	const char *where = "container";
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type == p_type.type) {

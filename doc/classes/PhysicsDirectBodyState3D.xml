@@ -12,7 +12,7 @@
 		<method name="add_central_force">
 			<return type="void">
 			</return>
-			<argument index="0" name="force" type="Vector3">
+			<argument index="0" name="force" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 				Adds a constant directional force without affecting rotation.
@@ -24,7 +24,7 @@
 			</return>
 			<argument index="0" name="force" type="Vector3">
 			</argument>
-			<argument index="1" name="position" type="Vector3">
+			<argument index="1" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
@@ -42,7 +42,7 @@
 		<method name="apply_central_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="j" type="Vector3">
+			<argument index="0" name="impulse" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 				Applies a single directional impulse without affecting rotation.
@@ -52,9 +52,9 @@
 		<method name="apply_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="position" type="Vector3">
+			<argument index="0" name="impulse" type="Vector3">
 			</argument>
-			<argument index="1" name="j" type="Vector3">
+			<argument index="1" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts. The position uses the rotation of the global coordinate system, but is centered at the object's origin.
@@ -63,7 +63,7 @@
 		<method name="apply_torque_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="j" type="Vector3">
+			<argument index="0" name="impulse" type="Vector3">
 			</argument>
 			<description>
 				Apply a torque impulse (which will be affected by the body mass and shape). This will rotate the body around the vector [code]j[/code] passed as parameter.

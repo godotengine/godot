@@ -570,17 +570,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "PopupMenu", style_menu);
 	theme->set_stylebox("disabled", "PopupMenu", style_menu);
 
-	theme->set_stylebox("normal", "Button", style_menu);
-	theme->set_stylebox("hover", "Button", style_menu);
-	theme->set_stylebox("pressed", "Button", style_menu);
-	theme->set_stylebox("focus", "Button", style_menu);
-	theme->set_stylebox("disabled", "Button", style_menu);
-
 	theme->set_color("font_color", "MenuButton", font_color);
 	theme->set_color("font_color_hover", "MenuButton", font_color_hl);
-	theme->set_color("font_color", "Button", font_color);
-	theme->set_color("font_color_hover", "Button", font_color_hl);
-	theme->set_color("font_color_pressed", "Button", accent_color);
 
 	theme->set_stylebox("MenuHover", "EditorStyles", style_menu_hover_border);
 

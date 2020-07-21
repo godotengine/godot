@@ -41,7 +41,7 @@ void GIProbeEditorPlugin::_bake() {
 				path = path.get_basename() + "." + gi_probe->get_name() + "_data.res";
 			}
 			probe_file->set_current_path(path);
-			probe_file->popup_centered_ratio();
+			probe_file->popup_file_dialog();
 			return;
 		}
 		gi_probe->bake();

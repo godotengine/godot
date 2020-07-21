@@ -1618,49 +1618,7 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
-		return 0;
-	}
-
-	const CharType *s = ptr();
-
-	int sign = s[0] == '-' ? -1 : 1;
-
-	if (sign < 0) {
-		s++;
-	}
-
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
-		s += 2;
-	}
-
-	int hex = 0;
-
-	while (*s) {
-		CharType c = LOWERCASE(*s);
-		int n;
-		if (c >= '0' && c <= '9') {
-			n = c - '0';
-		} else if (c >= 'a' && c <= 'f') {
-			n = (c - 'a') + 10;
-		} else {
-			return 0;
-		}
-
-		ERR_FAIL_COND_V_MSG(hex > INT32_MAX / 16, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
-		hex *= 16;
-		hex += n;
-		s++;
-	}
-
-	return hex * sign;
-}
-
-int64_t String::hex_to_int64(bool p_with_prefix) const {
+int64_t String::hex_to_int(bool p_with_prefix) const {
 	if (p_with_prefix && length() < 3) {
 		return 0;
 	}
@@ -1692,8 +1650,9 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 		} else {
 			return 0;
 		}
-
-		ERR_FAIL_COND_V_MSG(hex > INT64_MAX / 16, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
+		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -1702,7 +1661,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 	return hex * sign;
 }
 
-int64_t String::bin_to_int64(bool p_with_prefix) const {
+int64_t String::bin_to_int(bool p_with_prefix) const {
 	if (p_with_prefix && length() < 3) {
 		return 0;
 	}
@@ -1732,8 +1691,9 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 		} else {
 			return 0;
 		}
-
-		ERR_FAIL_COND_V_MSG(binary > INT64_MAX / 2, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
+		bool overflow = ((binary > INT64_MAX / 2) && (sign == 1 || (sign == -1 && binary != (INT64_MAX >> 1) + 1))) || (sign == -1 && binary == (INT64_MAX >> 1) + 1 && c > '0');
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		binary *= 2;
 		binary += n;
 		s++;
@@ -1742,32 +1702,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 	return binary * sign;
 }
 
-int String::to_int() const {
-	if (length() == 0) {
-		return 0;
-	}
-
-	int to = (find(".") >= 0) ? find(".") : length();
-
-	int integer = 0;
-	int sign = 1;
-
-	for (int i = 0; i < to; i++) {
-		CharType c = operator[](i);
-		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
-			integer *= 10;
-			integer += c - '0';
-
-		} else if (integer == 0 && c == '-') {
-			sign = -sign;
-		}
-	}
-
-	return integer * sign;
-}
-
-int64_t String::to_int64() const {
+int64_t String::to_int() const {
 	if (length() == 0) {
 		return 0;
 	}
@@ -1780,7 +1715,8 @@ int64_t String::to_int64() const {
 	for (int i = 0; i < to; i++) {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1792,7 +1728,7 @@ int64_t String::to_int64() const {
 	return integer * sign;
 }
 
-int String::to_int(const char *p_str, int p_len) {
+int64_t String::to_int(const char *p_str, int p_len) {
 	int to = 0;
 	if (p_len >= 0) {
 		to = p_len;
@@ -1802,13 +1738,14 @@ int String::to_int(const char *p_str, int p_len) {
 		}
 	}
 
-	int integer = 0;
-	int sign = 1;
+	int64_t integer = 0;
+	int64_t sign = 1;
 
 	for (int i = 0; i < to; i++) {
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2343,18 +2280,6 @@ String String::substr(int p_from, int p_chars) const {
 	return s;
 }
 
-int String::find_last(const String &p_str) const {
-	int pos = -1;
-	int findfrom = 0;
-	int findres = -1;
-	while ((findres = find(p_str, findfrom)) != -1) {
-		pos = findres;
-		findfrom = pos + 1;
-	}
-
-	return pos;
-}
-
 int String::find(const String &p_str, int p_from) const {
 	if (p_from < 0) {
 		return -1;
@@ -2645,7 +2570,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 }
 
 bool String::ends_with(const String &p_string) const {
-	int pos = find_last(p_string);
+	int pos = rfind(p_string);
 	if (pos == -1) {
 		return false;
 	}
@@ -3838,7 +3763,7 @@ bool String::is_valid_ip_address() const {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int(false);
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}
@@ -3894,7 +3819,7 @@ String String::get_base_dir() const {
 		}
 	}
 
-	int sep = MAX(rs.find_last("/"), rs.find_last("\\"));
+	int sep = MAX(rs.rfind("/"), rs.rfind("\\"));
 	if (sep == -1) {
 		return base;
 	}
@@ -3903,7 +3828,7 @@ String String::get_base_dir() const {
 }
 
 String String::get_file() const {
-	int sep = MAX(find_last("/"), find_last("\\"));
+	int sep = MAX(rfind("/"), rfind("\\"));
 	if (sep == -1) {
 		return *this;
 	}
@@ -3912,8 +3837,8 @@ String String::get_file() const {
 }
 
 String String::get_extension() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return "";
 	}
 
@@ -4001,8 +3926,8 @@ String String::property_name_encode() const {
 }
 
 String String::get_basename() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return *this;
 	}
 

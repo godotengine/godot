@@ -815,7 +815,7 @@ void Viewport::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT:
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
 
 			if (gui.mouse_focus && !gui.forced_mouse_focus) {
@@ -2083,7 +2083,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				Control *c = over;
 				Vector2 cpos = pos;
 				while (c) {
-					cursor_shape = c->get_cursor_shape(cpos);
+					if (gui.mouse_focus_mask != 0 || c->has_point(cpos)) {
+						cursor_shape = c->get_cursor_shape(cpos);
+					} else {
+						cursor_shape = Control::CURSOR_ARROW;
+					}
 					cpos = c->get_transform().xform(cpos);
 					if (cursor_shape != Control::CURSOR_ARROW) {
 						break;
@@ -2450,6 +2454,22 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	}
 }
 
+Window *Viewport::get_base_window() const {
+	Viewport *v = const_cast<Viewport *>(this);
+	Window *w = Object::cast_to<Window>(v);
+	while (!w) {
+		v = v->get_parent_viewport();
+		w = Object::cast_to<Window>(v);
+	}
+
+	return w;
+}
+void Viewport::_gui_remove_focus_for_window(Node *p_window) {
+	if (get_base_window() == p_window) {
+		_gui_remove_focus();
+	}
+}
+
 void Viewport::_gui_remove_focus() {
 	if (gui.key_focus) {
 		Node *f = gui.key_focus;
@@ -2467,7 +2487,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	if (gui.key_focus && gui.key_focus == p_control) {
 		return;
 	}
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
 	gui.key_focus = p_control;
 	emit_signal("gui_focus_changed", p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
@@ -2685,6 +2705,27 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_MOVE) {
 				Vector2 diff = mm->get_position() - gui.subwindow_drag_from;
 				Rect2i new_rect(gui.subwindow_drag_pos + diff, gui.subwindow_focused->get_size());
+
+				if (gui.subwindow_focused->is_clamped_to_embedder()) {
+					Size2i limit = get_visible_rect().size;
+					if (new_rect.position.x + new_rect.size.x > limit.x) {
+						new_rect.position.x = limit.x - new_rect.size.x;
+					}
+					if (new_rect.position.y + new_rect.size.y > limit.y) {
+						new_rect.position.y = limit.y - new_rect.size.y;
+					}
+
+					if (new_rect.position.x < 0) {
+						new_rect.position.x = 0;
+					}
+
+					int title_height = gui.subwindow_focused->get_flag(Window::FLAG_BORDERLESS) ? 0 : gui.subwindow_focused->get_theme_constant("title_height");
+
+					if (new_rect.position.y < title_height) {
+						new_rect.position.y = title_height;
+					}
+				}
+
 				gui.subwindow_focused->_rect_changed_callback(new_rect);
 			}
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
@@ -2913,6 +2954,10 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		return;
 	}
 
+	if (!_can_consume_input_events()) {
+		return;
+	}
+
 	if (!is_input_handled()) {
 		get_tree()->_call_input_pause(input_group, "_input", ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
 	}
@@ -2920,13 +2965,15 @@ void Viewport::input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	if (!is_input_handled()) {
 		_gui_input_event(ev);
 	}
+
+	event_count++;
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",ev); //special one for GUI, as controls use their own process check
 }
 
 void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (disable_input) {
+	if (disable_input || !_can_consume_input_events()) {
 		return;
 	}
 
@@ -3301,8 +3348,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
-	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
-	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
+	ClassDB::bind_method(D_METHOD("_gui_remove_focus_for_window"), &Viewport::_gui_remove_focus_for_window);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
 
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
@@ -3404,9 +3450,11 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SCENE_LUMINANCE);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SSAO);
-	BIND_ENUM_CONSTANT(DEBUG_DRAW_ROUGHNESS_LIMITER);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_PSSM_SPLITS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DECAL_ATLAS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI_PROBES);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_GI_BUFFER);
 
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);

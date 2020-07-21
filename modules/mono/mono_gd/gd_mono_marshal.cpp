@@ -72,92 +72,119 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 		case MONO_TYPE_VALUETYPE: {
 			GDMonoClass *vtclass = p_type.type_class;
 
-			if (vtclass == CACHED_CLASS(Vector2))
+			if (vtclass == CACHED_CLASS(Vector2)) {
 				return Variant::VECTOR2;
+			}
 
-			if (vtclass == CACHED_CLASS(Vector2i))
+			if (vtclass == CACHED_CLASS(Vector2i)) {
 				return Variant::VECTOR2I;
+			}
 
-			if (vtclass == CACHED_CLASS(Rect2))
+			if (vtclass == CACHED_CLASS(Rect2)) {
 				return Variant::RECT2;
+			}
 
-			if (vtclass == CACHED_CLASS(Rect2i))
+			if (vtclass == CACHED_CLASS(Rect2i)) {
 				return Variant::RECT2I;
+			}
 
-			if (vtclass == CACHED_CLASS(Transform2D))
+			if (vtclass == CACHED_CLASS(Transform2D)) {
 				return Variant::TRANSFORM2D;
+			}
 
-			if (vtclass == CACHED_CLASS(Vector3))
+			if (vtclass == CACHED_CLASS(Vector3)) {
 				return Variant::VECTOR3;
+			}
 
-			if (vtclass == CACHED_CLASS(Vector3i))
+			if (vtclass == CACHED_CLASS(Vector3i)) {
 				return Variant::VECTOR3I;
+			}
 
-			if (vtclass == CACHED_CLASS(Basis))
+			if (vtclass == CACHED_CLASS(Basis)) {
 				return Variant::BASIS;
+			}
 
-			if (vtclass == CACHED_CLASS(Quat))
+			if (vtclass == CACHED_CLASS(Quat)) {
 				return Variant::QUAT;
+			}
 
-			if (vtclass == CACHED_CLASS(Transform))
+			if (vtclass == CACHED_CLASS(Transform)) {
 				return Variant::TRANSFORM;
+			}
 
-			if (vtclass == CACHED_CLASS(AABB))
+			if (vtclass == CACHED_CLASS(AABB)) {
 				return Variant::AABB;
+			}
 
-			if (vtclass == CACHED_CLASS(Color))
+			if (vtclass == CACHED_CLASS(Color)) {
 				return Variant::COLOR;
+			}
 
-			if (vtclass == CACHED_CLASS(Plane))
+			if (vtclass == CACHED_CLASS(Plane)) {
 				return Variant::PLANE;
+			}
 
-			if (vtclass == CACHED_CLASS(Callable))
+			if (vtclass == CACHED_CLASS(Callable)) {
 				return Variant::CALLABLE;
+			}
 
-			if (vtclass == CACHED_CLASS(SignalInfo))
+			if (vtclass == CACHED_CLASS(SignalInfo)) {
 				return Variant::SIGNAL;
+			}
 
-			if (mono_class_is_enum(vtclass->get_mono_ptr()))
+			if (mono_class_is_enum(vtclass->get_mono_ptr())) {
 				return Variant::INT;
+			}
 		} break;
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
 			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
 
-			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
+			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject)) {
 				return Variant::ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t)) {
 				return Variant::PACKED_BYTE_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
 				return Variant::PACKED_INT32_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int64_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(int64_t)) {
 				return Variant::PACKED_INT64_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(float))
+			if (array_type->eklass == CACHED_CLASS_RAW(float)) {
 				return Variant::PACKED_FLOAT32_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(double))
+			if (array_type->eklass == CACHED_CLASS_RAW(double)) {
 				return Variant::PACKED_FLOAT64_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(String))
+			if (array_type->eklass == CACHED_CLASS_RAW(String)) {
 				return Variant::PACKED_STRING_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector2))
+			if (array_type->eklass == CACHED_CLASS_RAW(Vector2)) {
 				return Variant::PACKED_VECTOR2_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector3))
+			if (array_type->eklass == CACHED_CLASS_RAW(Vector3)) {
 				return Variant::PACKED_VECTOR3_ARRAY;
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Color))
+			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
 				return Variant::PACKED_COLOR_ARRAY;
+			}
 
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
-			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return Variant::ARRAY;
+			}
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -201,8 +228,9 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 		} break;
 
 		case MONO_TYPE_OBJECT: {
-			if (r_nil_is_variant)
+			if (r_nil_is_variant) {
 				*r_nil_is_variant = true;
+			}
 			return Variant::NIL;
 		} break;
 
@@ -244,8 +272,9 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 		} break;
 	}
 
-	if (r_nil_is_variant)
+	if (r_nil_is_variant) {
 		*r_nil_is_variant = false;
+	}
 
 	// Unknown
 	return Variant::NIL;
@@ -282,31 +311,6 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 	return false;
 }
 
-bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type) {
-	switch (p_dictionary_type.type_encoding) {
-		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *dict_reftype = mono_type_get_object(mono_domain_get(), p_dictionary_type.type_class->get_mono_type());
-
-			if (GDMonoUtils::Marshal::type_is_generic_dictionary(dict_reftype) ||
-					GDMonoUtils::Marshal::type_is_system_generic_dictionary(dict_reftype) ||
-					GDMonoUtils::Marshal::type_is_generic_idictionary(dict_reftype)) {
-				MonoReflectionType *key_reftype;
-				MonoReflectionType *value_reftype;
-
-				GDMonoUtils::Marshal::dictionary_get_key_value_types(dict_reftype, &key_reftype, &value_reftype);
-
-				r_key_type = ManagedType::from_reftype(key_reftype);
-				r_value_type = ManagedType::from_reftype(value_reftype);
-				return true;
-			}
-		} break;
-		default: {
-		} break;
-	}
-
-	return false;
-}
-
 String mono_to_utf8_string(MonoString *p_mono_string) {
 	MonoError error;
 	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
@@ -328,8 +332,9 @@ String mono_to_utf16_string(MonoString *p_mono_string) {
 	int len = mono_string_length(p_mono_string);
 	String ret;
 
-	if (len == 0)
+	if (len == 0) {
 		return ret;
+	}
 
 	ret.resize(len + 1);
 	ret.set(len, 0);
@@ -409,8 +414,9 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		}
 
 		case MONO_TYPE_STRING: {
-			if (p_var->get_type() == Variant::NIL)
+			if (p_var->get_type() == Variant::NIL) {
 				return nullptr; // Otherwise, Variant -> String would return the string "Null"
+			}
 			return (MonoObject *)mono_string_from_godot(p_var->operator String());
 		} break;
 
@@ -547,39 +553,50 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		case MONO_TYPE_SZARRAY: {
 			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
 
-			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
+			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject)) {
 				return (MonoObject *)Array_to_mono_array(p_var->operator Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t)) {
 				return (MonoObject *)PackedByteArray_to_mono_array(p_var->operator PackedByteArray());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
 				return (MonoObject *)PackedInt32Array_to_mono_array(p_var->operator PackedInt32Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int64_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(int64_t)) {
 				return (MonoObject *)PackedInt64Array_to_mono_array(p_var->operator PackedInt64Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(float))
+			if (array_type->eklass == CACHED_CLASS_RAW(float)) {
 				return (MonoObject *)PackedFloat32Array_to_mono_array(p_var->operator PackedFloat32Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(double))
+			if (array_type->eklass == CACHED_CLASS_RAW(double)) {
 				return (MonoObject *)PackedFloat64Array_to_mono_array(p_var->operator PackedFloat64Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(String))
+			if (array_type->eklass == CACHED_CLASS_RAW(String)) {
 				return (MonoObject *)PackedStringArray_to_mono_array(p_var->operator PackedStringArray());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector2))
+			if (array_type->eklass == CACHED_CLASS_RAW(Vector2)) {
 				return (MonoObject *)PackedVector2Array_to_mono_array(p_var->operator PackedVector2Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector3))
+			if (array_type->eklass == CACHED_CLASS_RAW(Vector3)) {
 				return (MonoObject *)PackedVector3Array_to_mono_array(p_var->operator PackedVector3Array());
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Color))
+			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
 				return (MonoObject *)PackedColorArray_to_mono_array(p_var->operator PackedColorArray());
+			}
 
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
-			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return (MonoObject *)Array_to_mono_array(p_var->operator Array(), array_type_class);
+			}
 
 			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
@@ -820,100 +837,128 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			return unbox<double>(p_obj);
 
 		case MONO_TYPE_STRING: {
-			if (p_obj == nullptr)
+			if (p_obj == nullptr) {
 				return Variant(); // NIL
+			}
 			return mono_string_to_godot_not_null((MonoString *)p_obj);
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
 			GDMonoClass *vtclass = p_type.type_class;
 
-			if (vtclass == CACHED_CLASS(Vector2))
+			if (vtclass == CACHED_CLASS(Vector2)) {
 				return MARSHALLED_IN(Vector2, unbox_addr<GDMonoMarshal::M_Vector2>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Vector2i))
+			if (vtclass == CACHED_CLASS(Vector2i)) {
 				return MARSHALLED_IN(Vector2i, unbox_addr<GDMonoMarshal::M_Vector2i>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Rect2))
+			if (vtclass == CACHED_CLASS(Rect2)) {
 				return MARSHALLED_IN(Rect2, unbox_addr<GDMonoMarshal::M_Rect2>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Rect2i))
+			if (vtclass == CACHED_CLASS(Rect2i)) {
 				return MARSHALLED_IN(Rect2i, unbox_addr<GDMonoMarshal::M_Rect2i>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Transform2D))
+			if (vtclass == CACHED_CLASS(Transform2D)) {
 				return MARSHALLED_IN(Transform2D, unbox_addr<GDMonoMarshal::M_Transform2D>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Vector3))
+			if (vtclass == CACHED_CLASS(Vector3)) {
 				return MARSHALLED_IN(Vector3, unbox_addr<GDMonoMarshal::M_Vector3>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Vector3i))
+			if (vtclass == CACHED_CLASS(Vector3i)) {
 				return MARSHALLED_IN(Vector3i, unbox_addr<GDMonoMarshal::M_Vector3i>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Basis))
+			if (vtclass == CACHED_CLASS(Basis)) {
 				return MARSHALLED_IN(Basis, unbox_addr<GDMonoMarshal::M_Basis>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Quat))
+			if (vtclass == CACHED_CLASS(Quat)) {
 				return MARSHALLED_IN(Quat, unbox_addr<GDMonoMarshal::M_Quat>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Transform))
+			if (vtclass == CACHED_CLASS(Transform)) {
 				return MARSHALLED_IN(Transform, unbox_addr<GDMonoMarshal::M_Transform>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(AABB))
+			if (vtclass == CACHED_CLASS(AABB)) {
 				return MARSHALLED_IN(AABB, unbox_addr<GDMonoMarshal::M_AABB>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Color))
+			if (vtclass == CACHED_CLASS(Color)) {
 				return MARSHALLED_IN(Color, unbox_addr<GDMonoMarshal::M_Color>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Plane))
+			if (vtclass == CACHED_CLASS(Plane)) {
 				return MARSHALLED_IN(Plane, unbox_addr<GDMonoMarshal::M_Plane>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(Callable))
+			if (vtclass == CACHED_CLASS(Callable)) {
 				return managed_to_callable(unbox<GDMonoMarshal::M_Callable>(p_obj));
+			}
 
-			if (vtclass == CACHED_CLASS(SignalInfo))
+			if (vtclass == CACHED_CLASS(SignalInfo)) {
 				return managed_to_signal_info(unbox<GDMonoMarshal::M_SignalInfo>(p_obj));
+			}
 
-			if (mono_class_is_enum(vtclass->get_mono_ptr()))
+			if (mono_class_is_enum(vtclass->get_mono_ptr())) {
 				return unbox<int32_t>(p_obj);
+			}
 		} break;
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
 			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
 
-			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
+			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject)) {
 				return mono_array_to_Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t)) {
 				return mono_array_to_PackedByteArray((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int32_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
 				return mono_array_to_PackedInt32Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int64_t))
+			if (array_type->eklass == CACHED_CLASS_RAW(int64_t)) {
 				return mono_array_to_PackedInt64Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(float))
+			if (array_type->eklass == CACHED_CLASS_RAW(float)) {
 				return mono_array_to_PackedFloat32Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(double))
+			if (array_type->eklass == CACHED_CLASS_RAW(double)) {
 				return mono_array_to_PackedFloat64Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(String))
+			if (array_type->eklass == CACHED_CLASS_RAW(String)) {
 				return mono_array_to_PackedStringArray((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector2))
+			if (array_type->eklass == CACHED_CLASS_RAW(Vector2)) {
 				return mono_array_to_PackedVector2Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector3))
+			if (array_type->eklass == CACHED_CLASS_RAW(Vector3)) {
 				return mono_array_to_PackedVector3Array((MonoArray *)p_obj);
+			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Color))
+			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
 				return mono_array_to_PackedColorArray((MonoArray *)p_obj);
+			}
 
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
-			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return mono_array_to_Array((MonoArray *)p_obj);
+			}
 
 			if (p_fail_with_err) {
 				ERR_FAIL_V_MSG(Variant(), "Attempted to convert a managed array of unmarshallable element type to Variant.");
@@ -1012,8 +1057,9 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj) {
-	if (!p_obj)
+	if (!p_obj) {
 		return Variant();
+	}
 
 	ManagedType type = ManagedType::from_class(mono_object_get_class(p_obj));
 
@@ -1021,20 +1067,26 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
-	if (!p_obj)
+	if (!p_obj) {
 		return Variant();
+	}
 
 	return mono_object_to_variant_impl(p_obj, p_type);
 }
 
 Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_type) {
-	if (!p_obj)
+	if (!p_obj) {
 		return Variant();
+	}
 
 	return mono_object_to_variant_impl(p_obj, p_type, /* fail_with_err: */ false);
 }
 
 String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
+	if (p_obj == nullptr) {
+		return String("null");
+	}
+
 	ManagedType type = ManagedType::from_class(mono_object_get_class(p_obj));
 	Variant var = GDMonoMarshal::mono_object_to_variant_no_err(p_obj, type);
 
@@ -1044,8 +1096,9 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
 		MonoString *mono_str = GDMonoUtils::object_to_string(p_obj, &exc);
 
 		if (exc) {
-			if (r_exc)
+			if (r_exc) {
 				*r_exc = exc;
+			}
 			return String();
 		}
 
@@ -1155,8 +1208,9 @@ MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_c
 
 Array mono_array_to_Array(MonoArray *p_array) {
 	Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 
@@ -1174,22 +1228,23 @@ MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array) {
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int32_t), length);
 
-	int32_t *dst = (int32_t *)mono_array_addr(ret, int32_t, 0);
-	memcpy(dst, src, length);
+	int32_t *dst = mono_array_addr(ret, int32_t, 0);
+	memcpy(dst, src, length * sizeof(int32_t));
 
 	return ret;
 }
 
 PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array) {
 	PackedInt32Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	int32_t *dst = ret.ptrw();
 
-	const int32_t *src = (const int32_t *)mono_array_addr(p_array, int32_t, 0);
-	memcpy(dst, src, length);
+	const int32_t *src = mono_array_addr(p_array, int32_t, 0);
+	memcpy(dst, src, length * sizeof(int32_t));
 
 	return ret;
 }
@@ -1200,22 +1255,23 @@ MonoArray *PackedInt64Array_to_mono_array(const PackedInt64Array &p_array) {
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int64_t), length);
 
-	int64_t *dst = (int64_t *)mono_array_addr(ret, int64_t, 0);
-	memcpy(dst, src, length);
+	int64_t *dst = mono_array_addr(ret, int64_t, 0);
+	memcpy(dst, src, length * sizeof(int64_t));
 
 	return ret;
 }
 
 PackedInt64Array mono_array_to_PackedInt64Array(MonoArray *p_array) {
 	PackedInt64Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	int64_t *dst = ret.ptrw();
 
-	const int64_t *src = (const int64_t *)mono_array_addr(p_array, int64_t, 0);
-	memcpy(dst, src, length);
+	const int64_t *src = mono_array_addr(p_array, int64_t, 0);
+	memcpy(dst, src, length * sizeof(int64_t));
 
 	return ret;
 }
@@ -1226,22 +1282,23 @@ MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array) {
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), length);
 
-	uint8_t *dst = (uint8_t *)mono_array_addr(ret, uint8_t, 0);
-	memcpy(dst, src, length);
+	uint8_t *dst = mono_array_addr(ret, uint8_t, 0);
+	memcpy(dst, src, length * sizeof(uint8_t));
 
 	return ret;
 }
 
 PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array) {
 	PackedByteArray ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	uint8_t *dst = ret.ptrw();
 
-	const uint8_t *src = (const uint8_t *)mono_array_addr(p_array, uint8_t, 0);
-	memcpy(dst, src, length);
+	const uint8_t *src = mono_array_addr(p_array, uint8_t, 0);
+	memcpy(dst, src, length * sizeof(uint8_t));
 
 	return ret;
 }
@@ -1252,22 +1309,23 @@ MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array) {
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(float), length);
 
-	float *dst = (float *)mono_array_addr(ret, float, 0);
-	memcpy(dst, src, length);
+	float *dst = mono_array_addr(ret, float, 0);
+	memcpy(dst, src, length * sizeof(float));
 
 	return ret;
 }
 
 PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array) {
 	PackedFloat32Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	float *dst = ret.ptrw();
 
-	const float *src = (const float *)mono_array_addr(p_array, float, 0);
-	memcpy(dst, src, length);
+	const float *src = mono_array_addr(p_array, float, 0);
+	memcpy(dst, src, length * sizeof(float));
 
 	return ret;
 }
@@ -1278,22 +1336,23 @@ MonoArray *PackedFloat64Array_to_mono_array(const PackedFloat64Array &p_array) {
 
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(double), length);
 
-	double *dst = (double *)mono_array_addr(ret, double, 0);
-	memcpy(dst, src, length);
+	double *dst = mono_array_addr(ret, double, 0);
+	memcpy(dst, src, length * sizeof(double));
 
 	return ret;
 }
 
 PackedFloat64Array mono_array_to_PackedFloat64Array(MonoArray *p_array) {
 	PackedFloat64Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	double *dst = ret.ptrw();
 
-	const double *src = (const double *)mono_array_addr(p_array, double, 0);
-	memcpy(dst, src, length);
+	const double *src = mono_array_addr(p_array, double, 0);
+	memcpy(dst, src, length * sizeof(double));
 
 	return ret;
 }
@@ -1314,8 +1373,9 @@ MonoArray *PackedStringArray_to_mono_array(const PackedStringArray &p_array) {
 
 PackedStringArray mono_array_to_PackedStringArray(MonoArray *p_array) {
 	PackedStringArray ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	String *w = ret.ptrw();
@@ -1335,8 +1395,8 @@ MonoArray *PackedColorArray_to_mono_array(const PackedColorArray &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Color), length);
 
 	if constexpr (InteropLayout::MATCHES_Color) {
-		Color *dst = (Color *)mono_array_addr(ret, Color, 0);
-		memcpy(dst, src, length);
+		Color *dst = mono_array_addr(ret, Color, 0);
+		memcpy(dst, src, length * sizeof(Color));
 	} else {
 		for (int i = 0; i < length; i++) {
 			M_Color *raw = (M_Color *)mono_array_addr_with_size(ret, sizeof(M_Color), i);
@@ -1349,15 +1409,16 @@ MonoArray *PackedColorArray_to_mono_array(const PackedColorArray &p_array) {
 
 PackedColorArray mono_array_to_PackedColorArray(MonoArray *p_array) {
 	PackedColorArray ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	Color *dst = ret.ptrw();
 
 	if constexpr (InteropLayout::MATCHES_Color) {
-		const Color *src = (const Color *)mono_array_addr(p_array, Color, 0);
-		memcpy(dst, src, length);
+		const Color *src = mono_array_addr(p_array, Color, 0);
+		memcpy(dst, src, length * sizeof(Color));
 	} else {
 		for (int i = 0; i < length; i++) {
 			dst[i] = MARSHALLED_IN(Color, (M_Color *)mono_array_addr_with_size(p_array, sizeof(M_Color), i));
@@ -1374,8 +1435,8 @@ MonoArray *PackedVector2Array_to_mono_array(const PackedVector2Array &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Vector2), length);
 
 	if constexpr (InteropLayout::MATCHES_Vector2) {
-		Vector2 *dst = (Vector2 *)mono_array_addr(ret, Vector2, 0);
-		memcpy(dst, src, length);
+		Vector2 *dst = mono_array_addr(ret, Vector2, 0);
+		memcpy(dst, src, length * sizeof(Vector2));
 	} else {
 		for (int i = 0; i < length; i++) {
 			M_Vector2 *raw = (M_Vector2 *)mono_array_addr_with_size(ret, sizeof(M_Vector2), i);
@@ -1388,15 +1449,16 @@ MonoArray *PackedVector2Array_to_mono_array(const PackedVector2Array &p_array) {
 
 PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array) {
 	PackedVector2Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	Vector2 *dst = ret.ptrw();
 
 	if constexpr (InteropLayout::MATCHES_Vector2) {
-		const Vector2 *src = (const Vector2 *)mono_array_addr(p_array, Vector2, 0);
-		memcpy(dst, src, length);
+		const Vector2 *src = mono_array_addr(p_array, Vector2, 0);
+		memcpy(dst, src, length * sizeof(Vector2));
 	} else {
 		for (int i = 0; i < length; i++) {
 			dst[i] = MARSHALLED_IN(Vector2, (M_Vector2 *)mono_array_addr_with_size(p_array, sizeof(M_Vector2), i));
@@ -1413,8 +1475,8 @@ MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array) {
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Vector3), length);
 
 	if constexpr (InteropLayout::MATCHES_Vector3) {
-		Vector3 *dst = (Vector3 *)mono_array_addr(ret, Vector3, 0);
-		memcpy(dst, src, length);
+		Vector3 *dst = mono_array_addr(ret, Vector3, 0);
+		memcpy(dst, src, length * sizeof(Vector3));
 	} else {
 		for (int i = 0; i < length; i++) {
 			M_Vector3 *raw = (M_Vector3 *)mono_array_addr_with_size(ret, sizeof(M_Vector3), i);
@@ -1427,15 +1489,16 @@ MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array) {
 
 PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array) {
 	PackedVector3Array ret;
-	if (!p_array)
+	if (!p_array) {
 		return ret;
+	}
 	int length = mono_array_length(p_array);
 	ret.resize(length);
 	Vector3 *dst = ret.ptrw();
 
 	if constexpr (InteropLayout::MATCHES_Vector3) {
-		const Vector3 *src = (const Vector3 *)mono_array_addr(p_array, Vector3, 0);
-		memcpy(dst, src, length);
+		const Vector3 *src = mono_array_addr(p_array, Vector3, 0);
+		memcpy(dst, src, length * sizeof(Vector3));
 	} else {
 		for (int i = 0; i < length; i++) {
 			dst[i] = MARSHALLED_IN(Vector3, (M_Vector3 *)mono_array_addr_with_size(p_array, sizeof(M_Vector3), i));

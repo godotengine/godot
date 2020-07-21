@@ -35,6 +35,7 @@
 #include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
+
 void Camera3D::_update_audio_listener_state() {
 }
 
@@ -318,8 +319,8 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 	Transform t = get_global_transform();
-	Vector3 eyedir = -get_global_transform().basis.get_axis(2).normalized();
-	return eyedir.dot(p_pos) < (eyedir.dot(t.origin) + near);
+	Vector3 eyedir = -t.basis.get_axis(2).normalized();
+	return eyedir.dot(p_pos - t.origin) < near;
 }
 
 Vector<Vector3> Camera3D::get_near_plane_points() const {

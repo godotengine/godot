@@ -33,6 +33,7 @@
 #include "core/message_queue.h"
 #include "core/print_string.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -902,6 +903,10 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		return Variant(); //not editable tree
 	}
 
+	if (tree->get_button_id_at_position(p_point) != -1) {
+		return Variant(); //dragging from button
+	}
+
 	Vector<Node *> selected;
 	Vector<Ref<Texture2D>> icons;
 	TreeItem *next = tree->get_next_selected(nullptr);
@@ -1072,7 +1077,7 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 }
 
 void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
-	emit_signal("rmb_pressed", tree->get_global_transform().xform(p_pos));
+	emit_signal("rmb_pressed", tree->get_screen_transform().xform(p_pos));
 }
 
 void SceneTreeEditor::_warning_changed(Node *p_for_node) {
@@ -1189,6 +1194,10 @@ SceneTreeEditor::~SceneTreeEditor() {
 }
 
 /******** DIALOG *********/
+
+void SceneTreeDialog::popup_scenetree_dialog() {
+	popup_centered_clamped(Size2(350, 700) * EDSCALE);
+}
 
 void SceneTreeDialog::_notification(int p_what) {
 	switch (p_what) {

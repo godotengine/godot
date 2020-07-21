@@ -135,6 +135,7 @@ public:
 	static ImageMemLoadFunc _png_mem_loader_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
+	static ImageMemLoadFunc _tga_mem_loader_func;
 
 	static void (*_image_compress_bc_func)(Image *, float, UsedChannels p_channels);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, UsedChannels p_channels);
@@ -360,6 +361,7 @@ public:
 	Error load_png_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
@@ -367,7 +369,7 @@ public:
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
 
-	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+	virtual Ref<Resource> duplicate(bool p_subresources = false) const override;
 
 	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC);
 	void optimize_channels();

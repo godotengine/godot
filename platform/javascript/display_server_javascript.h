@@ -53,6 +53,21 @@ class DisplayServerJavaScript : public DisplayServer {
 	double last_click_ms = 0;
 	int last_click_button_index = -1;
 
+	int last_width = 0;
+	int last_height = 0;
+
+	// utilities
+	static Point2 compute_position_in_canvas(int p_x, int p_y);
+	static void focus_canvas();
+	static bool is_canvas_focused();
+	template <typename T>
+	static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event);
+	static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event);
+	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
+	static void set_css_cursor(const char *p_cursor);
+	bool is_css_cursor_hidden() const;
+
+	// events
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 
 	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
@@ -81,16 +96,19 @@ protected:
 public:
 	// Override return type to make writing static callbacks less tedious.
 	static DisplayServerJavaScript *get_singleton();
+	static char canvas_id[256];
 
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 
 	String clipboard;
-	String canvas_id;
 
 	Callable window_event_callback;
 	Callable input_event_callback;
 	Callable input_text_callback;
 	Callable drop_files_callback;
+
+	// utilities
+	bool check_size_force_redraw();
 
 	// from DisplayServer
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");

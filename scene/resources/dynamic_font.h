@@ -189,6 +189,7 @@ public:
 	float get_underline_thickness() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
+	String get_available_chars() const;
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only = false, bool p_outline = false) const;
 
@@ -269,20 +270,21 @@ public:
 	Ref<DynamicFontData> get_fallback(int p_idx) const;
 	void remove_fallback(int p_idx);
 
-	virtual float get_height() const;
+	virtual float get_height() const override;
 
-	virtual float get_ascent() const;
-	virtual float get_descent() const;
-	virtual float get_underline_position() const;
-	virtual float get_underline_thickness() const;
+	virtual float get_ascent() const override;
+	virtual float get_descent() const override;
+	virtual float get_underline_position() const override;
+	virtual float get_underline_thickness() const override;
 
-	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
+	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const override;
+	String get_available_chars() const;
 
-	virtual bool is_distance_field_hint() const;
+	virtual bool is_distance_field_hint() const override;
 
-	virtual bool has_outline() const;
+	virtual bool has_outline() const override;
 
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const override;
 
 	SelfList<DynamicFont> font_list;
 

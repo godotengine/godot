@@ -309,6 +309,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			emit_signal("mouse_entered");
+			DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
@@ -316,13 +317,13 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
-			_propagate_window_notification(this, NOTIFICATION_WM_FOCUS_IN);
+			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
 			emit_signal("focus_entered");
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
-			_propagate_window_notification(this, NOTIFICATION_WM_FOCUS_OUT);
+			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
 			emit_signal("focus_exited");
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
@@ -337,6 +338,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			emit_signal("go_back_requested");
 		} break;
 		case DisplayServer::WINDOW_EVENT_DPI_CHANGE: {
+			_update_viewport_size();
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
 			emit_signal("dpi_changed");
 		} break;
@@ -398,6 +400,18 @@ void Window::set_visible(bool p_visible) {
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 
 	RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
+
+	//update transient exclusive
+	if (transient_parent) {
+		if (exclusive && visible) {
+			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+			transient_parent->exclusive_child = this;
+		} else {
+			if (transient_parent->exclusive_child == this) {
+				transient_parent->exclusive_child = nullptr;
+			}
+		}
+	}
 }
 
 void Window::_clear_transient() {
@@ -612,26 +626,25 @@ void Window::_update_viewport_size() {
 				// Already handled above
 				//_update_font_oversampling(1.0);
 			} break;
-			case CONTENT_SCALE_MODE_OBJECTS: {
+			case CONTENT_SCALE_MODE_CANVAS_ITEMS: {
 				final_size = screen_size;
 				final_size_override = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
 				font_oversampling = screen_size.x / viewport_size.x;
+
+				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
+				stretch_transform.scale(scale);
+
 			} break;
-			case CONTENT_SCALE_MODE_PIXELS: {
+			case CONTENT_SCALE_MODE_VIEWPORT: {
 				final_size = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
 			} break;
 		}
-
-		Size2 scale = size / (Vector2(final_size) + margin * 2);
-		stretch_transform.scale(scale);
-		stretch_transform.elements[2] = margin * scale;
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-
 	_set_size(final_size, final_size_override, attach_to_screen_rect, stretch_transform, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -862,6 +875,10 @@ void Window::child_controls_changed() {
 	call_deferred("_update_child_controls");
 }
 
+bool Window::_can_consume_input_events() const {
+	return exclusive_child == nullptr;
+}
+
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev))) {
 		return; //avoid joy input on editor
@@ -876,12 +893,20 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
-		exclusive_child->grab_focus();
+		Window *focus_target = exclusive_child;
+		while (focus_target->exclusive_child != nullptr) {
+			focus_target->grab_focus();
+			focus_target = focus_target->exclusive_child;
+		}
+		focus_target->grab_focus();
 
-		return; //has an exclusive child, can't get events until child is closed
+		if (!is_embedding_subwindows()) { //not embedding, no need for event
+			return;
+		}
 	}
 
 	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
+
 	input(p_ev);
 	if (!is_input_handled()) {
 		unhandled_input(p_ev);
@@ -1232,6 +1257,14 @@ Rect2i Window::get_parent_rect() const {
 	}
 }
 
+void Window::set_clamp_to_embedder(bool p_enable) {
+	clamp_to_embedder = p_enable;
+}
+
+bool Window::is_clamped_to_embedder() const {
+	return clamp_to_embedder;
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -1345,7 +1378,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,Object,Pixels"), "set_content_scale_mode", "get_content_scale_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_mode", PROPERTY_HINT_ENUM, "Disabled,CanvasItems,Viewport"), "set_content_scale_mode", "get_content_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,KeepWidth,KeepHeight,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
@@ -1376,8 +1409,8 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_OBJECTS);
-	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_PIXELS);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_CANVAS_ITEMS);
+	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_VIEWPORT);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_IGNORE);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP);

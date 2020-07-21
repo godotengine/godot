@@ -84,7 +84,7 @@ void EditorAudioBus::_notification(int p_what) {
 			bypass->set_icon(get_theme_icon("AudioBusBypass", "EditorIcons"));
 			bypass->add_theme_color_override("icon_color_pressed", bypass_color);
 
-			bus_options->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
+			bus_options->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 
 			update_bus();
 			set_process(true);
@@ -172,7 +172,7 @@ void EditorAudioBus::_notification(int p_what) {
 			mute->set_icon(get_theme_icon("AudioBusMute", "EditorIcons"));
 			bypass->set_icon(get_theme_icon("AudioBusBypass", "EditorIcons"));
 
-			bus_options->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
+			bus_options->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
 		} break;
 		case NOTIFICATION_MOUSE_EXIT:
 		case NOTIFICATION_DRAG_END: {
@@ -1176,7 +1176,7 @@ void EditorAudioBuses::_save_as_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(edited_path);
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
 
@@ -1184,7 +1184,7 @@ void EditorAudioBuses::_new_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Location for New Layout..."));
 	file_dialog->set_current_path(edited_path);
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	new_layout = true;
 }
 
@@ -1192,7 +1192,7 @@ void EditorAudioBuses::_load_layout() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
 	file_dialog->set_current_path(edited_path);
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 	new_layout = false;
 }
 

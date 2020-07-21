@@ -233,9 +233,9 @@ void EditorFileSystem::_scan_filesystem() {
 
 				FileCache fc;
 				fc.type = split[1];
-				fc.modification_time = split[2].to_int64();
-				fc.import_modification_time = split[3].to_int64();
-				fc.import_valid = split[4].to_int64() != 0;
+				fc.modification_time = split[2].to_int();
+				fc.import_modification_time = split[3].to_int();
+				fc.import_valid = split[4].to_int() != 0;
 				fc.import_group_file = split[5].strip_edges();
 				fc.script_class_name = split[6].get_slice("<>", 0);
 				fc.script_class_extends = split[6].get_slice("<>", 1);
@@ -533,6 +533,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (_test_for_reimport(full_path, false)) {
 					//must reimport
 					reimports.push_back(full_path);
+					reimports.append_array(_get_dependencies(full_path));
 				} else {
 					//must not reimport, all was good
 					//update modified times, to avoid reimport
@@ -1107,7 +1108,7 @@ void EditorFileSystem::_notification(int p_what) {
 						_queue_update_script_classes();
 						first_scan = false;
 					}
-				} else if (!scanning) {
+				} else if (!scanning && thread) {
 					set_process(false);
 
 					if (filesystem) {

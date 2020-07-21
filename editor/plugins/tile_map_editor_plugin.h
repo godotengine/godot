@@ -88,6 +88,8 @@ class TileMapEditor : public VBoxContainer {
 	MenuButton *options;
 
 	Button *paint_button;
+	Button *line_button;
+	Button *rectangle_button;
 	Button *bucket_fill_button;
 	Button *picker_button;
 	Button *select_button;
@@ -106,6 +108,7 @@ class TileMapEditor : public VBoxContainer {
 
 	bool selection_active;
 	bool mouse_over;
+	bool mouse_down;
 
 	bool flip_h;
 	bool flip_v;
@@ -228,14 +231,14 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { tile_map_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return tile_map_editor->forward_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { tile_map_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const { return "TileMap"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "TileMap"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	TileMapEditorPlugin(EditorNode *p_node);
 	~TileMapEditorPlugin();

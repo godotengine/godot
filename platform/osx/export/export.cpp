@@ -91,15 +91,15 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	}
 
 protected:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
-	virtual void get_export_options(List<ExportOption> *r_options);
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_export_options(List<ExportOption> *r_options) override;
 
 public:
-	virtual String get_name() const { return "Mac OSX"; }
-	virtual String get_os_name() const { return "OSX"; }
-	virtual Ref<Texture2D> get_logo() const { return logo; }
+	virtual String get_name() const override { return "Mac OSX"; }
+	virtual String get_os_name() const override { return "OSX"; }
+	virtual Ref<Texture2D> get_logo() const override { return logo; }
 
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
 		if (use_dmg()) {
 			list.push_back("dmg");
@@ -107,17 +107,17 @@ public:
 		list.push_back("zip");
 		return list;
 	}
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 
-	virtual void get_platform_features(List<String> *r_features) {
+	virtual void get_platform_features(List<String> *r_features) override {
 		r_features->push_back("pc");
 		r_features->push_back("s3tc");
 		r_features->push_back("OSX");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
 	}
 
 	EditorExportPlatformOSX();
@@ -825,14 +825,15 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 			zipfi.tmz_date.tm_hour = time.hour;
 			zipfi.tmz_date.tm_mday = date.day;
 			zipfi.tmz_date.tm_min = time.min;
-			zipfi.tmz_date.tm_mon = date.month;
+			zipfi.tmz_date.tm_mon = date.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, http://www.cplusplus.com/reference/ctime/tm/
 			zipfi.tmz_date.tm_sec = time.sec;
 			zipfi.tmz_date.tm_year = date.year;
 			zipfi.dosDate = 0;
 			// 0100000: regular file type
 			// 0000755: permissions rwxr-xr-x
 			// 0000644: permissions rw-r--r--
-			zipfi.external_fa = (is_executable ? 0100755 : 0100644) << 16L;
+			uint32_t _mode = (is_executable ? 0100755 : 0100644);
+			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,

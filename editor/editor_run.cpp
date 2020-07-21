@@ -38,6 +38,10 @@ EditorRun::Status EditorRun::get_status() const {
 	return status;
 }
 
+String EditorRun::get_running_scene() const {
+	return running_scene;
+}
+
 Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 	List<String> args;
 
@@ -108,24 +112,33 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
+	bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
+	int display_scale = 1;
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
+		if (OS::get_singleton()->is_hidpi_allowed()) {
+			if (hidpi_proj) {
+				display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
+			} else {
+				display_scale = DisplayServer::get_singleton()->screen_get_max_scale(); // Editor is in hiDPI mode, project is not, scale down.
+			}
+		} else {
+			if (hidpi_proj) {
+				display_scale = (1.f / DisplayServer::get_singleton()->screen_get_max_scale()); // Editor is not in hiDPI mode, project is, scale up.
+			} else {
+				display_scale = 1; // Both editor and project runs in lowDPI mode, do not scale.
+			}
+		}
+		screen_rect.position /= display_scale;
+		screen_rect.size /= display_scale;
+	}
 
 	switch (window_placement) {
 		case 0: { // top left
-
 			args.push_back("--position");
 			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
 		} break;
 		case 1: { // centered
-			int display_scale = 1;
-#ifdef OSX_ENABLED
-			display_scale = DisplayServer::get_singleton()->screen_get_scale(screen);
-#else
-			if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000) {
-				display_scale = 2;
-			}
-#endif
-
-			Vector2 pos = screen_rect.position + ((screen_rect.size / display_scale - desired_size) / 2).floor();
+			Vector2 pos = (screen_rect.position) + ((screen_rect.size - desired_size) / 2).floor();
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
@@ -140,10 +153,8 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 			args.push_back("--maximized");
-
 		} break;
 		case 4: { // force fullscreen
-
 			Vector2 pos = screen_rect.position;
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
@@ -196,6 +207,9 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	status = STATUS_PLAY;
+	if (p_scene != "") {
+		running_scene = p_scene;
+	}
 
 	return OK;
 }
@@ -224,8 +238,10 @@ void EditorRun::stop() {
 	}
 
 	status = STATUS_STOP;
+	running_scene = "";
 }
 
 EditorRun::EditorRun() {
 	status = STATUS_STOP;
+	running_scene = "";
 }

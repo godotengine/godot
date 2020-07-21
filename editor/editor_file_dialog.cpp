@@ -50,12 +50,16 @@ EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
+void EditorFileDialog::popup_file_dialog() {
+	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+}
+
 VBoxContainer *EditorFileDialog::get_vbox() {
 	return vbox;
 }
 
 void EditorFileDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
 		// update icons
 		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
@@ -936,7 +940,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.find_last(".");
+	int lp = p_file.rfind(".");
 	if (lp != -1) {
 		file->select(0, lp);
 		file->grab_focus();
@@ -951,7 +955,7 @@ void EditorFileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size()) {
 		return;
 	}
-	int pos = MAX(p_path.find_last("/"), p_path.find_last("\\"));
+	int pos = MAX(p_path.rfind("/"), p_path.rfind("\\"));
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {

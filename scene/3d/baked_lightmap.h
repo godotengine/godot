@@ -94,7 +94,7 @@ public:
 
 	void clear();
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 	BakedLightmapData();
 	~BakedLightmapData();
 };
@@ -224,7 +224,7 @@ private:
 	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds);
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -268,8 +268,8 @@ public:
 	void set_generate_probes(GenerateProbes p_generate_probes);
 	GenerateProbes get_generate_probes() const;
 
-	AABB get_aabb() const;
-	Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	AABB get_aabb() const override;
+	Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	BakeError bake(Node *p_from_node, String p_image_data_path = "", Lightmapper::BakeStepFunc p_bake_step = nullptr, void *p_bake_userdata = nullptr);
 	BakedLightmap();

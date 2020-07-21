@@ -335,7 +335,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 
 		if (!d->current_is_dir()) {
-			int last_pos = f.find_last(".profile");
+			int last_pos = f.rfind(".profile");
 			if (last_pos != -1) {
 				profiles.push_back(f.substr(0, last_pos));
 			}
@@ -403,10 +403,10 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 			_emit_current_profile_changed();
 		} break;
 		case PROFILE_IMPORT: {
-			import_profiles->popup_centered_ratio();
+			import_profiles->popup_file_dialog();
 		} break;
 		case PROFILE_EXPORT: {
-			export_profile->popup_centered_ratio();
+			export_profile->popup_file_dialog();
 			export_profile->set_current_file(_get_selected_profile() + ".profile");
 		} break;
 		case PROFILE_NEW: {

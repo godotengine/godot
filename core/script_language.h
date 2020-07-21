@@ -116,7 +116,7 @@ class Script : public Resource {
 	OBJ_SAVE_TYPE(Script);
 
 protected:
-	virtual bool editor_can_reload_from_file() { return false; } // this is handled by editor better
+	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -256,6 +256,7 @@ struct ScriptCodeCompletionOption {
 	Kind kind = KIND_PLAIN_TEXT;
 	String display;
 	String insert_text;
+	Color font_color;
 	RES icon;
 
 	ScriptCodeCompletionOption() {}
@@ -299,6 +300,7 @@ public:
 		String message;
 	};
 
+	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;

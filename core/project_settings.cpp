@@ -93,7 +93,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 	} else {
 		memdelete(dir);
 
-		int sep = path.find_last("/");
+		int sep = path.rfind("/");
 		if (sep == -1) {
 			return "res://" + path;
 		}
@@ -144,6 +144,12 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
+		if (p_name.operator String().begins_with("autoload/")) {
+			String node_name = p_name.operator String().split("/")[1];
+			if (autoloads.has(node_name)) {
+				remove_autoload(node_name);
+			}
+		}
 	} else {
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
@@ -180,6 +186,19 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
+		}
+		if (p_name.operator String().begins_with("autoload/")) {
+			String node_name = p_name.operator String().split("/")[1];
+			AutoloadInfo autoload;
+			autoload.name = node_name;
+			String path = p_value;
+			if (path.begins_with("*")) {
+				autoload.is_singleton = true;
+				autoload.path = path.substr(1);
+			} else {
+				autoload.path = path;
+			}
+			add_autoload(autoload);
 		}
 	}
 
@@ -469,6 +488,14 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 			_load_settings_text(custom_settings);
 		}
 	}
+	// Using GLOBAL_GET on every block for compressing can be slow, so assigning here.
+	Compression::zstd_long_distance_matching = GLOBAL_GET("compression/formats/zstd/long_distance_matching");
+	Compression::zstd_level = GLOBAL_GET("compression/formats/zstd/compression_level");
+	Compression::zstd_window_log_size = GLOBAL_GET("compression/formats/zstd/window_log_size");
+
+	Compression::zlib_level = GLOBAL_GET("compression/formats/zlib/compression_level");
+
+	Compression::gzip_level = GLOBAL_GET("compression/formats/gzip/compression_level");
 
 	return err;
 }
@@ -945,6 +972,29 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
+Map<StringName, ProjectSettings::AutoloadInfo> ProjectSettings::get_autoload_list() const {
+	return autoloads;
+}
+
+void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
+	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
+	autoloads[p_autoload.name] = p_autoload;
+}
+
+void ProjectSettings::remove_autoload(const StringName &p_autoload) {
+	ERR_FAIL_COND_MSG(!autoloads.has(p_autoload), "Trying to remove non-existent autoload.");
+	autoloads.erase(p_autoload);
+}
+
+bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
+	return autoloads.has(p_autoload);
+}
+
+ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
+	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
+	return autoloads[p_name];
+}
+
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
@@ -965,6 +1015,9 @@ void ProjectSettings::_bind_methods() {
 }
 
 ProjectSettings::ProjectSettings() {
+	// Initialization of engine variables should be done in the setup() method,
+	// so that the values can be overridden from project.godot or project.binary.
+
 	singleton = this;
 
 	Array events;
@@ -1164,18 +1217,17 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
 
-	//assigning here, because using GLOBAL_GET on every block for compressing can be slow
-	Compression::zstd_long_distance_matching = GLOBAL_DEF("compression/formats/zstd/long_distance_matching", false);
+	GLOBAL_DEF("compression/formats/zstd/long_distance_matching", Compression::zstd_long_distance_matching);
 	custom_prop_info["compression/formats/zstd/long_distance_matching"] = PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching");
-	Compression::zstd_level = GLOBAL_DEF("compression/formats/zstd/compression_level", 3);
+	GLOBAL_DEF("compression/formats/zstd/compression_level", Compression::zstd_level);
 	custom_prop_info["compression/formats/zstd/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1");
-	Compression::zstd_window_log_size = GLOBAL_DEF("compression/formats/zstd/window_log_size", 27);
+	GLOBAL_DEF("compression/formats/zstd/window_log_size", Compression::zstd_window_log_size);
 	custom_prop_info["compression/formats/zstd/window_log_size"] = PropertyInfo(Variant::INT, "compression/formats/zstd/window_log_size", PROPERTY_HINT_RANGE, "10,30,1");
 
-	Compression::zlib_level = GLOBAL_DEF("compression/formats/zlib/compression_level", Z_DEFAULT_COMPRESSION);
+	GLOBAL_DEF("compression/formats/zlib/compression_level", Compression::zlib_level);
 	custom_prop_info["compression/formats/zlib/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
-	Compression::gzip_level = GLOBAL_DEF("compression/formats/gzip/compression_level", Z_DEFAULT_COMPRESSION);
+	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 }
 
