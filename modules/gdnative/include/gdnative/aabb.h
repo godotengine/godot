@@ -69,6 +69,8 @@ void GDAPI godot_aabb_set_size(const godot_aabb *p_self, const godot_vector3 *p_
 
 godot_string GDAPI godot_aabb_as_string(const godot_aabb *p_self);
 
+godot_aabb GDAPI godot_aabb_abs(const godot_aabb *p_self);
+
 godot_real GDAPI godot_aabb_get_area(const godot_aabb *p_self);
 
 godot_bool GDAPI godot_aabb_has_no_area(const godot_aabb *p_self);
