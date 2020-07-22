@@ -6802,9 +6802,9 @@ Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_na
 	return mat;
 }
 
-String EditorNode3DGizmoPlugin::get_name() const {
-	if (get_script_instance() && get_script_instance()->has_method("get_name")) {
-		return get_script_instance()->call("get_name");
+String EditorNode3DGizmoPlugin::get_gizmo_name() const {
+	if (get_script_instance() && get_script_instance()->has_method("get_gizmo_name")) {
+		return get_script_instance()->call("get_gizmo_name");
 	}
 	return TTR("Nameless gizmo");
 }
