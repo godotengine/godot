@@ -248,7 +248,7 @@ namespace Godot
         /// Returns a vector transformed (multiplied) by this transformation matrix.
         /// </summary>
         /// <param name="v">A vector to transform.</param>
-        /// <returns>The transfomed vector.</returns>
+        /// <returns>The transformed vector.</returns>
         public Vector3 Xform(Vector3 v)
         {
             return new Vector3
@@ -266,7 +266,7 @@ namespace Godot
         /// transformation matrix only if it represents a rotation-reflection.
         /// </summary>
         /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transfomed vector.</returns>
+        /// <returns>The inversely transformed vector.</returns>
         public Vector3 XformInv(Vector3 v)
         {
             Vector3 vInv = v - origin;
