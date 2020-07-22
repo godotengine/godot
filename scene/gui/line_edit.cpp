@@ -127,7 +127,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
-			if (OS::get_singleton()->has_virtual_keyboard()) {
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
 				if (selection.enabled) {
 					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
 				} else {
@@ -323,7 +323,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_ENTER: {
 
 					emit_signal("text_entered", text);
-					if (OS::get_singleton()->has_virtual_keyboard())
+					if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
 						OS::get_singleton()->hide_virtual_keyboard();
 
 				} break;
@@ -930,7 +930,7 @@ void LineEdit::_notification(int p_what) {
 				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos2);
 			}
 
-			if (OS::get_singleton()->has_virtual_keyboard()) {
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
 				if (selection.enabled) {
 					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
 				} else {
@@ -949,7 +949,7 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard())
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
 				OS::get_singleton()->hide_virtual_keyboard();
 
 		} break;
@@ -1667,6 +1667,14 @@ bool LineEdit::is_shortcut_keys_enabled() const {
 	return shortcut_keys_enabled;
 }
 
+void LineEdit::set_virtual_keyboard_enabled(bool p_enable) {
+	virtual_keyboard_enabled = p_enable;
+}
+
+bool LineEdit::is_virtual_keyboard_enabled() const {
+	return virtual_keyboard_enabled;
+}
+
 void LineEdit::set_selecting_enabled(bool p_enabled) {
 	selecting_enabled = p_enabled;
 
@@ -1821,6 +1829,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &LineEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enable"), &LineEdit::set_virtual_keyboard_enabled);
+	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &LineEdit::is_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("set_clear_button_enabled", "enable"), &LineEdit::set_clear_button_enabled);
 	ClassDB::bind_method(D_METHOD("is_clear_button_enabled"), &LineEdit::is_clear_button_enabled);
 	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &LineEdit::set_shortcut_keys_enabled);
@@ -1856,6 +1866,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length", "get_expand_to_text_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_button_enabled"), "set_clear_button_enabled", "is_clear_button_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");

@@ -91,6 +91,8 @@ private:
 
 	bool shortcut_keys_enabled;
 
+	bool virtual_keyboard_enabled = true;
+
 	Ref<Texture> right_icon;
 
 	struct Selection {
@@ -228,6 +230,9 @@ public:
 
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
+
+	void set_virtual_keyboard_enabled(bool p_enable);
+	bool is_virtual_keyboard_enabled() const;
 
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
