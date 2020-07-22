@@ -37,7 +37,7 @@ void PackedSceneEditorTranslationParserPlugin::get_recognized_extensions(List<St
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", r_extensions);
 }
 
-Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_extracted_strings) {
+Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
 	// Parse specific scene Node's properties (see in constructor) that are auto-translated by the engine when set. E.g Label's text property.
 	// These properties are translated with the tr() function in the C++ code when being set or updated.
 
@@ -71,8 +71,10 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				String extension = s->get_language()->get_extension();
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					Vector<String> temp;
-					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), &temp);
+					Vector<Vector<String>> ids_context_plural;
+					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), &temp, &ids_context_plural);
 					parsed_strings.append_array(temp);
+					r_ids_ctx_plural->append_array(ids_context_plural);
 				}
 			} else if (property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
@@ -93,7 +95,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		}
 	}
 
-	r_extracted_strings->append_array(parsed_strings);
+	r_ids->append_array(parsed_strings);
 
 	return OK;
 }

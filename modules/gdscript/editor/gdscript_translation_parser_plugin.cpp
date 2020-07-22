@@ -37,7 +37,7 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
 }
 
-Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_extracted_strings) {
+Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
 	// Parse and match all GDScript function API that involves translation string.
 	// E.g get_node("Label").text = "something", var test = tr("something"), "something" will be matched and collected.
 
@@ -63,7 +63,11 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	_parse_file_dialog(source_code, &temp);
 	parsed_strings.append_array(temp);
 
-	// Filter out / and +
+	// Special handling for tr and tr_n.
+	_handle_tr_pattern(source_code, tr_pattern, r_ids_ctx_plural);
+	_handle_tr_pattern(source_code, trn_pattern, r_ids_ctx_plural);
+
+	// Filter out / and + used when user writes over multiple lines in GDScript
 	String filter = "(?:\\\\\\n|\"[\\s\\\\]*\\+\\s*\")";
 	regex.clear();
 	regex.compile(filter);
@@ -71,7 +75,7 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 		parsed_strings.set(i, regex.sub(parsed_strings[i], "", true));
 	}
 
-	r_extracted_strings->append_array(parsed_strings);
+	r_ids->append_array(parsed_strings);
 
 	return OK;
 }
@@ -112,6 +116,46 @@ void GDScriptEditorTranslationParserPlugin::_get_captured_strings(const Array &p
 	}
 }
 
+void GDScriptEditorTranslationParserPlugin::_handle_tr_pattern(const String &p_source_code, const String &p_pattern, Vector<Vector<String>> *r_ids_ctx_plural) {
+	regex.clear();
+	regex.compile(p_pattern);
+	Array results = regex.search_all(p_source_code);
+	Ref<RegExMatch> reg_match;
+
+	int valid_group_count = 0;
+	if (p_pattern == tr_pattern) {
+		valid_group_count = 2;
+	} else if (p_pattern == trn_pattern) {
+		valid_group_count = 3;
+	} else {
+		ERR_FAIL_MSG("Invalid p_pattern parameter. Unrecognized tr pattern.");
+		return;
+	}
+
+	// Get msgid, context and plural from RegEx search result.
+	for (int i = 0; i < results.size(); i++) {
+		reg_match = results[i];
+		ERR_FAIL_COND_MSG(reg_match->get_group_count() != valid_group_count, "Number of captured groups from RegEx pattern doesn't match.");
+
+		String msgid = reg_match->get_string(1);
+		String context, plural;
+		if (valid_group_count == 2) {
+			context = reg_match->get_string(2);
+		} else if (valid_group_count == 3) {
+			plural = reg_match->get_string(2);
+			context = reg_match->get_string(3);
+		}
+
+		if (!msgid.strip_edges().empty()) {
+			Vector<String> id_ctx_plural;
+			id_ctx_plural.push_back(msgid);
+			id_ctx_plural.push_back(context);
+			id_ctx_plural.push_back(plural.strip_edges().empty() ? "" : plural);
+			r_ids_ctx_plural->push_back(id_ctx_plural);
+		}
+	}
+}
+
 GDScriptEditorTranslationParserPlugin::GDScriptEditorTranslationParserPlugin() {
 	// Regex search pattern templates.
 	// The extra complication in the regex pattern is to ensure that the matching works when users write over multiple lines, use tabs etc.
@@ -121,7 +165,6 @@ GDScriptEditorTranslationParserPlugin::GDScriptEditorTranslationParserPlugin() {
 	const String second_arg_template = "[\\s\\\\]*\\([\\s\\S]+?,[\\s\\\\]*\"" + text + "\"[\\s\\S]*?\\)";
 
 	// Common patterns.
-	patterns.push_back("tr" + first_arg_template);
 	patterns.push_back(dot + "text" + str_assign_template);
 	patterns.push_back(dot + "placeholder_text" + str_assign_template);
 	patterns.push_back(dot + "hint_tooltip" + str_assign_template);
