@@ -3015,9 +3015,9 @@ void Tree::item_edited(int p_column, TreeItem *p_item, bool p_lmb) {
 	edited_item = p_item;
 	edited_col = p_column;
 	if (p_lmb) {
-		emit_signal("item_edited");
+		emit_signal("item_edited", p_item, p_column);
 	} else {
-		emit_signal("item_rmb_edited");
+		emit_signal("item_rmb_edited", p_item, p_column);
 	}
 }
 
@@ -3840,14 +3840,17 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,In between"), "set_drop_mode_flags", "get_drop_mode_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
 
-	ADD_SIGNAL(MethodInfo("item_selected"));
+	// In either selection mods, this will be emitted when a cell is selected
 	ADD_SIGNAL(MethodInfo("cell_selected"));
+	// In SELECT_SINGLE mode, this will be emitted when a cell is selected. There is no need to provied which cell got selected, since the developer can just grab that from the Tree node.
+	ADD_SIGNAL(MethodInfo("item_selected"));
+	// In SELECT_MULTI mode, this will be emitted when a cell is selected
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::VECTOR2, "position")));
 	ADD_SIGNAL(MethodInfo("empty_rmb", PropertyInfo(Variant::VECTOR2, "position")));
 	ADD_SIGNAL(MethodInfo("empty_tree_rmb_selected", PropertyInfo(Variant::VECTOR2, "position")));
-	ADD_SIGNAL(MethodInfo("item_edited"));
-	ADD_SIGNAL(MethodInfo("item_rmb_edited"));
+	ADD_SIGNAL(MethodInfo("item_edited", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("item_rmb_edited", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("item_custom_button_pressed"));
 	ADD_SIGNAL(MethodInfo("item_double_clicked"));
 	ADD_SIGNAL(MethodInfo("item_collapsed", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem")));
