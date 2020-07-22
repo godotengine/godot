@@ -600,6 +600,43 @@ def escape_rst(text, until_pos=-1):  # type: (str) -> str
     return text
 
 
+def format_codeblock(code_type, post_text, indent_level, state):  # types: str, str, int, state
+    end_pos = post_text.find("[/" + code_type + "]")
+    if end_pos == -1:
+        print_error("[" + code_type + "] without a closing tag, file: {}".format(state.current_class), state)
+        return None
+
+    code_text = post_text[len("[" + code_type + "]") : end_pos]
+    post_text = post_text[end_pos:]
+
+    # Remove extraneous tabs
+    code_pos = 0
+    while True:
+        code_pos = code_text.find("\n", code_pos)
+        if code_pos == -1:
+            break
+
+        to_skip = 0
+        while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
+            to_skip += 1
+
+        if to_skip > indent_level:
+            print_error(
+                "Four spaces should be used for indentation within ["
+                + code_type
+                + "], file: {}".format(state.current_class),
+                state,
+            )
+
+        if len(code_text[code_pos + to_skip + 1 :]) == 0:
+            code_text = code_text[:code_pos] + "\n"
+            code_pos += 1
+        else:
+            code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1 :]
+            code_pos += 5 - to_skip
+    return ["\n[" + code_type + "]" + code_text + post_text, len("\n[" + code_type + "]" + code_text)]
+
+
 def rstize_text(text, state):  # type: (str, State) -> str
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -616,43 +653,17 @@ def rstize_text(text, state):  # type: (str, State) -> str
         post_text = text[pos + 1 :]
 
         # Handle codeblocks
-        if post_text.startswith("[codeblock]"):
-            end_pos = post_text.find("[/codeblock]")
-            if end_pos == -1:
-                print_error("[codeblock] without a closing tag, file: {}".format(state.current_class), state)
+        if (
+            post_text.startswith("[codeblock]")
+            or post_text.startswith("[gdscript]")
+            or post_text.startswith("[csharp]")
+        ):
+            block_type = post_text[1:].split("]")[0]
+            result = format_codeblock(block_type, post_text, indent_level, state)
+            if result is None:
                 return ""
-
-            code_text = post_text[len("[codeblock]") : end_pos]
-            post_text = post_text[end_pos:]
-
-            # Remove extraneous tabs
-            code_pos = 0
-            while True:
-                code_pos = code_text.find("\n", code_pos)
-                if code_pos == -1:
-                    break
-
-                to_skip = 0
-                while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
-                    to_skip += 1
-
-                if to_skip > indent_level:
-                    print_error(
-                        "Four spaces should be used for indentation within [codeblock], file: {}".format(
-                            state.current_class
-                        ),
-                        state,
-                    )
-
-                if len(code_text[code_pos + to_skip + 1 :]) == 0:
-                    code_text = code_text[:code_pos] + "\n"
-                    code_pos += 1
-                else:
-                    code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1 :]
-                    code_pos += 5 - to_skip
-
-            text = pre_text + "\n[codeblock]" + code_text + post_text
-            pos += len("\n[codeblock]" + code_text)
+            text = pre_text + result[0]
+            pos += result[1]
 
         # Handle normal text
         else:
@@ -697,7 +708,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(" ")
-            if cmd == "/codeblock":
+            if cmd == "/codeblock" or cmd == "/gdscript" or cmd == "/csharp":
                 tag_text = ""
                 tag_depth -= 1
                 inside_code = False
@@ -813,6 +824,20 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_depth += 1
                 tag_text = "\n::\n"
                 inside_code = True
+            elif cmd == "gdscript":
+                tag_depth += 1
+                tag_text = "\n .. code-tab:: gdscript GDScript\n"
+                inside_code = True
+            elif cmd == "csharp":
+                tag_depth += 1
+                tag_text = "\n .. code-tab:: csharp\n"
+                inside_code = True
+            elif cmd == "codeblocks":
+                tag_depth += 1
+                tag_text = "\n.. tabs::"
+            elif cmd == "/codeblocks":
+                tag_depth -= 1
+                tag_text = ""
             elif cmd == "br":
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = "\n\n"

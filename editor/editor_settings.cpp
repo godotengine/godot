@@ -495,6 +495,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/help/help_source_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_source_font_size", PROPERTY_HINT_RANGE, "8,48,1");
 	_initial_set("text_editor/help/help_title_font_size", 23);
 	hints["text_editor/help/help_title_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_title_font_size", PROPERTY_HINT_RANGE, "8,48,1");
+	_initial_set("text_editor/help/class_reference_language", 0);
+	hints["text_editor/help/class_reference_language"] = PropertyInfo(Variant::INT, "text_editor/help/class_reference_language", PROPERTY_HINT_ENUM, "GDScript,C#");
+	_initial_set("text_editor/help/class_reference_examples", 0);
+	hints["text_editor/help/class_reference_examples"] = PropertyInfo(Variant::INT, "text_editor/help/class_reference_examples", PROPERTY_HINT_ENUM, "GDScript,C#,GDScript and C#");
 
 	/* Editors */
 

@@ -152,6 +152,8 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_input(const Ref<InputEvent> &p_input);
 	void _class_desc_resized();
 
+	String _convert_case(const String &p_name);
+
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
 	void _update_doc();
