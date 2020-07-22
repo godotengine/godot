@@ -50,7 +50,7 @@ public:
 	virtual RasterizerCanvas *get_canvas();
 	virtual RasterizerScene *get_scene();
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true);
 
 	virtual void initialize();
 	virtual void begin_frame(double frame_step);

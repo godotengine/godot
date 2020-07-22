@@ -1268,7 +1268,16 @@ public:
 	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes);
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+	enum SplashStretchMode {
+		SPLASH_STRETCH_MODE_KEEP,
+		SPLASH_STRETCH_MODE_KEEP_WIDTH,
+		SPLASH_STRETCH_MODE_KEEP_HEIGHT,
+		SPLASH_STRETCH_MODE_COVER,
+		SPLASH_STRETCH_MODE_EXPAND,
+		SPLASH_STRETCH_MODE_DISABLED,
+	};
+
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
 	enum Features {
@@ -1344,6 +1353,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
 VARIANT_ENUM_CAST(RenderingServer::RenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
+VARIANT_ENUM_CAST(RenderingServer::SplashStretchMode);
 
 // Alias to make it easier to use.
 #define RS RenderingServer

@@ -183,7 +183,10 @@
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], scale the boot splash image to the full window length when engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
+			If [code]true[/code], scale the boot splash image according to the mode selected in the stretch_mode property. If [code]false[/code], the engine will leave it at the default pixel size.
+		</member>
+		<member name="application/boot_splash/stretch_mode" type="String" setter="" getter="" default="keep">
+			Specifies how the splash image will be stretched. Possible values: keep, keep_width, keep_height, cover and expand. Takes no effect if fullsize is false.
 		</member>
 		<member name="application/boot_splash/image" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an image used as the boot splash.

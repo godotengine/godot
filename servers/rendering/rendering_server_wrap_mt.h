@@ -687,7 +687,7 @@ public:
 		return rendering_server->get_video_adapter_vendor();
 	}
 
-	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
+	FUNC4(set_boot_image, const Ref<Image> &, const Color &, RenderingServer::SplashStretchMode, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
 	FUNC0R(RID, get_test_cube)

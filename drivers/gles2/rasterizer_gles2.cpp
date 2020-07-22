@@ -328,7 +328,7 @@ void RasterizerGLES2::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
-void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->empty())
 		return;
 
@@ -354,13 +354,41 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
-	if (p_scale) {
+
+	if (p_stretch_mode == RenderingServer::SPLASH_STRETCH_MODE_KEEP_HEIGHT) {
+		//scale horizontally
+		screenrect.size.y = window_h;
+		screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+		screenrect.position.x = (window_w - screenrect.size.x) / 2;
+	} else if (p_stretch_mode == RenderingServer::SPLASH_STRETCH_MODE_KEEP_WIDTH) {
+		//scale vertically
+		screenrect.size.x = window_w;
+		screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+		screenrect.position.y = (window_h - screenrect.size.y) / 2;
+	} else if (p_stretch_mode == RenderingServer::SPLASH_STRETCH_MODE_COVER) {
+		double window_aspect = (double)window_w / window_h;
+		double img_aspect = imgrect.size.x / imgrect.size.y;
+
+		if (window_aspect > img_aspect) {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.position.y = (window_h - screenrect.size.y) / 2;
+		} else {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.position.x = (window_w - screenrect.size.x) / 2;
+		}
+	} else if (p_stretch_mode == RenderingServer::SPLASH_STRETCH_MODE_EXPAND) {
+		screenrect.size.x = window_w;
+		screenrect.size.y = window_h;
+	} else if (p_stretch_mode == RenderingServer::SPLASH_STRETCH_MODE_KEEP) {
 		if (window_w > window_h) {
 			//scale horizontally
 			screenrect.size.y = window_h;
 			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
 			screenrect.position.x = (window_w - screenrect.size.x) / 2;
-
 		} else {
 			//scale vertically
 			screenrect.size.x = window_w;

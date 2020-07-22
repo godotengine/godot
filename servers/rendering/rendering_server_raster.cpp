@@ -209,9 +209,9 @@ Vector<RenderingServer::FrameProfileArea> RenderingServerRaster::get_frame_profi
 
 /* TESTING */
 
-void RenderingServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RenderingServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	redraw_request();
-	RSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
+	RSG::rasterizer->set_boot_image(p_image, p_color, p_stretch_mode, p_use_filter);
 }
 
 void RenderingServerRaster::set_default_clear_color(const Color &p_color) {
