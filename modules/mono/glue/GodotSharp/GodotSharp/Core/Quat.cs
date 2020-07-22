@@ -299,7 +299,7 @@ namespace Godot
         /// Returns a vector transformed (multiplied) by this quaternion.
         /// </summary>
         /// <param name="v">A vector to transform.</param>
-        /// <returns>The transfomed vector.</returns>
+        /// <returns>The transformed vector.</returns>
         public Vector3 Xform(Vector3 v)
         {
 #if DEBUG
