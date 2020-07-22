@@ -41,7 +41,7 @@ class Light3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 
 	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const override;
@@ -58,7 +58,7 @@ class AudioStreamPlayer3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 
 	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const override;
@@ -75,7 +75,7 @@ class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 
 	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const override;
@@ -92,7 +92,7 @@ class MeshInstance3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	bool can_be_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
@@ -105,7 +105,7 @@ class Sprite3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	bool can_be_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
@@ -121,7 +121,7 @@ class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -133,7 +133,7 @@ class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -145,7 +145,7 @@ class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -157,7 +157,7 @@ class RayCast3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -169,7 +169,7 @@ class SpringArm3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -181,7 +181,7 @@ class VehicleWheel3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -193,7 +193,7 @@ class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	bool is_selectable_when_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
@@ -211,7 +211,7 @@ class VisibilityNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -228,7 +228,7 @@ class CPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	bool is_selectable_when_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
@@ -240,7 +240,7 @@ class GPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	bool is_selectable_when_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
@@ -258,7 +258,7 @@ class GPUParticlesCollision3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -275,7 +275,7 @@ class ReflectionProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -292,7 +292,7 @@ class DecalGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -309,7 +309,7 @@ class GIProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -326,7 +326,7 @@ class BakedLightmapGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -343,7 +343,7 @@ class LightmapProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -360,7 +360,7 @@ class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -377,7 +377,7 @@ class CollisionPolygon3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 	CollisionPolygon3DGizmoPlugin();
@@ -395,7 +395,7 @@ class NavigationRegion3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
@@ -427,7 +427,7 @@ class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 

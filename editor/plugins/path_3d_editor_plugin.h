@@ -59,7 +59,7 @@ protected:
 	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
 
 public:
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	Path3DGizmoPlugin();
 };

@@ -40,7 +40,7 @@ class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
+	String get_gizmo_name() const override;
 	int get_priority() const override;
 	bool is_selectable_when_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;

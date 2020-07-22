@@ -630,7 +630,7 @@ Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 	return ref;
 }
 
-String Path3DGizmoPlugin::get_name() const {
+String Path3DGizmoPlugin::get_gizmo_name() const {
 	return "Path3D";
 }
 
