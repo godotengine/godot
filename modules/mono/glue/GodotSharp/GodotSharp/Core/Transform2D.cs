@@ -181,7 +181,7 @@ namespace Godot
         /// This method does not account for translation (the origin vector).
         /// </summary>
         /// <param name="v">A vector to transform.</param>
-        /// <returns>The transfomed vector.</returns>
+        /// <returns>The transformed vector.</returns>
         public Vector2 BasisXform(Vector2 v)
         {
             return new Vector2(Tdotx(v), Tdoty(v));
@@ -195,7 +195,7 @@ namespace Godot
         /// basis matrix only if it represents a rotation-reflection.
         /// </summary>
         /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transfomed vector.</returns>
+        /// <returns>The inversely transformed vector.</returns>
         public Vector2 BasisXformInv(Vector2 v)
         {
             return new Vector2(x.Dot(v), y.Dot(v));
@@ -355,7 +355,7 @@ namespace Godot
         /// Returns a vector transformed (multiplied) by this transformation matrix.
         /// </summary>
         /// <param name="v">A vector to transform.</param>
-        /// <returns>The transfomed vector.</returns>
+        /// <returns>The transformed vector.</returns>
         public Vector2 Xform(Vector2 v)
         {
             return new Vector2(Tdotx(v), Tdoty(v)) + origin;
@@ -365,7 +365,7 @@ namespace Godot
         /// Returns a vector transformed (multiplied) by the inverse transformation matrix.
         /// </summary>
         /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transfomed vector.</returns>
+        /// <returns>The inversely transformed vector.</returns>
         public Vector2 XformInv(Vector2 v)
         {
             Vector2 vInv = v - origin;
