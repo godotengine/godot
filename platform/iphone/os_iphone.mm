@@ -128,7 +128,6 @@ void OSIPhone::initialize_modules() {
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
-	game_center->connect();
 #endif
 
 #ifdef STOREKIT_ENABLED
