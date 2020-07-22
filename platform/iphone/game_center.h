@@ -48,7 +48,7 @@ class GameCenter : public Object {
 	void return_connect_error(const char *p_error_description);
 
 public:
-	void connect();
+	Error authenticate();
 	bool is_authenticated();
 
 	Error post_score(Dictionary p_score);
