@@ -470,6 +470,8 @@ void PlayerInputsReference::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_int_size", "compression_level"), &PlayerInputsReference::get_int_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_unit_real_size", "compression_level"), &PlayerInputsReference::get_unit_real_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_normalized_vector2_size", "compression_level"), &PlayerInputsReference::get_normalized_vector2_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_vector3_size", "compression_level"), &PlayerInputsReference::get_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_precise_vector3_size", "compression_level"), &PlayerInputsReference::get_precise_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &PlayerInputsReference::get_normalized_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 }
 
@@ -491,6 +493,14 @@ real_t PlayerInputsReference::read_unit_real(NetworkedController::InputCompressi
 
 Vector2 PlayerInputsReference::read_normalized_vector2(NetworkedController::InputCompressionLevel p_compression) {
 	return inputs_buffer.read_normalized_vector2(static_cast<InputsBuffer::CompressionLevel>(p_compression));
+}
+
+Vector3 PlayerInputsReference::read_vector3(NetworkedController::InputCompressionLevel p_compression) {
+	return inputs_buffer.read_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
+}
+
+Vector3 PlayerInputsReference::read_precise_vector3(NetworkedController::InputCompressionLevel p_compression) {
+	return inputs_buffer.read_precise_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
 Vector3 PlayerInputsReference::read_normalized_vector3(NetworkedController::InputCompressionLevel p_compression) {
@@ -517,6 +527,16 @@ void PlayerInputsReference::skip_normalized_vector2(NetworkedController::InputCo
 	inputs_buffer.skip(bits);
 }
 
+void PlayerInputsReference::skip_vector3(NetworkedController::InputCompressionLevel p_compression) {
+	const int bits = get_vector3_size(p_compression);
+	inputs_buffer.skip(bits);
+}
+
+void PlayerInputsReference::skip_precise_vector3(NetworkedController::InputCompressionLevel p_compression) {
+	const int bits = get_precise_vector3_size(p_compression);
+	inputs_buffer.skip(bits);
+}
+
 void PlayerInputsReference::skip_normalized_vector3(NetworkedController::InputCompressionLevel p_compression) {
 	const int bits = get_normalized_vector3_size(p_compression);
 	inputs_buffer.skip(bits);
@@ -536,6 +556,14 @@ int PlayerInputsReference::get_unit_real_size(NetworkedController::InputCompress
 
 int PlayerInputsReference::get_normalized_vector2_size(NetworkedController::InputCompressionLevel p_compression) const {
 	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_NORMALIZED_VECTOR2, static_cast<InputsBuffer::CompressionLevel>(p_compression));
+}
+
+int PlayerInputsReference::get_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {
+	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_VECTOR3, static_cast<InputsBuffer::CompressionLevel>(p_compression));
+}
+
+int PlayerInputsReference::get_precise_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {
+	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_PRECISE_VECTOR3, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
 int PlayerInputsReference::get_normalized_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {

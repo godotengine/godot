@@ -248,6 +248,17 @@ public:
 	/// Parse next data as vector3 from the input buffer.
 	Vector3 read_vector3(CompressionLevel p_compression_level);
 
+	/// Add a precise vector3 into the buffer.
+	/// Note: This kind of vector occupies more space than the normalized verison.
+	/// Consider use a normalized vector to save bandwidth if possible.
+	///
+	/// Returns the decompressed vector so both the client and the peers can use
+	/// the same data.
+	Vector3 add_precise_vector3(Vector3 p_input, CompressionLevel p_compression_level);
+
+	/// Parse next data as precise vector3 from the input buffer.
+	Vector3 read_precise_vector3(CompressionLevel p_compression_level);
+
 	/// Add a normalized vector3 into the buffer.
 	/// Note: The compression algorithm rely on the fact that this is a
 	/// normalized vector. The behaviour is unexpected for not normalized vectors.

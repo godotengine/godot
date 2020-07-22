@@ -303,18 +303,24 @@ public:
 	int64_t read_int(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	real_t read_unit_real(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	Vector2 read_normalized_vector2(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	Vector3 read_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	Vector3 read_precise_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	Vector3 read_normalized_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 
 	void skip_bool(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	void skip_int(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	void skip_unit_real(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	void skip_normalized_vector2(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_precise_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 	void skip_normalized_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 
 	int get_bool_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
 	int get_int_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
 	int get_unit_real_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
 	int get_normalized_vector2_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_precise_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
 	int get_normalized_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
 
 	void begin();

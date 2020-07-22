@@ -264,16 +264,41 @@ Vector2 InputsBuffer::read_normalized_vector2(CompressionLevel p_compression_lev
 Vector3 InputsBuffer::add_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
 	ERR_FAIL_COND_V(is_reading == true, p_input);
 
-	const real_t integral_x = Math::floor(p_input[0]);
-	const real_t fractional_x = p_input[0] - integral_x;
-
-	add_int(integral_x, p_compression_level);
-	add_unit_real(fractional_x, COMPRESSION_LEVEL_1);
+	Vector3 r;
+	r[0] = add_real(p_input[0], p_compression_level);
+	r[1] = add_real(p_input[1], p_compression_level);
+	r[2] = add_real(p_input[2], p_compression_level);
+	return r;
 }
 
-Vector3 InputsBuffer::read_vector3(CompressionLevel p_compression_level){
-	const real_t integral
+Vector3 InputsBuffer::read_vector3(CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == false, Vector3());
 
+	Vector3 r;
+	r[0] = read_real(p_compression_level);
+	r[1] = read_real(p_compression_level);
+	r[2] = read_real(p_compression_level);
+	return r;
+}
+
+Vector3 InputsBuffer::add_precise_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == true, p_input);
+
+	Vector3 r;
+	r[0] = add_precise_real(p_input[0], p_compression_level);
+	r[1] = add_precise_real(p_input[1], p_compression_level);
+	r[2] = add_precise_real(p_input[2], p_compression_level);
+	return r;
+}
+
+Vector3 InputsBuffer::read_precise_vector3(CompressionLevel p_compression_level) {
+	ERR_FAIL_COND_V(is_reading == false, Vector3());
+
+	Vector3 r;
+	r[0] = read_precise_real(p_compression_level);
+	r[1] = read_precise_real(p_compression_level);
+	r[2] = read_precise_real(p_compression_level);
+	return r;
 }
 
 Vector3 InputsBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_compression_level) {
