@@ -40,6 +40,69 @@
 
 class RasterizerStorageRD : public RasterizerStorage {
 public:
+	static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.elements[0][0];
+		p_array[1] = p_mtx.basis.elements[1][0];
+		p_array[2] = p_mtx.basis.elements[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.basis.elements[0][1];
+		p_array[5] = p_mtx.basis.elements[1][1];
+		p_array[6] = p_mtx.basis.elements[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.basis.elements[0][2];
+		p_array[9] = p_mtx.basis.elements[1][2];
+		p_array[10] = p_mtx.basis.elements[2][2];
+		p_array[11] = 0;
+		p_array[12] = p_mtx.origin.x;
+		p_array[13] = p_mtx.origin.y;
+		p_array[14] = p_mtx.origin.z;
+		p_array[15] = 1;
+	}
+
+	static _FORCE_INLINE_ void store_basis_3x4(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.elements[0][0];
+		p_array[1] = p_mtx.elements[1][0];
+		p_array[2] = p_mtx.elements[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.elements[0][1];
+		p_array[5] = p_mtx.elements[1][1];
+		p_array[6] = p_mtx.elements[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.elements[0][2];
+		p_array[9] = p_mtx.elements[1][2];
+		p_array[10] = p_mtx.elements[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.elements[0][0];
+		p_array[1] = p_mtx.elements[1][0];
+		p_array[2] = p_mtx.elements[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.elements[0][1];
+		p_array[5] = p_mtx.elements[1][1];
+		p_array[6] = p_mtx.elements[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.elements[0][2];
+		p_array[9] = p_mtx.elements[1][2];
+		p_array[10] = p_mtx.elements[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				p_array[i * 4 + j] = p_mtx.matrix[i][j];
+			}
+		}
+	}
+
+	static _FORCE_INLINE_ void store_soft_shadow_kernel(const float *p_kernel, float *p_array) {
+		for (int i = 0; i < 128; i++) {
+			p_array[i] = p_kernel[i];
+		}
+	}
+
 	enum ShaderType {
 		SHADER_TYPE_2D,
 		SHADER_TYPE_3D,
