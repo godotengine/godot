@@ -118,9 +118,14 @@ namespace GodotTools.Build
             string arguments = string.Empty;
 
             if (buildTool == BuildTool.DotnetCli)
-                arguments += "msbuild "; // `dotnet msbuild` command
+                arguments += "msbuild"; // `dotnet msbuild` command
 
-            arguments += $@"""{buildInfo.Solution}"" /t:{string.Join(",", buildInfo.Targets)} " +
+            arguments += $@" ""{buildInfo.Solution}""";
+
+            if (buildInfo.Restore)
+                arguments += " /restore";
+
+            arguments += $@" /t:{string.Join(",", buildInfo.Targets)} " +
                          $@"""/p:{"Configuration=" + buildInfo.Configuration}"" /v:normal " +
                          $@"""/l:{typeof(GodotBuildLogger).FullName},{GodotBuildLogger.AssemblyPath};{buildInfo.LogsDirPath}""";
 
