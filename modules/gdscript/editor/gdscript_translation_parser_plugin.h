@@ -39,15 +39,18 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 
 	// Regex and search patterns that are used to match translation strings.
 	const String text = "((?:[^\"\\\\]|\\\\[\\s\\S])*(?:\"[\\s\\\\]*\\+[\\s\\\\]*\"(?:[^\"\\\\]|\\\\[\\s\\S])*)*)";
+	const String tr_pattern = "tr[\\s\\\\]*\\([\\s\\\\]*\"" + text + "\"(?:[\\s\\\\]*,[\\s\\\\]*\"" + text + "\")?[\\s\\\\]*\\)";
+	const String trn_pattern = "tr_n[\\s\\\\]*\\([\\s\\\\]*\"" + text + "\"[\\s\\\\]*,[\\s\\\\]*\"" + text + "\".*?(?:\"" + text + "\"[\\s\\\\]*)?\\)";
 	RegEx regex;
 	Vector<String> patterns;
 	Vector<String> file_dialog_patterns;
 
 	void _parse_file_dialog(const String &p_source_code, Vector<String> *r_output);
 	void _get_captured_strings(const Array &p_results, Vector<String> *r_output);
+	void _handle_tr_pattern(const String &p_source_code, const String &p_pattern, Vector<Vector<String>> *r_ids_ctx_plural);
 
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings) override;
+	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;
 	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
 
 	GDScriptEditorTranslationParserPlugin();
