@@ -34,6 +34,7 @@
 #include "core/local_vector.h"
 #include "core/rid_owner.h"
 #include "servers/rendering/rasterizer.h"
+#include "servers/rendering/rasterizer_rd/light_cluster_builder.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/rendering/rasterizer_rd/shaders/gi.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/giprobe.glsl.gen.h"
@@ -77,7 +78,11 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
+	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count);
+	void _setup_decals(const RID *p_decal_instances, int p_decal_count, const Transform &p_camera_inverse_xform);
+	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
+
+	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip, bool p_use_pancake) = 0;
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
@@ -1181,6 +1186,112 @@ private:
 	void _render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection);
 	void _sdfgi_debug_draw(RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform);
 
+	/* Cluster */
+
+	struct Cluster {
+		/* Scene State UBO */
+
+		struct ReflectionData { //should always be 128 bytes
+			float box_extents[3];
+			float index;
+			float box_offset[3];
+			uint32_t mask;
+			float params[4]; // intensity, 0, interior , boxproject
+			float ambient[3]; // ambient color,
+			uint32_t ambient_mode;
+			float local_matrix[16]; // up to here for spot and omni, rest is for directional
+		};
+
+		struct LightData {
+			float position[3];
+			float inv_radius;
+			float direction[3];
+			float size;
+			uint16_t attenuation_energy[2]; //16 bits attenuation, then energy
+			uint8_t color_specular[4]; //rgb color, a specular (8 bit unorm)
+			uint16_t cone_attenuation_angle[2]; // attenuation and angle, (16bit float)
+			uint8_t shadow_color_enabled[4]; //shadow rgb color, a>0.5 enabled (8bit unorm)
+			float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
+			float shadow_matrix[16];
+			float shadow_bias;
+			float shadow_normal_bias;
+			float transmittance_bias;
+			float soft_shadow_size;
+			float soft_shadow_scale;
+			uint32_t mask;
+			uint32_t pad[2];
+			float projector_rect[4];
+		};
+
+		struct DirectionalLightData {
+			float direction[3];
+			float energy;
+			float color[3];
+			float size;
+			float specular;
+			uint32_t mask;
+			float softshadow_angle;
+			float soft_shadow_scale;
+			uint32_t blend_splits;
+			uint32_t shadow_enabled;
+			float fade_from;
+			float fade_to;
+			float shadow_bias[4];
+			float shadow_normal_bias[4];
+			float shadow_transmittance_bias[4];
+			float shadow_transmittance_z_scale[4];
+			float shadow_range_begin[4];
+			float shadow_split_offsets[4];
+			float shadow_matrices[4][16];
+			float shadow_color1[4];
+			float shadow_color2[4];
+			float shadow_color3[4];
+			float shadow_color4[4];
+			float uv_scale1[2];
+			float uv_scale2[2];
+			float uv_scale3[2];
+			float uv_scale4[2];
+		};
+
+		struct DecalData {
+			float xform[16];
+			float inv_extents[3];
+			float albedo_mix;
+			float albedo_rect[4];
+			float normal_rect[4];
+			float orm_rect[4];
+			float emission_rect[4];
+			float modulate[4];
+			float emission_energy;
+			uint32_t mask;
+			float upper_fade;
+			float lower_fade;
+			float normal_xform[12];
+			float normal[3];
+			float normal_fade;
+		};
+
+		ReflectionData *reflections;
+		uint32_t max_reflections;
+		RID reflection_buffer;
+		uint32_t max_reflection_probes_per_instance;
+
+		DecalData *decals;
+		uint32_t max_decals;
+		RID decal_buffer;
+
+		LightData *lights;
+		uint32_t max_lights;
+		RID light_buffer;
+
+		DirectionalLightData *directional_lights;
+		uint32_t max_directional_lights;
+		RID directional_light_buffer;
+
+		LightClusterBuilder builder;
+
+	} cluster;
+
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
 
@@ -1654,6 +1765,14 @@ public:
 	}
 
 	virtual void set_time(double p_time, double p_step);
+
+	RID get_cluster_builder_texture();
+	RID get_cluster_builder_indices_buffer();
+	RID get_reflection_probe_buffer();
+	RID get_positional_light_buffer();
+	RID get_directional_light_buffer();
+	RID get_decal_buffer();
+	int get_max_directional_lights() const;
 
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir);
 
