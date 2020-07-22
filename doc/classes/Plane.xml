@@ -69,7 +69,8 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns a point on the plane.
+				Returns the center of the plane.
+				This method is deprecated, please use [method center] instead.
 			</description>
 		</method>
 		<method name="has_point">
@@ -80,7 +81,7 @@
 			<argument index="1" name="epsilon" type="float" default="1e-05">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [code]point[/code] is inside the plane (by a very minimum [code]epsilon[/code] threshold).
+				Returns [code]true[/code] if [code]point[/code] is inside the plane. Comparison uses a custom minimum [code]epsilon[/code] threshold.
 			</description>
 		</method>
 		<method name="intersect_3">
@@ -147,36 +148,38 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-				Returns the orthogonal projection of point [code]p[/code] into a point in the plane.
+				Returns the orthogonal projection of [code]point[/code] into a point in the plane.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="d" type="float" setter="" getter="" default="0.0">
-			Distance from the origin to the plane, in the direction of [member normal].
+			The distance from the origin to the plane, in the direction of [member normal]. This value is typically non-negative.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
-			The normal of the plane. "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
+			The normal of the plane, which must be normalized.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
-			The [member normal]'s X component.
+			The X component of the plane's [member normal] vector.
 		</member>
 		<member name="y" type="float" setter="" getter="" default="0.0">
-			The [member normal]'s Y component.
+			The Y component of the plane's [member normal] vector.
 		</member>
 		<member name="z" type="float" setter="" getter="" default="0.0">
-			The [member normal]'s Z component.
+			The Z component of the plane's [member normal] vector.
 		</member>
 	</members>
 	<constants>
 		<constant name="PLANE_YZ" value="Plane( 1, 0, 0, 0 )">
-			A plane that extends in the Y and Z axes.
+			A plane that extends in the Y and Z axes (normal vector points +X).
 		</constant>
 		<constant name="PLANE_XZ" value="Plane( 0, 1, 0, 0 )">
-			A plane that extends in the X and Z axes.
+			A plane that extends in the X and Z axes (normal vector points +Y).
 		</constant>
 		<constant name="PLANE_XY" value="Plane( 0, 0, 1, 0 )">
-			A plane that extends in the X and Y axes.
+			A plane that extends in the X and Y axes (normal vector points +Z).
 		</constant>
 	</constants>
 </class>

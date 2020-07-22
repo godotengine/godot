@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Transform2D" version="3.2">
 	<brief_description>
-		2D transformation (3×2 matrix).
+		2D transformation (2×3 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 2D space such as translation, rotation, or scaling. It consists of two [member x] and [member y] [Vector2]s and an [member origin]. It is similar to a 3×2 matrix.
+		2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of a three [Vector2] values: [member x], [member y], and the [member origin].
+		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
 	</tutorials>
 	<methods>
 		<method name="Transform2D">
@@ -28,7 +30,7 @@
 			<argument index="2" name="origin" type="Vector2">
 			</argument>
 			<description>
-				Constructs the transform from 3 [Vector2]s representing x, y, and origin.
+				Constructs the transform from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three column vectors).
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -46,7 +48,7 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns the inverse of the matrix.
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="basis_xform">
@@ -55,7 +57,8 @@
 			<argument index="0" name="v" type="Vector2">
 			</argument>
 			<description>
-				Transforms the given vector by this transform's basis (no translation).
+				Returns a vector transformed (multiplied) by the basis matrix.
+				This method does not account for translation (the origin vector).
 			</description>
 		</method>
 		<method name="basis_xform_inv">
@@ -64,7 +67,8 @@
 			<argument index="0" name="v" type="Vector2">
 			</argument>
 			<description>
-				Inverse-transforms the given vector by this transform's basis (no translation).
+				Returns a vector transformed (multiplied) by the inverse basis matrix.
+				This method does not account for translation (the origin vector).
 			</description>
 		</method>
 		<method name="get_origin">
@@ -96,14 +100,14 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Returns a transform interpolated between this transform and another by a given weight (0-1).
+				Returns a transform interpolated between this transform and another by a given weight (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -119,7 +123,7 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
 		<method name="rotated">
@@ -171,24 +175,24 @@
 	</methods>
 	<members>
 		<member name="origin" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
-			The transform's translation offset.
+			The origin vector (column 2, the third column). Equivalent to array index [code]2[/code]. The origin vector represents translation.
 		</member>
 		<member name="x" type="Vector2" setter="" getter="" default="Vector2( 1, 0 )">
-			The X axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The basis matrix's X vector (column 0). Equivalent to array index [code]0[/code].
 		</member>
 		<member name="y" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
-			The Y axis of 2×2 basis matrix containing 2 [Vector2]s as its columns: X axis and Y axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			[Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
+			The identity [Transform2D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
-			[Transform2D] with mirroring applied parallel to the X axis.
+			The [Transform2D] that will flip something along the X axis.
 		</constant>
 		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
-			[Transform2D] with mirroring applied parallel to the Y axis.
+			The [Transform2D] that will flip something along the Y axis.
 		</constant>
 	</constants>
 </class>

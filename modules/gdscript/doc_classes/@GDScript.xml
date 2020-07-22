@@ -52,7 +52,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the absolute value of parameter [code]s[/code] (i.e. unsigned value, works for integer and float).
+				Returns the absolute value of parameter [code]s[/code] (i.e. positive value).
 				[codeblock]
 				# a is 1
 				a = abs(-1)
@@ -112,7 +112,7 @@
 			</argument>
 			<description>
 				Returns the arc tangent of [code]s[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
-				The method cannot know in which quadrant the angle should fall. See [method atan2] if you always want an exact angle.
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[code] and [code]x[/code].
 				[codeblock]
 				a = atan(0.5) # a is 0.463648
 				[/codeblock]
@@ -127,6 +127,7 @@
 			</argument>
 			<description>
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
+				Important note: The Y coordinate comes first, by convention.
 				[codeblock]
 				a = atan2(0, -1) # a is 3.141593
 				[/codeblock]
@@ -161,7 +162,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Rounds [code]s[/code] upward, returning the smallest integral value that is not less than [code]s[/code].
+				Rounds [code]s[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]s[/code].
 				[codeblock]
 				i = ceil(1.45)  # i is 2
 				i = ceil(1.001) # i is 2
@@ -292,7 +293,7 @@
 			<argument index="0" name="deg" type="float">
 			</argument>
 			<description>
-				Returns degrees converted to radians.
+				Converts an angle expressed in degrees to radians.
 				[codeblock]
 				# r is 3.141593
 				r = deg2rad(180)
@@ -316,7 +317,7 @@
 			<argument index="1" name="curve" type="float">
 			</argument>
 			<description>
-				Easing function, based on exponent. 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
+				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
 			</description>
 		</method>
 		<method name="exp">
@@ -339,7 +340,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Rounds [code]s[/code] to the closest smaller integer and returns it.
+				Rounds [code]s[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]s[/code].
 				[codeblock]
 				# a is 2.0
 				a = floor(2.99)
@@ -539,7 +540,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns whether [code]s[/code] is a NaN (Not-A-Number) value.
+				Returns whether [code]s[/code] is a NaN ("Not a Number" or invalid) value.
 			</description>
 		</method>
 		<method name="is_zero_approx">
@@ -549,6 +550,7 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if [code]s[/code] is zero or almost zero.
+				This method is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
 		<method name="len">
@@ -916,7 +918,7 @@
 			<argument index="0" name="rad" type="float">
 			</argument>
 			<description>
-				Converts from radians to degrees.
+				Converts an angle expressed in radians to degrees.
 				[codeblock]
 				rad2deg(0.523599) # Returns 30
 				[/codeblock]
@@ -1035,7 +1037,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the integral value that is nearest to [code]s[/code], with halfway cases rounded away from zero.
+				Rounds [code]s[/code] to the nearest whole number, with halfway cases rounded away from zero.
 				[codeblock]
 				round(2.6) # Returns 3
 				[/codeblock]
@@ -1117,10 +1119,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the square root of [code]s[/code].
+				Returns the square root of [code]s[/code], where [code]s[/code] is a non-negative number.
 				[codeblock]
 				sqrt(9) # Returns 3
 				[/codeblock]
+				If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -1321,27 +1324,19 @@
 				Wraps float [code]value[/code] between [code]min[/code] and [code]max[/code].
 				Usable for creating loop-alike behavior or infinite surfaces.
 				[codeblock]
-				# a is 0.5
-				a = wrapf(10.5, 0.0, 10.0)
-				[/codeblock]
-				[codeblock]
-				# a is 9.5
-				a = wrapf(-0.5, 0.0, 10.0)
-				[/codeblock]
-				[codeblock]
-				# Infinite loop between 0.0 and 0.99
-				f = wrapf(f + 0.1, 0.0, 1.0)
+				# Infinite loop between 5.0 and 9.9
+				value = wrapf(value + 0.1, 5.0, 10.0)
 				[/codeblock]
 				[codeblock]
 				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, 0.0, TAU)
 				[/codeblock]
-				[b]Note:[/b] If you just want to wrap between 0.0 and [code]n[/code] (where [code]n[/code] is a positive floating-point value), it is better for performance to use the [method fmod] method like [code]fmod(number, n)[/code].
-				[code]wrapf[/code] is more flexible than using the [method fmod] approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
 				[codeblock]
 				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
+				[b]Note:[/b] If [code]min[/code] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
+				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">
@@ -1357,23 +1352,15 @@
 				Wraps integer [code]value[/code] between [code]min[/code] and [code]max[/code].
 				Usable for creating loop-alike behavior or infinite surfaces.
 				[codeblock]
-				# a is 0
-				a = wrapi(10, 0, 10)
+				# Infinite loop between 5 and 9
+				frame = wrapi(frame + 1, 5, 10)
 				[/codeblock]
-				[codeblock]
-				# a is 9
-				a = wrapi(-1, 0, 10)
-				[/codeblock]
-				[codeblock]
-				# Infinite loop between 0 and 9
-				frame = wrapi(frame + 1, 0, 10)
-				[/codeblock]
-				[b]Note:[/b] If you just want to wrap between 0 and [code]n[/code] (where [code]n[/code] is a positive integer value), it is better for performance to use the modulo operator like [code]number % n[/code].
-				[code]wrapi[/code] is more flexible than using the modulo approach by giving the user a simple control over the minimum value. It also fully supports negative numbers, e.g.
 				[codeblock]
 				# result is -2
 				var result = wrapi(-6, -5, -1)
 				[/codeblock]
+				[b]Note:[/b] If [code]min[/code] is [code]0[/code], this is equivalent to [method posmod], so prefer using that instead.
+				[code]wrapi[/code] is more flexible than using the [method posmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="yield">
@@ -1415,17 +1402,16 @@
 	</methods>
 	<constants>
 		<constant name="PI" value="3.141593">
-			Constant that represents how many times the diameter of a circle fits around its perimeter.
+			Constant that represents how many times the diameter of a circle fits around its perimeter. This is equivalent to [code]TAU / 2[/code].
 		</constant>
 		<constant name="TAU" value="6.283185">
-			The circle constant, the circumference of the unit circle.
+			The circle constant, the circumference of the unit circle in radians.
 		</constant>
 		<constant name="INF" value="inf">
-			A positive infinity. (For negative infinity, use -INF).
+			Positive infinity. For negative infinity, use -INF.
 		</constant>
 		<constant name="NAN" value="nan">
-			Macro constant that expands to an expression of type float that represents a NaN.
-			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
+			"Not a Number", an invalid value. [code]NaN[/code] has special properties, including that it is not equal to itself. It is output by some invalid operations, such as dividing zero by zero.
 		</constant>
 	</constants>
 </class>

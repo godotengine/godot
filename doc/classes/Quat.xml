@@ -4,9 +4,9 @@
 		Quaternion.
 	</brief_description>
 	<description>
-		A unit quaternion used for representing 3D rotations.
-		It is similar to [Basis], which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. But due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating-point errors.
-		Quaternions need to be (re)normalized.
+		A unit quaternion used for representing 3D rotations. Quaternions need to be normalized to be used for rotation.
+		It is similar to Basis, which implements matrix representation of rotations, and can be parametrized using both an axis-angle pair or Euler angles. Basis stores rotation, scale, and shearing, while Quat only stores rotation.
+		Due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating-point errors.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
@@ -18,7 +18,7 @@
 			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
-				Returns the rotation matrix corresponding to the given quaternion.
+				Constructs a quaternion from the given [Basis].
 			</description>
 		</method>
 		<method name="Quat">
@@ -27,7 +27,7 @@
 			<argument index="0" name="euler" type="Vector3">
 			</argument>
 			<description>
-				Returns a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
+				Constructs a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="Quat">
@@ -38,7 +38,7 @@
 			<argument index="1" name="angle" type="float">
 			</argument>
 			<description>
-				Returns a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
+				Constructs a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="Quat">
@@ -53,7 +53,7 @@
 			<argument index="3" name="w" type="float">
 			</argument>
 			<description>
-				Returns a quaternion defined by these values.
+				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
 		<method name="cubic_slerp">
@@ -68,7 +68,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Performs a cubic spherical-linear interpolation with another quaternion.
+				Performs a cubic spherical interpolation between quaternions [code]preA[/code], this vector, [code]b[/code], and [code]postB[/code], by the given amount [code]t[/code].
 			</description>
 		</method>
 		<method name="dot">
@@ -84,7 +84,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns Euler angles (in the YXZ convention: first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
+				Returns Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="inverse">
@@ -144,7 +144,7 @@
 			<argument index="0" name="euler" type="Vector3">
 			</argument>
 			<description>
-				Sets the quaternion to a rotation specified by Euler angles (in the YXZ convention: first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
+				Sets the quaternion to a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="slerp">
@@ -155,7 +155,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Performs a spherical-linear interpolation with another quaternion.
+				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code].
+				[b]Note:[/b] Both quaternions must be normalized.
 			</description>
 		</method>
 		<method name="slerpni">
@@ -166,7 +167,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Performs a spherical-linear interpolation with another quaterion without checking if the rotation path is not bigger than 90°.
+				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.
 			</description>
 		</method>
 		<method name="xform">
@@ -175,27 +176,31 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Transforms the vector [code]v[/code] by this quaternion.
+				Returns a vector transformed (multiplied) by this quaternion.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="w" type="float" setter="" getter="" default="1.0">
-			W component of the quaternion.
+			W component of the quaternion (real part).
+			Quaternion components should usually not be manipulated directly.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
-			X component of the quaternion.
+			X component of the quaternion (imaginary [code]i[/code] axis part).
+			Quaternion components should usually not be manipulated directly.
 		</member>
 		<member name="y" type="float" setter="" getter="" default="0.0">
-			Y component of the quaternion.
+			Y component of the quaternion (imaginary [code]j[/code] axis part).
+			Quaternion components should usually not be manipulated directly.
 		</member>
 		<member name="z" type="float" setter="" getter="" default="0.0">
-			Z component of the quaternion.
+			Z component of the quaternion (imaginary [code]k[/code] axis part).
+			Quaternion components should usually not be manipulated directly.
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Quat( 0, 0, 0, 1 )">
-			The identity rotation. Equivalent to an identity matrix. If a vector is transformed by an identity quaternion, it will not change.
+			The identity quaternion, representing no rotation. Equivalent to an identity [Basis] matrix. If a vector is transformed by an identity quaternion, it will not change.
 		</constant>
 	</constants>
 </class>

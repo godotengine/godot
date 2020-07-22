@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace Godot
 {
+    /// <summary>
+    /// This class contains color constants created from standardized color names.
+    /// The standardized color set is based on the X11 and .NET color names.
+    /// </summary>
     public static class Colors
     {
         // Color names and values are derived from core/color_names.inc

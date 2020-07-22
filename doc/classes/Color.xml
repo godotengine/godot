@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Color" version="3.2">
 	<brief_description>
-		Color in RGBA format with some support for ARGB format.
+		Color in RGBA format using floats on the range of 0 to 1.
 	</brief_description>
 	<description>
-		A color is represented by red, green, and blue [code](r, g, b)[/code] components. Additionally, [code]a[/code] represents the alpha component, often used for transparency. Values are in floating-point and usually range from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may accept values greater than 1.
+		A color represented by red, green, blue, and alpha (RGBA) components. The alpha component is often used for transparency. Values are in floating-point and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may accept values greater than 1 (overbright or HDR colors).
 		You can also create a color from standardized color names by using [method @GDScript.ColorN] or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url].
 		If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it's equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
@@ -275,37 +275,37 @@
 	</methods>
 	<members>
 		<member name="a" type="float" setter="" getter="" default="1.0">
-			Alpha value (range 0 to 1).
+			The color's alpha (transparency) component, typically on the range of 0 to 1.
 		</member>
 		<member name="a8" type="int" setter="" getter="" default="255">
-			Alpha value (range 0 to 255).
+			Wrapper for [member a] that uses the range 0 to 255 instead of 0 to 1.
 		</member>
 		<member name="b" type="float" setter="" getter="" default="0.0">
-			Blue value (range 0 to 1).
+			The color's blue component, typically on the range of 0 to 1.
 		</member>
 		<member name="b8" type="int" setter="" getter="" default="0">
-			Blue value (range 0 to 255).
+			Wrapper for [member b] that uses the range 0 to 255 instead of 0 to 1.
 		</member>
 		<member name="g" type="float" setter="" getter="" default="0.0">
-			Green value (range 0 to 1).
+			The color's green component, typically on the range of 0 to 1.
 		</member>
 		<member name="g8" type="int" setter="" getter="" default="0">
-			Green value (range 0 to 255).
+			Wrapper for [member g] that uses the range 0 to 255 instead of 0 to 1.
 		</member>
 		<member name="h" type="float" setter="" getter="" default="0.0">
-			HSV hue value (range 0 to 1).
+			The HSV hue of this color, on the range 0 to 1.
 		</member>
 		<member name="r" type="float" setter="" getter="" default="0.0">
-			Red value (range 0 to 1).
+			The color's red component, typically on the range of 0 to 1.
 		</member>
 		<member name="r8" type="int" setter="" getter="" default="0">
-			Red value (range 0 to 255).
+			Wrapper for [member r] that uses the range 0 to 255 instead of 0 to 1.
 		</member>
 		<member name="s" type="float" setter="" getter="" default="0.0">
-			HSV saturation value (range 0 to 1).
+			The HSV saturation of this color, on the range 0 to 1.
 		</member>
 		<member name="v" type="float" setter="" getter="" default="0.0">
-			HSV value (range 0 to 1).
+			The HSV value (brightness) of this color, on the range 0 to 1.
 		</member>
 	</members>
 	<constants>
