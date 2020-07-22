@@ -49,11 +49,6 @@
 #define TICK_SPEED_CHANGE_NOTIF_THRESHOLD 4
 
 void NetworkedController::_bind_methods() {
-	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_0);
-	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_1);
-	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_2);
-	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_3);
-
 	ClassDB::bind_method(D_METHOD("set_player_input_storage_size", "size"), &NetworkedController::set_player_input_storage_size);
 	ClassDB::bind_method(D_METHOD("get_player_input_storage_size"), &NetworkedController::get_player_input_storage_size);
 
@@ -80,21 +75,6 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
-	ClassDB::bind_method(D_METHOD("input_buffer_add_bool", "bool", "compression_level"), &NetworkedController::input_buffer_add_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_bool", "compression_level"), &NetworkedController::input_buffer_read_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-
-	ClassDB::bind_method(D_METHOD("input_buffer_add_int", "int", "compression_level"), &NetworkedController::input_buffer_add_int, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_int", "compression_level"), &NetworkedController::input_buffer_read_int, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-
-	ClassDB::bind_method(D_METHOD("input_buffer_add_unit_real", "unit_real", "compression_level"), &NetworkedController::input_buffer_add_unit_real, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_unit_real", "compression_level"), &NetworkedController::input_buffer_read_unit_real, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-
-	ClassDB::bind_method(D_METHOD("input_buffer_add_normalized_vector2", "vector", "compression_level"), &NetworkedController::input_buffer_add_normalized_vector2, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_normalized_vector2", "compression_level"), &NetworkedController::input_buffer_read_normalized_vector2, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-
-	ClassDB::bind_method(D_METHOD("input_buffer_add_normalized_vector3", "vector", "compression_level"), &NetworkedController::input_buffer_add_normalized_vector3, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_normalized_vector3", "compression_level"), &NetworkedController::input_buffer_read_normalized_vector3, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &NetworkedController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
 
@@ -108,10 +88,10 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_doll_controller"), &NetworkedController::is_doll_controller);
 	ClassDB::bind_method(D_METHOD("is_nonet_controller"), &NetworkedController::is_nonet_controller);
 
-	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
+	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
@@ -199,46 +179,6 @@ int NetworkedController::get_server_input_storage_size() const {
 
 uint64_t NetworkedController::get_current_input_id() const {
 	return controller->get_current_input_id();
-}
-
-bool NetworkedController::input_buffer_add_bool(bool p_input, InputCompressionLevel _p_compression) {
-	return inputs_buffer.add_bool(p_input);
-}
-
-bool NetworkedController::input_buffer_read_bool(InputCompressionLevel _p_compression) {
-	return inputs_buffer.read_bool();
-}
-
-int64_t NetworkedController::input_buffer_add_int(int64_t p_input, InputCompressionLevel p_compression) {
-	return inputs_buffer.add_int(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int64_t NetworkedController::input_buffer_read_int(InputCompressionLevel p_compression) {
-	return inputs_buffer.read_int(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-real_t NetworkedController::input_buffer_add_unit_real(real_t p_input, InputCompressionLevel p_compression) {
-	return inputs_buffer.add_unit_real(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-real_t NetworkedController::input_buffer_read_unit_real(InputCompressionLevel p_compression) {
-	return inputs_buffer.read_unit_real(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector2 NetworkedController::input_buffer_add_normalized_vector2(Vector2 p_input, InputCompressionLevel p_compression) {
-	return inputs_buffer.add_normalized_vector2(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector2 NetworkedController::input_buffer_read_normalized_vector2(InputCompressionLevel p_compression) {
-	return inputs_buffer.read_normalized_vector2(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector3 NetworkedController::input_buffer_add_normalized_vector3(Vector3 p_input, InputCompressionLevel p_compression) {
-	return inputs_buffer.add_normalized_vector3(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector3 NetworkedController::input_buffer_read_normalized_vector3(InputCompressionLevel p_compression) {
-	return inputs_buffer.read_normalized_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
@@ -453,131 +393,6 @@ void NetworkedController::_notification(int p_what) {
 	}
 }
 
-void PlayerInputsReference::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("read_bool", "compression_level"), &PlayerInputsReference::read_bool, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_int", "compression_level"), &PlayerInputsReference::read_int, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_unit_real", "compression_level"), &PlayerInputsReference::read_unit_real, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_normalized_vector2", "compression_level"), &PlayerInputsReference::read_normalized_vector2, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_normalized_vector3", "compression_level"), &PlayerInputsReference::read_normalized_vector3, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-
-	ClassDB::bind_method(D_METHOD("skip_bool", "compression_level"), &PlayerInputsReference::skip_bool, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_int", "compression_level"), &PlayerInputsReference::skip_int, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_unit_real", "compression_level"), &PlayerInputsReference::skip_unit_real, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_normalized_vector2", "compression_level"), &PlayerInputsReference::skip_normalized_vector2, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_normalized_vector3", "compression_level"), &PlayerInputsReference::skip_normalized_vector3, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-
-	ClassDB::bind_method(D_METHOD("get_bool_size", "compression_level"), &PlayerInputsReference::get_bool_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_int_size", "compression_level"), &PlayerInputsReference::get_int_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_unit_real_size", "compression_level"), &PlayerInputsReference::get_unit_real_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_normalized_vector2_size", "compression_level"), &PlayerInputsReference::get_normalized_vector2_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_vector3_size", "compression_level"), &PlayerInputsReference::get_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_precise_vector3_size", "compression_level"), &PlayerInputsReference::get_precise_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &PlayerInputsReference::get_normalized_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
-}
-
-int PlayerInputsReference::get_size() const {
-	return inputs_buffer.get_buffer_size();
-}
-
-bool PlayerInputsReference::read_bool(NetworkedController::InputCompressionLevel _p_compression) {
-	return inputs_buffer.read_bool();
-}
-
-int64_t PlayerInputsReference::read_int(NetworkedController::InputCompressionLevel p_compression) {
-	return inputs_buffer.read_int(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-real_t PlayerInputsReference::read_unit_real(NetworkedController::InputCompressionLevel p_compression) {
-	return inputs_buffer.read_unit_real(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector2 PlayerInputsReference::read_normalized_vector2(NetworkedController::InputCompressionLevel p_compression) {
-	return inputs_buffer.read_normalized_vector2(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector3 PlayerInputsReference::read_vector3(NetworkedController::InputCompressionLevel p_compression) {
-	return inputs_buffer.read_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector3 PlayerInputsReference::read_precise_vector3(NetworkedController::InputCompressionLevel p_compression) {
-	return inputs_buffer.read_precise_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-Vector3 PlayerInputsReference::read_normalized_vector3(NetworkedController::InputCompressionLevel p_compression) {
-	return inputs_buffer.read_normalized_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-void PlayerInputsReference::skip_bool(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_bool_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-void PlayerInputsReference::skip_int(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_int_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-void PlayerInputsReference::skip_unit_real(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_unit_real_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-void PlayerInputsReference::skip_normalized_vector2(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_normalized_vector2_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-void PlayerInputsReference::skip_vector3(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_vector3_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-void PlayerInputsReference::skip_precise_vector3(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_precise_vector3_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-void PlayerInputsReference::skip_normalized_vector3(NetworkedController::InputCompressionLevel p_compression) {
-	const int bits = get_normalized_vector3_size(p_compression);
-	inputs_buffer.skip(bits);
-}
-
-int PlayerInputsReference::get_bool_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_BOOL, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int PlayerInputsReference::get_int_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_INT, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int PlayerInputsReference::get_unit_real_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_UNIT_REAL, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int PlayerInputsReference::get_normalized_vector2_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_NORMALIZED_VECTOR2, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int PlayerInputsReference::get_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_VECTOR3, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int PlayerInputsReference::get_precise_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_PRECISE_VECTOR3, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-int PlayerInputsReference::get_normalized_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {
-	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_NORMALIZED_VECTOR3, static_cast<InputsBuffer::CompressionLevel>(p_compression));
-}
-
-void PlayerInputsReference::begin() {
-	inputs_buffer.begin_read();
-}
-
-void PlayerInputsReference::set_inputs_buffer(const BitArray &p_new_buffer) {
-	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
-}
-
 ServerController::ServerController(
 		NetworkedController *p_node,
 		int p_traced_frames) :
@@ -594,7 +409,7 @@ void ServerController::process(real_t p_delta) {
 	}
 
 	node->get_inputs_buffer_mut().begin_read();
-	node->call("controller_process", p_delta);
+	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
 
 	calculates_player_tick_rate(p_delta);
 	adjust_player_tick_rate(p_delta);
@@ -623,14 +438,13 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 
 	uint64_t inserted_input_count = 0;
 
-	BitArray bit_array;
-	bit_array.resize_in_bytes(data_len);
-	copymem(bit_array.get_bytes_mut().ptrw(), p_data.ptr(), data_len);
-
 	// Contains the entire packet and in turn it will be seek to specific location
 	// so I will not need to copy chunk of the packet data.
-	PlayerInputsReference pir;
-	pir.set_inputs_buffer(bit_array);
+	DataBuffer pir;
+	pir.get_buffer_mut().get_bytes_mut() = p_data;
+	// TODO this is for 3.2
+	//pir.get_buffer_mut().resize_in_bytes(data_len);
+	//copymem(pir.get_buffer_mut().get_bytes_mut().ptrw(), p_data.ptr(), data_len);
 
 	while (ofs < data_len) {
 		ERR_FAIL_COND_MSG(ofs + 1 > data_len, "The arrived packet size doesn't meet the expected size.");
@@ -639,7 +453,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 		ofs += 1;
 
 		// Validate input
-		pir.inputs_buffer.seek(ofs * 8);
+		pir.seek(ofs * 8);
 		const int input_size_in_bits = node->call("count_input_size", &pir);
 		// Pad to 8 bits.
 		const int input_size =
@@ -807,9 +621,7 @@ bool ServerController::fetch_next_input() {
 				bool recovered = false;
 				FrameSnapshotSkinny pi;
 
-				PlayerInputsReference pir_A(node->get_inputs_buffer());
-				// Copy from the node inputs so to copy the data info
-				PlayerInputsReference pir_B(node->get_inputs_buffer());
+				DataBuffer pir_A = node->get_inputs_buffer();
 
 				for (int i = 0; i < size; i += 1) {
 					if (ghost_packet_id < snapshots.front().id) {
@@ -825,12 +637,12 @@ bool ServerController::fetch_next_input() {
 						// Useful to avoid that the server stay too much behind the
 						// client.
 
-						pir_B.set_inputs_buffer(pi.inputs_buffer);
+						DataBuffer pir_B(pi.inputs_buffer);
 
-						pir_A.begin();
-						pir_B.begin();
+						pir_A.begin_read();
+						pir_B.begin_read();
 
-						const bool is_meaningful = pir_A.get_size() != pir_B.get_size() || node->call("are_inputs_different", &pir_A, &pir_B);
+						const bool is_meaningful = pir_A.get_buffer_size() != pir_B.get_buffer_size() || node->call("are_inputs_different", &pir_A, &pir_B);
 
 						if (is_meaningful) {
 							break;
@@ -937,7 +749,7 @@ void PlayerController::process(real_t p_delta) {
 		current_input_id = input_buffers_counter;
 		input_buffers_counter += 1;
 		node->get_inputs_buffer_mut().begin_write();
-		node->call("collect_inputs", p_delta);
+		node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
 	} else {
 		NET_DEBUG_WARN("It's not possible to accept new inputs. Is this lagging?");
 	}
@@ -947,7 +759,7 @@ void PlayerController::process(real_t p_delta) {
 
 	// The physics process is always emitted, because we still need to simulate
 	// the character motion even if we don't store the player inputs.
-	node->call("controller_process", p_delta);
+	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
 
 	if (accept_new_inputs) {
 		store_input_buffer(current_input_id);
@@ -1004,11 +816,9 @@ uint64_t PlayerController::get_stored_input_id(int p_i) const {
 bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
 	if (i < frames_snapshot.size()) {
-		// Set snapshot inputs.
-		node->set_inputs_buffer(frames_snapshot[i].inputs_buffer);
-
-		node->get_inputs_buffer_mut().begin_read();
-		node->call("controller_process", p_delta);
+		DataBuffer ib(frames_snapshot[i].inputs_buffer);
+		ib.begin_read();
+		node->call("controller_process", p_delta, &ib);
 		return (i + 1) < frames_snapshot.size();
 	} else {
 		return false;
@@ -1057,9 +867,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	int previous_buffer_size = 0;
 	uint8_t duplication_count = 0;
 
-	PlayerInputsReference pir_A(node->get_inputs_buffer());
-	// Copy from the node inputs so to copy the data info.
-	PlayerInputsReference pir_B(node->get_inputs_buffer());
+	DataBuffer pir_A(node->get_inputs_buffer());
 
 	// Compose the packets
 	for (size_t i = frames_snapshot.size() - inputs_count; i < frames_snapshot.size(); i += 1) {
@@ -1076,12 +884,12 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			if (frames_snapshot[i].similarity != previous_input_id) {
 				if (frames_snapshot[i].similarity == UINT64_MAX) {
 					// This input was never compared, let's do it now.
-					pir_B.set_inputs_buffer(frames_snapshot[i].inputs_buffer);
+					DataBuffer pir_B(frames_snapshot[i].inputs_buffer);
 
-					pir_A.begin();
-					pir_B.begin();
+					pir_A.begin_read();
+					pir_B.begin_read();
 
-					const bool are_different = pir_A.get_size() != pir_B.get_size() || node->call("are_inputs_different", &pir_A, &pir_B);
+					const bool are_different = pir_A.get_buffer_size() != pir_B.get_buffer_size() || node->call("are_inputs_different", &pir_A, &pir_B);
 					is_similar = are_different == false;
 
 				} else if (frames_snapshot[i].similarity == previous_input_similarity) {
@@ -1137,7 +945,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			previous_input_similarity = frames_snapshot[i].similarity;
 			previous_buffer_size = buffer_size;
 
-			pir_A.set_inputs_buffer(frames_snapshot[i].inputs_buffer);
+			pir_A.get_buffer_mut() = frames_snapshot[i].inputs_buffer;
 		}
 	}
 
@@ -1193,7 +1001,7 @@ void DollController::process(real_t p_delta) {
 	const bool is_new_input = server_controller.fetch_next_input();
 	if (server_controller.current_input_buffer_id != UINT64_MAX) {
 		node->get_inputs_buffer_mut().begin_read();
-		node->call("controller_process", p_delta);
+		node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
 		if (is_new_input) {
 			player_controller.store_input_buffer(server_controller.current_input_buffer_id);
 		}
@@ -1312,10 +1120,10 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 
 void NoNetController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_write();
-	node->call("collect_inputs", p_delta);
+	node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();
-	node->call("controller_process", p_delta);
+	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
 	frame_id += 1;
 }
 

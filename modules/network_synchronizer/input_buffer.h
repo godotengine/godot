@@ -32,14 +32,16 @@
 	@author AndreaCatania
 */
 
-#include "scene/main/node.h"
+#include "core/object.h"
 
 #include "bit_array.h"
 
 #ifndef INPUT_BUFFER_H
 #define INPUT_BUFFER_H
 
-class InputsBuffer {
+class DataBuffer : public Object {
+	GDCLASS(DataBuffer, Object);
+
 public:
 	enum DataType {
 		DATA_TYPE_BOOL,
@@ -152,7 +154,10 @@ private:
 	BitArray buffer;
 
 public:
-	InputsBuffer();
+	static void _bind_methods();
+
+	DataBuffer();
+	DataBuffer(const BitArray &p_buffer);
 
 	const BitArray &get_buffer() const {
 		return buffer;
@@ -226,6 +231,28 @@ public:
 	/// Parse the following data as an unit real.
 	real_t read_unit_real(CompressionLevel p_compression_level);
 
+	/// Add a vector2 into the buffer.
+	/// Note: This kind of vector occupies more space than the normalized verison.
+	/// Consider use a normalized vector to save bandwidth if possible.
+	///
+	/// Returns the decompressed vector so both the client and the peers can use
+	/// the same data.
+	Vector2 add_vector2(Vector2 p_input, CompressionLevel p_compression_level);
+
+	/// Parse next data as vector from the input buffer.
+	Vector2 read_vector2(CompressionLevel p_compression_level);
+
+	/// Add a precise vector2 into the buffer.
+	/// Note: This kind of vector occupies more space than the normalized verison.
+	/// Consider use a normalized vector to save bandwidth if possible.
+	///
+	/// Returns the decompressed vector so both the client and the peers can use
+	/// the same data.
+	Vector2 add_precise_vector2(Vector2 p_input, CompressionLevel p_compression_level);
+
+	/// Parse next data as precise vector from the input buffer.
+	Vector2 read_precise_vector2(CompressionLevel p_compression_level);
+
 	/// Add a normalized vector2 into the buffer.
 	/// Note: The compression algorithm rely on the fact that this is a
 	/// normalized vector. The behaviour is unexpected for not normalized vectors.
@@ -273,6 +300,30 @@ public:
 	// Puts all the bytes to 0.
 	void zero();
 
+	void skip_bool();
+	void skip_int(CompressionLevel p_compression);
+	void skip_real(CompressionLevel p_compression);
+	void skip_precise_real(CompressionLevel p_compression);
+	void skip_unit_real(CompressionLevel p_compression);
+	void skip_vector2(CompressionLevel p_compression);
+	void skip_precise_vector2(CompressionLevel p_compression);
+	void skip_normalized_vector2(CompressionLevel p_compression);
+	void skip_vector3(CompressionLevel p_compression);
+	void skip_precise_vector3(CompressionLevel p_compression);
+	void skip_normalized_vector3(CompressionLevel p_compression);
+
+	int get_bool_size() const;
+	int get_int_size(CompressionLevel p_compression) const;
+	int get_real_size(CompressionLevel p_compression) const;
+	int get_precise_real_size(CompressionLevel p_compression) const;
+	int get_unit_real_size(CompressionLevel p_compression) const;
+	int get_vector2_size(CompressionLevel p_compression) const;
+	int get_precise_vector2_size(CompressionLevel p_compression) const;
+	int get_normalized_vector2_size(CompressionLevel p_compression) const;
+	int get_vector3_size(CompressionLevel p_compression) const;
+	int get_precise_vector3_size(CompressionLevel p_compression) const;
+	int get_normalized_vector3_size(CompressionLevel p_compression) const;
+
 	static int get_bit_taken(DataType p_data_type, CompressionLevel p_compression);
 
 private:
@@ -281,5 +332,8 @@ private:
 
 	void make_room_in_bits(int p_dim);
 };
+
+VARIANT_ENUM_CAST(DataBuffer::DataType)
+VARIANT_ENUM_CAST(DataBuffer::CompressionLevel)
 
 #endif

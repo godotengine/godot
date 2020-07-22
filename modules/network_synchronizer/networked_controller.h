@@ -77,13 +77,6 @@ public:
 		CONTROLLER_TYPE_DOLL
 	};
 
-	enum InputCompressionLevel {
-		INPUT_COMPRESSION_LEVEL_0 = InputsBuffer::COMPRESSION_LEVEL_0,
-		INPUT_COMPRESSION_LEVEL_1 = InputsBuffer::COMPRESSION_LEVEL_1,
-		INPUT_COMPRESSION_LEVEL_2 = InputsBuffer::COMPRESSION_LEVEL_2,
-		INPUT_COMPRESSION_LEVEL_3 = InputsBuffer::COMPRESSION_LEVEL_3
-	};
-
 private:
 	/// The input storage size is used to cap the amount of inputs collected by
 	/// the `Master`.
@@ -140,7 +133,7 @@ private:
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
-	InputsBuffer inputs_buffer;
+	DataBuffer inputs_buffer;
 
 	SceneSynchronizer *scene_synchronizer = nullptr;
 
@@ -183,60 +176,11 @@ public:
 
 	uint64_t get_current_input_id() const;
 
-	/// Set bool
-	/// Returns the same data.
-	bool input_buffer_add_bool(bool p_input, InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Get boolean value
-	bool input_buffer_read_bool(InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Set integer
-	///
-	/// Returns the stored values, you can store up to the max value for the
-	/// compression.
-	int64_t input_buffer_add_int(int64_t p_input, InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Get integer
-	int64_t input_buffer_read_int(InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Set the unit real.
-	///
-	/// **Note:** Not unitary values lead to unexpected behaviour.
-	///
-	/// Returns the compressed value so both the client and the peers can use
-	/// the same data.
-	real_t input_buffer_add_unit_real(real_t p_input, InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Returns the unit real
-	real_t input_buffer_read_unit_real(InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Add a normalized vector2 into the buffer.
-	/// Note: The compression algorithm rely on the fact that this is a
-	/// normalized vector. The behaviour is unexpected for not normalized vectors.
-	///
-	/// Returns the decompressed vector so both the client and the peers can use
-	/// the same data.
-	Vector2 input_buffer_add_normalized_vector2(Vector2 p_input, InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Read a normalized vector2 from the input buffer.
-	Vector2 input_buffer_read_normalized_vector2(InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Add a normalized vector3 into the buffer.
-	/// Note: The compression algorithm rely on the fact that this is a
-	/// normalized vector. The behaviour is unexpected for not normalized vectors.
-	///
-	/// Returns the decompressed vector so both the client and the peers can use
-	/// the same data.
-	Vector3 input_buffer_add_normalized_vector3(Vector3 p_input, InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	/// Read a normalized vector3 from the input buffer.
-	Vector3 input_buffer_read_normalized_vector3(InputCompressionLevel p_compression = INPUT_COMPRESSION_LEVEL_1);
-
-	const InputsBuffer &get_inputs_buffer() const {
+	const DataBuffer &get_inputs_buffer() const {
 		return inputs_buffer;
 	}
 
-	InputsBuffer &get_inputs_buffer_mut() {
+	DataBuffer &get_inputs_buffer_mut() {
 		return inputs_buffer;
 	}
 
@@ -281,50 +225,6 @@ public:
 
 private:
 	virtual void _notification(int p_what);
-};
-
-VARIANT_ENUM_CAST(NetworkedController::InputCompressionLevel)
-
-class PlayerInputsReference : public Object {
-	GDCLASS(PlayerInputsReference, Object);
-
-public:
-	InputsBuffer inputs_buffer;
-
-	static void _bind_methods();
-
-	PlayerInputsReference() {}
-	PlayerInputsReference(const InputsBuffer &p_ib) :
-			inputs_buffer(p_ib) {}
-
-	int get_size() const;
-
-	bool read_bool(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	int64_t read_int(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	real_t read_unit_real(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	Vector2 read_normalized_vector2(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	Vector3 read_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	Vector3 read_precise_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	Vector3 read_normalized_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-
-	void skip_bool(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_int(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_unit_real(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_normalized_vector2(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_precise_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_normalized_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
-
-	int get_bool_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_int_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_unit_real_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_normalized_vector2_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_precise_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_normalized_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
-
-	void begin();
-	void set_inputs_buffer(const BitArray &p_new_buffer);
 };
 
 struct FrameSnapshotSkinny {

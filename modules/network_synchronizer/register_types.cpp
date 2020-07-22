@@ -34,11 +34,12 @@
 
 #include "register_types.h"
 
+#include "input_buffer.h"
 #include "networked_controller.h"
 #include "scene_synchronizer.h"
 
 void register_network_synchronizer_types() {
-	ClassDB::register_class<PlayerInputsReference>();
+	ClassDB::register_class<DataBuffer>();
 	ClassDB::register_class<NetworkedController>();
 	ClassDB::register_class<SceneSynchronizer>();
 }
