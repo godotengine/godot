@@ -2640,9 +2640,9 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	} else if (is_hovering_v_guide) {
 		c = CURSOR_HSIZE;
 	}
-
+	
 	viewport->set_default_cursor_shape(c);
-
+	
 	// Grab focus
 	if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
 		viewport->call_deferred("grab_focus");
@@ -4462,7 +4462,30 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 	for (int i = 0; i < TOOL_MAX; i++) {
 		tb[i]->set_pressed(i == p_index);
 	}
-
+	
+	// code to update the button when move is selected
+	switch(p_index){
+		case 2: 
+			Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_MOVE);
+			viewport->set_default_cursor_shape(CURSOR_MOVE);
+			break;
+		case 7:
+			Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_CROSS);
+			viewport->set_default_cursor_shape(CURSOR_CROSS);
+			break;
+		default:
+			Input::get_singleton()->set_default_cursor_shape(Input::CURSOR_ARROW);
+			viewport->set_default_cursor_shape(CURSOR_ARROW);
+			break;
+	}
+	
+	// we have to simulate mouse movement to update the cursur ie see Input::set_default_cursor_shape
+	Ref<InputEventMouseMotion> mm;
+	mm.instance();
+	mm->set_position(Input::get_singleton()->get_mouse_position());
+	mm->set_global_position(Input::get_singleton()->get_mouse_position());
+	Input::get_singleton()->parse_input_event(mm);
+	
 	tool = (Tool)p_index;
 	viewport->update();
 }
