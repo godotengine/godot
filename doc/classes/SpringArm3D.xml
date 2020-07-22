@@ -32,7 +32,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the proportion between the current arm length (after checking for collisions) and the [member spring_length]. Ranges from 0 to 1.
+				Returns the spring arm's current length.
 			</description>
 		</method>
 		<method name="remove_excluded_object">
