@@ -311,16 +311,9 @@ void JoypadLinux::open_joypad(const char *p_path) {
 			return;
 		}
 
-		//check if the device supports basic gamepad events, prevents certain keyboards from
-		//being detected as joypads
+		// Check if the device supports basic gamepad events
 		if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) &&
-					(test_bit(ABS_X, absbit) || test_bit(ABS_Y, absbit) || test_bit(ABS_HAT0X, absbit) ||
-							test_bit(ABS_GAS, absbit) || test_bit(ABS_RUDDER, absbit)) &&
-					(test_bit(BTN_A, keybit) || test_bit(BTN_THUMBL, keybit) ||
-							test_bit(BTN_TRIGGER, keybit) || test_bit(BTN_1, keybit))) &&
-				!(test_bit(EV_ABS, evbit) &&
-						test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit) &&
-						test_bit(ABS_RX, absbit) && test_bit(ABS_RY, absbit))) {
+					test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit))) {
 			close(fd);
 			return;
 		}
