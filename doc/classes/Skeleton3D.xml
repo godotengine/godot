@@ -263,7 +263,7 @@
 			<argument index="1" name="pose" type="Transform">
 			</argument>
 			<description>
-				Returns the pose transform for bone [code]bone_idx[/code].
+				Sets the pose transform for bone [code]bone_idx[/code].
 				[b]Note[/b]: The pose transform needs to be in bone space. Use [method world_transform_to_bone_transform] to convert a world transform, like one you can get from a [Node3D], to bone space.
 			</description>
 		</method>
