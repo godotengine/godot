@@ -205,8 +205,8 @@ struct ReflectionData {
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
 };
 
-layout(set = 0, binding = 6, std140) uniform ReflectionProbeData {
-	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
+layout(set = 0, binding = 6) buffer restrict readonly ReflectionProbeData {
+	ReflectionData data[];
 }
 reflections;
 

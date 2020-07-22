@@ -2685,7 +2685,7 @@ FRAGMENT_SHADER_CODE
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
-	//frag_color = vec4(1.0);
+	//frag_color = vec4(1.0);;;
 
 #endif //USE_NO_SHADING
 
