@@ -1252,6 +1252,55 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
+	// Select the correct code examples
+	switch ((int)EDITOR_GET("text_editor/help/class_reference_examples")) {
+		case 0: // GDScript
+			bbcode = bbcode.replace("[gdscript]", "[codeblock]");
+			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
+
+			for (int pos = bbcode.find("[csharp]"); pos != -1; pos = bbcode.find("[csharp]")) {
+				if (bbcode.find("[/csharp]") == -1) {
+					WARN_PRINT("Unclosed [csharp] block or parse fail in code (search for tag errors)");
+					break;
+				}
+
+				bbcode.erase(pos, bbcode.find("[/csharp]") + 9 - pos);
+				while (bbcode[pos] == '\n') {
+					bbcode.erase(pos, 1);
+				}
+			}
+			break;
+		case 1: // C#
+			bbcode = bbcode.replace("[csharp]", "[codeblock]");
+			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
+
+			for (int pos = bbcode.find("[gdscript]"); pos != -1; pos = bbcode.find("[gdscript]")) {
+				if (bbcode.find("[/gdscript]") == -1) {
+					WARN_PRINT("Unclosed [gdscript] block or parse fail in code (search for tag errors)");
+					break;
+				}
+
+				bbcode.erase(pos, bbcode.find("[/gdscript]") + 11 - pos);
+				while (bbcode[pos] == '\n') {
+					bbcode.erase(pos, 1);
+				}
+			}
+			break;
+		case 2: // GDScript and C#
+			bbcode = bbcode.replace("[csharp]", "[b]C#:[/b]\n[codeblock]");
+			bbcode = bbcode.replace("[gdscript]", "[b]GDScript:[/b]\n[codeblock]");
+
+			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
+			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
+			break;
+	}
+
+	// Remove codeblocks (they would be printed otherwise)
+	bbcode = bbcode.replace("[codeblocks]\n", "");
+	bbcode = bbcode.replace("\n[/codeblocks]", "");
+	bbcode = bbcode.replace("[codeblocks]", "");
+	bbcode = bbcode.replace("[/codeblocks]", "");
+
 	// remove extra new lines around code blocks
 	bbcode = bbcode.replace("[codeblock]\n", "[codeblock]");
 	bbcode = bbcode.replace("\n[/codeblock]", "[/codeblock]");
