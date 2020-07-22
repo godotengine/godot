@@ -41,7 +41,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings);
+	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);
 	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 };
 
