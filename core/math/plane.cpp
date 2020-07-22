@@ -56,7 +56,6 @@ Plane Plane::normalized() const {
 }
 
 Vector3 Plane::get_any_point() const {
-
 	return get_normal() * d;
 }
 
