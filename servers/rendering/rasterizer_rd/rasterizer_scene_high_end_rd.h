@@ -31,7 +31,6 @@
 #ifndef RASTERIZER_SCENE_HIGHEND_RD_H
 #define RASTERIZER_SCENE_HIGHEND_RD_H
 
-#include "servers/rendering/rasterizer_rd/light_cluster_builder.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_scene_rd.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/rendering/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
@@ -264,90 +263,8 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	void _setup_view_dependant_uniform_set(RID p_shadow_atlas, RID p_reflection_atlas, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count);
 	void _update_render_buffers_uniform_set(RID p_render_buffers);
 
-	/* Scene State UBO */
-
-	struct ReflectionData { //should always be 128 bytes
-		float box_extents[3];
-		float index;
-		float box_offset[3];
-		uint32_t mask;
-		float params[4]; // intensity, 0, interior , boxproject
-		float ambient[3]; // ambient color,
-		uint32_t ambient_mode;
-		float local_matrix[16]; // up to here for spot and omni, rest is for directional
-	};
-
-	struct LightData {
-		float position[3];
-		float inv_radius;
-		float direction[3];
-		float size;
-		uint16_t attenuation_energy[2]; //16 bits attenuation, then energy
-		uint8_t color_specular[4]; //rgb color, a specular (8 bit unorm)
-		uint16_t cone_attenuation_angle[2]; // attenuation and angle, (16bit float)
-		uint8_t shadow_color_enabled[4]; //shadow rgb color, a>0.5 enabled (8bit unorm)
-		float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
-		float shadow_matrix[16];
-		float shadow_bias;
-		float shadow_normal_bias;
-		float transmittance_bias;
-		float soft_shadow_size;
-		float soft_shadow_scale;
-		uint32_t mask;
-		uint32_t pad[2];
-		float projector_rect[4];
-	};
-
-	struct DirectionalLightData {
-		float direction[3];
-		float energy;
-		float color[3];
-		float size;
-		float specular;
-		uint32_t mask;
-		float softshadow_angle;
-		float soft_shadow_scale;
-		uint32_t blend_splits;
-		uint32_t shadow_enabled;
-		float fade_from;
-		float fade_to;
-		float shadow_bias[4];
-		float shadow_normal_bias[4];
-		float shadow_transmittance_bias[4];
-		float shadow_transmittance_z_scale[4];
-		float shadow_range_begin[4];
-		float shadow_split_offsets[4];
-		float shadow_matrices[4][16];
-		float shadow_color1[4];
-		float shadow_color2[4];
-		float shadow_color3[4];
-		float shadow_color4[4];
-		float uv_scale1[2];
-		float uv_scale2[2];
-		float uv_scale3[2];
-		float uv_scale4[2];
-	};
-
 	struct LightmapData {
 		float normal_xform[12];
-	};
-
-	struct DecalData {
-		float xform[16];
-		float inv_extents[3];
-		float albedo_mix;
-		float albedo_rect[4];
-		float normal_rect[4];
-		float orm_rect[4];
-		float emission_rect[4];
-		float modulate[4];
-		float emission_energy;
-		uint32_t mask;
-		float upper_fade;
-		float lower_fade;
-		float normal_xform[12];
-		float normal[3];
-		float normal_fade;
 	};
 
 	struct LightmapCaptureData {
@@ -448,26 +365,9 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 		RID uniform_buffer;
 
-		ReflectionData *reflections;
-		uint32_t max_reflections;
-		RID reflection_buffer;
-		uint32_t max_reflection_probes_per_instance;
-
 		LightmapData *lightmaps;
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
-
-		DecalData *decals;
-		uint32_t max_decals;
-		RID decal_buffer;
-
-		LightData *lights;
-		uint32_t max_lights;
-		RID light_buffer;
-
-		DirectionalLightData *directional_lights;
-		uint32_t max_directional_lights;
-		RID directional_light_buffer;
 
 		LightmapCaptureData *lightmap_captures;
 		uint32_t max_lightmap_captures;
@@ -635,8 +535,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
 
-	LightClusterBuilder cluster_builder;
-
 	enum PassMode {
 		PASS_MODE_COLOR,
 		PASS_MODE_COLOR_SPECULAR,
@@ -651,9 +549,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	};
 
 	void _setup_environment(RID p_environment, RID p_render_buffers, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
-	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
-	void _setup_decals(const RID *p_decal_instances, int p_decal_count, const Transform &p_camera_inverse_xform);
-	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
 	void _setup_lightmaps(InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, const Transform &p_cam_transform);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth, bool p_has_sdfgi = false, bool p_has_opaque_gi = false);
@@ -666,7 +561,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	Map<Size2i, RID> sdfgi_framebuffer_size_cache;
 
 protected:
-	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color);
+	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color);
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake);
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 	virtual void _render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
