@@ -119,6 +119,9 @@ String TextEditor::get_name() {
 	if (text_file->get_path().find("local://") == -1 && text_file->get_path().find("::") == -1) {
 		name = text_file->get_path().get_file();
 		if (is_unsaved()) {
+			if (text_file->get_path().empty()) {
+				name = TTR("[unsaved]");
+			}
 			name += "(*)";
 		}
 	} else if (text_file->get_name() != "") {
@@ -236,7 +239,10 @@ void TextEditor::apply_code() {
 }
 
 bool TextEditor::is_unsaved() {
-	return code_editor->get_text_edit()->get_version() != code_editor->get_text_edit()->get_saved_version();
+	const bool unsaved =
+			code_editor->get_text_edit()->get_version() != code_editor->get_text_edit()->get_saved_version() ||
+			text_file->get_path().empty(); // In memory.
+	return unsaved;
 }
 
 Variant TextEditor::get_edit_state() {
