@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   SCONS_CACHE_MSVC_CONFIG: true
-  SCONS_CACHE_LIMIT: 8192
+  SCONS_CACHE_LIMIT: 4096
 
 jobs:
   windows-editor:

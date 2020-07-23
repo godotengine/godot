@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
-  SCONS_CACHE_LIMIT: 8192
+  SCONS_CACHE_LIMIT: 4096
   EM_VERSION: latest
   EM_CACHE_FOLDER: 'emsdk-cache'
 
