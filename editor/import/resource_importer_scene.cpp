@@ -283,7 +283,7 @@ static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape3D>> &r_shape_l
 	if (!p_convex) {
 		Ref<Shape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
-	} else if (p_single){
+	} else if (p_single) {
 		Ref<Shape3D> shape = mesh->create_convex_shape();
 		r_shape_list.push_back(shape);
 	} else {
