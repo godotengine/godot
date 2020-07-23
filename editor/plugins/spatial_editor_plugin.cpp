@@ -1948,22 +1948,22 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		switch (nav_mode) {
 			case NAVIGATION_PAN: {
-				_nav_pan(m, pan_gesture->get_delta());
+				_nav_pan(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
 			case NAVIGATION_ZOOM: {
-				_nav_zoom(m, pan_gesture->get_delta());
+				_nav_zoom(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
 			case NAVIGATION_ORBIT: {
-				_nav_orbit(m, pan_gesture->get_delta());
+				_nav_orbit(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
 			case NAVIGATION_LOOK: {
-				_nav_look(m, pan_gesture->get_delta());
+				_nav_look(pan_gesture, pan_gesture->get_delta());
 
 			} break;
 
