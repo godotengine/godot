@@ -69,7 +69,7 @@ def configure(env):
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["/Zi"])
         env.Append(CCFLAGS=["/MDd"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED"])
+        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
