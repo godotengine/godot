@@ -27,6 +27,15 @@ active_platform_ids = []
 platform_exporters = []
 platform_apis = []
 
+# NOTE: It is safe to generate this file here, since this is still executed serially
+f = open("core/build_arguments.gen.h", "w")
+f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+f.write("#ifndef BUILD_ARGUMENTS_GEN_H\n")
+f.write("#define BUILD_ARGUMENTS_GEN_H\n")
+f.write('#define BUILD_ARGUMENTS "' + " ".join(sys.argv[1:]) + '"\n')
+f.write("#endif // BUILD_ARGUMENTS_GEN_H\n")
+f.close()
+
 for x in sorted(glob.glob("platform/*")):
     if not os.path.isdir(x) or not os.path.exists(x + "/detect.py"):
         continue
