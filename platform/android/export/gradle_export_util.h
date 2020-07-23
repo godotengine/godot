@@ -142,4 +142,104 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	return OK;
 }
 
+String bool_to_string(bool v) {
+	return v ? "true" : "false";
+}
+
+String _get_gles_tag() {
+	bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES3" &&
+					 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
+	return min_gles3 ? "    <uses-feature android:glEsVersion=\"0x00030000\" android:required=\"true\" />\n" : "";
+}
+
+String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
+	String manifest_screen_sizes = "    <supports-screens \n        tools:node=\"replace\"";
+	String sizes[] = { "small", "normal", "large", "xlarge" };
+	size_t num_sizes = sizeof(sizes) / sizeof(sizes[0]);
+	for (size_t i = 0; i < num_sizes; i++) {
+		String feature_name = vformat("screen/support_%s", sizes[i]);
+		String feature_support = bool_to_string(p_preset->get(feature_name));
+		String xml_entry = vformat("\n        android:%sScreens=\"%s\"", sizes[i], feature_support);
+		manifest_screen_sizes += xml_entry;
+	}
+	manifest_screen_sizes += " />\n";
+	return manifest_screen_sizes;
+}
+
+String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
+	String manifest_xr_features;
+	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	if (uses_xr) {
+		int dof_index = p_preset->get("xr_features/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
+		if (dof_index == 1) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"false\" android:version=\"1\" />\n";
+		} else if (dof_index == 2) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\" />\n";
+		}
+		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
+		if (hand_tracking_index == 1) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n";
+		} else if (hand_tracking_index == 2) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"true\" />\n";
+		}
+	}
+	return manifest_xr_features;
+}
+
+String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
+	String package_name = p_preset->get("package/unique_name");
+	String manifest_instrumentation_text = vformat(
+			"    <instrumentation\n"
+			"        tools:node=\"replace\"\n"
+			"        android:name=\".GodotInstrumentation\"\n"
+			"        android:icon=\"@mipmap/icon\"\n"
+			"        android:label=\"@string/godot_project_name_string\"\n"
+			"        android:targetPackage=\"%s\" />\n",
+			package_name);
+	return manifest_instrumentation_text;
+}
+
+String _get_plugins_tag(const String &plugins_names) {
+	if (!plugins_names.empty()) {
+		return vformat("    <meta-data tools:node=\"replace\" android:name=\"plugins\" android:value=\"%s\" />\n", plugins_names);
+	} else {
+		return "    <meta-data tools:node=\"remove\" android:name=\"plugins\" />\n";
+	}
+}
+
+String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
+	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	String orientation = (int)(p_preset->get("screen/orientation")) == 1 ? "portrait" : "landscape";
+	String manifest_activity_text = vformat(
+			"        <activity android:name=\"com.godot.game.GodotApp\" "
+			"tools:replace=\"android:screenOrientation\" "
+			"android:screenOrientation=\"%s\">\n",
+			orientation);
+	if (uses_xr) {
+		String focus_awareness = bool_to_string(p_preset->get("xr_features/focus_awareness"));
+		manifest_activity_text += vformat("            <meta-data tools:node=\"replace\" android:name=\"com.oculus.vr.focusaware\" android:value=\"%s\" />\n", focus_awareness);
+	} else {
+		manifest_activity_text += "            <meta-data tools:node=\"remove\" android:name=\"com.oculus.vr.focusaware\" />\n";
+	}
+	manifest_activity_text += "        </activity>\n";
+	return manifest_activity_text;
+}
+
+String _get_application_tag(const Ref<EditorExportPreset> &p_preset, const String &plugins_names) {
+	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	String manifest_application_text =
+			"    <application android:label=\"@string/godot_project_name_string\"\n"
+			"        android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
+			"        android:icon=\"@mipmap/icon\">)\n\n"
+			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n";
+
+	manifest_application_text += _get_plugins_tag(plugins_names);
+	if (uses_xr) {
+		manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
+	}
+	manifest_application_text += _get_activity_tag(p_preset);
+	manifest_application_text += "    </application>\n";
+	return manifest_application_text;
+}
+
 #endif //GODOT_GRADLE_EXPORT_UTIL_H
