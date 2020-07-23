@@ -2589,6 +2589,15 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	_gui_input_hover(p_event);
 
 	// Change the cursor
+	_update_cursor();
+
+	// Grab focus
+	if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
+		viewport->call_deferred("grab_focus");
+	}
+}
+
+void CanvasItemEditor::_update_cursor() {
 	CursorShape c = CURSOR_ARROW;
 	switch (drag_type) {
 		case DRAG_NONE:
@@ -2642,11 +2651,6 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	}
 
 	viewport->set_default_cursor_shape(c);
-
-	// Grab focus
-	if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field())) {
-		viewport->call_deferred("grab_focus");
-	}
 }
 
 void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Margin p_side) {
@@ -4464,7 +4468,13 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 	}
 
 	tool = (Tool)p_index;
+
 	viewport->update();
+	_update_cursor();
+
+	// Request immediate refresh of cursor when using hot-keys to switch between tools
+	DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)viewport->get_default_cursor_shape();
+	DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
