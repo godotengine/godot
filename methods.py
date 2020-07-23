@@ -86,7 +86,7 @@ def update_version(module_version_string=""):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        head = open(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
+        head = open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8").readline().strip()
         if head.startswith("ref: "):
             head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
