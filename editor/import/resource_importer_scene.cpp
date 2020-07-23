@@ -508,7 +508,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				collision_map[mesh] = shapes;
 				fixed_name = _fixstr(name, "convcol");
 			} else if (_teststr(name, "singleconvcol")) {
-				_gen_shape_list(mesh, shapes, true,  true);
+				_gen_shape_list(mesh, shapes, true, true);
 				collision_map[mesh] = shapes;
 				fixed_name = _fixstr(name, "singleconvcol");
 			}
