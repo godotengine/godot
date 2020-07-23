@@ -82,6 +82,8 @@ android {
 
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()
+        versionCode getExportVersionCode()
+        versionName getExportVersionName()
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
     }
