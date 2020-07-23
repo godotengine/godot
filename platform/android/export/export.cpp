@@ -768,6 +768,30 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 	}
 
+	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug) {
+		String manifest_text =
+				"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+				"<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+				"    xmlns:tools=\"http://schemas.android.com/tools\">\n";
+
+		manifest_text += _get_screen_sizes_tag(p_preset);
+		manifest_text += _get_gles_tag();
+
+		Vector<String> perms;
+		_get_permissions(p_preset, p_give_internet, perms);
+		for (int i = 0; i < perms.size(); i++) {
+			manifest_text += vformat("    <uses-permission android:name=\"%s\" />\n", perms.get(i));
+		}
+
+		manifest_text += _get_xr_features_tag(p_preset);
+		manifest_text += _get_instrumentation_tag(p_preset);
+		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
+		manifest_text += _get_application_tag(p_preset, plugins_names);
+		manifest_text += "</manifest>\n";
+		String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
+		store_string_at_path(manifest_path, manifest_text);
+	}
+
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
 		// Leaving the unused types commented because looking these constants up
 		// again later would be annoying
@@ -2064,6 +2088,7 @@ public:
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
 		bool use_custom_build = bool(p_preset->get("custom_template/use_custom_build"));
+		bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
 
 		Ref<Image> main_image;
 		Ref<Image> foreground;
@@ -2093,9 +2118,10 @@ public:
 			if (err != OK) {
 				EditorNode::add_io_error("Unable to overwrite res://android/build/res/*.xml files with project name");
 			}
-			// Copies the project icon files into the appropriate Gradle project directory
+			// Copies the project icon files into the appropriate Gradle project directory.
 			_copy_icons_to_gradle_project(p_preset, main_image, foreground, background);
-
+			// Write an AndroidManifest.xml file into the Gradle project directory.
+			_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 			//build project if custom build is enabled
 			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
 
@@ -2115,6 +2141,8 @@ public:
 			build_command = build_path.plus_file(build_command);
 
 			String package_name = get_package_name(p_preset->get("package/unique_name"));
+			String version_code = itos(p_preset->get("version/code"));
+			String version_name = p_preset->get("version/name");
 
 			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
 			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
@@ -2128,6 +2156,8 @@ public:
 			}
 			cmdline.push_back("build");
 			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
+			cmdline.push_back("-Pexport_version_code=" + version_code); // argument to specify the version code.
+			cmdline.push_back("-Pexport_version_name=" + version_name); // argument to specify the version name.
 			cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
 			cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
 			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
@@ -2248,11 +2278,10 @@ public:
 
 			//write
 
-			if (file == "AndroidManifest.xml") {
-				_fix_manifest(p_preset, data, p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG));
-			}
-
 			if (!use_custom_build) {
+				if (file == "AndroidManifest.xml") {
+					_fix_manifest(p_preset, data, p_give_internet);
+				}
 				if (file == "resources.arsc") {
 					_fix_resources(p_preset, data);
 				}
