@@ -104,6 +104,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	if (dtls_enabled) {
 		enet_host_dtls_server_setup(host, dtls_key.ptr(), dtls_cert.ptr());
 	}
+	enet_host_refuse_new_connections(host, refuse_connections);
 #endif
 
 	_setup_compressor();
@@ -160,6 +161,7 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 	if (dtls_enabled) {
 		enet_host_dtls_client_setup(host, dtls_cert.ptr(), dtls_verify, p_address.utf8().get_data());
 	}
+	enet_host_refuse_new_connections(host, refuse_connections);
 #endif
 
 	_setup_compressor();
@@ -641,7 +643,9 @@ int NetworkedMultiplayerENet::get_unique_id() const {
 void NetworkedMultiplayerENet::set_refuse_new_connections(bool p_enable) {
 	refuse_connections = p_enable;
 #ifdef GODOT_ENET
-	enet_host_refuse_new_connections(host, p_enable);
+	if (active) {
+		enet_host_refuse_new_connections(host, p_enable);
+	}
 #endif
 }
 
