@@ -818,6 +818,116 @@ bool NetworkedMultiplayerENet::is_server_relay_enabled() const {
 	return server_relay;
 }
 
+real_t NetworkedMultiplayerENet::get_packet_loss(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0.0);
+	// Packet loss of reliable packets.
+	return static_cast<real_t>(peer_map[p_peer]->packetLoss) / static_cast<real_t>(ENET_PEER_PACKET_LOSS_SCALE);
+}
+
+real_t NetworkedMultiplayerENet::get_packet_loss_variance(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0.0);
+	// Packet loss of reliable packets.
+	return static_cast<real_t>(peer_map[p_peer]->packetLossVariance) / static_cast<real_t>(ENET_PEER_PACKET_LOSS_SCALE);
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_loss_epoch(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	// Packet loss of reliable packets.
+	return peer_map[p_peer]->packetLossEpoch;
+}
+
+uint32_t NetworkedMultiplayerENet::get_round_trip_time(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	// Packet loss of reliable packets.
+	return peer_map[p_peer]->roundTripTime;
+}
+
+uint32_t NetworkedMultiplayerENet::get_round_trip_time_variance(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	// Packet loss of reliable packets.
+	return peer_map[p_peer]->roundTripTimeVariance;
+}
+
+uint32_t NetworkedMultiplayerENet::get_last_round_trip_time(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	// Packet loss of reliable packets.
+	return peer_map[p_peer]->lastRoundTripTime;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottle;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle_limit(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottleLimit;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle_counter(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottleCounter;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle_epoch(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottleEpoch;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle_acceleration(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottleAcceleration;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle_deceleration(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottleDeceleration;
+}
+
+uint32_t NetworkedMultiplayerENet::get_packet_throttle_interval(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	return peer_map[p_peer]->packetThrottleInterval;
+}
+
+uint32_t NetworkedMultiplayerENet::get_last_round_trip_time_variance(int p_peer) const {
+	ERR_FAIL_COND_V(peer_map.has(p_peer) == false, 0);
+	// Packet loss of reliable packets.
+	return peer_map[p_peer]->lastRoundTripTimeVariance;
+}
+
+uint32_t NetworkedMultiplayerENet::pop_total_sent_data() {
+	ERR_FAIL_COND_V(host == nullptr, 0);
+	const uint32_t tsd = host->totalSentData;
+	host->totalSentData = 0;
+	return tsd;
+}
+
+uint32_t NetworkedMultiplayerENet::pop_total_sent_packets() {
+	ERR_FAIL_COND_V(host == nullptr, 0);
+	const uint32_t tsp = host->totalSentPackets;
+	host->totalSentPackets = 0;
+	return tsp;
+}
+
+uint32_t NetworkedMultiplayerENet::pop_total_received_data() {
+	ERR_FAIL_COND_V(host == nullptr, 0);
+	const uint32_t trd = host->totalReceivedData;
+	host->totalReceivedData = 0;
+	return trd;
+}
+
+uint32_t NetworkedMultiplayerENet::pop_total_received_packets() {
+	ERR_FAIL_COND_V(host == nullptr, 0);
+	const uint32_t trp = host->totalReceivedPackets;
+	host->totalReceivedPackets = 0;
+	return trp;
+}
+
+void NetworkedMultiplayerENet::configure_peer_throttle(int p_peer, uint32_t p_interval, uint32_t p_acceleration, uint32_t p_deceleration) {
+	ERR_FAIL_COND(peer_map.has(p_peer) == false);
+	enet_peer_throttle_configure(peer_map[p_peer], p_interval, p_acceleration, p_deceleration);
+}
+
 void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "client_port"), &NetworkedMultiplayerENet::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
@@ -845,6 +955,30 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_always_ordered"), &NetworkedMultiplayerENet::is_always_ordered);
 	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &NetworkedMultiplayerENet::set_server_relay_enabled);
 	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &NetworkedMultiplayerENet::is_server_relay_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_packet_loss", "peer"), &NetworkedMultiplayerENet::get_packet_loss);
+	ClassDB::bind_method(D_METHOD("get_packet_loss_variance", "peer"), &NetworkedMultiplayerENet::get_packet_loss_variance);
+	ClassDB::bind_method(D_METHOD("get_packet_loss_epoch", "peer"), &NetworkedMultiplayerENet::get_packet_loss_epoch);
+
+	ClassDB::bind_method(D_METHOD("get_round_trip_time", "peer"), &NetworkedMultiplayerENet::get_round_trip_time);
+	ClassDB::bind_method(D_METHOD("get_round_trip_time_variance", "peer"), &NetworkedMultiplayerENet::get_round_trip_time_variance);
+	ClassDB::bind_method(D_METHOD("get_last_round_trip_time", "peer"), &NetworkedMultiplayerENet::get_last_round_trip_time);
+	ClassDB::bind_method(D_METHOD("get_last_round_trip_time_variance", "peer"), &NetworkedMultiplayerENet::get_last_round_trip_time);
+
+	ClassDB::bind_method(D_METHOD("get_packet_throttle", "peer"), &NetworkedMultiplayerENet::get_packet_throttle);
+	ClassDB::bind_method(D_METHOD("get_packet_throttle_limit", "peer"), &NetworkedMultiplayerENet::get_packet_throttle_limit);
+	ClassDB::bind_method(D_METHOD("get_packet_throttle_counter", "peer"), &NetworkedMultiplayerENet::get_packet_throttle_counter);
+	ClassDB::bind_method(D_METHOD("get_packet_throttle_epoch", "peer"), &NetworkedMultiplayerENet::get_packet_throttle_epoch);
+	ClassDB::bind_method(D_METHOD("get_packet_throttle_acceleration", "peer"), &NetworkedMultiplayerENet::get_packet_throttle_acceleration);
+	ClassDB::bind_method(D_METHOD("get_packet_throttle_deceleration", "peer"), &NetworkedMultiplayerENet::get_packet_throttle_deceleration);
+	ClassDB::bind_method(D_METHOD("get_packet_throttle_interval", "peer"), &NetworkedMultiplayerENet::get_packet_throttle_interval);
+
+	ClassDB::bind_method(D_METHOD("pop_total_sent_data"), &NetworkedMultiplayerENet::pop_total_sent_data);
+	ClassDB::bind_method(D_METHOD("pop_total_sent_packets"), &NetworkedMultiplayerENet::pop_total_sent_packets);
+	ClassDB::bind_method(D_METHOD("pop_total_received_data"), &NetworkedMultiplayerENet::pop_total_received_data);
+	ClassDB::bind_method(D_METHOD("pop_total_received_packets"), &NetworkedMultiplayerENet::pop_total_received_packets);
+
+	ClassDB::bind_method(D_METHOD("configure_peer_throttle", "peer", "interval", "acceleration", "deceleration"), &NetworkedMultiplayerENet::configure_peer_throttle);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");

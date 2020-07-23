@@ -166,6 +166,66 @@ public:
 	void set_server_relay_enabled(bool p_enabled);
 	bool is_server_relay_enabled() const;
 
+	/// Reliable channel packet loss.
+	real_t get_packet_loss(int p_peer) const;
+	real_t get_packet_loss_variance(int p_peer) const;
+	/// The epoch of the current packet loss.
+	uint32_t get_packet_loss_epoch(int p_peer) const;
+
+	/// Mean - Time taken for a reliable packet to do a round trip in ms.
+	uint32_t get_round_trip_time(int p_peer) const;
+	uint32_t get_round_trip_time_variance(int p_peer) const;
+	/// Last packet - Time taken for a reliable packet to do a round trip in ms.
+	uint32_t get_last_round_trip_time(int p_peer) const;
+	uint32_t get_last_round_trip_time_variance(int p_peer) const;
+
+	uint32_t get_packet_throttle(int p_peer) const;
+	uint32_t get_packet_throttle_limit(int p_peer) const;
+	uint32_t get_packet_throttle_counter(int p_peer) const;
+	uint32_t get_packet_throttle_epoch(int p_peer) const;
+	uint32_t get_packet_throttle_acceleration(int p_peer) const;
+	uint32_t get_packet_throttle_deceleration(int p_peer) const;
+	uint32_t get_packet_throttle_interval(int p_peer) const;
+
+	/// Returns the total data sent from last time this function was called.
+	uint32_t pop_total_sent_data();
+	/// Returns the total packets sent from last time this function was called.
+	uint32_t pop_total_sent_packets();
+	/// Returns the total data received from last time this function was called.
+	uint32_t pop_total_received_data();
+	/// Returns the total packets received from last time this function was called.
+	uint32_t pop_total_received_packets();
+
+	/// Configures throttle parameter for a peer.
+	///
+	/// Unreliable packets are dropped by ENet in response to the varying conditions
+	/// of the Internet connection to the peer.  The throttle represents a probability
+	/// that an unreliable packet should not be dropped and thus sent by ENet to the peer.
+	/// The lowest mean round trip time from the sending of a reliable packet to the
+	/// receipt of its acknowledgement is measured over an amount of time specified by
+	/// the interval parameter in milliseconds.  If a measured round trip time happens to
+	/// be significantly less than the mean round trip time measured over the interval,
+	/// then the throttle probability is increased to allow more traffic by an amount
+	/// specified in the acceleration parameter, which is a ratio to the ENET_PEER_PACKET_THROTTLE_SCALE
+	/// constant.  If a measured round trip time happens to be significantly greater than
+	/// the mean round trip time measured over the interval, then the throttle probability
+	/// is decreased to limit traffic by an amount specified in the deceleration parameter, which
+	/// is a ratio to the ENET_PEER_PACKET_THROTTLE_SCALE constant.  When the throttle has
+	/// a value of ENET_PEER_PACKET_THROTTLE_SCALE, no unreliable packets are dropped by
+	/// ENet, and so 100% of all unreliable packets will be sent.  When the throttle has a
+	/// value of 0, all unreliable packets are dropped by ENet, and so 0% of all unreliable
+	/// packets will be sent.  Intermediate values for the throttle represent intermediate
+	/// probabilities between 0% and 100% of unreliable packets being sent.  The bandwidth
+	/// limits of the local and foreign hosts are taken into account to determine a
+	/// sensible limit for the throttle probability above which it should not raise even in
+	/// the best of conditions.
+	///
+	/// @param peer peer to configure.
+	/// @param interval interval, in milliseconds, over which to measure lowest mean RTT; the default value is ENET_PEER_PACKET_THROTTLE_INTERVAL.
+	/// @param acceleration rate at which to increase the throttle probability as mean RTT declines
+	/// @param deceleration rate at which to decrease the throttle probability as mean RTT increases
+	void configure_peer_throttle(int p_peer, uint32_t p_interval, uint32_t p_acceleration, uint32_t p_deceleration);
+
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
 
