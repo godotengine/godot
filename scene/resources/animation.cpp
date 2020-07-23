@@ -821,8 +821,9 @@ int Animation::_insert(float p_time, T &p_keys, const V &p_value) {
 
 		// Condition for replacement.
 		if (idx > 0 && Math::is_equal_approx(p_keys[idx - 1].time, p_time)) {
-
+			float transition = p_keys[idx - 1].transition;
 			p_keys.write[idx - 1] = p_value;
+			p_keys.write[idx - 1].transition = transition;
 			return idx - 1;
 
 			// Condition for insert.
