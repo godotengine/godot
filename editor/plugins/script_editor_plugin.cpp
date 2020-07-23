@@ -1559,7 +1559,9 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		List<int> bpoints;
 		se->get_breakpoints(&bpoints);
 		String base = script->get_path();
-		ERR_CONTINUE(base.begins_with("local://") || base == "");
+		if (base.begins_with("local://") || base == "") {
+			continue;
+		}
 
 		for (List<int>::Element *E = bpoints.front(); E; E = E->next()) {
 
