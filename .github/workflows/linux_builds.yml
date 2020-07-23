@@ -8,9 +8,7 @@ env:
 jobs:
   linux-editor:
     runs-on: "ubuntu-20.04"
-
-    # Windows Editor - checkout with the plugin
-    name: Editor (target=release_debug, tools=yes)
+    name: Editor w/ Mono (target=release_debug, tools=yes)
 
     steps:
       - uses: actions/checkout@v2
@@ -25,7 +23,7 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-          libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Upload cache on completion and check it out now
       # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
@@ -63,11 +61,11 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes target=release_debug
+          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
 
   linux-template:
     runs-on: "ubuntu-20.04"
-    name: Template (target=release, tools=no)
+    name: Template w/ Mono (target=release, tools=no)
 
     steps:
       - uses: actions/checkout@v2
@@ -82,7 +80,7 @@ jobs:
       - name: Configure dependencies
         run: |
           sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-          libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
 
       # Upload cache on completion and check it out now
       # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
@@ -118,4 +116,4 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd target=release tools=no
+          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd target=release tools=no module_mono_enabled=yes mono_glue=no
