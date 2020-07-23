@@ -118,7 +118,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 			Map<String, ExtendGDScriptParser *>::Element *S = parse_results.find(path);
 			String err_msg = "Failed parse script " + path;
 			if (S) {
-				err_msg += "\n" + S->get()->get_error();
+				err_msg += "\n" + S->get()->get_errors()[0].message;
 			}
 			ERR_CONTINUE_MSG(err != OK, err_msg);
 		}

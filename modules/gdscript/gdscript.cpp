@@ -39,7 +39,11 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "gdscript_analyzer.h"
+#include "gdscript_cache.h"
 #include "gdscript_compiler.h"
+#include "gdscript_parser.h"
+#include "gdscript_warning.h"
 
 ///////////////////////////
 
@@ -79,6 +83,17 @@ Object *GDScriptNativeClass::instance() {
 	return ClassDB::instance(name);
 }
 
+void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error) {
+	GDScript *base = p_script->_base;
+	if (base != nullptr) {
+		_super_implicit_constructor(base, p_instance, r_error);
+		if (r_error.error != Callable::CallError::CALL_OK) {
+			return;
+		}
+	}
+	p_script->implicit_initializer->call(p_instance, nullptr, 0, r_error);
+}
+
 GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error) {
 	/* STEP 1, CREATE */
 
@@ -101,10 +116,8 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		MutexLock lock(GDScriptLanguage::singleton->lock);
 		instances.insert(instance->owner);
 	}
-	if (p_argcount < 0) {
-		return instance;
-	}
-	initializer->call(instance, p_args, p_argcount, r_error);
+
+	_super_implicit_constructor(this, instance, r_error);
 	if (r_error.error != Callable::CallError::CALL_OK) {
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(nullptr);
@@ -113,6 +126,22 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			instances.erase(p_owner);
 		}
 		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+	}
+
+	if (p_argcount < 0) {
+		return instance;
+	}
+	if (initializer != nullptr) {
+		initializer->call(instance, p_args, p_argcount, r_error);
+		if (r_error.error != Callable::CallError::CALL_OK) {
+			instance->script = Ref<GDScript>();
+			instance->owner->set_script_instance(nullptr);
+			{
+				MutexLock lock(GDScriptLanguage::singleton->lock);
+				instances.erase(p_owner);
+			}
+			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
+		}
 	}
 	//@TODO make thread safe
 	return instance;
@@ -382,13 +411,11 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 		}
 
 		GDScriptParser parser;
-		Error err = parser.parse(source, basedir, true, path);
+		GDScriptAnalyzer analyzer(&parser);
+		Error err = parser.parse(source, path, false);
 
-		if (err == OK) {
-			const GDScriptParser::Node *root = parser.get_parse_tree();
-			ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, false);
-
-			const GDScriptParser::ClassNode *c = static_cast<const GDScriptParser::ClassNode *>(root);
+		if (err == OK && analyzer.analyze() == OK) {
+			const GDScriptParser::ClassNode *c = parser.get_tree();
 
 			if (base_cache.is_valid()) {
 				base_cache->inheriters_cache.erase(get_instance_id());
@@ -397,8 +424,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 
 			if (c->extends_used) {
 				String path = "";
-				if (String(c->extends_file) != "" && String(c->extends_file) != get_path()) {
-					path = c->extends_file;
+				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
+					path = c->extends_path;
 					if (path.is_rel_path()) {
 						String base = get_path();
 						if (base == "" || base.is_rel_path()) {
@@ -407,8 +434,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 							path = base.get_base_dir().plus_file(path);
 						}
 					}
-				} else if (c->extends_class.size() != 0) {
-					String base = c->extends_class[0];
+				} else if (c->extends.size() != 0) {
+					const StringName &base = c->extends[0];
 
 					if (ScriptServer::is_global_class(base)) {
 						path = ScriptServer::get_global_class_path(base);
@@ -431,20 +458,36 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call) {
 
 			members_cache.clear();
 			member_default_values_cache.clear();
-
-			for (int i = 0; i < c->variables.size(); i++) {
-				if (c->variables[i]._export.type == Variant::NIL) {
-					continue;
-				}
-
-				members_cache.push_back(c->variables[i]._export);
-				member_default_values_cache[c->variables[i].identifier] = c->variables[i].default_value;
-			}
-
 			_signals.clear();
 
-			for (int i = 0; i < c->_signals.size(); i++) {
-				_signals[c->_signals[i].name] = c->_signals[i].arguments;
+			for (int i = 0; i < c->members.size(); i++) {
+				const GDScriptParser::ClassNode::Member &member = c->members[i];
+
+				switch (member.type) {
+					case GDScriptParser::ClassNode::Member::VARIABLE: {
+						if (!member.variable->exported) {
+							continue;
+						}
+
+						members_cache.push_back(member.variable->export_info);
+						Variant default_value;
+						if (member.variable->initializer && member.variable->initializer->is_constant) {
+							default_value = member.variable->initializer->reduced_value;
+						}
+						member_default_values_cache[member.variable->identifier->name] = default_value;
+					} break;
+					case GDScriptParser::ClassNode::Member::SIGNAL: {
+						// TODO: Cache this in parser to avoid loops like this.
+						Vector<StringName> parameters_names;
+						parameters_names.resize(member.signal->parameters.size());
+						for (int j = 0; j < member.signal->parameters.size(); j++) {
+							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
+						}
+						_signals[member.signal->identifier->name] = parameters_names;
+					} break;
+					default:
+						break; // Nothing.
+				}
 			}
 		} else {
 			placeholder_fallback_enabled = true;
@@ -555,16 +598,29 @@ Error GDScript::reload(bool p_keep_state) {
 
 	valid = false;
 	GDScriptParser parser;
-	Error err = parser.parse(source, basedir, false, path);
+	Error err = parser.parse(source, path, false);
 	if (err) {
 		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_error_line(), "Parser Error: " + parser.get_error());
+			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
-		_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_error_line(), ("Parse Error: " + parser.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
+		// TODO: Show all error messages.
+		_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
-	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool_script();
+	GDScriptAnalyzer analyzer(&parser);
+	err = analyzer.analyze();
+
+	if (err) {
+		if (EngineDebugger::is_active()) {
+			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
+		}
+		// TODO: Show all error messages.
+		_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), ERR_HANDLER_SCRIPT);
+		ERR_FAIL_V(ERR_PARSE_ERROR);
+	}
+
+	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);
@@ -585,7 +641,7 @@ Error GDScript::reload(bool p_keep_state) {
 		const GDScriptWarning &warning = E->get();
 		if (EngineDebugger::is_active()) {
 			Vector<ScriptLanguage::StackInfo> si;
-			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
+			EngineDebugger::get_script_debugger()->send_error("", get_path(), warning.start_line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
 		}
 	}
 #endif
@@ -753,83 +809,12 @@ void GDScript::_bind_methods() {
 }
 
 Vector<uint8_t> GDScript::get_as_byte_code() const {
-	GDScriptTokenizerBuffer tokenizer;
-	return tokenizer.parse_code_string(source);
+	return Vector<uint8_t>();
 };
 
+// TODO: Fully remove this. There's not this kind of "bytecode" anymore.
 Error GDScript::load_byte_code(const String &p_path) {
-	Vector<uint8_t> bytecode;
-
-	if (p_path.ends_with("gde")) {
-		FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
-		ERR_FAIL_COND_V(!fa, ERR_CANT_OPEN);
-
-		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
-		ERR_FAIL_COND_V(!fae, ERR_CANT_OPEN);
-
-		Vector<uint8_t> key;
-		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
-		}
-
-		Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_READ);
-
-		if (err) {
-			fa->close();
-			memdelete(fa);
-			memdelete(fae);
-
-			ERR_FAIL_COND_V(err, err);
-		}
-
-		bytecode.resize(fae->get_len());
-		fae->get_buffer(bytecode.ptrw(), bytecode.size());
-		fae->close();
-		memdelete(fae);
-
-	} else {
-		bytecode = FileAccess::get_file_as_array(p_path);
-	}
-
-	ERR_FAIL_COND_V(bytecode.size() == 0, ERR_PARSE_ERROR);
-	path = p_path;
-
-	String basedir = path;
-
-	if (basedir == "") {
-		basedir = get_path();
-	}
-
-	if (basedir != "") {
-		basedir = basedir.get_base_dir();
-	}
-
-	valid = false;
-	GDScriptParser parser;
-	Error err = parser.parse_bytecode(bytecode, basedir, get_path());
-	if (err) {
-		_err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_error_line(), ("Parse Error: " + parser.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
-		ERR_FAIL_V(ERR_PARSE_ERROR);
-	}
-
-	GDScriptCompiler compiler;
-	err = compiler.compile(&parser, this);
-
-	if (err) {
-		_err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
-		ERR_FAIL_V(ERR_COMPILATION_FAILED);
-	}
-
-	valid = true;
-
-	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
-		_set_subclass_path(E->get(), path);
-	}
-
-	_init_rpc_methods_properties();
-
-	return OK;
+	return ERR_COMPILATION_FAILED;
 }
 
 Error GDScript::load_source_code(const String &p_path) {
@@ -1055,6 +1040,8 @@ GDScript::~GDScript() {
 		memdelete(E->get());
 	}
 
+	GDScriptCache::remove_script(get_path());
+
 	_save_orphaned_subclasses();
 
 #ifdef DEBUG_ENABLED
@@ -1146,6 +1133,32 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				const Map<StringName, Variant>::Element *E = sl->constants.find(p_name);
 				if (E) {
 					r_ret = E->get();
+					return true; //index found
+				}
+				sl = sl->_base;
+			}
+		}
+
+		{
+			// Signals.
+			const GDScript *sl = sptr;
+			while (sl) {
+				const Map<StringName, Vector<StringName>>::Element *E = sl->_signals.find(p_name);
+				if (E) {
+					r_ret = Signal(this->owner, E->key());
+					return true; //index found
+				}
+				sl = sl->_base;
+			}
+		}
+
+		{
+			// Methods.
+			const GDScript *sl = sptr;
+			while (sl) {
+				const Map<StringName, GDScriptFunction *>::Element *E = sl->member_functions.find(p_name);
+				if (E) {
+					r_ret = Callable(this->owner, E->key());
 					return true; //index found
 				}
 				sl = sl->_base;
@@ -1304,6 +1317,7 @@ void GDScriptInstance::call_multilevel(const StringName &p_method, const Variant
 		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
 		if (E) {
 			E->get()->call(this, p_args, p_argcount, ce);
+			return;
 		}
 		sptr = sptr->_base;
 	}
@@ -1827,6 +1841,7 @@ void GDScriptLanguage::frame() {
 
 /* EDITOR FUNCTIONS */
 void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
+	// TODO: Add annotations here?
 	static const char *_reserved_words[] = {
 		// operators
 		"and",
@@ -1849,6 +1864,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		// functions
 		"as",
 		"assert",
+		"await",
 		"breakpoint",
 		"class",
 		"class_name",
@@ -1856,15 +1872,13 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"is",
 		"func",
 		"preload",
-		"setget",
 		"signal",
-		"tool",
+		"super",
+		"trait",
 		"yield",
 		// var
 		"const",
 		"enum",
-		"export",
-		"onready",
 		"static",
 		"var",
 		// control flow
@@ -1878,12 +1892,6 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"return",
 		"match",
 		"while",
-		"remote",
-		"master",
-		"puppet",
-		"remotesync",
-		"mastersync",
-		"puppetsync",
 		nullptr
 	};
 
@@ -1914,10 +1922,11 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	String source = f->get_as_utf8_string();
 
 	GDScriptParser parser;
-	parser.parse(source, p_path.get_base_dir(), true, p_path, false, nullptr, true);
+	err = parser.parse(source, p_path, false);
 
-	if (parser.get_parse_tree() && parser.get_parse_tree()->type == GDScriptParser::Node::TYPE_CLASS) {
-		const GDScriptParser::ClassNode *c = static_cast<const GDScriptParser::ClassNode *>(parser.get_parse_tree());
+	// TODO: Simplify this code by using the analyzer to get full inheritance.
+	if (err == OK) {
+		const GDScriptParser::ClassNode *c = parser.get_tree();
 		if (r_icon_path) {
 			if (c->icon_path.empty() || c->icon_path.is_abs_path()) {
 				*r_icon_path = c->icon_path;
@@ -1931,15 +1940,15 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			GDScriptParser subparser;
 			while (subclass) {
 				if (subclass->extends_used) {
-					if (subclass->extends_file) {
-						if (subclass->extends_class.size() == 0) {
-							get_global_class_name(subclass->extends_file, r_base_type);
+					if (!subclass->extends_path.empty()) {
+						if (subclass->extends.size() == 0) {
+							get_global_class_name(subclass->extends_path, r_base_type);
 							subclass = nullptr;
 							break;
 						} else {
-							Vector<StringName> extend_classes = subclass->extends_class;
+							Vector<StringName> extend_classes = subclass->extends;
 
-							FileAccessRef subfile = FileAccess::open(subclass->extends_file, FileAccess::READ);
+							FileAccessRef subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
 							if (!subfile) {
 								break;
 							}
@@ -1948,25 +1957,26 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 							if (subsource.empty()) {
 								break;
 							}
-							String subpath = subclass->extends_file;
+							String subpath = subclass->extends_path;
 							if (subpath.is_rel_path()) {
 								subpath = path.get_base_dir().plus_file(subpath).simplify_path();
 							}
 
-							if (OK != subparser.parse(subsource, subpath.get_base_dir(), true, subpath, false, nullptr, true)) {
+							if (OK != subparser.parse(subsource, subpath, false)) {
 								break;
 							}
 							path = subpath;
-							if (!subparser.get_parse_tree() || subparser.get_parse_tree()->type != GDScriptParser::Node::TYPE_CLASS) {
-								break;
-							}
-							subclass = static_cast<const GDScriptParser::ClassNode *>(subparser.get_parse_tree());
+							subclass = subparser.get_tree();
 
 							while (extend_classes.size() > 0) {
 								bool found = false;
-								for (int i = 0; i < subclass->subclasses.size(); i++) {
-									const GDScriptParser::ClassNode *inner_class = subclass->subclasses[i];
-									if (inner_class->name == extend_classes[0]) {
+								for (int i = 0; i < subclass->members.size(); i++) {
+									if (subclass->members[i].type != GDScriptParser::ClassNode::Member::CLASS) {
+										continue;
+									}
+
+									const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
+									if (inner_class->identifier->name == extend_classes[0]) {
 										extend_classes.remove(0);
 										found = true;
 										subclass = inner_class;
@@ -1979,8 +1989,8 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 								}
 							}
 						}
-					} else if (subclass->extends_class.size() == 1) {
-						*r_base_type = subclass->extends_class[0];
+					} else if (subclass->extends.size() == 1) {
+						*r_base_type = subclass->extends[0];
 						subclass = nullptr;
 					} else {
 						break;
@@ -1991,180 +2001,11 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 				}
 			}
 		}
-		return c->name;
+		return c->identifier != nullptr ? String(c->identifier->name) : String();
 	}
 
 	return String();
 }
-
-#ifdef DEBUG_ENABLED
-String GDScriptWarning::get_message() const {
-#define CHECK_SYMBOLS(m_amount) ERR_FAIL_COND_V(symbols.size() < m_amount, String());
-
-	switch (code) {
-		case UNASSIGNED_VARIABLE_OP_ASSIGN: {
-			CHECK_SYMBOLS(1);
-			return "Using assignment with operation but the variable '" + symbols[0] + "' was not previously assigned a value.";
-		} break;
-		case UNASSIGNED_VARIABLE: {
-			CHECK_SYMBOLS(1);
-			return "The variable '" + symbols[0] + "' was used but never assigned a value.";
-		} break;
-		case UNUSED_VARIABLE: {
-			CHECK_SYMBOLS(1);
-			return "The local variable '" + symbols[0] + "' is declared but never used in the block. If this is intended, prefix it with an underscore: '_" + symbols[0] + "'";
-		} break;
-		case SHADOWED_VARIABLE: {
-			CHECK_SYMBOLS(2);
-			return "The local variable '" + symbols[0] + "' is shadowing an already-defined variable at line " + symbols[1] + ".";
-		} break;
-		case UNUSED_CLASS_VARIABLE: {
-			CHECK_SYMBOLS(1);
-			return "The class variable '" + symbols[0] + "' is declared but never used in the script.";
-		} break;
-		case UNUSED_ARGUMENT: {
-			CHECK_SYMBOLS(2);
-			return "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'. If this is intended, prefix it with an underscore: '_" + symbols[1] + "'";
-		} break;
-		case UNREACHABLE_CODE: {
-			CHECK_SYMBOLS(1);
-			return "Unreachable code (statement after return) in function '" + symbols[0] + "()'.";
-		} break;
-		case STANDALONE_EXPRESSION: {
-			return "Standalone expression (the line has no effect).";
-		} break;
-		case VOID_ASSIGNMENT: {
-			CHECK_SYMBOLS(1);
-			return "Assignment operation, but the function '" + symbols[0] + "()' returns void.";
-		} break;
-		case NARROWING_CONVERSION: {
-			return "Narrowing conversion (float is converted to int and loses precision).";
-		} break;
-		case FUNCTION_MAY_YIELD: {
-			CHECK_SYMBOLS(1);
-			return "Assigned variable is typed but the function '" + symbols[0] + "()' may yield and return a GDScriptFunctionState instead.";
-		} break;
-		case VARIABLE_CONFLICTS_FUNCTION: {
-			CHECK_SYMBOLS(1);
-			return "Variable declaration of '" + symbols[0] + "' conflicts with a function of the same name.";
-		} break;
-		case FUNCTION_CONFLICTS_VARIABLE: {
-			CHECK_SYMBOLS(1);
-			return "Function declaration of '" + symbols[0] + "()' conflicts with a variable of the same name.";
-		} break;
-		case FUNCTION_CONFLICTS_CONSTANT: {
-			CHECK_SYMBOLS(1);
-			return "Function declaration of '" + symbols[0] + "()' conflicts with a constant of the same name.";
-		} break;
-		case INCOMPATIBLE_TERNARY: {
-			return "Values of the ternary conditional are not mutually compatible.";
-		} break;
-		case UNUSED_SIGNAL: {
-			CHECK_SYMBOLS(1);
-			return "The signal '" + symbols[0] + "' is declared but never emitted.";
-		} break;
-		case RETURN_VALUE_DISCARDED: {
-			CHECK_SYMBOLS(1);
-			return "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
-		} break;
-		case PROPERTY_USED_AS_FUNCTION: {
-			CHECK_SYMBOLS(2);
-			return "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a property with the same name. Did you mean to access it?";
-		} break;
-		case CONSTANT_USED_AS_FUNCTION: {
-			CHECK_SYMBOLS(2);
-			return "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a constant with the same name. Did you mean to access it?";
-		} break;
-		case FUNCTION_USED_AS_PROPERTY: {
-			CHECK_SYMBOLS(2);
-			return "The property '" + symbols[0] + "' was not found in base '" + symbols[1] + "' but there's a method with the same name. Did you mean to call it?";
-		} break;
-		case INTEGER_DIVISION: {
-			return "Integer division, decimal part will be discarded.";
-		} break;
-		case UNSAFE_PROPERTY_ACCESS: {
-			CHECK_SYMBOLS(2);
-			return "The property '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
-		} break;
-		case UNSAFE_METHOD_ACCESS: {
-			CHECK_SYMBOLS(2);
-			return "The method '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
-		} break;
-		case UNSAFE_CAST: {
-			CHECK_SYMBOLS(1);
-			return "The value is cast to '" + symbols[0] + "' but has an unknown type.";
-		} break;
-		case UNSAFE_CALL_ARGUMENT: {
-			CHECK_SYMBOLS(4);
-			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
-		} break;
-		case DEPRECATED_KEYWORD: {
-			CHECK_SYMBOLS(2);
-			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
-		} break;
-		case STANDALONE_TERNARY: {
-			return "Standalone ternary conditional operator: the return value is being discarded.";
-		}
-		case WARNING_MAX:
-			break; // Can't happen, but silences warning
-	}
-	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
-
-#undef CHECK_SYMBOLS
-}
-
-String GDScriptWarning::get_name() const {
-	return get_name_from_code(code);
-}
-
-String GDScriptWarning::get_name_from_code(Code p_code) {
-	ERR_FAIL_COND_V(p_code < 0 || p_code >= WARNING_MAX, String());
-
-	static const char *names[] = {
-		"UNASSIGNED_VARIABLE",
-		"UNASSIGNED_VARIABLE_OP_ASSIGN",
-		"UNUSED_VARIABLE",
-		"SHADOWED_VARIABLE",
-		"UNUSED_CLASS_VARIABLE",
-		"UNUSED_ARGUMENT",
-		"UNREACHABLE_CODE",
-		"STANDALONE_EXPRESSION",
-		"VOID_ASSIGNMENT",
-		"NARROWING_CONVERSION",
-		"FUNCTION_MAY_YIELD",
-		"VARIABLE_CONFLICTS_FUNCTION",
-		"FUNCTION_CONFLICTS_VARIABLE",
-		"FUNCTION_CONFLICTS_CONSTANT",
-		"INCOMPATIBLE_TERNARY",
-		"UNUSED_SIGNAL",
-		"RETURN_VALUE_DISCARDED",
-		"PROPERTY_USED_AS_FUNCTION",
-		"CONSTANT_USED_AS_FUNCTION",
-		"FUNCTION_USED_AS_PROPERTY",
-		"INTEGER_DIVISION",
-		"UNSAFE_PROPERTY_ACCESS",
-		"UNSAFE_METHOD_ACCESS",
-		"UNSAFE_CAST",
-		"UNSAFE_CALL_ARGUMENT",
-		"DEPRECATED_KEYWORD",
-		"STANDALONE_TERNARY",
-		nullptr
-	};
-
-	return names[(int)p_code];
-}
-
-GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) {
-	for (int i = 0; i < WARNING_MAX; i++) {
-		if (get_name_from_code((Code)i) == p_name) {
-			return (Code)i;
-		}
-	}
-
-	ERR_FAIL_V_MSG(WARNING_MAX, "Invalid GDScript warning name: " + p_name);
-}
-
-#endif // DEBUG_ENABLED
 
 GDScriptLanguage::GDScriptLanguage() {
 	calls = 0;
@@ -2204,7 +2045,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	GLOBAL_DEF("debug/gdscript/completion/autocomplete_setters_and_getters", false);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-		bool default_enabled = !warning.begins_with("unsafe_") && i != GDScriptWarning::UNUSED_CLASS_VARIABLE;
+		bool default_enabled = !warning.begins_with("unsafe_");
 		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
 	}
 #endif // DEBUG_ENABLED
@@ -2242,36 +2083,28 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	GDScript *script = memnew(GDScript);
+	Error err;
+	Ref<GDScript> script = GDScriptCache::get_full_script(p_path, err);
 
-	Ref<GDScript> scriptres(script);
+	// TODO: Reintroduce binary and encrypted scripts.
 
-	if (p_path.ends_with(".gde") || p_path.ends_with(".gdc")) {
-		script->set_script_path(p_original_path); // script needs this.
-		script->set_path(p_original_path);
-		Error err = script->load_byte_code(p_path);
-		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load byte code from file '" + p_path + "'.");
-
-	} else {
-		Error err = script->load_source_code(p_path);
-		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load source code from file '" + p_path + "'.");
-
-		script->set_script_path(p_original_path); // script needs this.
-		script->set_path(p_original_path);
-
-		script->reload();
+	if (script.is_null()) {
+		// Don't fail loading because of parsing error.
+		script.instance();
 	}
+
 	if (r_error) {
 		*r_error = OK;
 	}
 
-	return scriptres;
+	return script;
 }
 
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("gd");
-	p_extensions->push_back("gdc");
-	p_extensions->push_back("gde");
+	// TODO: Reintroduce binary and encrypted scripts.
+	// p_extensions->push_back("gdc");
+	// p_extensions->push_back("gde");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -2280,7 +2113,8 @@ bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "gd" || el == "gdc" || el == "gde") {
+	// TODO: Reintroduce binary and encrypted scripts.
+	if (el == "gd" /*|| el == "gdc" || el == "gde"*/) {
 		return "GDScript";
 	}
 	return "";
@@ -2296,7 +2130,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 
 	GDScriptParser parser;
-	if (OK != parser.parse(source, p_path.get_base_dir(), true, p_path, false, nullptr, true)) {
+	if (OK != parser.parse(source, p_path, false)) {
 		return;
 	}
 

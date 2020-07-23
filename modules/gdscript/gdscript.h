@@ -104,7 +104,8 @@ class GDScript : public Script {
 #endif
 	Map<StringName, PropertyInfo> member_info;
 
-	GDScriptFunction *initializer; //direct pointer to _init , faster to locate
+	GDScriptFunction *implicit_initializer = nullptr;
+	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 
 	int subclass_count;
 	Set<Object *> instances;
@@ -117,6 +118,7 @@ class GDScript : public Script {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
@@ -300,52 +302,6 @@ public:
 	GDScriptInstance();
 	~GDScriptInstance();
 };
-
-#ifdef DEBUG_ENABLED
-struct GDScriptWarning {
-	enum Code {
-		UNASSIGNED_VARIABLE, // Variable used but never assigned
-		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc)
-		UNUSED_VARIABLE, // Local variable is declared but never used
-		SHADOWED_VARIABLE, // Variable name shadowed by other variable
-		UNUSED_CLASS_VARIABLE, // Class variable is declared but never used in the file
-		UNUSED_ARGUMENT, // Function argument is never used
-		UNREACHABLE_CODE, // Code after a return statement
-		STANDALONE_EXPRESSION, // Expression not assigned to a variable
-		VOID_ASSIGNMENT, // Function returns void but it's assigned to a variable
-		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost
-		FUNCTION_MAY_YIELD, // Typed assign of function call that yields (it may return a function state)
-		VARIABLE_CONFLICTS_FUNCTION, // Variable has the same name of a function
-		FUNCTION_CONFLICTS_VARIABLE, // Function has the same name of a variable
-		FUNCTION_CONFLICTS_CONSTANT, // Function has the same name of a constant
-		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible
-		UNUSED_SIGNAL, // Signal is defined but never emitted
-		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used
-		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name
-		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name
-		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name
-		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded
-		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes)
-		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes)
-		UNSAFE_CAST, // Cast used in an unknown type
-		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
-		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
-		STANDALONE_TERNARY, // Return value of ternary expression is discarded
-		WARNING_MAX,
-	};
-
-	Code code = WARNING_MAX;
-	Vector<String> symbols;
-	int line = -1;
-
-	String get_name() const;
-	String get_message() const;
-	static String get_name_from_code(Code p_code);
-	static Code get_code_from_name(const String &p_name);
-
-	GDScriptWarning() {}
-};
-#endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunctionState;
