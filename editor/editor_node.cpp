@@ -2052,7 +2052,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	String args;
 	bool skip_breakpoints;
 
-	if (p_current || (editor_data.get_edited_scene_root() && p_custom == editor_data.get_edited_scene_root()->get_filename())) {
+	if (p_current || (editor_data.get_edited_scene_root() && p_custom != String() && p_custom == editor_data.get_edited_scene_root()->get_filename())) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
@@ -2082,13 +2082,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		if (unsaved_cache) {
 			Node *scene = editor_data.get_edited_scene_root();
 
-			if (scene) { //only autosave if there is a scene obviously
-
-				if (scene->get_filename() == "") {
-					show_accept(TTR("Current scene was never saved, please save it prior to running."), TTR("OK"));
-					return;
-				}
-
+			if (scene && scene->get_filename() != "") { // Only autosave if there is a scene and if it has a path.
 				_save_scene_with_preview(scene->get_filename());
 			}
 		}
