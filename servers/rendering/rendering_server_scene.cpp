@@ -370,8 +370,8 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 			case RS::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
 
-				if (RSG::storage->light_get_type(instance->base) != RS::LIGHT_DIRECTIONAL && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
-					instance->scenario->dynamic_lights.erase(light->instance);
+				if (scenario && RSG::storage->light_get_type(instance->base) != RS::LIGHT_DIRECTIONAL && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+					scenario->dynamic_lights.erase(light->instance);
 				}
 
 #ifdef DEBUG_ENABLED
@@ -379,8 +379,8 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
 				}
 #endif
-				if (instance->scenario && light->D) {
-					instance->scenario->directional_lights.erase(light->D);
+				if (scenario && light->D) {
+					scenario->directional_lights.erase(light->D);
 					light->D = nullptr;
 				}
 				RSG::scene_render->free(light->instance);
@@ -986,13 +986,13 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 
 		RS::LightBakeMode bake_mode = RSG::storage->light_get_bake_mode(p_instance->base);
 		if (RSG::storage->light_get_type(p_instance->base) != RS::LIGHT_DIRECTIONAL && bake_mode != light->bake_mode) {
-			if (light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+			if (p_instance->scenario && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
 				p_instance->scenario->dynamic_lights.erase(light->instance);
 			}
 
 			light->bake_mode = bake_mode;
 
-			if (light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+			if (p_instance->scenario && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
 				p_instance->scenario->dynamic_lights.push_back(light->instance);
 			}
 		}
