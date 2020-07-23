@@ -29,9 +29,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{github.sha}}
+          key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
           restore-keys: |
-            ${{github.job}}-${{github.sha}}
+            ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+            ${{github.job}}-${GITHUB_REF##*/}
             ${{github.job}}
 
       # Additional cache for Emscripten generated system libraries
