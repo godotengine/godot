@@ -90,6 +90,17 @@ const char *VariantParser::tk_name[TK_MAX] = {
 	"ERROR"
 };
 
+static double sfixtor(const String &p_sfix) {
+	if (p_sfix == "inf") {
+		return Math_INF;
+	} else if (p_sfix == "inf_neg") {
+		return -Math_INF;
+	} else if (p_sfix == "nan") {
+		return Math_NAN;
+	}
+	return -1;
+}
+
 Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, String &r_err_str) {
 	bool string_name = false;
 
@@ -467,8 +478,19 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 		if (first && token.type == TK_PARENTHESIS_CLOSE) {
 			break;
 		} else if (token.type != TK_NUMBER) {
-			r_err_str = "Expected float in constructor";
-			return ERR_PARSE_ERROR;
+			bool valid = false;
+			if (token.type == TK_IDENTIFIER) {
+				double real = sfixtor(token.value);
+				if (real != -1) {
+					token.type = TK_NUMBER;
+					token.value = real;
+					valid = true;
+				}
+			}
+			if (!valid) {
+				r_err_str = "Expected float in constructor";
+				return ERR_PARSE_ERROR;
+			}
 		}
 
 		r_construct.push_back(token.value);
@@ -505,6 +527,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = Variant();
 		} else if (id == "inf") {
 			value = Math_INF;
+		} else if (id == "inf_neg") {
+			value = -Math_INF;
 		} else if (id == "nan") {
 			value = Math_NAN;
 		} else if (id == "Vector2") {
@@ -1386,12 +1410,21 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 
 static String rtosfix(double p_value) {
 	if (p_value == 0.0) {
 		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	} else {
+		if (isnan(p_value)) {
+			return "nan";
+		} else if (isinf(p_value)) {
+			if (p_value > 0) {
+				return "inf";
+			} else {
+				return "inf_neg";
+			}
+		}
 		return rtoss(p_value);
 	}
 }
@@ -1409,7 +1442,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::FLOAT: {
 			String s = rtosfix(p_variant.operator real_t());
-			if (s != "inf" && s != "nan") {
+			if (s.find_char('n') == -1) { // ("inf", "inf_neg", "nan") all has 'n' and it's faster.
 				if (s.find(".") == -1 && s.find("e") == -1) {
 					s += ".0";
 				}
