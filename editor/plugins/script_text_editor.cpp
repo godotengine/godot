@@ -338,7 +338,10 @@ void ScriptTextEditor::update_settings() {
 }
 
 bool ScriptTextEditor::is_unsaved() {
-	return code_editor->get_text_edit()->get_version() != code_editor->get_text_edit()->get_saved_version();
+	const bool unsaved =
+			code_editor->get_text_edit()->get_version() != code_editor->get_text_edit()->get_saved_version() ||
+			script->get_path().empty(); // In memory.
+	return unsaved;
 }
 
 Variant ScriptTextEditor::get_edit_state() {
@@ -415,6 +418,9 @@ String ScriptTextEditor::get_name() {
 	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
+			if (script->get_path().empty()) {
+				name = TTR("[unsaved]");
+			}
 			name += "(*)";
 		}
 	} else if (script->get_name() != "") {

@@ -2551,6 +2551,9 @@ String VisualScriptEditor::get_name() {
 	if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
 		name = script->get_path().get_file();
 		if (is_unsaved()) {
+			if (script->get_path().empty()) {
+				name = TTR("[unsaved]");
+			}
 			name += "(*)";
 		}
 	} else if (script->get_name() != "") {
@@ -2567,7 +2570,11 @@ Ref<Texture2D> VisualScriptEditor::get_theme_icon() {
 }
 
 bool VisualScriptEditor::is_unsaved() {
-	return script->is_edited() || script->are_subnodes_edited();
+	bool unsaved =
+			script->is_edited() ||
+			script->are_subnodes_edited() ||
+			script->get_path().empty(); // In memory.
+	return unsaved;
 }
 
 Variant VisualScriptEditor::get_edit_state() {
