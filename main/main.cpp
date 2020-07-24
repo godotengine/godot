@@ -397,16 +397,17 @@ void Main::print_help(const char *p_binary) {
 
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 #ifdef TOOLS_ENABLED // templates can't run unit test tool
-	OS::get_singleton()->initialize();
-	StringName::setup();
 	for (int x = 0; x < argc; x++) {
 		if (strncmp(argv[x], "--test", 6) == 0) {
 			tests_need_run = true;
-			return test_main(argc, argv);
+			OS::get_singleton()->initialize();
+			StringName::setup();
+			int status = test_main(argc, argv);
+			StringName::cleanup();
+			// TODO: fix OS::singleton cleanup
+			return status;
 		}
 	}
-	StringName::cleanup();
-	OS::get_singleton()->finalize();
 #endif
 	tests_need_run = false;
 	return 0;
