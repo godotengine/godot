@@ -874,6 +874,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", font_color_selection);
 
+	// CodeEdit
+	theme->set_stylebox("normal", "CodeEdit", style_widget);
+	theme->set_stylebox("focus", "CodeEdit", style_widget_hover);
+	theme->set_stylebox("read_only", "CodeEdit", style_widget_disabled);
+	theme->set_constant("side_margin", "TabContainer", 0);
+	theme->set_icon("tab", "CodeEdit", theme->get_icon("GuiTab", "EditorIcons"));
+	theme->set_icon("space", "CodeEdit", theme->get_icon("GuiSpace", "EditorIcons"));
+	theme->set_icon("folded", "CodeEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
+	theme->set_icon("fold", "CodeEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
+	theme->set_color("font_color", "CodeEdit", font_color);
+	theme->set_color("caret_color", "CodeEdit", font_color);
+	theme->set_color("selection_color", "CodeEdit", font_color_selection);
+
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));
 	theme->set_stylebox("bg", "HSplitContainer", make_stylebox(theme->get_icon("GuiHsplitBg", "EditorIcons"), 1, 1, 1, 1));
