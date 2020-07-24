@@ -146,7 +146,6 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
-	//void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
 
 	static void _bind_methods();
 
@@ -258,8 +257,6 @@ class GDScriptInstance : public ScriptInstance {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
-	void _ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount);
-
 public:
 	virtual Object *get_owner() { return owner; }
 
@@ -271,8 +268,6 @@ public:
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
-	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
