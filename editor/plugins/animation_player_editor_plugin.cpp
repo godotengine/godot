@@ -744,7 +744,7 @@ void AnimationPlayerEditor::_dialog_action(String p_path) {
 }
 
 void AnimationPlayerEditor::_scale_changed(const String &p_scale) {
-	player->set_speed_scale(p_scale.to_double());
+	player->set_speed_scale(p_scale.to_float());
 }
 
 void AnimationPlayerEditor::_update_animation() {

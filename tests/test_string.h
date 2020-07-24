@@ -209,7 +209,7 @@ TEST_CASE("[String] String to float") {
 	static const double num[4] = { -12348298412.2, 0.05, 2.0002, -0.0001 };
 
 	for (int i = 0; i < 4; i++) {
-		CHECK(!(ABS(String(nums[i]).to_double() - num[i]) > 0.00001));
+		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
 	}
 }
 

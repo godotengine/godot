@@ -2898,7 +2898,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 					a.append(false);
 				}
 			} else if (!decimal.search(values[j]).is_null()) {
-				a.append(values[j].to_double());
+				a.append(values[j].to_float());
 			} else if (!numerical.search(values[j]).is_null()) {
 				a.append(values[j].to_int());
 			} else {

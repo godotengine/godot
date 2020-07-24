@@ -150,7 +150,7 @@ String StringBuffer<SHORT_BUFFER_SIZE>::as_string() {
 template <int SHORT_BUFFER_SIZE>
 double StringBuffer<SHORT_BUFFER_SIZE>::as_double() {
 	current_buffer_ptr()[string_length] = '\0';
-	return String::to_double(current_buffer_ptr());
+	return String::to_float(current_buffer_ptr());
 }
 
 template <int SHORT_BUFFER_SIZE>

@@ -3275,10 +3275,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				if ((p_hint == PROPERTY_HINT_RANGE || p_hint == PROPERTY_HINT_EXP_RANGE) && p_hint_text.get_slice_count(",") >= 2) {
 					greater = false; //if using ranged, assume false by default
 					lesser = false;
-					min = p_hint_text.get_slice(",", 0).to_double();
-					max = p_hint_text.get_slice(",", 1).to_double();
+					min = p_hint_text.get_slice(",", 0).to_float();
+					max = p_hint_text.get_slice(",", 1).to_float();
 					if (p_hint_text.get_slice_count(",") >= 3) {
-						step = p_hint_text.get_slice(",", 2).to_double();
+						step = p_hint_text.get_slice(",", 2).to_float();
 					}
 					hide_slider = false;
 					exp_range = p_hint == PROPERTY_HINT_EXP_RANGE;
@@ -3378,10 +3378,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3396,8 +3396,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				hide_slider = false;
 			}
 
@@ -3411,10 +3411,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3428,8 +3428,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				hide_slider = false;
 			}
 
@@ -3442,10 +3442,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3460,8 +3460,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 
 				hide_slider = false;
 			}
@@ -3476,10 +3476,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3494,10 +3494,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3511,10 +3511,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3528,10 +3528,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3545,10 +3545,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
@@ -3562,10 +3562,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-				min = p_hint_text.get_slice(",", 0).to_double();
-				max = p_hint_text.get_slice(",", 1).to_double();
+				min = p_hint_text.get_slice(",", 0).to_float();
+				max = p_hint_text.get_slice(",", 1).to_float();
 				if (p_hint_text.get_slice_count(",") >= 3) {
-					step = p_hint_text.get_slice(",", 2).to_double();
+					step = p_hint_text.get_slice(",", 2).to_float();
 				}
 				hide_slider = false;
 			}
