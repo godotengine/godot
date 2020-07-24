@@ -42,6 +42,10 @@
 #ifndef DOCTEST_LIBRARY_INCLUDED
 #define DOCTEST_LIBRARY_INCLUDED
 
+// CUSTOMIZATION TO PREVENT CRASHES IN MSVC COMPILER
+// YEAH I KNOW, IT TELLS ME ABOVE NOT TO EDIT IT, BUT I DID <3
+#include <sstream>
+
 // =================================================================================================
 // == VERSION ======================================================================================
 // =================================================================================================
@@ -2868,9 +2872,11 @@ namespace detail {
             oss << std::setw(2) << static_cast<unsigned>(bytes[i]);
         return oss.str().c_str();
     }
-
-    DOCTEST_THREAD_LOCAL std::ostringstream g_oss; // NOLINT(cert-err58-cpp)
-
+	#if defined(DOCTEST_PLATFORM_WINDOWS)
+	DOCTEST_THREAD_LOCAL static std::ostringstream g_oss; // NOLINT(cert-err58-cpp)
+	#else
+	DOCTEST_THREAD_LOCAL std::ostringstream g_oss; // NOLINT(cert-err58-cpp)
+	#endif // DOCTEST_PLATFORM_WINDOWS
     std::ostream* getTlsOss() {
         g_oss.clear(); // there shouldn't be anything worth clearing in the flags
         g_oss.str(""); // the slow way of resetting a string stream
@@ -3017,8 +3023,11 @@ typedef timer_large_integer::type ticks_t;
     // used to avoid locks for the debug output
     // TODO: figure out if this is indeed necessary/correct - seems like either there still
     // could be a race or that there wouldn't be a race even if using the context directly
-    DOCTEST_THREAD_LOCAL bool g_no_colors;
-
+	#if defined(DOCTEST_PLATFORM_WINDOWS)
+	DOCTEST_THREAD_LOCAL static bool g_no_colors;
+	#else
+	DOCTEST_THREAD_LOCAL bool g_no_colors;
+	#endif // DOCTEST_PLATFORM_WINDOWS
 #endif // DOCTEST_CONFIG_DISABLE
 } // namespace detail
 
@@ -3910,7 +3919,11 @@ namespace detail {
     void toStream(std::ostream* s, int long long in) { *s << in; }
     void toStream(std::ostream* s, int long long unsigned in) { *s << in; }
 
+	#if defined(DOCTEST_PLATFORM_WINDOWS)
+    DOCTEST_THREAD_LOCAL static std::vector<IContextScope*> g_infoContexts; // for logging with INFO()
+	#else
     DOCTEST_THREAD_LOCAL std::vector<IContextScope*> g_infoContexts; // for logging with INFO()
+	#endif // DOCTEST_PLATFORM_WINDOWS
 
     ContextScopeBase::ContextScopeBase() {
         g_infoContexts.push_back(this);
