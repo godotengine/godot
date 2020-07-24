@@ -308,16 +308,6 @@ Variant ScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	return call(p_method, argptr, argc, error);
 }
 
-void ScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	Callable::CallError ce;
-	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
-}
-
-void ScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	Callable::CallError ce;
-	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
-}
-
 void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
@@ -329,19 +319,6 @@ Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid)
 		*r_valid = false;
 	}
 	return Variant();
-}
-
-void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	call_multilevel(p_method, argptr, argc);
 }
 
 ScriptInstance::~ScriptInstance() {

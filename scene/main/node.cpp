@@ -55,15 +55,13 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_PROCESS: {
 			if (get_script_instance()) {
 				Variant time = get_process_delta_time();
-				const Variant *ptr[1] = { &time };
-				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_process, ptr, 1);
+				get_script_instance()->call(SceneStringNames::get_singleton()->_process, time);
 			}
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			if (get_script_instance()) {
 				Variant time = get_physics_process_delta_time();
-				const Variant *ptr[1] = { &time };
-				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_physics_process, ptr, 1);
+				get_script_instance()->call(SceneStringNames::get_singleton()->_physics_process, time);
 			}
 
 		} break;
@@ -146,7 +144,7 @@ void Node::_notification(int p_notification) {
 					set_physics_process(true);
 				}
 
-				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, nullptr, 0);
+				get_script_instance()->call(SceneStringNames::get_singleton()->_ready);
 			}
 
 		} break;
@@ -216,7 +214,7 @@ void Node::_propagate_enter_tree() {
 	notification(NOTIFICATION_ENTER_TREE);
 
 	if (get_script_instance()) {
-		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree, nullptr, 0);
+		get_script_instance()->call(SceneStringNames::get_singleton()->_enter_tree);
 	}
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
@@ -264,7 +262,7 @@ void Node::_propagate_exit_tree() {
 	data.blocked--;
 
 	if (get_script_instance()) {
-		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, nullptr, 0);
+		get_script_instance()->call(SceneStringNames::get_singleton()->_exit_tree);
 	}
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 

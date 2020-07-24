@@ -62,12 +62,6 @@ public:
 
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	// Rely on default implementations provided by ScriptInstance for the moment.
-	// Note that multilevel call could be removed in 3.0 release, so stay tuned
-	// (see https://godotengine.org/qa/9244/can-override-the-_ready-and-_process-functions-child-classes)
-	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
-	//virtual void call_multilevel_reversed(const StringName& p_method,const Variant** p_args,int p_argcount);
-
 	virtual void notification(int p_notification);
 
 	virtual Ref<Script> get_script() const;

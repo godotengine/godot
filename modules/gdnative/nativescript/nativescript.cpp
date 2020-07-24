@@ -991,7 +991,8 @@ void NativeScriptInstance::notification(int p_notification) {
 
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
-	call_multilevel("_notification", args, 1);
+	Callable::CallError error;
+	call("_notification", args, 1, error);
 }
 
 String NativeScriptInstance::to_string(bool *r_valid) {
@@ -1085,31 +1086,6 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_
 
 ScriptLanguage *NativeScriptInstance::get_language() {
 	return NativeScriptLanguage::get_singleton();
-}
-
-void NativeScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
-
-	while (script_data) {
-		Map<StringName, NativeScriptDesc::Method>::Element *E = script_data->methods.find(p_method);
-		if (E) {
-			godot_variant res = E->get().method.method((godot_object *)owner,
-					E->get().method.method_data,
-					userdata,
-					p_argcount,
-					(godot_variant **)p_args);
-			godot_variant_destroy(&res);
-		}
-		script_data = script_data->base_data;
-	}
-}
-
-void NativeScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
-
-	if (script_data) {
-		_ml_call_reversed(script_data, p_method, p_args, p_argcount);
-	}
 }
 
 NativeScriptInstance::~NativeScriptInstance() {

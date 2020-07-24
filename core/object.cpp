@@ -680,84 +680,6 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 	return Variant();
 }
 
-#ifdef DEBUG_ENABLED
-static void _test_call_error(const StringName &p_func, const Callable::CallError &error) {
-	switch (error.error) {
-		case Callable::CallError::CALL_OK:
-		case Callable::CallError::CALL_ERROR_INVALID_METHOD:
-			break;
-		case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-			ERR_FAIL_MSG("Error calling function: " + String(p_func) + " - Invalid type for argument " + itos(error.argument) + ", expected " + Variant::get_type_name(Variant::Type(error.expected)) + ".");
-			break;
-		}
-		case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
-			ERR_FAIL_MSG("Error calling function: " + String(p_func) + " - Too many arguments, expected " + itos(error.argument) + ".");
-			break;
-		}
-		case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
-			ERR_FAIL_MSG("Error calling function: " + String(p_func) + " - Too few arguments, expected " + itos(error.argument) + ".");
-			break;
-		}
-		case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
-			break;
-	}
-}
-#else
-
-#define _test_call_error(m_str, m_err)
-
-#endif
-
-void Object::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	if (p_method == CoreStringNames::get_singleton()->_free) {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_COND_MSG(Object::cast_to<Reference>(this), "Can't 'free' a reference.");
-
-		ERR_FAIL_COND_MSG(_lock_index.get() > 1, "Object is locked and can't be freed.");
-#endif
-
-		//must be here, must be before everything,
-		memdelete(this);
-		return;
-	}
-
-	//Variant ret;
-	OBJ_DEBUG_LOCK
-
-	Callable::CallError error;
-
-	if (script_instance) {
-		script_instance->call_multilevel(p_method, p_args, p_argcount);
-		//_test_call_error(p_method,error);
-	}
-
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-
-	if (method) {
-		method->call(this, p_args, p_argcount, error);
-		_test_call_error(p_method, error);
-	}
-}
-
-void Object::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-
-	Callable::CallError error;
-	OBJ_DEBUG_LOCK
-
-	if (method) {
-		method->call(this, p_args, p_argcount, error);
-		_test_call_error(p_method, error);
-	}
-
-	//Variant ret;
-
-	if (script_instance) {
-		script_instance->call_multilevel_reversed(p_method, p_args, p_argcount);
-		//_test_call_error(p_method,error);
-	}
-}
-
 bool Object::has_method(const StringName &p_method) const {
 	if (p_method == CoreStringNames::get_singleton()->_free) {
 		return true;
@@ -818,21 +740,6 @@ Variant Object::call(const StringName &p_name, VARIANT_ARG_DECLARE) {
 
 	Variant ret = call(p_name, argptr, argc, error);
 	return ret;
-}
-
-void Object::call_multilevel(const StringName &p_name, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS;
-
-	int argc = 0;
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL) {
-			break;
-		}
-		argc++;
-	}
-
-	//Callable::CallError error;
-	call_multilevel(p_name, argptr, argc);
 }
 
 Variant Object::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
