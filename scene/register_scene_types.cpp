@@ -81,6 +81,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/code_edit.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
@@ -351,6 +352,7 @@ void register_scene_types() {
 	ClassDB::register_class<Tree>();
 
 	ClassDB::register_class<TextEdit>();
+	ClassDB::register_class<CodeEdit>();
 	ClassDB::register_class<SyntaxHighlighter>();
 	ClassDB::register_class<CodeHighlighter>();
 

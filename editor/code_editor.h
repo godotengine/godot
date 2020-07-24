@@ -34,9 +34,9 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
@@ -45,15 +45,15 @@ class GotoLineDialog : public ConfirmationDialog {
 	Label *line_label;
 	LineEdit *line;
 
-	TextEdit *text_editor;
+	CodeEdit *text_editor;
 
 	virtual void ok_pressed() override;
 
 public:
-	void popup_find_line(TextEdit *p_edit);
+	void popup_find_line(CodeEdit *p_edit);
 	int get_line() const;
 
-	void set_text_editor(TextEdit *p_text_editor);
+	void set_text_editor(CodeEdit *p_text_editor);
 	GotoLineDialog();
 };
 
@@ -77,7 +77,7 @@ class FindReplaceBar : public HBoxContainer {
 	HBoxContainer *hbc_button_replace;
 	HBoxContainer *hbc_option_replace;
 
-	TextEdit *text_edit;
+	CodeEdit *text_editor;
 
 	int result_line;
 	int result_col;
@@ -120,7 +120,7 @@ public:
 	bool is_selection_only() const;
 	void set_error(const String &p_label);
 
-	void set_text_edit(TextEdit *p_text_edit);
+	void set_text_edit(CodeEdit *p_text_edit);
 
 	void popup_search(bool p_show_only = false);
 	void popup_replace();
@@ -137,7 +137,7 @@ typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code,
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
-	TextEdit *text_editor;
+	CodeEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
 	HBoxContainer *status_bar;
 
@@ -240,7 +240,7 @@ public:
 	void set_error(const String &p_error);
 	void set_error_pos(int p_line, int p_column);
 	void update_line_and_column() { _line_col_changed(); }
-	TextEdit *get_text_edit() { return text_editor; }
+	CodeEdit *get_text_editor() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}
 	void goto_error();
