@@ -935,7 +935,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		if (is_expression) {
-			TextEdit *expression_box = memnew(TextEdit);
+			CodeEdit *expression_box = memnew(CodeEdit);
 			Ref<CodeHighlighter> expression_syntax_highlighter;
 			expression_syntax_highlighter.instance();
 			expression_node->set_control(expression_box, 0);
@@ -1186,14 +1186,14 @@ void VisualShaderEditor::_remove_output_port(int p_node, int p_port) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_expression_focus_out(Object *text_edit, int p_node) {
+void VisualShaderEditor::_expression_focus_out(Object *code_edit, int p_node) {
 	VisualShader::Type type = get_current_shader_type();
 	Ref<VisualShaderNodeExpression> node = visual_shader->get_node(type, p_node);
 	if (node.is_null()) {
 		return;
 	}
 
-	TextEdit *expression_box = Object::cast_to<TextEdit>(text_edit);
+	CodeEdit *expression_box = Object::cast_to<CodeEdit>(code_edit);
 
 	if (node->get_expression() == expression_box->get_text()) {
 		return;
@@ -2550,7 +2550,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_vbox = memnew(VBoxContainer);
 	preview_vbox->set_visible(preview_showed);
 	main_box->add_child(preview_vbox);
-	preview_text = memnew(TextEdit);
+	preview_text = memnew(CodeEdit);
 	syntax_highlighter.instance();
 	preview_vbox->add_child(preview_text);
 	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
