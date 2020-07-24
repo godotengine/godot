@@ -265,8 +265,6 @@ class CSharpInstance : public ScriptInstance {
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
 
-	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
-
 	void get_properties_state_for_reloading(List<Pair<StringName, Variant>> &r_state);
 	void get_event_signals_state_for_reloading(List<Pair<StringName, Array>> &r_state);
 
@@ -285,8 +283,6 @@ public:
 	/* TODO */ void get_method_list(List<MethodInfo> *p_list) const override {}
 	bool has_method(const StringName &p_method) const override;
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
-	void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) override;
-	void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) override;
 
 	void mono_object_disposed(MonoObject *p_obj);
 
