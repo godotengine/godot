@@ -1971,7 +1971,7 @@ void Tree::_text_editor_enter(String p_text) {
 			//popup_edited_item->edited_signal.call( popup_edited_item_col );
 		} break;
 		case TreeItem::CELL_MODE_RANGE: {
-			c.val = p_text.to_double();
+			c.val = p_text.to_float();
 			if (c.step > 0) {
 				c.val = Math::stepify(c.val, c.step);
 			}

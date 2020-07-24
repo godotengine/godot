@@ -1573,7 +1573,7 @@ Variant::operator float() const {
 		case FLOAT:
 			return _data._float;
 		case STRING:
-			return operator String().to_double();
+			return operator String().to_float();
 		default: {
 			return 0;
 		}
@@ -1591,7 +1591,7 @@ Variant::operator double() const {
 		case FLOAT:
 			return _data._float;
 		case STRING:
-			return operator String().to_double();
+			return operator String().to_float();
 		default: {
 			return 0;
 		}
