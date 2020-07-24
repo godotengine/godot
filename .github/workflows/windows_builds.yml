@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   SCONS_CACHE_MSVC_CONFIG: true
-  SCONS_CACHE_LIMIT: 8192
+  SCONS_CACHE_LIMIT: 4096
 
 jobs:
   windows-editor:
@@ -26,11 +26,11 @@ jobs:
       uses: RevoluPowered/cache@v2.1
       with:
         path: /.scons_cache/
-        key: ${{runner.os}}-editor-${{github.sha}}
+        key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
         restore-keys: |
-          ${{runner.os}}-editor-${{github.sha}}
-          ${{runner.os}}-editor
-          ${{runner.os}}
+          ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+          ${{github.job}}-${GITHUB_REF##*/}
+          ${{github.job}}
 
     # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
     - name: Set up Python 3.x
@@ -80,11 +80,11 @@ jobs:
       uses: RevoluPowered/cache@v2.1
       with:
         path: /.scons_cache/
-        key: ${{runner.os}}-template-${{github.sha}}
+        key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
         restore-keys: |
-          ${{runner.os}}-template-${{github.sha}}
-          ${{runner.os}}-template
-          ${{runner.os}}
+          ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+          ${{github.job}}-${GITHUB_REF##*/}
+          ${{github.job}}
 
     # Use python 3.x release (works cross platform)
     - name: Set up Python 3.x

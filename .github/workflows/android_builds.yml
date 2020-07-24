@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
-  SCONS_CACHE_LIMIT: 8192
+  SCONS_CACHE_LIMIT: 4096
 
 jobs:
   android-template:
@@ -43,11 +43,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{runner.os}}-template-${{github.sha}}
+          key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
           restore-keys: |
-            ${{runner.os}}-template-${{github.sha}}
-            ${{runner.os}}-template
-            ${{runner.os}}
+            ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+            ${{github.job}}-${GITHUB_REF##*/}
+            ${{github.job}}
 
         # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x

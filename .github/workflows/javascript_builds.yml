@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
-  SCONS_CACHE_LIMIT: 8192
+  SCONS_CACHE_LIMIT: 4096
   EM_VERSION: latest
   EM_CACHE_FOLDER: 'emsdk-cache'
 
@@ -29,9 +29,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{github.sha}}
+          key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
           restore-keys: |
-            ${{github.job}}-${{github.sha}}
+            ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+            ${{github.job}}-${GITHUB_REF##*/}
             ${{github.job}}
 
       # Additional cache for Emscripten generated system libraries
