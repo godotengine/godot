@@ -81,6 +81,9 @@ Files extracted from upstream source:
 
 Extracted from .zip provided. Extracted license and header only.
 
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
 
 ## enet
 
