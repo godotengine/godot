@@ -30,6 +30,7 @@
 
 #include "main.h"
 
+#include "core/build_arguments.gen.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
@@ -501,6 +502,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
+			print_line("Build arguments: " + String(BUILD_ARGUMENTS));
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
