@@ -468,6 +468,9 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	int l_width = d["width"];
 	int l_depth = d["depth"];
 
+	ERR_FAIL_COND_MSG(l_width < 2, "Map width must be at least 2.");
+	ERR_FAIL_COND_MSG(l_depth < 2, "Map depth must be at least 2.");
+
 	// TODO This code will need adjustments if real_t is set to `double`,
 	// because that precision is unnecessary for a heightmap and Bullet doesn't support it...
 
