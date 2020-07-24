@@ -41,6 +41,9 @@ int main(int argc, char *argv[]) {
 
 	setlocale(LC_CTYPE, "");
 
+	// We must override main when testing is enabled
+	TEST_MAIN_OVERRIDE
+
 	char *cwd = (char *)malloc(PATH_MAX);
 	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
 	char *ret = getcwd(cwd, PATH_MAX);

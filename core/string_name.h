@@ -35,6 +35,8 @@
 #include "core/safe_refcount.h"
 #include "core/ustring.h"
 
+class Main;
+
 struct StaticCString {
 	const char *ptr;
 	static StaticCString create(const char *p_ptr);
@@ -73,7 +75,7 @@ class StringName {
 	void unref();
 	friend void register_core_types();
 	friend void unregister_core_types();
-
+	friend class Main;
 	static Mutex mutex;
 	static void setup();
 	static void cleanup();
