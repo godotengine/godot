@@ -39,6 +39,7 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -56,6 +57,7 @@ public class GodotEditText extends EditText {
 	// Fields
 	// ===========================================================
 	private GodotRenderView mRenderView;
+	private View mKeyboardView;
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
@@ -129,7 +131,7 @@ public class GodotEditText extends EditText {
 
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
-					final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+					final InputMethodManager imm = (InputMethodManager)mKeyboardView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.showSoftInput(edit, 0);
 				}
 			} break;
@@ -138,7 +140,7 @@ public class GodotEditText extends EditText {
 				GodotEditText edit = (GodotEditText)msg.obj;
 
 				edit.removeTextChangedListener(mInputWrapper);
-				final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				final InputMethodManager imm = (InputMethodManager)mKeyboardView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 				imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
 				edit.mRenderView.getView().requestFocus();
 			} break;
@@ -160,6 +162,10 @@ public class GodotEditText extends EditText {
 			mInputWrapper = new GodotTextInputWrapper(mRenderView, this);
 		setOnEditorActionListener(mInputWrapper);
 		view.getView().requestFocus();
+	}
+
+	public void setKeyboardView(final View keyboardView) {
+		mKeyboardView = keyboardView;
 	}
 
 	// ===========================================================
