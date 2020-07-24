@@ -4744,7 +4744,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							return;
 						}
 						_ADVANCE_AND_CONSUME_NEWLINES;
-						if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {							_set_error("Expected a String for section name.");
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+							_set_error("Expected a String for section name.");
 							return;
 						}
 						String to_add = String(tokenizer->get_token_constant()) + String("/");
@@ -4763,6 +4764,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						export_section_path += to_add;
 						_parse_section(p_class);
 						export_section_path = past_export;
+					} break;
+					default: {
+						_set_error("Expected \"section\"");
+						return;
 					} break;
 				}
 			} break;
@@ -6338,16 +6343,17 @@ void GDScriptParser::_parse_section(ClassNode *p_class) {
 						_parse_section(p_class);
 						export_section_path = past_export;
 					} break;
+					default: {
+						_set_error("Expected \"section\"");
+						return;
+					} break;
 				}
 			} break;
 
 			default: {
-
 				_set_error(String() + "Unexpected token: " + tokenizer->get_token_name(tokenizer->get_token()) + ":" + tokenizer->get_token_identifier());
 				return;
-
 			} break;
-
 		}
 	}
 }

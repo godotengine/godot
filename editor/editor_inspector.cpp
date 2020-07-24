@@ -1577,7 +1577,7 @@ void EditorInspector::update_tree() {
 			continue;
 		}
 
-		String basename = p.name;
+		String basename = p.export_path + p.name;
 		if (group != "") {
 			if (group_base != "") {
 				if (basename.begins_with(group_base)) {

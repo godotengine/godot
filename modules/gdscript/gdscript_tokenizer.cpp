@@ -1578,7 +1578,7 @@ GDScriptTokenizerBuffer::GDScriptTokenizerBuffer() {
 	token = 0;
 }
 
-const char* GDScriptCosmetics::get_cosmetic_name(GDScriptCosmetics::Cosmetic p_cosm) {
+const char *GDScriptCosmetics::get_cosmetic_name(GDScriptCosmetics::Cosmetic p_cosm) {
 	ERR_FAIL_INDEX_V(p_cosm, COSM_MAX, "");
 
 	static const char *_names[COSM_MAX] = {
