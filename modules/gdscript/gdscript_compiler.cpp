@@ -736,7 +736,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} else {
 					if (callee->type == GDScriptParser::Node::IDENTIFIER) {
 						// Self function call.
-						if (codegen.function_node && codegen.function_node->is_static) {
+						if ((codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							ret = (GDScriptFunction::ADDR_TYPE_CLASS << GDScriptFunction::ADDR_BITS);
 						} else {
 							ret = (GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS);
