@@ -646,7 +646,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 		int64_t value = number.bin_to_int();
 		return make_literal(value);
 	} else if (has_decimal || has_exponent) {
-		double value = number.to_double();
+		double value = number.to_float();
 		return make_literal(value);
 	} else {
 		int64_t value = number.to_int();
