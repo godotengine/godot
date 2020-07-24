@@ -411,7 +411,7 @@ void AnimationPlayerEditor::_animation_remove() {
 
 	String current = animation->get_item_text(animation->get_selected());
 
-	delete_dialog->set_text(TTR("Delete Animation '" + current + "'?"));
+	delete_dialog->set_text(vformat(TTR("Delete Animation '%s'?"), current));
 	delete_dialog->popup_centered();
 }
 

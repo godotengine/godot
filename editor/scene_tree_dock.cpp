@@ -2718,7 +2718,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 				if (l != String()) {
 					Button *button = memnew(Button);
 					favorite_nodes->add_child(button);
-					button->set_text(TTR(l));
+					button->set_text(l);
 					String name = l.get_slicec(' ', 0);
 					if (ScriptServer::is_global_class(name)) {
 						name = ScriptServer::get_global_class_native_base(name);
