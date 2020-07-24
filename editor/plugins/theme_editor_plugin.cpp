@@ -828,7 +828,7 @@ ThemeEditor::ThemeEditor() {
 	type_hbc->add_child(type_edit);
 	type_menu = memnew(MenuButton);
 	type_menu->set_flat(false);
-	type_menu->set_text("..");
+	type_menu->set_text("...");
 	type_hbc->add_child(type_menu);
 
 	type_menu->get_popup()->connect("id_pressed", callable_mp(this, &ThemeEditor::_type_menu_cbk));
@@ -846,7 +846,7 @@ ThemeEditor::ThemeEditor() {
 	name_hbc->add_child(name_edit);
 	name_menu = memnew(MenuButton);
 	type_menu->set_flat(false);
-	name_menu->set_text("..");
+	name_menu->set_text("...");
 	name_hbc->add_child(name_menu);
 
 	name_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ThemeEditor::_name_menu_about_to_show));
