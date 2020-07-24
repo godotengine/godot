@@ -4,6 +4,7 @@ on: [push, pull_request]
 # Global Cache Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
+  GODOT_BASE_BRANCH: master
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 4096
 
@@ -18,19 +19,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # Upload cache on completion and check it out now
-    # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
-    # Linux with this will work reliably, so not as bad to edit for Linux.
+      # Upload cache on completion and check it out now
+      # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
     - name: Load .scons_cache directory
       id: windows-editor-cache
       uses: RevoluPowered/cache@v2.1
       with:
         path: /.scons_cache/
-        key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
         restore-keys: |
-          ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
-          ${{github.job}}-${GITHUB_REF##*/}
-          ${{github.job}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
     # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
     - name: Set up Python 3.x
@@ -73,18 +73,17 @@ jobs:
     - uses: actions/checkout@v2
 
     # Upload cache on completion and check it out now
-    # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
-    # Linux with this will work reliably, so not as bad to edit for Linux.
+    # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
     - name: Load .scons_cache directory
       id: windows-template-cache
       uses: RevoluPowered/cache@v2.1
       with:
         path: /.scons_cache/
-        key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
         restore-keys: |
-          ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
-          ${{github.job}}-${GITHUB_REF##*/}
-          ${{github.job}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
     # Use python 3.x release (works cross platform)
     - name: Set up Python 3.x
@@ -102,6 +101,7 @@ jobs:
         python -m pip install scons pywin32
         python --version
         scons --version
+
     - name: Compilation
       env:
         SCONS_CACHE: /.scons_cache/
