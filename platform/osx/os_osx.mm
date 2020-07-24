@@ -3135,7 +3135,7 @@ void OS_OSX::run() {
 			process_events(); // get rid of pending events
 			joypad_osx->process_joypads();
 
-			if (Main::iteration() == true) {
+			if (Main::iteration()) {
 				quit = true;
 			}
 		} @catch (NSException *exception) {

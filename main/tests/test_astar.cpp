@@ -102,9 +102,9 @@ bool test_add_remove() {
 	a.connect_points(1, 3, true);
 	a.connect_points(1, 4, false);
 
-	ok = ok && (a.are_points_connected(2, 1) == true);
-	ok = ok && (a.are_points_connected(4, 1) == true);
-	ok = ok && (a.are_points_connected(2, 1, false) == true);
+	ok = ok && (a.are_points_connected(2, 1));
+	ok = ok && (a.are_points_connected(4, 1));
+	ok = ok && (a.are_points_connected(2, 1, false));
 	ok = ok && (a.are_points_connected(4, 1, false) == false);
 
 	a.disconnect_points(1, 2, true);
@@ -177,7 +177,7 @@ bool test_add_remove() {
 		if (Math::rand() % 2 == 1) {
 			// Add a (possibly existing) directed edge and confirm connectivity
 			a.connect_points(u, v, false);
-			ok = ok && (a.are_points_connected(u, v, false) == true);
+			ok = ok && (a.are_points_connected(u, v, false));
 		} else {
 			// Remove a (possibly nonexistent) directed edge and confirm disconnectivity
 			a.disconnect_points(u, v, false);
