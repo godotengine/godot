@@ -400,7 +400,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 	OS::get_singleton()->initialize();
 	StringName::setup();
 	for (int x = 0; x < argc; x++) {
-		if (strncmp(argv[x], "--test", 6)) {
+		if (strncmp(argv[x], "--test", 6) == 0) {
 			tests_need_run = true;
 			return test_main(argc, argv);
 		}
@@ -1829,7 +1829,7 @@ bool Main::start() {
 		print_line("Generating new docs...");
 		doc.save_classes(index_path, doc_data_classes);
 
-		return FAILED;
+		return false;
 	}
 
 	if (_export_preset != "") {
@@ -1837,7 +1837,7 @@ bool Main::start() {
 			String err = "Command line includes export parameter option, but no destination path was given.\n";
 			err += "Please specify the binary's file path to export to. Aborting export.";
 			ERR_PRINT(err);
-			return FAILED;
+			return false;
 		}
 	}
 #endif
@@ -1859,7 +1859,7 @@ bool Main::start() {
 			if (!script_res->is_valid()) {
 				OS::get_singleton()->set_exit_code(1);
 			}
-			return FAILED;
+			return false;
 		}
 
 		if (script_res->can_instance()) {
@@ -1878,7 +1878,7 @@ bool Main::start() {
 			script_loop->set_init_script(script_res);
 			main_loop = script_loop;
 		} else {
-			return FAILED;
+			return false;
 		}
 
 	} else {
@@ -1892,7 +1892,7 @@ bool Main::start() {
 	if (!main_loop) {
 		if (!ClassDB::class_exists(main_loop_type)) {
 			DisplayServer::get_singleton()->alert("Error: MainLoop type doesn't exist: " + main_loop_type);
-			return FAILED;
+			return false;
 		} else {
 			Object *ml = ClassDB::instance(main_loop_type);
 			ERR_FAIL_COND_V_MSG(!ml, false, "Can't instance MainLoop type.");
@@ -2251,7 +2251,7 @@ bool Main::start() {
 
 	OS::get_singleton()->set_main_loop(main_loop);
 
-	return OK;
+	return true;
 }
 
 /* Main iteration
