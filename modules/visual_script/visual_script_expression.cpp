@@ -489,7 +489,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					r_token.type = TK_CONSTANT;
 
 					if (is_float) {
-						r_token.value = num.to_double();
+						r_token.value = num.to_float();
 					} else {
 						r_token.value = num.to_int();
 					}

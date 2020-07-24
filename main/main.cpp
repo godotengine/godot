@@ -879,7 +879,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--time-scale") { // force time scale
 
 			if (I->next()) {
-				Engine::get_singleton()->set_time_scale(I->next()->get().to_double());
+				Engine::get_singleton()->set_time_scale(I->next()->get().to_float());
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
@@ -2017,7 +2017,7 @@ bool Main::start() {
 
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
-			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0),
+			Size2i stretch_size = Size2i(GLOBAL_DEF("display/window/size/width", 0),
 					GLOBAL_DEF("display/window/size/height", 0));
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;

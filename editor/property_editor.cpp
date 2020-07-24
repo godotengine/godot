@@ -368,18 +368,18 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				float min = 0, max = 100, step = type == Variant::FLOAT ? .01 : 1;
 				if (c >= 1) {
 					if (!hint_text.get_slice(",", 0).empty()) {
-						min = hint_text.get_slice(",", 0).to_double();
+						min = hint_text.get_slice(",", 0).to_float();
 					}
 				}
 				if (c >= 2) {
 					if (!hint_text.get_slice(",", 1).empty()) {
-						max = hint_text.get_slice(",", 1).to_double();
+						max = hint_text.get_slice(",", 1).to_float();
 					}
 				}
 
 				if (c >= 3) {
 					if (!hint_text.get_slice(",", 2).empty()) {
-						step = hint_text.get_slice(",", 2).to_double();
+						step = hint_text.get_slice(",", 2).to_float();
 					}
 				}
 
@@ -1590,7 +1590,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 	Error err = expr->parse(text);
 	real_t out;
 	if (err != OK) {
-		out = value_editor[0]->get_text().to_double();
+		out = value_editor[0]->get_text().to_float();
 	} else {
 		out = expr->execute(Array(), nullptr, false);
 	}

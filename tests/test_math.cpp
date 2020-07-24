@@ -242,7 +242,7 @@ class GetClassAndNamespace {
 					if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
 						//a number
 						const CharType *rptr;
-						double number = String::to_double(&code[idx], &rptr);
+						double number = String::to_float(&code[idx], &rptr);
 						idx += (rptr - &code[idx]);
 						value = number;
 						return TK_NUMBER;

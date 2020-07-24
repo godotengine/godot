@@ -1405,7 +1405,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return (int64_t(*p_args[0]));
 			}
 			case FLOAT: {
-				return real_t(*p_args[0]);
+				return double(*p_args[0]);
 			}
 			case STRING: {
 				return String(*p_args[0]);

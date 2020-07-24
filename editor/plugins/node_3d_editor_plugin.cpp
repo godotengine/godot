@@ -4689,9 +4689,9 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 }
 
 void Node3DEditor::_snap_changed() {
-	snap_translate_value = snap_translate->get_text().to_double();
-	snap_rotate_value = snap_rotate->get_text().to_double();
-	snap_scale_value = snap_scale->get_text().to_double();
+	snap_translate_value = snap_translate->get_text().to_float();
+	snap_rotate_value = snap_rotate->get_text().to_float();
+	snap_scale_value = snap_scale->get_text().to_float();
 }
 
 void Node3DEditor::_snap_update() {
@@ -4708,9 +4708,9 @@ void Node3DEditor::_xform_dialog_action() {
 	Vector3 translate;
 
 	for (int i = 0; i < 3; i++) {
-		translate[i] = xform_translate[i]->get_text().to_double();
-		rotate[i] = Math::deg2rad(xform_rotate[i]->get_text().to_double());
-		scale[i] = xform_scale[i]->get_text().to_double();
+		translate[i] = xform_translate[i]->get_text().to_float();
+		rotate[i] = Math::deg2rad(xform_rotate[i]->get_text().to_float());
+		scale[i] = xform_scale[i]->get_text().to_float();
 	}
 
 	t.basis.scale(scale);
@@ -6432,9 +6432,9 @@ Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 float Node3DEditor::get_translate_snap() const {
 	float snap_value;
 	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-		snap_value = snap_translate->get_text().to_double() / 10.0;
+		snap_value = snap_translate->get_text().to_float() / 10.0;
 	} else {
-		snap_value = snap_translate->get_text().to_double();
+		snap_value = snap_translate->get_text().to_float();
 	}
 
 	return snap_value;
@@ -6443,9 +6443,9 @@ float Node3DEditor::get_translate_snap() const {
 float Node3DEditor::get_rotate_snap() const {
 	float snap_value;
 	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-		snap_value = snap_rotate->get_text().to_double() / 3.0;
+		snap_value = snap_rotate->get_text().to_float() / 3.0;
 	} else {
-		snap_value = snap_rotate->get_text().to_double();
+		snap_value = snap_rotate->get_text().to_float();
 	}
 
 	return snap_value;
@@ -6454,9 +6454,9 @@ float Node3DEditor::get_rotate_snap() const {
 float Node3DEditor::get_scale_snap() const {
 	float snap_value;
 	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-		snap_value = snap_scale->get_text().to_double() / 2.0;
+		snap_value = snap_scale->get_text().to_float() / 2.0;
 	} else {
-		snap_value = snap_scale->get_text().to_double();
+		snap_value = snap_scale->get_text().to_float();
 	}
 
 	return snap_value;

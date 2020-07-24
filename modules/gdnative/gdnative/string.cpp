@@ -541,13 +541,7 @@ godot_string GDAPI godot_string_substr(const godot_string *p_self, godot_int p_f
 	return result;
 }
 
-double GDAPI godot_string_to_double(const godot_string *p_self) {
-	const String *self = (const String *)p_self;
-
-	return self->to_double();
-}
-
-godot_real GDAPI godot_string_to_float(const godot_string *p_self) {
+double GDAPI godot_string_to_float(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
 	return self->to_float();
@@ -583,8 +577,8 @@ godot_string GDAPI godot_string_camelcase_to_underscore_lowercased(const godot_s
 	return result;
 }
 
-double GDAPI godot_string_char_to_double(const char *p_what) {
-	return String::to_double(p_what);
+double GDAPI godot_string_char_to_float(const char *p_what) {
+	return String::to_float(p_what);
 }
 
 godot_int GDAPI godot_string_char_to_int(const char *p_what) {
@@ -621,8 +615,8 @@ int64_t GDAPI godot_string_to_int64(const godot_string *p_self) {
 	return self->to_int();
 }
 
-double GDAPI godot_string_unicode_char_to_double(const wchar_t *p_str, const wchar_t **r_end) {
-	return String::to_double(p_str, r_end);
+double GDAPI godot_string_unicode_char_to_float(const wchar_t *p_str, const wchar_t **r_end) {
+	return String::to_float(p_str, r_end);
 }
 
 godot_string GDAPI godot_string_get_slice(const godot_string *p_self, godot_string p_splitter, godot_int p_slice) {
