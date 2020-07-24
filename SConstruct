@@ -642,7 +642,7 @@ if selected_platform in platform_list:
         )
 
     # enable test framework globally and inform it of configuration method
-    env.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT"])
+    env.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT","DOCTEST_CONFIG_USE_STD_HEADERS"])
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
