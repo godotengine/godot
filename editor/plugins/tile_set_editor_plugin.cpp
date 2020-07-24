@@ -698,7 +698,7 @@ void TileSetEditor::_on_tileset_toolbar_confirm() {
 			List<int> ids;
 			tileset->get_tile_list(&ids);
 
-			undo_redo->create_action(TTR(option == TOOL_TILESET_MERGE_SCENE ? "Merge Tileset from Scene" : "Create Tileset from Scene"));
+			undo_redo->create_action(option == TOOL_TILESET_MERGE_SCENE ? TTR("Merge Tileset from Scene") : TTR("Create Tileset from Scene"));
 			undo_redo->add_do_method(this, "_undo_redo_import_scene", scene, option == TOOL_TILESET_MERGE_SCENE);
 			undo_redo->add_undo_method(tileset.ptr(), "clear");
 			for (List<int>::Element *E = ids.front(); E; E = E->next()) {
