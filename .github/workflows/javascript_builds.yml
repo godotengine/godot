@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
+  GODOT_BASE_BRANCH: master
   SCONS_CACHE_LIMIT: 4096
   EM_VERSION: latest
   EM_CACHE_FOLDER: 'emsdk-cache'
@@ -22,18 +23,16 @@ jobs:
           sudo apt-get update
 
       # Upload cache on completion and check it out now
-      # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
-      # Linux with this will work reliably, so not as bad to edit for Linux.
       - name: Load .scons_cache directory
         id: javascript-template-cache
         uses: actions/cache@v2
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
           restore-keys: |
-            ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
-            ${{github.job}}-${GITHUB_REF##*/}
-            ${{github.job}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
       # Additional cache for Emscripten generated system libraries
       - name: Load Emscripten cache
