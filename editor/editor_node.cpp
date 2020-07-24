@@ -175,11 +175,126 @@
 
 EditorNode *EditorNode::singleton = NULL;
 
+void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
+	// Keep track of a list of "index sets," i.e. sets of indices
+	// within disambiguated_scene_names which contain the same name.
+	Vector<Set<int> > index_sets;
+	Map<String, int> scene_name_to_set_index;
+	for (int i = 0; i < r_filenames.size(); i++) {
+		String scene_name = r_filenames[i];
+		if (!scene_name_to_set_index.has(scene_name)) {
+			index_sets.push_back(Set<int>());
+			scene_name_to_set_index.insert(r_filenames[i], index_sets.size() - 1);
+		}
+		index_sets.write[scene_name_to_set_index[scene_name]].insert(i);
+	}
+
+	// For each index set with a size > 1, we need to disambiguate
+	for (int i = 0; i < index_sets.size(); i++) {
+		Set<int> iset = index_sets[i];
+		while (iset.size() > 1) {
+			// Append the parent folder to each scene name
+			for (Set<int>::Element *E = iset.front(); E; E = E->next()) {
+				int set_idx = E->get();
+				String scene_name = r_filenames[set_idx];
+				String full_path = p_full_paths[set_idx];
+
+				// Get rid of file extensions and res:// prefixes
+				if (scene_name.rfind(".") >= 0) {
+					scene_name = scene_name.substr(0, scene_name.rfind("."));
+				}
+				if (full_path.begins_with("res://")) {
+					full_path = full_path.substr(6);
+				}
+				if (full_path.rfind(".") >= 0) {
+					full_path = full_path.substr(0, full_path.rfind("."));
+				}
+
+				int scene_name_size = scene_name.size();
+				int full_path_size = full_path.size();
+				int difference = full_path_size - scene_name_size;
+
+				// Find just the parent folder of the current path and append it.
+				// If the current name is foo.tscn, and the full path is /some/folder/foo.tscn
+				// then slash_idx is the second '/', so that we select just "folder", and
+				// append that to yield "folder/foo.tscn".
+				if (difference > 0) {
+					String parent = full_path.substr(0, difference);
+					int slash_idx = parent.rfind("/");
+					slash_idx = parent.rfind("/", slash_idx - 1);
+					parent = slash_idx >= 0 ? parent.substr(slash_idx + 1) : parent;
+					r_filenames.write[set_idx] = parent + r_filenames[set_idx];
+				}
+			}
+
+			// Loop back through scene names and remove non-ambiguous names
+			bool can_proceed = false;
+			Set<int>::Element *E = iset.front();
+			while (E) {
+				String scene_name = r_filenames[E->get()];
+				bool duplicate_found = false;
+				for (Set<int>::Element *F = iset.front(); F; F = F->next()) {
+					if (E->get() == F->get()) {
+						continue;
+					}
+					String other_scene_name = r_filenames[F->get()];
+					if (other_scene_name == scene_name) {
+						duplicate_found = true;
+						break;
+					}
+				}
+
+				Set<int>::Element *to_erase = duplicate_found ? nullptr : E;
+
+				// We need to check that we could actually append anymore names
+				// if we wanted to for disambiguation. If we can't, then we have
+				// to abort even with ambiguous names. We clean the full path
+				// and the scene name first to remove extensions so that this
+				// comparison actually works.
+				String path = p_full_paths[E->get()];
+				if (path.begins_with("res://")) {
+					path = path.substr(6);
+				}
+				if (path.rfind(".") >= 0) {
+					path = path.substr(0, path.rfind("."));
+				}
+				if (scene_name.rfind(".") >= 0) {
+					scene_name = scene_name.substr(0, scene_name.rfind("."));
+				}
+
+				// We can proceed iff the full path is longer than the scene name,
+				// meaning that there is at least one more parent folder we can
+				// tack onto the name.
+				can_proceed = can_proceed || (path.size() - scene_name.size()) >= 1;
+
+				E = E->next();
+				if (to_erase) {
+					iset.erase(to_erase);
+				}
+			}
+
+			if (!can_proceed) {
+				break;
+			}
+		}
+	}
+}
+
 void EditorNode::_update_scene_tabs() {
 
 	bool show_rb = EditorSettings::get_singleton()->get("interface/scene_tabs/show_script_button");
 
 	OS::get_singleton()->global_menu_clear("_dock");
+
+	// Get all scene names, which may be ambiguous
+	Vector<String> disambiguated_scene_names;
+	Vector<String> full_path_names;
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		disambiguated_scene_names.push_back(editor_data.get_scene_title(i));
+		full_path_names.push_back(editor_data.get_scene_path(i));
+	}
+
+	disambiguate_filenames(full_path_names, disambiguated_scene_names);
 
 	scene_tabs->clear_tabs();
 	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
@@ -193,7 +308,7 @@ void EditorNode::_update_scene_tabs() {
 
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
-		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
+		scene_tabs->add_tab(disambiguated_scene_names[i] + (unsaved ? "(*)" : ""), icon);
 
 		OS::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), GLOBAL_SCENE, i);
 
@@ -1971,8 +2086,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	String args;
 	bool skip_breakpoints;
 
-	if (p_current || (editor_data.get_edited_scene_root() && p_custom == editor_data.get_edited_scene_root()->get_filename())) {
-
+	if (p_current || (editor_data.get_edited_scene_root() && p_custom != String() && p_custom == editor_data.get_edited_scene_root()->get_filename())) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
@@ -2005,14 +2119,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 			Node *scene = editor_data.get_edited_scene_root();
 
-			if (scene) { //only autosave if there is a scene obviously
-
-				if (scene->get_filename() == "") {
-
-					show_accept(TTR("Current scene was never saved, please save it prior to running."), TTR("OK"));
-					return;
-				}
-
+			if (scene && scene->get_filename() != "") { // Only autosave if there is a scene and if it has a path.
 				_save_scene_with_preview(scene->get_filename());
 			}
 		}
@@ -3590,10 +3697,14 @@ void EditorNode::_quick_opened() {
 
 	Vector<String> files = quick_open->get_selected_files();
 
+	bool open_scene_dialog = quick_open->get_base_type() == "PackedScene";
 	for (int i = 0; i < files.size(); i++) {
 		String res_path = files[i];
 
-		if (quick_open->get_base_type() == "PackedScene") {
+		List<String> scene_extensions;
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+
+		if (open_scene_dialog || scene_extensions.find(files[i].get_extension())) {
 			open_request(res_path);
 		} else {
 			load_resource(res_path);

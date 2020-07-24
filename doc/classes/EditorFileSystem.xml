@@ -97,6 +97,7 @@
 			<argument index="0" name="resources" type="PoolStringArray">
 			</argument>
 			<description>
+				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
 		<signal name="sources_changed">

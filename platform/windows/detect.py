@@ -196,7 +196,7 @@ def configure_msvc(env, manual_msvc_config):
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc"])
-        env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED", "D3D_DEBUG_INFO"])
+        env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
@@ -325,7 +325,7 @@ def configure_mingw(env):
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED"])
+        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
     ## Compiler configuration
 

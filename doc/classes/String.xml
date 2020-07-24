@@ -253,7 +253,8 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a copy of the string with escaped characters replaced by their meanings according to the C language standard.
+				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\?[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
+				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
 			</description>
 		</method>
 		<method name="capitalize">

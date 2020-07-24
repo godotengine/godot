@@ -230,7 +230,7 @@
 			<argument index="1" name="pose" type="Transform">
 			</argument>
 			<description>
-				Returns the pose transform for bone [code]bone_idx[/code].
+				Sets the pose transform for bone [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="set_bone_rest">

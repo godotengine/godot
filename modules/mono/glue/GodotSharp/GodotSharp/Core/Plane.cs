@@ -109,7 +109,7 @@ namespace Godot
         /// <summary>
         /// Returns the shortest distance from this plane to the position `point`.
         /// </summary>
-        /// <param name="point">The position to use for the calcualtion.</param>
+        /// <param name="point">The position to use for the calculation.</param>
         /// <returns>The shortest distance.</returns>
         public real_t DistanceTo(Vector3 point)
         {

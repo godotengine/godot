@@ -689,7 +689,7 @@ void Tween::_tween_process(float p_delta) {
 	}
 
 	// Are all of the tweens complete?
-	bool all_finished = true;
+	int any_unfinished = 0;
 
 	// For each tween we wish to interpolate...
 	for (List<InterpolateData>::Element *E = interpolates.front(); E; E = E->next()) {
@@ -697,12 +697,12 @@ void Tween::_tween_process(float p_delta) {
 		// Get the data from it
 		InterpolateData &data = E->get();
 
-		// Track if we hit one that isn't finished yet
-		all_finished = all_finished && data.finish;
-
 		// Is the data not active or already finished? No need to go any further
 		if (!data.active || data.finish)
 			continue;
+
+		// Track if we hit one that isn't finished yet
+		any_unfinished++;
 
 		// Get the target object for this interpolation
 		Object *object = ObjectDB::get_instance(data.id);
@@ -787,18 +787,17 @@ void Tween::_tween_process(float p_delta) {
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 
 			// If we are not repeating the tween, remove it
-			if (!repeat)
+			if (!repeat) {
 				call_deferred("_remove_by_uid", data.uid);
-		} else if (!repeat) {
-			// Check whether all tweens are finished
-			all_finished = all_finished && data.finish;
+				any_unfinished--;
+			}
 		}
 	}
 	// One less update left to go
 	pending_update--;
 
 	// If all tweens are completed, we no longer need to be active
-	if (all_finished) {
+	if (any_unfinished == 0) {
 		set_active(false);
 		emit_signal("tween_all_completed");
 	}

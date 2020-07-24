@@ -189,7 +189,7 @@ public:
 	}
 
 	/**
-     * Converts aiMatrix4x4 to godot Transform 
+     * Converts aiMatrix4x4 to godot Transform
     */
 	static const Transform assimp_matrix_transform(const aiMatrix4x4 p_matrix) {
 		aiMatrix4x4 matrix = p_matrix;

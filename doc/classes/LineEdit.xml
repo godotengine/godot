@@ -165,6 +165,9 @@
 			String value of the [LineEdit].
 			[b]Note:[/b] Changing text using this property won't emit the [signal text_changed] signal.
 		</member>
+		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
+			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+		</member>
 	</members>
 	<signals>
 		<signal name="text_change_rejected">

@@ -1,52 +1,45 @@
-# Engine build CI
-name: Godot CI
-
-on:
-    # will build EVERY pull request
-    pull_request:
-
-    # will only build explicit branches
-    push:
-      branches: [ master, 3.2, 3.1, 3.0 ]
+name: Windows Builds
+on: [push, pull_request]
 
 # Global Cache Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
+  GODOT_BASE_BRANCH: 3.2
   SCONS_CACHE_MSVC_CONFIG: true
-  SCONS_CACHE_LIMIT: 8192
+  SCONS_CACHE_LIMIT: 4096
+
 jobs:
   windows-editor:
     # Windows 10 with latest image
     runs-on: "windows-latest"
 
     # Windows Editor - checkout with the plugin
-    name: Windows Editor (target=release_debug, tools=yes)
+    name: Editor (target=release_debug, tools=yes)
 
     steps:
     - uses: actions/checkout@v2
 
-    # Upload cache on completion and check it out now
-    # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
-    # Linux with this will work reliably, so not as bad to edit for Linux.
+      # Upload cache on completion and check it out now
+      # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
     - name: Load .scons_cache directory
       id: windows-editor-cache
       uses: RevoluPowered/cache@v2.1
       with:
         path: /.scons_cache/
-        key: ${{runner.os}}-editor-${{github.sha}}
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
         restore-keys: |
-          ${{runner.os}}-editor-${{github.sha}}
-          ${{runner.os}}-editor
-          ${{runner.os}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
     # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
     - name: Set up Python 3.x
       uses: actions/setup-python@v2
       with:
         # Semantic version range syntax or exact version of a Python version
-        python-version: '3.x' 
+        python-version: '3.x'
         # Optional - x64 or x86 architecture, defaults to x64
-        architecture: 'x64' 
+        architecture: 'x64'
 
     # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
     - name: Configuring Python packages
@@ -72,36 +65,34 @@ jobs:
 #        name: windows-editor (x64)
 #        path: bin/godot.windows.opt.tools.64.exe
 
-
   windows-template:
     runs-on: "windows-latest"
-    name: Windows Template (target=release, tools=no)
+    name: Template (target=release, tools=no)
 
     steps:
     - uses: actions/checkout@v2
 
     # Upload cache on completion and check it out now
-    # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
-    # Linux with this will work reliably, so not as bad to edit for Linux.
+    # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
     - name: Load .scons_cache directory
       id: windows-template-cache
       uses: RevoluPowered/cache@v2.1
       with:
         path: /.scons_cache/
-        key: ${{runner.os}}-template-${{github.sha}}
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
         restore-keys: |
-          ${{runner.os}}-template-${{github.sha}}
-          ${{runner.os}}-template
-          ${{runner.os}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
-      # Use python 3.x release (works cross platform)
+    # Use python 3.x release (works cross platform)
     - name: Set up Python 3.x
       uses: actions/setup-python@v2
       with:
         # Semantic version range syntax or exact version of a Python version
-        python-version: '3.x' 
+        python-version: '3.x'
         # Optional - x64 or x86 architecture, defaults to x64
-        architecture: 'x64' 
+        architecture: 'x64'
 
     # You can test your matrix by printing the current Python version
     - name: Configuring Python packages
@@ -110,6 +101,7 @@ jobs:
         python -m pip install scons pywin32
         python --version
         scons --version
+
     - name: Compilation
       env:
         SCONS_CACHE: /.scons_cache/

@@ -1996,17 +1996,16 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if ((b->get_alt() && !b->get_control()) || tool == TOOL_MOVE) {
 				List<CanvasItem *> selection = _get_edited_canvas_items();
 
-				// Remove not movable nodes
+				drag_selection.clear();
 				for (int i = 0; i < selection.size(); i++) {
-					if (!_is_node_movable(selection[i], true)) {
-						selection.erase(selection[i]);
+					if (_is_node_movable(selection[i], true)) {
+						drag_selection.push_back(selection[i]);
 					}
 				}
 
 				if (selection.size() > 0) {
 					drag_type = DRAG_MOVE;
 					drag_from = transform.affine_inverse().xform(b->get_position());
-					drag_selection = selection;
 					_save_canvas_item_state(drag_selection);
 				}
 				return true;
@@ -2296,16 +2295,15 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					// Drag the node(s) if requested
 					List<CanvasItem *> selection2 = _get_edited_canvas_items();
 
-					// Remove not movable nodes
+					drag_selection.clear();
 					for (int i = 0; i < selection2.size(); i++) {
-						if (!_is_node_movable(selection2[i], true)) {
-							selection2.erase(selection2[i]);
+						if (_is_node_movable(selection2[i], true)) {
+							drag_selection.push_back(selection2[i]);
 						}
 					}
 
 					if (selection2.size() > 0) {
 						drag_type = DRAG_MOVE;
-						drag_selection = selection2;
 						drag_from = click;
 						_save_canvas_item_state(drag_selection);
 					}

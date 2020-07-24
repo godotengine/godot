@@ -585,7 +585,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		Ref<Script> script = current->get_edited_resource();
 		if (p_save) {
 			// Do not try to save internal scripts
-			if (!(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
+			if (!script.is_valid() || !(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
 				_menu_option(FILE_SAVE);
 			}
 		}
@@ -1885,6 +1885,19 @@ void ScriptEditor::_update_script_names() {
 			}
 
 			sedata.push_back(sd);
+		}
+
+		Vector<String> disambiguated_script_names;
+		Vector<String> full_script_paths;
+		for (int j = 0; j < sedata.size(); j++) {
+			disambiguated_script_names.push_back(sedata[j].name);
+			full_script_paths.push_back(sedata[j].tooltip);
+		}
+
+		EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
+
+		for (int j = 0; j < sedata.size(); j++) {
+			sedata.write[j].name = disambiguated_script_names[j];
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
