@@ -4718,6 +4718,54 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				continue;
 			} break;
+			case GDScriptTokenizer::TK_PR_COSMETIC: {
+#define _ADVANCE_AND_CONSUME_NEWLINES \
+	do {                              \
+		tokenizer->advance();         \
+	} while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE)
+
+				_ADVANCE_AND_CONSUME_NEWLINES;
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+					_set_error("Expected \"(\".");
+					return;
+				}
+
+				_ADVANCE_AND_CONSUME_NEWLINES;
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_BUILT_IN_COSMETIC) {
+					_set_error("Expected \"section\"");
+					return;
+				}
+				switch (tokenizer->get_token_built_in_cosm()) {
+					case GDScriptCosmetics::SECTION: {
+						_ADVANCE_AND_CONSUME_NEWLINES;
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+							_set_error("Expected \",\".");
+							return;
+						}
+						_ADVANCE_AND_CONSUME_NEWLINES;
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {							_set_error("Expected a String for section name.");
+							return;
+						}
+						String to_add = String(tokenizer->get_token_constant()) + String("/");
+
+						_ADVANCE_AND_CONSUME_NEWLINES;
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+							_set_error("Expected \")\".");
+							return;
+						}
+						tokenizer->advance();
+						if (!_enter_indent_block()) {
+							_set_error("Expected indented block after declaration of section");
+							return;
+						}
+						String past_export = export_section_path;
+						export_section_path += to_add;
+						_parse_section(p_class);
+						export_section_path = past_export;
+					} break;
+				}
+			} break;
 			case GDScriptTokenizer::TK_PR_ONREADY: {
 
 				//may be fallthrough from export, ignore if so
@@ -4863,6 +4911,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				member.identifier = tokenizer->get_token_literal();
 				member.expression = NULL;
 				member._export.name = member.identifier;
+				member._export.export_path = export_section_path;
 				member.line = tokenizer->get_token_line();
 				member.usages = 0;
 				member.rpc_mode = rpc_mode;
@@ -5373,6 +5422,932 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				return;
 
 			} break;
+		}
+	}
+}
+
+void GDScriptParser::_parse_section(ClassNode *p_class) {
+	IndentLevel current_level = indent_level.back()->get();
+
+	while (true) {
+
+		GDScriptTokenizer::Token token = tokenizer->get_token();
+		if (error_set)
+			return;
+
+		if (current_level.indent > indent_level.back()->get().indent) {
+			p_class->end_line = tokenizer->get_token_line();
+			return; //go back a level
+		}
+
+		switch (token) {
+
+			case GDScriptTokenizer::TK_CURSOR: {
+				tokenizer->advance();
+			} break;
+			case GDScriptTokenizer::TK_EOF:
+				p_class->end_line = tokenizer->get_token_line();
+			case GDScriptTokenizer::TK_ERROR: {
+				return; //go back
+				//end of file!
+			} break;
+			case GDScriptTokenizer::TK_NEWLINE: {
+				if (!_parse_newline()) {
+					if (!error_set) {
+						p_class->end_line = tokenizer->get_token_line();
+					}
+					return;
+				}
+			} break;
+			case GDScriptTokenizer::TK_PR_EXPORT: {
+
+				tokenizer->advance();
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+
+#define _ADVANCE_AND_CONSUME_NEWLINES \
+	do {                              \
+		tokenizer->advance();         \
+	} while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE)
+
+					_ADVANCE_AND_CONSUME_NEWLINES;
+					parenthesis++;
+
+					String hint_prefix = "";
+					bool is_arrayed = false;
+
+					while (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE &&
+							tokenizer->get_token_type() == Variant::ARRAY &&
+							tokenizer->get_token(1) == GDScriptTokenizer::TK_COMMA) {
+						tokenizer->advance(); // Array
+						tokenizer->advance(); // Comma
+						if (is_arrayed) {
+							hint_prefix += itos(Variant::ARRAY) + ":";
+						} else {
+							is_arrayed = true;
+						}
+					}
+
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
+
+						Variant::Type type = tokenizer->get_token_type();
+						if (type == Variant::NIL) {
+							_set_error("Can't export null type.");
+							return;
+						}
+						if (type == Variant::OBJECT) {
+							_set_error("Can't export raw object type.");
+							return;
+						}
+						current_export.type = type;
+						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+						_ADVANCE_AND_CONSUME_NEWLINES;
+
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+							// hint expected next!
+							_ADVANCE_AND_CONSUME_NEWLINES;
+
+							switch (type) {
+
+								case Variant::INT: {
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
+
+										_ADVANCE_AND_CONSUME_NEWLINES;
+
+										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											WARN_DEPRECATED_MSG("Exporting bit flags hint requires string constants.");
+											break;
+										}
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+											_set_error("Expected \",\" in the bit flags hint.");
+											return;
+										}
+
+										current_export.hint = PROPERTY_HINT_FLAGS;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+
+										bool first = true;
+										while (true) {
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+												current_export = PropertyInfo();
+												_set_error("Expected a string constant in the named bit flags hint.");
+												return;
+											}
+
+											String c = tokenizer->get_token_constant();
+											if (!first)
+												current_export.hint_string += ",";
+											else
+												first = false;
+
+											current_export.hint_string += c.xml_escape();
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+												break;
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+												current_export = PropertyInfo();
+												_set_error("Expected \")\" or \",\" in the named bit flags hint.");
+												return;
+											}
+											_ADVANCE_AND_CONSUME_NEWLINES;
+										}
+
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_RENDER") {
+
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the layers 2D render hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_2D_RENDER;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_2D_PHYSICS") {
+
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the layers 2D physics hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_2D_PHYSICS;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_RENDER") {
+
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the layers 3D render hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_3D_RENDER;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "LAYERS_3D_PHYSICS") {
+
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the layers 3D physics hint.");
+											return;
+										}
+										current_export.hint = PROPERTY_HINT_LAYERS_3D_PHYSICS;
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING) {
+										//enumeration
+										current_export.hint = PROPERTY_HINT_ENUM;
+										bool first = true;
+										while (true) {
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+
+												current_export = PropertyInfo();
+												_set_error("Expected a string constant in the enumeration hint.");
+												return;
+											}
+
+											String c = tokenizer->get_token_constant();
+											if (!first)
+												current_export.hint_string += ",";
+											else
+												first = false;
+
+											current_export.hint_string += c.xml_escape();
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+												break;
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+												current_export = PropertyInfo();
+												_set_error("Expected \")\" or \",\" in the enumeration hint.");
+												return;
+											}
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+										}
+
+										break;
+									}
+
+									FALLTHROUGH;
+								}
+								case Variant::REAL: {
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "EASE") {
+										current_export.hint = PROPERTY_HINT_EXP_EASING;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the hint.");
+											return;
+										}
+										break;
+									}
+
+									// range
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "EXP") {
+
+										current_export.hint = PROPERTY_HINT_EXP_RANGE;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+
+										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+											break;
+										else if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+											_set_error("Expected \")\" or \",\" in the exponential range hint.");
+											return;
+										}
+										_ADVANCE_AND_CONSUME_NEWLINES;
+									} else
+										current_export.hint = PROPERTY_HINT_RANGE;
+
+									float sign = 1.0;
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB) {
+										sign = -1;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+									}
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
+
+										current_export = PropertyInfo();
+										_set_error("Expected a range in the numeric hint.");
+										return;
+									}
+
+									current_export.hint_string = rtos(sign * double(tokenizer->get_token_constant()));
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+										current_export.hint_string = "0," + current_export.hint_string;
+										break;
+									}
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+
+										current_export = PropertyInfo();
+										_set_error("Expected \",\" or \")\" in the numeric range hint.");
+										return;
+									}
+
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+									sign = 1.0;
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB) {
+										sign = -1;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+									}
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
+
+										current_export = PropertyInfo();
+										_set_error("Expected a number as upper bound in the numeric range hint.");
+										return;
+									}
+
+									current_export.hint_string += "," + rtos(sign * double(tokenizer->get_token_constant()));
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+										break;
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+
+										current_export = PropertyInfo();
+										_set_error("Expected \",\" or \")\" in the numeric range hint.");
+										return;
+									}
+
+									_ADVANCE_AND_CONSUME_NEWLINES;
+									sign = 1.0;
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB) {
+										sign = -1;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+									}
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
+
+										current_export = PropertyInfo();
+										_set_error("Expected a number as step in the numeric range hint.");
+										return;
+									}
+
+									current_export.hint_string += "," + rtos(sign * double(tokenizer->get_token_constant()));
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+								} break;
+								case Variant::STRING: {
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING) {
+										//enumeration
+										current_export.hint = PROPERTY_HINT_ENUM;
+										bool first = true;
+										while (true) {
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+
+												current_export = PropertyInfo();
+												_set_error("Expected a string constant in the enumeration hint.");
+												return;
+											}
+
+											String c = tokenizer->get_token_constant();
+											if (!first)
+												current_export.hint_string += ",";
+											else
+												first = false;
+
+											current_export.hint_string += c.xml_escape();
+											_ADVANCE_AND_CONSUME_NEWLINES;
+											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+												break;
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+												current_export = PropertyInfo();
+												_set_error("Expected \")\" or \",\" in the enumeration hint.");
+												return;
+											}
+											_ADVANCE_AND_CONSUME_NEWLINES;
+										}
+
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "DIR") {
+
+										_ADVANCE_AND_CONSUME_NEWLINES;
+
+										if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+											current_export.hint = PROPERTY_HINT_DIR;
+										else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER || !(tokenizer->get_token_identifier() == "GLOBAL")) {
+												_set_error("Expected \"GLOBAL\" after comma in the directory hint.");
+												return;
+											}
+											if (!p_class->tool) {
+												_set_error("Global filesystem hints may only be used in tool scripts.");
+												return;
+											}
+											current_export.hint = PROPERTY_HINT_GLOBAL_DIR;
+											_ADVANCE_AND_CONSUME_NEWLINES;
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+												_set_error("Expected \")\" in the hint.");
+												return;
+											}
+										} else {
+											_set_error("Expected \")\" or \",\" in the hint.");
+											return;
+										}
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FILE") {
+
+										current_export.hint = PROPERTY_HINT_FILE;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+
+										if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+
+											if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "GLOBAL") {
+
+												if (!p_class->tool) {
+													_set_error("Global filesystem hints may only be used in tool scripts.");
+													return;
+												}
+												current_export.hint = PROPERTY_HINT_GLOBAL_FILE;
+												_ADVANCE_AND_CONSUME_NEWLINES;
+
+												if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+													break;
+												else if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA)
+													_ADVANCE_AND_CONSUME_NEWLINES;
+												else {
+													_set_error("Expected \")\" or \",\" in the hint.");
+													return;
+												}
+											}
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+
+												if (current_export.hint == PROPERTY_HINT_GLOBAL_FILE)
+													_set_error("Expected string constant with filter.");
+												else
+													_set_error("Expected \"GLOBAL\" or string constant with filter.");
+												return;
+											}
+											current_export.hint_string = tokenizer->get_token_constant();
+											_ADVANCE_AND_CONSUME_NEWLINES;
+										}
+
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the hint.");
+											return;
+										}
+										break;
+									}
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "MULTILINE") {
+
+										current_export.hint = PROPERTY_HINT_MULTILINE_TEXT;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+										if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected \")\" in the hint.");
+											return;
+										}
+										break;
+									}
+								} break;
+								case Variant::COLOR: {
+
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER) {
+
+										current_export = PropertyInfo();
+										_set_error("Color type hint expects RGB or RGBA as hints.");
+										return;
+									}
+
+									String identifier = tokenizer->get_token_identifier();
+									if (identifier == "RGB") {
+										current_export.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
+									} else if (identifier == "RGBA") {
+										//none
+									} else {
+										current_export = PropertyInfo();
+										_set_error("Color type hint expects RGB or RGBA as hints.");
+										return;
+									}
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+								} break;
+								default: {
+
+									current_export = PropertyInfo();
+									_set_error("Type \"" + Variant::get_type_name(type) + "\" can't take hints.");
+									return;
+								} break;
+							}
+						}
+
+					} else {
+
+						parenthesis++;
+						Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
+						if (!subexpr) {
+							if (_recover_from_completion()) {
+								break;
+							}
+							return;
+						}
+						parenthesis--;
+
+						if (subexpr->type != Node::TYPE_CONSTANT) {
+							current_export = PropertyInfo();
+							_set_error("Expected a constant expression.");
+						}
+
+						Variant constant = static_cast<ConstantNode *>(subexpr)->value;
+
+						if (constant.get_type() == Variant::OBJECT) {
+							GDScriptNativeClass *native_class = Object::cast_to<GDScriptNativeClass>(constant);
+
+							if (native_class && ClassDB::is_parent_class(native_class->get_name(), "Resource")) {
+								current_export.type = Variant::OBJECT;
+								current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+								current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+
+								current_export.hint_string = native_class->get_name();
+								current_export.class_name = native_class->get_name();
+
+							} else {
+								current_export = PropertyInfo();
+								_set_error("The export hint isn't a resource type.");
+							}
+						} else if (constant.get_type() == Variant::DICTIONARY) {
+							// Enumeration
+							bool is_flags = false;
+
+							if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+								_ADVANCE_AND_CONSUME_NEWLINES;
+
+								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
+									is_flags = true;
+									_ADVANCE_AND_CONSUME_NEWLINES;
+								} else {
+									current_export = PropertyInfo();
+									_set_error("Expected \"FLAGS\" after comma.");
+								}
+							}
+
+							current_export.type = Variant::INT;
+							current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
+							current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							Dictionary enum_values = constant;
+
+							List<Variant> keys;
+							enum_values.get_key_list(&keys);
+
+							bool first = true;
+							for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+								if (enum_values[E->get()].get_type() == Variant::INT) {
+									if (!first)
+										current_export.hint_string += ",";
+									else
+										first = false;
+
+									current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
+									if (!is_flags) {
+										current_export.hint_string += ":";
+										current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
+									}
+								}
+							}
+						} else {
+							current_export = PropertyInfo();
+							_set_error("Expected type for export.");
+							return;
+						}
+					}
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+
+						current_export = PropertyInfo();
+						_set_error("Expected \")\" or \",\" after the export hint.");
+						return;
+					}
+
+					tokenizer->advance();
+					parenthesis--;
+
+					if (is_arrayed) {
+						hint_prefix += itos(current_export.type);
+						if (current_export.hint) {
+							hint_prefix += "/" + itos(current_export.hint);
+						}
+						current_export.hint_string = hint_prefix + ":" + current_export.hint_string;
+						current_export.hint = PROPERTY_HINT_TYPE_STRING;
+						current_export.type = Variant::ARRAY;
+					}
+#undef _ADVANCE_AND_CONSUME_NEWLINES
+				}
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_VAR && tokenizer->get_token() != GDScriptTokenizer::TK_PR_ONREADY && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTE && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTER && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPET && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_REMOTESYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_MASTERSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_PUPPETSYNC && tokenizer->get_token() != GDScriptTokenizer::TK_PR_SLAVE) {
+
+					current_export = PropertyInfo();
+					_set_error("Expected \"var\", \"onready\", \"remote\", \"master\", \"puppet\", \"sync\", \"remotesync\", \"mastersync\", \"puppetsync\".");
+					return;
+				}
+
+				continue;
+			} break;
+			case GDScriptTokenizer::TK_PR_VAR: {
+				// variable declaration and (eventual) initialization
+
+				ClassNode::Member member;
+
+				bool autoexport = tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_EXPORT;
+				if (current_export.type != Variant::NIL) {
+					member._export = current_export;
+					current_export = PropertyInfo();
+				}
+
+				bool onready = tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_ONREADY;
+
+				tokenizer->advance();
+				if (!tokenizer->is_token_literal(0, true)) {
+
+					_set_error("Expected an identifier for the member variable name.");
+					return;
+				}
+
+				member.identifier = tokenizer->get_token_literal();
+				member.expression = NULL;
+				member._export.name = member.identifier;
+				member._export.export_path = export_section_path;
+				member.line = tokenizer->get_token_line();
+				member.usages = 0;
+				member.rpc_mode = rpc_mode;
+
+				if (current_class->constant_expressions.has(member.identifier)) {
+					_set_error("A constant named \"" + String(member.identifier) + "\" already exists in this class (at line: " +
+							   itos(current_class->constant_expressions[member.identifier].expression->line) + ").");
+					return;
+				}
+
+				for (int i = 0; i < current_class->variables.size(); i++) {
+					if (current_class->variables[i].identifier == member.identifier) {
+						_set_error("Variable \"" + String(member.identifier) + "\" already exists in this class (at line: " +
+								   itos(current_class->variables[i].line) + ").");
+						return;
+					}
+				}
+
+				for (int i = 0; i < current_class->subclasses.size(); i++) {
+					if (current_class->subclasses[i]->name == member.identifier) {
+						_set_error("A class named \"" + String(member.identifier) + "\" already exists in this class (at line " + itos(current_class->subclasses[i]->line) + ").");
+						return;
+					}
+				}
+#ifdef DEBUG_ENABLED
+				for (int i = 0; i < current_class->functions.size(); i++) {
+					if (current_class->functions[i]->name == member.identifier) {
+						_add_warning(GDScriptWarning::VARIABLE_CONFLICTS_FUNCTION, member.line, member.identifier);
+						break;
+					}
+				}
+				for (int i = 0; i < current_class->static_functions.size(); i++) {
+					if (current_class->static_functions[i]->name == member.identifier) {
+						_add_warning(GDScriptWarning::VARIABLE_CONFLICTS_FUNCTION, member.line, member.identifier);
+						break;
+					}
+				}
+#endif // DEBUG_ENABLED
+				tokenizer->advance();
+
+				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+						member.data_type = DataType();
+#ifdef DEBUG_ENABLED
+						member.data_type.infer_type = true;
+#endif
+						tokenizer->advance();
+					} else if (!_parse_type(member.data_type)) {
+						_set_error("Expected a type for the class variable.");
+						return;
+					}
+				}
+
+				if (autoexport && member.data_type.has_type) {
+					if (member.data_type.kind == DataType::BUILTIN) {
+						member._export.type = member.data_type.builtin_type;
+					} else if (member.data_type.kind == DataType::NATIVE) {
+						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
+							member._export.type = Variant::OBJECT;
+							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							member._export.hint_string = member.data_type.native_type;
+							member._export.class_name = member.data_type.native_type;
+						} else {
+							_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+							return;
+						}
+
+					} else {
+						_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+						return;
+					}
+				}
+
+#ifdef TOOLS_ENABLED
+				Variant::CallError ce;
+				member.default_value = Variant::construct(member._export.type, NULL, 0, ce);
+#endif
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
+
+#ifdef DEBUG_ENABLED
+					int line = tokenizer->get_token_line();
+#endif
+					tokenizer->advance();
+
+					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport || member._export.type != Variant::NIL);
+					if (!subexpr) {
+						if (_recover_from_completion()) {
+							break;
+						}
+						return;
+					}
+
+					//discourage common error
+					if (!onready && subexpr->type == Node::TYPE_OPERATOR) {
+
+						OperatorNode *op = static_cast<OperatorNode *>(subexpr);
+						if (op->op == OperatorNode::OP_CALL && op->arguments[0]->type == Node::TYPE_SELF && op->arguments[1]->type == Node::TYPE_IDENTIFIER) {
+							IdentifierNode *id = static_cast<IdentifierNode *>(op->arguments[1]);
+							if (id->name == "get_node") {
+
+								_set_error("Use \"onready var " + String(member.identifier) + " = get_node(...)\" instead.");
+								return;
+							}
+						}
+					}
+
+					member.expression = subexpr;
+
+					if (autoexport && !member.data_type.has_type) {
+
+						if (subexpr->type != Node::TYPE_CONSTANT) {
+
+							_set_error("Type-less export needs a constant expression assigned to infer type.");
+							return;
+						}
+
+						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
+						if (cn->value.get_type() == Variant::NIL) {
+
+							_set_error("Can't accept a null constant expression for inferring export type.");
+							return;
+						}
+
+						if (!_reduce_export_var_type(cn->value, member.line)) return;
+
+						member._export.type = cn->value.get_type();
+						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+						if (cn->value.get_type() == Variant::OBJECT) {
+							Object *obj = cn->value;
+							Resource *res = Object::cast_to<Resource>(obj);
+							if (res == NULL) {
+								_set_error("The exported constant isn't a type or resource.");
+								return;
+							}
+							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+							member._export.hint_string = res->get_class();
+						}
+					}
+#ifdef TOOLS_ENABLED
+					if (subexpr->type == Node::TYPE_CONSTANT && (member._export.type != Variant::NIL || member.data_type.has_type)) {
+
+						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
+						if (cn->value.get_type() != Variant::NIL) {
+							if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
+								if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
+									Variant::CallError err;
+									const Variant *args = &cn->value;
+									cn->value = Variant::construct(member._export.type, &args, 1, err);
+								} else {
+									_set_error("Can't convert the provided value to the export type.");
+									return;
+								}
+							}
+							member.default_value = cn->value;
+						}
+					}
+#endif
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = member.identifier;
+					id->datatype = member.data_type;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_INIT_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(subexpr);
+
+#ifdef DEBUG_ENABLED
+					NewLineNode *nl2 = alloc_node<NewLineNode>();
+					nl2->line = line;
+					if (onready)
+						p_class->ready->statements.push_back(nl2);
+					else
+						p_class->initializer->statements.push_back(nl2);
+#endif
+					if (onready)
+						p_class->ready->statements.push_back(op);
+					else
+						p_class->initializer->statements.push_back(op);
+
+					member.initial_assignment = op;
+
+				} else {
+
+					if (autoexport && !member.data_type.has_type) {
+						_set_error("Type-less export needs a constant expression assigned to infer type.");
+						return;
+					}
+
+					Node *expr;
+
+					if (member.data_type.has_type) {
+						expr = _get_default_value_for_type(member.data_type);
+					} else {
+						DataType exported_type;
+						exported_type.has_type = true;
+						exported_type.kind = DataType::BUILTIN;
+						exported_type.builtin_type = member._export.type;
+						expr = _get_default_value_for_type(exported_type);
+					}
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = member.identifier;
+					id->datatype = member.data_type;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_INIT_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(expr);
+
+					p_class->initializer->statements.push_back(op);
+
+					member.initial_assignment = op;
+				}
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_SETGET) {
+
+					tokenizer->advance();
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+						//just comma means using only getter
+						if (!tokenizer->is_token_literal()) {
+							_set_error("Expected an identifier for the setter function after \"setget\".");
+						}
+
+						member.setter = tokenizer->get_token_literal();
+
+						tokenizer->advance();
+					}
+
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+						//there is a getter
+						tokenizer->advance();
+
+						if (!tokenizer->is_token_literal()) {
+							_set_error("Expected an identifier for the getter function after \",\".");
+						}
+
+						member.getter = tokenizer->get_token_literal();
+						tokenizer->advance();
+					}
+				}
+				p_class->variables.push_back(member);
+
+				if (!_end_statement()) {
+					_set_end_statement_error("var");
+					return;
+				}
+			} break;
+			case GDScriptTokenizer::TK_PR_COSMETIC: {
+#define _ADVANCE_AND_CONSUME_NEWLINES \
+	do {                              \
+		tokenizer->advance();         \
+	} while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE)
+
+				_ADVANCE_AND_CONSUME_NEWLINES;
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+					_set_error("Expected \"(\".");
+					return;
+				}
+
+				_ADVANCE_AND_CONSUME_NEWLINES;
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_BUILT_IN_COSMETIC) {
+					_set_error("Expected \"section\"");
+					return;
+				}
+				switch (tokenizer->get_token_built_in_cosm()) {
+					case GDScriptCosmetics::SECTION: {
+						_ADVANCE_AND_CONSUME_NEWLINES;
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+							_set_error("Expected \",\".");
+							return;
+						}
+						_ADVANCE_AND_CONSUME_NEWLINES;
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+							_set_error("Expected a String for section name.");
+							return;
+						}
+						String to_add = String(tokenizer->get_token_constant()) + String("/");
+
+						_ADVANCE_AND_CONSUME_NEWLINES;
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+							_set_error("Expected \")\".");
+							return;
+						}
+						tokenizer->advance();
+						if (!_enter_indent_block()) {
+							_set_error("Expected indented block after declaration of section");
+							return;
+						}
+
+						String past_export = export_section_path;
+						export_section_path += to_add;
+						_parse_section(p_class);
+						export_section_path = past_export;
+					} break;
+				}
+			} break;
+
+			default: {
+
+				_set_error(String() + "Unexpected token: " + tokenizer->get_token_name(tokenizer->get_token()) + ":" + tokenizer->get_token_identifier());
+				return;
+
+			} break;
+
 		}
 	}
 }

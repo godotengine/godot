@@ -42,6 +42,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"Self",
 	"Built-In Type",
 	"Built-In Func",
+	"Built-In Cosmetic",
 	"In",
 	"'=='",
 	"'!='",
@@ -95,6 +96,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"tool",
 	"static",
 	"export",
+	"cosmetic",
 	"setget",
 	"const",
 	"var",
@@ -196,6 +198,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_TOOL, "tool" },
 	{ GDScriptTokenizer::TK_PR_STATIC, "static" },
 	{ GDScriptTokenizer::TK_PR_EXPORT, "export" },
+	{ GDScriptTokenizer::TK_PR_COSMETIC, "cosmetic" },
 	{ GDScriptTokenizer::TK_PR_SETGET, "setget" },
 	{ GDScriptTokenizer::TK_PR_VAR, "var" },
 	{ GDScriptTokenizer::TK_PR_AS, "as" },
@@ -262,6 +265,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 			return true;
 
 		// Literal for non-variables only:
+		case TK_BUILT_IN_COSMETIC:
 		case TK_BUILT_IN_TYPE:
 		case TK_BUILT_IN_FUNC:
 
@@ -276,6 +280,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_PRELOAD:
 		case TK_PR_FUNCTION:
 		case TK_PR_EXTENDS:
+		case TK_PR_COSMETIC:
 		case TK_PR_ASSERT:
 		case TK_PR_YIELD:
 		case TK_PR_VAR:
@@ -331,6 +336,8 @@ StringName GDScriptTokenizer::get_token_literal(int p_offset) const {
 		} break; // Shouldn't get here, stuff happens
 		case TK_BUILT_IN_FUNC:
 			return GDScriptFunctions::get_func_name(get_token_built_in_func(p_offset));
+		case TK_BUILT_IN_COSMETIC:
+			return GDScriptCosmetics::get_cosmetic_name(get_token_built_in_cosm(p_offset));
 		case TK_CONSTANT: {
 			const Variant value = get_token_constant(p_offset);
 
@@ -413,6 +420,18 @@ void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_fu
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
+
+void GDScriptTokenizerText::_make_built_in_cosm(GDScriptCosmetics::Cosmetic p_cosm) {
+	TokenData &tk = tk_rb[tk_rb_pos];
+
+	tk.type = TK_BUILT_IN_COSMETIC;
+	tk.cosm = p_cosm;
+	tk.line = line;
+	tk.col = column;
+
+	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+}
+
 void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
@@ -1027,6 +1046,20 @@ void GDScriptTokenizerText::_advance() {
 						}
 
 						if (!found) {
+
+							//built in cosm?
+
+							for (int j = 0; j < GDScriptCosmetics::COSM_MAX; j++) {
+
+								if (str == GDScriptCosmetics::get_cosmetic_name(GDScriptCosmetics::Cosmetic(j))) {
+									_make_built_in_cosm(GDScriptCosmetics::Cosmetic(j));
+									found = true;
+									break;
+								}
+							}
+						}
+
+						if (!found) {
 							//keyword
 
 							int idx = 0;
@@ -1138,6 +1171,16 @@ GDScriptFunctions::Function GDScriptTokenizerText::get_token_built_in_func(int p
 	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
 	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_BUILT_IN_FUNC, GDScriptFunctions::FUNC_MAX);
 	return tk_rb[ofs].func;
+}
+
+GDScriptCosmetics::Cosmetic GDScriptTokenizerText::get_token_built_in_cosm(int p_offset) const {
+
+	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, GDScriptCosmetics::COSM_MAX);
+	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, GDScriptCosmetics::COSM_MAX);
+
+	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
+	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_BUILT_IN_COSMETIC, GDScriptCosmetics::COSM_MAX);
+	return tk_rb[ofs].cosm;
 }
 
 Variant::Type GDScriptTokenizerText::get_token_type(int p_offset) const {
@@ -1466,6 +1509,13 @@ GDScriptFunctions::Function GDScriptTokenizerBuffer::get_token_built_in_func(int
 	return GDScriptFunctions::Function(tokens[offset] >> TOKEN_BITS);
 }
 
+GDScriptCosmetics::Cosmetic GDScriptTokenizerBuffer::get_token_built_in_cosm(int p_offset) const {
+
+	int offset = token + p_offset;
+	ERR_FAIL_INDEX_V(offset, tokens.size(), GDScriptCosmetics::COSM_MAX);
+	return GDScriptCosmetics::Cosmetic(tokens[offset] >> TOKEN_BITS);
+}
+
 Variant::Type GDScriptTokenizerBuffer::get_token_type(int p_offset) const {
 
 	int offset = token + p_offset;
@@ -1526,4 +1576,13 @@ void GDScriptTokenizerBuffer::advance(int p_amount) {
 GDScriptTokenizerBuffer::GDScriptTokenizerBuffer() {
 
 	token = 0;
+}
+
+const char* GDScriptCosmetics::get_cosmetic_name(GDScriptCosmetics::Cosmetic p_cosm) {
+	ERR_FAIL_INDEX_V(p_cosm, COSM_MAX, "");
+
+	static const char *_names[COSM_MAX] = {
+		"section",
+	};
+	return _names[p_cosm];
 }

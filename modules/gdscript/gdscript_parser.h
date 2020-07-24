@@ -597,6 +597,7 @@ private:
 	bool completion_found;
 	bool completion_ident_is_call;
 
+	String export_section_path = "";
 	PropertyInfo current_export;
 
 	MultiplayerAPI::RPCMode rpc_mode;
@@ -624,6 +625,7 @@ private:
 	void _parse_block(BlockNode *p_block, bool p_static);
 	void _parse_extends(ClassNode *p_class);
 	void _parse_class(ClassNode *p_class);
+	void _parse_section(ClassNode *p_class);
 	bool _end_statement();
 	void _set_end_statement_error(String p_name);
 

@@ -38,6 +38,16 @@
 #include "core/vmap.h"
 #include "gdscript_functions.h"
 
+class GDScriptCosmetics {
+public:
+	enum Cosmetic {
+		SECTION,
+		COSM_MAX,
+	};
+
+	static const char *get_cosmetic_name(Cosmetic p_cosm);
+};
+
 class GDScriptTokenizer {
 public:
 	enum Token {
@@ -46,6 +56,7 @@ public:
 		TK_IDENTIFIER,
 		TK_CONSTANT,
 		TK_SELF,
+		TK_BUILT_IN_COSMETIC,
 		TK_BUILT_IN_TYPE,
 		TK_BUILT_IN_FUNC,
 		TK_OP_IN,
@@ -101,6 +112,7 @@ public:
 		TK_PR_TOOL,
 		TK_PR_STATIC,
 		TK_PR_EXPORT,
+		TK_PR_COSMETIC,
 		TK_PR_SETGET,
 		TK_PR_CONST,
 		TK_PR_VAR,
@@ -164,6 +176,7 @@ public:
 	virtual Token get_token(int p_offset = 0) const = 0;
 	virtual StringName get_token_identifier(int p_offset = 0) const = 0;
 	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const = 0;
+	virtual GDScriptCosmetics::Cosmetic get_token_built_in_cosm(int p_offset = 0) const = 0;
 	virtual Variant::Type get_token_type(int p_offset = 0) const = 0;
 	virtual int get_token_line(int p_offset = 0) const = 0;
 	virtual int get_token_column(int p_offset = 0) const = 0;
@@ -195,6 +208,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 		union {
 			Variant::Type vtype; //for type types
 			GDScriptFunctions::Function func; //function for built in functions
+			GDScriptCosmetics::Cosmetic cosm; //cosmetic for built in cosmetics
 			int warning_code; //for warning skip
 		};
 		int line, col;
@@ -209,6 +223,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	void _make_newline(int p_indentation = 0, int p_tabs = 0);
 	void _make_identifier(const StringName &p_identifier);
 	void _make_built_in_func(GDScriptFunctions::Function p_func);
+	void _make_built_in_cosm(GDScriptCosmetics::Cosmetic p_cosm);
 	void _make_constant(const Variant &p_constant);
 	void _make_type(const Variant::Type &p_type);
 	void _make_error(const String &p_error);
@@ -237,6 +252,7 @@ public:
 	virtual Token get_token(int p_offset = 0) const;
 	virtual StringName get_token_identifier(int p_offset = 0) const;
 	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
+	virtual GDScriptCosmetics::Cosmetic get_token_built_in_cosm(int p_offset = 0) const;
 	virtual Variant::Type get_token_type(int p_offset = 0) const;
 	virtual int get_token_line(int p_offset = 0) const;
 	virtual int get_token_column(int p_offset = 0) const;
@@ -276,6 +292,7 @@ public:
 	virtual Token get_token(int p_offset = 0) const;
 	virtual StringName get_token_identifier(int p_offset = 0) const;
 	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
+	virtual GDScriptCosmetics::Cosmetic get_token_built_in_cosm(int p_offset = 0) const;
 	virtual Variant::Type get_token_type(int p_offset = 0) const;
 	virtual int get_token_line(int p_offset = 0) const;
 	virtual int get_token_column(int p_offset = 0) const;

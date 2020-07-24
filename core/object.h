@@ -144,6 +144,7 @@ struct PropertyInfo {
 
 	Variant::Type type;
 	String name;
+	String export_path;
 	StringName class_name; //for classes
 	PropertyHint hint;
 	String hint_string;
