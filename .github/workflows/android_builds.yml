@@ -3,13 +3,14 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
+  GODOT_BASE_BRANCH: master
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
 
-    name: Android Template (target=release, tools=no)
+    name: Template (target=release, tools=no)
 
     steps:
       - uses: actions/checkout@v2
@@ -20,13 +21,13 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      # install all packages (except scons)
+      # Install all packages (except scons)
       - name: Configure dependencies
         run: |
          sudo apt-get install openjdk-8-jdk
          echo "::set-env name=JAVA_HOME::usr/lib/jvm/java-8-openjdk-amd64"
 
-      - name: Install Android Sdk and Ndk
+      - name: Install Android SDK and NDK
         run: |
           echo "::set-env name=PATH::/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH}"
           java -version
@@ -36,20 +37,18 @@ jobs:
           source ~/.bashrc
 
       # Upload cache on completion and check it out now
-      # Editing this is pretty dangerous for windows since it can break and needs properly tested with a fresh cache.
-      # Linux with this will work reliably, so not as bad to edit for Linux.
       - name: Load .scons_cache directory
         id: android-template-cache
         uses: actions/cache@v2
         with:
           path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
+          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
           restore-keys: |
-            ${{github.job}}-${GITHUB_REF##*/}-${{github.sha}}
-            ${{github.job}}-${GITHUB_REF##*/}
-            ${{github.job}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
 
-        # Use python 3.x release (works cross platform)
+      # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
@@ -65,6 +64,7 @@ jobs:
           python -m pip install scons
           python --version
           scons --version
+
       - name: Compilation
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
