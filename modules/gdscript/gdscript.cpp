@@ -1309,39 +1309,6 @@ Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_arg
 	return Variant();
 }
 
-void GDScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	GDScript *sptr = script.ptr();
-	Callable::CallError ce;
-
-	while (sptr) {
-		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
-		if (E) {
-			E->get()->call(this, p_args, p_argcount, ce);
-			return;
-		}
-		sptr = sptr->_base;
-	}
-}
-
-void GDScriptInstance::_ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount) {
-	if (sptr->_base) {
-		_ml_call_reversed(sptr->_base, p_method, p_args, p_argcount);
-	}
-
-	Callable::CallError ce;
-
-	Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
-	if (E) {
-		E->get()->call(this, p_args, p_argcount, ce);
-	}
-}
-
-void GDScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	if (script.ptr()) {
-		_ml_call_reversed(script.ptr(), p_method, p_args, p_argcount);
-	}
-}
-
 void GDScriptInstance::notification(int p_notification) {
 	//notification is not virtual, it gets called at ALL levels just like in C.
 	Variant value = p_notification;
