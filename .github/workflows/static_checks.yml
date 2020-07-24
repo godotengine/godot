@@ -1,0 +1,32 @@
+name: Static Checks
+on: [push, pull_request]
+
+jobs:
+  static-checks:
+    name: Static Checks (clang-format, black format, file format, documentation checks)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq dos2unix recode clang-format
+          sudo pip3 install black pygments
+
+      - name: File formatting checks (file_format.sh)
+        run: |
+          bash ./misc/scripts/file_format.sh
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./misc/scripts/clang_format.sh
+
+      - name: Python style checks via black (black_format.sh)
+        run: |
+          bash ./misc/scripts/black_format.sh
+
+      - name: Documentation checks
+        run: |
+          doc/tools/makerst.py --dry-run doc/classes modules
