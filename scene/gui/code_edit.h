@@ -37,12 +37,32 @@ class CodeEdit : public TextEdit {
 	GDCLASS(CodeEdit, TextEdit)
 
 private:
+	int cached_line_count = 0;
+
+	/* Line numbers */
+	int line_number_gutter = -1;
+	int line_number_digits = 0;
+	String line_number_padding = " ";
+	Color line_number_color = Color(1, 1, 1);
+	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
+
+	void _gutter_clicked(int p_line, int p_gutter);
+	void _line_edited_from(int p_line);
+
+	void _update_gutter_indexes();
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 public:
+	/* Line numbers */
+	void set_draw_line_numbers(bool p_draw);
+	bool is_draw_line_numbers_enabled() const;
+	void set_line_numbers_zero_padded(bool p_zero_padded);
+	bool is_line_numbers_zero_padded() const;
+
 	CodeEdit();
 	~CodeEdit();
 };
