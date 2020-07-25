@@ -60,7 +60,7 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes tests=yes target=release_debug module_mono_enabled=yes mono_glue=no
 
       # Execute unit tests for the editor
       - name: Unit Tests
