@@ -1715,7 +1715,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_SMOOTHSTEP: {
-			MethodInfo mi("smoothstep", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			MethodInfo mi("smoothstep", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "s"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
