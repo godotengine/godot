@@ -35,7 +35,7 @@
 
 
 		func get_recognized_extensions():
-		    return ["gd"]			
+		    return ["gd"]
 		[/codeblock]
 	</description>
 	<tutorials>
