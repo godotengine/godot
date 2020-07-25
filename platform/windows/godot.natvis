@@ -19,7 +19,7 @@
 			</ArrayItems>
 		</Expand>
 	</Type>
-	
+
 	<Type Name="List&lt;*&gt;">
 		<Expand>
 			<Item Name="[size]">_data ? (_data->size_cache) : 0</Item>
@@ -62,7 +62,7 @@
 		<DisplayString Condition="type == Variant::POOL_COLOR_ARRAY">{*(PoolColorArray *)_data._mem}</DisplayString>
 
 		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,su</StringView>
-		
+
 		<Expand>
 			<Item Name="[value]" Condition="type == Variant::BOOL">_data._bool</Item>
 			<Item Name="[value]" Condition="type == Variant::INT">_data._int</Item>
@@ -143,7 +143,7 @@
 			<Item Name="alpha">a</Item>
 		</Expand>
 	</Type>
-	
+
 	<Type Name="Node" Inheritable="false">
 		<Expand>
 			<Item Name="Object">(Object*)this</Item>
