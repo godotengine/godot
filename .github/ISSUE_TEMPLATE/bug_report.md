@@ -6,8 +6,8 @@ labels: ''
 assignees: ''
 
 ---
-<!-- Please search existing issues for potential duplicates before filing yours:	
-https://github.com/godotengine/godot/issues?q=is%3Aissue	
+<!-- Please search existing issues for potential duplicates before filing yours:
+https://github.com/godotengine/godot/issues?q=is%3Aissue
 -->
 
 **Godot version:**

@@ -71,7 +71,7 @@ internal class VkRenderer {
 	 */
 	fun onVkSurfaceChanged(surface: Surface, width: Int, height: Int) {
 		GodotLib.resize(surface, width, height)
-		
+
 		for (plugin in pluginRegistry.getAllPlugins()) {
 			plugin.onVkSurfaceChanged(surface, width, height)
 		}

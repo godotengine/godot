@@ -16,11 +16,9 @@ PY_FILES=$(find \( -path "./.git" \
 black -l 120 $PY_FILES
 
 git diff > patch.patch
-FILESIZE="$(stat -c%s patch.patch)"
-MAXSIZE=5
 
 # If no patch has been generated all is OK, clean up, and exit.
-if (( FILESIZE < MAXSIZE )); then
+if [ ! -s patch.patch ] ; then
     printf "Files in this commit comply with the black style rules.\n"
     rm -f patch.patch
     exit 0
