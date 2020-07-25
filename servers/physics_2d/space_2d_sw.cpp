@@ -63,7 +63,7 @@ int Physics2DDirectSpaceStateSW::_intersect_point_impl(const Vector2 &p_point, S
 	int cc = 0;
 
 	for (int i = 0; i < amount; i++) {
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas, p_filter_by_canvas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
