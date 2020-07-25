@@ -206,7 +206,7 @@ def configure_msvc(env, manual_msvc_config):
 
     ## Compile/link flags
 
-    env.AppendUnique(CCFLAGS=["/MT", "/Gd", "/GR", "/nologo"])
+    env.AppendUnique(CCFLAGS=["/MD", "/Gd", "/GR", "/nologo"])
     if int(env["MSVC_VERSION"].split(".")[0]) >= 14:  # vs2015 and later
         env.AppendUnique(CCFLAGS=["/utf-8"])
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
