@@ -32,6 +32,7 @@
 #define RESOURCEIMPORTERSCENE_H
 
 #include "core/io/resource_importer.h"
+#include "core/project_settings.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape_3d.h"
@@ -68,7 +69,11 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
-	EditorSceneImporter() {}
+	EditorSceneImporter() {
+		// Register basic settings for files so importers can disable importing materials
+		_GLOBAL_DEF("filesystem/import/import_materials_for_3d", true);
+		_GLOBAL_DEF("filesystem/import/import_animations_for_3d", true);
+	}
 };
 
 class EditorScenePostImport : public Reference {
