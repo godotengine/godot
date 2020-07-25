@@ -55,7 +55,6 @@
 #include "main/performance.h"
 #include "main/splash.gen.h"
 #include "main/splash_editor.gen.h"
-#include "main/tests/test_main.h"
 #include "modules/modules_enabled.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
@@ -74,6 +73,10 @@
 #include "servers/rendering/rendering_server_raster.h"
 #include "servers/rendering/rendering_server_wrap_mt.h"
 #include "servers/xr_server.h"
+
+#ifdef TESTS_ENABLED
+#include "main/tests/test_main.h"
+#endif
 
 #ifdef TOOLS_ENABLED
 
@@ -383,6 +386,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print(
 			"  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
+#ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test <test>                    Run a unit test [");
 	const char **test_names = tests_get_names();
 	const char *comma = "";
@@ -393,10 +397,12 @@ void Main::print_help(const char *p_binary) {
 	}
 	OS::get_singleton()->print("].\n");
 #endif
+	OS::get_singleton()->print("\n");
+#endif
 }
 
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
-#ifdef TOOLS_ENABLED // templates can't run unit test tool
+#ifdef TESTS_ENABLED
 	for (int x = 0; x < argc; x++) {
 		if (strncmp(argv[x], "--test", 6) == 0) {
 			tests_need_run = true;
