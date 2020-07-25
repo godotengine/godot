@@ -75,7 +75,7 @@
 #include "servers/xr_server.h"
 
 #ifdef TESTS_ENABLED
-#include "main/tests/test_main.h"
+#include "tests/test_main.h"
 #endif
 
 #ifdef TOOLS_ENABLED
