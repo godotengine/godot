@@ -661,8 +661,7 @@ if selected_platform in platform_list:
 
     Export("env")
 
-    # build subdirs, the build order is dependent on link order.
-
+    # Build subdirs, the build order is dependent on link order.
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
@@ -671,9 +670,11 @@ if selected_platform in platform_list:
 
     SConscript("platform/SCsub")
     SConscript("modules/SCsub")
+    if env["tests"]:
+        SConscript("tests/SCsub")
     SConscript("main/SCsub")
 
-    SConscript("platform/" + selected_platform + "/SCsub")  # build selected platform
+    SConscript("platform/" + selected_platform + "/SCsub")  # Build selected platform.
 
     # Microsoft Visual Studio Project Generation
     if env["vsproj"]:
