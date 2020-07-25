@@ -49,7 +49,7 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes target=release_debug
+          scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes tests=yes target=release_debug
 
       # Execute unit tests for the editor
       - name: Unit Tests
