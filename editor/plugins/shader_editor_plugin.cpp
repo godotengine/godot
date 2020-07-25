@@ -365,7 +365,7 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_editor()->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
 	shader_editor->get_text_editor()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
 	shader_editor->get_text_editor()->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/indent/draw_spaces"));
-	shader_editor->get_text_editor()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
+	shader_editor->get_text_editor()->set_draw_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
 	shader_editor->get_text_editor()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
 	shader_editor->get_text_editor()->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
 	shader_editor->get_text_editor()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));

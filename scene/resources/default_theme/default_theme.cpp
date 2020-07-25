@@ -406,7 +406,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("caret_color", "TextEdit", control_font_color);
 	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
 	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
-	theme->set_color("line_number_color", "TextEdit", Color(0.67, 0.67, 0.67, 0.4));
 	theme->set_color("safe_line_number_color", "TextEdit", Color(0.67, 0.78, 0.67, 0.6));
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.8, 0.9, 0.9, 0.15));
 

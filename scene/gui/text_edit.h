@@ -223,60 +223,6 @@ private:
 		}
 	} selection;
 
-	struct Cache {
-		Ref<Texture2D> tab_icon;
-		Ref<Texture2D> space_icon;
-		Ref<Texture2D> can_fold_icon;
-		Ref<Texture2D> folded_icon;
-		Ref<Texture2D> folded_eol_icon;
-		Ref<Texture2D> executing_icon;
-		Ref<StyleBox> style_normal;
-		Ref<StyleBox> style_focus;
-		Ref<StyleBox> style_readonly;
-		Ref<Font> font;
-		Color completion_background_color;
-		Color completion_selected_color;
-		Color completion_existing_color;
-		Color completion_font_color;
-		Color caret_color;
-		Color caret_background_color;
-		Color line_number_color;
-		Color safe_line_number_color;
-		Color font_color;
-		Color font_color_selected;
-		Color font_color_readonly;
-		Color selection_color;
-		Color mark_color;
-		Color bookmark_color;
-		Color breakpoint_color;
-		Color executing_line_color;
-		Color code_folding_color;
-		Color current_line_color;
-		Color line_length_guideline_color;
-		Color brace_mismatch_color;
-		Color word_highlighted_color;
-		Color search_result_color;
-		Color search_result_border_color;
-		Color background_color;
-
-		int row_height;
-		int line_spacing;
-		int line_number_w;
-		int breakpoint_gutter_width;
-		int fold_gutter_width;
-		int info_gutter_width;
-		int minimap_width;
-		Cache() {
-			row_height = 0;
-			line_spacing = 0;
-			line_number_w = 0;
-			breakpoint_gutter_width = 0;
-			fold_gutter_width = 0;
-			info_gutter_width = 0;
-			minimap_width = 0;
-		}
-	} cache;
-
 	Map<int, Dictionary> syntax_highlighting_cache;
 
 	struct TextOperation {
@@ -372,8 +318,6 @@ private:
 	bool cursor_changed_dirty;
 	bool text_changed_dirty;
 	bool undo_enabled;
-	bool line_numbers;
-	bool line_numbers_zero_padded;
 	bool line_length_guidelines;
 	int line_length_guideline_soft_col;
 	int line_length_guideline_hard_col;
@@ -534,6 +478,57 @@ private:
 	int _calculate_spaces_till_next_right_indent(int column);
 
 protected:
+	struct Cache {
+		Ref<Texture2D> tab_icon;
+		Ref<Texture2D> space_icon;
+		Ref<Texture2D> can_fold_icon;
+		Ref<Texture2D> folded_icon;
+		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> executing_icon;
+		Ref<StyleBox> style_normal;
+		Ref<StyleBox> style_focus;
+		Ref<StyleBox> style_readonly;
+		Ref<Font> font;
+		Color completion_background_color;
+		Color completion_selected_color;
+		Color completion_existing_color;
+		Color completion_font_color;
+		Color caret_color;
+		Color caret_background_color;
+		Color safe_line_number_color;
+		Color font_color;
+		Color font_color_selected;
+		Color font_color_readonly;
+		Color selection_color;
+		Color mark_color;
+		Color bookmark_color;
+		Color breakpoint_color;
+		Color executing_line_color;
+		Color code_folding_color;
+		Color current_line_color;
+		Color line_length_guideline_color;
+		Color brace_mismatch_color;
+		Color word_highlighted_color;
+		Color search_result_color;
+		Color search_result_border_color;
+		Color background_color;
+
+		int row_height;
+		int line_spacing;
+		int breakpoint_gutter_width;
+		int fold_gutter_width;
+		int info_gutter_width;
+		int minimap_width;
+		Cache() {
+			row_height = 0;
+			line_spacing = 0;
+			breakpoint_gutter_width = 0;
+			fold_gutter_width = 0;
+			info_gutter_width = 0;
+			minimap_width = 0;
+		}
+	} cache;
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
@@ -786,13 +781,8 @@ public:
 
 	void menu_option(int p_option);
 
-	void set_show_line_numbers(bool p_show);
-	bool is_show_line_numbers_enabled() const;
-
 	void set_highlight_current_line(bool p_enabled);
 	bool is_highlight_current_line_enabled() const;
-
-	void set_line_numbers_zero_padded(bool p_zero_padded);
 
 	void set_show_line_length_guidelines(bool p_show);
 	void set_line_length_guideline_soft_column(int p_column);
