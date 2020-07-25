@@ -968,7 +968,7 @@ void VisualShaderEditor::_update_graph() {
 
 			expression_box->set_text(expression);
 			expression_box->set_context_menu_enabled(false);
-			expression_box->set_show_line_numbers(true);
+			expression_box->set_draw_line_numbers(true);
 
 			expression_box->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_expression_focus_out), varray(expression_box, nodes[n_i]));
 		}
@@ -2557,7 +2557,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
 	preview_text->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 	preview_text->set_syntax_highlighter(syntax_highlighter);
-	preview_text->set_show_line_numbers(true);
+	preview_text->set_draw_line_numbers(true);
 	preview_text->set_readonly(true);
 
 	error_text = memnew(Label);
