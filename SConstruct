@@ -115,6 +115,7 @@ opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "releas
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
 
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
+opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
@@ -249,6 +250,10 @@ if env_base["target"] == "debug":
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
 
+if not env_base["tools"]:
+    # Export templates can't run unit test tool.
+    env_base["tests"] = False
+
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
@@ -312,6 +317,8 @@ if selected_platform in platform_list:
         env["verbose"] = True
         env["warnings"] = "extra"
         env["werror"] = True
+        if env["tools"]:
+            env["tests"] = True
 
     if env["vsproj"]:
         env.vs_incs = []
@@ -586,6 +593,8 @@ if selected_platform in platform_list:
         env.Append(CPPDEFINES=["PTRCALL_ENABLED"])
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
+    if env["tests"]:
+        env.Append(CPPDEFINES=["TESTS_ENABLED"])
     if env["disable_3d"]:
         if env["tools"]:
             print(
@@ -641,8 +650,9 @@ if selected_platform in platform_list:
             }
         )
 
-    # enable test framework globally and inform it of configuration method
-    env.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT"])
+    # Enable test framework globally and inform it of configuration method.
+    if env["tests"]:
+        env.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT"])
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
