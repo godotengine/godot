@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 # This script ensures proper POSIX text file formatting and a few other things.
-# This is supplementary to clang-black-format.sh, but should be run before it.
+# This is supplementary to clang_format.sh and black_format.sh, but should be
+# run before them.
+
+# We need dos2unix and recode.
+if [ ! -x "$(command -v dos2unix)" -o ! -x "$(command -v recode)" ]; then
+    printf "Install 'dos2unix' and 'recode' to use this script.\n"
+fi
 
 set -uo pipefail
 IFS=$'\n\t'
@@ -29,22 +35,17 @@ while IFS= read -rd '' f; do
     recode UTF-8 "$f" 2> /dev/null
     # Ensures that files have LF line endings.
     dos2unix "$f" 2> /dev/null
-    # Ensures that files do not contain a BOM.
-    sed -i '1s/^\xEF\xBB\xBF//' "$f"
-    # Ensures that files end with newline characters.
-    tail -c1 < "$f" | read -r _ || echo >> "$f";
     # Remove trailing space characters.
-    sed -z -i 's/\x20\x0A/\x0A/g' "$f"
+    # -l option handles newlines conveniently and seems to also get rid of BOMs.
+    perl -i -ple 's/\s*$//g' "$f"
     # Remove the character sequence "== true" if it has a leading space.
-    sed -z -i 's/\x20== true//g' "$f"
+    perl -i -pe 's/\x20== true//g' "$f"
 done
 
 git diff > patch.patch
-FILESIZE="$(stat -c%s patch.patch)"
-MAXSIZE=5
 
 # If no patch has been generated all is OK, clean up, and exit.
-if (( FILESIZE < MAXSIZE )); then
+if [ ! -s patch.patch ] ; then
     printf "Files in this commit comply with the formatting rules.\n"
     rm -f patch.patch
     exit 0
