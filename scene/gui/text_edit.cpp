@@ -280,10 +280,6 @@ void TextEdit::_update_scrollbars() {
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
 	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
 
-	if (line_numbers) {
-		total_width += cache.line_number_w;
-	}
-
 	if (draw_breakpoint_gutter || draw_bookmark_gutter) {
 		total_width += cache.breakpoint_gutter_width;
 	}
@@ -612,28 +608,11 @@ void TextEdit::_notification(int p_what) {
 				cache.minimap_width = minimap_width;
 			}
 
-			int line_number_char_count = 0;
-
-			{
-				int lc = text.size();
-				cache.line_number_w = 0;
-				while (lc) {
-					cache.line_number_w += 1;
-					lc /= 10;
-				};
-
-				if (line_numbers) {
-					line_number_char_count = cache.line_number_w;
-					cache.line_number_w = (cache.line_number_w + 1) * cache.font->get_char_size('0').width;
-				} else {
-					cache.line_number_w = 0;
-				}
-			}
 			_update_scrollbars();
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
-			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
+			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
 
 			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
@@ -823,8 +802,6 @@ void TextEdit::_notification(int p_what) {
 
 			// Check if highlighted words contains only whitespaces (tabs or spaces).
 			bool only_whitespaces_highlighted = highlighted_text.strip_edges() == String();
-
-			String line_num_padding = line_numbers_zero_padded ? "0" : " ";
 
 			int cursor_wrap_index = get_cursor_wrap_index();
 
@@ -1206,7 +1183,7 @@ void TextEdit::_notification(int p_what) {
 						// Draw fold markers.
 						if (draw_fold_gutter) {
 							int horizontal_gap = (cache.fold_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.line_number_w + cache.info_gutter_width;
+							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.info_gutter_width;
 							if (is_folded(line)) {
 								int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
 								int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
@@ -1216,17 +1193,6 @@ void TextEdit::_notification(int p_what) {
 								int yofs = (get_row_height() - cache.can_fold_icon->get_height()) / 2;
 								cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), cache.code_folding_color);
 							}
-						}
-
-						// Draw line numbers.
-						if (cache.line_number_w) {
-							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
-							String fc = String::num(line + 1);
-							while (fc.length() < line_number_char_count) {
-								fc = line_num_padding + fc;
-							}
-
-							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.info_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, text.is_safe(line) ? cache.safe_line_number_color : cache.line_number_color);
 						}
 					}
 
@@ -2101,7 +2067,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		row = text.size() - 1;
 		col = text[row].size();
 	} else {
-		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width);
+		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width);
 		colx += cursor.x_ofs;
 		col = get_char_pos_for_line(colx, row, wrap_index);
 		if (is_wrap_enabled() && wrap_index < times_line_wraps(row)) {
@@ -2146,7 +2112,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 
 	// Calculate final pixel position
 	int y = (row - get_v_scroll_offset() + 1 /*Bottom of line*/) * get_row_height();
-	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
 		if (cache.font != nullptr) {
@@ -2318,7 +2284,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// Toggle fold on gutter click if can.
 				if (draw_fold_gutter) {
 					left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
-					int gutter_left = left_margin + gutters_width + cache.breakpoint_gutter_width + cache.line_number_w + cache.info_gutter_width;
+					int gutter_left = left_margin + gutters_width + cache.breakpoint_gutter_width + cache.info_gutter_width;
 					if (mb->get_position().x > gutter_left - 6 && mb->get_position().x <= gutter_left + cache.fold_gutter_width - 3) {
 						if (is_folded(row)) {
 							unfold_line(row);
@@ -2332,7 +2298,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// Unfold on folded icon click.
 				if (is_folded(row)) {
 					int line_width = text.get_line_width(row);
-					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.info_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
+					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.info_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
 					if (mb->get_position().x > line_width - 3 && mb->get_position().x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 						unfold_line(row);
 						return;
@@ -4215,7 +4181,7 @@ int TextEdit::get_total_visible_rows() const {
 }
 
 void TextEdit::_update_wrap_at() {
-	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
+	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
 	update_cursor_wrap_offset();
 	text.clear_wrap_cache();
 
@@ -4250,7 +4216,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4285,7 +4251,7 @@ void TextEdit::center_viewport_to_cursor() {
 	}
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4732,7 +4698,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_POINTING_HAND;
 	}
 
-	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
+	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
 	if ((completion_active && completion_rect.has_point(p_pos))) {
 		return CURSOR_ARROW;
 	}
@@ -4771,7 +4737,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		}
 
 		// Fold icon.
-		if (draw_fold_gutter && p_pos.x > gutter_left + cache.line_number_w - 6 && p_pos.x <= gutter_left + cache.line_number_w + cache.fold_gutter_width - 3) {
+		if (draw_fold_gutter && p_pos.x > gutter_left - 6 && p_pos.x <= gutter_left + cache.fold_gutter_width - 3) {
 			if (is_folded(row) || can_fold(row)) {
 				return CURSOR_POINTING_HAND;
 			} else {
@@ -4791,7 +4757,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		// EOL fold icon.
 		if (is_folded(row)) {
 			int line_width = text.get_line_width(row);
-			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 			if (p_pos.x > line_width - 3 && p_pos.x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 				return CURSOR_POINTING_HAND;
 			}
@@ -4994,7 +4960,6 @@ void TextEdit::_update_caches() {
 	cache.font = get_theme_font("font");
 	cache.caret_color = get_theme_color("caret_color");
 	cache.caret_background_color = get_theme_color("caret_background_color");
-	cache.line_number_color = get_theme_color("line_number_color");
 	cache.safe_line_number_color = get_theme_color("safe_line_number_color");
 	cache.font_color = get_theme_color("font_color");
 	cache.font_color_selected = get_theme_color("font_color_selected");
@@ -6817,20 +6782,6 @@ void TextEdit::insert_at(const String &p_text, int at) {
 	}
 }
 
-void TextEdit::set_show_line_numbers(bool p_show) {
-	line_numbers = p_show;
-	update();
-}
-
-void TextEdit::set_line_numbers_zero_padded(bool p_zero_padded) {
-	line_numbers_zero_padded = p_zero_padded;
-	update();
-}
-
-bool TextEdit::is_show_line_numbers_enabled() const {
-	return line_numbers;
-}
-
 void TextEdit::set_show_line_length_guidelines(bool p_show) {
 	line_length_guidelines = p_show;
 	update();
@@ -7115,8 +7066,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("redo"), &TextEdit::redo);
 	ClassDB::bind_method(D_METHOD("clear_undo_history"), &TextEdit::clear_undo_history);
 
-	ClassDB::bind_method(D_METHOD("set_show_line_numbers", "enable"), &TextEdit::set_show_line_numbers);
-	ClassDB::bind_method(D_METHOD("is_show_line_numbers_enabled"), &TextEdit::is_show_line_numbers_enabled);
 	ClassDB::bind_method(D_METHOD("set_draw_tabs"), &TextEdit::set_draw_tabs);
 	ClassDB::bind_method(D_METHOD("is_drawing_tabs"), &TextEdit::is_drawing_tabs);
 	ClassDB::bind_method(D_METHOD("set_draw_spaces"), &TextEdit::set_draw_spaces);
@@ -7207,7 +7156,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "breakpoint_gutter"), "set_breakpoint_gutter_enabled", "is_breakpoint_gutter_enabled");
@@ -7279,7 +7227,6 @@ TextEdit::TextEdit() {
 	_update_caches();
 	cache.row_height = 1;
 	cache.line_spacing = 1;
-	cache.line_number_w = 1;
 	cache.breakpoint_gutter_width = 0;
 	breakpoint_gutter_width = 0;
 	cache.fold_gutter_width = 0;
@@ -7349,8 +7296,6 @@ TextEdit::TextEdit() {
 	completion_active = false;
 	completion_line_ofs = 0;
 	tooltip_obj = nullptr;
-	line_numbers = false;
-	line_numbers_zero_padded = false;
 	line_length_guidelines = false;
 	line_length_guideline_soft_col = 80;
 	line_length_guideline_hard_col = 100;
