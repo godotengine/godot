@@ -107,6 +107,8 @@ static int _find_first_non_whitespace_column_of_line(const String &line) {
 	return left;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 	font = p_font;
 }
@@ -198,6 +200,7 @@ void TextEdit::Text::set(int p_line, const String &p_text) {
 
 void TextEdit::Text::insert(int p_at, const String &p_text) {
 	Line line;
+	line.gutters.resize(gutter_count);
 	line.marked = false;
 	line.safe = false;
 	line.breakpoint = false;
@@ -231,6 +234,32 @@ int TextEdit::Text::get_char_width(char32_t c, char32_t next_c, int px) const {
 	return w;
 }
 
+void TextEdit::Text::add_gutter(int p_at) {
+	for (int i = 0; i < text.size(); i++) {
+		if (p_at < 0 || p_at > gutter_count) {
+			text.write[i].gutters.push_back(Gutter());
+		} else {
+			text.write[i].gutters.insert(p_at, Gutter());
+		}
+	}
+	gutter_count++;
+}
+
+void TextEdit::Text::remove_gutter(int p_gutter) {
+	for (int i = 0; i < text.size(); i++) {
+		text.write[i].gutters.remove(p_gutter);
+	}
+	gutter_count--;
+}
+
+void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
+	text.write[p_to_line].gutters = text[p_from_line].gutters;
+	text.write[p_from_line].gutters.clear();
+	text.write[p_from_line].gutters.resize(gutter_count);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void TextEdit::_update_scrollbars() {
 	Size2 size = get_size();
 	Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -249,7 +278,7 @@ void TextEdit::_update_scrollbars() {
 	}
 
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
-	int total_width = text.get_max_width(true) + vmin.x;
+	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
 
 	if (line_numbers) {
 		total_width += cache.line_number_w;
@@ -604,7 +633,7 @@ void TextEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
-			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
+			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
 
 			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
@@ -1053,6 +1082,54 @@ void TextEdit::_notification(int p_what) {
 					if (line_wrap_index == 0) {
 						// Only do these if we are on the first wrapped part of a line.
 
+						int gutter_offset = cache.style_normal->get_margin(MARGIN_LEFT);
+						for (int g = 0; g < gutters.size(); g++) {
+							const GutterInfo gutter = gutters[g];
+
+							if (!gutter.draw || gutter.width <= 0) {
+								continue;
+							}
+
+							switch (gutter.type) {
+								case GUTTER_TYPE_STRING: {
+									const String &text = get_line_gutter_text(line, g);
+									if (text == "") {
+										break;
+									}
+
+									int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
+									cache.font->draw(ci, Point2(gutter_offset + ofs_x, yofs + cache.font->get_ascent()), text, get_line_gutter_item_color(line, g));
+								} break;
+								case GUTTER_TPYE_ICON: {
+									const Ref<Texture2D> icon = get_line_gutter_icon(line, g);
+									if (icon.is_null()) {
+										break;
+									}
+
+									Rect2i gutter_rect = Rect2i(Point2i(gutter_offset, ofs_y), Size2i(gutter.width, get_row_height()));
+
+									int horizontal_padding = gutter_rect.size.x / 6;
+									int vertical_padding = gutter_rect.size.y / 6;
+
+									gutter_rect.position += Point2(horizontal_padding, vertical_padding);
+									gutter_rect.size -= Point2(horizontal_padding, vertical_padding) * 2;
+
+									icon->draw_rect(ci, gutter_rect, false, get_line_gutter_item_color(line, g));
+								} break;
+								case GUTTER_TPYE_CUSTOM: {
+									if (gutter.custom_draw_obj.is_valid()) {
+										Object *cdo = ObjectDB::get_instance(gutter.custom_draw_obj);
+										if (cdo) {
+											Rect2i gutter_rect = Rect2i(Point2i(gutter_offset, ofs_y), Size2i(gutter.width, get_row_height()));
+											cdo->call(gutter.custom_draw_callback, line, g, Rect2(gutter_rect));
+										}
+									}
+								} break;
+							}
+
+							gutter_offset += gutter.width;
+						}
+
 						if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
 #ifdef TOOLS_ENABLED
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
@@ -1067,7 +1144,7 @@ void TextEdit::_notification(int p_what) {
 								int vertical_gap = (get_row_height() * 40) / 100;
 								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
 								int marker_radius = get_row_height() - (vertical_gap * 2);
-								RenderingServer::get_singleton()->canvas_item_add_circle(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2 + marker_radius / 2, ofs_y + vertical_gap + marker_radius / 2), marker_radius, Color(cache.bookmark_color.r, cache.bookmark_color.g, cache.bookmark_color.b));
+								RenderingServer::get_singleton()->canvas_item_add_circle(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + horizontal_gap - 2 + marker_radius / 2, ofs_y + vertical_gap + marker_radius / 2), marker_radius, Color(cache.bookmark_color.r, cache.bookmark_color.g, cache.bookmark_color.b));
 							}
 						}
 
@@ -1079,7 +1156,7 @@ void TextEdit::_notification(int p_what) {
 								int marker_height = get_row_height() - (vertical_gap * 2);
 								int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2);
 								// No transparency on marker.
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2, ofs_y + vertical_gap, marker_width, marker_height), Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + horizontal_gap - 2, ofs_y + vertical_gap, marker_width, marker_height), Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
 							}
 						}
 
@@ -1087,7 +1164,7 @@ void TextEdit::_notification(int p_what) {
 						if (draw_info_gutter && text.has_info_icon(line)) {
 							int vertical_gap = (get_row_height() * 40) / 100;
 							int horizontal_gap = (cache.info_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width;
+							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width;
 
 							Ref<Texture2D> info_icon = text.get_info_icon(line);
 							// Ensure the icon fits the gutter size.
@@ -1116,7 +1193,7 @@ void TextEdit::_notification(int p_what) {
 								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
 								int marker_height = get_row_height() - (vertical_gap * 2) + icon_extra_size;
 								int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2) + icon_extra_size;
-								cache.executing_icon->draw_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2 - icon_extra_size / 2, ofs_y + vertical_gap - icon_extra_size / 2, marker_width, marker_height), false, Color(cache.executing_line_color.r, cache.executing_line_color.g, cache.executing_line_color.b));
+								cache.executing_icon->draw_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + horizontal_gap - 2 - icon_extra_size / 2, ofs_y + vertical_gap - icon_extra_size / 2, marker_width, marker_height), false, Color(cache.executing_line_color.r, cache.executing_line_color.g, cache.executing_line_color.b));
 							} else {
 #ifdef TOOLS_ENABLED
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.executing_line_color);
@@ -1129,7 +1206,7 @@ void TextEdit::_notification(int p_what) {
 						// Draw fold markers.
 						if (draw_fold_gutter) {
 							int horizontal_gap = (cache.fold_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + cache.line_number_w + cache.info_gutter_width;
+							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.line_number_w + cache.info_gutter_width;
 							if (is_folded(line)) {
 								int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
 								int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
@@ -1149,7 +1226,7 @@ void TextEdit::_notification(int p_what) {
 								fc = line_num_padding + fc;
 							}
 
-							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + cache.info_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, text.is_safe(line) ? cache.safe_line_number_color : cache.line_number_color);
+							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.info_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, text.is_safe(line) ? cache.safe_line_number_color : cache.line_number_color);
 						}
 					}
 
@@ -1797,6 +1874,32 @@ void TextEdit::backspace_at_cursor() {
 	int prev_line = cursor.column ? cursor.line : cursor.line - 1;
 	int prev_column = cursor.column ? (cursor.column - 1) : (text[cursor.line - 1].length());
 
+	if (cursor.line != prev_line) {
+		for (int i = 0; i < gutters.size(); i++) {
+			if (!gutters[i].overwritable) {
+				continue;
+			}
+
+			if (text.get_line_gutter_text(cursor.line, i) != "") {
+				text.set_line_gutter_text(prev_line, i, text.get_line_gutter_text(cursor.line, i));
+				text.set_line_gutter_item_color(prev_line, i, text.get_line_gutter_item_color(cursor.line, i));
+			}
+
+			if (text.get_line_gutter_icon(cursor.line, i).is_valid()) {
+				text.set_line_gutter_icon(prev_line, i, text.get_line_gutter_icon(cursor.line, i));
+				text.set_line_gutter_item_color(prev_line, i, text.get_line_gutter_item_color(cursor.line, i));
+			}
+
+			if (text.get_line_gutter_metadata(cursor.line, i) != "") {
+				text.set_line_gutter_metadata(prev_line, i, text.get_line_gutter_metadata(cursor.line, i));
+			}
+
+			if (text.is_line_gutter_clickable(cursor.line, i)) {
+				text.set_line_gutter_clickable(prev_line, i, true);
+			}
+		}
+	}
+
 	if (is_line_hidden(cursor.line)) {
 		set_line_as_hidden(prev_line, true);
 	}
@@ -1998,7 +2101,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		row = text.size() - 1;
 		col = text[row].size();
 	} else {
-		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width);
+		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width);
 		colx += cursor.x_ofs;
 		col = get_char_pos_for_line(colx, row, wrap_index);
 		if (is_wrap_enabled() && wrap_index < times_line_wraps(row)) {
@@ -2043,7 +2146,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 
 	// Calculate final pixel position
 	int y = (row - get_v_scroll_offset() + 1 /*Bottom of line*/) * get_row_height();
-	int x = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
 		if (cache.font != nullptr) {
@@ -2178,9 +2281,23 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				int row, col;
 				_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
 
+				int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+				for (int i = 0; i < gutters.size(); i++) {
+					if (!gutters[i].draw || gutters[i].width <= 0) {
+						continue;
+					}
+
+					if (mb->get_position().x > left_margin && mb->get_position().x <= (left_margin + gutters[i].width) - 3) {
+						emit_signal("gutter_clicked", row, i);
+						return;
+					}
+
+					left_margin += gutters[i].width;
+				}
+
 				// Toggle breakpoint on gutter click.
 				if (draw_breakpoint_gutter) {
-					int gutter = cache.style_normal->get_margin(MARGIN_LEFT);
+					int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width;
 					if (mb->get_position().x > gutter - 6 && mb->get_position().x <= gutter + cache.breakpoint_gutter_width - 3) {
 						set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
 						emit_signal("breakpoint_toggled", row);
@@ -2190,8 +2307,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// Emit info clicked.
 				if (draw_info_gutter && text.has_info_icon(row)) {
-					int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
-					int gutter_left = left_margin + cache.breakpoint_gutter_width;
+					left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+					int gutter_left = left_margin + gutters_width + cache.breakpoint_gutter_width;
 					if (mb->get_position().x > gutter_left - 6 && mb->get_position().x <= gutter_left + cache.info_gutter_width - 3) {
 						emit_signal("info_clicked", row, text.get_info(row));
 						return;
@@ -2200,8 +2317,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// Toggle fold on gutter click if can.
 				if (draw_fold_gutter) {
-					int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
-					int gutter_left = left_margin + cache.breakpoint_gutter_width + cache.line_number_w + cache.info_gutter_width;
+					left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+					int gutter_left = left_margin + gutters_width + cache.breakpoint_gutter_width + cache.line_number_w + cache.info_gutter_width;
 					if (mb->get_position().x > gutter_left - 6 && mb->get_position().x <= gutter_left + cache.fold_gutter_width - 3) {
 						if (is_folded(row)) {
 							unfold_line(row);
@@ -2215,7 +2332,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// Unfold on folded icon click.
 				if (is_folded(row)) {
 					int line_width = text.get_line_width(row);
-					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.info_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
+					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.info_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
 					if (mb->get_position().x > line_width - 3 && mb->get_position().x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 						unfold_line(row);
 						return;
@@ -3818,6 +3935,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	}
 
 	if (shift_first_line) {
+		text.move_gutters(p_line, p_line + 1);
 		text.set_breakpoint(p_line + 1, text.is_breakpoint(p_line));
 		text.set_hidden(p_line + 1, text.is_hidden(p_line));
 		if (text.has_info_icon(p_line)) {
@@ -4097,7 +4215,7 @@ int TextEdit::get_total_visible_rows() const {
 }
 
 void TextEdit::_update_wrap_at() {
-	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
+	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
 	update_cursor_wrap_offset();
 	text.clear_wrap_cache();
 
@@ -4132,7 +4250,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4167,7 +4285,7 @@ void TextEdit::center_viewport_to_cursor() {
 	}
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4614,7 +4732,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_POINTING_HAND;
 	}
 
-	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
+	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
 	if ((completion_active && completion_rect.has_point(p_pos))) {
 		return CURSOR_ARROW;
 	}
@@ -4622,6 +4740,21 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		int row, col;
 		_get_mouse_pos(p_pos, row, col);
 		int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+
+		for (int i = 0; i < gutters.size(); i++) {
+			if (!gutters[i].draw) {
+				continue;
+			}
+
+			if (p_pos.x > left_margin && p_pos.x <= (left_margin + gutters[i].width) - 3) {
+				if (gutters[i].clickable || is_line_gutter_clickable(row, i)) {
+					return CURSOR_POINTING_HAND;
+				}
+			}
+			left_margin += gutters[i].width;
+		}
+
+		left_margin += gutters_width;
 
 		// Breakpoint icon.
 		if (draw_breakpoint_gutter && p_pos.x > left_margin - 6 && p_pos.x <= left_margin + cache.breakpoint_gutter_width - 3) {
@@ -4658,7 +4791,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		// EOL fold icon.
 		if (is_folded(row)) {
 			int line_width = text.get_line_width(row);
-			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 			if (p_pos.x > line_width - 3 && p_pos.x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 				return CURSOR_POINTING_HAND;
 			}
@@ -4899,6 +5032,7 @@ void TextEdit::_update_caches() {
 	}
 }
 
+/* Syntax Highlighting. */
 Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() {
 	return syntax_highlighter;
 }
@@ -4909,6 +5043,187 @@ void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighte
 		syntax_highlighter->set_text_edit(this);
 	}
 	update();
+}
+
+/* Gutters. */
+void TextEdit::_update_gutter_width() {
+	gutters_width = 0;
+	for (int i = 0; i < gutters.size(); i++) {
+		if (gutters[i].draw) {
+			gutters_width += gutters[i].width;
+		}
+	}
+	if (gutters_width > 0) {
+		gutter_padding = 2;
+	}
+	update();
+}
+
+void TextEdit::add_gutter(int p_at) {
+	if (p_at < 0 || p_at > gutters.size()) {
+		gutters.push_back(GutterInfo());
+	} else {
+		gutters.insert(p_at, GutterInfo());
+	}
+
+	for (int i = 0; i < text.size() + 1; i++) {
+		text.add_gutter(p_at);
+	}
+	emit_signal("gutter_added");
+	update();
+}
+
+void TextEdit::remove_gutter(int p_gutter) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+
+	gutters.remove(p_gutter);
+
+	for (int i = 0; i < text.size() + 1; i++) {
+		text.remove_gutter(p_gutter);
+	}
+	emit_signal("gutter_removed");
+	update();
+}
+
+int TextEdit::get_gutter_count() const {
+	return gutters.size();
+}
+
+void TextEdit::set_gutter_name(int p_gutter, const String &p_name) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	gutters.write[p_gutter].name = p_name;
+}
+
+String TextEdit::get_gutter_name(int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), "");
+	return gutters[p_gutter].name;
+}
+
+void TextEdit::set_gutter_type(int p_gutter, GutterType p_type) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	gutters.write[p_gutter].type = p_type;
+	update();
+}
+
+TextEdit::GutterType TextEdit::get_gutter_type(int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), GUTTER_TYPE_STRING);
+	return gutters[p_gutter].type;
+}
+
+void TextEdit::set_gutter_width(int p_gutter, int p_width) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	gutters.write[p_gutter].width = p_width;
+	_update_gutter_width();
+}
+
+int TextEdit::get_gutter_width(int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), -1);
+	return gutters[p_gutter].width;
+}
+
+void TextEdit::set_gutter_draw(int p_gutter, bool p_draw) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	gutters.write[p_gutter].draw = p_draw;
+	_update_gutter_width();
+}
+
+bool TextEdit::is_gutter_drawn(int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	return gutters[p_gutter].draw;
+}
+
+void TextEdit::set_gutter_clickable(int p_gutter, bool p_clickable) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	gutters.write[p_gutter].clickable = p_clickable;
+	update();
+}
+
+bool TextEdit::is_gutter_clickable(int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	return gutters[p_gutter].clickable;
+}
+
+void TextEdit::set_gutter_overwritable(int p_gutter, bool p_overwritable) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	gutters.write[p_gutter].overwritable = p_overwritable;
+}
+
+bool TextEdit::is_gutter_overwritable(int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	return gutters[p_gutter].overwritable;
+}
+
+void TextEdit::set_gutter_custom_draw(int p_gutter, Object *p_object, const StringName &p_callback) {
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_NULL(p_object);
+
+	gutters.write[p_gutter].custom_draw_obj = p_object->get_instance_id();
+	gutters.write[p_gutter].custom_draw_callback = p_callback;
+	update();
+}
+
+// Line gutters.
+void TextEdit::set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	text.set_line_gutter_metadata(p_line, p_gutter, p_metadata);
+}
+
+Variant TextEdit::get_line_gutter_metadata(int p_line, int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), "");
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), "");
+	return text.get_line_gutter_metadata(p_line, p_gutter);
+}
+
+void TextEdit::set_line_gutter_text(int p_line, int p_gutter, const String &p_text) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	text.set_line_gutter_text(p_line, p_gutter, p_text);
+	update();
+}
+
+String TextEdit::get_line_gutter_text(int p_line, int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), "");
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), "");
+	return text.get_line_gutter_text(p_line, p_gutter);
+}
+
+void TextEdit::set_line_gutter_icon(int p_line, int p_gutter, Ref<Texture2D> p_icon) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	text.set_line_gutter_icon(p_line, p_gutter, p_icon);
+	update();
+}
+
+Ref<Texture2D> TextEdit::get_line_gutter_icon(int p_line, int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), Ref<Texture2D>());
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), Ref<Texture2D>());
+	return text.get_line_gutter_icon(p_line, p_gutter);
+}
+
+void TextEdit::set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	text.set_line_gutter_item_color(p_line, p_gutter, p_color);
+	update();
+}
+
+Color TextEdit::get_line_gutter_item_color(int p_line, int p_gutter) {
+	ERR_FAIL_INDEX_V(p_line, text.size(), Color());
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), Color());
+	return text.get_line_gutter_item_color(p_line, p_gutter);
+}
+
+void TextEdit::set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	text.set_line_gutter_clickable(p_line, p_gutter, p_clickable);
+}
+
+bool TextEdit::is_line_gutter_clickable(int p_line, int p_gutter) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	return text.is_line_gutter_clickable(p_line, p_gutter);
 }
 
 void TextEdit::add_keyword(const String &p_keyword) {
@@ -6832,6 +7147,40 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
 
+	/* Gutters. */
+	BIND_ENUM_CONSTANT(GUTTER_TYPE_STRING);
+	BIND_ENUM_CONSTANT(GUTTER_TPYE_ICON);
+	BIND_ENUM_CONSTANT(GUTTER_TPYE_CUSTOM);
+
+	ClassDB::bind_method(D_METHOD("add_gutter", "at"), &TextEdit::add_gutter, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_gutter", "gutter"), &TextEdit::remove_gutter);
+	ClassDB::bind_method(D_METHOD("get_gutter_count"), &TextEdit::get_gutter_count);
+	ClassDB::bind_method(D_METHOD("set_gutter_name", "gutter", "name"), &TextEdit::set_gutter_name);
+	ClassDB::bind_method(D_METHOD("get_gutter_name", "gutter"), &TextEdit::get_gutter_name);
+	ClassDB::bind_method(D_METHOD("set_gutter_type", "gutter", "type"), &TextEdit::set_gutter_type);
+	ClassDB::bind_method(D_METHOD("get_gutter_type", "gutter"), &TextEdit::get_gutter_type);
+	ClassDB::bind_method(D_METHOD("set_gutter_width", "gutter", "width"), &TextEdit::set_gutter_width);
+	ClassDB::bind_method(D_METHOD("get_gutter_width", "gutter"), &TextEdit::get_gutter_width);
+	ClassDB::bind_method(D_METHOD("set_gutter_draw", "gutter", "draw"), &TextEdit::set_gutter_draw);
+	ClassDB::bind_method(D_METHOD("is_gutter_drawn", "gutter"), &TextEdit::is_gutter_drawn);
+	ClassDB::bind_method(D_METHOD("set_gutter_clickable", "gutter", "clickable"), &TextEdit::set_gutter_clickable);
+	ClassDB::bind_method(D_METHOD("is_gutter_clickable", "gutter"), &TextEdit::is_gutter_clickable);
+	ClassDB::bind_method(D_METHOD("set_gutter_overwritable", "gutter", "overwritable"), &TextEdit::set_gutter_overwritable);
+	ClassDB::bind_method(D_METHOD("is_gutter_overwritable", "gutter"), &TextEdit::is_gutter_overwritable);
+	ClassDB::bind_method(D_METHOD("set_gutter_custom_draw", "column", "object", "callback"), &TextEdit::set_gutter_custom_draw);
+
+	// Line gutters.
+	ClassDB::bind_method(D_METHOD("set_line_gutter_metadata", "line", "gutter", "metadata"), &TextEdit::set_line_gutter_metadata);
+	ClassDB::bind_method(D_METHOD("get_line_gutter_metadata", "line", "gutter"), &TextEdit::get_line_gutter_metadata);
+	ClassDB::bind_method(D_METHOD("set_line_gutter_text", "line", "gutter", "text"), &TextEdit::set_line_gutter_text);
+	ClassDB::bind_method(D_METHOD("get_line_gutter_text", "line", "gutter"), &TextEdit::get_line_gutter_text);
+	ClassDB::bind_method(D_METHOD("set_line_gutter_icon", "line", "gutter", "icon"), &TextEdit::set_line_gutter_icon);
+	ClassDB::bind_method(D_METHOD("get_line_gutter_icon", "line", "gutter"), &TextEdit::get_line_gutter_icon);
+	ClassDB::bind_method(D_METHOD("set_line_gutter_item_color", "line", "gutter", "color"), &TextEdit::set_line_gutter_item_color);
+	ClassDB::bind_method(D_METHOD("get_line_gutter_item_color", "line", "gutter"), &TextEdit::get_line_gutter_item_color);
+	ClassDB::bind_method(D_METHOD("set_line_gutter_clickable", "line", "gutter", "clickable"), &TextEdit::set_line_gutter_clickable);
+	ClassDB::bind_method(D_METHOD("is_line_gutter_clickable", "line", "gutter"), &TextEdit::is_line_gutter_clickable);
+
 	ClassDB::bind_method(D_METHOD("set_highlight_current_line", "enabled"), &TextEdit::set_highlight_current_line);
 	ClassDB::bind_method(D_METHOD("is_highlight_current_line_enabled"), &TextEdit::is_highlight_current_line_enabled);
 
@@ -6892,6 +7241,9 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("line_edited_from", PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_completion"));
+	ADD_SIGNAL(MethodInfo("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
+	ADD_SIGNAL(MethodInfo("gutter_added"));
+	ADD_SIGNAL(MethodInfo("gutter_removed"));
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("info_clicked", PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::STRING, "info")));

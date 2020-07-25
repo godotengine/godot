@@ -41,9 +41,44 @@ class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
 
 public:
+	enum GutterType {
+		GUTTER_TYPE_STRING,
+		GUTTER_TPYE_ICON,
+		GUTTER_TPYE_CUSTOM
+	};
+
+private:
+	struct GutterInfo {
+		GutterType type = GutterType::GUTTER_TYPE_STRING;
+		String name = "";
+		int width = 24;
+		bool draw = true;
+		bool clickable = false;
+		bool overwritable = false;
+
+		ObjectID custom_draw_obj = ObjectID();
+		StringName custom_draw_callback;
+	};
+	Vector<GutterInfo> gutters;
+	int gutters_width = 0;
+	int gutter_padding = 0;
+
+	void _update_gutter_width();
+
 	class Text {
 	public:
+		struct Gutter {
+			Variant metadata;
+			bool clickable = false;
+
+			Ref<Texture2D> icon = Ref<Texture2D>();
+			String text = "";
+			Color color = Color(1, 1, 1);
+		};
+
 		struct Line {
+			Vector<Gutter> gutters;
+
 			int width_cache : 24;
 			bool marked : 1;
 			bool breakpoint : 1;
@@ -70,7 +105,8 @@ public:
 	private:
 		mutable Vector<Line> text;
 		Ref<Font> font;
-		int indent_size;
+		int indent_size = 4;
+		int gutter_count = 0;
 
 		void _update_line_cache(int p_line) const;
 
@@ -113,10 +149,28 @@ public:
 		void clear_wrap_cache();
 		void clear_info_icons();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
-		Text() { indent_size = 4; }
+
+		/* Gutters. */
+		void add_gutter(int p_at);
+		void remove_gutter(int p_gutter);
+		void move_gutters(int p_from_line, int p_to_line);
+
+		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) { text.write[p_line].gutters.write[p_gutter].metadata = p_metadata; }
+		const Variant &get_line_gutter_metadata(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].metadata; }
+
+		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) { text.write[p_line].gutters.write[p_gutter].text = p_text; }
+		const String &get_line_gutter_text(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].text; }
+
+		void set_line_gutter_icon(int p_line, int p_gutter, Ref<Texture2D> p_icon) { text.write[p_line].gutters.write[p_gutter].icon = p_icon; }
+		const Ref<Texture2D> &get_line_gutter_icon(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].icon; }
+
+		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) { text.write[p_line].gutters.write[p_gutter].color = p_color; }
+		const Color &get_line_gutter_item_color(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].color; }
+
+		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text.write[p_line].gutters.write[p_gutter].clickable = p_clickable; }
+		bool is_line_gutter_clickable(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].clickable; }
 	};
 
-private:
 	struct Cursor {
 		int last_fit_x;
 		int line, column; ///< cursor
@@ -494,8 +548,50 @@ protected:
 	static void _bind_methods();
 
 public:
+	/* Syntax Highlighting. */
 	Ref<SyntaxHighlighter> get_syntax_highlighter();
 	void set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighter);
+
+	/* Gutters. */
+	void add_gutter(int p_at = -1);
+	void remove_gutter(int p_gutter);
+	int get_gutter_count() const;
+
+	void set_gutter_name(int p_gutter, const String &p_name);
+	String get_gutter_name(int p_gutter) const;
+
+	void set_gutter_type(int p_gutter, GutterType p_type);
+	GutterType get_gutter_type(int p_gutter) const;
+
+	void set_gutter_width(int p_gutter, int p_width);
+	int get_gutter_width(int p_gutter) const;
+
+	void set_gutter_draw(int p_gutter, bool p_draw);
+	bool is_gutter_drawn(int p_gutter) const;
+
+	void set_gutter_clickable(int p_gutter, bool p_clickable);
+	bool is_gutter_clickable(int p_gutter) const;
+
+	void set_gutter_overwritable(int p_gutter, bool p_overwritable);
+	bool is_gutter_overwritable(int p_gutter) const;
+
+	void set_gutter_custom_draw(int p_gutter, Object *p_object, const StringName &p_callback);
+
+	// Line gutters.
+	void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata);
+	Variant get_line_gutter_metadata(int p_line, int p_gutter) const;
+
+	void set_line_gutter_text(int p_line, int p_gutter, const String &p_text);
+	String get_line_gutter_text(int p_line, int p_gutter) const;
+
+	void set_line_gutter_icon(int p_line, int p_gutter, Ref<Texture2D> p_icon);
+	Ref<Texture2D> get_line_gutter_icon(int p_line, int p_gutter) const;
+
+	void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color);
+	Color get_line_gutter_item_color(int p_line, int p_gutter);
+
+	void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable);
+	bool is_line_gutter_clickable(int p_line, int p_gutter) const;
 
 	enum MenuItems {
 		MENU_CUT,
@@ -764,6 +860,7 @@ public:
 	~TextEdit();
 };
 
+VARIANT_ENUM_CAST(TextEdit::GutterType);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
 
