@@ -495,13 +495,17 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 	_update_window_style(window_id);
 
-	ShowWindow(wd.hWnd, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show The Window
-	if (!(p_flags & WINDOW_FLAG_NO_FOCUS_BIT)) {
+	return window_id;
+}
+
+void DisplayServerWindows::show_window(WindowID p_id) {
+	WindowData &wd = windows[p_id];
+
+	ShowWindow(wd.hWnd, wd.no_focus ? SW_SHOWNOACTIVATE : SW_SHOW); // Show The Window
+	if (!wd.no_focus) {
 		SetForegroundWindow(wd.hWnd); // Slightly Higher Priority
 		SetFocus(wd.hWnd); // Sets Keyboard Focus To
 	}
-
-	return window_id;
 }
 
 void DisplayServerWindows::delete_sub_window(WindowID p_window) {
@@ -3121,9 +3125,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	ShowWindow(windows[MAIN_WINDOW_ID].hWnd, SW_SHOW); // Show The Window
-	SetForegroundWindow(windows[MAIN_WINDOW_ID].hWnd); // Slightly Higher Priority
-	SetFocus(windows[MAIN_WINDOW_ID].hWnd); // Sets Keyboard Focus To
+	show_window(MAIN_WINDOW_ID);
 
 #if defined(VULKAN_ENABLED)
 
