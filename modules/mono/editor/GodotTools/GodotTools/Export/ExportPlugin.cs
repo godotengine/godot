@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using GodotTools.Core;
 using GodotTools.Internals;
+using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
@@ -145,9 +146,7 @@ namespace GodotTools.Export
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return;
 
-            string platform = DeterminePlatformFromFeatures(features);
-
-            if (platform == null)
+            if (!DeterminePlatformFromFeatures(features, out string platform))
                 throw new NotSupportedException("Target platform not supported");
 
             string outputDir = new FileInfo(path).Directory?.FullName ??
@@ -160,10 +159,7 @@ namespace GodotTools.Export
 
             AddFile(scriptsMetadataPath, scriptsMetadataPath);
 
-            // Turn export features into defines
-            var godotDefines = features;
-
-            if (!BuildManager.BuildProjectBlocking(buildConfig, godotDefines))
+            if (!BuildManager.BuildProjectBlocking(buildConfig, platform))
                 throw new Exception("Failed to build project");
 
             // Add dependency assemblies
@@ -289,6 +285,7 @@ namespace GodotTools.Export
             }
         }
 
+        [NotNull]
         private static string ExportDataDirectory(string[] features, string platform, bool isDebug, string outputDir)
         {
             string target = isDebug ? "release_debug" : "release";
@@ -343,18 +340,19 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] { OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform);
+            return !new[] {OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
         }
 
-        private static string DeterminePlatformFromFeatures(IEnumerable<string> features)
+        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
         {
             foreach (var feature in features)
             {
-                if (OS.PlatformNameMap.TryGetValue(feature, out string platform))
-                    return platform;
+                if (OS.PlatformNameMap.TryGetValue(feature, out platform))
+                    return true;
             }
 
-            return null;
+            platform = null;
+            return false;
         }
 
         private static string GetBclProfileDir(string profile)
@@ -391,7 +389,7 @@ namespace GodotTools.Export
         /// </summary>
         private static bool PlatformRequiresCustomBcl(string platform)
         {
-            if (new[] { OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform))
+            if (new[] {OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform))
                 return true;
 
             // The 'net_4_x' BCL is not compatible between Windows and the other platforms.

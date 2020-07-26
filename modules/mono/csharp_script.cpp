@@ -44,7 +44,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/bindings_generator.h"
-#include "editor/csharp_project.h"
 #include "editor/editor_node.h"
 #include "editor/node_dock.h"
 #endif
@@ -3724,13 +3723,9 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 
 #ifdef TOOLS_ENABLED
 	if (!FileAccess::exists(p_path)) {
-		// The file does not yet exists, let's assume the user just created this script
-
-		if (_create_project_solution_if_needed()) {
-			CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
-					"Compile",
-					ProjectSettings::get_singleton()->globalize_path(p_path));
-		} else {
+		// The file does not yet exist, let's assume the user just created this script. In such
+		// cases we need to check whether the solution and csproj were already created or not.
+		if (!_create_project_solution_if_needed()) {
 			ERR_PRINT("C# project could not be created; cannot add file: '" + p_path + "'.");
 		}
 	}
