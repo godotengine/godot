@@ -699,15 +699,18 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected);
 	if (current) {
 		Ref<Script> script = current->get_edited_resource();
-		if (p_save) {
-			// Do not try to save internal scripts
-			if (!script.is_valid() || !(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
+		if (p_save && script.is_valid()) {
+			// Do not try to save internal scripts, but prompt to save in-memory
+			// scripts which are not saved to disk yet (have empty path).
+			if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
 				_menu_option(FILE_SAVE);
 			}
 		}
-
-		if (script != nullptr) {
-			previous_scripts.push_back(script->get_path());
+		if (script.is_valid()) {
+			if (!script->get_path().empty()) {
+				// Only saved scripts can be restored.
+				previous_scripts.push_back(script->get_path());
+			}
 			notify_script_close(script);
 		}
 	}
@@ -1471,6 +1474,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 			editor->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			editor->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
+			editor->get_filesystem_dock()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
 
 			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
@@ -1478,6 +1482,7 @@ void ScriptEditor::_notification(int p_what) {
 			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_script_split_dragged));
 
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
+			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1850,6 +1855,12 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 			Ref<Texture2D> icon = se->get_theme_icon();
 			String path = se->get_edited_resource()->get_path();
+			bool saved = !path.empty();
+			if (saved) {
+				// The script might be deleted, moved, or renamed, so make sure
+				// to update original path to previously edited resource.
+				se->set_meta("_edit_res_path", path);
+			}
 			bool built_in = !path.is_resource_file();
 			String name;
 
@@ -1868,7 +1879,7 @@ void ScriptEditor::_update_script_names() {
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
 			sd.name = name;
-			sd.tooltip = path;
+			sd.tooltip = saved ? path : TTR("Unsaved file.");
 			sd.index = i;
 			sd.used = used.has(se->get_edited_resource());
 			sd.category = 0;
@@ -1900,6 +1911,9 @@ void ScriptEditor::_update_script_names() {
 				case DISPLAY_FULL_PATH: {
 					sd.name = path;
 				} break;
+			}
+			if (!saved) {
+				sd.name = se->get_name();
 			}
 
 			sedata.push_back(sd);
@@ -2222,6 +2236,9 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		se->enable_editor();
 	}
 
+	// If we delete a script within the filesystem, the original resource path
+	// is lost, so keep it as metadata to figure out the exact tab to delete.
+	se->set_meta("_edit_res_path", p_resource->get_path());
 	se->set_tooltip_request_func("_get_debug_tooltip", this);
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
@@ -2394,6 +2411,23 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_script_names();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/files/auto_reload_and_parse_scripts_on_save", true));
+}
+
+void ScriptEditor::_filesystem_changed() {
+	_update_script_names();
+}
+
+void ScriptEditor::_file_removed(const String &p_removed_file) {
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (!se) {
+			continue;
+		}
+		if (se->get_meta("_edit_res_path") == p_removed_file) {
+			// The script is deleted with no undo, so just close the tab.
+			_close_tab(i, false, false);
+		}
+	}
 }
 
 void ScriptEditor::_autosave_scripts() {
