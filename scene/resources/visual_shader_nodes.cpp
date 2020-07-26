@@ -3915,6 +3915,10 @@ String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, Visu
 	return code;
 }
 
+bool VisualShaderNodeTextureUniform::is_code_generated() const {
+	return is_output_port_connected(0) || is_output_port_connected(1); // rgb or alpha
+}
+
 String VisualShaderNodeTextureUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String id = get_uniform_name();
 	String code = "\t{\n";
