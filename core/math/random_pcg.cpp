@@ -49,3 +49,18 @@ double RandomPCG::random(double p_from, double p_to) {
 float RandomPCG::random(float p_from, float p_to) {
 	return randf() * (p_to - p_from) + p_from;
 }
+
+int RandomPCG::random(int p_from, int p_to) {
+	int range;
+	int min;
+	if (p_to > p_from) {
+		range = p_to - p_from + 1;
+		min = p_from;
+	} else if (p_to < p_from) {
+		range = p_from - p_to + 1;
+		min = p_to;
+	} else { // from == to
+		return p_from;
+	}
+	return rand(range) + min;
+}

@@ -289,7 +289,7 @@ public:
 
 	static double random(double from, double to);
 	static float random(float from, float to);
-	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
+	static int random(int from, int to);
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
 		// Check for exact equality first, required to handle "infinity" values.

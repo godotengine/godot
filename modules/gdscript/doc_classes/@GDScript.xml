@@ -921,7 +921,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="rand_range">
+		<method name="randf_range">
 			<return type="float">
 			</return>
 			<argument index="0" name="from" type="float">
@@ -931,7 +931,22 @@
 			<description>
 				Random range, any floating point value between [code]from[/code] and [code]to[/code].
 				[codeblock]
-				prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263
+				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Random range, any 32-bit integer value between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code] they are swapped.
+				[codeblock]
+				print(randi_range(0, 1)) # Prints 0 or 1
+				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
 				[/codeblock]
 			</description>
 		</method>

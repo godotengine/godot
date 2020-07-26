@@ -193,7 +193,11 @@ void godot_icall_GD_randomize() {
 	Math::randomize();
 }
 
-double godot_icall_GD_rand_range(double from, double to) {
+double godot_icall_GD_randf_range(double from, double to) {
+	return Math::random(from, to);
+}
+
+int32_t godot_icall_GD_randi_range(int32_t from, int32_t to) {
 	return Math::random(from, to);
 }
 
@@ -298,7 +302,8 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randf", (void *)godot_icall_GD_randf);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randi", (void *)godot_icall_GD_randi);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randomize", (void *)godot_icall_GD_randomize);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_range", (void *)godot_icall_GD_rand_range);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_randf_range", (void *)godot_icall_GD_randf_range);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_randi_range", (void *)godot_icall_GD_randi_range);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_seed", (void *)godot_icall_GD_rand_seed);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_seed", (void *)godot_icall_GD_seed);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_str", (void *)godot_icall_GD_str);

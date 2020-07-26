@@ -181,3 +181,7 @@ double Math::random(double from, double to) {
 float Math::random(float from, float to) {
 	return default_rand.random(from, to);
 }
+
+int Math::random(int from, int to) {
+	return default_rand.random(from, to);
+}
