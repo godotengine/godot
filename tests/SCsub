@@ -3,7 +3,13 @@
 Import("env")
 
 env.tests_sources = []
-env.add_source_files(env.tests_sources, "*.cpp")
 
-lib = env.add_library("tests", env.tests_sources)
+env_tests = env.Clone()
+
+# Enable test framework and inform it of configuration method.
+env_tests.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT"])
+
+env_tests.add_source_files(env.tests_sources, "*.cpp")
+
+lib = env_tests.add_library("tests", env.tests_sources)
 env.Prepend(LIBS=[lib])
