@@ -28,7 +28,8 @@ def get_opts():
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         BoolVariable(
             "use_static_mvk",
-            "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables validation layers)",
+            "Link MoltenVK statically as Level-0 driver (better portability) or use Vulkan ICD loader (enables"
+            " validation layers)",
             False,
         ),
         EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),

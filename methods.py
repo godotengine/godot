@@ -549,15 +549,18 @@ def generate_vs_project(env, num_jobs):
         # in a backslash, so we need to remove this, lest it escape the
         # last double quote off, confusing MSBuild
         env["MSVSBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
+            " tools=!tools! -j"
             + str(num_jobs)
         )
         env["MSVSREBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
+            " tools=!tools! vsproj=yes -j"
             + str(num_jobs)
         )
         env["MSVSCLEANCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no"
+            " target=$(Configuration) tools=!tools! -j"
             + str(num_jobs)
         )
 

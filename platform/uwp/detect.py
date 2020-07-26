@@ -120,7 +120,9 @@ def configure(env):
             print("Compiled program architecture will be a x86 executable. (forcing bits=32).")
         else:
             print(
-                "Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
+                "Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings"
+                " (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture"
+                " this build is compiled for. You should check your settings/compilation setup."
             )
             env["bits"] = "32"
 
@@ -160,7 +162,10 @@ def configure(env):
     env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/x86/store/references"])
 
     env.Append(
-        CCFLAGS='/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'.split()
+        CCFLAGS=(
+            '/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX-'
+            " /Zc:forScope /Gd /EHsc /nologo".split()
+        )
     )
     env.Append(CPPDEFINES=["_UNICODE", "UNICODE", ("WINAPI_FAMILY", "WINAPI_FAMILY_APP")])
     env.Append(CXXFLAGS=["/ZW"])
