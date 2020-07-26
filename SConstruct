@@ -617,8 +617,9 @@ if selected_platform in platform_list:
     editor_module_list = ["regex"]
     if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
         print(
-            "Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), "
-            "only with 'tools=no' (export template)."
+            "Build option 'module_"
+            + x
+            + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template)."
         )
         Exit(255)
 

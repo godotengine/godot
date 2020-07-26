@@ -230,59 +230,76 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
     fd.write("\t_FORCE_INLINE_ int get_uniform(Uniforms p_uniform) const { return _get_uniform(p_uniform); }\n\n")
     if header_data.conditionals:
         fd.write(
-            "\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable)  {  _set_conditional(p_conditional,p_enable); }\n\n"
+            "\t_FORCE_INLINE_ void set_conditional(Conditionals p_conditional,bool p_enable) {"
+            " _set_conditional(p_conditional,p_enable); }\n\n"
         )
     fd.write("\t#ifdef DEBUG_ENABLED\n ")
     fd.write(
-        "\t#define _FU if (get_uniform(p_uniform)<0) return; if (!is_version_valid()) return; ERR_FAIL_COND( get_active()!=this ); \n\n "
+        "\t#define _FU if (get_uniform(p_uniform)<0) return; if (!is_version_valid()) return; ERR_FAIL_COND("
+        " get_active()!=this ); \n\n "
     )
     fd.write("\t#else\n ")
     fd.write("\t#define _FU if (get_uniform(p_uniform)<0) return; \n\n ")
     fd.write("\t#endif\n")
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_value) { _FU"
+        " glUniform1f(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU glUniform1f(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, double p_value) { _FU"
+        " glUniform1f(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint8_t p_value) { _FU"
+        " glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int8_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int8_t p_value) { _FU"
+        " glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint16_t p_value) { _FU"
+        " glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int16_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int16_t p_value) { _FU"
+        " glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, uint32_t p_value) { _FU"
+        " glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int32_t p_value) { _FU glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, int32_t p_value) { _FU"
+        " glUniform1i(get_uniform(p_uniform),p_value); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat"
+        " col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat"
+        " vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Size2i& p_vec2) { _FU GLint vec2[2]={p_vec2.x,p_vec2.y}; glUniform2iv(get_uniform(p_uniform),1,vec2); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Size2i& p_vec2) { _FU GLint"
+        " vec2[2]={p_vec2.x,p_vec2.y}; glUniform2iv(get_uniform(p_uniform),1,vec2); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat"
+        " vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b) { _FU glUniform2f(get_uniform(p_uniform),p_a,p_b); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b) { _FU"
+        " glUniform2f(get_uniform(p_uniform),p_a,p_b); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c) { _FU glUniform3f(get_uniform(p_uniform),p_a,p_b,p_c); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c) { _FU"
+        " glUniform3f(get_uniform(p_uniform),p_a,p_b,p_c); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c, float p_d) { _FU glUniform4f(get_uniform(p_uniform),p_a,p_b,p_c,p_d); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b, float p_c, float p_d) { _FU"
+        " glUniform4f(get_uniform(p_uniform),p_a,p_b,p_c,p_d); }\n\n"
     )
 
     fd.write(

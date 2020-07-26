@@ -128,7 +128,9 @@ def setup_msvc_manual(env):
         print("Compiled program architecture will be a 32 bit executable. (forcing bits=32).")
     else:
         print(
-            "Failed to manually detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup, or avoid setting VCINSTALLDIR."
+            "Failed to manually detect MSVC compiler architecture version... Defaulting to 32bit executable settings"
+            " (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this"
+            " build is compiled for. You should check your settings/compilation setup, or avoid setting VCINSTALLDIR."
         )
 
 

@@ -115,7 +115,8 @@ def configure(env):
     if env["android_arch"] == "x86_64":
         if get_platform(env["ndk_platform"]) < 21:
             print(
-                "WARNING: android_arch=x86_64 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21"
+                "WARNING: android_arch=x86_64 is not supported by ndk_platform lower than android-21; setting"
+                " ndk_platform=android-21"
             )
             env["ndk_platform"] = "android-21"
         env["ARCH"] = "arch-x86_64"
@@ -136,7 +137,8 @@ def configure(env):
     elif env["android_arch"] == "arm64v8":
         if get_platform(env["ndk_platform"]) < 21:
             print(
-                "WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21"
+                "WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than android-21; setting"
+                " ndk_platform=android-21"
             )
             env["ndk_platform"] = "android-21"
         env["ARCH"] = "arch-arm64"
@@ -231,7 +233,10 @@ def configure(env):
     env.Append(CPPDEFINES=[("__ANDROID_API__", str(get_platform(env["ndk_platform"])))])
 
     env.Append(
-        CCFLAGS="-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
+        CCFLAGS=(
+            "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden"
+            " -fno-strict-aliasing".split()
+        )
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
 
