@@ -49,6 +49,8 @@
 #include "test_string.h"
 #include "test_validate_testing.h"
 
+#include "modules/modules_tests.gen.h"
+
 #include "thirdparty/doctest/doctest.h"
 
 const char **tests_get_names() {
