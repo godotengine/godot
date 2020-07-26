@@ -1944,8 +1944,12 @@ void DisplayServerOSX::alert(const String &p_alert, const String &p_title) {
 	[window setInformativeText:ns_alert];
 	[window setAlertStyle:NSAlertStyleWarning];
 
+	id key_window = [[NSApplication sharedApplication] keyWindow];
 	[window runModal];
 	[window release];
+	if (key_window) {
+		[key_window makeKeyAndOrderFront:nil];
+	}
 }
 
 Error DisplayServerOSX::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
