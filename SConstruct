@@ -593,8 +593,6 @@ if selected_platform in platform_list:
         env.Append(CPPDEFINES=["PTRCALL_ENABLED"])
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
-    if env["tests"]:
-        env.Append(CPPDEFINES=["TESTS_ENABLED"])
     if env["disable_3d"]:
         if env["tools"]:
             print(
@@ -649,10 +647,6 @@ if selected_platform in platform_list:
                 )
             }
         )
-
-    # Enable test framework globally and inform it of configuration method.
-    if env["tests"]:
-        env.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT"])
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
