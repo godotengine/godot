@@ -14,6 +14,7 @@ iphone_lib = [
     "in_app_store.mm",
     "icloud.mm",
     "ios.mm",
+    "gl_view_gesture_recognizer.m",
 ]
 
 env_ios = env.Clone()
