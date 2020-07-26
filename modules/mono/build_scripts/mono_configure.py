@@ -125,7 +125,8 @@ def configure(env, env_mono):
 
     if not mono_prefix and (os.getenv("MONO32_PREFIX") or os.getenv("MONO64_PREFIX")):
         print(
-            "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead"
+            "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the"
+            " 'mono_prefix' SCons parameter instead"
         )
 
     # Although we don't support building with tools for any platform where we currently use static AOT,
