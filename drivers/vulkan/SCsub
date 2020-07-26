@@ -4,6 +4,7 @@ Import("env")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 
+# FIXME: Refactor all this to reduce code duplication.
 if env["platform"] == "android":
     # Use NDK Vulkan headers
     thirdparty_dir = env["ANDROID_NDK_ROOT"] + "/sources/third_party/vulkan/src"
@@ -99,4 +100,14 @@ elif env["builtin_vulkan"]:
 
     loader_sources = [thirdparty_dir + "/loader/" + file for file in loader_sources]
     env_thirdparty.add_source_files(env.drivers_sources, loader_sources)
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+else:  # Always build VMA.
+    thirdparty_dir = "#thirdparty/vulkan"
+    env.Prepend(CPPPATH=[thirdparty_dir])
+
+    # Build Vulkan loader library
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+    vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
+
     env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
