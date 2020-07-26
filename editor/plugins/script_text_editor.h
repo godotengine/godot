@@ -211,7 +211,7 @@ public:
 	virtual void clear_executing_line() override;
 
 	virtual void reload(bool p_soft) override;
-	virtual void get_breakpoints(List<int> *p_breakpoints) override;
+	virtual Array get_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;

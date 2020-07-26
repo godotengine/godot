@@ -171,7 +171,8 @@ void TextEditor::add_callback(const String &p_function, PackedStringArray p_args
 void TextEditor::set_debugger_active(bool p_active) {
 }
 
-void TextEditor::get_breakpoints(List<int> *p_breakpoints) {
+Array TextEditor::get_breakpoints() {
+	return Array();
 }
 
 void TextEditor::reload_text() {
@@ -207,7 +208,7 @@ void TextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = code_editor->get_text_editor()->get_bookmarks_array();
+	Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
