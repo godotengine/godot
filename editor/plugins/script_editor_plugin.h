@@ -151,7 +151,7 @@ public:
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
-	virtual void get_breakpoints(List<int> *p_breakpoints) = 0;
+	virtual Array get_breakpoints() = 0;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
