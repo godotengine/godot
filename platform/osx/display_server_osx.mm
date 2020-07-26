@@ -2793,7 +2793,9 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			// OrderOut prevents a lose focus bug with the window
-			[wd.window_object orderOut:nil];
+			if ([wd.window_object isVisible]) {
+				[wd.window_object orderOut:nil];
+			}
 			wd.borderless = p_enabled;
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
@@ -2807,7 +2809,13 @@ void DisplayServerOSX::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 				[wd.window_object setFrame:frameRect display:NO];
 			}
 			_update_window(wd);
-			[wd.window_object makeKeyAndOrderFront:nil];
+			if ([wd.window_object isVisible]) {
+				if (wd.no_focus) {
+					[wd.window_object orderFront:nil];
+				} else {
+					[wd.window_object makeKeyAndOrderFront:nil];
+				}
+			}
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			wd.on_top = p_enabled;
@@ -2875,7 +2883,11 @@ void DisplayServerOSX::window_move_to_foreground(WindowID p_window) {
 	const WindowData &wd = windows[p_window];
 
 	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-	[wd.window_object makeKeyAndOrderFront:nil];
+	if (wd.no_focus) {
+		[wd.window_object orderFront:nil];
+	} else {
+		[wd.window_object makeKeyAndOrderFront:nil];
+	}
 }
 
 bool DisplayServerOSX::window_can_draw(WindowID p_window) const {
