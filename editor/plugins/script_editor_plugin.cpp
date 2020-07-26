@@ -1585,15 +1585,14 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 			continue;
 		}
 
-		List<int> bpoints;
-		se->get_breakpoints(&bpoints);
 		String base = script->get_path();
 		if (base.begins_with("local://") || base == "") {
 			continue;
 		}
 
-		for (List<int>::Element *E = bpoints.front(); E; E = E->next()) {
-			p_breakpoints->push_back(base + ":" + itos(E->get() + 1));
+		Array bpoints = se->get_breakpoints();
+		for (int j = 0; j < bpoints.size(); j++) {
+			p_breakpoints->push_back(base + ":" + itos((int)bpoints[j] + 1));
 		}
 	}
 }
