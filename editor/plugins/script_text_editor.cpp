@@ -566,7 +566,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = code_editor->get_text_editor()->get_bookmarks_array();
+	Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
@@ -717,7 +717,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 
-	Array breakpoint_list = code_editor->get_text_editor()->get_breakpoints_array();
+	Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
 	if (breakpoint_list.size() == 0) {
 		return;
 	}
@@ -749,7 +749,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 }
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
-	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_set_as_breakpoint(p_row));
+	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
@@ -1177,24 +1177,22 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_TOGGLE_BREAKPOINT: {
 			int line = tx->cursor_get_line();
-			bool dobreak = !tx->is_line_set_as_breakpoint(line);
+			bool dobreak = !tx->is_line_breakpointed(line);
 			tx->set_line_as_breakpoint(line, dobreak);
 			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
-			List<int> bpoints;
-			tx->get_breakpoints(&bpoints);
+			Array bpoints = tx->get_breakpointed_lines();
 
-			for (List<int>::Element *E = bpoints.front(); E; E = E->next()) {
-				int line = E->get();
-				bool dobreak = !tx->is_line_set_as_breakpoint(line);
+			for (int i = 0; i < bpoints.size(); i++) {
+				int line = bpoints[i];
+				bool dobreak = !tx->is_line_breakpointed(line);
 				tx->set_line_as_breakpoint(line, dobreak);
 				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 			}
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
-			List<int> bpoints;
-			tx->get_breakpoints(&bpoints);
+			Array bpoints = tx->get_breakpointed_lines();
 			if (bpoints.size() <= 0) {
 				return;
 			}
@@ -1202,13 +1200,13 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			int line = tx->cursor_get_line();
 
 			// wrap around
-			if (line >= bpoints[bpoints.size() - 1]) {
+			if (line >= (int)bpoints[bpoints.size() - 1]) {
 				tx->unfold_line(bpoints[0]);
 				tx->cursor_set_line(bpoints[0]);
 				tx->center_viewport_to_cursor();
 			} else {
-				for (List<int>::Element *E = bpoints.front(); E; E = E->next()) {
-					int bline = E->get();
+				for (int i = 0; i < bpoints.size(); i++) {
+					int bline = bpoints[i];
 					if (bline > line) {
 						tx->unfold_line(bline);
 						tx->cursor_set_line(bline);
@@ -1220,21 +1218,20 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
-			List<int> bpoints;
-			tx->get_breakpoints(&bpoints);
+			Array bpoints = tx->get_breakpointed_lines();
 			if (bpoints.size() <= 0) {
 				return;
 			}
 
 			int line = tx->cursor_get_line();
 			// wrap around
-			if (line <= bpoints[0]) {
+			if (line <= (int)bpoints[0]) {
 				tx->unfold_line(bpoints[bpoints.size() - 1]);
 				tx->cursor_set_line(bpoints[bpoints.size() - 1]);
 				tx->center_viewport_to_cursor();
 			} else {
-				for (List<int>::Element *E = bpoints.back(); E; E = E->prev()) {
-					int bline = E->get();
+				for (int i = bpoints.size(); i >= 0; i--) {
+					int bline = bpoints[i];
 					if (bline < line) {
 						tx->unfold_line(bline);
 						tx->cursor_set_line(bline);
@@ -1342,8 +1339,8 @@ void ScriptTextEditor::reload(bool p_soft) {
 	scr->get_language()->reload_tool_script(scr, soft);
 }
 
-void ScriptTextEditor::get_breakpoints(List<int> *p_breakpoints) {
-	code_editor->get_text_editor()->get_breakpoints(p_breakpoints);
+Array ScriptTextEditor::get_breakpoints() {
+	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 
 void ScriptTextEditor::set_tooltip_request_func(String p_method, Object *p_obj) {

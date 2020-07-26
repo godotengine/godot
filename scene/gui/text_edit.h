@@ -81,8 +81,6 @@ private:
 
 			int width_cache : 24;
 			bool marked : 1;
-			bool breakpoint : 1;
-			bool bookmark : 1;
 			bool hidden : 1;
 			bool safe : 1;
 			bool has_info : 1;
@@ -93,8 +91,6 @@ private:
 			Line() {
 				width_cache = 0;
 				marked = false;
-				breakpoint = false;
-				bookmark = false;
 				hidden = false;
 				safe = false;
 				has_info = false;
@@ -121,10 +117,6 @@ private:
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
-		void set_bookmark(int p_line, bool p_bookmark) { text.write[p_line].bookmark = p_bookmark; }
-		bool is_bookmark(int p_line) const { return text[p_line].bookmark; }
-		void set_breakpoint(int p_line, bool p_breakpoint) { text.write[p_line].breakpoint = p_breakpoint; }
-		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
@@ -321,9 +313,6 @@ private:
 	bool line_length_guidelines;
 	int line_length_guideline_soft_col;
 	int line_length_guideline_hard_col;
-	bool draw_bookmark_gutter;
-	bool draw_breakpoint_gutter;
-	int breakpoint_gutter_width;
 	bool draw_fold_gutter;
 	int fold_gutter_width;
 	bool hiding_enabled;
@@ -383,10 +372,7 @@ private:
 
 	bool context_menu_enabled;
 	bool shortcut_keys_enabled;
-
 	bool virtual_keyboard_enabled = true;
-
-	int executing_line;
 
 	void _generate_context_menu();
 
@@ -484,7 +470,6 @@ protected:
 		Ref<Texture2D> can_fold_icon;
 		Ref<Texture2D> folded_icon;
 		Ref<Texture2D> folded_eol_icon;
-		Ref<Texture2D> executing_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
@@ -501,9 +486,6 @@ protected:
 		Color font_color_readonly;
 		Color selection_color;
 		Color mark_color;
-		Color bookmark_color;
-		Color breakpoint_color;
-		Color executing_line_color;
 		Color code_folding_color;
 		Color current_line_color;
 		Color line_length_guideline_color;
@@ -515,14 +497,12 @@ protected:
 
 		int row_height;
 		int line_spacing;
-		int breakpoint_gutter_width;
 		int fold_gutter_width;
 		int info_gutter_width;
 		int minimap_width;
 		Cache() {
 			row_height = 0;
 			line_spacing = 0;
-			breakpoint_gutter_width = 0;
 			fold_gutter_width = 0;
 			info_gutter_width = 0;
 			minimap_width = 0;
@@ -625,19 +605,8 @@ public:
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
 	void set_line_as_marked(int p_line, bool p_marked);
-	void set_line_as_bookmark(int p_line, bool p_bookmark);
-	bool is_line_set_as_bookmark(int p_line) const;
-	void get_bookmarks(List<int> *p_bookmarks) const;
-	Array get_bookmarks_array() const;
-	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
-	bool is_line_set_as_breakpoint(int p_line) const;
-	void set_executing_line(int p_line);
-	void clear_executing_line();
 	void set_line_as_safe(int p_line, bool p_safe);
 	bool is_line_set_as_safe(int p_line) const;
-	void get_breakpoints(List<int> *p_breakpoints) const;
-	Array get_breakpoints_array() const;
-	void remove_breakpoints();
 
 	void set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info = "");
 	void clear_info_icons();
@@ -787,15 +756,6 @@ public:
 	void set_show_line_length_guidelines(bool p_show);
 	void set_line_length_guideline_soft_column(int p_column);
 	void set_line_length_guideline_hard_column(int p_column);
-
-	void set_bookmark_gutter_enabled(bool p_draw);
-	bool is_bookmark_gutter_enabled() const;
-
-	void set_breakpoint_gutter_enabled(bool p_draw);
-	bool is_breakpoint_gutter_enabled() const;
-
-	void set_breakpoint_gutter_width(int p_gutter_width);
-	int get_breakpoint_gutter_width() const;
 
 	void set_draw_fold_gutter(bool p_draw);
 	bool is_drawing_fold_gutter() const;

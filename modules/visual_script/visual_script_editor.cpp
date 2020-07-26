@@ -2682,7 +2682,8 @@ void VisualScriptEditor::reload(bool p_soft) {
 	_update_graph();
 }
 
-void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
+Array VisualScriptEditor::get_breakpoints() {
+	Array breakpoints;
 	List<StringName> functions;
 	script->get_function_list(&functions);
 	for (List<StringName>::Element *E = functions.front(); E; E = E->next()) {
@@ -2691,10 +2692,11 @@ void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
 		for (List<int>::Element *F = nodes.front(); F; F = F->next()) {
 			Ref<VisualScriptNode> vsn = script->get_node(E->get(), F->get());
 			if (vsn->is_breakpoint()) {
-				p_breakpoints->push_back(F->get() - 1); //subtract 1 because breakpoints in text start from zero
+				breakpoints.push_back(F->get() - 1); //subtract 1 because breakpoints in text start from zero
 			}
 		}
 	}
+	return breakpoints;
 }
 
 void VisualScriptEditor::add_callback(const String &p_function, PackedStringArray p_args) {

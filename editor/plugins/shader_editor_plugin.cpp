@@ -379,7 +379,7 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_editor()->set_show_line_length_guidelines(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_length_guidelines"));
 	shader_editor->get_text_editor()->set_line_length_guideline_soft_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_soft_column"));
 	shader_editor->get_text_editor()->set_line_length_guideline_hard_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_hard_column"));
-	shader_editor->get_text_editor()->set_breakpoint_gutter_enabled(false);
+	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 }
 
 void ShaderEditor::_bind_methods() {
@@ -521,7 +521,7 @@ void ShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = shader_editor->get_text_editor()->get_bookmarks_array();
+	Array bookmark_list = shader_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}

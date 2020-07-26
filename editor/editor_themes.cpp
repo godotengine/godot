@@ -883,6 +883,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("space", "CodeEdit", theme->get_icon("GuiSpace", "EditorIcons"));
 	theme->set_icon("folded", "CodeEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("fold", "CodeEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
+	theme->set_icon("executing_line", "CodeEdit", theme->get_icon("MainPlay", "EditorIcons"));
 	theme->set_color("font_color", "CodeEdit", font_color);
 	theme->set_color("caret_color", "CodeEdit", font_color);
 	theme->set_color("selection_color", "CodeEdit", font_color_selection);
@@ -1192,7 +1193,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color bookmark_color = Color(0.08, 0.49, 0.98);
 	const Color breakpoint_color = error_color;
-	const Color executing_line_color = Color(0.2, 0.8, 0.2, 0.4);
+	const Color executing_line_color = Color(0.98, 0.89, 0.27);
 	const Color code_folding_color = alpha3;
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = Color(0.41, 0.61, 0.91, 0.38);

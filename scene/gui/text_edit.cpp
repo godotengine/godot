@@ -203,8 +203,6 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 	line.gutters.resize(gutter_count);
 	line.marked = false;
 	line.safe = false;
-	line.breakpoint = false;
-	line.bookmark = false;
 	line.hidden = false;
 	line.has_info = false;
 	line.width_cache = -1;
@@ -279,10 +277,6 @@ void TextEdit::_update_scrollbars() {
 
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
 	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
-
-	if (draw_breakpoint_gutter || draw_bookmark_gutter) {
-		total_width += cache.breakpoint_gutter_width;
-	}
 
 	if (draw_info_gutter) {
 		total_width += cache.info_gutter_width;
@@ -582,13 +576,6 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = false;
 			}
 
-			if (draw_breakpoint_gutter || draw_bookmark_gutter) {
-				breakpoint_gutter_width = (get_row_height() * 55) / 100;
-				cache.breakpoint_gutter_width = breakpoint_gutter_width;
-			} else {
-				cache.breakpoint_gutter_width = 0;
-			}
-
 			if (draw_info_gutter) {
 				info_gutter_width = (get_row_height());
 				cache.info_gutter_width = info_gutter_width;
@@ -612,7 +599,7 @@ void TextEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
-			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
+			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.fold_gutter_width + cache.info_gutter_width;
 
 			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
@@ -1107,41 +1094,11 @@ void TextEdit::_notification(int p_what) {
 							gutter_offset += gutter.width;
 						}
 
-						if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
-#ifdef TOOLS_ENABLED
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
-#else
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.breakpoint_color);
-#endif
-						}
-
-						// Draw bookmark marker.
-						if (text.is_bookmark(line)) {
-							if (draw_bookmark_gutter) {
-								int vertical_gap = (get_row_height() * 40) / 100;
-								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
-								int marker_radius = get_row_height() - (vertical_gap * 2);
-								RenderingServer::get_singleton()->canvas_item_add_circle(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + horizontal_gap - 2 + marker_radius / 2, ofs_y + vertical_gap + marker_radius / 2), marker_radius, Color(cache.bookmark_color.r, cache.bookmark_color.g, cache.bookmark_color.b));
-							}
-						}
-
-						// Draw breakpoint marker.
-						if (text.is_breakpoint(line)) {
-							if (draw_breakpoint_gutter) {
-								int vertical_gap = (get_row_height() * 40) / 100;
-								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
-								int marker_height = get_row_height() - (vertical_gap * 2);
-								int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2);
-								// No transparency on marker.
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + horizontal_gap - 2, ofs_y + vertical_gap, marker_width, marker_height), Color(cache.breakpoint_color.r, cache.breakpoint_color.g, cache.breakpoint_color.b));
-							}
-						}
-
 						// Draw info icons.
 						if (draw_info_gutter && text.has_info_icon(line)) {
 							int vertical_gap = (get_row_height() * 40) / 100;
 							int horizontal_gap = (cache.info_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width;
+							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width;
 
 							Ref<Texture2D> info_icon = text.get_info_icon(line);
 							// Ensure the icon fits the gutter size.
@@ -1162,28 +1119,10 @@ void TextEdit::_notification(int p_what) {
 							draw_texture_rect(info_icon, Rect2(icon_pos, icon_size));
 						}
 
-						// Draw execution marker.
-						if (executing_line == line) {
-							if (draw_breakpoint_gutter) {
-								int icon_extra_size = 4;
-								int vertical_gap = (get_row_height() * 40) / 100;
-								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
-								int marker_height = get_row_height() - (vertical_gap * 2) + icon_extra_size;
-								int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2) + icon_extra_size;
-								cache.executing_icon->draw_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + horizontal_gap - 2 - icon_extra_size / 2, ofs_y + vertical_gap - icon_extra_size / 2, marker_width, marker_height), false, Color(cache.executing_line_color.r, cache.executing_line_color.g, cache.executing_line_color.b));
-							} else {
-#ifdef TOOLS_ENABLED
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.executing_line_color);
-#else
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.executing_line_color);
-#endif
-							}
-						}
-
 						// Draw fold markers.
 						if (draw_fold_gutter) {
 							int horizontal_gap = (cache.fold_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.info_gutter_width;
+							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.info_gutter_width;
 							if (is_folded(line)) {
 								int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
 								int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
@@ -1869,12 +1808,6 @@ void TextEdit::backspace_at_cursor() {
 	if (is_line_hidden(cursor.line)) {
 		set_line_as_hidden(prev_line, true);
 	}
-	if (is_line_set_as_breakpoint(cursor.line)) {
-		if (!text.is_breakpoint(prev_line)) {
-			emit_signal("breakpoint_toggled", prev_line);
-		}
-		set_line_as_breakpoint(prev_line, true);
-	}
 
 	if (text.has_info_icon(cursor.line)) {
 		set_line_info_icon(prev_line, text.get_info_icon(cursor.line), text.get_info(cursor.line));
@@ -2067,7 +2000,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		row = text.size() - 1;
 		col = text[row].size();
 	} else {
-		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width);
+		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.fold_gutter_width + cache.info_gutter_width);
 		colx += cursor.x_ofs;
 		col = get_char_pos_for_line(colx, row, wrap_index);
 		if (is_wrap_enabled() && wrap_index < times_line_wraps(row)) {
@@ -2112,7 +2045,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 
 	// Calculate final pixel position
 	int y = (row - get_v_scroll_offset() + 1 /*Bottom of line*/) * get_row_height();
-	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
 		if (cache.font != nullptr) {
@@ -2261,20 +2194,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					left_margin += gutters[i].width;
 				}
 
-				// Toggle breakpoint on gutter click.
-				if (draw_breakpoint_gutter) {
-					int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width;
-					if (mb->get_position().x > gutter - 6 && mb->get_position().x <= gutter + cache.breakpoint_gutter_width - 3) {
-						set_line_as_breakpoint(row, !is_line_set_as_breakpoint(row));
-						emit_signal("breakpoint_toggled", row);
-						return;
-					}
-				}
-
 				// Emit info clicked.
 				if (draw_info_gutter && text.has_info_icon(row)) {
 					left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
-					int gutter_left = left_margin + gutters_width + cache.breakpoint_gutter_width;
+					int gutter_left = left_margin + gutters_width;
 					if (mb->get_position().x > gutter_left - 6 && mb->get_position().x <= gutter_left + cache.info_gutter_width - 3) {
 						emit_signal("info_clicked", row, text.get_info(row));
 						return;
@@ -2284,7 +2207,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// Toggle fold on gutter click if can.
 				if (draw_fold_gutter) {
 					left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
-					int gutter_left = left_margin + gutters_width + cache.breakpoint_gutter_width + cache.info_gutter_width;
+					int gutter_left = left_margin + gutters_width + cache.info_gutter_width;
 					if (mb->get_position().x > gutter_left - 6 && mb->get_position().x <= gutter_left + cache.fold_gutter_width - 3) {
 						if (is_folded(row)) {
 							unfold_line(row);
@@ -2298,7 +2221,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				// Unfold on folded icon click.
 				if (is_folded(row)) {
 					int line_width = text.get_line_width(row);
-					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.info_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
+					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.info_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
 					if (mb->get_position().x > line_width - 3 && mb->get_position().x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 						unfold_line(row);
 						return;
@@ -3858,30 +3781,15 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 
 	Vector<String> substrings = p_text.replace("\r", "").split("\n");
 
-	/* STEP 2: Fire breakpoint_toggled signals. */
-
 	// Is this just a new empty line?
 	bool shift_first_line = p_char == 0 && p_text.replace("\r", "") == "\n";
 
-	int i = p_line + !shift_first_line;
-	int lines = substrings.size() - 1;
-	for (; i < text.size(); i++) {
-		if (text.is_breakpoint(i)) {
-			if ((i - lines < p_line || !text.is_breakpoint(i - lines)) || (i - lines == p_line && !shift_first_line)) {
-				emit_signal("breakpoint_toggled", i);
-			}
-			if (i + lines >= text.size() || !text.is_breakpoint(i + lines)) {
-				emit_signal("breakpoint_toggled", i + lines);
-			}
-		}
-	}
-
-	/* STEP 3: Add spaces if the char is greater than the end of the line. */
+	/* STEP 2: Add spaces if the char is greater than the end of the line. */
 	while (p_char > text[p_line].length()) {
 		text.set(p_line, text[p_line] + String::chr(' '));
 	}
 
-	/* STEP 4: Separate dest string in pre and post text. */
+	/* STEP 3: Separate dest string in pre and post text. */
 
 	String preinsert_text = text[p_line].substr(0, p_char);
 	String postinsert_text = text[p_line].substr(p_char, text[p_line].size());
@@ -3902,13 +3810,11 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 
 	if (shift_first_line) {
 		text.move_gutters(p_line, p_line + 1);
-		text.set_breakpoint(p_line + 1, text.is_breakpoint(p_line));
 		text.set_hidden(p_line + 1, text.is_hidden(p_line));
 		if (text.has_info_icon(p_line)) {
 			text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
 		}
 
-		text.set_breakpoint(p_line, false);
 		text.set_hidden(p_line, false);
 		text.set_info_icon(p_line, nullptr, "");
 	}
@@ -3960,19 +3866,6 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 
 	String pre_text = text[p_from_line].substr(0, p_from_column);
 	String post_text = text[p_to_line].substr(p_to_column, text[p_to_line].length());
-
-	int lines = p_to_line - p_from_line;
-
-	for (int i = p_from_line + 1; i < text.size(); i++) {
-		if (text.is_breakpoint(i)) {
-			if (i + lines >= text.size() || !text.is_breakpoint(i + lines)) {
-				emit_signal("breakpoint_toggled", i);
-			}
-			if (i > p_to_line && (i - lines < 0 || !text.is_breakpoint(i - lines))) {
-				emit_signal("breakpoint_toggled", i - lines);
-			}
-		}
-	}
 
 	for (int i = p_from_line; i < p_to_line; i++) {
 		text.remove(p_from_line + 1);
@@ -4181,7 +4074,7 @@ int TextEdit::get_total_visible_rows() const {
 }
 
 void TextEdit::_update_wrap_at() {
-	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
+	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
 	update_cursor_wrap_offset();
 	text.clear_wrap_cache();
 
@@ -4216,7 +4109,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4251,7 +4144,7 @@ void TextEdit::center_viewport_to_cursor() {
 	}
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4698,7 +4591,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_POINTING_HAND;
 	}
 
-	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
+	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + cache.fold_gutter_width + cache.info_gutter_width;
 	if ((completion_active && completion_rect.has_point(p_pos))) {
 		return CURSOR_ARROW;
 	}
@@ -4722,14 +4615,9 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 
 		left_margin += gutters_width;
 
-		// Breakpoint icon.
-		if (draw_breakpoint_gutter && p_pos.x > left_margin - 6 && p_pos.x <= left_margin + cache.breakpoint_gutter_width - 3) {
-			return CURSOR_POINTING_HAND;
-		}
-
 		// Info icons.
-		int gutter_left = left_margin + cache.breakpoint_gutter_width + cache.info_gutter_width;
-		if (draw_info_gutter && p_pos.x > left_margin + cache.breakpoint_gutter_width - 6 && p_pos.x <= gutter_left - 3) {
+		int gutter_left = left_margin + cache.info_gutter_width;
+		if (draw_info_gutter && p_pos.x > left_margin - 6 && p_pos.x <= gutter_left - 3) {
 			if (text.has_info_icon(row)) {
 				return CURSOR_POINTING_HAND;
 			}
@@ -4757,7 +4645,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		// EOL fold icon.
 		if (is_folded(row)) {
 			int line_width = text.get_line_width(row);
-			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
+			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.fold_gutter_width + cache.info_gutter_width - cursor.x_ofs;
 			if (p_pos.x > line_width - 3 && p_pos.x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 				return CURSOR_POINTING_HAND;
 			}
@@ -4968,9 +4856,6 @@ void TextEdit::_update_caches() {
 	cache.mark_color = get_theme_color("mark_color");
 	cache.current_line_color = get_theme_color("current_line_color");
 	cache.line_length_guideline_color = get_theme_color("line_length_guideline_color");
-	cache.bookmark_color = get_theme_color("bookmark_color");
-	cache.breakpoint_color = get_theme_color("breakpoint_color");
-	cache.executing_line_color = get_theme_color("executing_line_color");
 	cache.code_folding_color = get_theme_color("code_folding_color");
 	cache.brace_mismatch_color = get_theme_color("brace_mismatch_color");
 	cache.word_highlighted_color = get_theme_color("word_highlighted_color");
@@ -4988,7 +4873,6 @@ void TextEdit::_update_caches() {
 	cache.folded_icon = get_theme_icon("folded");
 	cache.can_fold_icon = get_theme_icon("fold");
 	cache.folded_eol_icon = get_theme_icon("GuiEllipsis", "EditorIcons");
-	cache.executing_icon = get_theme_icon("MainPlay", "EditorIcons");
 	text.set_font(cache.font);
 	text.clear_width_cache();
 
@@ -5630,84 +5514,6 @@ void TextEdit::set_line_as_safe(int p_line, bool p_safe) {
 bool TextEdit::is_line_set_as_safe(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	return text.is_safe(p_line);
-}
-
-void TextEdit::set_executing_line(int p_line) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	executing_line = p_line;
-	update();
-}
-
-void TextEdit::clear_executing_line() {
-	executing_line = -1;
-	update();
-}
-
-bool TextEdit::is_line_set_as_bookmark(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	return text.is_bookmark(p_line);
-}
-
-void TextEdit::set_line_as_bookmark(int p_line, bool p_bookmark) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_bookmark(p_line, p_bookmark);
-	update();
-}
-
-void TextEdit::get_bookmarks(List<int> *p_bookmarks) const {
-	for (int i = 0; i < text.size(); i++) {
-		if (text.is_bookmark(i)) {
-			p_bookmarks->push_back(i);
-		}
-	}
-}
-
-Array TextEdit::get_bookmarks_array() const {
-	Array arr;
-	for (int i = 0; i < text.size(); i++) {
-		if (text.is_bookmark(i)) {
-			arr.append(i);
-		}
-	}
-	return arr;
-}
-
-bool TextEdit::is_line_set_as_breakpoint(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	return text.is_breakpoint(p_line);
-}
-
-void TextEdit::set_line_as_breakpoint(int p_line, bool p_breakpoint) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_breakpoint(p_line, p_breakpoint);
-	update();
-}
-
-void TextEdit::get_breakpoints(List<int> *p_breakpoints) const {
-	for (int i = 0; i < text.size(); i++) {
-		if (text.is_breakpoint(i)) {
-			p_breakpoints->push_back(i);
-		}
-	}
-}
-
-Array TextEdit::get_breakpoints_array() const {
-	Array arr;
-	for (int i = 0; i < text.size(); i++) {
-		if (text.is_breakpoint(i)) {
-			arr.append(i);
-		}
-	}
-	return arr;
-}
-
-void TextEdit::remove_breakpoints() {
-	for (int i = 0; i < text.size(); i++) {
-		if (text.is_breakpoint(i)) {
-			/* Should "breakpoint_toggled" be fired when breakpoints are removed this way? */
-			text.set_breakpoint(i, false);
-		}
-	}
 }
 
 void TextEdit::set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
@@ -6797,33 +6603,6 @@ void TextEdit::set_line_length_guideline_hard_column(int p_column) {
 	update();
 }
 
-void TextEdit::set_bookmark_gutter_enabled(bool p_draw) {
-	draw_bookmark_gutter = p_draw;
-	update();
-}
-
-bool TextEdit::is_bookmark_gutter_enabled() const {
-	return draw_bookmark_gutter;
-}
-
-void TextEdit::set_breakpoint_gutter_enabled(bool p_draw) {
-	draw_breakpoint_gutter = p_draw;
-	update();
-}
-
-bool TextEdit::is_breakpoint_gutter_enabled() const {
-	return draw_breakpoint_gutter;
-}
-
-void TextEdit::set_breakpoint_gutter_width(int p_gutter_width) {
-	breakpoint_gutter_width = p_gutter_width;
-	update();
-}
-
-int TextEdit::get_breakpoint_gutter_width() const {
-	return cache.breakpoint_gutter_width;
-}
-
 void TextEdit::set_draw_fold_gutter(bool p_draw) {
 	draw_fold_gutter = p_draw;
 	update();
@@ -7070,8 +6849,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_drawing_tabs"), &TextEdit::is_drawing_tabs);
 	ClassDB::bind_method(D_METHOD("set_draw_spaces"), &TextEdit::set_draw_spaces);
 	ClassDB::bind_method(D_METHOD("is_drawing_spaces"), &TextEdit::is_drawing_spaces);
-	ClassDB::bind_method(D_METHOD("set_breakpoint_gutter_enabled", "enable"), &TextEdit::set_breakpoint_gutter_enabled);
-	ClassDB::bind_method(D_METHOD("is_breakpoint_gutter_enabled"), &TextEdit::is_breakpoint_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter"), &TextEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &TextEdit::is_drawing_fold_gutter);
 
@@ -7145,9 +6922,6 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
-	ClassDB::bind_method(D_METHOD("get_breakpoints"), &TextEdit::get_breakpoints_array);
-	ClassDB::bind_method(D_METHOD("remove_breakpoints"), &TextEdit::remove_breakpoints);
-
 	ClassDB::bind_method(D_METHOD("draw_minimap", "draw"), &TextEdit::set_draw_minimap);
 	ClassDB::bind_method(D_METHOD("is_drawing_minimap"), &TextEdit::is_drawing_minimap);
 	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
@@ -7158,7 +6932,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "breakpoint_gutter"), "set_breakpoint_gutter_enabled", "is_breakpoint_gutter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
@@ -7192,7 +6965,6 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
 	ADD_SIGNAL(MethodInfo("gutter_added"));
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
-	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "row")));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("info_clicked", PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::STRING, "info")));
 	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
@@ -7227,8 +6999,6 @@ TextEdit::TextEdit() {
 	_update_caches();
 	cache.row_height = 1;
 	cache.line_spacing = 1;
-	cache.breakpoint_gutter_width = 0;
-	breakpoint_gutter_width = 0;
 	cache.fold_gutter_width = 0;
 	fold_gutter_width = 0;
 	info_gutter_width = 0;
@@ -7299,8 +7069,6 @@ TextEdit::TextEdit() {
 	line_length_guidelines = false;
 	line_length_guideline_soft_col = 80;
 	line_length_guideline_hard_col = 100;
-	draw_bookmark_gutter = false;
-	draw_breakpoint_gutter = false;
 	draw_fold_gutter = false;
 	draw_info_gutter = false;
 	hiding_enabled = false;
@@ -7340,8 +7108,6 @@ TextEdit::TextEdit() {
 	set_readonly(false);
 	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
 	first_draw = true;
-
-	executing_line = -1;
 }
 
 TextEdit::~TextEdit() {
