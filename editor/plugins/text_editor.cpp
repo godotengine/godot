@@ -34,22 +34,27 @@
 #include "editor/editor_node.h"
 
 void TextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
+	ERR_FAIL_COND(p_highlighter.is_null());
+
 	highlighters[p_highlighter->_get_name()] = p_highlighter;
 	highlighter_menu->add_radio_check_item(p_highlighter->_get_name());
 }
 
 void TextEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
+	ERR_FAIL_COND(p_highlighter.is_null());
+
+	Map<String, Ref<EditorSyntaxHighlighter>>::Element *el = highlighters.front();
+	while (el != nullptr) {
+		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key());
+		highlighter_menu->set_item_checked(highlighter_index, el->value() == p_highlighter);
+		el = el->next();
+	}
+
 	TextEdit *te = code_editor->get_text_edit();
 	te->set_syntax_highlighter(p_highlighter);
-	highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->_get_name()), true);
 }
 
 void TextEditor::_change_syntax_highlighter(int p_idx) {
-	Map<String, Ref<EditorSyntaxHighlighter>>::Element *el = highlighters.front();
-	while (el != nullptr) {
-		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
-		el = el->next();
-	}
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
 }
 
@@ -126,7 +131,7 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
+	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
 }
 
 RES TextEditor::get_edited_resource() const {
@@ -134,7 +139,8 @@ RES TextEditor::get_edited_resource() const {
 }
 
 void TextEditor::set_edited_resource(const RES &p_res) {
-	ERR_FAIL_COND(!text_file.is_null());
+	ERR_FAIL_COND(text_file.is_valid());
+	ERR_FAIL_COND(p_res.is_null());
 
 	text_file = p_res;
 
@@ -144,6 +150,16 @@ void TextEditor::set_edited_resource(const RES &p_res) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+}
+
+void TextEditor::enable_editor() {
+	if (editor_enabled) {
+		return;
+	}
+
+	editor_enabled = true;
+
+	_load_theme_settings();
 }
 
 void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
@@ -237,6 +253,8 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 			_change_syntax_highlighter(idx);
 		}
 	}
+
+	ensure_focus();
 }
 
 void TextEditor::trim_trailing_whitespace() {
@@ -301,14 +319,6 @@ Control *TextEditor::get_edit_menu() {
 
 void TextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
-}
-
-void TextEditor::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_READY:
-			_load_theme_settings();
-			break;
-	}
 }
 
 void TextEditor::_edit_option(int p_op) {
