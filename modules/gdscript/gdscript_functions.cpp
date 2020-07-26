@@ -83,7 +83,8 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"randomize",
 		"randi",
 		"randf",
-		"rand_range",
+		"randf_range",
+		"randi_range",
 		"seed",
 		"rand_seed",
 		"deg2rad",
@@ -419,7 +420,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			Math::randomize();
 			r_ret = Variant();
 		} break;
-		case MATH_RAND: {
+		case MATH_RANDI: {
 			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::rand();
 		} break;
@@ -427,11 +428,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::randf();
 		} break;
-		case MATH_RANDOM: {
+		case MATH_RANDF_RANGE: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			r_ret = Math::random((double)*p_args[0], (double)*p_args[1]);
+		} break;
+		case MATH_RANDI_RANGE: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::random((int)*p_args[0], (int)*p_args[1]);
 		} break;
 		case MATH_SEED: {
 			VALIDATE_ARG_COUNT(1);
@@ -1655,7 +1662,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
-		case MATH_RAND: {
+		case MATH_RANDI: {
 			MethodInfo mi("randi");
 			mi.return_val.type = Variant::INT;
 			return mi;
@@ -1665,9 +1672,14 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::FLOAT;
 			return mi;
 		} break;
-		case MATH_RANDOM: {
-			MethodInfo mi("rand_range", PropertyInfo(Variant::FLOAT, "from"), PropertyInfo(Variant::FLOAT, "to"));
+		case MATH_RANDF_RANGE: {
+			MethodInfo mi("randf_range", PropertyInfo(Variant::FLOAT, "from"), PropertyInfo(Variant::FLOAT, "to"));
 			mi.return_val.type = Variant::FLOAT;
+			return mi;
+		} break;
+		case MATH_RANDI_RANGE: {
+			MethodInfo mi("randi_range", PropertyInfo(Variant::INT, "from"), PropertyInfo(Variant::INT, "to"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_SEED: {

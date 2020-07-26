@@ -43,7 +43,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ void set_seed(uint64_t seed) { randbase.seed(seed); }
+	_FORCE_INLINE_ void set_seed(uint64_t p_seed) { randbase.seed(p_seed); }
 
 	_FORCE_INLINE_ uint64_t get_seed() { return randbase.get_seed(); }
 
@@ -53,24 +53,11 @@ public:
 
 	_FORCE_INLINE_ real_t randf() { return randbase.randf(); }
 
-	_FORCE_INLINE_ real_t randf_range(real_t from, real_t to) { return randbase.random(from, to); }
+	_FORCE_INLINE_ real_t randf_range(real_t p_from, real_t p_to) { return randbase.random(p_from, p_to); }
 
-	_FORCE_INLINE_ real_t randfn(real_t mean = 0.0, real_t deviation = 1.0) { return randbase.randfn(mean, deviation); }
+	_FORCE_INLINE_ real_t randfn(real_t p_mean = 0.0, real_t p_deviation = 1.0) { return randbase.randfn(p_mean, p_deviation); }
 
-	_FORCE_INLINE_ int randi_range(int from, int to) {
-		int range;
-		int min;
-		if (to > from) {
-			range = to - from + 1;
-			min = from;
-		} else if (to < from) {
-			range = from - to + 1;
-			min = to;
-		} else { // from == to
-			return from;
-		}
-		return randbase.rand(range) + min;
-	}
+	_FORCE_INLINE_ int randi_range(int p_from, int p_to) { return randbase.random(p_from, p_to); }
 
 	RandomNumberGenerator() {}
 };
