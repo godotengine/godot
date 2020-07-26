@@ -996,8 +996,12 @@
 			</return>
 			<argument index="0" name="existing_text" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="multiline" type="bool" default="false">
+			</argument>
 			<description>
-				Shows the virtual keyboard if the platform has one. The [code]existing_text[/code] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				Shows the virtual keyboard if the platform has one.
+				The [code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				The [code]multiline[/code] parameter needs to be set to [code]true[/code] to be able to enter multiple lines of text, as in [TextEdit].
 				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>

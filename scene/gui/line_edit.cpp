@@ -129,9 +129,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
 				if (selection.enabled) {
-					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, selection.begin, selection.end);
 				} else {
-					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, cursor_pos);
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, cursor_pos);
 				}
 			}
 		}
@@ -326,6 +326,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
 						OS::get_singleton()->hide_virtual_keyboard();
 
+					return;
 				} break;
 
 				case KEY_BACKSPACE: {
@@ -932,9 +933,9 @@ void LineEdit::_notification(int p_what) {
 
 			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
 				if (selection.enabled) {
-					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, selection.begin, selection.end);
 				} else {
-					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, cursor_pos);
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, cursor_pos);
 				}
 			}
 		} break;

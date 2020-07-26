@@ -123,7 +123,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			public void run() {
 				for (int i = 0; i < count; ++i) {
 					int key = newChars[i];
-					if (key == '\n') {
+					if ((key == '\n') && !mEdit.isMultiline()) {
 						// Return keys are handled through action events
 						continue;
 					}
@@ -151,7 +151,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			});
 		}
 
-		if (pActionID == EditorInfo.IME_NULL) {
+		if (pActionID == EditorInfo.IME_ACTION_DONE) {
 			// Enter key has been pressed
 			GodotLib.key(KeyEvent.KEYCODE_ENTER, 0, true);
 			GodotLib.key(KeyEvent.KEYCODE_ENTER, 0, false);
