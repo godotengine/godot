@@ -342,6 +342,16 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		return result;
 	}
 
+	if (first == "Object") {
+		result.kind = GDScriptParser::DataType::NATIVE;
+		result.native_type = "Object";
+		if (p_type->type_chain.size() > 1) {
+			push_error(R"("Object" type don't contain nested types.)", p_type->type_chain[1]);
+			return GDScriptParser::DataType();
+		}
+		return result;
+	}
+
 	if (GDScriptParser::get_builtin_type(first) < Variant::VARIANT_MAX) {
 		// Built-in types.
 		if (p_type->type_chain.size() > 1) {
