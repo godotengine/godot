@@ -74,7 +74,7 @@ def _build_gdnative_api_struct_header(api):
 
         ret_val += [
             "typedef struct godot_gdnative_core_"
-            + ("{0}_{1}".format(core["version"]["major"], core["version"]["minor"]))
+            + "{0}_{1}".format(core["version"]["major"], core["version"]["minor"])
             + "_api_struct {",
             "\tunsigned int type;",
             "\tgodot_gdnative_api_version version;",
@@ -185,7 +185,7 @@ def _build_gdnative_api_struct_source(api):
 
         ret_val += [
             "extern const godot_gdnative_core_"
-            + ("{0}_{1}_api_struct api_{0}_{1}".format(core["version"]["major"], core["version"]["minor"]))
+            + "{0}_{1}_api_struct api_{0}_{1}".format(core["version"]["major"], core["version"]["minor"])
             + " = {",
             "\tGDNATIVE_" + core["type"] + ",",
             "\t{" + str(core["version"]["major"]) + ", " + str(core["version"]["minor"]) + "},",
