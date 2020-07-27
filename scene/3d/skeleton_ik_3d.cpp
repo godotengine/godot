@@ -511,6 +511,11 @@ bool SkeletonIK3D::is_running() {
 void SkeletonIK3D::start(bool p_one_time) {
 	if (p_one_time) {
 		set_process_internal(false);
+
+		if (target_node_override) {
+			reload_goal();
+		}
+
 		_solve_chain();
 	} else {
 		set_process_internal(true);
