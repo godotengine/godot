@@ -20,9 +20,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false">
-			If [code]true[/code], horizontal scrolling is enabled. An horizontal scroll bar will display at the bottom of the inspector.
-		</member>
+		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false" />
 	</members>
 	<signals>
 		<signal name="object_id_selected">
