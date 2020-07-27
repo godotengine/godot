@@ -33,15 +33,15 @@
 #include "core/print_string.h"
 #include "servers/rendering_server.h"
 
-static bool _is_text_char(CharType c) {
+static bool _is_text_char(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
-static bool _is_number(CharType c) {
+static bool _is_number(char32_t c) {
 	return (c >= '0' && c <= '9');
 }
 
-static bool _is_hex(CharType c) {
+static bool _is_hex(char32_t c) {
 	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
@@ -334,7 +334,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 };
 
 ShaderLanguage::Token ShaderLanguage::_get_token() {
-#define GETCHAR(m_idx) (((char_idx + m_idx) < code.length()) ? code[char_idx + m_idx] : CharType(0))
+#define GETCHAR(m_idx) (((char_idx + m_idx) < code.length()) ? code[char_idx + m_idx] : char32_t(0))
 
 	while (true) {
 		char_idx++;
@@ -582,11 +582,11 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							break;
 						}
 
-						str += CharType(GETCHAR(i));
+						str += char32_t(GETCHAR(i));
 						i++;
 					}
 
-					CharType last_char = str[str.length() - 1];
+					char32_t last_char = str[str.length() - 1];
 
 					if (hexa_found) {
 						//integer(hex)
@@ -663,7 +663,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					String str;
 
 					while (_is_text_char(GETCHAR(0))) {
-						str += CharType(GETCHAR(0));
+						str += char32_t(GETCHAR(0));
 						char_idx++;
 					}
 
@@ -3869,7 +3869,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							break;
 						}
 
-						const CharType *c = ident.ptr();
+						const char32_t *c = ident.ptr();
 						for (int i = 0; i < l; i++) {
 							switch (c[i]) {
 								case 'r':
@@ -3933,7 +3933,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							break;
 						}
 
-						const CharType *c = ident.ptr();
+						const char32_t *c = ident.ptr();
 						for (int i = 0; i < l; i++) {
 							switch (c[i]) {
 								case 'r':
@@ -4000,7 +4000,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							break;
 						}
 
-						const CharType *c = ident.ptr();
+						const char32_t *c = ident.ptr();
 						for (int i = 0; i < l; i++) {
 							switch (c[i]) {
 								case 'r':
@@ -7039,7 +7039,7 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 static int _get_first_ident_pos(const String &p_code) {
 	int idx = 0;
 
-#define GETCHAR(m_idx) (((idx + m_idx) < p_code.length()) ? p_code[idx + m_idx] : CharType(0))
+#define GETCHAR(m_idx) (((idx + m_idx) < p_code.length()) ? p_code[idx + m_idx] : char32_t(0))
 
 	while (true) {
 		if (GETCHAR(0) == '/' && GETCHAR(1) == '/') {
@@ -7300,7 +7300,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 
 						if (j == completion_argument) {
-							calltip += CharType(0xFFFF);
+							calltip += char32_t(0xFFFF);
 						}
 
 						if (shader->functions[i].function->arguments[j].is_const) {
@@ -7320,7 +7320,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						calltip += shader->functions[i].function->arguments[j].name;
 
 						if (j == completion_argument) {
-							calltip += CharType(0xFFFF);
+							calltip += char32_t(0xFFFF);
 						}
 					}
 
@@ -7383,7 +7383,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 
 						if (i == completion_argument) {
-							calltip += CharType(0xFFFF);
+							calltip += char32_t(0xFFFF);
 						}
 
 						if (out_arg >= 0 && i == out_arg) {
@@ -7393,7 +7393,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						calltip += get_datatype_name(builtin_func_defs[idx].args[i]);
 
 						if (i == completion_argument) {
-							calltip += CharType(0xFFFF);
+							calltip += char32_t(0xFFFF);
 						}
 
 						found_arg = true;

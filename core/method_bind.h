@@ -181,18 +181,18 @@ VARIANT_ENUM_CAST(Variant::Type);
 VARIANT_ENUM_CAST(Variant::Operator);
 
 template <>
-struct VariantCaster<wchar_t> {
-	static _FORCE_INLINE_ wchar_t cast(const Variant &p_variant) {
-		return (wchar_t)p_variant.operator int();
+struct VariantCaster<char32_t> {
+	static _FORCE_INLINE_ char32_t cast(const Variant &p_variant) {
+		return (char32_t)p_variant.operator int();
 	}
 };
 #ifdef PTRCALL_ENABLED
 template <>
-struct PtrToArg<wchar_t> {
-	_FORCE_INLINE_ static wchar_t convert(const void *p_ptr) {
-		return wchar_t(*reinterpret_cast<const int *>(p_ptr));
+struct PtrToArg<char32_t> {
+	_FORCE_INLINE_ static char32_t convert(const void *p_ptr) {
+		return char32_t(*reinterpret_cast<const int *>(p_ptr));
 	}
-	_FORCE_INLINE_ static void encode(wchar_t p_val, const void *p_ptr) {
+	_FORCE_INLINE_ static void encode(char32_t p_val, const void *p_ptr) {
 		*(int *)p_ptr = p_val;
 	}
 };

@@ -86,7 +86,7 @@ String iOS::get_rate_url(int p_app_id) const {
 	// ios7 for everything?
 	ret = templ_iOS7.replace("APP_ID", String::num(p_app_id));
 
-	printf("returning rate url %ls\n", ret.c_str());
+	printf("returning rate url %s\n", ret.utf8().get_data());
 	return ret;
 };
 

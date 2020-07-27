@@ -187,7 +187,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 	while (true) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
 
-		CharType cchar = GET_CHAR();
+		char32_t cchar = GET_CHAR();
 		if (cchar == 0) {
 			r_token.type = TK_EOF;
 			return OK;
@@ -329,7 +329,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 			case '"': {
 				String str;
 				while (true) {
-					CharType ch = GET_CHAR();
+					char32_t ch = GET_CHAR();
 
 					if (ch == 0) {
 						_set_error("Unterminated String");
@@ -340,13 +340,13 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					} else if (ch == '\\') {
 						//escaped characters...
 
-						CharType next = GET_CHAR();
+						char32_t next = GET_CHAR();
 						if (next == 0) {
 							_set_error("Unterminated String");
 							r_token.type = TK_ERROR;
 							return ERR_PARSE_ERROR;
 						}
-						CharType res = 0;
+						char32_t res = 0;
 
 						switch (next) {
 							case 'b':
@@ -367,7 +367,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 							case 'u': {
 								// hex number
 								for (int j = 0; j < 4; j++) {
-									CharType c = GET_CHAR();
+									char32_t c = GET_CHAR();
 
 									if (c == 0) {
 										_set_error("Unterminated String");
@@ -379,7 +379,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									CharType v;
+									char32_t v;
 									if (c >= '0' && c <= '9') {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
@@ -431,7 +431,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 #define READING_DONE 4
 					int reading = READING_INT;
 
-					CharType c = cchar;
+					char32_t c = cchar;
 					bool exp_sign = false;
 					bool exp_beg = false;
 					bool is_float = false;

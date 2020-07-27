@@ -596,7 +596,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 
 		} break;
 		case TEXT_CHAR: {
-			CharType result[2] = { *p_inputs[0], 0 };
+			char32_t result[2] = { *p_inputs[0], 0 };
 
 			*r_return = String(result);
 
@@ -739,7 +739,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 
 ////////
 
-static bool _is_number(CharType c) {
+static bool _is_number(char32_t c) {
 	return (c >= '0' && c <= '9');
 }
 
@@ -747,7 +747,7 @@ Error Expression::_get_token(Token &r_token) {
 	while (true) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
 
-		CharType cchar = GET_CHAR();
+		char32_t cchar = GET_CHAR();
 
 		switch (cchar) {
 			case 0: {
@@ -900,7 +900,7 @@ Error Expression::_get_token(Token &r_token) {
 			case '"': {
 				String str;
 				while (true) {
-					CharType ch = GET_CHAR();
+					char32_t ch = GET_CHAR();
 
 					if (ch == 0) {
 						_set_error("Unterminated String");
@@ -912,13 +912,13 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (ch == '\\') {
 						//escaped characters...
 
-						CharType next = GET_CHAR();
+						char32_t next = GET_CHAR();
 						if (next == 0) {
 							_set_error("Unterminated String");
 							r_token.type = TK_ERROR;
 							return ERR_PARSE_ERROR;
 						}
-						CharType res = 0;
+						char32_t res = 0;
 
 						switch (next) {
 							case 'b':
@@ -939,7 +939,7 @@ Error Expression::_get_token(Token &r_token) {
 							case 'u': {
 								// hex number
 								for (int j = 0; j < 4; j++) {
-									CharType c = GET_CHAR();
+									char32_t c = GET_CHAR();
 
 									if (c == 0) {
 										_set_error("Unterminated String");
@@ -951,7 +951,7 @@ Error Expression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									CharType v;
+									char32_t v;
 									if (_is_number(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
@@ -992,7 +992,7 @@ Error Expression::_get_token(Token &r_token) {
 					break;
 				}
 
-				CharType next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
+				char32_t next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
 				if (_is_number(cchar) || (cchar == '.' && _is_number(next_char))) {
 					//a number
 
@@ -1004,7 +1004,7 @@ Error Expression::_get_token(Token &r_token) {
 #define READING_DONE 4
 					int reading = READING_INT;
 
-					CharType c = cchar;
+					char32_t c = cchar;
 					bool exp_sign = false;
 					bool exp_beg = false;
 					bool is_float = false;

@@ -148,7 +148,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 }
 
 bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset = 0) {
-	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
+	//printf("opening zip pack %s, %i, %i\n", p_name.utf8().get_data(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
 	// load with offset feature only supported for PCK files
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
 
@@ -201,7 +201,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this, p_replace_files);
-		//printf("packed data add path %ls, %ls\n", p_name.c_str(), fname.c_str());
+		//printf("packed data add path %s, %s\n", p_name.utf8().get_data(), fname.utf8().get_data());
 
 		if ((i + 1) < gi.number_entry) {
 			unzGoToNextFile(zfile);

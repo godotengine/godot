@@ -234,7 +234,7 @@ double FileAccess::get_double() const {
 String FileAccess::get_token() const {
 	CharString token;
 
-	CharType c = get_8();
+	char32_t c = get_8();
 
 	while (!eof_reached()) {
 		if (c <= ' ') {
@@ -299,7 +299,7 @@ public:
 String FileAccess::get_line() const {
 	CharBuffer line;
 
-	CharType c = get_8();
+	char32_t c = get_8();
 
 	while (!eof_reached()) {
 		if (c == '\n' || c == '\0') {
@@ -342,8 +342,8 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	bool in_quote = false;
 	String current;
 	for (int i = 0; i < l.length(); i++) {
-		CharType c = l[i];
-		CharType s[2] = { 0, 0 };
+		char32_t c = l[i];
+		char32_t s[2] = { 0, 0 };
 
 		if (!in_quote && c == p_delim[0]) {
 			strings.push_back(current);
