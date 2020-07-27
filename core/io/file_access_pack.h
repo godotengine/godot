@@ -118,6 +118,9 @@ public:
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
 
+	_FORCE_INLINE_ DirAccess *try_open_directory(const String &p_path);
+	_FORCE_INLINE_ bool has_directory(const String &p_path);
+
 	PackedData();
 	~PackedData();
 };
@@ -197,6 +200,17 @@ bool PackedData::has_path(const String &p_path) {
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
+bool PackedData::has_directory(const String &p_path) {
+
+	DirAccess *da = try_open_directory(p_path);
+	if (da) {
+		memdelete(da);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 class DirAccessPack : public DirAccess {
 
 	PackedData::PackedDir *current;
@@ -204,6 +218,8 @@ class DirAccessPack : public DirAccess {
 	List<String> list_dirs;
 	List<String> list_files;
 	bool cdir;
+
+	PackedData::PackedDir *_find_dir(String p_dir);
 
 public:
 	virtual Error list_dir_begin();
@@ -233,5 +249,15 @@ public:
 	DirAccessPack();
 	~DirAccessPack();
 };
+
+DirAccess *PackedData::try_open_directory(const String &p_path) {
+
+	DirAccess *da = memnew(DirAccessPack());
+	if (da->change_dir(p_path) != OK) {
+		memdelete(da);
+		da = NULL;
+	}
+	return da;
+}
 
 #endif // FILE_ACCESS_PACK_H
