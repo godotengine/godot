@@ -51,7 +51,7 @@ FileAccess *FileAccess::create(AccessType p_access) {
 }
 
 bool FileAccess::exists(const String &p_name) {
-	if (PackedData::get_singleton() && PackedData::get_singleton()->has_path(p_name)) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_name)) {
 		return true;
 	}
 
@@ -456,7 +456,7 @@ void FileAccess::store_double(double p_dest) {
 }
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file)) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return 0;
 	}
 
@@ -469,7 +469,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 }
 
 uint32_t FileAccess::get_unix_permissions(const String &p_file) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file)) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return 0;
 	}
 
@@ -482,6 +482,10 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 }
 
 Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
 	FileAccess *fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
 
