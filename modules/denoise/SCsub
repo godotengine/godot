@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import resource_to_cpp
-from platform_methods import run_in_subprocess
 
 Import("env")
 Import("env_modules")
