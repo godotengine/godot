@@ -382,8 +382,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("tab", "TextEdit", make_icon(tab_png));
 	theme->set_icon("space", "TextEdit", make_icon(space_png));
-	theme->set_icon("folded", "TextEdit", make_icon(arrow_right_png));
-	theme->set_icon("fold", "TextEdit", make_icon(arrow_down_png));
 
 	theme->set_font("font", "TextEdit", Ref<Font>());
 
@@ -422,8 +420,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("breakpoint", "CodeEdit", make_icon(graph_port_png));
 	theme->set_icon("bookmark", "CodeEdit", make_icon(bookmark_png));
 	theme->set_icon("executing_line", "CodeEdit", make_icon(arrow_right_png));
+	theme->set_icon("can_fold", "CodeEdit", make_icon(arrow_down_png));
 	theme->set_icon("folded", "CodeEdit", make_icon(arrow_right_png));
-	theme->set_icon("fold", "CodeEdit", make_icon(arrow_down_png));
+
 	theme->set_font("font", "CodeEdit", Ref<Font>());
 
 	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
