@@ -56,6 +56,8 @@ class DisplayServerJavaScript : public DisplayServer {
 	int last_width = 0;
 	int last_height = 0;
 
+	bool swap_cancel_ok = false;
+
 	// utilities
 	static Point2 compute_position_in_canvas(int p_x, int p_y);
 	static void focus_canvas();
@@ -195,6 +197,7 @@ public:
 	virtual void set_icon(const Ref<Image> &p_icon);
 
 	// others
+	virtual bool get_swap_cancel_ok();
 	virtual void swap_buffers();
 
 	static void register_javascript_driver();
