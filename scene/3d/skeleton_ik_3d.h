@@ -52,7 +52,6 @@ class FabrikInverseKinematic {
 
 		// Bone info
 		BoneId bone = -1;
-		PhysicalBone3D *pb = nullptr;
 
 		real_t length = 0.0;
 		/// Positions relative to root bone
@@ -106,8 +105,6 @@ public:
 private:
 	/// Init a chain that starts from the root to tip
 	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
-
-	static void update_chain(const Skeleton3D *p_sk, ChainItem *p_chain_item);
 
 	static void solve_simple(Task *p_task, bool p_solve_magnet);
 	/// Special solvers that solve only chains with one end effector
