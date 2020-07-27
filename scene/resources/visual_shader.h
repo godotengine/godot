@@ -182,6 +182,7 @@ class VisualShaderNode : public Resource {
 	int port_preview;
 
 	Map<int, Variant> default_input_values;
+	Map<int, bool> connected_input_ports;
 	Map<int, bool> connected_output_ports;
 
 protected:
@@ -225,6 +226,9 @@ public:
 
 	bool is_output_port_connected(int p_port) const;
 	void set_output_port_connected(int p_port, bool p_connected);
+	bool is_input_port_connected(int p_port) const;
+	void set_input_port_connected(int p_port, bool p_connected);
+	virtual bool is_generate_input_var(int p_port) const;
 
 	virtual bool is_code_generated() const;
 
