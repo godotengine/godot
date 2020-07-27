@@ -762,7 +762,7 @@ StreamTexture2D::~StreamTexture2D() {
 	}
 }
 
-RES ResourceFormatLoaderStreamTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderStreamTexture2D::_load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 	Ref<StreamTexture2D> st;
 	st.instance();
 	Error err = st->load(p_path);
@@ -2215,7 +2215,7 @@ StreamTextureLayered::~StreamTextureLayered() {
 
 /////////////////////////////////////////////////
 
-RES ResourceFormatLoaderStreamTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+RES ResourceFormatLoaderStreamTextureLayered::_load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 	Ref<StreamTextureLayered> st;
 	if (p_path.get_extension().to_lower() == "stexarray") {
 		Ref<StreamTexture2DArray> s;

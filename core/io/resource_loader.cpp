@@ -31,6 +31,7 @@
 #include "resource_loader.h"
 
 #include "core/io/resource_importer.h"
+#include "core/message_queue.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -114,6 +115,13 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 }
 
 RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+	MessageQueue::get_singleton()->set_current_thread_accumulation_enabled(true);
+	RES result = _load(p_path, p_original_path, r_error, p_use_sub_threads, r_progress, p_no_cache);
+	MessageQueue::get_singleton()->set_current_thread_accumulation_enabled(false);
+	return result;
+}
+
+RES ResourceFormatLoader::_load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 	if (get_script_instance() && get_script_instance()->has_method("load")) {
 		Variant res = get_script_instance()->call("load", p_path, p_original_path, p_use_sub_threads);
 

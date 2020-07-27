@@ -531,8 +531,10 @@ public:
 };
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
+protected:
+	virtual RES _load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) override;
+
 public:
-	RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false) override;
 	void get_recognized_extensions(List<String> *p_extensions) const override;
 	bool handles_type(const String &p_type) const override;
 	String get_resource_type(const String &p_path) const override;
