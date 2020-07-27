@@ -654,6 +654,17 @@
 				Returns the string's amount of characters.
 			</description>
 		</method>
+		<method name="lpad">
+			<return type="String">
+			</return>
+			<argument index="0" name="min_length" type="int">
+			</argument>
+			<argument index="1" name="character" type="String" default="&quot; &quot;">
+			</argument>
+			<description>
+				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the left of the string.
+			</description>
+		</method>
 		<method name="lstrip">
 			<return type="String">
 			</return>
@@ -693,6 +704,15 @@
 			</return>
 			<description>
 				Returns the MD5 hash of the string as a string.
+			</description>
+		</method>
+		<method name="naturalnocasecmp_to">
+			<return type="int">
+			</return>
+			<argument index="0" name="to" type="String">
+			</argument>
+			<description>
+				Performs a case-insensitive natural order comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
 			</description>
 		</method>
 		<method name="nocasecmp_to">
@@ -814,6 +834,17 @@
 			</argument>
 			<description>
 				Returns the right side of the string from a given position.
+			</description>
+		</method>
+		<method name="rpad">
+			<return type="String">
+			</return>
+			<argument index="0" name="min_length" type="int">
+			</argument>
+			<argument index="1" name="character" type="String" default="&quot; &quot;">
+			</argument>
+			<description>
+				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the right of the string.
 			</description>
 		</method>
 		<method name="rsplit">
@@ -953,7 +984,7 @@
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
+				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
 			</description>
 		</method>
 		<method name="to_float">
@@ -984,11 +1015,25 @@
 				Returns the string converted to uppercase.
 			</description>
 		</method>
+		<method name="to_utf16">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Converts the String (which is an array of characters) to UTF-16 encoded [PackedByteArray] (which is an array of bytes).
+			</description>
+		</method>
+		<method name="to_utf32">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Converts the String (which is an array of characters) to UTF-32 encoded [PackedByteArray] (which is an array of bytes).
+			</description>
+		</method>
 		<method name="to_utf8">
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
+				Converts the String (which is an array of characters) to UTF-8 encode [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="trim_prefix">

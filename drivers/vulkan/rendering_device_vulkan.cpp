@@ -3643,7 +3643,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 					//print_line("DEBUG: SAMPLER: texel buffer");
 				} else {
 					if (r_error) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported buffer type.";
+						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' is of unsupported buffer type.";
 					}
 					return false;
 				}
@@ -3666,7 +3666,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 			} else {
 				//print_line("DEBUG: sampler unknown");
 				if (r_error) {
-					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported sampler type.";
+					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' is of unsupported sampler type.";
 				}
 				return false;
 			}
@@ -3691,7 +3691,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 				if (reflection.getType()->getQualifier().layoutPushConstant) {
 					uint32_t len = reflection.size;
 					if (push_constant.push_constant_size != 0 && push_constant.push_constant_size != len) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' push constants for different stages should all be the same size.";
+						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' push constants for different stages should all be the same size.";
 						return false;
 					}
 					push_constant.push_constant_size = len;
@@ -3707,7 +3707,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 				//print_line("DEBUG: Storage buffer");
 			} else {
 				if (r_error) {
-					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' is of unsupported block type: (" + itos(reflection.getType()->getQualifier().storage) + ").";
+					*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' is of unsupported block type: (" + itos(reflection.getType()->getQualifier().storage) + ").";
 				}
 				return false;
 			}
@@ -3736,7 +3736,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 			}
 
 			if (r_error) {
-				*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' unsupported uniform type.";
+				*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' unsupported uniform type.";
 			}
 			return false;
 		}
@@ -3744,7 +3744,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 	if (!reflection.getType()->getQualifier().hasBinding()) {
 		if (r_error) {
-			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' lacks a binding number.";
+			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' lacks a binding number.";
 		}
 		return false;
 	}
@@ -3753,14 +3753,14 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 	if (set >= MAX_UNIFORM_SETS) {
 		if (r_error) {
-			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").";
+			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").";
 		}
 		return false;
 	}
 
 	if (set >= limits.maxBoundDescriptorSets) {
 		if (r_error) {
-			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' uses a set (" + itos(set) + ") index larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").";
+			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' uses a set (" + itos(set) + ") index larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").";
 		}
 		return false;
 	}
@@ -3774,7 +3774,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 				//already exists, verify that it's the same type
 				if (bindings[set][i].descriptorType != layout_binding.descriptorType) {
 					if (r_error) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(binding) + " with different uniform type.";
+						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(binding) + " with different uniform type.";
 					}
 					return false;
 				}
@@ -3782,7 +3782,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 				//also, verify that it's the same size
 				if (bindings[set][i].descriptorCount != layout_binding.descriptorCount || uniform_infos[set][i].length != info.length) {
 					if (r_error) {
-						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(binding) + " with different uniform size.";
+						*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(binding) + " with different uniform size.";
 					}
 					return false;
 				}

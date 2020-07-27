@@ -714,7 +714,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 	const String &signalname = signal;
 	String midname = selectedNode->get_name();
 	for (int i = 0; i < midname.length(); i++) { //TODO: Regex filter may be cleaner.
-		CharType c = midname[i];
+		char32_t c = midname[i];
 		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
 			if (c == ' ') {
 				// Replace spaces with underlines.

@@ -59,7 +59,7 @@ public:
 	bool visibility;
 	Point2 offset;
 	Color color;
-	CharType character;
+	char32_t character;
 	float elapsed_time;
 	Dictionary environment;
 
@@ -79,7 +79,7 @@ public:
 	Color get_color() { return color; }
 	void set_color(Color p_color) { color = p_color; }
 	int get_character() { return (int)character; }
-	void set_character(int p_char) { character = (CharType)p_char; }
+	void set_character(int p_char) { character = (char32_t)p_char; }
 	Dictionary get_environment() { return environment; }
 	void set_environment(Dictionary p_environment) { environment = p_environment; }
 };

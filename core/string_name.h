@@ -122,7 +122,7 @@ public:
 	}
 
 	static StringName search(const char *p_name);
-	static StringName search(const CharType *p_name);
+	static StringName search(const char32_t *p_name);
 	static StringName search(const String &p_name);
 
 	struct AlphCompare {

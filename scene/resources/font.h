@@ -49,7 +49,7 @@ public:
 	virtual float get_underline_position() const = 0;
 	virtual float get_underline_thickness() const = 0;
 
-	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const = 0;
+	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0) const = 0;
 	Size2 get_string_size(const String &p_string) const;
 	Size2 get_wordwrap_string_size(const String &p_string, float p_width) const;
 
@@ -59,7 +59,7 @@ public:
 	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
 
 	virtual bool has_outline() const { return false; }
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
 
 	void update_changes();
 	Font();
@@ -74,8 +74,8 @@ class FontDrawer {
 	struct PendingDraw {
 		RID canvas_item;
 		Point2 pos;
-		CharType chr;
-		CharType next;
+		char32_t chr;
+		char32_t next;
 		Color modulate;
 	};
 
@@ -88,7 +88,7 @@ public:
 		has_outline = p_font->has_outline();
 	}
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
 		if (has_outline) {
 			PendingDraw draw = { p_canvas_item, p_pos, p_char, p_next, p_modulate };
 			pending_draws.push_back(draw);
@@ -137,7 +137,7 @@ public:
 	};
 
 private:
-	HashMap<CharType, Character> char_map;
+	HashMap<char32_t, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
 
 	float height;
@@ -169,20 +169,20 @@ public:
 	float get_underline_thickness() const override;
 
 	void add_texture(const Ref<Texture2D> &p_texture);
-	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
+	void add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
 
 	int get_character_count() const;
-	Vector<CharType> get_char_keys() const;
-	Character get_character(CharType p_char) const;
+	Vector<char32_t> get_char_keys() const;
+	Character get_character(char32_t p_char) const;
 
 	int get_texture_count() const;
 	Ref<Texture2D> get_texture(int p_idx) const;
 
-	void add_kerning_pair(CharType p_A, CharType p_B, int p_kerning);
-	int get_kerning_pair(CharType p_A, CharType p_B) const;
+	void add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning);
+	int get_kerning_pair(char32_t p_A, char32_t p_B) const;
 	Vector<KerningPairKey> get_kerning_pair_keys() const;
 
-	Size2 get_char_size(CharType p_char, CharType p_next = 0) const override;
+	Size2 get_char_size(char32_t p_char, char32_t p_next = 0) const override;
 
 	void set_fallback(const Ref<BitmapFont> &p_fallback);
 	Ref<BitmapFont> get_fallback() const;
@@ -192,7 +192,7 @@ public:
 	void set_distance_field_hint(bool p_distance_field);
 	bool is_distance_field_hint() const override;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const override;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const override;
 
 	BitmapFont();
 	~BitmapFont();
