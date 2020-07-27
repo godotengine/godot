@@ -1236,7 +1236,10 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			img.instance();
 			img->create(1, 1, 0, Image::FORMAT_RGB8);
 		} else if (c3d < c2d) {
-			img = scene_root->get_texture()->get_data();
+			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
+			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
+				img = viewport_texture->get_data();
+			}
 		} else {
 			// The 3D editor may be disabled as a feature, but scenes can still be opened.
 			// This check prevents the preview from regenerating in case those scenes are then saved.
@@ -1246,8 +1249,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			}
 		}
 
-		if (img.is_valid()) {
-
+		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
 			img = img->duplicate();
 
 			save.step(TTR("Creating Thumbnail"), 2);
