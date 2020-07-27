@@ -829,6 +829,19 @@ DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_dr
 }
 
 DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	r_error = OK; // Always succeeds for now.
+
+	/* clang-format off */
+	swap_cancel_ok = EM_ASM_INT({
+		const win = (['Windows', 'Win64', 'Win32', 'WinCE']);
+		const plat = navigator.platform || "";
+		if (win.indexOf(plat) !== -1) {
+			return 1;
+		}
+		return 0;
+	}) == 1;
+	/* clang-format on */
+
 	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 #if 0
 	EmscriptenWebGLContextAttributes attributes;
@@ -1179,6 +1192,10 @@ void DisplayServerJavaScript::process_events() {
 
 int DisplayServerJavaScript::get_current_video_driver() const {
 	return 1;
+}
+
+bool DisplayServerJavaScript::get_swap_cancel_ok() {
+	return swap_cancel_ok;
 }
 
 void DisplayServerJavaScript::swap_buffers() {
