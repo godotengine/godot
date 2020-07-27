@@ -4,6 +4,11 @@ import glob
 import subprocess
 from collections import OrderedDict
 
+# We need to define our own `Action` method to control the verbosity of output
+# and whenever we need to run those commands in a subprocess on some platforms.
+from SCons.Script import Action
+from platform_methods import run_in_subprocess
+
 
 def add_source_files(self, sources, files, warn_duplicates=True):
     # Convert string to list of absolute paths (including expanding wildcard)
@@ -619,6 +624,14 @@ def CommandNoCache(env, target, sources, command, **args):
     result = env.Command(target, sources, command, **args)
     env.NoCache(result)
     return result
+
+
+def Run(env, function, short_message, subprocess=True):
+    output_print = short_message if not env["verbose"] else ""
+    if not subprocess:
+        return Action(function, output_print)
+    else:
+        return Action(run_in_subprocess(function), output_print)
 
 
 def detect_darwin_sdk_path(platform, env):

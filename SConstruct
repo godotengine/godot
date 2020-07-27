@@ -84,6 +84,7 @@ env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
 env_base.__class__.CommandNoCache = methods.CommandNoCache
+env_base.__class__.Run = methods.Run
 env_base.__class__.disable_warnings = methods.disable_warnings
 env_base.__class__.module_check_dependencies = methods.module_check_dependencies
 
@@ -627,27 +628,24 @@ if selected_platform in platform_list:
         methods.no_verbose(sys, env)
 
     if not env["platform"] == "server":
-        env.Append(
-            BUILDERS={
-                "GLES2_GLSL": env.Builder(
-                    action=run_in_subprocess(gles_builders.build_gles2_headers), suffix="glsl.gen.h", src_suffix=".glsl"
-                )
-            }
-        )
-        env.Append(
-            BUILDERS={
-                "RD_GLSL": env.Builder(
-                    action=run_in_subprocess(gles_builders.build_rd_headers), suffix="glsl.gen.h", src_suffix=".glsl"
-                )
-            }
-        )
-        env.Append(
-            BUILDERS={
-                "GLSL_HEADER": env.Builder(
-                    action=run_in_subprocess(gles_builders.build_raw_headers), suffix="glsl.gen.h", src_suffix=".glsl"
-                )
-            }
-        )
+        GLSL_BUILDERS = {
+            "GLES2_GLSL": env.Builder(
+                action=env.Run(gles_builders.build_gles2_headers, 'Building GLES2_GLSL header: "$TARGET"'),
+                suffix="glsl.gen.h",
+                src_suffix=".glsl",
+            ),
+            "RD_GLSL": env.Builder(
+                action=env.Run(gles_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+                suffix="glsl.gen.h",
+                src_suffix=".glsl",
+            ),
+            "GLSL_HEADER": env.Builder(
+                action=env.Run(gles_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+                suffix="glsl.gen.h",
+                src_suffix=".glsl",
+            ),
+        }
+        env.Append(BUILDERS=GLSL_BUILDERS)
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
