@@ -10,6 +10,14 @@
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="default_value" type="Vector3" setter="set_default_value" getter="get_default_value" default="Vector3( 0, 0, 0 )">
+			A default value to be assigned within the shader.
+		</member>
+		<member name="default_value_enabled" type="bool" setter="set_default_value_enabled" getter="is_default_value_enabled" default="false">
+			Enables usage of the [member default_value].
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
