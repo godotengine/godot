@@ -74,6 +74,21 @@ void VisualShaderNode::set_output_port_connected(int p_port, bool p_connected) {
 	connected_output_ports[p_port] = p_connected;
 }
 
+bool VisualShaderNode::is_input_port_connected(int p_port) const {
+	if (connected_input_ports.has(p_port)) {
+		return connected_input_ports[p_port];
+	}
+	return false;
+}
+
+void VisualShaderNode::set_input_port_connected(int p_port, bool p_connected) {
+	connected_input_ports[p_port] = p_connected;
+}
+
+bool VisualShaderNode::is_generate_input_var(int p_port) const {
+	return true;
+}
+
 bool VisualShaderNode::is_code_generated() const {
 	return true;
 }
@@ -444,6 +459,7 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 			g->connections.erase(E);
 			if (E->get().from_node == p_id) {
 				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
+				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
 			}
 		}
 		E = N;
@@ -542,6 +558,7 @@ void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from
 	g->connections.push_back(c);
 	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
 	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
+	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
 
 	_queue_update();
 }
@@ -574,6 +591,7 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	g->connections.push_back(c);
 	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
 	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
+	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
 
 	_queue_update();
 	return OK;
@@ -588,6 +606,7 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 			g->connections.erase(E);
 			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
 			g->nodes[p_from_node].node->set_output_port_connected(p_from_port, false);
+			g->nodes[p_to_node].node->set_input_port_connected(p_to_port, false);
 			_queue_update();
 			return;
 		}
@@ -1210,6 +1229,10 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = "int(" + src_var + ")";
 			}
 		} else {
+			if (!vsnode->is_generate_input_var(i)) {
+				continue;
+			}
+
 			Variant defval = vsnode->get_input_port_default_value(i);
 			if (defval.get_type() == Variant::FLOAT) {
 				float val = defval;
