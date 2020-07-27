@@ -851,7 +851,7 @@ Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty)
 			end = len;
 		}
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_double(&c_str()[from]));
+			ret.push_back(String::to_float(&c_str()[from]));
 		}
 
 		if (end == len) {
@@ -880,7 +880,7 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 		}
 
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_double(&c_str()[from]));
+			ret.push_back(String::to_float(&c_str()[from]));
 		}
 
 		if (end == len) {
@@ -2006,7 +2006,7 @@ done:
 #define READING_EXP 3
 #define READING_DONE 4
 
-double String::to_double(const char *p_str) {
+double String::to_float(const char *p_str) {
 #ifndef NO_USE_STDLIB
 	return built_in_strtod<char>(p_str);
 //return atof(p_str); DOES NOT WORK ON ANDROID(??)
@@ -2015,11 +2015,7 @@ double String::to_double(const char *p_str) {
 #endif
 }
 
-float String::to_float() const {
-	return to_double();
-}
-
-double String::to_double(const CharType *p_str, const CharType **r_end) {
+double String::to_float(const CharType *p_str, const CharType **r_end) {
 	return built_in_strtod<CharType>(p_str, (CharType **)r_end);
 }
 
@@ -2087,7 +2083,7 @@ int64_t String::to_int(const CharType *p_str, int p_len, bool p_clamp) {
 	return sign * integer;
 }
 
-double String::to_double() const {
+double String::to_float() const {
 	if (empty()) {
 		return 0;
 	}

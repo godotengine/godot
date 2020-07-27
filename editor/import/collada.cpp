@@ -262,7 +262,7 @@ void Collada::_parse_asset(XMLParser &parser) {
 
 				COLLADA_PRINT("up axis: " + parser.get_node_data());
 			} else if (name == "unit") {
-				state.unit_scale = parser.get_attribute_value("meter").to_double();
+				state.unit_scale = parser.get_attribute_value("meter").to_float();
 				COLLADA_PRINT("unit scale: " + rtos(state.unit_scale));
 			}
 
@@ -433,7 +433,7 @@ Transform Collada::_read_transform(XMLParser &parser) {
 	Vector<float> farr;
 	farr.resize(16);
 	for (int i = 0; i < 16; i++) {
-		farr.write[i] = array[i].to_double();
+		farr.write[i] = array[i].to_float();
 	}
 
 	return _read_transform_from_array(farr);
@@ -469,7 +469,7 @@ Variant Collada::_parse_param(XMLParser &parser) {
 			if (parser.get_node_name() == "float") {
 				parser.read();
 				if (parser.get_node_type() == XMLParser::NODE_TEXT) {
-					data = parser.get_node_data().to_double();
+					data = parser.get_node_data().to_float();
 				}
 			} else if (parser.get_node_name() == "float2") {
 				Vector<float> v2 = _read_float_array(parser);
@@ -735,29 +735,29 @@ void Collada::_parse_camera(XMLParser &parser) {
 				camera.mode = CameraData::MODE_ORTHOGONAL;
 			} else if (name == "xfov") {
 				parser.read();
-				camera.perspective.x_fov = parser.get_node_data().to_double();
+				camera.perspective.x_fov = parser.get_node_data().to_float();
 
 			} else if (name == "yfov") {
 				parser.read();
-				camera.perspective.y_fov = parser.get_node_data().to_double();
+				camera.perspective.y_fov = parser.get_node_data().to_float();
 			} else if (name == "xmag") {
 				parser.read();
-				camera.orthogonal.x_mag = parser.get_node_data().to_double();
+				camera.orthogonal.x_mag = parser.get_node_data().to_float();
 
 			} else if (name == "ymag") {
 				parser.read();
-				camera.orthogonal.y_mag = parser.get_node_data().to_double();
+				camera.orthogonal.y_mag = parser.get_node_data().to_float();
 			} else if (name == "aspect_ratio") {
 				parser.read();
-				camera.aspect = parser.get_node_data().to_double();
+				camera.aspect = parser.get_node_data().to_float();
 
 			} else if (name == "znear") {
 				parser.read();
-				camera.z_near = parser.get_node_data().to_double();
+				camera.z_near = parser.get_node_data().to_float();
 
 			} else if (name == "zfar") {
 				parser.read();
-				camera.z_far = parser.get_node_data().to_double();
+				camera.z_far = parser.get_node_data().to_float();
 			}
 
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "camera") {
@@ -806,20 +806,20 @@ void Collada::_parse_light(XMLParser &parser) {
 
 			} else if (name == "constant_attenuation") {
 				parser.read();
-				light.constant_att = parser.get_node_data().to_double();
+				light.constant_att = parser.get_node_data().to_float();
 			} else if (name == "linear_attenuation") {
 				parser.read();
-				light.linear_att = parser.get_node_data().to_double();
+				light.linear_att = parser.get_node_data().to_float();
 			} else if (name == "quadratic_attenuation") {
 				parser.read();
-				light.quad_att = parser.get_node_data().to_double();
+				light.quad_att = parser.get_node_data().to_float();
 			} else if (name == "falloff_angle") {
 				parser.read();
-				light.spot_angle = parser.get_node_data().to_double();
+				light.spot_angle = parser.get_node_data().to_float();
 
 			} else if (name == "falloff_exponent") {
 				parser.read();
-				light.spot_exp = parser.get_node_data().to_double();
+				light.spot_exp = parser.get_node_data().to_float();
 			}
 
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "light") {
@@ -1877,10 +1877,10 @@ void Collada::_parse_animation_clip(XMLParser &parser) {
 		clip.name = parser.get_attribute_value("id");
 	}
 	if (parser.has_attribute("start")) {
-		clip.begin = parser.get_attribute_value("start").to_double();
+		clip.begin = parser.get_attribute_value("start").to_float();
 	}
 	if (parser.has_attribute("end")) {
-		clip.end = parser.get_attribute_value("end").to_double();
+		clip.end = parser.get_attribute_value("end").to_float();
 	}
 
 	while (parser.read() == OK) {
