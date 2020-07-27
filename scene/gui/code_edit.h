@@ -71,6 +71,14 @@ private:
 	Color line_number_color = Color(1, 1, 1);
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
+	/* Fold Gutter */
+	int fold_gutter = -1;
+	bool draw_fold_gutter = false;
+	Color folding_color = Color(1, 1, 1);
+	Ref<Texture2D> can_fold_icon = Ref<Texture2D>();
+	Ref<Texture2D> folded_icon = Ref<Texture2D>();
+	void _fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
+
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _lines_edited_from(int p_from_line, int p_to_line);
 
@@ -115,6 +123,10 @@ public:
 	bool is_draw_line_numbers_enabled() const;
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 	bool is_line_numbers_zero_padded() const;
+
+	/* Fold gutter */
+	void set_draw_fold_gutter(bool p_draw);
+	bool is_drawing_fold_gutter() const;
 
 	CodeEdit();
 	~CodeEdit();

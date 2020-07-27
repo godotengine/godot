@@ -36,6 +36,7 @@ void CodeEdit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_gutter_width(main_gutter, cache.row_height);
 			set_gutter_width(line_number_gutter, (line_number_digits + 1) * cache.font->get_char_size('0').width);
+			set_gutter_width(fold_gutter, cache.row_height / 1.2);
 
 			breakpoint_color = get_theme_color("breakpoint_color");
 			breakpoint_icon = get_theme_icon("breakpoint");
@@ -47,6 +48,10 @@ void CodeEdit::_notification(int p_what) {
 			executing_line_icon = get_theme_icon("executing_line");
 
 			line_number_color = get_theme_color("line_number_color");
+
+			folding_color = get_theme_color("code_folding_color");
+			can_fold_icon = get_theme_icon("can_fold");
+			folded_icon = get_theme_icon("folded");
 		} break;
 		case NOTIFICATION_DRAW: {
 		} break;
@@ -232,6 +237,35 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	cache.font->draw(get_canvas_item(), Point2(region.position.x, yofs + cache.font->get_ascent()), fc, line_number_color);
 }
 
+/* Fold Gutter */
+void CodeEdit::set_draw_fold_gutter(bool p_draw) {
+	set_gutter_draw(fold_gutter, p_draw);
+}
+
+bool CodeEdit::is_drawing_fold_gutter() const {
+	return is_gutter_drawn(fold_gutter);
+}
+
+void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region) {
+	if (!can_fold(p_line) && !is_folded(p_line)) {
+		set_line_gutter_clickable(p_line, fold_gutter, false);
+		return;
+	}
+	set_line_gutter_clickable(p_line, fold_gutter, true);
+
+	int horizontal_padding = p_region.size.x / 10;
+	int vertical_padding = p_region.size.y / 6;
+
+	p_region.position += Point2(horizontal_padding, vertical_padding);
+	p_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
+
+	if (can_fold(p_line)) {
+		can_fold_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
+		return;
+	}
+	folded_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
+}
+
 void CodeEdit::_bind_methods() {
 	/* Main Gutter */
 	ClassDB::bind_method(D_METHOD("_main_gutter_draw_callback"), &CodeEdit::_main_gutter_draw_callback);
@@ -271,6 +305,12 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_line_numbers_zero_padded", "enable"), &CodeEdit::set_line_numbers_zero_padded);
 	ClassDB::bind_method(D_METHOD("is_line_numbers_zero_padded"), &CodeEdit::is_line_numbers_zero_padded);
 
+	/* Fold Gutter */
+	ClassDB::bind_method(D_METHOD("_fold_gutter_draw_callback"), &CodeEdit::_fold_gutter_draw_callback);
+
+	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
+	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &CodeEdit::is_drawing_fold_gutter);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
@@ -295,6 +335,15 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 
 	if (p_gutter == line_number_gutter) {
 		cursor_set_line(p_line);
+		return;
+	}
+
+	if (p_gutter == fold_gutter) {
+		if (is_folded(p_line)) {
+			unfold_line(p_line);
+		} else if (can_fold(p_line)) {
+			fold_line(p_line);
+		}
 		return;
 	}
 }
@@ -342,6 +391,11 @@ void CodeEdit::_update_gutter_indexes() {
 			line_number_gutter = i;
 			continue;
 		}
+
+		if (get_gutter_name(i) == "fold_gutter") {
+			fold_gutter = i;
+			continue;
+		}
 	}
 }
 
@@ -364,6 +418,14 @@ CodeEdit::CodeEdit() {
 	set_gutter_draw(gutter_idx, false);
 	set_gutter_type(gutter_idx, GUTTER_TPYE_CUSTOM);
 	set_gutter_custom_draw(gutter_idx, this, "_line_number_draw_callback");
+	gutter_idx++;
+
+	/* Fold Gutter */
+	add_gutter();
+	set_gutter_name(gutter_idx, "fold_gutter");
+	set_gutter_draw(gutter_idx, false);
+	set_gutter_type(gutter_idx, GUTTER_TPYE_CUSTOM);
+	set_gutter_custom_draw(gutter_idx, this, "_fold_gutter_draw_callback");
 	gutter_idx++;
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
