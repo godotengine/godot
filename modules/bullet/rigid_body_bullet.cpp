@@ -51,9 +51,7 @@
 BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = nullptr;
 
 Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {
-	Vector3 gVec;
-	B_TO_G(body->btBody->getGravity(), gVec);
-	return gVec;
+	return body->total_gravity;
 }
 
 float BulletPhysicsDirectBodyState3D::get_total_angular_damp() const {
@@ -183,7 +181,7 @@ int BulletPhysicsDirectBodyState3D::get_contact_collider_shape(int p_contact_idx
 }
 
 Vector3 BulletPhysicsDirectBodyState3D::get_contact_collider_velocity_at_position(int p_contact_idx) const {
-	RigidBodyBullet::CollisionData &colDat = body->collisions.write[p_contact_idx];
+	RigidBodyBullet::CollisionData &colDat = body->collisions[p_contact_idx];
 
 	btVector3 hitLocation;
 	G_TO_B(colDat.hitLocalLocation, hitLocation);
@@ -213,7 +211,7 @@ void RigidBodyBullet::KinematicUtilities::setSafeMargin(btScalar p_margin) {
 }
 
 void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
-	const Vector<CollisionObjectBullet::ShapeWrapper> &shapes_wrappers(owner->get_shapes_wrappers());
+	const LocalVector<CollisionObjectBullet::ShapeWrapper> &shapes_wrappers(owner->get_shapes_wrappers());
 	const int shapes_count = shapes_wrappers.size();
 
 	just_delete_shapes(shapes_count);
@@ -228,8 +226,8 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			continue;
 		}
 
-		shapes.write[i].transform = shape_wrapper->transform;
-		shapes.write[i].transform.getOrigin() *= owner_scale;
+		shapes[i].transform = shape_wrapper->transform;
+		shapes[i].transform.getOrigin() *= owner_scale;
 		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer3D::SHAPE_SPHERE:
 			case PhysicsServer3D::SHAPE_BOX:
@@ -237,11 +235,11 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer3D::SHAPE_CYLINDER:
 			case PhysicsServer3D::SHAPE_CONVEX_POLYGON:
 			case PhysicsServer3D::SHAPE_RAY: {
-				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->internal_create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
+				shapes[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->internal_create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported for kinematic collision.");
-				shapes.write[i].shape = nullptr;
+				shapes[i].shape = nullptr;
 		}
 	}
 }
@@ -249,7 +247,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		if (shapes[i].shape) {
-			bulletdelete(shapes.write[i].shape);
+			bulletdelete(shapes[i].shape);
 		}
 	}
 	shapes.resize(new_size);
@@ -271,8 +269,8 @@ RigidBodyBullet::RigidBodyBullet() :
 	reload_axis_lock();
 
 	areasWhereIam.resize(maxAreasWhereIam);
-	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
-		areasWhereIam.write[i] = nullptr;
+	for (uint32_t i = 0; i < areasWhereIam.size(); i += 1) {
+		areasWhereIam[i] = nullptr;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
 
@@ -335,16 +333,15 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		space->register_collision_object(this);
 		reload_body();
+		space->add_to_flush_queue(this);
 	}
 }
 
 void RigidBodyBullet::dispatch_callbacks() {
+	RigidCollisionObjectBullet::dispatch_callbacks();
+
 	/// The check isFirstTransformChanged is necessary in order to call integrated forces only when the first transform is sent
 	if ((btBody->isKinematicObject() || btBody->isActive() || previousActiveState != btBody->isActive()) && force_integration_callback && can_integrate_forces) {
-		if (omit_forces_integration) {
-			btBody->clearForces();
-		}
-
 		BulletPhysicsDirectBodyState3D *bodyDirect = BulletPhysicsDirectBodyState3D::get_singleton(this);
 
 		Variant variantBodyDirect = bodyDirect;
@@ -362,16 +359,22 @@ void RigidBodyBullet::dispatch_callbacks() {
 		}
 	}
 
+	previousActiveState = btBody->isActive();
+}
+
+void RigidBodyBullet::pre_process() {
+	RigidCollisionObjectBullet::pre_process();
+
 	if (isScratchedSpaceOverrideModificator || 0 < countGravityPointSpaces) {
 		isScratchedSpaceOverrideModificator = false;
 		reload_space_override_modificator();
 	}
 
-	/// Lock axis
-	btBody->setLinearVelocity(btBody->getLinearVelocity() * btBody->getLinearFactor());
-	btBody->setAngularVelocity(btBody->getAngularVelocity() * btBody->getAngularFactor());
-
-	previousActiveState = btBody->isActive();
+	if (is_active()) {
+		/// Lock axis
+		btBody->setLinearVelocity(btBody->getLinearVelocity() * btBody->getLinearFactor());
+		btBody->setAngularVelocity(btBody->getAngularVelocity() * btBody->getAngularFactor());
+	}
 }
 
 void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
@@ -392,7 +395,7 @@ void RigidBodyBullet::scratch_space_override_modificator() {
 	isScratchedSpaceOverrideModificator = true;
 }
 
-void RigidBodyBullet::on_collision_filters_change() {
+void RigidBodyBullet::do_reload_collision_filters() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
@@ -405,14 +408,15 @@ void RigidBodyBullet::on_collision_checker_start() {
 	collisionsCount = 0;
 
 	// Swap array
-	Vector<RigidBodyBullet *> *s = prev_collision_traces;
-	prev_collision_traces = curr_collision_traces;
-	curr_collision_traces = s;
+	SWAP(prev_collision_traces, curr_collision_traces);
 }
 
 void RigidBodyBullet::on_collision_checker_end() {
 	// Always true if active and not a static or kinematic body
 	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
+	if (isTransformChanged && space != nullptr) {
+		space->add_to_flush_queue(this);
+	}
 }
 
 bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
@@ -420,7 +424,7 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 		return false;
 	}
 
-	CollisionData &cd = collisions.write[collisionsCount];
+	CollisionData &cd = collisions[collisionsCount];
 	cd.hitLocalLocation = p_hitLocalLocation;
 	cd.otherObject = p_otherObject;
 	cd.hitWorldLocation = p_hitWorldLocation;
@@ -429,7 +433,7 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 	cd.other_object_shape = p_other_shape_index;
 	cd.local_shape = p_local_shape_index;
 
-	curr_collision_traces->write[collisionsCount] = p_otherObject;
+	(*curr_collision_traces)[collisionsCount] = p_otherObject;
 
 	++collisionsCount;
 	return true;
@@ -464,6 +468,7 @@ bool RigidBodyBullet::is_active() const {
 
 void RigidBodyBullet::set_omit_forces_integration(bool p_omit) {
 	omit_forces_integration = p_omit;
+	scratch_space_override_modificator();
 }
 
 void RigidBodyBullet::set_param(PhysicsServer3D::BodyParameter p_param, real_t p_value) {
@@ -839,15 +844,15 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 	for (int i = 0; i < areaWhereIamCount; ++i) {
 		if (nullptr == areasWhereIam[i]) {
 			// This area has the highest priority
-			areasWhereIam.write[i] = p_area;
+			areasWhereIam[i] = p_area;
 			break;
 		} else {
 			if (areasWhereIam[i]->get_spOv_priority() > p_area->get_spOv_priority()) {
 				// The position was found, just shift all elements
 				for (int j = i; j < areaWhereIamCount; ++j) {
-					areasWhereIam.write[j + 1] = areasWhereIam[j];
+					areasWhereIam[j + 1] = areasWhereIam[j];
 				}
-				areasWhereIam.write[i] = p_area;
+				areasWhereIam[i] = p_area;
 				break;
 			}
 		}
@@ -871,7 +876,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 		if (p_area == areasWhereIam[i]) {
 			// The area was found, just shift down all elements
 			for (int j = i; j < areaWhereIamCount; ++j) {
-				areasWhereIam.write[j] = areasWhereIam[j + 1];
+				areasWhereIam[j] = areasWhereIam[j + 1];
 			}
 			wasTheAreaFound = true;
 			break;
@@ -884,7 +889,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 		}
 
 		--areaWhereIamCount;
-		areasWhereIam.write[areaWhereIamCount] = nullptr; // Even if this is not required, I clear the last element to be safe
+		areasWhereIam[areaWhereIamCount] = nullptr; // Even if this is not required, I clear the last element to be safe
 		if (PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
 			scratch_space_override_modificator();
 		}
@@ -897,36 +902,31 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		return;
 	}
 
-	Vector3 newGravity(0.0, 0.0, 0.0);
+	Vector3 newGravity;
 	real_t newLinearDamp = MAX(0.0, linearDamp);
 	real_t newAngularDamp = MAX(0.0, angularDamp);
 
-	AreaBullet *currentArea;
-	// Variable used to calculate new gravity for gravity point areas, it is pointed by currentGravity pointer
-	Vector3 support_gravity(0, 0, 0);
-
 	bool stopped = false;
-	for (int i = areaWhereIamCount - 1; (0 <= i) && !stopped; --i) {
-		currentArea = areasWhereIam[i];
+	for (int i = 0; i < areaWhereIamCount && !stopped; i += 1) {
+		AreaBullet *currentArea = areasWhereIam[i];
 
 		if (!currentArea || PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
 			continue;
 		}
 
+		Vector3 support_gravity;
+
 		/// Here is calculated the gravity
 		if (currentArea->is_spOv_gravityPoint()) {
 			/// It calculates the direction of new gravity
 			support_gravity = currentArea->get_transform().xform(currentArea->get_spOv_gravityVec()) - get_transform().get_origin();
-			real_t distanceMag = support_gravity.length();
+
+			const real_t distanceMag = support_gravity.length();
 			// Normalized in this way to avoid the double call of function "length()"
 			if (distanceMag == 0) {
-				support_gravity.x = 0;
-				support_gravity.y = 0;
-				support_gravity.z = 0;
+				support_gravity = Vector3();
 			} else {
-				support_gravity.x /= distanceMag;
-				support_gravity.y /= distanceMag;
-				support_gravity.z /= distanceMag;
+				support_gravity /= distanceMag;
 			}
 
 			/// Here is calculated the final gravity
@@ -988,10 +988,17 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		newAngularDamp += space->get_angular_damp();
 	}
 
-	btVector3 newBtGravity;
-	G_TO_B(newGravity * gravity_scale, newBtGravity);
+	total_gravity = newGravity;
 
-	btBody->setGravity(newBtGravity);
+	if (omit_forces_integration) {
+		// Custom behaviour.
+		btBody->setGravity(btVector3(0, 0, 0));
+	} else {
+		btVector3 newBtGravity;
+		G_TO_B(newGravity * gravity_scale, newBtGravity);
+		btBody->setGravity(newBtGravity);
+	}
+
 	btBody->setDamping(newLinearDamp, newAngularDamp);
 }
 
