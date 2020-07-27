@@ -147,6 +147,11 @@ void EditorTranslationParser::remove_parser(const Ref<EditorTranslationParserPlu
 	}
 }
 
+void EditorTranslationParser::clean_parsers() {
+	standard_parsers.clear();
+	custom_parsers.clear();
+}
+
 EditorTranslationParser *EditorTranslationParser::get_singleton() {
 	if (!singleton) {
 		singleton = memnew(EditorTranslationParser);
