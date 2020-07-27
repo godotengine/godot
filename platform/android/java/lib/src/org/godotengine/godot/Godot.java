@@ -69,6 +69,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -80,6 +81,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -248,6 +250,8 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	public GodotView mView;
 	private boolean godot_initialized = false;
 
+	private PopupWindow mKeyboardWindow;
+
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mGravity;
@@ -316,24 +320,36 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		setContentView(layout);
 
+		// Create a popup window with an invisible layout for the virtual keyboard,
+		// so the view can be resized to get the vk height without resizing the main godot view.
+		final FrameLayout keyboardLayout = new FrameLayout(this);
+		keyboardLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		keyboardLayout.setVisibility(View.INVISIBLE);
+		mKeyboardWindow = new PopupWindow(keyboardLayout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+		mKeyboardWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+		mKeyboardWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+		mKeyboardWindow.setFocusable(true); // for the text edit to work
+		mKeyboardWindow.setTouchable(false); // inputs need to go through
+
 		// GodotEditText layout
 		GodotEditText edittext = new GodotEditText(this);
-		edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-		// ...add to FrameLayout
-		layout.addView(edittext);
+		edittext.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		edittext.setKeyboardView(keyboardLayout);
+		// ...add to keyboard layout
+		keyboardLayout.addView(edittext);
 
 		mView = new GodotView(this, xrMode, use_gl3, use_32_bits, use_debug_opengl);
 		layout.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);
 
-		mView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+		keyboardLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
 				Point fullSize = new Point();
 				getWindowManager().getDefaultDisplay().getSize(fullSize);
 				Rect gameSize = new Rect();
-				mView.getWindowVisibleDisplayFrame(gameSize);
+				mKeyboardWindow.getContentView().getWindowVisibleDisplayFrame(gameSize);
 
 				final int keyboardHeight = fullSize.y - gameSize.bottom;
 				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
@@ -571,6 +587,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		super.onCreate(icicle);
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 		pluginRegistry = GodotPluginRegistry.initializePluginRegistry(this);
 
@@ -710,7 +727,20 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+
+		mView.post(new Runnable() {
+			@Override
+			public void run() {
+				mKeyboardWindow.showAtLocation(getWindow().getDecorView(), Gravity.NO_GRAVITY, 0, 0);
+			}
+		});
+	}
+
+	@Override
 	protected void onDestroy() {
+		mKeyboardWindow.dismiss();
 
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
