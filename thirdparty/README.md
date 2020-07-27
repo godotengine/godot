@@ -347,6 +347,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
   * License: MIT
+- `stb_rect_pack.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.00
+  * License: Public Domain (Unlicense) or MIT
 
 ### modules
 

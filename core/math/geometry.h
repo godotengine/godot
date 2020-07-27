@@ -1014,6 +1014,13 @@ public:
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
+	struct PackRectsResult {
+		int x;
+		int y;
+		bool packed;
+	};
+	static Vector<PackRectsResult> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
+
 	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
 
 private:

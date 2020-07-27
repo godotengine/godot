@@ -33,6 +33,8 @@
 #include "core/print_string.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/triangulator.h"
+#define STB_RECT_PACK_IMPLEMENTATION
+#include "thirdparty/stb_rect_pack/stb_rect_pack.h"
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
@@ -1223,4 +1225,37 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int 
 	}
 
 	return points;
+}
+
+Vector<Geometry::PackRectsResult> Geometry::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
+
+	Vector<stbrp_node> nodes;
+	nodes.resize(p_atlas_size.width);
+	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+
+	stbrp_context context;
+	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);
+
+	Vector<stbrp_rect> rects;
+	rects.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		rects.write[i].id = i;
+		rects.write[i].w = p_sizes[i].width;
+		rects.write[i].h = p_sizes[i].height;
+		rects.write[i].x = 0;
+		rects.write[i].y = 0;
+		rects.write[i].was_packed = 0;
+	}
+
+	stbrp_pack_rects(&context, rects.ptrw(), rects.size());
+
+	Vector<PackRectsResult> ret;
+	ret.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		ret.write[rects[i].id] = { rects[i].x, rects[i].y, static_cast<bool>(rects[i].was_packed) };
+	}
+
+	return ret;
 }
