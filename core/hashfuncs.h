@@ -146,6 +146,8 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return (uint32_t)p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return (uint32_t)p_wchar; }
+	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return (uint32_t)p_uchar; }
+	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return (uint32_t)p_uchar; }
 	static _FORCE_INLINE_ uint32_t hash(const RID &p_rid) { return hash_one_uint64(p_rid.get_id()); }
 
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }

@@ -35,21 +35,21 @@
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {
-	CharType short_buffer[SHORT_BUFFER_SIZE];
+	char32_t short_buffer[SHORT_BUFFER_SIZE];
 	String buffer;
 	int string_length = 0;
 
-	_FORCE_INLINE_ CharType *current_buffer_ptr() {
+	_FORCE_INLINE_ char32_t *current_buffer_ptr() {
 		return static_cast<String &>(buffer).empty() ? short_buffer : buffer.ptrw();
 	}
 
 public:
-	StringBuffer &append(CharType p_char);
+	StringBuffer &append(char32_t p_char);
 	StringBuffer &append(const String &p_string);
 	StringBuffer &append(const char *p_str);
-	StringBuffer &append(const CharType *p_str, int p_clip_to_len = -1);
+	StringBuffer &append(const char32_t *p_str, int p_clip_to_len = -1);
 
-	_FORCE_INLINE_ void operator+=(CharType p_char) {
+	_FORCE_INLINE_ void operator+=(char32_t p_char) {
 		append(p_char);
 	}
 
@@ -61,7 +61,7 @@ public:
 		append(p_str);
 	}
 
-	_FORCE_INLINE_ void operator+=(const CharType *p_str) {
+	_FORCE_INLINE_ void operator+=(const char32_t *p_str) {
 		append(p_str);
 	}
 
@@ -80,7 +80,7 @@ public:
 };
 
 template <int SHORT_BUFFER_SIZE>
-StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(CharType p_char) {
+StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(char32_t p_char) {
 	reserve(string_length + 2);
 	current_buffer_ptr()[string_length++] = p_char;
 	return *this;
@@ -88,7 +88,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(CharTyp
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const String &p_string) {
-	return append(p_string.c_str());
+	return append(p_string.get_data());
 }
 
 template <int SHORT_BUFFER_SIZE>
@@ -96,7 +96,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 	int len = strlen(p_str);
 	reserve(string_length + len + 1);
 
-	CharType *buf = current_buffer_ptr();
+	char32_t *buf = current_buffer_ptr();
 	for (const char *c_ptr = p_str; *c_ptr; ++c_ptr) {
 		buf[string_length++] = *c_ptr;
 	}
@@ -104,13 +104,13 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 }
 
 template <int SHORT_BUFFER_SIZE>
-StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const CharType *p_str, int p_clip_to_len) {
+StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const char32_t *p_str, int p_clip_to_len) {
 	int len = 0;
 	while ((p_clip_to_len < 0 || len < p_clip_to_len) && p_str[len]) {
 		++len;
 	}
 	reserve(string_length + len + 1);
-	memcpy(&(current_buffer_ptr()[string_length]), p_str, len * sizeof(CharType));
+	memcpy(&(current_buffer_ptr()[string_length]), p_str, len * sizeof(char32_t));
 	string_length += len;
 
 	return *this;
@@ -125,7 +125,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_
 	bool need_copy = string_length > 0 && buffer.empty();
 	buffer.resize(next_power_of_2(p_size));
 	if (need_copy) {
-		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(CharType));
+		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(char32_t));
 	}
 
 	return *this;

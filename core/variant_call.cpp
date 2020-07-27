@@ -239,6 +239,7 @@ struct _VariantCall {
 
 	VCALL_LOCALMEM1R(String, casecmp_to);
 	VCALL_LOCALMEM1R(String, nocasecmp_to);
+	VCALL_LOCALMEM1R(String, naturalnocasecmp_to);
 	VCALL_LOCALMEM0R(String, length);
 	VCALL_LOCALMEM3R(String, count);
 	VCALL_LOCALMEM3R(String, countn);
@@ -311,6 +312,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, to_int);
 	VCALL_LOCALMEM0R(String, to_float);
 	VCALL_LOCALMEM0R(String, hex_to_int);
+	VCALL_LOCALMEM2R(String, lpad);
+	VCALL_LOCALMEM2R(String, rpad);
 	VCALL_LOCALMEM1R(String, pad_decimals);
 	VCALL_LOCALMEM1R(String, pad_zeros);
 	VCALL_LOCALMEM1R(String, trim_prefix);
@@ -346,6 +349,39 @@ struct _VariantCall {
 		retval.resize(len);
 		uint8_t *w = retval.ptrw();
 		copymem(w, charstr.ptr(), len);
+
+		r_ret = retval;
+	}
+
+	static void _call_String_to_utf16(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PackedByteArray();
+			return;
+		}
+		Char16String charstr = s->utf16();
+
+		PackedByteArray retval;
+		size_t len = charstr.length() * 2;
+		retval.resize(len);
+		uint8_t *w = retval.ptrw();
+		copymem(w, (const void *)charstr.ptr(), len);
+
+		r_ret = retval;
+	}
+
+	static void _call_String_to_utf32(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PackedByteArray();
+			return;
+		}
+
+		PackedByteArray retval;
+		size_t len = s->length() * 4;
+		retval.resize(len);
+		uint8_t *w = retval.ptrw();
+		copymem(w, (const void *)s->ptr(), len);
 
 		r_ret = retval;
 	}
@@ -614,6 +650,26 @@ struct _VariantCall {
 		if (ba->size() > 0) {
 			const uint8_t *r = ba->ptr();
 			s.parse_utf8((const char *)r, ba->size());
+		}
+		r_ret = s;
+	}
+
+	static void _call_PackedByteArray_get_string_from_utf16(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
+		String s;
+		if (ba->size() > 0) {
+			const uint8_t *r = ba->ptr();
+			s.parse_utf16((const char16_t *)r, ba->size() / 2);
+		}
+		r_ret = s;
+	}
+
+	static void _call_PackedByteArray_get_string_from_utf32(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		PackedByteArray *ba = reinterpret_cast<PackedByteArray *>(p_self._data._mem);
+		String s;
+		if (ba->size() > 0) {
+			const uint8_t *r = ba->ptr();
+			s = String((const char32_t *)r, ba->size() / 4);
 		}
 		r_ret = s;
 	}
@@ -1789,6 +1845,7 @@ void register_variant_methods() {
 	/* STRING */
 	ADDFUNC1R(STRING, INT, String, casecmp_to, STRING, "to", varray());
 	ADDFUNC1R(STRING, INT, String, nocasecmp_to, STRING, "to", varray());
+	ADDFUNC1R(STRING, INT, String, naturalnocasecmp_to, STRING, "to", varray());
 	ADDFUNC0R(STRING, INT, String, length, varray());
 	ADDFUNC2R(STRING, STRING, String, substr, INT, "from", INT, "len", varray(-1));
 
@@ -1867,6 +1924,8 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, INT, String, to_int, varray());
 	ADDFUNC0R(STRING, FLOAT, String, to_float, varray());
 	ADDFUNC0R(STRING, INT, String, hex_to_int, varray());
+	ADDFUNC2R(STRING, STRING, String, lpad, INT, "min_length", STRING, "character", varray(" "));
+	ADDFUNC2R(STRING, STRING, String, rpad, INT, "min_length", STRING, "character", varray(" "));
 	ADDFUNC1R(STRING, STRING, String, pad_decimals, INT, "digits", varray());
 	ADDFUNC1R(STRING, STRING, String, pad_zeros, INT, "digits", varray());
 	ADDFUNC1R(STRING, STRING, String, trim_prefix, STRING, "prefix", varray());
@@ -1874,6 +1933,8 @@ void register_variant_methods() {
 
 	ADDFUNC0R(STRING, PACKED_BYTE_ARRAY, String, to_ascii, varray());
 	ADDFUNC0R(STRING, PACKED_BYTE_ARRAY, String, to_utf8, varray());
+	ADDFUNC0R(STRING, PACKED_BYTE_ARRAY, String, to_utf16, varray());
+	ADDFUNC0R(STRING, PACKED_BYTE_ARRAY, String, to_utf32, varray());
 
 	ADDFUNC0R(VECTOR2, FLOAT, Vector2, angle, varray());
 	ADDFUNC1R(VECTOR2, FLOAT, Vector2, angle_to, VECTOR2, "to", varray());
@@ -2109,6 +2170,8 @@ void register_variant_methods() {
 
 	ADDFUNC0R(PACKED_BYTE_ARRAY, STRING, PackedByteArray, get_string_from_ascii, varray());
 	ADDFUNC0R(PACKED_BYTE_ARRAY, STRING, PackedByteArray, get_string_from_utf8, varray());
+	ADDFUNC0R(PACKED_BYTE_ARRAY, STRING, PackedByteArray, get_string_from_utf16, varray());
+	ADDFUNC0R(PACKED_BYTE_ARRAY, STRING, PackedByteArray, get_string_from_utf32, varray());
 	ADDFUNC0R(PACKED_BYTE_ARRAY, STRING, PackedByteArray, hex_encode, varray());
 	ADDFUNC1R(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY, PackedByteArray, compress, INT, "compression_mode", varray(0));
 	ADDFUNC2R(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY, PackedByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));

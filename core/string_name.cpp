@@ -317,7 +317,7 @@ StringName StringName::search(const char *p_name) {
 	return StringName(); //does not exist
 }
 
-StringName StringName::search(const CharType *p_name) {
+StringName StringName::search(const char32_t *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
 	ERR_FAIL_COND_V(!p_name, StringName());

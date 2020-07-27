@@ -278,7 +278,7 @@ Error OSIPhone::shell_open(String p_uri) {
 		return ERR_CANT_OPEN;
 	}
 
-	printf("opening url %ls\n", p_uri.c_str());
+	printf("opening url %s\n", p_uri.utf8().get_data());
 
 	//    if (@available(iOS 10, *)) {
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
@@ -293,7 +293,7 @@ void OSIPhone::set_user_data_dir(String p_dir) {
 	DirAccess *da = DirAccess::open(p_dir);
 
 	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %ls from %ls\n", user_data_dir.c_str(), p_dir.c_str());
+	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
 	memdelete(da);
 }
 

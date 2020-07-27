@@ -246,7 +246,7 @@ public:
 
 	operator ObjectID() const;
 
-	operator CharType() const;
+	operator char32_t() const;
 	operator float() const;
 	operator double() const;
 	operator String() const;
@@ -323,7 +323,7 @@ public:
 	Variant(const String &p_string);
 	Variant(const StringName &p_string);
 	Variant(const char *const p_cstring);
-	Variant(const CharType *p_wstring);
+	Variant(const char32_t *p_wstring);
 	Variant(const Vector2 &p_vector2);
 	Variant(const Vector2i &p_vector2i);
 	Variant(const Rect2 &p_rect2);

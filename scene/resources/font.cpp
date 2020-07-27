@@ -125,7 +125,7 @@ void BitmapFont::_set_chars(const Vector<int> &p_chars) {
 Vector<int> BitmapFont::_get_chars() const {
 	Vector<int> chars;
 
-	const CharType *key = nullptr;
+	const char32_t *key = nullptr;
 
 	while ((key = char_map.next(key))) {
 		const Character *c = char_map.getptr(*key);
@@ -272,7 +272,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 				}
 			}
 		} else if (type == "char") {
-			CharType idx = 0;
+			char32_t idx = 0;
 			if (keys.has("id")) {
 				idx = keys["id"].to_int();
 			}
@@ -313,7 +313,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 			add_char(idx, texture, rect, ofs, advance);
 
 		} else if (type == "kerning") {
-			CharType first = 0, second = 0;
+			char32_t first = 0, second = 0;
 			int k = 0;
 
 			if (keys.has("first")) {
@@ -385,10 +385,10 @@ int BitmapFont::get_character_count() const {
 	return char_map.size();
 };
 
-Vector<CharType> BitmapFont::get_char_keys() const {
-	Vector<CharType> chars;
+Vector<char32_t> BitmapFont::get_char_keys() const {
+	Vector<char32_t> chars;
 	chars.resize(char_map.size());
-	const CharType *ct = nullptr;
+	const char32_t *ct = nullptr;
 	int count = 0;
 	while ((ct = char_map.next(ct))) {
 		chars.write[count++] = *ct;
@@ -397,7 +397,7 @@ Vector<CharType> BitmapFont::get_char_keys() const {
 	return chars;
 };
 
-BitmapFont::Character BitmapFont::get_character(CharType p_char) const {
+BitmapFont::Character BitmapFont::get_character(char32_t p_char) const {
 	if (!char_map.has(p_char)) {
 		ERR_FAIL_V(Character());
 	};
@@ -405,7 +405,7 @@ BitmapFont::Character BitmapFont::get_character(CharType p_char) const {
 	return char_map[p_char];
 };
 
-void BitmapFont::add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
+void BitmapFont::add_char(char32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
 	if (p_advance < 0) {
 		p_advance = p_rect.size.width;
 	}
@@ -420,7 +420,7 @@ void BitmapFont::add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rec
 	char_map[p_char] = c;
 }
 
-void BitmapFont::add_kerning_pair(CharType p_A, CharType p_B, int p_kerning) {
+void BitmapFont::add_kerning_pair(char32_t p_A, char32_t p_B, int p_kerning) {
 	KerningPairKey kpk;
 	kpk.A = p_A;
 	kpk.B = p_B;
@@ -444,7 +444,7 @@ Vector<BitmapFont::KerningPairKey> BitmapFont::get_kerning_pair_keys() const {
 	return ret;
 }
 
-int BitmapFont::get_kerning_pair(CharType p_A, CharType p_B) const {
+int BitmapFont::get_kerning_pair(char32_t p_A, char32_t p_B) const {
 	KerningPairKey kpk;
 	kpk.A = p_A;
 	kpk.B = p_B;
@@ -482,7 +482,7 @@ Size2 Font::get_string_size(const String &p_string) const {
 	if (l == 0) {
 		return Size2(0, get_height());
 	}
-	const CharType *sptr = &p_string[0];
+	const char32_t *sptr = &p_string[0];
 
 	for (int i = 0; i < l; i++) {
 		w += get_char_size(sptr[i], sptr[i + 1]).width;
@@ -534,7 +534,7 @@ Ref<BitmapFont> BitmapFont::get_fallback() const {
 	return fallback;
 }
 
-float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
+float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next, const Color &p_modulate, bool p_outline) const {
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
@@ -556,7 +556,7 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 	return get_char_size(p_char, p_next).width;
 }
 
-Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {
+Size2 BitmapFont::get_char_size(char32_t p_char, char32_t p_next) const {
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {

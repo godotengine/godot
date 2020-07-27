@@ -84,7 +84,7 @@ static String format_error_message(DWORD id) {
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
 
-	String msg = "Error " + itos(id) + ": " + String(messageBuffer, size);
+	String msg = "Error " + itos(id) + ": " + String::utf16((const char16_t *)messageBuffer, size);
 
 	LocalFree(messageBuffer);
 
@@ -107,15 +107,11 @@ void RedirectIOToConsole() {
 
 	// set the screen buffer to be big enough to let us scroll text
 
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			&coninfo);
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
 	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
 
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			coninfo.dwSize);
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
 	// redirect unbuffered STDOUT to the console
 
@@ -265,10 +261,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	if (p_also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory(path.get_base_dir().c_str());
+		cookie = add_dll_directory((LPCWSTR)(path.get_base_dir().utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW(path.c_str(), nullptr, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(path.utf16().get_data()), nullptr, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + format_error_message(GetLastError()) + ".");
 
 	if (cookie) {
@@ -407,7 +403,7 @@ uint64_t OS_Windows::get_ticks_usec() const {
 
 String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	for (int i = 0; i < p_text.size(); i++) {
-		CharType c = p_text[i];
+		char32_t c = p_text[i];
 		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
 			return "\"" + p_text + "\"";
 		}
@@ -428,7 +424,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		// Note: _wpopen is calling command as "cmd.exe /c argss", instead of executing it directly, add extra quotes around full command, to prevent it from stripping quotes in the command.
 		argss = _quote_command_line_argument(argss);
 
-		FILE *f = _wpopen(argss.c_str(), L"r");
+		FILE *f = _wpopen((LPCWSTR)(argss.utf16().get_data()), L"r");
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 		char buf[65535];
@@ -463,13 +459,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	Vector<CharType> modstr; // Windows wants to change this no idea why.
-	modstr.resize(cmdline.size());
-	for (int i = 0; i < cmdline.size(); i++) {
-		modstr.write[i] = cmdline[i];
-	}
-
-	int ret = CreateProcessW(nullptr, modstr.ptrw(), nullptr, nullptr, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	Char16String modstr = cmdline.utf16(); // Windows wants to change this no idea why.
+	int ret = CreateProcessW(nullptr, (LPWSTR)(modstr.ptrw()), nullptr, nullptr, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
@@ -509,26 +500,26 @@ int OS_Windows::get_process_id() const {
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {
-	if (_wchdir(p_cwd.c_str()) != 0)
+	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0)
 		return ERR_CANT_OPEN;
 
 	return OK;
 }
 
 String OS_Windows::get_executable_path() const {
-	wchar_t bufname[4096];
+	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = bufname;
+	String s = String::utf16((const char16_t *)bufname);
 	return s;
 }
 
 bool OS_Windows::has_environment(const String &p_var) const {
 #ifdef MINGW_ENABLED
-	return _wgetenv(p_var.c_str()) != nullptr;
+	return _wgetenv((LPCWSTR)(p_var.utf16().get_data())) != nullptr;
 #else
-	wchar_t *env;
+	WCHAR *env;
 	size_t len;
-	_wdupenv_s(&env, &len, p_var.c_str());
+	_wdupenv_s(&env, &len, (LPCWSTR)(p_var.utf16().get_data()));
 	const bool has_env = env != nullptr;
 	free(env);
 	return has_env;
@@ -536,16 +527,16 @@ bool OS_Windows::has_environment(const String &p_var) const {
 };
 
 String OS_Windows::get_environment(const String &p_var) const {
-	wchar_t wval[0x7Fff]; // MSDN says 32767 char is the maximum
-	int wlen = GetEnvironmentVariableW(p_var.c_str(), wval, 0x7Fff);
+	WCHAR wval[0x7fff]; // MSDN says 32767 char is the maximum
+	int wlen = GetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), wval, 0x7fff);
 	if (wlen > 0) {
-		return wval;
+		return String::utf16((const char16_t *)wval);
 	}
 	return "";
 }
 
 bool OS_Windows::set_environment(const String &p_var, const String &p_value) const {
-	return (bool)SetEnvironmentVariableW(p_var.c_str(), p_value.c_str());
+	return (bool)SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), (LPCWSTR)(p_value.utf16().get_data()));
 }
 
 String OS_Windows::get_stdin_string(bool p_block) {
@@ -558,7 +549,7 @@ String OS_Windows::get_stdin_string(bool p_block) {
 }
 
 Error OS_Windows::shell_open(String p_uri) {
-	ShellExecuteW(nullptr, nullptr, p_uri.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	return OK;
 }
 
@@ -701,7 +692,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String(szPath);
+	String path = String::utf16((const char16_t *)szPath);
 	CoTaskMemFree(szPath);
 	return path;
 }
@@ -727,7 +718,7 @@ String OS_Windows::get_user_data_dir() const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFO HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
-	return String(HwProfInfo.szHwProfileGuid);
+	return String::utf16((const char16_t *)(HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -744,9 +735,11 @@ bool OS_Windows::is_disable_crash_handler() const {
 
 Error OS_Windows::move_to_trash(const String &p_path) {
 	SHFILEOPSTRUCTW sf;
-	WCHAR *from = new WCHAR[p_path.length() + 2];
-	wcscpy_s(from, p_path.length() + 1, p_path.c_str());
-	from[p_path.length() + 1] = 0;
+
+	Char16String utf16 = p_path.utf16();
+	WCHAR *from = new WCHAR[utf16.length() + 2];
+	wcscpy_s(from, utf16.length() + 1, (LPCWSTR)(utf16.get_data()));
+	from[utf16.length() + 1] = 0;
 
 	sf.hwnd = main_window;
 	sf.wFunc = FO_DELETE;

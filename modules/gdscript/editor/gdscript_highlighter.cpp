@@ -33,15 +33,15 @@
 #include "../gdscript_tokenizer.h"
 #include "editor/editor_settings.h"
 
-static bool _is_char(CharType c) {
+static bool _is_char(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
-static bool _is_hex_symbol(CharType c) {
+static bool _is_hex_symbol(char32_t c) {
 	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 }
 
-static bool _is_bin_symbol(CharType c) {
+static bool _is_bin_symbol(char32_t c) {
 	return (c == '0' || c == '1');
 }
 
@@ -119,7 +119,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 
 						/* search the line */
 						bool match = true;
-						const CharType *start_key = color_regions[c].start_key.c_str();
+						const char32_t *start_key = color_regions[c].start_key.get_data();
 						for (int k = 0; k < start_key_length; k++) {
 							if (start_key[k] != str[from + k]) {
 								match = false;
@@ -156,7 +156,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 					/* search the line */
 					int region_end_index = -1;
 					int end_key_length = color_regions[in_region].end_key.length();
-					const CharType *end_key = color_regions[in_region].end_key.c_str();
+					const char32_t *end_key = color_regions[in_region].end_key.get_data();
 					for (; from < line_length; from++) {
 						if (line_length - from < end_key_length) {
 							break;
