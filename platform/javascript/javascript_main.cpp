@@ -34,6 +34,7 @@
 #include "platform/javascript/os_javascript.h"
 
 #include <emscripten/emscripten.h>
+#include <stdlib.h>
 
 static OS_JavaScript *os = nullptr;
 static uint64_t target_ticks = 0;
