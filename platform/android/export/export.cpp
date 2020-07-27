@@ -453,7 +453,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		bool first = true;
 		for (int i = 0; i < basename.length(); i++) {
-			CharType c = basename[i];
+			char32_t c = basename[i];
 			if (c >= '0' && c <= '9' && first) {
 				continue;
 			}
@@ -484,7 +484,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		int segments = 0;
 		bool first = true;
 		for (int i = 0; i < pname.length(); i++) {
-			CharType c = pname[i];
+			char32_t c = pname[i];
 			if (first && c == '.') {
 				if (r_error) {
 					*r_error = TTR("Package segments must be of non-zero length.");
@@ -873,7 +873,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						if (string_flags & UTF8_FLAG) {
 						} else {
 							uint32_t len = decode_uint16(&p_manifest[string_at]);
-							Vector<CharType> ucstring;
+							Vector<char32_t> ucstring;
 							ucstring.resize(len + 1);
 							for (uint32_t j = 0; j < len; j++) {
 								uint16_t c = decode_uint16(&p_manifest[string_at + 2 + 2 * j]);
@@ -1334,7 +1334,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		} else {
 			String str;
 			for (uint32_t i = 0; i < len; i++) {
-				CharType c = decode_uint16(&p_bytes[offset + i * 2]);
+				char32_t c = decode_uint16(&p_bytes[offset + i * 2]);
 				if (c == 0) {
 					break;
 				}

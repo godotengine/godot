@@ -79,7 +79,7 @@ public:
 		void set_font(const Ref<Font> &p_font);
 		int get_line_width(int p_line) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
-		int get_char_width(CharType c, CharType next_c, int px) const;
+		int get_char_width(char32_t c, char32_t next_c, int px) const;
 		void set_line_wrap_amount(int p_line, int p_wrap_amount) const;
 		int get_line_wrap_amount(int p_line) const;
 		void set(int p_line, const String &p_text);
@@ -488,7 +488,7 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
-	void _consume_pair_symbol(CharType ch);
+	void _consume_pair_symbol(char32_t ch);
 	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
 
 	static void _bind_methods();

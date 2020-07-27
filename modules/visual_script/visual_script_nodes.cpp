@@ -933,36 +933,36 @@ static const char *op_names[] = {
 };
 
 String VisualScriptOperator::get_caption() const {
-	static const wchar_t *op_names[] = {
+	static const char32_t *op_names[] = {
 		//comparison
-		L"A = B", //OP_EQUAL,
-		L"A \u2260 B", //OP_NOT_EQUAL,
-		L"A < B", //OP_LESS,
-		L"A \u2264 B", //OP_LESS_EQUAL,
-		L"A > B", //OP_GREATER,
-		L"A \u2265 B", //OP_GREATER_EQUAL,
+		U"A = B", //OP_EQUAL,
+		U"A \u2260 B", //OP_NOT_EQUAL,
+		U"A < B", //OP_LESS,
+		U"A \u2264 B", //OP_LESS_EQUAL,
+		U"A > B", //OP_GREATER,
+		U"A \u2265 B", //OP_GREATER_EQUAL,
 		//mathematic
-		L"A + B", //OP_ADD,
-		L"A - B", //OP_SUBTRACT,
-		L"A \u00D7 B", //OP_MULTIPLY,
-		L"A \u00F7 B", //OP_DIVIDE,
-		L"\u00AC A", //OP_NEGATE,
-		L"+ A", //OP_POSITIVE,
-		L"A mod B", //OP_MODULE,
-		L"A .. B", //OP_STRING_CONCAT,
+		U"A + B", //OP_ADD,
+		U"A - B", //OP_SUBTRACT,
+		U"A \u00D7 B", //OP_MULTIPLY,
+		U"A \u00F7 B", //OP_DIVIDE,
+		U"\u00AC A", //OP_NEGATE,
+		U"+ A", //OP_POSITIVE,
+		U"A mod B", //OP_MODULE,
+		U"A .. B", //OP_STRING_CONCAT,
 		//bitwise
-		L"A << B", //OP_SHIFT_LEFT,
-		L"A >> B", //OP_SHIFT_RIGHT,
-		L"A & B", //OP_BIT_AND,
-		L"A | B", //OP_BIT_OR,
-		L"A ^ B", //OP_BIT_XOR,
-		L"~A", //OP_BIT_NEGATE,
+		U"A << B", //OP_SHIFT_LEFT,
+		U"A >> B", //OP_SHIFT_RIGHT,
+		U"A & B", //OP_BIT_AND,
+		U"A | B", //OP_BIT_OR,
+		U"A ^ B", //OP_BIT_XOR,
+		U"~A", //OP_BIT_NEGATE,
 		//logic
-		L"A and B", //OP_AND,
-		L"A or B", //OP_OR,
-		L"A xor B", //OP_XOR,
-		L"not A", //OP_NOT,
-		L"A in B", //OP_IN,
+		U"A and B", //OP_AND,
+		U"A or B", //OP_OR,
+		U"A xor B", //OP_XOR,
+		U"not A", //OP_NOT,
+		U"A in B", //OP_IN,
 
 	};
 	return op_names[op];

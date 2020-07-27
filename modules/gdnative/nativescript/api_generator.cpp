@@ -176,10 +176,10 @@ List<ClassAPI> generate_c_api_classes() {
 	// Register global constants as a fake GlobalConstants singleton class
 	{
 		ClassAPI global_constants_api;
-		global_constants_api.class_name = L"GlobalConstants";
+		global_constants_api.class_name = "GlobalConstants";
 		global_constants_api.api_type = ClassDB::API_CORE;
 		global_constants_api.is_singleton = true;
-		global_constants_api.singleton_name = L"GlobalConstants";
+		global_constants_api.singleton_name = "GlobalConstants";
 		global_constants_api.is_instanciable = false;
 		const int constants_count = GlobalConstants::get_global_constant_count();
 		for (int i = 0; i < constants_count; ++i) {

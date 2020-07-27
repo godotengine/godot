@@ -90,7 +90,7 @@ static void handle_crash(int sig) {
 	if (OS::get_singleton()->get_main_loop())
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 
-	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
+	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
 		void *load_addr = (void *)load_address();
@@ -142,7 +142,7 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			fprintf(stderr, "[%zu] %ls\n", i, output.c_str());
+			fprintf(stderr, "[%zu] %s\n", i, output.utf8().get_data());
 		}
 
 		free(strings);

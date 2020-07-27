@@ -6256,7 +6256,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.c_str()));
+		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.get_data()));
 		accept->popup_centered();
 	}
 }

@@ -701,7 +701,7 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 
 	if (p_path.begins_with("res://")) {
 		if (PackedData::get_singleton()->has_path(p_path)) {
-			printf("Unable to play %S using the native player as it resides in a .pck file\n", p_path.c_str());
+			printf("Unable to play %s using the native player as it resides in a .pck file\n", p_path.utf8().get_data());
 			return ERR_INVALID_PARAMETER;
 		} else {
 			p_path = p_path.replace("res:/", ProjectSettings::get_singleton()->get_resource_path());
@@ -712,7 +712,7 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 
 	memdelete(f);
 
-	printf("Playing video: %S\n", p_path.c_str());
+	printf("Playing video: %s\n", p_path.utf8().get_data());
 
 	String file_path = ProjectSettings::get_singleton()->globalize_path(p_path);
 

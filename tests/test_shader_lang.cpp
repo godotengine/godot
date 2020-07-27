@@ -325,7 +325,7 @@ MainLoop *test() {
 	String code;
 
 	while (true) {
-		CharType c = fa->get_8();
+		char32_t c = fa->get_8();
 		if (fa->eof_reached()) {
 			break;
 		}

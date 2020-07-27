@@ -635,7 +635,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		case TEXT_CHAR: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			CharType result[2] = { *p_args[0], 0 };
+			char32_t result[2] = { *p_args[0], 0 };
 			r_ret = String(result);
 		} break;
 		case TEXT_ORD: {

@@ -183,14 +183,14 @@ public:
 
 private:
 	String source;
-	const CharType *_source = nullptr;
-	const CharType *_current = nullptr;
+	const char32_t *_source = nullptr;
+	const char32_t *_current = nullptr;
 	int line = -1, column = -1;
 	int cursor_line = -1, cursor_column = -1;
 	int tab_size = 4;
 
 	// Keep track of multichar tokens.
-	const CharType *_start = nullptr;
+	const char32_t *_start = nullptr;
 	int start_line = 0, start_column = 0;
 	int leftmost_column = 0, rightmost_column = 0;
 
@@ -202,30 +202,30 @@ private:
 	Token last_newline;
 	int pending_indents = 0;
 	List<int> indent_stack;
-	List<CharType> paren_stack;
-	CharType indent_char = '\0';
+	List<char32_t> paren_stack;
+	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
-	_FORCE_INLINE_ CharType _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
+	_FORCE_INLINE_ char32_t _peek(int p_offset = 0) { return position + p_offset >= 0 && position + p_offset < length ? _current[p_offset] : '\0'; }
 	int indent_level() const { return indent_stack.size(); }
 	bool has_error() const { return !error_stack.empty(); }
 	Token pop_error();
-	CharType _advance();
+	char32_t _advance();
 	void _skip_whitespace();
 	void check_indent();
 
 	Token make_error(const String &p_message);
 	void push_error(const String &p_message);
 	void push_error(const Token &p_error);
-	Token make_paren_error(CharType p_paren);
+	Token make_paren_error(char32_t p_paren);
 	Token make_token(Token::Type p_type);
 	Token make_literal(const Variant &p_literal);
 	Token make_identifier(const StringName &p_identifier);
-	Token check_vcs_marker(CharType p_test, Token::Type p_double_type);
-	void push_paren(CharType p_char);
-	bool pop_paren(CharType p_expected);
+	Token check_vcs_marker(char32_t p_test, Token::Type p_double_type);
+	void push_paren(char32_t p_char);
+	bool pop_paren(char32_t p_expected);
 
 	void newline(bool p_make_token);
 	Token number();

@@ -1060,7 +1060,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_CHAR: {
-			CharType result[2] = { *p_inputs[0], 0 };
+			char32_t result[2] = { *p_inputs[0], 0 };
 
 			*r_return = String(result);
 
