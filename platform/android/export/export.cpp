@@ -2080,6 +2080,93 @@ public:
 		return OK;
 	}
 
+	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String apk_path, EditorProgress ep) {
+		String release_keystore = p_preset->get("keystore/release");
+		String release_username = p_preset->get("keystore/release_user");
+		String release_password = p_preset->get("keystore/release_password");
+
+		String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
+		if (!FileAccess::exists(jarsigner)) {
+			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
+			return OK;
+		}
+
+		String keystore;
+		String password;
+		String user;
+		if (p_debug) {
+			keystore = p_preset->get("keystore/debug");
+			password = p_preset->get("keystore/debug_password");
+			user = p_preset->get("keystore/debug_user");
+
+			if (keystore.empty()) {
+				keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
+				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
+				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
+			}
+
+			if (ep.step("Signing debug APK...", 103)) {
+				return ERR_SKIP;
+			}
+
+		} else {
+			keystore = release_keystore;
+			password = release_password;
+			user = release_username;
+
+			if (ep.step("Signing release APK...", 103)) {
+				return ERR_SKIP;
+			}
+		}
+
+		if (!FileAccess::exists(keystore)) {
+			EditorNode::add_io_error("Could not find keystore, unable to export.");
+			return ERR_FILE_CANT_OPEN;
+		}
+
+		List<String> args;
+		args.push_back("-digestalg");
+		args.push_back("SHA-256");
+		args.push_back("-sigalg");
+		args.push_back("SHA256withRSA");
+		String tsa_url = EditorSettings::get_singleton()->get("export/android/timestamping_authority_url");
+		if (tsa_url != "") {
+			args.push_back("-tsa");
+			args.push_back(tsa_url);
+		}
+		args.push_back("-verbose");
+		args.push_back("-keystore");
+		args.push_back(keystore);
+		args.push_back("-storepass");
+		args.push_back(password);
+		args.push_back(apk_path);
+		args.push_back(user);
+		int retval;
+		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+		if (retval) {
+			EditorNode::add_io_error("'jarsigner' returned with error #" + itos(retval));
+			return ERR_CANT_CREATE;
+		}
+
+		if (ep.step("Verifying APK...", 104)) {
+			return ERR_SKIP;
+		}
+
+		args.clear();
+		args.push_back("-verify");
+		args.push_back("-keystore");
+		args.push_back(keystore);
+		args.push_back(apk_path);
+		args.push_back("-verbose");
+
+		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
+		if (retval) {
+			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
+			return ERR_CANT_CREATE;
+		}
+		return OK;
+	}
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -2249,10 +2336,6 @@ public:
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
-		String release_keystore = p_preset->get("keystore/release");
-		String release_username = p_preset->get("keystore/release_user");
-		String release_password = p_preset->get("keystore/release_password");
-
 		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
 		// Prepare images to be resized for the icons. If some image ends up being uninitialized, the default image from the export template will be used.
@@ -2404,84 +2487,9 @@ public:
 		}
 
 		if (_signed) {
-			String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
-			if (!FileAccess::exists(jarsigner)) {
-				EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
-				CLEANUP_AND_RETURN(OK);
-			}
-
-			String keystore;
-			String password;
-			String user;
-			if (p_debug) {
-				keystore = p_preset->get("keystore/debug");
-				password = p_preset->get("keystore/debug_password");
-				user = p_preset->get("keystore/debug_user");
-
-				if (keystore.empty()) {
-					keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
-					password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
-					user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
-				}
-
-				if (ep.step("Signing debug APK...", 103)) {
-					CLEANUP_AND_RETURN(ERR_SKIP);
-				}
-
-			} else {
-				keystore = release_keystore;
-				password = release_password;
-				user = release_username;
-
-				if (ep.step("Signing release APK...", 103)) {
-					CLEANUP_AND_RETURN(ERR_SKIP);
-				}
-			}
-
-			if (!FileAccess::exists(keystore)) {
-				EditorNode::add_io_error("Could not find keystore, unable to export.");
-				CLEANUP_AND_RETURN(ERR_FILE_CANT_OPEN);
-			}
-
-			List<String> args;
-			args.push_back("-digestalg");
-			args.push_back("SHA-256");
-			args.push_back("-sigalg");
-			args.push_back("SHA256withRSA");
-			String tsa_url = EditorSettings::get_singleton()->get("export/android/timestamping_authority_url");
-			if (tsa_url != "") {
-				args.push_back("-tsa");
-				args.push_back(tsa_url);
-			}
-			args.push_back("-verbose");
-			args.push_back("-keystore");
-			args.push_back(keystore);
-			args.push_back("-storepass");
-			args.push_back(password);
-			args.push_back(tmp_unaligned_path);
-			args.push_back(user);
-			int retval;
-			OS::get_singleton()->execute(jarsigner, args, true, nullptr, nullptr, &retval);
-			if (retval) {
-				EditorNode::add_io_error("'jarsigner' returned with error #" + itos(retval));
-				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
-			}
-
-			if (ep.step("Verifying APK...", 104)) {
-				CLEANUP_AND_RETURN(ERR_SKIP);
-			}
-
-			args.clear();
-			args.push_back("-verify");
-			args.push_back("-keystore");
-			args.push_back(keystore);
-			args.push_back(tmp_unaligned_path);
-			args.push_back("-verbose");
-
-			OS::get_singleton()->execute(jarsigner, args, true, nullptr, nullptr, &retval);
-			if (retval) {
-				EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
-				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+			err = sign_apk(p_preset, p_debug, tmp_unaligned_path, ep);
+			if (err != OK) {
+				CLEANUP_AND_RETURN(err);
 			}
 		}
 
