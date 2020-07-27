@@ -107,14 +107,15 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 	f->store_32(p_images[0]->get_height());
 	f->store_32(p_images.size()); //depth
 	f->store_32(p_texture_flags);
+
+	if ((p_compress_mode == COMPRESS_LOSSLESS) && p_images[0]->get_format() > Image::FORMAT_RGBA8) {
+		p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
+	}
+
 	if (p_compress_mode != COMPRESS_VIDEO_RAM) {
 		//vram needs to do a first compression to tell what the format is, for the rest its ok
 		f->store_32(p_images[0]->get_format());
 		f->store_32(p_compress_mode); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
-	}
-
-	if ((p_compress_mode == COMPRESS_LOSSLESS) && p_images[0]->get_format() > Image::FORMAT_RGBA8) {
-		p_compress_mode = COMPRESS_UNCOMPRESSED; //these can't go as lossy
 	}
 
 	for (int i = 0; i < p_images.size(); i++) {
