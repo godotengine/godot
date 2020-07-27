@@ -149,28 +149,34 @@ env.Depends(
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
     "#thirdparty/certs/ca-certificates.crt",
-    run_in_subprocess(core_builders.make_certs_header),
+    env.Run(core_builders.make_certs_header, "Building ca-certificates header."),
 )
 
 # Make binders
 env.CommandNoCache(
     ["method_bind.gen.inc", "method_bind_ext.gen.inc", "method_bind_free_func.gen.inc"],
     "make_binders.py",
-    run_in_subprocess(make_binders.run),
+    env.Run(make_binders.run, "Generating method binders."),
 )
 
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", run_in_subprocess(core_builders.make_authors_header))
+env.CommandNoCache(
+    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header."),
+)
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", run_in_subprocess(core_builders.make_donors_header))
+env.CommandNoCache(
+    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header."),
+)
 
 # License
 env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
 env.CommandNoCache(
-    "#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"], run_in_subprocess(core_builders.make_license_header)
+    "#core/license.gen.h",
+    ["../COPYRIGHT.txt", "../LICENSE.txt"],
+    env.Run(core_builders.make_license_header, "Generating license header."),
 )
 
 # Chain load SCsubs

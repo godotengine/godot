@@ -22,13 +22,12 @@ SConscript("pluginscript/SCsub")
 SConscript("videodecoder/SCsub")
 
 
-from platform_methods import run_in_subprocess
 import gdnative_builders
 
 _, gensource = env_gdnative.CommandNoCache(
     ["include/gdnative_api_struct.gen.h", "gdnative_api_struct.gen.cpp"],
     "gdnative_api.json",
-    run_in_subprocess(gdnative_builders.build_gdnative_api_struct),
+    env.Run(gdnative_builders.build_gdnative_api_struct, "Generating GDNative API."),
 )
 env_gdnative.add_source_files(env.modules_sources, [gensource])
 
