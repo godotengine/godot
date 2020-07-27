@@ -35,6 +35,7 @@
 #ifndef INTERPOLATOR_H
 #define INTERPOLATOR_H
 
+#include "core/local_vector.h"
 #include "core/object.h"
 
 class Interpolator : public Object {
@@ -48,12 +49,33 @@ public:
 		FALLBACK_NEW
 	};
 
+private:
+	struct VariableInfo {
+		// TODO Do we need a name?
+		int id;
+		Variant default_value;
+	};
+
+	LocalVector<VariableInfo> variables;
+	LocalVector<LocalVector<Variant>> buffer;
+
+	bool init_phase = true;
+
 	static void bind_methods();
 
 public:
 	Interpolator();
 
-	int register_variable(const Variant &p_var, Fallback p_fallback);
+	int register_variable(const Variant &p_default, Fallback p_fallback);
+	void set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name);
+	void terminate_init();
+
+	void begin_write(uint64_t p_epoch);
+	void epoch_insert(int p_var_id, Variant p_value);
+	void end_write();
+
+	void pop_epoch(uint64_t p_epoch, LocalVector<Variant> &r_vector);
 };
 
+VARIANT_ENUM_CAST(Interpolator::Fallback);
 #endif
