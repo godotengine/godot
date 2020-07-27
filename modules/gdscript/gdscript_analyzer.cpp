@@ -1430,6 +1430,12 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 }
 
 void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
+	if (p_await->to_await == nullptr) {
+		GDScriptParser::DataType await_type;
+		await_type.kind = GDScriptParser::DataType::VARIANT;
+		p_await->set_datatype(await_type);
+		return;
+	}
 	if (p_await->to_await->type == GDScriptParser::Node::CALL) {
 		reduce_call(static_cast<GDScriptParser::CallNode *>(p_await->to_await), true);
 	} else {
