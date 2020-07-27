@@ -916,6 +916,17 @@ void OS_JavaScript::initialize_core() {
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+	/* clang-format off */
+	swap_ok_cancel = EM_ASM_INT({
+		const win = (['Windows', 'Win64', 'Win32', 'WinCE']);
+		const plat = navigator.platform || "";
+		if (win.indexOf(plat) !== -1) {
+			return 1;
+		}
+		return 0;
+	}) == 1;
+	/* clang-format on */
+
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
@@ -1082,6 +1093,10 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	visual_server->init();
 
 	return OK;
+}
+
+bool OS_JavaScript::get_swap_ok_cancel() {
+	return swap_ok_cancel;
 }
 
 void OS_JavaScript::swap_buffers() {
@@ -1428,6 +1443,7 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	visual_server = NULL;
 	audio_driver_javascript = NULL;
 
+	swap_ok_cancel = false;
 	idb_available = false;
 	sync_wait_time = -1;
 

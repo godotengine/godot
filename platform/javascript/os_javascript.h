@@ -69,6 +69,7 @@ class OS_JavaScript : public OS_Unix {
 	AudioDriverJavaScript *audio_driver_javascript;
 	VisualServer *visual_server;
 
+	bool swap_ok_cancel;
 	bool idb_available;
 	int64_t sync_wait_time;
 	int64_t last_sync_check_time;
@@ -115,6 +116,7 @@ public:
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
+	virtual bool get_swap_ok_cancel();
 	virtual void swap_buffers();
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
