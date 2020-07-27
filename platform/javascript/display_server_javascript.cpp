@@ -829,6 +829,8 @@ DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_dr
 }
 
 DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	r_error = OK; // Always succeeds for now.
+
 	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 #if 0
 	EmscriptenWebGLContextAttributes attributes;
