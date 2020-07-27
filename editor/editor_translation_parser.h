@@ -64,6 +64,7 @@ public:
 	Ref<EditorTranslationParserPlugin> get_parser(const String &p_extension) const;
 	void add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
+	void clean_parsers();
 
 	EditorTranslationParser();
 	~EditorTranslationParser();

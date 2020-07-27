@@ -6799,6 +6799,7 @@ EditorNode::EditorNode() {
 
 EditorNode::~EditorNode() {
 	EditorInspector::cleanup_plugins();
+	EditorTranslationParser::get_singleton()->clean_parsers();
 
 	remove_print_handler(&print_handler);
 	memdelete(EditorHelp::get_doc_data());
