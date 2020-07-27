@@ -313,8 +313,6 @@ private:
 	bool line_length_guidelines;
 	int line_length_guideline_soft_col;
 	int line_length_guideline_hard_col;
-	bool draw_fold_gutter;
-	int fold_gutter_width;
 	bool hiding_enabled;
 	bool draw_info_gutter;
 	int info_gutter_width;
@@ -467,8 +465,6 @@ protected:
 	struct Cache {
 		Ref<Texture2D> tab_icon;
 		Ref<Texture2D> space_icon;
-		Ref<Texture2D> can_fold_icon;
-		Ref<Texture2D> folded_icon;
 		Ref<Texture2D> folded_eol_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
@@ -497,13 +493,11 @@ protected:
 
 		int row_height;
 		int line_spacing;
-		int fold_gutter_width;
 		int info_gutter_width;
 		int minimap_width;
 		Cache() {
 			row_height = 0;
 			line_spacing = 0;
-			fold_gutter_width = 0;
 			info_gutter_width = 0;
 			minimap_width = 0;
 		}
@@ -756,12 +750,6 @@ public:
 	void set_show_line_length_guidelines(bool p_show);
 	void set_line_length_guideline_soft_column(int p_column);
 	void set_line_length_guideline_hard_column(int p_column);
-
-	void set_draw_fold_gutter(bool p_draw);
-	bool is_drawing_fold_gutter() const;
-
-	void set_fold_gutter_width(int p_gutter_width);
-	int get_fold_gutter_width() const;
 
 	void set_draw_info_gutter(bool p_draw);
 	bool is_drawing_info_gutter() const;
