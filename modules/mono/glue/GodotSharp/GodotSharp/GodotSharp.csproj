@@ -7,6 +7,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);GODOT</DefineConstants>
@@ -28,6 +29,7 @@
     <Compile Include="Core\Dictionary.cs" />
     <Compile Include="Core\Dispatcher.cs" />
     <Compile Include="Core\DynamicObject.cs" />
+    <Compile Include="Core\Extensions\ErrorExtensions.cs" />
     <Compile Include="Core\Extensions\NodeExtensions.cs" />
     <Compile Include="Core\Extensions\ObjectExtensions.cs" />
     <Compile Include="Core\Extensions\ResourceLoaderExtensions.cs" />
@@ -39,6 +41,9 @@
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
+    <Compile Include="Core\IO\Directory.cs" />
+    <Compile Include="Core\IO\File.cs" />
+    <Compile Include="Core\IO\FileStream.cs" />
     <Compile Include="Core\MarshalUtils.cs" />
     <Compile Include="Core\Mathf.cs" />
     <Compile Include="Core\MathfEx.cs" />

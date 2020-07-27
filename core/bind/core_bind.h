@@ -384,6 +384,7 @@ public:
 	Error open(const String &p_path, ModeFlags p_mode_flags); // open a file.
 	void close(); // Close a file.
 	bool is_open() const; // True when file is open.
+	void flush();
 
 	String get_path() const; // Returns the path for the current open file.
 	String get_path_absolute() const; // Returns the absolute path for the current open file.
