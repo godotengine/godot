@@ -84,7 +84,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code].
+				Returns a list of the bodies colliding with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
@@ -137,7 +137,8 @@
 			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported].
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
-			The maximum number of contacts to report.
+			The maximum number of contacts that will be recorded. Requires [member contact_monitor] to be set to [code]true[/code].
+			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
 			Continuous collision detection mode.
@@ -184,14 +185,14 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
+				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a body exits contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
+				Emitted when a body exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -204,7 +205,7 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
+				Emitted when a body enters into contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -217,7 +218,7 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body shape exits contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
+				Emitted when a body shape exits contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
