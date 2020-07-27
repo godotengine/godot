@@ -629,7 +629,8 @@ Ref<Resource> ResourceInteractiveLoaderBinary::get_resource() {
 
 	return resource;
 }
-Error ResourceInteractiveLoaderBinary::poll() {
+
+Error ResourceInteractiveLoaderBinary::_poll() {
 
 	if (error != OK)
 		return error;
