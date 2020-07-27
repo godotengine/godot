@@ -875,8 +875,12 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 			continue;
 		}
 
-		n->call(p_method, (const Variant **)v, 1);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
+		Callable::CallError err;
+		// Call both script and native method.
+		if (n->get_script_instance()) {
+			n->get_script_instance()->call(p_method, (const Variant **)v, 1, err);
+		}
+		n->call(p_method, (const Variant **)v, 1, err);
 	}
 
 	call_lock--;
