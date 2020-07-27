@@ -11,6 +11,12 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="default_value" type="float" setter="set_default_value" getter="get_default_value" default="0.0">
+			A default value to be assigned within the shader.
+		</member>
+		<member name="default_value_enabled" type="bool" setter="set_default_value_enabled" getter="is_default_value_enabled" default="false">
+			Enables usage of the [member default_value].
+		</member>
 		<member name="hint" type="int" setter="set_hint" getter="get_hint" enum="VisualShaderNodeFloatUniform.Hint" default="0">
 			A hint applied to the uniform, which controls the values it can take when set through the inspector.
 		</member>
