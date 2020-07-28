@@ -41,12 +41,14 @@
 # Anas <anas.ghamdi61@gmail.com>, 2020.
 # R-K <raouf9005@gmail.com>, 2020.
 # HeroFight dev <abdkafi2002@gmail.com>, 2020.
+# أحمد مصطفى الطبراني <eltabaraniahmed@gmail.com>, 2020.
+# ChemicalInk <aladdinalkhafaji@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
-"Last-Translator: Airbus5717 <Abdussamadf350@gmail.com>\n"
+"PO-Revision-Date: 2020-07-21 13:41+0000\n"
+"Last-Translator: ChemicalInk <aladdinalkhafaji@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -2340,10 +2342,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "ليس هناك مشهد محدد ليتم تشغيله."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "المشهد الحالي لم يتم حفظه. الرجاء حفظ المشهد قبل تشغيله و اختباره."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -4722,17 +4720,16 @@ msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition: "
-msgstr "التحريك "
+msgstr "الانتقال: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "وضع السحب"
+msgstr "وضع اللعب:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "مسارات  التحريك"
+msgstr "شجرة التحريك"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -4899,14 +4896,12 @@ msgid "Request failed, return code:"
 msgstr "فشل إتمام الطلب٫ الرمز الذي تم إرجاعه:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed."
 msgstr "فشل الطلب."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Cannot save response to:"
-msgstr "لا يمكن المسح:"
+msgstr "لا يمكن الحفظ بسبب:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
@@ -4917,19 +4912,16 @@ msgid "Request failed, too many redirects"
 msgstr "فشل الطلب٫ السبب هو اعادة التحويل مرات اكثر من اللازم"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Redirect loop."
 msgstr "اعادة توجيه حلقة التكرار."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, timeout"
-msgstr "فشل إتمام الطلب٫ الرمز الذي تم إرجاعه:"
+msgstr "فشل الطلب ، انتهت المهلة"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
-msgstr "الوقت"
+msgstr "إنتهى الوقت"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -4952,14 +4944,12 @@ msgid "Asset Download Error:"
 msgstr "خطأ في تنزيل الأصول:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading (%s / %s)..."
-msgstr "جاري التنزيل"
+msgstr "جاري التنزيل (%s / %s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading..."
-msgstr "جاري التنزيل"
+msgstr "‫جاري التنزيل..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
@@ -4974,9 +4964,8 @@ msgid "Idle"
 msgstr "عاطل"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "تثبيت"
+msgstr "تثبيت..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -5007,24 +4996,20 @@ msgid "Name (Z-A)"
 msgstr "الاسم (ترتيب ألف بائي معكوس)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "الرخصة"
+msgstr "الرخصة (أ-ي)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "الرخصة"
+msgstr "الرخصة (ي-أ)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "First"
 msgstr "الأول"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Previous"
-msgstr "التبويب السابق"
+msgstr "السابق"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
@@ -5043,14 +5028,12 @@ msgid "No results for \"%s\"."
 msgstr "لا نتائج من أجل \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import..."
-msgstr "إستيراد"
+msgstr "استيراد..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Plugins..."
-msgstr "إضافات"
+msgstr "إضافات..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
@@ -5066,9 +5049,8 @@ msgid "Site:"
 msgstr "الموقع:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "الدعم..."
+msgstr "الدعم"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5079,9 +5061,8 @@ msgid "Testing"
 msgstr "أختبار"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Loading..."
-msgstr "تحميل"
+msgstr "جاري التحميل..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5594,9 +5575,8 @@ msgid "Scale mask for inserting keys."
 msgstr "قناع التحجيم لأجل إدخال المفاتيح."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys (based on mask)."
-msgstr "أدخل مفتاح (مسارات موجودة بالفعل)"
+msgstr "أدخل المفاتيح (على أساس القناع)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5666,9 +5646,8 @@ msgid "Error instancing scene from %s"
 msgstr "خطأ في توضيح المشهد من %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change Default Type"
-msgstr "غير النوع الإفتراضي"
+msgstr "تغير النوع الإفتراضي"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5753,9 +5732,8 @@ msgid "Emission Colors"
 msgstr "الوان الإنبعاث"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
-#, fuzzy
 msgid "CPUParticles"
-msgstr "جسيمات"
+msgstr "جزيئات وحدة المعالجة المركزية"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5816,9 +5794,8 @@ msgid "Right Linear"
 msgstr "الخط اليميني"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Preset"
-msgstr "تحميل الإعداد المعد مسبقاً"
+msgstr "تحميل إعداد مسبق"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
@@ -5974,9 +5951,8 @@ msgstr ""
 "هذا هو الخيار الأكثر دقة (لكنه الأبطئ) لأجل للكشف عن وقوع التصادم."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
-msgstr "إنشاء متصادم محدب قريب"
+msgstr "إنشاء شقيق تصادم محدب مفرد"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6051,9 +6027,8 @@ msgid ""
 msgstr "تحديث من المشهد"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh Library"
-msgstr "مكتبة الميش..."
+msgstr "مكتبة المجسم"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -10617,6 +10592,11 @@ msgstr "حفظ المشهد"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "حذف العُقدة \"%s\" مع جميع أبنائها؟"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Delete %d nodes?"
 msgstr "إنشاء عقدة"
 
@@ -12372,6 +12352,12 @@ msgstr ""
 "يجب تزويد  ال CollisionShape2D بإحدى الأشكال (من نوع Shape2D) لتعمل بالشكل "
 "المطلوب. الرجاء تكوين و ضبط الشكل لها اولا!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12850,6 +12836,9 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "المشهد الحالي لم يتم حفظه. الرجاء حفظ المشهد قبل تشغيله و اختباره."
 
 #~ msgid "Not in resource path."
 #~ msgstr "ليس في مسار الموارد."

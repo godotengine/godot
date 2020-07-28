@@ -8,12 +8,13 @@
 # Eternal Death <eternaldeath0001@gmail.com>, 2019.
 # Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
 # pandektis <pandektis@gmail.com>, 2020.
+# KostasMSC <kargyris@athtech.gr>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
-"Last-Translator: pandektis <pandektis@gmail.com>\n"
+"PO-Revision-Date: 2020-07-11 01:21+0000\n"
+"Last-Translator: KostasMSC <kargyris@athtech.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -1785,7 +1786,7 @@ msgstr "Νέος φάκελος..."
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
-msgstr "Αναναίωση"
+msgstr "Ανανέωση"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -2336,12 +2337,6 @@ msgid "There is no defined scene to run."
 msgstr "Δεν υπάρχει καθορισμένη σκηνή για εκτελέση."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Η τρέχουσα σκηνή δεν έχει αποθηκευτεί, αποθηκεύστε πριν να τρέξετε το "
-"πρόγραμμα."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Αδύνατη η εκκίνηση της υπό-εργασίας!"
 
@@ -2703,7 +2698,7 @@ msgstr "Άνοιγμα πρόσφατων"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr "Αποθηκεύσετε σκηνής"
+msgstr "Αποθηκεύση σκηνής"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -5581,7 +5576,7 @@ msgstr "Εμφάνιση Χαράκων"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr "Εμφάνιση Οδηγών"
+msgstr "Εμφάνιση Οδηγιών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Origin"
@@ -10582,6 +10577,11 @@ msgid "Make node as Root"
 msgstr "Κάνε κόμβο ρίζα"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Διαγραφή κόμβου \"%s\" και των παιδιών του;"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Διαγραφή %d κόμβων;"
 
@@ -12286,6 +12286,12 @@ msgstr ""
 "Ένα σχήμα πρέπει να δοθεί στο CollisionShape2D για να λειτουργήσει. "
 "Δημιουργήστε ένα πόρο σχήματος για αυτό!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12869,6 +12875,11 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Η τρέχουσα σκηνή δεν έχει αποθηκευτεί, αποθηκεύστε πριν να τρέξετε το "
+#~ "πρόγραμμα."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Δεν υπάρχει στην διαδρομή πόρων."

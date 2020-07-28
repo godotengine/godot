@@ -2321,10 +2321,6 @@ msgid "There is no defined scene to run."
 msgstr "Nieje definovaná žiadna scéna na spustenie."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "Aktuálna scéna sa nikdy neuložila, prosím uložte ju pred spustením."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Subprocess sa nedá spustiť!"
 
@@ -10493,6 +10489,11 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Všetky vybrané"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Delete %d nodes?"
 msgstr "Všetky vybrané"
 
@@ -12171,6 +12172,12 @@ msgstr ""
 "Musíte nastaviť tvar objektu CollisionShape2D aby fungoval. Prosím, vytvorte "
 "preň tvarový objekt!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12647,6 +12654,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "Aktuálna scéna sa nikdy neuložila, prosím uložte ju pred spustením."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Nieje v resource path."

@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 12:01+0000\n"
+"PO-Revision-Date: 2020-06-26 06:11+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -768,9 +768,8 @@ msgid "Method in target node must be specified."
 msgstr "Método no nó alvo deve ser especificado."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "O nome não é um identificador válido:"
+msgstr "O nome do método tem de ser um identificador válido."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -2337,10 +2336,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Não existe cena definida para execução."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "A cena atual nunca foi guardada, por favor guarde-a antes de executar."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -10530,6 +10525,11 @@ msgid "Make node as Root"
 msgstr "Tornar Nó Raiz"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Apagar nó \"%s\" e filhos?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Apagar %d nós?"
 
@@ -12227,6 +12227,12 @@ msgstr ""
 "Uma forma tem de ser fornecida para CollisionShape2D funcionar. Crie um "
 "recurso forma!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12793,6 +12799,10 @@ msgstr "Variações só podem ser atribuídas na função vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem ser modificadas."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "A cena atual nunca foi guardada, por favor guarde-a antes de executar."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Não está no caminho do recurso."

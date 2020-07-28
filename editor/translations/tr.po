@@ -47,12 +47,15 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # Güneş Gümüş <gunes.gumus.001@gmail.com>, 2020.
 # Oğuz Ersen <oguzersen@protonmail.com>, 2020.
+# Vedat Günel <gunel15@itu.edu.tr>, 2020.
+# Ahmet Elgün <ahmetelgn@gmail.com>, 2020.
+# Efruz Yıldırır <efruzyildirir@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-22 21:01+0000\n"
-"Last-Translator: Güneş Gümüş <gunes.gumus.001@gmail.com>\n"
+"PO-Revision-Date: 2020-07-06 04:41+0000\n"
+"Last-Translator: Efruz Yıldırır <efruzyildirir@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -60,7 +63,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -798,9 +801,8 @@ msgid "Method in target node must be specified."
 msgstr "Hedef düğümdeki metod tanımlanmalı."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Ad doğru bir belirleyici değil:"
+msgstr "Metod ismi geçerli bir tanımlayıcı değil."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1497,7 +1499,7 @@ msgstr "KendindenYüklenme'leri Yeniden Sırala"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Otomatik yükleme eklenemiyor:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2364,10 +2366,6 @@ msgid "There is no defined scene to run."
 msgstr "Çalıştırmak için herhangi bir sahne seçilmedi."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "Şimdiki sahne hiç kaydedilmedi, lütfen çalıştırmadan önce kaydediniz."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Alt işlem başlatılamadı!"
 
@@ -2452,15 +2450,16 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Hiç kaydedilmemiş bir sahne yeniden yüklenemiyor."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Sahne Kaydet"
+msgstr "Kaydedilmiş Sahneyi Yeniden Yükle"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Mevcut sahnede kaydedilmemiş değişiklikler var.\n"
+"Sahne yine de yeniden yüklensin mi? Bu işlem geri alınamaz."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -3395,11 +3394,10 @@ msgid "Did you forget the '_run' method?"
 msgstr "'_run()' metodunu unuttunuz mu?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Alıcı bırakmak için Ctrl'e basılı tutun. Genel imza bırakmak için Shift'e "
-"basılı tutun."
+"Tamsayılara yuvarlamak için Ctrl tuşunu basılı tutun. Hassas değişiklikler "
+"için Shift tuşunu basılı tutun."
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4000,7 +3998,7 @@ msgstr "sonradan-içe aktarılmış betik çalıştırılırken hata:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr ""
+msgstr "`Post_import ()` yönteminde Node türevi bir nesne döndürdünüz mü?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -4024,7 +4022,7 @@ msgstr "Şu Şekilde İçe Aktar:"
 
 #: editor/import_dock.cpp
 msgid "Preset"
-msgstr "Önayar"
+msgstr "Ön ayar"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -4037,7 +4035,7 @@ msgstr "Sahneleri kaydet, tekrar içe aktar ve baştan başlat"
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
 msgstr ""
-"İçe aktarılmış dosyanın tipini değiştirmek editörü baştan başlatılmasını "
+"İçe aktarılmış dosyanın tipini değiştirmek editörü yeniden başlatmanı "
 "gerektiriyor."
 
 #: editor/import_dock.cpp
@@ -6947,9 +6945,8 @@ msgstr ""
 "'%s' düğümünden '%s' düğümüne, '%s' sinyali için '%s' bağlantı metodu eksik."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(gözardı et)"
+msgstr "[Gözardı et]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -10558,6 +10555,11 @@ msgid "Make node as Root"
 msgstr "Düğümü Kök düğüm yap"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "\"%s\" düğümü ve alt düğümleri silinsin mi?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "%d düğümleri silelim mi?"
 
@@ -12009,6 +12011,7 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"Eklentileri kullanabilmek için \"Özel Derleme Kullan\" seçeneği aktif olmalı."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12233,6 +12236,12 @@ msgid ""
 msgstr ""
 "CollisionShape2D'nin işlevini yerine getirmesi için ona bir şekil sağlanması "
 "gerekmektedir. Lütfen onun için bir şekil kaynağı oluşturun!"
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12807,6 +12816,10 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Şimdiki sahne hiç kaydedilmedi, lütfen çalıştırmadan önce kaydediniz."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Kaynak yolunda değil."

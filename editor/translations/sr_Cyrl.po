@@ -2549,10 +2549,6 @@ msgid "There is no defined scene to run."
 msgstr "Не постоји дефинисана сцена за покретање."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "Тренутна сцена није сачувана, молим сачувајте је пре покретања."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Не могу покренути подпроцес!"
 
@@ -11811,6 +11807,11 @@ msgstr "Направи Корен од чвора"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Обриши чвор \"%s\" и његову децу?"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Delete %d nodes?"
 msgstr "Обриши %d чворове?"
 
@@ -13785,6 +13786,12 @@ msgstr ""
 "Облик мора бити снабдевен за СударниОблик2Д да би радио. Молимо креирај "
 "облик ресурс за њега!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 #, fuzzy
 msgid ""
@@ -14434,6 +14441,9 @@ msgstr "Варијације могу само бити одређене у фу
 #, fuzzy
 msgid "Constants cannot be modified."
 msgstr "Константе није могуће мењати."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "Тренутна сцена није сачувана, молим сачувајте је пре покретања."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Није на пут ресурса."
