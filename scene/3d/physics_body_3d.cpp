@@ -501,11 +501,11 @@ real_t RigidBody3D::get_mass() const {
 }
 
 void RigidBody3D::set_weight(real_t p_weight) {
-	set_mass(p_weight / real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8)));
+	set_mass(p_weight / real_t(GLOBAL_GET("physics/3d/default_gravity")));
 }
 
 real_t RigidBody3D::get_weight() const {
-	return mass * real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8));
+	return mass * real_t(GLOBAL_GET("physics/3d/default_gravity"));
 }
 
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
