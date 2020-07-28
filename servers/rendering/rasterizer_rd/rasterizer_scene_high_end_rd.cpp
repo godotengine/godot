@@ -1331,8 +1331,8 @@ void RasterizerSceneHighEndRD::_add_geometry(InstanceBase *p_instance, uint32_t 
 		material = (MaterialData *)storage->material_get_data(material->next_pass, RasterizerStorageRD::SHADER_TYPE_3D);
 		if (!material || !material->shader_data->valid) {
 			break;
-			_add_geometry_with_material(p_instance, p_surface, material, material->next_pass, p_pass_mode, p_geometry_index, p_using_sdfgi);
 		}
+		_add_geometry_with_material(p_instance, p_surface, material, material->next_pass, p_pass_mode, p_geometry_index, p_using_sdfgi);
 	}
 }
 
