@@ -488,7 +488,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 	color_region.color = p_color;
 	color_region.start_key = p_start_key;
 	color_region.end_key = p_end_key;
-	color_region.line_only = p_line_only;
+	color_region.line_only = p_line_only || p_end_key == "";
 	color_regions.push_back(color_region);
 	clear_highlighting_cache();
 }
