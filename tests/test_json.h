@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_main.cpp                                                        */
+/*  test_json.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_main.h"
+#ifndef TEST_JSON_H
+#define TEST_JSON_H
 
-#include "core/list.h"
-
-#include "test_astar.h"
-#include "test_basis.h"
-#include "test_class_db.h"
-#include "test_gdscript.h"
-#include "test_gui.h"
-#include "test_json.h"
-#include "test_math.h"
-#include "test_oa_hash_map.h"
-#include "test_ordered_hash_map.h"
-#include "test_physics_2d.h"
-#include "test_physics_3d.h"
-#include "test_render.h"
-#include "test_shader_lang.h"
-#include "test_string.h"
-#include "test_validate_testing.h"
-#include "test_variant.h"
-
-#include "modules/modules_tests.gen.h"
+#include "core/io/json.h"
 
 #include "tests/test_macros.h"
 
-int test_main(int argc, char *argv[]) {
-	// Doctest runner.
-	doctest::Context test_context;
-	List<String> valid_arguments;
+namespace TestJSON {
 
-	// Clean arguments of "--test" from the args.
-	int argument_count = 0;
-	for (int x = 0; x < argc; x++) {
-		if (strncmp(argv[x], "--test", 6) != 0) {
-			valid_arguments.push_back(String(argv[x]));
-			argument_count++;
-		}
+TEST_SUITE("[JSON] Issues") {
+	TEST_CASE_PENDING("https://github.com/godotengine/godot/issues/40794") {
+		// Correct:  R"({ "a": 12345, "b": 12345 })"
+		String json = R"( "a": 12345, "b": 12345 })"; // Missing starting bracket.
+		Variant parsed;
+		String err_str;
+		int line;
+
+		Error err = JSON::parse(json, parsed, err_str, line);
+
+		CHECK_MESSAGE(err == ERR_PARSE_ERROR,
+				"Missing starting curly bracket, this should be treated as a parse error.");
+		CHECK_MESSAGE(parsed.get_type() != Variant::STRING,
+				"Should not prematurely parse as a string.");
 	}
-	// Convert Godot command line arguments back to standard arguments.
-	char **args = new char *[valid_arguments.size()];
-	for (int x = 0; x < valid_arguments.size(); x++) {
-		// Operation to convert Godot string to non wchar string.
-		const char *str = valid_arguments[x].utf8().ptr();
-		// Allocate the string copy.
-		args[x] = new char[strlen(str) + 1];
-		// Copy this into memory.
-		std::memcpy(args[x], str, strlen(str) + 1);
-	}
-
-	test_context.applyCommandLine(valid_arguments.size(), args);
-
-	test_context.setOption("order-by", "name");
-	test_context.setOption("abort-after", 5);
-	test_context.setOption("no-breaks", true);
-
-	delete[] args;
-
-	return test_context.run();
 }
+
+} // namespace TestJSON
+
+#endif // TEST_JSON_H
