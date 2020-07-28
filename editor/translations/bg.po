@@ -2262,11 +2262,6 @@ msgid "There is no defined scene to run."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Текущата сцена никога не е била запазена. Моля, запазете я преди изпълнение."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr ""
 
@@ -10293,6 +10288,11 @@ msgid "Make node as Root"
 msgstr "Превръщане на възела в корен"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Изтриване на %d възела?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Изтриване на %d възела?"
 
@@ -11996,6 +11996,12 @@ msgstr ""
 "За да работи CollisionShape2D, е нужно да му се даде форма. Моля, създайте "
 "му Shape2D ресурс."
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12483,6 +12489,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Текущата сцена никога не е била запазена. Моля, запазете я преди "
+#~ "изпълнение."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Не е в пътя на ресурсите."

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-06-26 06:11+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -2325,11 +2325,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Suoritettavaa skeneä ei ole määritetty."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Nykyistä skeneä ei ole vielä tallennettu. Tallenna se ennen suorittamista."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -8642,7 +8637,7 @@ msgstr "Muuntaa HSV-vektorin RGB-vastaavaksi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr "Muuntaa RGB-vektori HSV-vastaavaksi."
+msgstr "Muuntaa RGB-vektorin HSV-vastaavaksi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sepia function."
@@ -10530,6 +10525,11 @@ msgid "Make node as Root"
 msgstr "Tee solmusta juurisolmu"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Poista solmu \"%s\" ja sen alisolmut?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Poista %d solmua?"
 
@@ -12223,6 +12223,12 @@ msgstr ""
 "CollisionShape2D solmulla täytyy olla muoto, jotta se toimisi. Ole hyvä ja "
 "luo sille muotoresurssi!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12796,6 +12802,10 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Nykyistä skeneä ei ole vielä tallennettu. Tallenna se ennen suorittamista."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Ei löytynyt resurssipolusta."

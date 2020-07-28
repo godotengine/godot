@@ -35,7 +35,7 @@
 # Rémi Verschelde <rverschelde@gmail.com>, 2016-2017.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Roger BR <drai_kin@hotmail.com>, 2016.
-# salty64 <cedric.arrabie@univ-pau.fr>, 2018.
+# salty64 <cedric.arrabie@univ-pau.fr>, 2018, 2020.
 # Thomas Baijot <thomasbaijot@gmail.com>, 2016, 2019.
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
@@ -79,7 +79,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-07-26 15:41+0000\n"
 "Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -384,7 +384,7 @@ msgstr "Envelopper l’interp. de la boucle"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Insérer clés"
+msgstr "Insérer clé"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
@@ -2407,12 +2407,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Il n'y a pas de scène définie pour être lancée."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"La scène actuelle n'a jamais été sauvegardée, veuillez la sauvegarder avant "
-"de la lancer."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5543,7 +5537,7 @@ msgstr "Activer/Désactiver le magnétisme intelligent."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
-msgstr "Utiliser le magnétisme intelligent"
+msgstr "Utiliser l'aimantation intelligente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
@@ -7311,7 +7305,7 @@ msgstr "Échelle : "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Traduction : "
+msgstr "Translation : "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -7567,7 +7561,7 @@ msgstr "Utiliser les coordonées locales"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Aligner avec la grille"
+msgstr "Utiliser l’aimantation"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7599,11 +7593,11 @@ msgstr "Basculer entre la vue perspective et orthogonale"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
-msgstr "Insérer une clef d'animation"
+msgstr "Insérer une clé d'animation"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Origin"
-msgstr "Focaliser sur l'origine"
+msgstr "Focaliser l'origine"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -9026,8 +9020,7 @@ msgstr "Renvoie la tangente hyperbolique inverse du paramètre."
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr ""
-"Recherche l'entier le plus proche qui est plus supérieur ou égal au "
-"paramètre."
+"Recherche l'entier le plus proche qui est supérieur ou égal au paramètre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
@@ -9043,7 +9036,7 @@ msgstr "Renvoie le cosinus hyperbolique du paramètre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
-msgstr "Convertit une quantité de radians en degrés."
+msgstr "Convertit une quantité en radians en degrés."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
@@ -9109,11 +9102,11 @@ msgstr "1.0 / scalaire"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer to the parameter."
-msgstr "Renvoie l'entier le plus proche de celui du paramètre."
+msgstr "Renvoie l'entier le plus proche du paramètre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest even integer to the parameter."
-msgstr "Renvoie l'entier pair le plus proche de celui du paramètre."
+msgstr "Renvoie l'entier pair le plus proche du paramètre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
@@ -10686,6 +10679,10 @@ msgid "Make node as Root"
 msgstr "Choisir le nœud comme racine de scène"
 
 #: editor/scene_tree_dock.cpp
+msgid "Delete %d nodes and any children?"
+msgstr "Supprimer %d nœuds et leurs enfants potentiels ?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Supprimer %d nœuds ?"
 
@@ -11130,11 +11127,11 @@ msgstr "Erreur :"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Error"
-msgstr "Erreur C ++"
+msgstr "Erreur C++"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Error:"
-msgstr "Erreur C ++ :"
+msgstr "Erreur C++ :"
 
 #: editor/script_editor_debugger.cpp
 msgid "C++ Source"
@@ -11223,7 +11220,7 @@ msgstr "Exporter la liste vers un fichier CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "Chemin de la ressource"
+msgstr "Chemin de ressource"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -12404,6 +12401,15 @@ msgstr ""
 "Une forme doit être créée afin qu'une CollisionShape2D fonctionne. Veuillez "
 "créer une ressource de forme !"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"Les formes à base de polygones ne sont pas prévues pour être utilisées ou "
+"éditées via le nœud CollisionShape2D. Veuillez utiliser le nœud "
+"CollisionPolygon2D à la place."
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12984,7 +12990,7 @@ msgstr "Affectation à la fonction."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to uniform."
-msgstr "Affectation à l'uniforme."
+msgstr "Affectation à la variable uniform."
 
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
@@ -12993,6 +12999,11 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "La scène actuelle n'a jamais été sauvegardée, veuillez la sauvegarder "
+#~ "avant de la lancer."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Pas dans le chemin de la ressource."

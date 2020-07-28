@@ -52,12 +52,14 @@
 # artism90 <artism90@googlemail.com>, 2020.
 # Jaigskim <filzstift112@gmail.com>, 2020.
 # Jacqueline Ulken <Jacqueline.Ulken@protonmail.com>, 2020.
+# Günther Bohn <ciscouser@gmx.de>, 2020.
+# Tom Wor <mail@tomwor.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2020-07-28 09:51+0000\n"
+"Last-Translator: Tom Wor <mail@tomwor.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -775,7 +777,7 @@ msgstr "Standard"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr "Seitenleiste umschalten"
+msgstr "Skript-Panel umschalten"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -2380,12 +2382,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Es ist keine abzuspielende Szene definiert."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Die aktuelle Szene wurde noch nicht gespeichert, bitte vor dem Abspielen "
-"sichern."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -5438,7 +5434,7 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr "Zoom Zurücksetzen"
+msgstr "Zoom zurücksetzen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10153,7 +10149,7 @@ msgstr "Ereignis hinzufügen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "\"Button\""
+msgstr "Schaltfläche (Button)"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -10641,6 +10637,11 @@ msgid "Make node as Root"
 msgstr "Node zur Szenenwurzel machen"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Node „%s“ und Unterobjekte löschen?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "%d Nodes löschen?"
 
@@ -10759,7 +10760,7 @@ msgstr "Leere Vererbung"
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
-msgstr "bearbeitbare Unterobjekte"
+msgstr "Bearbeitbare Unterobjekte"
 
 #: editor/scene_tree_dock.cpp
 msgid "Load As Placeholder"
@@ -12340,6 +12341,12 @@ msgstr ""
 "Damit CollisionShape2D funktionieren kann, muss eine Form angegeben werden. "
 "Bitte erzeuge eine Shape-Ressource dafür!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12938,6 +12945,11 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Die aktuelle Szene wurde noch nicht gespeichert, bitte vor dem Abspielen "
+#~ "sichern."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Nicht im Ressourcen-Pfad."

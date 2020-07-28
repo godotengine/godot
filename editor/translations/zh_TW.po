@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-22 06:40+0000\n"
+"PO-Revision-Date: 2020-07-07 15:56+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -52,7 +52,7 @@ msgstr "應為一個長度為 1（一個字元）的字串。"
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "欲解碼的位元組不足或格式無效。"
+msgstr "位元組長度不足以進行解碼或或格式無效。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -196,7 +196,7 @@ msgstr "更改多個動畫的關鍵畫格數值"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr "更改多個動畫的回調"
+msgstr "更改多個動畫的呼叫"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -302,7 +302,7 @@ msgstr "不連續"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr "觸發器"
+msgstr "觸發程序"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -408,7 +408,7 @@ msgstr "重新排列軌道"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr "變形軌只能套用至 Spatial 節點。"
+msgstr "變形軌僅可套用至 Spatial 節點。"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -417,18 +417,18 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"音訊軌只能指向以下類型的節點：\n"
+"音訊軌僅可指向以下類型節點：\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "動畫軌只能指向 AnimationPlayer 節點。"
+msgstr "動畫軌僅可指向 AnimationPlayer 節點。"
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr "動畫 Player 無法播放自己，只能播放其他 Player。"
+msgstr "動畫 Player 無法播放自己，僅可播放其他 Player。"
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -460,7 +460,7 @@ msgstr "添加軌道關鍵畫格"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "無效的軌道路徑，無法新增方法關鍵畫格。"
+msgstr "無效軌道路徑，無法新增方法關鍵畫格。"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -503,11 +503,12 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
-"這個動畫是由外部匯入之場景提供，套用於匯入軌道的修改將不會被保存。\n"
+"該動畫屬於外部匯入之場景，套用於匯入軌道的修改將不會被保存。\n"
 "\n"
-"若要開啟「加入客制軌」的功能，請在場景在匯入設定中將「動畫 -> 儲存」設定為\n"
-"「檔案」，並啟用「動畫 -> 保存客制軌」，然後重新匯入。\n"
-"或者也可使用會將動畫匯入獨立檔案的匯入 Preset。"
+"若要開啟「加入客制軌」的功能，請在場景在匯入設定中將 [Animation] -> "
+"[Storage] 設定為\n"
+"[Files]，並啟用 [Animation] -> [Keep Custom Tracks]，然後重新匯入。\n"
+"另可使用會將動畫匯入獨立檔案的匯入預設設定。"
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -597,7 +598,7 @@ msgstr "清除動畫"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr "選擇要設定動畫的節點："
+msgstr "選擇欲設定動畫之節點："
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
@@ -698,7 +699,7 @@ msgstr "行號："
 
 #: editor/code_editor.cpp
 msgid "%d replaced."
-msgstr "已取代了 %d 件。"
+msgstr "已取代 %d 件。"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -714,7 +715,7 @@ msgstr "區分大小寫"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr "搜尋完整單字"
+msgstr "搜尋完整單詞"
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
@@ -759,16 +760,15 @@ msgstr "警告"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr "行號和列號。"
+msgstr "行號與列號。"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr "必須指定目標節點的方法。"
+msgstr "必須指定目標節點方法。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "名稱不是一個有效的識別符："
+msgstr "方法名稱必須為有效識別符。"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -790,7 +790,7 @@ msgstr "自訊號："
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr "場景中無任何的腳本。"
+msgstr "場景中無任何腳本。"
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -819,7 +819,7 @@ msgstr "額外呼叫引數："
 
 #: editor/connections_dialog.cpp
 msgid "Receiver Method:"
-msgstr "Receiver 方法："
+msgstr "接收器方法："
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -1028,7 +1028,7 @@ msgstr "開啟"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr "擁有者："
+msgstr "為下列之擁有者："
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
@@ -1101,7 +1101,7 @@ msgstr "沒有明確從屬關係的資源："
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr "改變字典鍵"
+msgstr "改變字典索引鍵"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
@@ -1179,7 +1179,7 @@ msgid ""
 "respective copyright statements and license terms."
 msgstr ""
 "Godot Engine 依賴數個自由且開放原始碼的第三方函式庫，所有函式庫皆相容於 MIT "
-"授權條款。以下是這些第三方元件的完整列表於其各自之著作權宣告與授權條款。"
+"授權條款。以下為這些第三方元件的完整列表與其著作權宣告及授權條款。"
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1244,39 +1244,39 @@ msgstr "新增效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr "重新命名音訊 Bus"
+msgstr "重新命名音訊匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr "更改音訊 Bus 音量"
+msgstr "更改音訊匯流排音量"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "切換音訊 Bus 的 Solo"
+msgstr "切換音訊匯流排 Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "靜音／取消靜音音訊 Bus"
+msgstr "靜音／取消靜音音訊匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "忽略／取消忽略音訊 Bus 效果"
+msgstr "忽略／取消忽略音訊匯流排效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "選擇 Bus 輸出地點"
+msgstr "選擇音訊匯流排輸出位置"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr "新增音效 Bus 效果"
+msgstr "新增音效匯流排效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
-msgstr "移動 Bus 效果"
+msgstr "移動匯流排效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr "刪除 Bus 效果"
+msgstr "刪除匯流排效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
@@ -1296,7 +1296,7 @@ msgstr "忽略效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
-msgstr "Bus 選項"
+msgstr "匯流排選項"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1317,31 +1317,31 @@ msgstr "音訊"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "新增音訊 Bus"
+msgstr "新增音訊匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr "Master Bus 不可刪除！"
+msgstr "不可刪除主匯流排！"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr "刪除音訊 Bus"
+msgstr "刪除音訊匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr "重複音訊 Bus"
+msgstr "重複音訊匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
-msgstr "重設 Bus 音量"
+msgstr "重設匯流排音量"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr "移動音訊 Bus"
+msgstr "移動音訊匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "另存音訊 Bus 配置為..."
+msgstr "將音訊匯流排配置另存為..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -1349,7 +1349,7 @@ msgstr "新配置的位置..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "開啟音訊 Bus 配置"
+msgstr "開啟音訊匯流排配置"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
@@ -1361,7 +1361,7 @@ msgstr "畫面配置"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "無效的檔案，或該檔案不是音訊 Bus 配置檔。"
+msgstr "無效檔案或該檔案並非音訊匯流排配置檔。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Error saving file: %s"
@@ -1369,11 +1369,11 @@ msgstr "無法保存檔案：%s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr "新增 Bus"
+msgstr "新增匯流排"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
-msgstr "新增一個新的音訊 Bus 至該配置。"
+msgstr "新增一個新的音訊匯流排至該配置。"
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1383,7 +1383,7 @@ msgstr "載入"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr "讀取現存的 Bus 配置。"
+msgstr "讀取現有的匯流排配置。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save As"
@@ -1391,7 +1391,7 @@ msgstr "另存新檔"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr "將該 Bus 配置保存至檔案。"
+msgstr "將該匯流排配置保存至檔案。"
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
@@ -1399,11 +1399,11 @@ msgstr "載入預設"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "載入預設的 Bus 配置。"
+msgstr "載入預設匯流排配置。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr "建立新的 Bus 配置。"
+msgstr "建立新匯流排配置。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1419,7 +1419,7 @@ msgstr "不可與現存的引擎類別名稱衝突。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing built-in type name."
-msgstr "不可與內建的列表名稱衝突。"
+msgstr "不可與內建的類別名稱衝突。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing global constant name."
@@ -1484,7 +1484,7 @@ msgstr "名稱"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "單例 (Singleton)"
+msgstr "單例"
 
 #: editor/editor_data.cpp editor/inspector_dock.cpp
 msgid "Paste Params"
@@ -1512,7 +1512,7 @@ msgstr "[未保存]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first."
-msgstr "請先選擇一個基礎的資料夾。"
+msgstr "請先選擇基礎資料夾。"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1557,15 +1557,16 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
-"目標平台上的 GLES2 必須使用「ETC」紋理壓縮。請在專案設定中啟用「匯入 ETC」。"
+"目標平台上的 GLES2 必須使用「ETC」紋理壓縮。請在專案設定中啟用「Import "
+"Etc」。"
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"目標平台上的 GLES3 必須使用「ETC2」紋理壓縮。請在專案設定中啟用「匯入 "
-"ETC2」。"
+"目標平台上的 GLES3 必須使用「ETC2」紋理壓縮。請在專案設定中啟用「Import Etc "
+"2」。"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1575,7 +1576,7 @@ msgid ""
 "Enabled'."
 msgstr ""
 "目標平台上的 GLES2 回退驅動器功能必須使用「ETC」紋理壓縮。\n"
-"請在專案設定中啟用「匯入 ETC」或是禁用「啟用驅動器回退」。"
+"請在專案設定中啟用「Import Etc」或是禁用「Driver Fallback Enabled」。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1587,7 +1588,7 @@ msgstr "找不到自定義偵錯樣板。"
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "找不到自定義釋出樣板。"
+msgstr "找不到自定義發行樣板。"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1595,7 +1596,7 @@ msgstr "找不到樣板檔案："
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "匯出 32 位元檔時，內嵌的 PCK 大小不得超過 4 GB。"
+msgstr "匯出 32 位元檔時，內嵌 PCK 大小不得超過 4 GB。"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -1627,15 +1628,15 @@ msgstr "檔案系統與匯入 Dock"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
-msgstr "確定要清除 Profile「%s」嗎？（無法復原）"
+msgstr "確定要清除設定檔「%s」嗎？（無法復原）"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr "Profile 必須為一個有效的檔案名稱，並且不包含「.」"
+msgstr "設定檔必須為有效檔名，且不可包含「.」"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile with this name already exists."
-msgstr "已有相同名稱的 Profile 存在。"
+msgstr "已有相同名稱的設定檔存在。"
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
@@ -1677,11 +1678,11 @@ msgstr "檔案「%s」的格式無效，已中止匯入。"
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
-msgstr "Profile「%s」已經存在。匯入前請先將其移除。已中止匯入。"
+msgstr "設定檔「%s」已存在。匯入前請先將其移除。已中止匯入。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
-msgstr "保存 Profile 至路徑「%s」時發生錯誤。"
+msgstr "在下列路徑保存設定檔時發生錯誤：%s。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
@@ -1689,7 +1690,7 @@ msgstr "未設定"
 
 #: editor/editor_feature_profile.cpp
 msgid "Current Profile:"
-msgstr "目前版本："
+msgstr "目前設定檔："
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
@@ -1712,7 +1713,7 @@ msgstr "匯出"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
-msgstr "可用的 Profile："
+msgstr "可用設定檔："
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -1720,31 +1721,31 @@ msgstr "類別選項"
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
-msgstr "新增 Profile 名稱："
+msgstr "新增設定檔名稱："
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase Profile"
-msgstr "清除 Profile"
+msgstr "清除設定檔"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
-msgstr "Godot 功能 Profile"
+msgstr "Godot 功能設定檔"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr "匯入 Profile"
+msgstr "匯入設定檔"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
-msgstr "匯出 Profile"
+msgstr "匯出設定檔"
 
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
-msgstr "管理編輯器功能 Profile"
+msgstr "管理編輯器功能設定檔"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr "選擇目前的資料夾"
+msgstr "選擇目前資料夾"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1865,7 +1866,7 @@ msgstr "重新整理檔案。"
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
-msgstr "將目前的資料夾新增或移除我的最愛。"
+msgstr "將目前資料夾新增或移除至我的最愛。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
@@ -1913,7 +1914,7 @@ msgstr "（重新）匯入素材"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr "上"
+msgstr "頂端"
 
 #: editor/editor_help.cpp
 msgid "Class:"
@@ -2009,27 +2010,27 @@ msgstr "全部顯示"
 
 #: editor/editor_help_search.cpp
 msgid "Classes Only"
-msgstr "僅限類別"
+msgstr "僅顯示類別"
 
 #: editor/editor_help_search.cpp
 msgid "Methods Only"
-msgstr "僅限方法"
+msgstr "僅顯示方法"
 
 #: editor/editor_help_search.cpp
 msgid "Signals Only"
-msgstr "僅限信號"
+msgstr "僅顯示訊號"
 
 #: editor/editor_help_search.cpp
 msgid "Constants Only"
-msgstr "僅限常數"
+msgstr "僅顯示常數"
 
 #: editor/editor_help_search.cpp
 msgid "Properties Only"
-msgstr "僅限屬性"
+msgstr "僅顯示屬性"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Properties Only"
-msgstr "僅限主題屬性"
+msgstr "僅顯示主題屬性"
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
@@ -2156,7 +2157,7 @@ msgstr "保存資源錯誤！"
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
-msgstr "由於該資源不屬於已編輯的場景，無法保存該資源。請先確保其獨立。"
+msgstr "由於該資源不屬於已編輯的場景，無法保存該資源。請先使其獨立化。"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -2305,11 +2306,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr "沒有已定義的場景可執行。"
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "目前的場景從未被保存，請先保存以執行。"
+msgstr "未定義欲執行之場景。"
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2365,7 +2362,7 @@ msgstr "是"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr "此場景從未被保存。是否要在執行前先保存？"
+msgstr "此場景從未被保存。是否於執行前先保存？"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
@@ -2381,15 +2378,15 @@ msgstr "該操作必須要有跟節點才可完成。"
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "匯出 Tile Set"
+msgstr "匯出圖塊集"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr "該操作必須要有已選擇的節點才可完成。"
+msgstr "請先選擇節點以執行該操作。"
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "目前的場景尚未保存。仍然要開啟嗎？"
+msgstr "尚未保存目前場景。仍然要開啟嗎？"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -2404,8 +2401,8 @@ msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
-"目前的場景有未保存的改動。\n"
-"仍然要重新載入場景嗎？這個操作將無法復原。"
+"目前場景有未保存的改動。\n"
+"仍要重新載入場景嗎？此操作將無法復原。"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2439,9 +2436,7 @@ msgstr "開啟專案管理員前要先保存以下場景嗎？"
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
-msgstr ""
-"該選項已停止維護。遇到需要強制重新整理的狀況現在已被視為程式錯誤。請回報該問"
-"題。"
+msgstr "該選項已停止維護。目前已將需強制重新整理之狀況視為 Bug，請回報該問題。"
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -2471,12 +2466,12 @@ msgstr "無法自路徑「%s」載入擴充腳本。"
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
-msgstr "無法從路徑「%s」載入擴充腳本。看樣子是程式碼中有錯誤，請檢查語法。"
+msgstr "無法自路徑「%s」載入擴充腳本。可能為程式碼中有錯誤，請檢查語法。"
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr "無法自路徑「%s」載入擴充腳本，基礎型別不是 EditorPlugin。"
+msgstr "無法自路徑「%s」載入擴充腳本，基礎型別非 EditorPlugin。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
@@ -2495,7 +2490,7 @@ msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"載入場景時發生錯誤，場景必須置於專案路徑內。請使用「匯入」來開啟該場景，並將"
+"載入場景時發生錯誤，場景必須置於專案路徑內。請使用 [匯入] 來開啟該場景，並將"
 "其保存於專案路徑內。"
 
 #: editor/editor_node.cpp
@@ -2513,7 +2508,7 @@ msgid ""
 "category."
 msgstr ""
 "尚未定義主場景。要選擇一個場景嗎？\n"
-"稍後可在「應用程式」分類中的「專案設定」修改。"
+"稍後可在「專案設定」的 [Application] 分類中修改。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2522,7 +2517,7 @@ msgid ""
 "category."
 msgstr ""
 "所選的場景「%s」不存在，是否要選擇一個有效的場景？\n"
-"稍後可在「應用程式」分類中的「專案設定」中修改。"
+"稍後可在「專案設定」的 [Application] 分類中修改。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2530,8 +2525,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"所選的場景「%s」不是場景檔案，是否要選擇另一個有效的場景？\n"
-"稍後可在「應用程式」分類中的「專案設定」中修改。"
+"所選的場景「%s」並非場景檔案，是否要選擇另一個有效的場景？\n"
+"稍後可在「專案設定」中的 [Application] 中修改。"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -2589,7 +2584,7 @@ msgstr "還有 %d 個資料夾"
 
 #: editor/editor_node.cpp
 msgid "%d more files"
-msgstr "還有 %d 個檔案"
+msgstr "其他 %d 個檔案"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
@@ -2759,10 +2754,10 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This "
 "option speeds up testing for games with a large footprint."
 msgstr ""
-"當該選項啟用後，匯出或部署將會產生最小化的可執行檔。\n"
-"檔案系統將由這個編輯器在網路上提供。\n"
-"Android 平台上，部署需要使用 USB 線以獲得更快速的效能。該選項對於大型遊戲能加"
-"速測試。"
+"啟用該選項後，匯出或部署是會產生最小可執行檔。\n"
+"專案之檔案系統將由本編輯器以網路提供。\n"
+"部署至 Android 平台需使用 USB 線以獲得更快速的效能。該選項對於大型遊戲能加速"
+"測試。"
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -2772,7 +2767,7 @@ msgstr "顯示碰撞區域"
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
-msgstr "該選項開啟後，執行遊戲時將可看見碰撞區域與（2D 或 3D 的）射線節點。"
+msgstr "開啟選項後，執行遊戲時將可看見碰撞區域與（2D 或 3D 的）射線節點。"
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
@@ -2782,7 +2777,7 @@ msgstr "顯示導航"
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
-msgstr "該選項開啟後，執行遊戲時將可看見導航網格 (mesh) 與多邊形。"
+msgstr "開啟該選項後，執行遊戲時將可看見導航網格 (mesh) 與多邊形。"
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
@@ -2809,7 +2804,7 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"當開啟該選項後，保存的腳本都將在執行中的遊戲重新載入。\n"
+"開啟該選項後，保存之腳本都將於執行中的遊戲重新載入。\n"
 "若在遠端裝置上使用，可使用網路檔案系統 NFS 以獲得最佳效能。"
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
@@ -2842,7 +2837,7 @@ msgstr "開啟／關閉系統主控台"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "開啟「編輯器資料／編輯器設定」資料夾"
+msgstr "開啟 編輯器資料／編輯器設定 資料夾"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
@@ -2997,12 +2992,12 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"將通過在「res://android/build」中安裝原始樣板以為該項目設定自定 Android 建構"
-"樣板。\n"
-"輸出時可以套用修改並建構自定 APK（如新增模組、修改 AndroidManifest.xml …"
+"將於「res://android/build」安裝原始樣板以為該項目設定自定 Android 建構樣"
+"板。\n"
+"輸出時可套用修改並建構自定 APK（如新增模組、修改 AndroidManifest.xml …"
 "等）。\n"
-"請注意，若要使用自定建構而非使用預先建構好的 APK，請啟用 Android 匯出 Preset "
-"中的「使用自定建構」選項。"
+"請注意，若要使用自定建構而非使用預先建構之 APK，請啟用 Android 匯出預設設定中"
+"的 [Use Custom Build] 選項。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3145,7 +3140,7 @@ msgstr "全部"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "僅自己"
+msgstr "自身"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -3198,7 +3193,7 @@ msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
-"無法為要保存為檔案的資源建立檢視區紋理 (ViewportTexture)。\n"
+"無法為欲保存為檔案之資源建立 ViewportTexture。\n"
 "資源必須屬於一個場景。"
 
 #: editor/editor_properties.cpp
@@ -3209,11 +3204,11 @@ msgid ""
 "containing it up to a node)."
 msgstr ""
 "無法為該資源建立檢視區紋理 (ViewportTexture)，因其未設定對應的本地場景。\n"
-"請開啟其（與其至節點的所有資源）的「本地化場景」屬性。"
+"請開啟其（與其至節點的所有資源）「Local to Scene」屬性。"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
-msgstr "選擇檢視區"
+msgstr "選擇 Viewport"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
@@ -3247,11 +3242,11 @@ msgstr "貼上"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
-msgstr "轉換成 %s"
+msgstr "轉換為 %s"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
-msgstr "所選節點不是檢視區 (Viewport)！"
+msgstr "所選節點並非 Viewport！"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
@@ -3268,7 +3263,7 @@ msgstr "移除項目"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
-msgstr "新增鍵值："
+msgstr "新增索引鍵："
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Value:"
@@ -3276,15 +3271,15 @@ msgstr "新增數值："
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
-msgstr "新增鍵／值配對"
+msgstr "新增索引鍵／值組"
 
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
-"該平台沒有可執行的匯出 Preset。\n"
-"請在匯出選單中新增一個可執行的 Preset。"
+"該平台沒有可執行的匯出預設設定。\n"
+"請在匯出選單中新增一個可執行的預設設定。"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -3300,7 +3295,7 @@ msgstr "無法實體化腳本："
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr "是否遺漏「tool」關鍵字？"
+msgstr "是否未加上「tool」關鍵字？"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
@@ -3308,7 +3303,7 @@ msgstr "無法執行腳本："
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr "是否遺漏了「_run」方法？"
+msgstr "是否未新增「_run」方法？"
 
 #: editor/editor_spin_slider.cpp
 msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
@@ -3403,7 +3398,7 @@ msgstr "解析鏡像列表的 JSON 時發生錯誤。請回報此問題！"
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
-msgstr "為找到該版本的下載鏈接。直接下載僅適用於正式版本。"
+msgstr "未找到該版本的下載鏈接。直接下載僅適用於正式發行版本。"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3446,8 +3441,8 @@ msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
 msgstr ""
-"未找到樣板安裝。\n"
-"有問題的樣板檔案存放於「%s」。"
+"樣板安裝失敗。\n"
+"發生問題之樣板檔案存放於「%s」。"
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
@@ -3573,7 +3568,7 @@ msgstr "未提供名稱。"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters."
-msgstr "提供的名稱包含了無效的字元。"
+msgstr "提供的名稱包含無效字元。"
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
@@ -3581,7 +3576,7 @@ msgstr "已有相同名稱的檔案或資料夾存在。"
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr "名稱包含了無效的字元。"
+msgstr "名稱包含無效字元。"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3891,7 +3886,7 @@ msgstr "正在執行自定腳本..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr "無法載入匯入後腳本："
+msgstr "無法載入 Post-Import 腳本："
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
@@ -3903,7 +3898,7 @@ msgstr "執行匯入後腳本時發生錯誤："
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr "是否有在 `post_import()` 方法內回傳 Node 衍生之物件？"
+msgstr "是否有在 `post_import()` 方法內回傳繼承 Node 之物件？"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -3927,7 +3922,7 @@ msgstr "匯入為："
 
 #: editor/import_dock.cpp
 msgid "Preset"
-msgstr "Preset"
+msgstr "預設設定"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -3944,7 +3939,7 @@ msgstr "修改匯入檔案的型別需要重新啟動編輯器。"
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr "警告：有素材使用該資源，將會無法正確加載。"
+msgstr "警告：有素材使用該資源，將無法正確加載。"
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3989,7 +3984,7 @@ msgstr "在說明中開啟"
 
 #: editor/inspector_dock.cpp
 msgid "Create a new resource in memory and edit it."
-msgstr "在記憶體中建立一個新的資源名編輯。"
+msgstr "在記憶體中建立新資源並編輯。"
 
 #: editor/inspector_dock.cpp
 msgid "Load an existing resource from disk and edit it."
@@ -4001,11 +3996,11 @@ msgstr "保存目前編輯的資源。"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
-msgstr "在歷史記錄中跳至上一個編輯的物件。"
+msgstr "跳至歷史記錄中上一個編輯的物件。"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the next edited object in history."
-msgstr "在歷史記錄中跳至下一個編輯的物件。"
+msgstr "跳至歷史記錄中下一個編輯的物件。"
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
@@ -4017,7 +4012,7 @@ msgstr "物件屬性。"
 
 #: editor/inspector_dock.cpp
 msgid "Filter properties"
-msgstr "過濾屬性"
+msgstr "篩選屬性"
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -4207,23 +4202,23 @@ msgstr "新增三角形"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Limits"
-msgstr "修改混合空間 2D 限制"
+msgstr "修改 BlendSpace2D 限制"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Labels"
-msgstr "修改混合空間 2D 標籤"
+msgstr "修改 BlendSpace2D 標籤"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Remove BlendSpace2D Point"
-msgstr "移除混合空間 2D 頂點"
+msgstr "移除 BlendSpace2D 頂點"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Remove BlendSpace2D Triangle"
-msgstr "移除混合空間 2D 三角形"
+msgstr "移除 BlendSpace2D 三角形"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "混合空間 2D 不屬於任何動畫樹節點。"
+msgstr "BlendSpace2D 不屬於任何 AnimationTree 節點。"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
@@ -4257,11 +4252,11 @@ msgstr "已更改參數"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
-msgstr "編輯篩選"
+msgstr "編輯篩選條件"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr "輸出節點無法被新增到混合樹。"
+msgstr "輸出節點無法被新增至混合樹。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Add Node to BlendTree"
@@ -4302,11 +4297,11 @@ msgstr "刪除節點"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
-msgstr "開啟／關閉過濾"
+msgstr "開啟／關閉篩選"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Change Filter"
-msgstr "更改過濾"
+msgstr "更改篩選條件"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -4352,7 +4347,7 @@ msgstr "編輯已篩選的軌道："
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable Filtering"
-msgstr "啟用篩選"
+msgstr "啟用條件篩選"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -4415,7 +4410,7 @@ msgstr "無動畫可複製！"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
-msgstr "剪貼簿中沒有動畫資源！"
+msgstr "剪貼簿中無動畫資源！"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
@@ -4483,11 +4478,11 @@ msgstr "載入後自動播放"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr "啟用洋蔥皮化 (Onion Skinning)"
+msgstr "啟用描圖紙"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning Options"
-msgstr "洋蔥皮化選項"
+msgstr "描圖紙選項"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -4531,7 +4526,7 @@ msgstr "包含 Gizmo (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr "固定動畫播放器"
+msgstr "固定 AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -4641,7 +4636,7 @@ msgstr "移除所選的節點或轉場。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
-msgstr "開啟／關閉該動畫在開始、重新啟動或尋覓至 0 時的自動播放。"
+msgstr "開啟／關閉自動播放動畫於開始、重新啟動或搜尋至 0 時。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
@@ -4716,7 +4711,7 @@ msgstr "混合 1："
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr "交叉淡化 (X-Fade) 時間（秒）："
+msgstr "淡入與淡出時間（秒）："
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Current:"
@@ -4750,39 +4745,39 @@ msgstr "無效的動畫樹。"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "動畫節點"
+msgstr "Animation 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr "單項節點"
+msgstr "OneShot 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
-msgstr "混合節點"
+msgstr "Mix 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr "混合 2 節點"
+msgstr "Blend2 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "混合 3 節點"
+msgstr "Blend3 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "混合 4 節點"
+msgstr "Blend4 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "時間縮放節點"
+msgstr "TimeScale 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr "時間尋覓節點"
+msgstr "TimeSeek 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr "轉場節點"
+msgstr "Transition 節點"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
@@ -4790,11 +4785,11 @@ msgstr "匯入動畫…"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr "編輯節點過濾"
+msgstr "編輯節點篩選條件"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
-msgstr "過濾..."
+msgstr "篩選..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -4858,7 +4853,7 @@ msgstr "下載雜湊錯誤，檔案可能被篡改。"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr "預計："
+msgstr "應為："
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
@@ -5011,7 +5006,8 @@ msgstr ""
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
-msgstr "沒有可 Bake 的網格。請確保網格包含 UV2 通道並已開啟「Bake 光照」旗標。"
+msgstr ""
+"無可製作之網格。請確保這些網格包含 UV2 通道並已開啟「Bake Light」旗標。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -5019,7 +5015,7 @@ msgstr "建立光照圖失敗，請確保該路徑可寫入。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Bake 光照圖"
+msgstr "建立光照圖"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
@@ -5092,7 +5088,7 @@ msgstr "移動軸心"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate CanvasItem"
-msgstr "旋轉畫布項目"
+msgstr "旋轉 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move anchor"
@@ -5100,31 +5096,31 @@ msgstr "移動錨點"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize CanvasItem"
-msgstr "調整畫布項目大小"
+msgstr "調整 CanvasItem 大小"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale CanvasItem"
-msgstr "縮放畫布項目"
+msgstr "縮放 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem"
-msgstr "移動畫布項目"
+msgstr "移動 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
-msgstr "容器子項目的錨點與外邊距 (margin) 值被其母項目複寫。"
+msgstr "容器子項目的錨點與外邊距值遭其母項目複寫。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr "控制節點的錨點與外邊距的 Preset。"
+msgstr "控制節點的錨點與外邊距之預設設定。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
-msgstr "啟用時，移動控制節點將修改錨點而非外邊距。"
+msgstr "啟用後，移動控制節點將修改錨點而非外邊距。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
@@ -5164,27 +5160,27 @@ msgstr "中央"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Left Wide"
-msgstr "左延長"
+msgstr "左延展"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr "上延長"
+msgstr "上延展"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Right Wide"
-msgstr "右延長"
+msgstr "右延展"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr "下延長"
+msgstr "下延展"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr "垂直中央延長"
+msgstr "垂直中央延展"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr "水平中央延長"
+msgstr "水平中央延展"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
@@ -5212,7 +5208,7 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
-"遊戲相機覆蓋\n"
+"遊戲相機複寫\n"
 "以檢視區相機取代遊戲相機。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5221,7 +5217,7 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
-"遊戲相機覆蓋\n"
+"遊戲相機複寫\n"
 "無正在執行的遊戲實體。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5254,7 +5250,7 @@ msgstr "清除參考線"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr "子節點建立自定骨骼"
+msgstr "自節點建立自定骨骼"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Bones"
@@ -5272,7 +5268,7 @@ msgstr "清除 IK 鏈"
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
-msgstr "警告：容器的子項目的位置與大小有其母項目決定。"
+msgstr "警告：容器子項目之位置與大小由其母項目決定。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -5510,8 +5506,8 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
-"檔物件被轉換、旋轉、或（基於遮罩）縮放時自動插入關鍵影格。\n"
-"關鍵影格只會被新增至現存的軌道，將不會建立新的軌道。\n"
+"當物件被轉換、旋轉 或（基於遮罩）縮放時自動插入關鍵影格。\n"
+"關鍵影格只會被新增至現有軌道，不會建立新軌道。\n"
 "第一次必須先手動插入關鍵影格。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5524,7 +5520,7 @@ msgstr "動畫關鍵影格與姿勢選項"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
-msgstr "插入關鍵影格（在現有軌道）"
+msgstr "插入關鍵影格（於現有軌道）"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
@@ -5582,7 +5578,7 @@ msgstr ""
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
-msgstr "建立多邊形 3D"
+msgstr "建立 Polygon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
@@ -5678,11 +5674,11 @@ msgstr "Flat 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
-msgstr "緩入"
+msgstr "緩慢移入"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease Out"
-msgstr "緩出"
+msgstr "緩慢移出"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
@@ -5698,7 +5694,7 @@ msgstr "修改曲線切線"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Curve Preset"
-msgstr "加載曲線 Preset"
+msgstr "加載曲線預設設定"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add Point"
@@ -5718,7 +5714,7 @@ msgstr "右線性"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load Preset"
-msgstr "載入 Preset"
+msgstr "載入預設設定"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
@@ -5738,7 +5734,7 @@ msgstr "右鍵點擊以新增控制點"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr "Bake GI 探針"
+msgstr "製作 GI 探查"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
@@ -5810,7 +5806,7 @@ msgstr "建立導航網格"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Contained Mesh is not of type ArrayMesh."
-msgstr "包含的網格的型別不是陣列網格 (ArrayMesh)。"
+msgstr "包含之 Mesh 並非 ArrayMesh 型別。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "UV Unwrap failed, mesh may not be manifold?"
@@ -5818,7 +5814,7 @@ msgstr "UV 展開失敗，該網格可能並非流形？"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "No mesh to debug."
-msgstr "沒有可除錯的網格。"
+msgstr "沒有可進行偵錯之網格。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Model has no UV in this layer"
@@ -5826,15 +5822,15 @@ msgstr "模型在該圖層上無 UV"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
-msgstr "網格實體 (MeshInstance) 缺乏網格！"
+msgstr "MeshInstance 未包含 Mesh！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
-msgstr "網格未包含可建立輪廓的表面！"
+msgstr "Mesh 未包含可建立輪廓的表面！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "網格的原始類型不是 PRIMITIVE_TRIANGLES！"
+msgstr "Mesh 的原始類型並非 PRIMITIVE_TRIANGLES！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -5858,8 +5854,8 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
-"建立靜態形體 (StaticBody) 並自動指派一個基於多邊形的碰撞形體。\n"
-"對於碰撞偵測，這是最精確（但最慢）的選項。"
+"建立 StaticBody 並自動指派一個基於多邊形的碰撞形體。\n"
+"對於碰撞偵測，該選項為最精確（但最慢）的選項。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5871,7 +5867,7 @@ msgid ""
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
 "建立基於多邊形的碰撞形狀。\n"
-"對於碰撞偵測，這是最精確（但最慢）的選項。"
+"對於碰撞偵測，該選項為最精確（但最慢）的選項。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Collision Sibling"
@@ -5883,7 +5879,7 @@ msgid ""
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
 "建立單一凸面碰撞形狀。\n"
-"對於碰撞偵測，這是最快（但最不精確）的選項。"
+"對於碰撞偵測，該選項為最快（但最不精確）的選項。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
@@ -5949,7 +5945,7 @@ msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
-msgstr "網格庫 (Mesh Library)"
+msgstr "網格庫"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5970,11 +5966,11 @@ msgstr "自場景更新"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
-msgstr "未指定網格來源（且節點中沒有多網格集 (MultiMesh Set)）。"
+msgstr "未指定網格來源（且節點中沒有 MultiMesh 集）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
-msgstr "未指定網格來源（且多網格 (MultiMesh) 未包含網格 (Mesh)）。"
+msgstr "未指定網格來源（且 MultiMesh 未包含 Mesh）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
@@ -5982,11 +5978,11 @@ msgstr "網格來源無效（無效的路徑）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr "網格來源無效（不是網格實體 (MeshInstance)）。"
+msgstr "網格來源無效（非 MeshInstance）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "網格來源無效（未包含網格 (Mesh) 資源）。"
+msgstr "網格來源無效（未包含 Mesh 資源）。"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -6010,7 +6006,7 @@ msgstr "選擇來源網格："
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Target Surface:"
-msgstr "選擇目標網格："
+msgstr "選擇目標表面："
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate Surface"
@@ -6018,7 +6014,7 @@ msgstr "填充表面"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate MultiMesh"
-msgstr "填充多網格 (MultiMesh)"
+msgstr "填充 MultiMesh"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Target Surface:"
@@ -6080,7 +6076,7 @@ msgstr "產生矩形可見性"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
-msgstr "僅限指向粒子材料的處理材料 (ParticlesMaterial Process Material)"
+msgstr "僅可將為 ParticlesMaterial 處理材料設定點"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6097,7 +6093,7 @@ msgstr "幾何體未包含任何面。"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "\"%s\" doesn't inherit from Spatial."
-msgstr "「%s」非自 Spatial 繼承。"
+msgstr "「%s」非繼承自 Spatial。"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "\"%s\" doesn't contain geometry."
@@ -6133,7 +6129,7 @@ msgstr "發射源： "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr "需要「粒子材料 (ParticlesMaterial)」型別的處理器材料。"
+msgstr "需「ParticlesMaterial」型別的處理器材料。"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
@@ -6232,12 +6228,12 @@ msgstr "選項"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Angles"
-msgstr "鏡像手柄角度"
+msgstr "鏡像控點角度"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Lengths"
-msgstr "鏡像手柄長度"
+msgstr "鏡像控點長度"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
@@ -6245,15 +6241,15 @@ msgstr "曲線控制點 #"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Point Position"
-msgstr "設定曲線控制點的位置"
+msgstr "設定曲線控制點位置"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve In Position"
-msgstr "設定曲線的內控制點位置"
+msgstr "設定曲線內控制點位置"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Out Position"
-msgstr "設定曲線的外控制點位置"
+msgstr "設定曲線外控制點位置"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
@@ -6282,7 +6278,7 @@ msgstr "移動關節"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
-msgstr "多邊形 2D (Polygon2D) 的骨架屬性未指向骨架 2D (Skeleton2D) 節點"
+msgstr "Polygon2D 的骨架屬性未指向 Skeleton2D 節點"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Sync Bones"
@@ -6304,7 +6300,7 @@ msgstr "建立 UV Map"
 msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
-msgstr "多邊形 2D 有內部頂點，將無法在檢視區編輯。"
+msgstr "Polygon2D 有內部頂點，將無法在檢視區編輯。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -6344,11 +6340,11 @@ msgstr "描繪骨骼權重"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
-msgstr "開啟多邊形 2D UV 編輯器。"
+msgstr "Polygon2D UV 編輯器。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr "多邊形 2D UV 編輯器"
+msgstr "Polygon2D UV 編輯器"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV"
@@ -6396,13 +6392,13 @@ msgstr "縮放多邊形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create a custom polygon. Enables custom polygon rendering."
-msgstr "建立自定多邊形。啟用自定多邊形算圖。"
+msgstr "建立自定多邊形。啟用自定多邊形算繪。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
-msgstr "移除自定多邊形。若無剩餘多邊形，將禁用自定多邊形算圖。"
+msgstr "移除自定多邊形。若無剩餘多邊形，將禁用自定多邊形算繪。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -6520,11 +6516,11 @@ msgstr "載入資源"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ResourcePreloader"
-msgstr "資源預加載 (ResourcePreloader)"
+msgstr "ResourcePreloader"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
-msgstr "動畫樹 (AnimationTree) 未設定至動畫播放器 (AnimationPlayer) 的路徑"
+msgstr "AnimationTree 未設定至 AnimationPlayer 的路徑"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "Path to AnimationPlayer is invalid"
@@ -6540,7 +6536,7 @@ msgstr "關閉並保存修改嗎？"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
-msgstr "寫入文字檔案 (TextFile) 時發生錯誤："
+msgstr "寫入 TextFile 時發生錯誤："
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Could not load file at:"
@@ -6593,7 +6589,7 @@ msgstr "腳本不在工具模式下，無法執行。"
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
-msgstr "欲執行該腳本，其必須繼承自編輯器腳本 (EditorScript) 並設為工具模式。"
+msgstr "該腳本必須繼承 EditorScript 並設為工具模式才可執行。"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -6627,7 +6623,7 @@ msgstr "尋找上一個"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
-msgstr "過濾腳本"
+msgstr "篩選腳本"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
@@ -6635,7 +6631,7 @@ msgstr "開啟／關閉按照字母順序排列方法列表。"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter methods"
-msgstr "過濾方法"
+msgstr "篩選方法"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6724,11 +6720,11 @@ msgstr "執行"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
-msgstr "步入"
+msgstr "逐步執行"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
-msgstr "步過"
+msgstr "不進入函式"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
@@ -6773,7 +6769,7 @@ msgid ""
 "What action should be taken?:"
 msgstr ""
 "磁碟中的下列檔案已更新。\n"
-"要執行什麼？："
+"請選擇於執行之操作："
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -6833,7 +6829,7 @@ msgstr "只可拖移來自檔案系統的資源。"
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr "無法防止節點，由於腳本「%s」並未在該場景中使用。"
+msgstr "無法放置節點，由於腳本「%s」並未在該場景中使用。"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lookup Symbol"
@@ -6901,7 +6897,7 @@ msgstr "向右縮排"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "展開／收起註解"
+msgstr "註解／取消註解"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -7006,27 +7002,27 @@ msgstr "著色器"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "此骨架未包含骨骼，請建立一些子骨骼 2D (Bone2D) 節點。"
+msgstr "此骨架未包含骨骼，請建立一些子 Bone2D 節點。"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Create Rest Pose from Bones"
-msgstr "自骨骼建立放鬆姿勢"
+msgstr "自骨骼建立靜止姿勢"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
-msgstr "設定放鬆姿勢至骨骼"
+msgstr "設定靜止姿勢至骨骼"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
-msgstr "骨架2D (Sekeleton2D)"
+msgstr "Sekeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Make Rest Pose (From Bones)"
-msgstr "製作放鬆姿勢（自骨骼）"
+msgstr "製作靜止姿勢（自骨骼）"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Bones to Rest Pose"
-msgstr "設定骨骼為放鬆姿勢"
+msgstr "設定骨骼為靜止姿勢"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7242,7 +7238,7 @@ msgstr "效果預覽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr "使用 GLES2 算圖器時無法使用。"
+msgstr "使用 GLES2 轉譯器時無法使用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -7285,7 +7281,7 @@ msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"注意：顯示的 FPS 值時編輯器的畫面速率。\n"
+"注意：顯示的 FPS 值為編輯器之畫面速率。\n"
 "無法實際反映為遊戲中的效能。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7496,35 +7492,35 @@ msgstr "未命名的 Gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
-msgstr "建立網格 2D (Mesh2D)"
+msgstr "建立 Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Mesh2D Preview"
-msgstr "建立網格 2D (Mesh2D) 預覽"
+msgstr "建立 Mesh2D 預覽"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Polygon2D"
-msgstr "建立多邊形 2D (Polygon2D)"
+msgstr "建立 Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr "預覽多邊形 2D (Polygon2D)"
+msgstr "預覽 Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D"
-msgstr "建立碰撞多邊形 2D (CollisionPolygon2D)"
+msgstr "建立 CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "CollisionPolygon2D Preview"
-msgstr "碰撞多邊形 2D (CollisionPolygon2D) 預覽"
+msgstr "碰撞 CollisionPolygon2D 預覽"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
-msgstr "建立遮光 2D (LightOccluder2D)"
+msgstr "建立 LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "LightOccluder2D Preview"
-msgstr "遮光 2D (LightOccluder2D) 預覽"
+msgstr "LightOccluder2D 預覽"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7540,7 +7536,7 @@ msgstr "無效的幾何圖形，無法以網格取代。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Mesh2D"
-msgstr "轉換為網格 2D (Mesh2D)"
+msgstr "轉換為 Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
@@ -7548,7 +7544,7 @@ msgstr "無效的幾何圖形，無法建立多邊形。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
-msgstr "轉換為多邊形 2D (Polygon2D)"
+msgstr "轉換為 Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
@@ -7556,7 +7552,7 @@ msgstr "無效的幾何圖形，無法建立碰撞多邊形。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "建立碰撞多邊形 2D (CollisionPolygon2D) 同級"
+msgstr "建立 CollisionPolygon2D 同級"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7564,7 +7560,7 @@ msgstr "無效的幾何圖形，無法建立遮光。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
-msgstr "建立遮光 2D (LightOccluder2D) 同級"
+msgstr "建立 LightOccluder2D 同級"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
@@ -7700,7 +7696,7 @@ msgstr "自 Sprite 表建立幀"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
-msgstr "SpriteFrames（Sprite 影格）"
+msgstr "SpriteFrame"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -7708,7 +7704,7 @@ msgstr "設定區域矩形 (Region Rect)"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Margin"
-msgstr "設置外邊距"
+msgstr "設定外邊距"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
@@ -7745,7 +7741,7 @@ msgstr "分隔線："
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
-msgstr "紋理區域 (TextureRegion)"
+msgstr "TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
@@ -7849,7 +7845,7 @@ msgstr "許多"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled LineEdit"
-msgstr "已停用的行編輯"
+msgstr "已停用的 LineEdit"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -7951,7 +7947,7 @@ msgstr "啟用優先級"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Filter tiles"
-msgstr "過濾圖塊"
+msgstr "篩選圖塊"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Give a TileSet resource to this TileMap to use its tiles."
@@ -8229,7 +8225,7 @@ msgstr "建立圖塊"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr "設定磁貼圖示"
+msgstr "設定圖塊圖示"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Bitmask"
@@ -8466,7 +8462,7 @@ msgstr "設定表示式"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Resize VisualShader node"
-msgstr "調整視覺著色器 (VisualShader) 節點大小"
+msgstr "調整 VisualShader 節點大小"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
@@ -8535,7 +8531,7 @@ msgstr "將 HSV 向量轉為同等之 RGB。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr "將 RGB 向量轉為同等至 HSV。"
+msgstr "將 RGB 向量轉為同等之 HSV。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sepia function."
@@ -8649,7 +8645,7 @@ msgstr "回傳兩個參數間比較的布林結果。"
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
-msgstr "回傳 INF（或 NaN）與一個純量間比較的布林結果。"
+msgstr "回傳 INF (或 NaN) 與一個純量間比較的布林結果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8701,7 +8697,7 @@ msgstr "純量運算子。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
-msgstr "E 常數（2.718282）。表示自然對數的底數。"
+msgstr "E 常數 (2.718282)。表示自然對數的底數。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
@@ -8725,7 +8721,7 @@ msgstr "π (Pi) 常數 (3.141593) 或 180 度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr "τ 常數 (6.283185) 或 360 度。"
+msgstr "τ (Tau) 常數 (6.283185) 或 360 度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
@@ -8770,7 +8766,7 @@ msgstr "尋找大於或等於該參數最近的整數。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
-msgstr "將值限制欲兩個值之間。"
+msgstr "將值限制於兩個值之間。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
@@ -8782,7 +8778,7 @@ msgstr "回傳參數的雙曲餘弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
-msgstr "將弧度轉換為度。"
+msgstr "將弧度轉換為角度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
@@ -8802,7 +8798,7 @@ msgstr "計算引數的小數部分。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
-msgstr "回傳參數的平方根的倒數。"
+msgstr "回傳參數的平方根之倒數。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Natural logarithm."
@@ -8839,7 +8835,7 @@ msgstr "回傳第一個參數的第二個參數冪次的值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
-msgstr "將度數轉換為弧度。"
+msgstr "將角度轉換為弧度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / scalar"
@@ -8851,7 +8847,7 @@ msgstr "尋找參數最近的整數。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest even integer to the parameter."
-msgstr "尋找參數最近的整數。"
+msgstr "尋找參數最近的偶數。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
@@ -9230,7 +9226,7 @@ msgstr "（限片段／光照模式）（純量）加總「x」與「y」進行�
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
-msgstr "視覺著色器 (VisualShader)"
+msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Edit Visual Property"
@@ -9258,7 +9254,7 @@ msgstr "是否要自列表中刪除「%s」修正檔？"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
-msgstr "確定要刪除 Preset「%s」？"
+msgstr "確定要刪除預設設定「%s」？"
 
 #: editor/project_export.cpp
 msgid ""
@@ -9275,11 +9271,11 @@ msgid ""
 "export settings."
 msgstr ""
 "為平台「%s」匯出專案失敗。\n"
-"可能使由於匯出 Preset 或匯出設定中的組態設定有問題導致。"
+"可能是由於匯出預設設定或匯出設定中的組態設定有問題導致。"
 
 #: editor/project_export.cpp
 msgid "Release"
-msgstr "釋出"
+msgstr "發行"
 
 #: editor/project_export.cpp
 msgid "Exporting All"
@@ -9295,7 +9291,7 @@ msgstr "該平台的匯出範本遺失／損毀："
 
 #: editor/project_export.cpp
 msgid "Presets"
-msgstr "Preset"
+msgstr "預設設定"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
@@ -9306,8 +9302,8 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
-"若選中，則 Preset 將可使用一鍵部署。\n"
-"每個平台只可將一個 Preset 設為可執行。"
+"若選中，則預設設定將可使用單鍵部署。\n"
+"每個平台只可將一個預設設定設為可執行。"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -9342,7 +9338,7 @@ msgid ""
 "Filters to export non-resource files/folders\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"過濾非資源的檔案／資料夾以匯出\n"
+"篩選非資源的檔案／資料夾以進行匯出\n"
 "（以半形逗號區分，如： *.json, *.txt, docs/*）"
 
 #: editor/project_export.cpp
@@ -9350,7 +9346,7 @@ msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-"過濾以在專案內排除檔案／資料夾\n"
+"進行篩選以在專案內排除檔案／資料夾\n"
 "（以半形逗號區分，如： *.json, *.txt, docs/*）"
 
 #: editor/project_export.cpp
@@ -9550,7 +9546,7 @@ msgstr "專案安裝路徑："
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr "算圖器："
+msgstr "轉譯器："
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
@@ -9586,7 +9582,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
-msgstr "稍後仍可更改算圖器，但可能需要對場景進行調整。"
+msgstr "稍後仍可更改轉譯器，但可能需要對場景進行調整。"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -9602,7 +9598,7 @@ msgstr "錯誤：專案在檔案系統上遺失。"
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
-msgstr "無法在「%s」中打開專案。"
+msgstr "無法於「%s」打開專案。"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -9625,7 +9621,7 @@ msgstr ""
 "%s\n"
 "\n"
 "若您繼續開啟，會將其轉換為目前 Godot 版本的組態設定檔案格式。\n"
-"警告：您將不再可使用過往版本的引擎開啟該專案。"
+"警告：您將不再可使用舊版的 Godot 開啟該專案。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9638,12 +9634,13 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"下列專案設定檔時由較舊版本的引擎所產生，且需要將其轉換為目前的版本：\n"
+"下列專案設定檔是由較舊版本的 Godot 產生，需進行轉換以適用於目前版本的 "
+"Godot：\n"
 "\n"
 "%s\n"
 "\n"
 "要進行轉換嗎？\n"
-"警告：您將不再可使用過往版本的引擎開啟該專案。"
+"警告：您將不再可使用舊版的 Godot 開啟該專案。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9709,7 +9706,7 @@ msgid ""
 "Are you sure to scan %s folders for existing Godot projects?\n"
 "This could take a while."
 msgstr ""
-"確定要為現存的 Godot 專案掃描 %s 資料夾嗎？\n"
+"確定要掃描 %s 中的 Godot 專案嗎？\n"
 "這可能需要一段時間。"
 
 #: editor/project_manager.cpp
@@ -9766,12 +9763,12 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
-"搜尋框可以用來依據名稱與路徑中的最後一部分來過濾專案。\n"
-"若要以名稱與完整路徑來過濾專案，搜尋內容應該至少包含一個「/」字元。"
+"搜尋框可以用來依據名稱與路徑中的最後一部分來篩選專案。\n"
+"若要以名稱與完整路徑來過濾專案，搜尋內容應至少包含一個「/」字元。"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
-msgstr "鍵 "
+msgstr "按鍵 "
 
 #: editor/project_settings_editor.cpp
 msgid "Joy Button"
@@ -9789,7 +9786,7 @@ msgstr "滑鼠按鈕"
 msgid ""
 "Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
-msgstr "無效的操作名稱。不能為空或包含「/」、「:」、「=」、「\\」或「\"」"
+msgstr "無效的操作名稱。名稱不可留空或包含 “/”, “:”, “=”, “\\” 或 “\"”"
 
 #: editor/project_settings_editor.cpp
 msgid "An action with the name '%s' already exists."
@@ -9885,7 +9882,7 @@ msgstr "新增事件"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Button (按鈕)"
+msgstr "按鈕"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -9931,7 +9928,7 @@ msgstr "刪除項目"
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
-msgstr "無效的操作名稱。不能為空或包含「/」、「:」、「=」、「\\」或「\"」。"
+msgstr "無效的操作名稱。名稱不可留空或包含 “/”, “:”, “=”, “\\” 或 “\"”。"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
@@ -9983,11 +9980,11 @@ msgstr "移除資源重映射選項"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter"
-msgstr "更改區域過濾"
+msgstr "更改地區設定篩選條件"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter Mode"
-msgstr "更改區域過濾模式"
+msgstr "更改地區設定篩選模式"
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
@@ -10051,31 +10048,31 @@ msgstr "資源："
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
-msgstr "依語言重映射："
+msgstr "依地區設定重映射："
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "語言"
+msgstr "地區"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales Filter"
-msgstr "語言過濾"
+msgstr "地區篩選條件"
 
 #: editor/project_settings_editor.cpp
 msgid "Show All Locales"
-msgstr "顯示所有語言"
+msgstr "顯示所有地區"
 
 #: editor/project_settings_editor.cpp
 msgid "Show Selected Locales Only"
-msgstr "僅顯示選定的語言"
+msgstr "僅顯示選定的地區"
 
 #: editor/project_settings_editor.cpp
 msgid "Filter mode:"
-msgstr "過濾模式："
+msgstr "篩選模式："
 
 #: editor/project_settings_editor.cpp
 msgid "Locales:"
-msgstr "語言："
+msgstr "地區："
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
@@ -10087,7 +10084,7 @@ msgstr "外掛"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
-msgstr "Preset..."
+msgstr "預設設定..."
 
 #: editor/property_editor.cpp
 msgid "Zero"
@@ -10099,7 +10096,7 @@ msgstr "緩入緩出"
 
 #: editor/property_editor.cpp
 msgid "Easing Out-In"
-msgstr "緩入緩出（反向）"
+msgstr "緩出緩入"
 
 #: editor/property_editor.cpp
 msgid "File..."
@@ -10333,7 +10330,7 @@ msgstr "取消附加腳本"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
-msgstr "此操作無法在樹狀根執行。"
+msgstr "此操作無法在樹狀根節點執行。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
@@ -10362,6 +10359,11 @@ msgstr "實體化的場景無法轉為根節點"
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "將節點設為根節點"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "確定要刪除節點「%s」與其子節點嗎？"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -10456,7 +10458,7 @@ msgstr "更改節點的型別"
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
-msgstr "無法保存新場景。很可能由於無法滿足其依賴性（實體）。"
+msgstr "無法保存新場景。可能是由於無法滿足其依賴性（實體）。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
@@ -10493,7 +10495,7 @@ msgid ""
 "disabled."
 msgstr ""
 "無法附加腳本：未註冊任何語言。\n"
-"有可能是由於編輯器在建構時未啟用任何語言模組。"
+"可能是由於編輯器在建構時未啟用任何語言模組。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10634,7 +10636,7 @@ msgid ""
 "AnimationPlayer is pinned.\n"
 "Click to unpin."
 msgstr ""
-"已固定動畫播放器 (AnimationPlayer)。\n"
+"已固定 AnimationPlayer。\n"
 "點擊以取消固定。"
 
 #: editor/scene_tree_editor.cpp
@@ -10739,7 +10741,7 @@ msgstr "可用的腳本路徑／名稱。"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "可使用：a-z、A-Z、0-9、_ 以及 ."
+msgstr "可使用：a-z, A-Z, 0-9, _ 以及 ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -10761,7 +10763,7 @@ msgstr "腳本檔案已存在。"
 msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
-msgstr "注意：內置腳本有些限制，且無法使用外部編輯器來編輯。"
+msgstr "注意：內建腳本有些限制，且無法使用外部編輯器來編輯。"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -10869,11 +10871,11 @@ msgstr "數值"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitors"
-msgstr "監視程式"
+msgstr "監視器"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
-msgstr "子列表中選擇一個或多個項目以顯示圖表。"
+msgstr "在子列表中選擇一個或多個項目以顯示圖表。"
 
 #: editor/script_editor_debugger.cpp
 msgid "List of Video Memory Usage by Resource:"
@@ -10957,7 +10959,7 @@ msgstr "更改光照半徑"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "更改音訊串流播放器 3D (AudioStreamPlayer3D) 發射角"
+msgstr "更改 AudioStreamPlayer3D 發射角"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -10977,7 +10979,7 @@ msgstr "更改粒子 AABB"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
-msgstr "更改探針範圍"
+msgstr "更改探查範圍"
 
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Sphere Shape Radius"
@@ -11237,11 +11239,11 @@ msgstr "選擇距離："
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Filter meshes"
-msgstr "過濾網格"
+msgstr "篩選網格"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
-msgstr "提供網格庫資源予該網格地圖以使用其網格。"
+msgstr "提供 MeshLibrary 予該 GridMap 以使用其網格。"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -11253,7 +11255,7 @@ msgstr "內部異常堆疊回溯結束"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr "Bake 導航網格 (NavMesh)"
+msgstr "製作 NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -11391,11 +11393,11 @@ msgstr "訊號："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create a new signal."
-msgstr "建立一個新的訊號。"
+msgstr "建立一個新訊號。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr "名稱不是一個有效的識別符："
+msgstr "名稱並非有效識別符："
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
@@ -11451,13 +11453,12 @@ msgstr "重複視覺腳本 (VisualScript) 節點"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
-msgstr ""
-"按住 %s 以拖移 Getter 節點。按住 Shift 以拖移一個通用的簽章 (Signature)。"
+msgstr "按住 %s 以拖移 Getter 節點。按住 Shift 以拖移通用簽章 (Signature)。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"按住 Ctrl 以拖移 Getter 節點。按住 Shift 以拖移一個通用的簽名 (Signature)。"
+"按住 Ctrl 以拖移 Getter 節點。按住 Shift 以拖移通用通用簽章 (Signature)。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a simple reference to the node."
@@ -11477,7 +11478,7 @@ msgstr "按住 Ctrl 以拖動一個變數 Setter 節點。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr "新增餘載 (Preload) 節點"
+msgstr "新增預載 (Preload) 節點"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -11665,7 +11666,7 @@ msgstr "無效的索引屬性名稱。"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr "基礎物件不是一個節點！"
+msgstr "基礎物件並非節點！"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
@@ -11677,11 +11678,11 @@ msgstr "無效的索引屬性名稱「%s」，於節點「%s」。"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ": 無效的引數型別 : "
+msgstr ": 無效的引數型別： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ": 無效的引數 : "
+msgstr ": 無效的引數： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -11751,11 +11752,11 @@ msgstr "尚未於編輯器設定中設定 OpenJDK Jarsigner。"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr "尚未於編輯器設定或 Preset 中設定除錯鑰匙圈 (Keystore)。"
+msgstr "尚未於編輯器設定或預設設定中設定金鑰儲存區 (Keystore)。"
 
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
-msgstr "釋出 Keystore 中不正確之組態設定至匯出 Preset。"
+msgstr "發行金鑰儲存區中不正確之組態設定至匯出預設設定。"
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -11866,7 +11867,7 @@ msgstr "無效的識別符："
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr "必須在 Preset 中指定必填圖示。"
+msgstr "必須在預設設定中指定必填圖示。"
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
@@ -11979,8 +11980,7 @@ msgid ""
 "define its shape."
 msgstr ""
 "該節點無形狀，故無法與其他物件碰撞或互動。\n"
-"請考慮新增一個 CollisionShape2D 或 CollisionPolygon2D 為其子節點以定義其形"
-"狀。"
+"建議您新增 CollisionShape2D 或 CollisionPolygon2D 作為其子節點以定義其形狀。"
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -11988,7 +11988,7 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D 只能為 CollisionObject2D 衍生的節點提供碰撞形狀資訊。請僅"
+"CollisionPolygon2D 僅可為 CollisionObject2D 衍生的節點提供碰撞形狀資訊。請僅"
 "於 Area2D、StaticBody2D、RigidBody2D、KinematicBody2D…等節點下作為子節點使"
 "用。"
 
@@ -12002,7 +12002,7 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D 只能為 CollisionObject2D 衍生的節點提供碰撞形狀資訊。請僅於 "
+"CollisionShape2D 僅可為 CollisionObject2D 衍生的節點提供碰撞形狀資訊。請僅於 "
 "Area2D、StaticBody2D、RigidBody2D、KinematicBody2D…等節點下作為子節點使用以提"
 "供形狀。"
 
@@ -12011,6 +12011,12 @@ msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr "CollisionShape2D 必須被賦予形狀才能運作。請先建立形狀！"
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12063,7 +12069,7 @@ msgid ""
 "CPUParticles\" option for this purpose."
 msgstr ""
 "GLES2 視訊驅動程式目前不支援基於 GPU 的粒子。\n"
-"請改為使用 CPUParticles2D 節點。你可以使用「轉換為 CPUParticles」選項。"
+"請改為使用 CPUParticles2D 節點。可使用「Convert to CPUParticles」選項。"
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -12075,7 +12081,9 @@ msgstr "尚未指定要處理粒子的材料，故未產生任何行為。"
 msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
-msgstr "Particles2D 動畫需要使用開啟了「粒子動畫」的 CanvasItemMaterial。"
+msgstr ""
+"Particles2D 動畫需要使用開啟了「Particles Animation（粒子動畫）」的 "
+"CanvasItemMaterial。"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -12106,7 +12114,7 @@ msgstr "Bone2D 僅在其為 Skeleton2D 或另一個 Bone2D 的子節點時有效
 #: scene/2d/skeleton_2d.cpp
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
-msgstr "該骨骼缺少適當的 REST 姿勢。請跳至 Skeleton2D 節點並進行設定。"
+msgstr "該骨骼缺少適當的「靜止姿勢」。請跳至 Skeleton2D 節點並進行設定。"
 
 #: scene/2d/tile_map.cpp
 msgid ""
@@ -12114,7 +12122,7 @@ msgid ""
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D 只能為 CollisionObject2D 衍生的節點提供碰撞形狀資訊。請將其"
+"CollisionShape2D 僅可為 CollisionObject2D 衍生的節點提供碰撞形狀資訊。請將其"
 "設為 Area2D、StaticBody2D、RigidBody2D、KinematicBody2D… 的子節點以賦予其形"
 "狀。"
 
@@ -12183,7 +12191,7 @@ msgid ""
 "its shape."
 msgstr ""
 "該節點沒有形狀，故無法與其他物件碰撞或互動。\n"
-"請考慮新增一個 CollisionShape 或 CollisionPolygon 作為其子節點以定義其形狀。"
+"建議您新增 CollisionShape 或 CollisionPolygon 作為其子節點以定義其形狀。"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -12191,7 +12199,7 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon 只能為 CollisionObject 衍生的節點提供碰撞形狀資訊。請僅於 "
+"CollisionPolygon 僅可為 CollisionObject 衍生的節點提供碰撞形狀資訊。請僅於 "
 "Area、StaticBody、RigidBody、KinematicBody…等節點下作為子節點使用。"
 
 #: scene/3d/collision_polygon.cpp
@@ -12204,7 +12212,7 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape 只能為 CollisionObject 衍生的節點提供碰撞形狀資訊。請僅於 "
+"CollisionShape 僅可為 CollisionObject 衍生的節點提供碰撞形狀資訊。請僅於 "
 "Area、StaticBody、RigidBody、KinematicBody…等節點下作為子節點使用。"
 
 #: scene/3d/collision_shape.cpp
@@ -12217,7 +12225,7 @@ msgstr "CollisionShape 必須被賦予形狀才能運作。請先建立形狀。
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
-msgstr "平面形狀的運作不太正常，且將在未來的版本移除。請勿使用。"
+msgstr "平面形狀時常無法正常使用，且將在未來的版本移除。請勿使用。"
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12271,7 +12279,7 @@ msgid ""
 "\" option for this purpose."
 msgstr ""
 "GLES2 視訊驅動程式不支援基於 GPU 的粒子。\n"
-"請改為使用 CPUParticles 節點。為此您可以使用「轉換為 CPUParticles」選項。"
+"請改為使用 CPUParticles 節點。可使用「Convert to CPUParticles」選項。"
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12295,8 +12303,8 @@ msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
 msgstr ""
-"PathFollow 的 ROTATION_ORIENTED 需要在其母節點 Path 的 Curve 資源內啟用「上向"
-"量 (Up Vector)」。"
+"PathFollow 的 ROTATION_ORIENTED 需要在其母節點 Path 的 Curve 資源內啟用「Up "
+"Vector」。"
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -12313,7 +12321,7 @@ msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
 msgstr ""
-"「遠端路徑」屬性必須指向一個有效的 Spatial 或 Spatial 衍生之節點才可運作。"
+"「Remote Path」屬性必須指向一個有效的 Spatial 或 Spatial 衍生之節點才可運作。"
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -12362,8 +12370,8 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
-"已忽略該 WorldEnvironment。請（為 3D 場景）新增一個相機或（為 2D 場景）設定環"
-"境之背景模式 (Background Mode) 為畫布 (Canvas)。"
+"已忽略該 WorldEnvironment。請（為 3D 場景）新增一個相機或（為 2D 場景）將 "
+"Environment 之 Background Mode 設為 Canvas。"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
@@ -12413,7 +12421,7 @@ msgid ""
 msgstr ""
 "色彩： #%s\n"
 "左鍵點擊：設定色彩\n"
-"右鍵點擊：刪除 Preset"
+"右鍵點擊：刪除預設設定"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
@@ -12433,7 +12441,7 @@ msgstr "在 16 進位與代碼值之間切換。"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset."
-msgstr "將目前的顏色加入 Preset。"
+msgstr "將目前的顏色加入預設設定。"
 
 #: scene/gui/container.cpp
 msgid ""
@@ -12450,8 +12458,8 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
-"由於設定的滑鼠篩選 (Mouse Filter) 設定為「忽略 (Ignore)」，將不會顯示提示 "
-"Tooltip 。要解決該問題，請將滑鼠篩選設為「停止 (Stop）」或「通過 (Pass)」。"
+"由於設定的 Mouse Filter 設定為「Ignore」，將不會顯示提示工具提示 。要解決該問"
+"題，請將 Mouse Filter 設為「Stop」或「Pass」。"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -12472,7 +12480,7 @@ msgstr ""
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr "若啟用「表示式編輯」，則「最小值」必須大於 0。"
+msgstr "若啟用「Exp Edit」，則「Min Value」必須大於 0。"
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -12492,7 +12500,7 @@ msgstr "（其它）"
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
-msgstr "無法載入專案設定中指定的預設環境（算圖 -> 環境 -> 預設環境）。"
+msgstr "無法載入專案設定中指定的預設環境（算繪 -> 環境 -> 預設環境）。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -12501,13 +12509,13 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"該 Viewport 尚未被設定為算圖目標。若你想直接將其內容顯示於畫面上，請將其設為 "
+"該 Viewport 尚未被設定為算繪目標。若你想直接將其內容顯示於畫面上，請將其設為 "
 "Control 的子節點以讓其取得大小。否則請將其設為 RenderTarget 並指派其內部紋理"
 "為其他節點以顯示。"
 
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
-msgstr "Viewport 大小必須大於 0 才可進行算圖。"
+msgstr "Viewport 大小必須大於 0 才可進行算繪。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
@@ -12536,6 +12544,9 @@ msgstr "Varying 變數只可在頂點函式中指派。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不可修改常數。"
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "目前的場景從未被保存，請先保存以執行。"
 
 #~ msgid "Not in resource path."
 #~ msgstr "不在資源路徑中。"

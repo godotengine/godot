@@ -2381,10 +2381,6 @@ msgid "There is no defined scene to run."
 msgstr "אין סצנה מוגדרת להרצה."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "הסצנה הנוכחית מעולם לא נשמרה, נא לשמור אותה בטרם ההרצה."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "לא ניתן להפעיל תהליך משנה!"
 
@@ -10684,6 +10680,11 @@ msgstr "שמירת סצנה"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "מחיקת שורה"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Delete %d nodes?"
 msgstr "מחיקת שורה"
 
@@ -12367,6 +12368,12 @@ msgid ""
 "shape resource for it!"
 msgstr ""
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12841,6 +12848,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "הסצנה הנוכחית מעולם לא נשמרה, נא לשמור אותה בטרם ההרצה."
 
 #~ msgid "Not in resource path."
 #~ msgstr "לא בנתיב המשאב."
