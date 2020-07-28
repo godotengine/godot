@@ -347,7 +347,6 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			return err;
 		}
 		value = d;
-		return OK;
 	} else if (token.type == TK_BRACKET_OPEN) {
 		Array a;
 		Error err = _parse_array(a, p_str, index, p_len, line, r_err_str);
@@ -355,8 +354,6 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			return err;
 		}
 		value = a;
-		return OK;
-
 	} else if (token.type == TK_IDENTIFIER) {
 		String id = token.value;
 		if (id == "true") {
@@ -369,18 +366,16 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			r_err_str = "Expected 'true','false' or 'null', got '" + id + "'.";
 			return ERR_PARSE_ERROR;
 		}
-		return OK;
-
 	} else if (token.type == TK_NUMBER) {
 		value = token.value;
-		return OK;
 	} else if (token.type == TK_STRING) {
 		value = token.value;
-		return OK;
 	} else {
 		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
 		return ERR_PARSE_ERROR;
 	}
+
+	return OK;
 }
 
 Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
@@ -498,6 +493,19 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 	}
 
 	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
+
+	// Check if EOF is reached
+	// or it's a type of the next token.
+	if (err == OK && idx < len) {
+		err = _get_token(str, idx, len, token, r_err_line, r_err_str);
+
+		if (err || token.type != TK_EOF) {
+			r_err_str = "Expected 'EOF'";
+			// Reset return value to empty `Variant`
+			r_ret = Variant();
+			return ERR_PARSE_ERROR;
+		}
+	}
 
 	return err;
 }
