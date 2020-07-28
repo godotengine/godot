@@ -13,12 +13,13 @@
 # hpn33 <hamed.hpn332@gmail.com>, 2019, 2020.
 # Focus <saeeddashticlash@gmail.com>, 2019, 2020.
 # mohamad por <mohamad24xx@gmail.com>, 2020.
+# Tetra Homer <tetrahomer@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-23 20:21+0000\n"
-"Last-Translator: Focus <saeeddashticlash@gmail.com>\n"
+"PO-Revision-Date: 2020-07-21 13:41+0000\n"
+"Last-Translator: Tetra Homer <tetrahomer@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -26,14 +27,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"نوع ورودی برای متد ()convert ‌ نامعتبر است ،‌ از ثابت های  *_TYPE‌ استفاده "
-"کنید ."
+msgstr "نوع ورودی برای ()convert نامعتبر است, ثوابت *_TYPE‌ بکار گیرید ."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -53,61 +52,59 @@ msgstr "ورودی نامعتبر i% (تایید نشده) در عبارت"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "نمی توان از self استفاده کرد چون instance = null هست (تایید نشده)"
+msgstr "نمی توان self را بکار گرفت چون instance = null هست (تایید نشده)"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "نام دارایی ایندکس نامعتبر 's%' در گره s%."
+msgstr "عملگر های نامعتبر به عملگر %s, %s و %s."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "نام دارایی ایندکس نامعتبر 's%' در گره s%."
+msgstr "نوع ایندکس %s برای نوع اصلی %s نامعتبر است"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "شاخص نامگذاری شده \"٪ s\" برای نوع پایه٪ s نامعتبر است"
+msgstr "ایندکس اسمی '%s' برای نوع اصلی %s نامعتبر است"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ": آرگومان نوع نامعتبر آرگومان های نامعتبر برای ساخت '٪ s'"
+msgstr "آرگومان های نامعتبر برای ساخت '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "در تماس با '٪ s':"
+msgstr "به هنگام فراخوان تابع'%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "بایت"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "کیلوبایت"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "مگابایت"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "گیگابایت"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "ترابایت"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "پتابایت"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "اگزابایت"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "ازاد کردن"
+msgstr "آزاد کردن"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -123,90 +120,84 @@ msgstr "زمان:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr "ارزش:"
+msgstr "مقدار:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "کلید را اینجا وارد کن"
+msgstr "کلید را اینجا وارد کنید"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "کلیدهای انتخاب شده تکراری درست کن"
+msgstr "تکرار کلید(های) منتخب"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "کلید‌های انخاب شده را پاک کن"
+msgstr "حذف کلید(های) منتخب"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Bezier Point را اضافه کن"
+msgstr "افزودن نقطه بِزیِر"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Bezier Points را جابجا کن"
+msgstr "انتقال نقاط بِزیِر"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "تکرار کلید‌های انیمیشن"
+msgstr "تکرار کلید ‌های متحرک"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "کلیدها را در انیمیشن حذف کن"
+msgstr "حذف کلید های متحرک"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "تغییر زمان فریم کلید در انیمیشن"
+msgstr "تغییر زمان لحظه‌کلیدِ متحرک"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "انتقال را در انیمیشن تغییر بده"
+msgstr "تغییر انتقالی متحرک"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "انتقال را در انیمیشن تغییر بده"
+msgstr "تغییر دگرشکل متحرک"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "تغییر مقدار فریم کلید در انیمیشن"
+msgstr "تغییر مقدار لحظه‌کلید متحرک"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "فراخوانی را در انیمیشن تغییر بده"
+msgstr "تغییر فراخوان متحرک"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "تغییر زمان فریم کلید در انیمیشن"
+msgstr "تغییرات زمان لحظه‌کلید متحرک"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "انتقال را در انیمیشن تغییر بده"
+msgstr "تغییرات انتقالی متحرک"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "انتقال را در انیمیشن تغییر بده"
+msgstr "تغییرات دگرشکل متحرک"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "تغییر مقدار فریم کلید در انیمیشن"
+msgstr "تغییرات مقدار لحظه‌کلید متحرک"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "فراخوانی را در انیمیشن تغییر بده"
+msgstr "تغییرات فراخوان متحرک"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "طول انیمیشن را تغییر بده"
+msgstr "تغییر طول انیمیشن"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "حلقه(loop)  انیمیشن را تغییر دهید"
+msgstr "تغییر حلقه(loop) انیمیشن"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -214,15 +205,15 @@ msgstr "ویژگی مسیر"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr "مسیر 3D Transform"
+msgstr "مسیر دگرشکل 3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "صدا زدن  Method Track"
+msgstr "فراخوان تابع مسیر"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "مسیر منحنی بِزیِر"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
@@ -267,7 +258,7 @@ msgstr "تغییرمیسر path"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "روشن / خاموش کردن این Track."
+msgstr "دِگرحالتِ روشن/خاموش این قطعه."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -336,9 +327,8 @@ msgid "Insert Key"
 msgstr "درج کلید"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "نسخه همانند (Duplicate ) کلید(key)"
+msgstr "تکرار کلید(ها)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -366,7 +356,7 @@ msgstr "یک ترک جدید برای s% بساز و کلید را درج کن؟
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "ساختن تعداد d% ترک جدید، ودرج  کلیدها؟"
+msgstr "ساختن %d قطعه جدید و درج کلیدها؟"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -430,7 +420,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "یک مجری انیمیشن نمی تواند خود را محرک کند، فقط سایر مجریان."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -438,66 +428,60 @@ msgstr "بدون ریشه اضافه کردن مسیر امکان پذیر نی�
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "مسیر نامعتبر برای بِزیِر( زیر-خواص نامناسب)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
-msgstr "ترک Bezier را اضافه کن"
+msgstr "افزودن مسیر بِزیِر"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "مسیر قطعه نامعتبر، پس نمی‌توان یک کلید به آن افزود."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "درج ترک و کلید در انیمیشن"
+msgstr "افزودن کلید مسیر دگرشکل"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "ترک را اضافه کن"
+msgstr "افزودن کلید مسیر"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "درج ترک و کلید در انیمیشن"
+msgstr "افزودن تابع کلید میسر"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "VariableGet در اسکریپت پیدا نشد: "
+msgstr "تابع در شئ یافت نشد: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "کلیدها را در انیمیشن جابجا کن"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "حافظه پنهان خالی است!"
+msgstr "حافظه پنهان خالی است"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "مسیر به سمت گره:"
+msgstr "جاگذاری مسیر ها"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "کلیدها را در انیمیشن تغییر مقیاس بده"
+msgstr "اندازه کلید های متحرک"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
+msgstr "این گزینه برای اصلاح بِزیِر کار نمی کند, چون تنها یک مسیر واحد است."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -511,42 +495,47 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"این انیمیشن متعلق به یک صحنه ورودی است, بنابراین تغییرات در مسیرهای ورودی "
+"ذخیره نشده‌اند.\n"
+"\n"
+"برای امکان اضافه کردن مسیر های سفارشی, به تنظیمات ورودی صحنه بروید و\n"
+"\"انیمیشن > ذخیره‌سازی\" به \"پرونده ها\", \"انیمیشن > نگه داشتن مسیر های "
+"سفارشی\" را تنظیم و فعال کنید، سپس ازنو-وارد کنید.\n"
+"با وارد کردن از «پیش تعیین شده»ای که انیمیشن ها را به صورت پرونده‌های جداگانه "
+"وارد می کند، می‌توانید این روش جایگزین را بکار گیرید."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "هشدار: در حال ویرایش انیمیشن وارد شده"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
-"یک AnimationPlayer از درخت صحنه انتخاب کنید تا انیمیشن‌ها را ویرایش کنید."
+msgstr "یک گره AnimationPlayer را برای ایجاد و ویرایش انیمیشن ها برگزینید."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "فقط مسیرهای از گره های انتخاب شده در درخت نشان داده شود."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
 msgstr ""
+"مسیرها را بر اساس گره گروه‌بندی کنید یا آن‌ها را به عنوان لیست ساده نمایش دهید."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "گام(ها):"
+msgstr "چفت:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "گره انیمیشن"
+msgstr "مقدار مرحله انیمیشن."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "ثانیه ها"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "لحظه بر ثانیه"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -559,9 +548,8 @@ msgid "Edit"
 msgstr "ویرایش"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "گره انیمیشن"
+msgstr "خصوصیات انیمیشن."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
@@ -577,26 +565,23 @@ msgstr "از مکان‌نما تغییر مقیاس بده"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "انتخاب شده را به دو تا تکثیر کن"
+msgstr "تکثیر برگزیده"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "ترانهاده را به دو تا تکثیر کن"
+msgstr "تکثیر جابجایی"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "انتخاب شده را حذف کن"
+msgstr "حذف برگزیده"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
-msgstr "به گام بعدی برو"
+msgstr "برو به گام بعد"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
-msgstr "به گام قبلی برو"
+msgstr "برو به گام پیشین"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -612,7 +597,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "بکارگیری منحنی بِزیِر"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -659,9 +644,8 @@ msgid "Scale Ratio:"
 msgstr "نسبت تغییر مقیاس:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select Tracks to Copy"
-msgstr "دارایی Setter را اضافه کن"
+msgstr "انتخاب میسرها جهت تکثیر"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -670,17 +654,15 @@ msgstr "دارایی Setter را اضافه کن"
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr "کپی کردن"
+msgstr "کپی"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select All/None"
-msgstr "گره انتخاب"
+msgstr "انتخاب همه/هیچ"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "ترک را اضافه کن"
+msgstr "افزودن کلیپ آهنگ صوتی"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -711,18 +693,16 @@ msgid "Line Number:"
 msgstr "شماره خط:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "جایگزینی"
+msgstr "%d جایگزین شده."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "%d منطبق."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "تطبیقی ندارد"
+msgstr "%d هم‌خوانی."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -747,7 +727,7 @@ msgstr "تنها در قسمت انتخاب شده"
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "استاندارد"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
@@ -757,17 +737,17 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
-msgstr "بزرگنمایی بیشتر"
+msgstr "بزرگنمایی"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr "بزرگنمایی کمتر"
+msgstr "کوچکنمایی"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "بازنشانی بزرگنمایی"
+msgstr "باز‌نشانی مقیاس"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -778,38 +758,31 @@ msgid "Line and column numbers."
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "متد در گره مقصد باید مشخص شده باشد!"
+msgstr "تابع در گره مقصد باید مشخص شده باشد."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "نام یک شناسه‌ی معتبر نیست:"
+msgstr "اسم تابع باید یک شناسه‌ی معتبر باشد."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"متد هدف پیدا نشد! لطفا یک متد صحیح مشخص کنید یا یک اسکریپت به گره هدف الحاق "
-"کنید."
+"متد هدف پیدا نشد. یک تابع معتبر تعیین کنید یا یک اسکریپت به گره هدف وصل کنید."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "اتصال به گره:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "اتصال به گره:"
+msgstr "اتصال به اسکریپت:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "سیگنال ها:"
+msgstr "از سیگنال:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
@@ -841,14 +814,12 @@ msgid "Extra Call Arguments:"
 msgstr "آرگومان‌های اضافی فراخوانی:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "انتخاب حالت"
+msgstr "روش گیرنده:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "متعادل شده"
+msgstr "پیشرفته"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -868,9 +839,8 @@ msgid "Disconnects the signal after its first emission."
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "اتصال سیگنال:"
+msgstr "نمی توان سیگنال را متصل کرد"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -891,9 +861,8 @@ msgid "Connect"
 msgstr "اتصال"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "سیگنال ها:"
+msgstr "سیگنال:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -904,9 +873,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "'s%' را از 's%' جدا کن"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
-msgstr "'s%' را از 's%' جدا کن"
+msgstr "جدا کردن همه از سیگنال: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -918,14 +886,12 @@ msgid "Disconnect"
 msgstr "عدم اتصال"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "اتصال سیگنال:"
+msgstr "وصل یک سیگنال به یک تابع"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "خطای اتصال"
+msgstr "ویرایش اتصال:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -940,19 +906,16 @@ msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "عدم اتصال"
+msgstr "جدا کردن همه"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "ویرایش"
+msgstr "ویرایش..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "روش ها"
+msgstr "برو به تابع"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -1004,22 +967,20 @@ msgid "Dependencies For:"
 msgstr "بستگی‌ها برای:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"صحنه‌ی 's%' در حال حاضر ویرایش شده است.\n"
-"تغییرات مؤثر نخواهد بود مگر با بارگذاری مجدد."
+"ویرایش صحنه 's%' شروع شده است.\n"
+"تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"منابع 's%' در حال استفاده است.\n"
-"تغییرات با بارگذاری مجدد مؤثر خواهد بود."
+"منابع 's%' بکار رفته‌اند.\n"
+"تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -1066,9 +1027,8 @@ msgid "Owners Of:"
 msgstr "مالکانِ:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "آیا پرونده‌های انتخاب شده از پروژه حذف شوند؟ (بدون undo)"
+msgstr "آیا پرونده‌های انتخاب شده از طرح حذف شوند؟ (نمی‌توان بازیابی کرد)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1089,9 +1049,8 @@ msgid "Error loading:"
 msgstr "خطا در بارگذاری:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Load failed due to missing dependencies:"
-msgstr "خطا در بارگذاری صحنه به دلیل بستگی‌های مفقود:"
+msgstr "به دلیل مفقود شدن وابستگی‌ها بارگیری انجام نشد:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -1114,9 +1073,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "به طور دائمی تعداد 'd%' آیتم را حذف کند؟ (بدون undo !)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "بستگی‌ها"
+msgstr "نمایش وابستگی‌ها"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
@@ -1176,11 +1134,11 @@ msgstr "مؤلفان"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr "اسپانسر‌های پلاتینیوم (درجه ۱)"
+msgstr "حامیان پلاتینیُم (درجه ۱)"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr "اسپانسر‌های طلایی (درجه ۲)"
+msgstr "حامیان طلایی (درجه ۲)"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1207,9 +1165,8 @@ msgid "License"
 msgstr "مجوز"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
-msgstr "مجوز‌های شخص ثالث"
+msgstr "مجوز های شخص-ثالث"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -1218,6 +1175,9 @@ msgid ""
 "is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Engine به تعدادی از کتابخانه های منبع باز و شخص-ثالث رایگان متکی است "
+"که همگی با شرایط مجوز MIT سازگار هستند. در زیر لیستی جامع از کلیه مؤلفه های "
+"شخص ثالث با بیانیه های حق کپی برداری مربوطه و شرایط مجوز آنها قرار دارد."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1233,29 +1193,27 @@ msgstr "گواهینامه"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in ZIP format."
-msgstr ""
+msgstr "خطای گشودن بسته بندی پرونده، به شکل ZIP نیست."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (Already Exists)"
-msgstr "پیش از این وجود داشته است"
+msgstr "%s (موجود است)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "عست های غیر فشرده"
+msgstr "فشرده نشدن اَسِت ها"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
-msgstr ""
+msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "نمی‌تواند یک پوشه ایجاد شود."
+msgstr "و %s بیش تر پرونده ها."
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
-msgstr ""
+msgstr "بسته با موفقیت نصب شد!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1263,9 +1221,8 @@ msgid "Success!"
 msgstr "موفقیت!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "محتواها:"
+msgstr "درون مایه های بسته بندی:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1277,52 +1234,51 @@ msgstr "نصب کننده پکیج ها"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "بلندگوها"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr ""
+msgstr "افزودن جلوه"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr ""
+msgstr "تغییر نام صوت گذرا"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "مقدار آرایه را تغییر بده"
+msgstr "تغییر مقدار صدای خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr ""
+msgstr "دِگرحالتِ صدای تکی خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr ""
+msgstr "دِگرحالتِ صدای سکوت خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
+msgstr "دِگرحالتِ صدای جلوه های میان بر خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr ""
+msgstr "انتخاب صدای ارسال گذرا"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "افزودن صدای جلوه خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
-msgstr ""
+msgstr "انتقال جلوه خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr "حذف اثر گذرا"
+msgstr "حذف جلوه خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
-msgstr ""
+msgstr "برای چینش مجدد، بکشید و رها کنید."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1351,7 +1307,7 @@ msgstr "بازنشانی حجم"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr "حذف اثر"
+msgstr "حذف جلوه"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
@@ -1366,24 +1322,20 @@ msgid "Master bus can't be deleted!"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Audio Bus"
-msgstr "انیمیشن را بهینه‌سازی کن"
+msgstr "حذف صدای خطی"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Duplicate Audio Bus"
-msgstr "انتخاب شده را به دو تا تکثیر کن"
+msgstr "تکثیر صدای خطی"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Bus Volume"
-msgstr "بازنشانی بزرگنمایی"
+msgstr "باز‌نشانی مقدار خطی"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Move Audio Bus"
-msgstr "کلید Add را جابجا کن"
+msgstr "انتقال صدای خطی"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
@@ -1410,9 +1362,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "خطا در بارگذاری:"
+msgstr "خطای ذخیره کردن پرونده: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1461,23 +1412,20 @@ msgid "Valid characters:"
 msgstr "کاراکترهای معتبر:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "نام نامعتبر. نباید با یک نام کلاس موجود در موتور برخوردی داشته باشد."
+msgstr "نباید با یک نام کلاس موتور موجود برخورد کند."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr "نام نامعتبر. نباید یا یک نام نوع توکار برخوردی داشته باشد."
+msgstr "نباید با یک نام نوع درون-ساز موجود برخورد کند."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
-msgstr "نام نامعتبر. نباید با نام یک ثابت سراسری موجود برخوردی داشته باشد."
+msgstr "نباید با نام یک ثابت سراسری موجود برخوردی کند."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "کلمه کلیدی نمی تواند به عنوان یک نام خودبارگیر بکار برده شود."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1553,9 +1501,8 @@ msgid "Updating scene..."
 msgstr ""
 
 #: editor/editor_data.cpp editor/editor_properties.cpp
-#, fuzzy
 msgid "[empty]"
-msgstr "(خالی)"
+msgstr "[پوچ]"
 
 #: editor/editor_data.cpp
 msgid "[unsaved]"
@@ -1644,91 +1591,76 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "ویرایشگر"
+msgstr "ویرایشگر 3بعدی"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "گشودن ویرایشگر اسکریپت"
+msgstr "ویرایشگر اسکریپت"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Asset Library"
-msgstr "گشودن کتابخانه عست"
+msgstr "کتابخانه دارایی"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "وارد کردن"
+msgstr "وارد کردن لنگرگاه"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "نام گره:"
+msgstr "لنگرگاه گره:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "سامانه پرونده"
+msgstr "فایل‌سیستم و وارد‌کردن لنگرگاه"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase profile '%s'? (no undo)"
-msgstr "جایگزینی همه"
+msgstr "پاک‌کردن نمایه '%s'? (عدم بازگردانی)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "نمایه با این نام در حال حاضر وجود دارد."
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Properties Disabled)"
-msgstr "ویژگی:"
+msgstr "(خصوصیات غیرفعال شده)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Editor Disabled)"
-msgstr "غیرفعال شده"
+msgstr "(ویرایشگر غیرفعال شده)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options:"
-msgstr "توضیح:"
+msgstr "گزینه‌های کلاس:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enable Contextual Editor"
-msgstr "گشودن ویرایشگر متن"
+msgstr "فعال کردن ویرایشگر متنی"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Properties:"
-msgstr "صافی کردن گره‌ها"
+msgstr "خصوصیات فعال شده:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Features:"
-msgstr "فهرست متدها:"
+msgstr "ویژگی های فعال شده:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enabled Classes:"
-msgstr "جستجوی کلاسها"
+msgstr "کلاس های فعال شده:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1741,23 +1673,20 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Error saving profile to path: '%s'."
-msgstr "خطای بارگذاری قلم."
+msgstr "خطای ذخیره نمایه در مسیر: '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "نسخه اخیر:"
+msgstr "نمایه موجود:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Make Current"
-msgstr "تابع را بساز"
+msgstr "ساختن جریان"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1775,73 +1704,61 @@ msgid "Export"
 msgstr "صدور"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "گره های موجود:"
+msgstr "نمایه‌های موجود:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options"
-msgstr "توضیحات"
+msgstr "گزینه های کلاس"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "New profile name:"
-msgstr "نام گره:"
+msgstr "نام نمایه جدید:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase Profile"
-msgstr "کُندی در آغاز"
+msgstr "پاک کردن نمایه"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "مدیریت صدور قالب ها"
+msgstr "ویژگی نمایه Godot"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Profile(s)"
-msgstr "پروژه واردشده"
+msgstr "وارد کردن نمایه(ها)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Export Profile"
-msgstr "صدور پروژه"
+msgstr "صادر کردن نمایه"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Manage Editor Feature Profiles"
-msgstr "مدیریت صدور قالب ها"
+msgstr "مدیریت ویژگی نمایه‌های ویرایشگر"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "ساختن پوشه"
+msgstr "برگزیدن پوشه موجود"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
 msgstr "فایل وجود دارد، آیا بازنویسی شود؟"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select This Folder"
-msgstr "انتخاب حالت"
+msgstr "برگزیدن این پوشه"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
 msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
-msgstr "باز شدن مدیر پروژه؟"
+msgstr "گشودن در مدیر پرونده"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Show in File Manager"
-msgstr "باز شدن مدیر پروژه؟"
+msgstr "نمایش  در مدیر پرونده"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
@@ -1924,29 +1841,24 @@ msgid "Move Favorite Down"
 msgstr ""
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "رفتن به پوشه والد"
+msgstr "برو به پوشه پیشین."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "رفتن به پوشه والد"
+msgstr "برو به پوشه بعد."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "رفتن به پوشه والد"
+msgstr "برو به پوشه والد."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "جستجوی کلاسها"
+msgstr "نوسازی پرونده‌ها."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "ناتوان در ساختن پوشه."
+msgstr "پوشه موجود (غیر)محبوب."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
@@ -1976,7 +1888,7 @@ msgstr "پرونده:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr "باید از یک پسوند معتبر استفاده شود."
+msgstr "باید یک پسوند معتبر بکار گیرید."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -2010,9 +1922,8 @@ msgid "Inherited by:"
 msgstr "به ارث رسیده به وسیله:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "توضیح:"
+msgstr "توضیح"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2020,25 +1931,23 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
+msgstr "خصوصیات"
 
 #: editor/editor_help.cpp
 msgid "override:"
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "پیشفرض"
+msgstr "پیش فرض:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "روش ها"
+msgstr "توابع"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
-msgstr "صافی کردن گره‌ها"
+msgstr "خصوصیات زمینه"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2046,17 +1955,15 @@ msgstr "شمارش ها"
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr "ثابت ها"
+msgstr "ثوابت"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
-msgstr "توضیحات مشخصه:"
+msgstr "توضیحات خصیصه"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "ارزش:"
+msgstr "(مقدار)"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2065,9 +1972,8 @@ msgid ""
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Method Descriptions"
-msgstr "توضیحات"
+msgstr "توضیحات تابع"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2082,80 +1988,67 @@ msgstr "جستجوی راهنما"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr "حساس به حالت (حروف لاتین)"
+msgstr "حساس به حروف کوچک و بزرگ"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Show Hierarchy"
-msgstr "جستجو"
+msgstr "نمایش سلسله‌مراتب"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Display All"
-msgstr "جایگزینی همه"
+msgstr "نشان دادن همه"
 
 #: editor/editor_help_search.cpp
 msgid "Classes Only"
-msgstr ""
+msgstr "تنها کلاس‌ها"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Methods Only"
-msgstr "روش ها"
+msgstr "تنها روش‌ها"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Signals Only"
-msgstr "سیگنال‌ها"
+msgstr "تنها سیگنال‌ها"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Constants Only"
-msgstr "ثابت ها"
+msgstr "تنها ثوابت"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Properties Only"
-msgstr "ویژگی:"
+msgstr "تنها خصوصیات"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Properties Only"
-msgstr "دارایی Setter را اضافه کن"
+msgstr "تنها خصوصیات زمینه"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Member Type"
-msgstr "عضوها"
+msgstr "نوع عضو"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Class"
-msgstr "کلاس:"
+msgstr "کلاس"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
-msgstr "روش ها"
+msgstr "روش"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Signal"
-msgstr "سیگنال‌ها"
+msgstr "سیگنال‌"
 
 #: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "ثابت"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Property"
-msgstr "ویژگی:"
+msgstr "خصیصه"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
-msgstr "صافی کردن گره‌ها"
+msgstr "ویژگی زمینه"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2163,20 +2056,19 @@ msgstr "ویژگی:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
-msgstr ""
+msgstr "تعیین"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "تعیین چندگانه:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "خروجی:"
 
 #: editor/editor_log.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Selection"
-msgstr "برداشتن انتخاب شده"
+msgstr "کپی برگزیده"
 
 #: editor/editor_log.cpp editor/editor_network_profiler.cpp
 #: editor/editor_profiler.cpp editor/editor_properties.cpp
@@ -2189,31 +2081,30 @@ msgid "Clear"
 msgstr "پاک کردن"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "خروجی"
+msgstr "پاک کردن خروجی"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
 msgid "Stop"
-msgstr ""
+msgstr "توقف"
 
 #: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
 #: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
 msgid "Start"
-msgstr ""
+msgstr "شروع"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/ثانیه"
 
 #: editor/editor_network_profiler.cpp
 msgid "Down"
-msgstr ""
+msgstr "پایین"
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
-msgstr ""
+msgstr "بالا"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
@@ -2237,7 +2128,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
+msgstr "چارچوب جدید"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -2246,11 +2137,11 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr "موافقت"
+msgstr "قبول"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr ""
+msgstr "خطای ذخیره سازی منبع!"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2279,9 +2170,8 @@ msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while parsing '%s'."
-msgstr "خطای بارگذاری قلم."
+msgstr "خطا هنگام تجزیه '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
@@ -2292,9 +2182,8 @@ msgid "Missing '%s' or its dependencies."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while loading '%s'."
-msgstr "خطای بارگذاری قلم."
+msgstr "خطا هنگام تجزیه '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -2399,33 +2288,28 @@ msgid "There is no defined scene to run."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr ""
 
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
-msgstr "باز کردن صحنه"
+msgstr "گشودن صحنه"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "گشودن صحنه اصلی"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "باز کن"
+msgstr "گشودن فوری..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr ""
+msgstr "گشودن فوری صحنه..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr ""
+msgstr "گشودن سریع اسکریپت..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -2449,27 +2333,27 @@ msgstr "ذخیره صحنه در ..."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "نه"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr "تایید"
+msgstr "بله"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr ""
+msgstr "این صحنه هرگز ذخیره نشده است. ذخیره قبل از اجرا؟"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "این عملیات بدون یک صحنه انجام نمی شود."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "صادر کردن کتابخانه شبکه مش"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr ""
+msgstr "این عملیات بدون یک گره ریشه ای انجام نمی شود."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -2488,9 +2372,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "باز کردن صحنه"
+msgstr "بازیابی صحنه ذخیره شده"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2500,7 +2383,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr ""
+msgstr "اجرا فوری صحنه…"
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -2508,7 +2391,7 @@ msgstr "خروج"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr "از ویرایشگر خارج می شوید؟"
+msgstr "خروج از ویرایشگر؟"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
@@ -2538,12 +2421,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "بستن صحنه"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reopen Closed Scene"
-msgstr "باز کردن صحنه"
+msgstr "بازگشودن صحنه بسته شده"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
@@ -2554,9 +2436,8 @@ msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to load addon script from path: '%s'."
-msgstr "خطای بارگذاری قلم."
+msgstr "امکان بارگیری اسکریپت افزونه از مسیر وجود ندارد: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2616,7 +2497,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr ""
+msgstr "ذخیره لایه"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
@@ -2629,50 +2510,44 @@ msgstr "پیشفرض"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Show in FileSystem"
-msgstr "سامانه پرونده"
+msgstr "نمایش در فایل‌سیستم"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Play This Scene"
-msgstr "پخش صحنه"
+msgstr "اجرای این صحنه"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close Tab"
-msgstr "بستن"
+msgstr "بستن زبانه"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo Close Tab"
-msgstr "بستن"
+msgstr "برگرداندن زبانه"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "بستن زبانه های دیگر"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "بستن زبانه ها به طرف راست"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close All Tabs"
-msgstr "بستن"
+msgstr "بستن تمام زبانه ها"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr ""
+msgstr "جاگرداندن زبانه صحنه"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more folders"
-msgstr "نمی‌تواند یک پوشه ایجاد شود."
+msgstr "%d پوشه‌های بیش تر"
 
 #: editor/editor_node.cpp
 msgid "%d more files"
@@ -2703,9 +2578,8 @@ msgid "Go to previously opened scene."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "کپی کردن"
+msgstr "کپی متن"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -2744,9 +2618,8 @@ msgid "Save Scene"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save All Scenes"
-msgstr "ذخیره صحنه در ..."
+msgstr "ذخیره صحنه"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -2763,12 +2636,12 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr "خنثی کردن (Undo)"
+msgstr "عقب‌گرد"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "جلوگرد"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -2780,14 +2653,12 @@ msgid "Project"
 msgstr "پروژه"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project Settings..."
-msgstr "ترجیحات پروژه"
+msgstr "تنظیمات طرح…"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Version Control"
-msgstr "نسخه:"
+msgstr "مهار نسخه"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
@@ -2798,27 +2669,24 @@ msgid "Shut Down Version Control"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export..."
-msgstr "صدور"
+msgstr "صدور…"
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "باز شدن مدیر پروژه؟"
+msgstr "گشودن پوشه اطلاعات طرح"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "ابزارها"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Orphan Resource Explorer..."
-msgstr "پوینده‌ی منبع جدا افتاده"
+msgstr "پوینده‌ی منبع جاافتاده"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2898,14 +2766,12 @@ msgid ""
 msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Editor"
 msgstr "ویرایشگر"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "ویرایشگر ترجیحات"
+msgstr "تنظیمات ویرایشگر…"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -10070,9 +9936,8 @@ msgid "Project Manager"
 msgstr "مدیر پروژه"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Projects"
-msgstr "پروژه"
+msgstr "طرح ها"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
@@ -10112,6 +9977,8 @@ msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
+"شما فعلا هیچ طرحی ندارید.\n"
+"آیا می خواهید طرح های نمونه رسمی را در کتابخانه دارایی کاوش کنید؟"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10119,6 +9986,9 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"کادر جستجو طرح ها را با نام و مسیر اجزا گذشته تصفیه می کند.\n"
+"برای تصفیه کردن طرح ها با نام و مسیر کامل، پرس و جو باید حداقل دارای یک `/"
+"`کاراکتر باشد."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10363,7 +10233,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "The editor must be restarted for changes to take effect."
-msgstr ""
+msgstr "باید ویرایشگر از نو شروع شود تا تغییرات جلوه کنند."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -10736,6 +10606,11 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "حذف گره(ها)"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -12469,7 +12344,7 @@ msgstr ""
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "یک CollisionPolygon2D خالی اثری بر برخورد ندارد."
+msgstr "یک CollisionPolygon2D خالی جلوه بر برخورد ندارد."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -12490,6 +12365,12 @@ msgstr ""
 "یک شکل باید برای CollisionShape2D فراهم شده باشد تا عمل کند. لطفا یک شکل "
 "منبع برای آن ایجاد کنید!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12506,9 +12387,7 @@ msgstr "یک بافت با شکل نور باید برای دارایی texture 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"یک چندضلعی مسدود باید برای این مسدودکننده (occluder) تنظیم (یا ترسیم) شود تا "
-"تأثیرگذار باشد."
+msgstr "یک چندضلعی انسدادی باید تنظیم (یا ترسیم) شود تا جلوه کننده باشد."
 
 #: scene/2d/light_occluder_2d.cpp
 #, fuzzy
@@ -12680,7 +12559,7 @@ msgstr ""
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
-msgstr "یک CollisionPolygon خالی تأثیری بر برخورد ندارد."
+msgstr "یک CollisionPolygon خالی جلوه بر برخورد ندارد."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12825,6 +12704,8 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"محیط جهان نیاز به ویژگی \"محیط\" خود دارد تا دارای یک محیط باشد تا جلوه ای "
+"قابل دیدن داشته باشد."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -13009,7 +12890,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "ثوابت قابل تغییر نیستند."
 
 #~ msgid "Not in resource path."
 #~ msgstr "در مسیرِ منبع نیست."
