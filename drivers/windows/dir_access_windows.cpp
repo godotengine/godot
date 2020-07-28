@@ -69,11 +69,7 @@ Error DirAccessWindows::list_dir_begin() {
 	list_dir_end();
 	p->h = FindFirstFileExW((current_dir + "\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, NULL, 0);
 
-	if (p->h == INVALID_HANDLE_VALUE) {
-		return ERR_CANT_OPEN;
-	}
-
-	return OK;
+	return (p->h == INVALID_HANDLE_VALUE) ? ERR_CANT_OPEN : OK;
 }
 
 String DirAccessWindows::get_next() {
