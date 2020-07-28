@@ -3924,7 +3924,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 		}
 		text_changed_dirty = true;
 	}
-	emit_signal("line_edited_from", p_line);
+	emit_signal("lines_edited_from", p_line, r_end_line);
 }
 
 String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
@@ -3987,7 +3987,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 		}
 		text_changed_dirty = true;
 	}
-	emit_signal("line_edited_from", p_from_line);
+	emit_signal("lines_edited_from", p_to_line, p_from_line);
 }
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
@@ -7187,7 +7187,7 @@ void TextEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
-	ADD_SIGNAL(MethodInfo("line_edited_from", PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(MethodInfo("lines_edited_from", PropertyInfo(Variant::INT, "from_line"), PropertyInfo(Variant::INT, "to_line")));
 	ADD_SIGNAL(MethodInfo("request_completion"));
 	ADD_SIGNAL(MethodInfo("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
 	ADD_SIGNAL(MethodInfo("gutter_added"));

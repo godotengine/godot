@@ -53,13 +53,13 @@ Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
 	return color_map;
 }
 
-void SyntaxHighlighter::_line_edited_from(int p_line) {
+void SyntaxHighlighter::_lines_edited_from(int p_from_line, int p_to_line) {
 	if (highlighting_cache.size() < 1) {
 		return;
 	}
 
 	int cache_size = highlighting_cache.back()->key();
-	for (int i = p_line - 1; i <= cache_size; i++) {
+	for (int i = MIN(p_from_line, p_to_line) - 1; i <= cache_size; i++) {
 		if (highlighting_cache.has(i)) {
 			highlighting_cache.erase(i);
 		}
@@ -93,7 +93,7 @@ void SyntaxHighlighter::update_cache() {
 
 void SyntaxHighlighter::set_text_edit(TextEdit *p_text_edit) {
 	if (text_edit && ObjectDB::get_instance(text_edit_instance_id)) {
-		text_edit->disconnect("line_edited_from", callable_mp(this, &SyntaxHighlighter::_line_edited_from));
+		text_edit->disconnect("lines_edited_from", callable_mp(this, &SyntaxHighlighter::_lines_edited_from));
 	}
 
 	text_edit = p_text_edit;
@@ -101,7 +101,7 @@ void SyntaxHighlighter::set_text_edit(TextEdit *p_text_edit) {
 		return;
 	}
 	text_edit_instance_id = text_edit->get_instance_id();
-	text_edit->connect("line_edited_from", callable_mp(this, &SyntaxHighlighter::_line_edited_from));
+	text_edit->connect("lines_edited_from", callable_mp(this, &SyntaxHighlighter::_lines_edited_from));
 	update_cache();
 }
 
