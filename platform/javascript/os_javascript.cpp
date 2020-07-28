@@ -1077,16 +1077,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
 		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
 		canvas.addEventListener('drop', Module.listeners['drop'], false);
-		// Quit request
-		Module['request_quit'] = function() {
-			send_notification(notifications[notifications.length - 1]);
-		};
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
 		MainLoop::NOTIFICATION_WM_FOCUS_IN,
-		MainLoop::NOTIFICATION_WM_FOCUS_OUT,
-		MainLoop::NOTIFICATION_WM_QUIT_REQUEST
+		MainLoop::NOTIFICATION_WM_FOCUS_OUT
 	);
 	/* clang-format on */
 
