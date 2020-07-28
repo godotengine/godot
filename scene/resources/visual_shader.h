@@ -388,6 +388,7 @@ public:
 private:
 	String uniform_name;
 	Qualifier qualifier;
+	bool global_code_generated = false;
 
 protected:
 	static void _bind_methods();
@@ -400,6 +401,9 @@ public:
 	void set_qualifier(Qualifier p_qual);
 	Qualifier get_qualifier() const;
 
+	void set_global_code_generated(bool p_enabled);
+	bool is_global_code_generated() const;
+
 	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -409,6 +413,62 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeUniform::Qualifier)
+
+class VisualShaderNodeUniformRef : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeUniformRef, VisualShaderNode);
+
+public:
+	enum UniformType {
+		UNIFORM_TYPE_FLOAT,
+		UNIFORM_TYPE_INT,
+		UNIFORM_TYPE_BOOLEAN,
+		UNIFORM_TYPE_VECTOR,
+		UNIFORM_TYPE_TRANSFORM,
+		UNIFORM_TYPE_COLOR,
+		UNIFORM_TYPE_SAMPLER,
+	};
+
+	struct Uniform {
+		String name;
+		UniformType type;
+	};
+
+private:
+	String uniform_name;
+	UniformType uniform_type;
+
+protected:
+	static void _bind_methods();
+
+public:
+	static void add_uniform(const String &p_name, UniformType p_type);
+	static void clear_uniforms();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	void set_uniform_name(const String &p_name);
+	String get_uniform_name() const;
+
+	int get_uniforms_count() const;
+	String get_uniform_name_by_index(int p_idx) const;
+	UniformType get_uniform_type_by_name(const String &p_name) const;
+	UniformType get_uniform_type_by_index(int p_idx) const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	VisualShaderNodeUniformRef();
+};
 
 class VisualShaderNodeGroupBase : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNode);
