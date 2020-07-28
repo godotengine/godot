@@ -1439,14 +1439,14 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			Error err2;
 			FileAccess *file = FileAccess::open(cache_file_path, FileAccess::READ, &err2);
 
-			if (err2) {
-				if (file)
-					memdelete(file);
-			} else {
+			if (!err2) {
 				cache_size = file->get_len();
 				cache_data = (int *)memalloc(cache_size);
 				file->get_buffer((unsigned char *)cache_data, cache_size);
 			}
+
+			if (file)
+				memdelete(file);
 		}
 
 		float texel_size = p_options["meshes/lightmap_texel_size"];

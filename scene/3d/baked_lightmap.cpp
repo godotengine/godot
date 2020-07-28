@@ -733,6 +733,14 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 			RaytraceEngine::Ray ray(position + normal * bias * 2, direction, bias);
 			bool hit = RaytraceEngine::get_singleton()->intersect(ray);
 
+			if (hit) {
+				// Reject if away from any edge more than a half texel
+				Vector2 half_texel = Vector2(0.5, 0.5) / scene_lightmap_sizes[ray.geomID];
+				if (unlikely(ray.u < -half_texel.x || ray.v < -half_texel.y || ray.u > 1.0 + half_texel.x || ray.v > 1.0 + half_texel.y)) {
+					hit = false;
+				}
+			}
+
 			if (!hit) {
 				Color c = Color(0, 0, 0);
 				if (!sky_data.empty()) {
@@ -741,11 +749,11 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 					Vector2 st = Vector2(Math::atan2(direction.z, direction.x), Math::acos(direction.y));
 
 					if (Math::is_nan(st.y)) {
-						st.y = direction.y > 0.0 ? 0.0 : M_PI;
+						st.y = direction.y > 0.0 ? 0.0 : Math_PI;
 					}
 
-					st.x += M_PI;
-					st /= Vector2(M_PI * 2.0, M_PI);
+					st.x += Math_PI;
+					st /= Vector2(Math_PI * 2.0, Math_PI);
 					st.x = Math::fmod(st.x + 0.75, 1.0);
 
 					c = _bilinear_sample(sky_data, sky_size, st, true);
@@ -756,12 +764,10 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 			}
 
 			unsigned int hit_mesh_id = ray.geomID;
-			float u = ray.u;
-			float v = ray.v;
-			const Vector2 &size = scene_lightmap_sizes[hit_mesh_id];
+			const Size2i &size = scene_lightmap_sizes[hit_mesh_id];
 
-			int x = u * size.x;
-			int y = v * size.y;
+			int x = CLAMP(ray.u * size.x, 0, size.x - 1);
+			int y = CLAMP(ray.v * size.y, 0, size.y - 1);
 
 			int idx = y * size.x + x;
 			idx = scene_lightmap_indices[ray.geomID][idx];
@@ -941,8 +947,8 @@ void RaytraceLightBaker::_plot_triangle(Vector2 *p_vertices, Vector3 *p_position
 
 	uint32_t min_x = MAX(bbox_min.x - 2, 0);
 	uint32_t min_y = MAX(bbox_min.y - 2, 0);
-	uint32_t max_x = MIN(bbox_max.x, p_width);
-	uint32_t max_y = MIN(bbox_max.y, p_height);
+	uint32_t max_x = MIN(bbox_max.x, p_width - 1);
+	uint32_t max_y = MIN(bbox_max.y, p_height - 1);
 
 	Vector2 texel_size;
 
@@ -2102,7 +2108,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,16,1"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_texels_per_unit", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_texels_per_unit", "get_default_texels_per_unit");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_texels_per_unit", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,or_greater"), "set_default_texels_per_unit", "get_default_texels_per_unit");
 
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");
@@ -2141,7 +2147,7 @@ BakedLightmap::BakedLightmap() {
 
 	extents = Vector3(10, 10, 10);
 
-	default_texels_per_unit = 0.0f;
+	default_texels_per_unit = 16.0f;
 	bake_quality = BAKE_QUALITY_MEDIUM;
 	capture_quality = BAKE_QUALITY_MEDIUM;
 	capture_propagation = 1;
