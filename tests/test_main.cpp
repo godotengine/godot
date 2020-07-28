@@ -35,6 +35,7 @@
 #include "test_astar.h"
 #include "test_basis.h"
 #include "test_class_db.h"
+#include "test_color.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
 #include "test_math.h"
