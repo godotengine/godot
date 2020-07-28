@@ -1486,6 +1486,8 @@ private:
 	float hint_range_min;
 	float hint_range_max;
 	float hint_range_step;
+	bool default_value_enabled;
+	float default_value;
 
 protected:
 	static void _bind_methods();
@@ -1516,6 +1518,12 @@ public:
 	void set_step(float p_value);
 	float get_step() const;
 
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(float p_value);
+	float get_default_value() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1540,6 +1548,8 @@ private:
 	int hint_range_min;
 	int hint_range_max;
 	int hint_range_step;
+	bool default_value_enabled;
+	int default_value;
 
 protected:
 	static void _bind_methods();
@@ -1570,6 +1580,12 @@ public:
 	void set_step(int p_value);
 	int get_step() const;
 
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(int p_value);
+	int get_default_value() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
 
 	virtual Vector<StringName> get_editable_properties() const override;
@@ -1584,6 +1600,13 @@ VARIANT_ENUM_CAST(VisualShaderNodeIntUniform::Hint)
 class VisualShaderNodeBooleanUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeBooleanUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	bool default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const override;
 
@@ -1598,7 +1621,15 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(bool p_value);
+	bool get_default_value() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeBooleanUniform();
 };
@@ -1608,6 +1639,13 @@ public:
 class VisualShaderNodeColorUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeColorUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	Color default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const override;
 
@@ -1622,7 +1660,15 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Color &p_value);
+	Color get_default_value() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeColorUniform();
 };
@@ -1632,6 +1678,13 @@ public:
 class VisualShaderNodeVec3Uniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeVec3Uniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	Vector3 default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const override;
 
@@ -1646,7 +1699,15 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Vector3 &p_value);
+	Vector3 get_default_value() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeVec3Uniform();
 };
@@ -1656,6 +1717,13 @@ public:
 class VisualShaderNodeTransformUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeTransformUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	Transform default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const override;
 
@@ -1670,7 +1738,15 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Transform &p_value);
+	Transform get_default_value() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
+
+	virtual Vector<StringName> get_editable_properties() const override;
 
 	VisualShaderNodeTransformUniform();
 };
