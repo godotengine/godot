@@ -172,7 +172,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	const Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-	syntax_highlighter->add_color_region("//", "", comment_color, false);
+	syntax_highlighter->add_color_region("//", "", comment_color, true);
 }
 
 void ShaderTextEditor::_check_shader_mode() {
