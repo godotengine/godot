@@ -605,12 +605,12 @@ real_t RigidBody2D::get_inertia() const {
 
 void RigidBody2D::set_weight(real_t p_weight) {
 
-	set_mass(p_weight / (real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10));
+	set_mass(p_weight / real_t(GLOBAL_GET("physics/2d/default_gravity")));
 }
 
 real_t RigidBody2D::get_weight() const {
 
-	return mass * (real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10);
+	return mass * real_t(GLOBAL_GET("physics/2d/default_gravity"));
 }
 
 #ifndef DISABLE_DEPRECATED
