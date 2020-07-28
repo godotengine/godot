@@ -467,7 +467,7 @@ public:
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
-	FUNC3(instance_set_use_lightmap, RID, RID, RID)
+	FUNC5(instance_set_use_lightmap, RID, RID, RID, int, const Rect2 &)
 
 	FUNC2(instance_set_custom_aabb, RID, AABB)
 

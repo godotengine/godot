@@ -109,6 +109,10 @@ layout(std140) uniform SceneData { // ubo:0
 
 uniform highp mat4 world_transform;
 
+#ifdef USE_LIGHTMAP
+uniform highp vec4 lightmap_uv_rect;
+#endif
+
 #ifdef USE_LIGHT_DIRECTIONAL
 
 layout(std140) uniform DirectionalLightData { //ubo:3
@@ -346,7 +350,9 @@ void main() {
 	uv_interp = uv_attrib;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(USE_LIGHTMAP)
+	uv2_interp = lightmap_uv_rect.zw * uv2_attrib + lightmap_uv_rect.xy;
+#elif defined(ENABLE_UV2_INTERP)
 	uv2_interp = uv2_attrib;
 #endif
 
@@ -1435,7 +1441,12 @@ void reflection_process(int idx, vec3 vertex, vec3 normal, vec3 binormal, vec3 t
 }
 
 #ifdef USE_LIGHTMAP
+#ifdef USE_LIGHTMAP_LAYERED
+uniform mediump sampler2DArray lightmap; //texunit:-9
+uniform int lightmap_layer;
+#else
 uniform mediump sampler2D lightmap; //texunit:-9
+#endif
 uniform mediump float lightmap_energy;
 #endif
 
@@ -1823,7 +1834,11 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #ifdef USE_LIGHTMAP
+#ifdef USE_LIGHTMAP_LAYERED
+	ambient_light = texture(lightmap, vec3(uv2, float(lightmap_layer))).rgb * lightmap_energy;
+#else
 	ambient_light = texture(lightmap, uv2).rgb * lightmap_energy;
+#endif
 #endif
 
 #ifdef USE_LIGHTMAP_CAPTURE

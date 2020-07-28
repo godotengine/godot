@@ -48,7 +48,12 @@ class BakedLightmapData : public Resource {
 	struct User {
 
 		NodePath path;
-		Ref<Texture> lightmap;
+		struct {
+			Ref<Texture> single;
+			Ref<TextureLayered> layered;
+		} lightmap;
+		int lightmap_slice;
+		Rect2 lightmap_uv_rect;
 		int instance_index;
 	};
 
@@ -76,10 +81,12 @@ public:
 	void set_energy(float p_energy);
 	float get_energy() const;
 
-	void add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance = -1);
+	void add_user(const NodePath &p_path, const Ref<Resource> &p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect, int p_instance);
 	int get_user_count() const;
 	NodePath get_user_path(int p_user) const;
-	Ref<Texture> get_user_lightmap(int p_user) const;
+	Ref<Resource> get_user_lightmap(int p_user) const;
+	int get_user_lightmap_slice(int p_user) const;
+	Rect2 get_user_lightmap_uv_rect(int p_user) const;
 	int get_user_instance(int p_user) const;
 	void clear_users();
 
@@ -104,6 +111,7 @@ public:
 		BAKE_ERROR_NO_SAVE_PATH,
 		BAKE_ERROR_NO_MESHES,
 		BAKE_ERROR_CANT_CREATE_IMAGE,
+		BAKE_ERROR_LIGHTMAP_SIZE,
 		BAKE_ERROR_USER_ABORTED
 
 	};
@@ -124,6 +132,8 @@ private:
 	float default_texels_per_unit;
 	float bias;
 	BakeQuality bake_quality;
+	bool generate_atlas;
+	int max_atlas_size;
 	bool capture_enabled;
 	int bounces;
 	bool use_denoiser;
@@ -178,6 +188,12 @@ public:
 	void set_bake_quality(BakeQuality p_quality);
 	BakeQuality get_bake_quality() const;
 
+	void set_generate_atlas(bool p_enabled);
+	bool is_generate_atlas_enabled() const;
+
+	void set_max_atlas_size(int p_size);
+	int get_max_atlas_size() const;
+
 	void set_capture_enabled(bool p_enable);
 	bool get_capture_enabled() const;
 
@@ -209,6 +225,11 @@ public:
 	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	BakeError bake(Node *p_from_node, bool p_create_visual_debug = false);
+
+#ifdef TOOLS_ENABLED
+	virtual String get_configuration_warning() const;
+#endif
+
 	BakedLightmap();
 };
 
@@ -292,7 +313,7 @@ public:
 	AABB bake_bounds;
 	int capture_subdiv;
 
-	BakedLightmap::BakeError bake(Node *p_base_node, Node *p_from_node, String p_save_path, Ref<BakedLightmapData> r_lightmap_data);
+	BakedLightmap::BakeError bake(Node *p_base_node, Node *p_from_node, bool p_generate_atlas, int p_max_atlas_size, String p_save_path, Ref<BakedLightmapData> r_lightmap_data);
 
 	RaytraceLightBaker();
 };

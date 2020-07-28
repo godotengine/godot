@@ -545,7 +545,7 @@ public:
 	BIND3(instance_set_blend_shape_weight, RID, int, float)
 	BIND3(instance_set_surface_material, RID, int, RID)
 	BIND2(instance_set_visible, RID, bool)
-	BIND3(instance_set_use_lightmap, RID, RID, RID)
+	BIND5(instance_set_use_lightmap, RID, RID, RID, int, const Rect2 &)
 
 	BIND2(instance_set_custom_aabb, RID, AABB)
 

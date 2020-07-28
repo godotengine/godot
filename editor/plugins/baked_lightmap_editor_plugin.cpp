@@ -50,6 +50,9 @@ void BakedLightmapEditorPlugin::_bake() {
 			case BakedLightmap::BAKE_ERROR_CANT_CREATE_IMAGE:
 				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images, make sure path is writable."));
 				break;
+			case BakedLightmap::BAKE_ERROR_LIGHTMAP_SIZE:
+				EditorNode::get_singleton()->show_warning(TTR("Failed determining lightmap size. Maximum lightmap size too small?"));
+				break;
 			default: {
 			}
 		}

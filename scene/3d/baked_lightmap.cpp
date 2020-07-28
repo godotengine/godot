@@ -31,6 +31,7 @@
 #include "baked_lightmap.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
+#include "core/math/math_defs.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/os/threaded_array_processor.h"
@@ -90,12 +91,21 @@ float BakedLightmapData::get_energy() const {
 	return energy;
 }
 
-void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance) {
+void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Resource> &p_lightmap, int p_lightmap_slice, const Rect2 &p_lightmap_uv_rect, int p_instance) {
 
 	ERR_FAIL_COND_MSG(p_lightmap.is_null(), "It's not a reference to a valid Texture object.");
+	ERR_FAIL_COND(p_lightmap_slice == -1 && !Object::cast_to<Texture>(p_lightmap.ptr()));
+	ERR_FAIL_COND(p_lightmap_slice != -1 && !Object::cast_to<TextureLayered>(p_lightmap.ptr()));
+
 	User user;
 	user.path = p_path;
-	user.lightmap = p_lightmap;
+	if (p_lightmap_slice == -1) {
+		user.lightmap.single = p_lightmap;
+	} else {
+		user.lightmap.layered = p_lightmap;
+	}
+	user.lightmap_slice = p_lightmap_slice;
+	user.lightmap_uv_rect = p_lightmap_uv_rect;
 	user.instance_index = p_instance;
 	users.push_back(user);
 }
@@ -109,10 +119,26 @@ NodePath BakedLightmapData::get_user_path(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), NodePath());
 	return users[p_user].path;
 }
-Ref<Texture> BakedLightmapData::get_user_lightmap(int p_user) const {
+Ref<Resource> BakedLightmapData::get_user_lightmap(int p_user) const {
 
-	ERR_FAIL_INDEX_V(p_user, users.size(), Ref<Texture>());
-	return users[p_user].lightmap;
+	ERR_FAIL_INDEX_V(p_user, users.size(), Ref<Resource>());
+	if (users[p_user].lightmap_slice == -1) {
+		return users[p_user].lightmap.single;
+	} else {
+		return users[p_user].lightmap.layered;
+	}
+}
+
+int BakedLightmapData::get_user_lightmap_slice(int p_user) const {
+
+	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
+	return users[p_user].lightmap_slice;
+}
+
+Rect2 BakedLightmapData::get_user_lightmap_uv_rect(int p_user) const {
+
+	ERR_FAIL_INDEX_V(p_user, users.size(), Rect2(0, 0, 1, 1));
+	return users[p_user].lightmap_uv_rect;
 }
 
 int BakedLightmapData::get_user_instance(int p_user) const {
@@ -127,10 +153,39 @@ void BakedLightmapData::clear_users() {
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
 
-	ERR_FAIL_COND((p_data.size() % 3) != 0);
+	// Detect old lightmapper format
+	if (p_data.size() % 3 == 0) {
+		bool is_old_format = true;
+		for (int i = 0; i < p_data.size(); i += 3) {
+			is_old_format = is_old_format && p_data[i + 0].get_type() == Variant::NODE_PATH;
+			is_old_format = is_old_format && p_data[i + 1].is_ref();
+			is_old_format = is_old_format && p_data[i + 2].get_type() == Variant::INT;
+			if (!is_old_format) {
+				break;
+			}
+		}
+		if (is_old_format) {
+#ifdef DEBUG_ENABLED
+			WARN_PRINTS("Geometry at path " + String(p_data[0]) + " is using old lightmapper data. Please re-bake.");
+#endif
+			Array adapted_data;
+			adapted_data.resize((p_data.size() / 3) * 5);
+			for (int i = 0; i < p_data.size() / 3; i++) {
+				adapted_data[i * 5 + 0] = p_data[i * 3 + 0];
+				adapted_data[i * 5 + 1] = p_data[i * 3 + 1];
+				adapted_data[i * 5 + 2] = -1;
+				adapted_data[i * 5 + 3] = Rect2(0, 0, 1, 1);
+				adapted_data[i * 5 + 4] = p_data[i * 3 + 2];
+			}
+			_set_user_data(adapted_data);
+			return;
+		}
+	}
 
-	for (int i = 0; i < p_data.size(); i += 3) {
-		add_user(p_data[i], p_data[i + 1], p_data[i + 2]);
+	ERR_FAIL_COND((p_data.size() % 5) != 0);
+
+	for (int i = 0; i < p_data.size(); i += 5) {
+		add_user(p_data[i], p_data[i + 1], p_data[i + 2], p_data[i + 3], p_data[i + 4]);
 	}
 }
 
@@ -139,7 +194,9 @@ Array BakedLightmapData::_get_user_data() const {
 	Array ret;
 	for (int i = 0; i < users.size(); i++) {
 		ret.push_back(users[i].path);
-		ret.push_back(users[i].lightmap);
+		ret.push_back(users[i].lightmap_slice == -1 ? Ref<Resource>(users[i].lightmap.single) : Ref<Resource>(users[i].lightmap.layered));
+		ret.push_back(users[i].lightmap_slice);
+		ret.push_back(users[i].lightmap_uv_rect);
 		ret.push_back(users[i].instance_index);
 	}
 	return ret;
@@ -168,7 +225,7 @@ void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_energy", "energy"), &BakedLightmapData::set_energy);
 	ClassDB::bind_method(D_METHOD("get_energy"), &BakedLightmapData::get_energy);
 
-	ClassDB::bind_method(D_METHOD("add_user", "path", "lightmap", "instance"), &BakedLightmapData::add_user);
+	ClassDB::bind_method(D_METHOD("add_user", "path", "lightmap", "lightmap_slice", "lightmap_uv_rect", "instance"), &BakedLightmapData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &BakedLightmapData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &BakedLightmapData::get_user_path);
 	ClassDB::bind_method(D_METHOD("get_user_lightmap", "user_idx"), &BakedLightmapData::get_user_lightmap);
@@ -429,19 +486,12 @@ Vector2 RaytraceLightBaker::_compute_lightmap_size(const PlotMesh &p_plot_mesh) 
 void RaytraceLightBaker::_make_lightmap(const RaytraceLightBaker::PlotMesh &p_plot_mesh, int p_idx) {
 	Ref<Mesh> mesh = p_plot_mesh.mesh;
 
-	Vector2 size = p_plot_mesh.size_hint;
-
-	if (size == Size2()) {
-		size = _compute_lightmap_size(p_plot_mesh);
-		ERR_FAIL_COND(size == Vector2());
-	}
+	Vector2 size = scene_lightmap_sizes[p_idx];
 
 	int buffer_size = size.x * size.y;
 
 	Vector<LightMapElement> &lightmap = scene_lightmaps.write[p_idx];
 	Vector<int> &lightmap_indices = scene_lightmap_indices.write[p_idx];
-
-	scene_lightmap_sizes.write[p_idx] = size;
 
 	lightmap_indices.resize(buffer_size);
 
@@ -1202,7 +1252,7 @@ void RaytraceLightBaker::_fix_seam(const Vector2 &p_uv0, const Vector2 &p_uv1, c
 	}
 }
 
-BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_from_node, String p_save_path, Ref<BakedLightmapData> r_lightmap_data) {
+BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_from_node, bool p_generate_atlas, int p_max_atlas_size, String p_save_path, Ref<BakedLightmapData> r_lightmap_data) {
 
 #if DEBUG_ENABLED
 	uint64_t start_msec, current_msec;
@@ -1248,14 +1298,141 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 		mesh_id++;
 	}
 
-	time_split("Build sets");
-
 	int n_lit_meshes = mesh_list.size() - no_lightmap_meshes.size();
 	if (BakedLightmap::bake_begin_function) {
-		BakedLightmap::bake_begin_function(mesh_list.size() + n_lit_meshes * 3 + 1);
+		int step_count =
+				(p_generate_atlas && n_lit_meshes ? 1 : 0) + // Optimize atlas
+				mesh_list.size() + // Generate buffers
+				n_lit_meshes + // Direct
+				n_lit_meshes + // Indirect
+				n_lit_meshes + // Denoise & fix seams
+				n_lit_meshes + // Plot lightmap
+				(p_generate_atlas && n_lit_meshes ? 1 : n_lit_meshes) + // Save images
+				(capture_enabled ? 1 : 0);
+		BakedLightmap::bake_begin_function(step_count);
 	}
 
 	int step = 0;
+
+	time_split("Build sets");
+
+	Size2i atlas_size;
+
+	mesh_id = 0;
+	for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
+
+		Vector2 size = E->get().size_hint;
+
+		if (size == Size2()) {
+			size = _compute_lightmap_size(E->get());
+			ERR_FAIL_COND_V(size == Vector2(), BakedLightmap::BAKE_ERROR_LIGHTMAP_SIZE);
+		}
+
+		scene_lightmap_sizes.write[mesh_id] = size;
+
+		if (E->get().save_lightmap) {
+			atlas_size.width = MAX(atlas_size.width, size.width);
+			atlas_size.height = MAX(atlas_size.height, size.height);
+		}
+
+		mesh_id++;
+	}
+
+	// Determine best atlas layout by bruteforce fitting
+
+	struct AtlasOffset {
+		int slice;
+		int x;
+		int y;
+	};
+	Vector<AtlasOffset> atlas_offsets;
+	int atlas_slices = 0;
+	if (p_generate_atlas && n_lit_meshes) {
+		int max = nearest_power_of_2_templated(atlas_size.width);
+		max = MAX(max, nearest_power_of_2_templated(atlas_size.height));
+
+		if (max > p_max_atlas_size) {
+			return BakedLightmap::BAKE_ERROR_LIGHTMAP_SIZE;
+		}
+
+		if (BakedLightmap::bake_step_function) {
+			bool cancel = BakedLightmap::bake_step_function(step++, TTR("Determining optimal atlas size"));
+			if (cancel) {
+				return BakedLightmap::BAKE_ERROR_USER_ABORTED;
+			}
+		}
+
+		atlas_size = Size2i(max, max);
+
+		Size2i best_atlas_size;
+		int best_atlas_slices = 0;
+		int best_atlas_memory = 0x7FFFFFFF;
+		Vector<AtlasOffset> best_atlas_offsets;
+
+		while (atlas_size.x <= p_max_atlas_size && atlas_size.y <= p_max_atlas_size) {
+
+			Vector<Size2i> source_sizes;
+			{
+				source_sizes.resize(scene_lightmap_sizes.size());
+				List<PlotMesh>::Element *E = mesh_list.front();
+				for (int i = 0; i < source_sizes.size(); i++) {
+					source_sizes.write[i] = E->get().save_lightmap ? scene_lightmap_sizes[i] : Vector2i();
+					E = E->next();
+				}
+			}
+			Vector<int> source_indices;
+			source_indices.resize(source_sizes.size());
+			for (int i = 0; i < source_indices.size(); i++) {
+				source_indices.write[i] = i;
+			}
+			Vector<AtlasOffset> curr_atlas_offsets;
+			curr_atlas_offsets.resize(source_sizes.size());
+
+			int slices = 0;
+
+			while (source_sizes.size() > 0) {
+
+				Vector<Geometry::PackRectsResult> offsets = Geometry::partial_pack_rects(source_sizes, atlas_size);
+				Vector<int> new_indices;
+				Vector<Vector2i> new_sources;
+				for (int i = 0; i < offsets.size(); i++) {
+					Geometry::PackRectsResult ofs = offsets[i];
+					int sidx = source_indices[i];
+					if (ofs.packed) {
+						curr_atlas_offsets.write[sidx] = { slices, ofs.x, ofs.y };
+					} else {
+						new_indices.push_back(sidx);
+						new_sources.push_back(source_sizes[i]);
+					}
+				}
+
+				source_sizes = new_sources;
+				source_indices = new_indices;
+				slices++;
+			}
+
+			int mem_used = atlas_size.x * atlas_size.y * slices;
+			if (mem_used < best_atlas_memory) {
+				best_atlas_size = atlas_size;
+				best_atlas_offsets = curr_atlas_offsets;
+				best_atlas_slices = slices;
+				best_atlas_memory = mem_used;
+			}
+
+			if (atlas_size.width == atlas_size.height) {
+				atlas_size.width *= 2;
+			} else {
+				atlas_size.height *= 2;
+			}
+		}
+		atlas_size = best_atlas_size;
+		atlas_slices = best_atlas_slices;
+		atlas_offsets = best_atlas_offsets;
+
+		time_split("Optimize atlas");
+	}
+
+	step = 0;
 	mesh_id = 0;
 	for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
 
@@ -1363,6 +1540,9 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 
 	time_split("Indirect light");
 
+	Vector<Vector<Vector3> > lightmaps_data;
+	lightmaps_data.resize(mesh_list.size());
+
 	if (use_denoiser) {
 		LightmapDenoiser::get_singleton()->init();
 	}
@@ -1377,7 +1557,7 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 		}
 
 		if (BakedLightmap::bake_step_function) {
-			bool cancel = BakedLightmap::bake_step_function(step++, RTR("Plot light map ") + " (" + itos(mesh_step + 1) + "/" + itos(n_lit_meshes) + ")");
+			bool cancel = BakedLightmap::bake_step_function(step++, RTR("Denoise & fix seams ") + " (" + itos(mesh_step + 1) + "/" + itos(n_lit_meshes) + ")");
 			if (cancel) {
 				return BakedLightmap::BAKE_ERROR_USER_ABORTED;
 			}
@@ -1387,10 +1567,10 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 		LightMapElement *lightmap_ptr = scene_lightmaps.write[mesh_id].ptrw();
 		int *lightmap_indices_ptr = scene_lightmap_indices.write[mesh_id].ptrw();
 
-		Vector<Vector3> lightmap_data;
-		lightmap_data.resize(size.x * size.y);
+		Vector<Vector3> *lightmap_data = &lightmaps_data.ptrw()[mesh_id];
+		lightmap_data->resize(size.x * size.y);
 
-		Vector3 *lightmap_data_ptr = lightmap_data.ptrw();
+		Vector3 *lightmap_data_ptr = lightmap_data->ptrw();
 		for (int i = 0; i < size.y; i++) {
 			for (int j = 0; j < size.x; j++) {
 				int idx = lightmap_indices_ptr[i * size.x + j];
@@ -1433,103 +1613,14 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 			}
 		}
 
+		scene_lightmaps.write[mesh_id].clear(); // Free now to save memory
+
 		if (use_denoiser) {
-			LightmapDenoiser::get_singleton()->denoise_lightmap((float *)lightmap_data.ptrw(), size);
+			LightmapDenoiser::get_singleton()->denoise_lightmap((float *)lightmap_data->ptrw(), size);
 		}
 
-		_fix_seams(E->get(), lightmap_data.ptrw(), size);
+		_fix_seams(E->get(), lightmap_data->ptrw(), size);
 
-		String mesh_name = E->get().mesh->get_name();
-		if (mesh_name == "" || mesh_name.find(":") != -1 || mesh_name.find("/") != -1) {
-			mesh_name = "LightMap";
-		}
-
-		if (used_mesh_names.has(mesh_name)) {
-			int idx = 2;
-			String base = mesh_name;
-			while (true) {
-				mesh_name = base + itos(idx);
-				if (!used_mesh_names.has(mesh_name))
-					break;
-				idx++;
-			}
-		}
-		used_mesh_names.insert(mesh_name);
-
-		Ref<Image> image;
-		image.instance();
-
-		uint32_t tex_flags = Texture::FLAGS_DEFAULT;
-
-		PoolVector<uint8_t> data;
-		int s = lightmap_data.size();
-		data.resize(s * 3 * sizeof(float));
-		{
-			PoolVector<uint8_t>::Write w = data.write();
-			float *fw = (float *)w.ptr();
-			for (int i = 0; i < s; i++) {
-				fw[i * 3 + 0] = lightmap_data[i].x;
-				fw[i * 3 + 1] = lightmap_data[i].y;
-				fw[i * 3 + 2] = lightmap_data[i].z;
-			}
-		}
-
-		image->create(size.width, size.height, false, Image::FORMAT_RGBF, data);
-
-		String image_path = p_save_path.plus_file(mesh_name);
-		Ref<Texture> texture;
-
-		if (ResourceLoader::import) {
-
-			image_path += ".exr";
-			String relative_path = image_path;
-			if (relative_path.begins_with("res://")) {
-				relative_path = relative_path.substr(6, relative_path.length());
-			}
-
-			image->save_exr(relative_path, false);
-
-			if (!FileAccess::exists(image_path + ".import")) {
-				Ref<ConfigFile> config;
-				config.instance();
-				config->set_value("remap", "importer", "texture");
-				config->set_value("remap", "type", "StreamTexture");
-				config->set_value("params", "compress/mode", 0);
-				config->set_value("params", "detect_3d", false);
-				config->set_value("params", "flags/repeat", false);
-				config->set_value("params", "flags/filter", true);
-				config->set_value("params", "flags/mipmaps", false);
-				config->set_value("params", "flags/srgb", false);
-
-				config->save(image_path + ".import");
-			}
-
-			ResourceLoader::import(image_path);
-			texture = ResourceLoader::load(image_path); //if already loaded, it will be updated on refocus?
-		} else {
-
-			image_path += ".text";
-			Ref<ImageTexture> tex;
-			bool set_path = true;
-			if (ResourceCache::has(image_path)) {
-				tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
-				set_path = false;
-			}
-
-			if (!tex.is_valid()) {
-				tex.instance();
-			}
-
-			tex->create_from_image(image, tex_flags);
-
-			ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
-			if (set_path) {
-				tex->set_path(image_path);
-			}
-			texture = tex;
-		}
-
-		r_lightmap_data->add_user(p_base_node->get_path_to(E->get().node), texture, E->get().instance_idx);
 		mesh_id++;
 		mesh_step++;
 	}
@@ -1538,7 +1629,278 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 		LightmapDenoiser::get_singleton()->free();
 	}
 
+	time_split("Noise & seams");
+
+	// 1. Create all the images (either per mesh or per atlas slice)
+
+	Vector<PlotMesh *> lit_meshes;
+	for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
+		if (E->get().save_lightmap) {
+			lit_meshes.push_back(&E->get());
+		}
+	}
+
+	Vector<Ref<Image> > images;
+	uint32_t tex_flags = Texture::FLAGS_DEFAULT;
+
+	if (p_generate_atlas) {
+		images.resize(atlas_slices);
+
+		for (int i = 0; i < atlas_slices; i++) {
+			Ref<Image> image;
+			image.instance();
+			image->create(atlas_size.x, atlas_size.y, false, Image::FORMAT_RGBH);
+			images.set(i, image);
+		}
+	} else {
+		images.resize(n_lit_meshes);
+
+		mesh_id = 0;
+		mesh_step = 0;
+		for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
+			if (!E->get().save_lightmap) {
+				mesh_id++;
+				continue;
+			}
+
+			String mesh_name = E->get().mesh->get_name();
+			if (mesh_name == "" || mesh_name.find(":") != -1 || mesh_name.find("/") != -1) {
+				mesh_name = "LightMap";
+			}
+
+			if (used_mesh_names.has(mesh_name)) {
+				int idx = 2;
+				String base = mesh_name;
+				while (true) {
+					mesh_name = base + itos(idx);
+					if (!used_mesh_names.has(mesh_name))
+						break;
+					idx++;
+				}
+			}
+			used_mesh_names.insert(mesh_name);
+
+			Ref<Image> image;
+			image.instance();
+			image->create(scene_lightmap_sizes[mesh_id].x, scene_lightmap_sizes[mesh_id].y, false, Image::FORMAT_RGB8);
+			image->set_name(mesh_name);
+			images.set(mesh_step, image);
+
+			mesh_id++;
+			mesh_step++;
+		}
+	}
+
+	// 2. Plot each lightmap onto its corresponding image
+
+	auto _blit_lightmap = [](const Vector<Vector3> &p_src, const Size2i &p_size, Image *p_dst, int p_x, int p_y) -> void {
+		ERR_FAIL_COND(p_x < 0 || p_y < 0);
+		ERR_FAIL_COND(p_x + p_size.x > p_dst->get_width());
+		ERR_FAIL_COND(p_y + p_size.y > p_dst->get_height());
+
+		p_dst->lock();
+		for (int y = 0; y < p_size.y; y++) {
+			const Vector3 *__restrict src = p_src.ptr() + y * p_size.x;
+			for (int x = 0; x < p_size.x; x++) {
+				p_dst->set_pixel(p_x + x, p_y + y, Color(src->x, src->y, src->z));
+				src++;
+			}
+		}
+		p_dst->unlock();
+	};
+
+	mesh_id = 0;
+	mesh_step = 0;
+	for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
+		if (!E->get().save_lightmap) {
+			mesh_id++;
+			continue;
+		}
+
+		if (BakedLightmap::bake_step_function) {
+			bool cancel = BakedLightmap::bake_step_function(step++, RTR("Plot light map ") + " (" + itos(mesh_step + 1) + "/" + itos(n_lit_meshes) + ")");
+			if (cancel) {
+				return BakedLightmap::BAKE_ERROR_USER_ABORTED;
+			}
+		}
+
+		if (p_generate_atlas) {
+			_blit_lightmap(lightmaps_data[mesh_id], scene_lightmap_sizes[mesh_id], images.get(atlas_offsets[mesh_id].slice).ptr(), atlas_offsets[mesh_id].x, atlas_offsets[mesh_id].y);
+		} else {
+			_blit_lightmap(lightmaps_data[mesh_id], scene_lightmap_sizes[mesh_id], images.get(mesh_step).ptr(), 0, 0);
+		}
+
+		mesh_id++;
+		mesh_step++;
+	}
+
 	time_split("Plotting");
+
+	// 3. Save images to disk
+
+	if (p_generate_atlas) {
+		if (n_lit_meshes) {
+			if (BakedLightmap::bake_step_function) {
+				bool cancel = BakedLightmap::bake_step_function(step++, RTR("Save light map atlas"));
+				if (cancel) {
+					return BakedLightmap::BAKE_ERROR_USER_ABORTED;
+				}
+			}
+
+			Ref<Image> large_image;
+			large_image.instance();
+			large_image->create(atlas_size.x, atlas_size.y * images.size(), false, images[0]->get_format());
+			for (int i = 0; i < images.size(); i++) {
+				large_image->blit_rect(images[i], Rect2(0, 0, atlas_size.x, atlas_size.y), Point2(0, atlas_size.y * i));
+			}
+
+			Ref<TextureLayered> texture;
+			String image_path = p_save_path.plus_file(p_base_node->get_name());
+
+			if (ResourceLoader::import) {
+
+				image_path += ".exr";
+				String relative_path = image_path;
+				if (relative_path.begins_with("res://")) {
+					relative_path = relative_path.substr(6, relative_path.length());
+				}
+				large_image->save_exr(relative_path, false);
+
+				Ref<ConfigFile> config;
+				config.instance();
+				if (FileAccess::exists(image_path + ".import")) {
+					config->load(image_path + ".import");
+				} else {
+					// Set only if settings don't exist, to keep user choice
+					config->set_value("params", "compress/mode", 0);
+				}
+				config->set_value("remap", "importer", "texture_array");
+				config->set_value("remap", "type", "TextureArray");
+				config->set_value("params", "detect_3d", false);
+				config->set_value("params", "flags/repeat", false);
+				config->set_value("params", "flags/filter", true);
+				config->set_value("params", "flags/mipmaps", false);
+				config->set_value("params", "flags/srgb", false);
+				config->set_value("params", "slices/horizontal", 1);
+				config->set_value("params", "slices/vertical", images.size());
+				config->save(image_path + ".import");
+
+				ResourceLoader::import(image_path);
+				texture = ResourceLoader::load(image_path); //if already loaded, it will be updated on refocus?
+			} else {
+
+				image_path += ".texarr";
+				Ref<TextureLayered> tex;
+				bool set_path = true;
+				if (ResourceCache::has(image_path)) {
+					tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
+					set_path = false;
+				}
+
+				if (!tex.is_valid()) {
+					tex.instance();
+				}
+
+				tex->create(atlas_size.x, atlas_size.y, images.size(), images[0]->get_format(), tex_flags);
+				for (int i = 0; i < images.size(); i++) {
+					tex->set_layer_data(images[i], i);
+				}
+
+				ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
+				if (set_path) {
+					tex->set_path(image_path);
+				}
+				texture = tex;
+			}
+
+			mesh_id = 0;
+			mesh_step = 0;
+			for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
+				if (E->get().save_lightmap) {
+					Rect2 uv_rect = Rect2(
+							static_cast<real_t>(atlas_offsets[mesh_id].x) / atlas_size.x,
+							static_cast<real_t>(atlas_offsets[mesh_id].y) / atlas_size.y,
+							static_cast<real_t>(scene_lightmap_sizes[mesh_id].x) / atlas_size.x,
+							static_cast<real_t>(scene_lightmap_sizes[mesh_id].y) / atlas_size.y);
+					r_lightmap_data->add_user(p_base_node->get_path_to(E->get().node), texture, atlas_offsets[mesh_id].slice, uv_rect, E->get().instance_idx);
+					mesh_step++;
+				}
+				mesh_id++;
+			}
+		}
+	} else {
+		for (int i = 0; i < images.size(); i++) {
+
+			if (BakedLightmap::bake_step_function) {
+				bool cancel = BakedLightmap::bake_step_function(step++, RTR("Save light map ") + " (" + itos(i + 1) + "/" + itos(images.size()) + ")");
+				if (cancel) {
+					if (BakedLightmap::bake_end_function) {
+						BakedLightmap::bake_end_function();
+					}
+					return BakedLightmap::BAKE_ERROR_USER_ABORTED;
+				}
+			}
+
+			Ref<Texture> texture;
+			String image_path = p_save_path.plus_file(images[i]->get_name());
+
+			if (ResourceLoader::import) {
+
+				image_path += ".exr";
+				String relative_path = image_path;
+				if (relative_path.begins_with("res://")) {
+					relative_path = relative_path.substr(6, relative_path.length());
+				}
+				images[i]->save_exr(relative_path, false);
+
+				Ref<ConfigFile> config;
+				config.instance();
+				if (FileAccess::exists(image_path + ".import")) {
+					config->load(image_path + ".import");
+				} else {
+					// Set only if settings don't exist, to keep user choice
+					config->set_value("params", "compress/mode", 0);
+				}
+				config->set_value("remap", "importer", "texture");
+				config->set_value("remap", "type", "StreamTexture");
+				config->set_value("params", "detect_3d", false);
+				config->set_value("params", "flags/repeat", false);
+				config->set_value("params", "flags/filter", true);
+				config->set_value("params", "flags/mipmaps", false);
+				config->set_value("params", "flags/srgb", false);
+
+				config->save(image_path + ".import");
+
+				ResourceLoader::import(image_path);
+				texture = ResourceLoader::load(image_path); //if already loaded, it will be updated on refocus?
+			} else {
+
+				image_path += ".tex";
+				Ref<ImageTexture> tex;
+				bool set_path = true;
+				if (ResourceCache::has(image_path)) {
+					tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
+					set_path = false;
+				}
+
+				if (!tex.is_valid()) {
+					tex.instance();
+				}
+
+				tex->create_from_image(images[i], tex_flags);
+
+				ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
+				if (set_path) {
+					tex->set_path(image_path);
+				}
+				texture = tex;
+			}
+
+			r_lightmap_data->add_user(p_base_node->get_path_to(lit_meshes[i]->node), texture, -1, Rect2(0, 0, 1, 1), lit_meshes[i]->instance_idx);
+		}
+	}
+
+	time_split("Saving");
 
 	if (BakedLightmap::bake_step_function) {
 		BakedLightmap::bake_step_function(step++, RTR("Generating capture... "));
@@ -1753,7 +2115,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	int bake_subdiv = nearest_shift(subdiv) + 1;
 	baker.capture_subdiv = bake_subdiv - 1;
 
-	BakeError err = baker.bake(this, from_node, save_path, new_light_data);
+	BakeError err = baker.bake(this, from_node, generate_atlas, max_atlas_size, save_path, new_light_data);
 
 	if (err == BAKE_ERROR_OK) {
 		set_light_data(new_light_data);
@@ -1795,20 +2157,21 @@ void BakedLightmap::_assign_lightmaps() {
 	ERR_FAIL_COND(!light_data.is_valid());
 
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Ref<Texture> lightmap = light_data->get_user_lightmap(i);
+		Ref<Resource> lightmap = light_data->get_user_lightmap(i);
 		ERR_CONTINUE(!lightmap.is_valid());
+		ERR_CONTINUE(!Object::cast_to<Texture>(lightmap.ptr()) && !Object::cast_to<TextureLayered>(lightmap.ptr()));
 
 		Node *node = get_node(light_data->get_user_path(i));
 		int instance_idx = light_data->get_user_instance(i);
 		if (instance_idx >= 0) {
 			RID instance = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance.is_valid()) {
-				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid());
+				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid(), light_data->get_user_lightmap_slice(i), light_data->get_user_lightmap_uv_rect(i));
 			}
 		} else {
 			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
 			ERR_CONTINUE(!vi);
-			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid());
+			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid(), light_data->get_user_lightmap_slice(i), light_data->get_user_lightmap_uv_rect(i));
 		}
 	}
 }
@@ -1821,12 +2184,12 @@ void BakedLightmap::_clear_lightmaps() {
 		if (instance_idx >= 0) {
 			RID instance = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance.is_valid()) {
-				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), RID());
+				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), RID(), -1, Rect2(0, 0, 1, 1));
 			}
 		} else {
 			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
 			ERR_CONTINUE(!vi);
-			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), RID());
+			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), RID(), -1, Rect2(0, 0, 1, 1));
 		}
 	}
 }
@@ -1949,6 +2312,23 @@ BakedLightmap::BakeQuality BakedLightmap::get_capture_quality() const {
 	return capture_quality;
 }
 
+void BakedLightmap::set_generate_atlas(bool p_enabled) {
+	generate_atlas = p_enabled;
+}
+
+bool BakedLightmap::is_generate_atlas_enabled() const {
+	return generate_atlas;
+}
+
+void BakedLightmap::set_max_atlas_size(int p_size) {
+	ERR_FAIL_COND(p_size < 2048);
+	max_atlas_size = p_size;
+}
+
+int BakedLightmap::get_max_atlas_size() const {
+	return max_atlas_size;
+}
+
 void BakedLightmap::set_bake_quality(BakeQuality p_quality) {
 	bake_quality = p_quality;
 }
@@ -2049,6 +2429,17 @@ void BakedLightmap::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+String BakedLightmap::get_configuration_warning() const {
+
+	if (generate_atlas && OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+		return TTR("Lightmap atlassing is not supported by the GLES2 driver. If you need to support GLES2, please uncheck bake/generate_atlas.");
+	} else {
+		return "";
+	}
+}
+#endif
+
 void BakedLightmap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_light_data", "data"), &BakedLightmap::set_light_data);
@@ -2077,6 +2468,12 @@ void BakedLightmap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &BakedLightmap::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &BakedLightmap::is_using_denoiser);
+
+	ClassDB::bind_method(D_METHOD("set_generate_atlas", "enabled"), &BakedLightmap::set_generate_atlas);
+	ClassDB::bind_method(D_METHOD("is_generate_atlas_enabled"), &BakedLightmap::is_generate_atlas_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_max_atlas_size", "max_atlas_size"), &BakedLightmap::set_max_atlas_size);
+	ClassDB::bind_method(D_METHOD("get_max_atlas_size"), &BakedLightmap::get_max_atlas_size);
 
 	ClassDB::bind_method(D_METHOD("set_capture_quality", "capture_quality"), &BakedLightmap::set_capture_quality);
 	ClassDB::bind_method(D_METHOD("get_capture_quality"), &BakedLightmap::get_capture_quality);
@@ -2109,6 +2506,10 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_texels_per_unit", PROPERTY_HINT_RANGE, "0.0,64.0,0.01,or_greater"), "set_default_texels_per_unit", "get_default_texels_per_unit");
+
+	ADD_GROUP("Atlas", "atlas_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "atlas_generate"), "set_generate_atlas", "is_generate_atlas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "atlas_max_size"), "set_max_atlas_size", "get_max_atlas_size");
 
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");
@@ -2163,4 +2564,7 @@ BakedLightmap::BakedLightmap() {
 
 	use_denoiser = true;
 	bias = 0.0005;
+
+	generate_atlas = true;
+	max_atlas_size = 4096;
 }

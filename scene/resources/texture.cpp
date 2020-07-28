@@ -2253,7 +2253,6 @@ Image::Format TextureLayered::get_format() const {
 Error TextureLayered::load(const String &p_path) {
 
 	Error error;
-	Error error;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &error);
 	ERR_FAIL_COND_V(error, error);
 
