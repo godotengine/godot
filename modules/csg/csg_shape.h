@@ -58,6 +58,7 @@ private:
 	AABB node_aabb;
 
 	bool dirty;
+	bool last_visible;
 	float snap;
 
 	bool use_collision;
