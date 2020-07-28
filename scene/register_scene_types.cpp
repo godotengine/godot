@@ -547,6 +547,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTexture2DArray>();
 	ClassDB::register_class<VisualShaderNodeCubemap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
+	ClassDB::register_class<VisualShaderNodeUniformRef>();
 	ClassDB::register_class<VisualShaderNodeFloatUniform>();
 	ClassDB::register_class<VisualShaderNodeIntUniform>();
 	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
