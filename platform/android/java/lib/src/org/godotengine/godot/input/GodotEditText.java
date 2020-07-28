@@ -32,17 +32,27 @@ package org.godotengine.godot.input;
 
 import org.godotengine.godot.*;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.PopupWindow;
 
 import java.lang.ref.WeakReference;
 
@@ -58,6 +68,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	private GodotView mView;
 	private View mKeyboardView;
+	private PopupWindow mKeyboardWindow;
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
@@ -82,24 +93,52 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public GodotEditText(final Context context) {
+	public GodotEditText(final Context context, final GodotView view) {
 		super(context);
-		this.initView();
+
+		setPadding(0, 0, 0, 0);
+		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+		setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+		mView = view;
+		mInputWrapper = new GodotTextInputWrapper(mView, this);
+		setOnEditorActionListener(mInputWrapper);
+		view.requestFocus();
+
+		// Create a popup window with an invisible layout for the virtual keyboard,
+		// so the view can be resized to get the vk height without resizing the main godot view.
+		final FrameLayout keyboardLayout = new FrameLayout(context);
+		keyboardLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		keyboardLayout.setVisibility(View.INVISIBLE);
+		keyboardLayout.addView(this);
+		mKeyboardView = keyboardLayout;
+
+		mKeyboardWindow = new PopupWindow(keyboardLayout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+		mKeyboardWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+		mKeyboardWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+		mKeyboardWindow.setFocusable(true); // for the text edit to work
+		mKeyboardWindow.setTouchable(false); // inputs need to go through
+
+		keyboardLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				Point fullSize = new Point();
+				((Activity)mView.getContext()).getWindowManager().getDefaultDisplay().getSize(fullSize);
+				Rect gameSize = new Rect();
+				mKeyboardWindow.getContentView().getWindowVisibleDisplayFrame(gameSize);
+
+				final int keyboardHeight = fullSize.y - gameSize.bottom;
+				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+			}
+		});
 	}
 
-	public GodotEditText(final Context context, final AttributeSet attrs) {
-		super(context, attrs);
-		this.initView();
+	public void onInitView() {
+		mKeyboardWindow.showAtLocation(mView, Gravity.NO_GRAVITY, 0, 0);
 	}
 
-	public GodotEditText(final Context context, final AttributeSet attrs, final int defStyle) {
-		super(context, attrs, defStyle);
-		this.initView();
-	}
-
-	protected void initView() {
-		this.setPadding(0, 0, 0, 0);
-		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+	public void onDestroyView() {
+		mKeyboardWindow.dismiss();
 	}
 
 	public boolean isMultiline() {
@@ -151,21 +190,6 @@ public class GodotEditText extends EditText {
 		InputFilter[] filters = new InputFilter[1];
 		filters[0] = new InputFilter.LengthFilter(this.mMaxInputLength);
 		p_edit_text.setFilters(filters);
-	}
-
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
-	public void setView(final GodotView view) {
-		this.mView = view;
-		if (mInputWrapper == null)
-			mInputWrapper = new GodotTextInputWrapper(mView, this);
-		this.setOnEditorActionListener(mInputWrapper);
-		view.requestFocus();
-	}
-
-	public void setKeyboardView(final View keyboardView) {
-		this.mKeyboardView = keyboardView;
 	}
 
 	// ===========================================================
