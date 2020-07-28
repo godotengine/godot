@@ -29,7 +29,7 @@
 # Giuseppe Guerra <me@nyodev.xyz>, 2019.
 # RHC <rhc.throwaway@gmail.com>, 2019.
 # Antonio Giungato <antonio.giungato@gmail.com>, 2019.
-# Marco Galli <mrcgll98@gmail.com>, 2019.
+# Marco Galli <mrcgll98@gmail.com>, 2019, 2020.
 # MassiminoilTrace <omino.gis@gmail.com>, 2019, 2020.
 # MARCO BANFI <mbanfi@gmail.com>, 2019.
 # Marco <rodomar705@gmail.com>, 2019.
@@ -37,7 +37,7 @@
 # Stefano Merazzi <asso99@hotmail.com>, 2019.
 # Sinapse X <sinapsex13@gmail.com>, 2019.
 # Micila Micillotto <micillotto@gmail.com>, 2019, 2020.
-# Mirko Soppelsa <miknsop@gmail.com>, 2019.
+# Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020.
 # No <kingofwizards.kw7@gmail.com>, 2019.
 # StarFang208 <polaritymanx@yahoo.it>, 2019.
 # Katia Piazza <gydey@ridiculousglitch.com>, 2019.
@@ -52,12 +52,14 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # riccardo boffelli <riccardo.boffelli.96@gmail.com>, 2020.
 # Lorenzo Asolan <brixiumx@gmail.com>, 2020.
+# Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020.
+# Federico Manzella <ferdiu.manzella@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
-"Last-Translator: Lorenzo Asolan <brixiumx@gmail.com>\n"
+"PO-Revision-Date: 2020-07-26 15:41+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -804,7 +806,6 @@ msgid "Method in target node must be specified."
 msgstr "Il metodo del nodo designato deve essere specificato."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
 msgstr "Il nome del metodo dev'essere un identificatore valido."
 
@@ -2378,12 +2379,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Non c'è nessuna scena definita da eseguire."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"La scena attuale non è mai stata salvata, si prega di salvarla prima di "
-"eseguirla."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -4029,10 +4024,9 @@ msgid "Error running post-import script:"
 msgstr "Errore di esecuzione dello script di post-import:"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
-"Avete restituito un oggetto derivato da un Nodo nel metodo `post_import()`?"
+"Hai restituito un oggetto derivato da un Nodo nel metodo `post_import()`?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -8720,7 +8714,7 @@ msgstr "Crea Nodo Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color function."
-msgstr "Colora funzione."
+msgstr "Funzione colore."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color operator."
@@ -8728,15 +8722,15 @@ msgstr "Operatore colore."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Grayscale function."
-msgstr "Funzione Grayscale."
+msgstr "Funzione scala di grigi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
-msgstr "Converti vettore HSV nell'equivalente RGB."
+msgstr "Converte un vettore HSV nel suo equivalente RGB."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr "Converti vettore RGB nell'equivalente HSV."
+msgstr "Converte un vettore RGB nel suo equivalente HSV."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sepia function."
@@ -8744,31 +8738,31 @@ msgstr "Funzione seppia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Burn operator."
-msgstr "Operatore Burn."
+msgstr "Operatore brucia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Darken operator."
-msgstr "Operatore Darken."
+msgstr "Operatore scurisci."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Difference operator."
-msgstr "Operatore \"differenza\"."
+msgstr "Operatore differenza."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Dodge operator."
-msgstr "Operatore schivata."
+msgstr "Operatore scherma."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "HardLight operator."
-msgstr "Operatore HardLight."
+msgstr "Operatore luce dura."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
-msgstr "Operatore \"schiarischi\"."
+msgstr "Operatore schiarisci."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Overlay operator."
-msgstr "Operatore overlay."
+msgstr "Operatore sovrapponi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Screen operator."
@@ -8776,7 +8770,7 @@ msgstr "Operatore schermo."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr "Operatore SoftLight."
+msgstr "Operatore luce morbida."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color constant."
@@ -8788,7 +8782,8 @@ msgstr "Uniforme di colore."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the %s comparison between two parameters."
-msgstr "Ritorna il risultato booleano del confronto di %s tra due parametri."
+msgstr ""
+"Restituisce il risultato booleano del confronto di %s tra due parametri."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
@@ -8800,29 +8795,31 @@ msgstr "Maggiore Di (>)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr "Maggiore o Uguale (>=)"
+msgstr "Maggiore o uguale (>=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
 msgstr ""
-"Ritorna un vettore associato se gli scalari di quello fornito sono uguali, "
-"maggiori o minori."
+"Restituisce un vettore associato se gli scalari di quello fornito sono "
+"uguali, maggiori o minori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
 msgstr ""
-"Ritorna il risultato booleano del confronto tra INF e un parametro scalare."
+"Restituisce il risultato booleano del confronto tra INF e un parametro "
+"scalare."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
 msgstr ""
-"Ritorna il risultato booleano del confronto tra NaN e un parametro scalare."
+"Restituisce il risultato booleano del confronto tra NaN e un parametro "
+"scalare."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
@@ -8840,24 +8837,26 @@ msgstr "Non Uguale (!=)"
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
-"Ritorna un vettore associato se il valore booleano fornito è vero o falso."
+"Restituisce un vettore associato se il valore booleano fornito è vero o "
+"falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated scalar if the provided boolean value is true or false."
-msgstr "Ritorna uno scalare associato se il booleano provvisto è vero o falso."
+msgstr ""
+"Restituisce uno scalare associato se il booleano fornito è vero o falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the comparison between two parameters."
-msgstr "Ritorna il risultato booleano del confronto tra due parametri."
+msgstr "Restituisce il risultato booleano del confronto tra due parametri."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
 msgstr ""
-"Ritorna il risultato booleano del confronto tra INF (o NaN) e un parametro "
-"scalare."
+"Restituisce il risultato booleano del confronto tra INF (o NaN) e un "
+"parametro scalare."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8877,27 +8876,27 @@ msgstr "Parametro di input."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr "Parametro di input '%s' per le modalità shader vertex e fragment."
+msgstr "Parametro di input '%s' per le modalità shader vertice e frammento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment and light shader modes."
-msgstr "Parametro di input '%s' per le modalità shader fragment e light."
+msgstr "Parametro di input '%s' per le modalità shader frammento e luce."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment shader mode."
-msgstr "Parametro di input '%s' per la modalità shader fragment."
+msgstr "Parametro di input '%s' per la modalità shader frammento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for light shader mode."
-msgstr "Parametro di input '%s' per la modalità shader light."
+msgstr "Parametro di input '%s' per la modalità shader luce."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex shader mode."
-msgstr "Parametro di input '%s' per la modalità shader vertex."
+msgstr "Parametro di input '%s' per la modalità shader vertice."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader mode."
-msgstr "Parametro di input '%s' per la modalità shader vertex e fragment."
+msgstr "Parametro di input '%s' per la modalità shader vertice e frammento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -8941,35 +8940,35 @@ msgstr "La costante Sqrt2 (1.414214). La radice quadrata di 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr "Ritorna il valore assoluto del parametro."
+msgstr "Restituisce il valore assoluto del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
-msgstr "Ritorna l'arco-coseno del parametro."
+msgstr "Restituisce l'arco-coseno del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr "Ritorna l'inversa del coseno iperbolico del parametro."
+msgstr "Restituisce l'inversa del coseno iperbolico del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
-msgstr "Ritorna l'arco-seno del parametro."
+msgstr "Restituisce l'arco-seno del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr "Ritorna l'inversa del seno iperbolico del parametro."
+msgstr "Restituisce l'inversa del seno iperbolico del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
-msgstr "Ritorna l'arco-tangente del parametro."
+msgstr "Restituisce l'arco-tangente del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameters."
-msgstr "Ritorna l'arco-tangente dei parametri."
+msgstr "Restituisce l'arco-tangente dei parametri."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr "Ritorna l'inversa della tangente iperbolica del parametro."
+msgstr "Restituisce l'inversa della tangente iperbolica del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8983,11 +8982,11 @@ msgstr "Vincola un valore tra due altri valori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
-msgstr "Ritorna il coseno del parametro."
+msgstr "Restituisce il coseno del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "Ritorna il coseno iperbolico del parametro."
+msgstr "Restituisce il coseno iperbolico del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
@@ -9024,11 +9023,11 @@ msgstr "Logaritmo in base 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
-msgstr "Ritorna il maggiore di due valori."
+msgstr "Restituisce il maggiore di due valori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the lesser of two values."
-msgstr "Ritorna il minore di due valori."
+msgstr "Restituisce il minore di due valori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."
@@ -9036,7 +9035,7 @@ msgstr "Interpolazione lineare tra due scalari."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the opposite value of the parameter."
-msgstr "Ritorna il valore opposto del parametro."
+msgstr "Restituisce il valore opposto del parametro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - scalar"
@@ -9046,7 +9045,7 @@ msgstr "1.0 - scalare"
 msgid ""
 "Returns the value of the first parameter raised to the power of the second."
 msgstr ""
-"Ritorna il valore del primo parametro elevato alla potenza del secondo."
+"Restituisce il valore del primo parametro elevato alla potenza del secondo."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
@@ -10631,6 +10630,11 @@ msgid "Make node as Root"
 msgstr "Rendi il nodo come Radice"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Elimina il nodo \"%s\" e tutti i suoi figli?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Elimina %d nodi?"
 
@@ -10760,15 +10764,14 @@ msgid "Open Documentation"
 msgstr "Apri la documentazione"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
 "Non è possibile allegare uno script: non ci sono linguaggi registrati.\n"
-"Questo probabilmente perché questo editor è stato costruito con tutti i "
-"moduli di lingua disabilitati."
+"Probabilmente perché questo editor è stato costruito con tutti i moduli di "
+"linguaggio disabilitati."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -12053,11 +12056,9 @@ msgstr ""
 "Debug keystore non configurato nelle Impostazioni dell'Editor né nel preset."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Debug keystore non configurato correttamente nelle Impostazioni dell'Editor "
-"né nel preset."
+"Debug keystore non configurato correttamente nel preset di esportazione."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12088,12 +12089,11 @@ msgid "Invalid package name:"
 msgstr "Nome del pacchetto non valido:"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
-"Modulo \"GodotPaymentV3\" non valido incluso nell'impostazione del progetto "
+"Modulo \"GodotPaymentV3\" non valido incluso nelle impostazione del progetto "
 "\"android/moduli\" (modificato in Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
@@ -12101,13 +12101,12 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "Per utilizzare i plugin \"Use Custom Build\" deve essere abilitato."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
-"\"Degrees Of Freedom\" è valido solo quando \"Xr Mode\" è \"Oculus Mobile VR"
-"\"."
+"\"Degrees Of Freedom\" è valido solamente quando \"Xr Mode\" è \"Oculus "
+"Mobile VR\"."
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -12345,6 +12344,12 @@ msgid ""
 msgstr ""
 "Perché CollisionShape2D funzioni deve essere fornita una forma. Si prega di "
 "creare una risorsa forma (shape)!"
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12923,6 +12928,11 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "La scena attuale non è mai stata salvata, si prega di salvarla prima di "
+#~ "eseguirla."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Non è nel percorso risorse."

@@ -26,12 +26,13 @@
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
 # zephyroths <ridho.hikaru@gmail.com>, 2020.
 # Richard Urban <redasuio1@gmail.com>, 2020.
+# yusuf afandi <afandi.yusuf.04@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-03 20:09+0000\n"
-"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"PO-Revision-Date: 2020-07-06 04:41+0000\n"
+"Last-Translator: yusuf afandi <afandi.yusuf.04@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -778,9 +779,8 @@ msgid "Method in target node must be specified."
 msgstr "Method dalam node target harus ditentukan."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Nama bukan sebuah pengidentifikasi yang sah:"
+msgstr "Nama bukan sebuah pengidentifikasi yang sah."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -2344,12 +2344,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Tidak ada skena yang didefinisikan untuk dijalankan."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Skena saat ini belum pernah disimpan, harap simpan terlebih dahulu sebelum "
-"menjalankannya."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -10553,6 +10547,11 @@ msgid "Make node as Root"
 msgstr "Jadikan node sebagai Dasar"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Hapus node \"%s\" dan anak-anaknya?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Hapus %d node?"
 
@@ -12240,6 +12239,12 @@ msgstr ""
 "Sebuah shape harus disediakan untuk CollisionShape2D supaya berfungsi. Mohon "
 "ciptakan resource shape untuknya!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12799,6 +12804,11 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Skena saat ini belum pernah disimpan, harap simpan terlebih dahulu "
+#~ "sebelum menjalankannya."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Tidak dalam lokasi resource."

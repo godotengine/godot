@@ -2290,10 +2290,6 @@ msgid "There is no defined scene to run."
 msgstr "ยังไม่ได้เลือกฉากที่จะเล่น"
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "ฉากปัจจุบันยังไม่ได้บันทึก กรุณาบันทึกก่อนเริ่มโปรแกรม"
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "ไม่สามารถเริ่มขั้นตอนย่อย!"
 
@@ -10508,6 +10504,11 @@ msgid "Make node as Root"
 msgstr "ทำโหนดให้เป็นโหนดแม่"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "ลบโหนด \"%s\" และโหนดลูก?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "ลบโหนด %d ?"
 
@@ -12168,6 +12169,12 @@ msgid ""
 "shape resource for it!"
 msgstr "ต้องมีรูปทรงเพื่อให้ CollisionShape2D ทำงานได้ กรุณาสร้างรูปทรง!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12688,6 +12695,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "ฉากปัจจุบันยังไม่ได้บันทึก กรุณาบันทึกก่อนเริ่มโปรแกรม"
 
 #~ msgid "Not in resource path."
 #~ msgstr "ไม่อยู่ในโฟลเดอร์รีซอร์ส"
