@@ -479,7 +479,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and its inherited visibility is also [code]true[/code].
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -565,7 +565,8 @@
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 	</members>
 	<signals>

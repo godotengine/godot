@@ -103,6 +103,7 @@ void BoxContainer::_resort() {
 
 		has_stretched = true;
 		bool refit_successful = true; //assume refit-test will go well
+		float error = 0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
 
@@ -117,8 +118,9 @@ void BoxContainer::_resort() {
 
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
-
-				int final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				float final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				// Add leftover fractional pixels to error accumulator
+				error += final_pixel_size - (int)final_pixel_size;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
@@ -130,6 +132,11 @@ void BoxContainer::_resort() {
 					break;
 				} else {
 					msc.final_size = final_pixel_size;
+					// Dump accumulated error if one pixel or more
+					if (error >= 1) {
+						msc.final_size += 1;
+						error -= 1;
+					}
 				}
 			}
 		}

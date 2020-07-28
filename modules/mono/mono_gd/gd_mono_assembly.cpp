@@ -397,7 +397,7 @@ GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class)
 
 			while (!nested_classes.empty()) {
 				GDMonoClass *current_nested = nested_classes.front()->get();
-				nested_classes.pop_back();
+				nested_classes.pop_front();
 
 				void *iter = NULL;
 

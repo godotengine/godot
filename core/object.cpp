@@ -695,7 +695,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Vari
 
 	StringName method = *p_args[0];
 
-	MessageQueue::get_singleton()->push_call(get_instance_id(), method, &p_args[1], p_argcount - 1);
+	MessageQueue::get_singleton()->push_call(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
 
 	return Variant();
 }

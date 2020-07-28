@@ -1572,12 +1572,6 @@ void BulletPhysicsServer::sync() {
 }
 
 void BulletPhysicsServer::flush_queries() {
-	if (!active)
-		return;
-
-	for (int i = 0; i < active_spaces_count; ++i) {
-		active_spaces[i]->flush_queries();
-	}
 }
 
 void BulletPhysicsServer::finish() {
