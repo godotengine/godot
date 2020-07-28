@@ -1362,72 +1362,146 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 			}
 		}
 
-		atlas_size = Size2i(max, max);
-
 		Size2i best_atlas_size;
 		int best_atlas_slices = 0;
 		int best_atlas_memory = 0x7FFFFFFF;
+		float best_atlas_mem_utilization = 0;
 		Vector<AtlasOffset> best_atlas_offsets;
+		float best_recovery_scale = 1.0f;
+		Vector<Size2i> best_scaled_sizes;
 
-		while (atlas_size.x <= p_max_atlas_size && atlas_size.y <= p_max_atlas_size) {
+		int first_try_mem_occupied = 0;
+		int first_try_mem_used = 0;
+		for (int recovery_percent = 0; recovery_percent <= 100; recovery_percent += 10) {
+			// These only make sense from the second round of the loop
+			float recovery_scale = 1;
+			int target_mem_occupied = 0;
+			if (recovery_percent != 0) {
+				target_mem_occupied = first_try_mem_occupied + (first_try_mem_used - first_try_mem_occupied) * recovery_percent * 0.01f;
+				recovery_scale = recovery_percent == 0 ? 1.0f : Math::sqrt(static_cast<float>(target_mem_occupied) / first_try_mem_occupied);
+			}
 
-			Vector<Size2i> source_sizes;
-			{
-				source_sizes.resize(scene_lightmap_sizes.size());
-				List<PlotMesh>::Element *E = mesh_list.front();
-				for (int i = 0; i < source_sizes.size(); i++) {
-					source_sizes.write[i] = E->get().save_lightmap ? scene_lightmap_sizes[i] : Vector2i();
-					E = E->next();
+			atlas_size = Size2i(max, max);
+			while (atlas_size.x <= p_max_atlas_size && atlas_size.y <= p_max_atlas_size) {
+
+				if (recovery_percent != 0) {
+					// Find out how much memory is not recoverable (because of lightmaps that can't grow),
+					// to compute a greater recovery scale for those that can.
+					int mem_unrecoverable = 0;
+					List<PlotMesh>::Element *E = mesh_list.front();
+					for (int i = 0; i < scene_lightmap_sizes.size(); i++) {
+						if (E->get().save_lightmap) {
+							Vector2i scaled_size = Vector2i(
+									static_cast<int>(recovery_scale * scene_lightmap_sizes[i].x),
+									static_cast<int>(recovery_scale * scene_lightmap_sizes[i].y));
+							if (scaled_size.x > atlas_size.x || scaled_size.y > atlas_size.y) {
+								mem_unrecoverable += scaled_size.x * scaled_size.y - scene_lightmap_sizes[i].x * scene_lightmap_sizes[i].y;
+							}
+						}
+						E = E->next();
+					}
+					recovery_scale = Math::sqrt(static_cast<float>(target_mem_occupied - mem_unrecoverable) / (first_try_mem_occupied - mem_unrecoverable));
 				}
-			}
-			Vector<int> source_indices;
-			source_indices.resize(source_sizes.size());
-			for (int i = 0; i < source_indices.size(); i++) {
-				source_indices.write[i] = i;
-			}
-			Vector<AtlasOffset> curr_atlas_offsets;
-			curr_atlas_offsets.resize(source_sizes.size());
 
-			int slices = 0;
-
-			while (source_sizes.size() > 0) {
-
-				Vector<Geometry::PackRectsResult> offsets = Geometry::partial_pack_rects(source_sizes, atlas_size);
-				Vector<int> new_indices;
-				Vector<Vector2i> new_sources;
-				for (int i = 0; i < offsets.size(); i++) {
-					Geometry::PackRectsResult ofs = offsets[i];
-					int sidx = source_indices[i];
-					if (ofs.packed) {
-						curr_atlas_offsets.write[sidx] = { slices, ofs.x, ofs.y };
-					} else {
-						new_indices.push_back(sidx);
-						new_sources.push_back(source_sizes[i]);
+				Vector<Size2i> scaled_sizes;
+				scaled_sizes.resize(scene_lightmap_sizes.size());
+				{
+					List<PlotMesh>::Element *E = mesh_list.front();
+					for (int i = 0; i < scene_lightmap_sizes.size(); i++) {
+						if (E->get().save_lightmap) {
+							if (recovery_percent == 0) {
+								scaled_sizes.write[i] = scene_lightmap_sizes[i];
+							} else {
+								Vector2i scaled_size = Vector2i(
+										static_cast<int>(recovery_scale * scene_lightmap_sizes[i].x),
+										static_cast<int>(recovery_scale * scene_lightmap_sizes[i].y));
+								if (scaled_size.x <= atlas_size.x && scaled_size.y <= atlas_size.y) {
+									scaled_sizes.write[i] = scaled_size;
+								} else {
+									scaled_sizes.write[i] = scene_lightmap_sizes[i];
+								}
+							}
+						} else {
+							// Don't consider meshes with no generated lightmap here; will compensate later
+							scaled_sizes.write[i] = Vector2i();
+						}
+						E = E->next();
 					}
 				}
 
-				source_sizes = new_sources;
-				source_indices = new_indices;
-				slices++;
-			}
+				Vector<Size2i> source_sizes = scaled_sizes;
+				Vector<int> source_indices;
+				source_indices.resize(source_sizes.size());
+				for (int i = 0; i < source_indices.size(); i++) {
+					source_indices.write[i] = i;
+				}
 
-			int mem_used = atlas_size.x * atlas_size.y * slices;
-			if (mem_used < best_atlas_memory) {
-				best_atlas_size = atlas_size;
-				best_atlas_offsets = curr_atlas_offsets;
-				best_atlas_slices = slices;
-				best_atlas_memory = mem_used;
-			}
+				Vector<AtlasOffset> curr_atlas_offsets;
+				curr_atlas_offsets.resize(source_sizes.size());
 
-			if (atlas_size.width == atlas_size.height) {
-				atlas_size.width *= 2;
-			} else {
-				atlas_size.height *= 2;
+				int slices = 0;
+
+				while (source_sizes.size() > 0) {
+
+					Vector<Geometry::PackRectsResult> offsets = Geometry::partial_pack_rects(source_sizes, atlas_size);
+					Vector<int> new_indices;
+					Vector<Vector2i> new_sources;
+					for (int i = 0; i < offsets.size(); i++) {
+						Geometry::PackRectsResult ofs = offsets[i];
+						int sidx = source_indices[i];
+						if (ofs.packed) {
+							curr_atlas_offsets.write[sidx] = { slices, ofs.x, ofs.y };
+						} else {
+							new_indices.push_back(sidx);
+							new_sources.push_back(source_sizes[i]);
+						}
+					}
+
+					source_sizes = new_sources;
+					source_indices = new_indices;
+					slices++;
+				}
+
+				int mem_used = atlas_size.x * atlas_size.y * slices;
+				int mem_occupied = 0;
+				for (int i = 0; i < curr_atlas_offsets.size(); i++) {
+					mem_occupied += scaled_sizes[i].x * scaled_sizes[i].y;
+				}
+
+				float mem_utilization = static_cast<float>(mem_occupied) / mem_used;
+				if (mem_used < best_atlas_memory || (mem_used == best_atlas_memory && mem_utilization > best_atlas_mem_utilization)) {
+					best_atlas_size = atlas_size;
+					best_atlas_offsets = curr_atlas_offsets;
+					best_atlas_slices = slices;
+					best_atlas_memory = mem_used;
+					best_atlas_mem_utilization = mem_utilization;
+					best_scaled_sizes = scaled_sizes;
+					best_recovery_scale = recovery_scale;
+					if (recovery_percent == 0) {
+						first_try_mem_occupied = mem_occupied;
+						first_try_mem_used = mem_used;
+					}
+				}
+
+				if (atlas_size.width == atlas_size.height) {
+					atlas_size.width *= 2;
+				} else {
+					atlas_size.height *= 2;
+				}
 			}
 		}
 		atlas_size = best_atlas_size;
 		atlas_slices = best_atlas_slices;
 		atlas_offsets = best_atlas_offsets;
+
+		// Set new lightmap sizes with possible texture space recovery
+		for (int i = 0; i < scene_lightmap_sizes.size(); i++) {
+			if (best_scaled_sizes[i] != Size2i()) {
+				scene_lightmap_sizes.write[i] = best_scaled_sizes[i];
+			}
+		}
+
+		print_line(vformat("Texture space utilization: %.2f%% (improved from: %.2f%%)", best_atlas_mem_utilization * 100.0f, 100.0f * first_try_mem_occupied / first_try_mem_used));
 
 		time_split("Optimize atlas");
 	}
