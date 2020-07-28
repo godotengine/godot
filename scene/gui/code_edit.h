@@ -47,7 +47,7 @@ private:
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	void _gutter_clicked(int p_line, int p_gutter);
-	void _line_edited_from(int p_line);
+	void _lines_edited_from(int p_from_line, int p_to_line);
 
 	void _update_gutter_indexes();
 
