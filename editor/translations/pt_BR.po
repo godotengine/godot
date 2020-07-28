@@ -94,12 +94,16 @@
 # Kleyton Luiz de Sousa Vieira <kleytonluizdesouzavieira@gmail.com>, 2020.
 # Felipe Jesus Macedo <fmacedo746@gmail.com>, 2020.
 # José Paulo <jose.paulo1919@gmail.com>, 2020.
+# Necco <necco@outlook.com>, 2020.
+# Marcelo Silveira Hayden <mshayden.1998@gmail.com>, 2020.
+# GUILHERME SOUZA REIS DE MELO LOPES <guilhermesrml@unipam.edu.br>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
-"Last-Translator: José Paulo <jose.paulo1919@gmail.com>\n"
+"PO-Revision-Date: 2020-07-26 15:41+0000\n"
+"Last-Translator: GUILHERME SOUZA REIS DE MELO LOPES <guilhermesrml@unipam."
+"edu.br>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -182,7 +186,7 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Livre"
+msgstr "Gratuito"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -1557,7 +1561,7 @@ msgstr "Caminho:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr "Nome do nó:"
+msgstr "Nome do Nó:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
 #: editor/editor_profiler.cpp editor/project_manager.cpp
@@ -1705,7 +1709,7 @@ msgstr "Importar Dock"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
-msgstr "Dock de Nós"
+msgstr "Painel de Nós"
 
 #: editor/editor_feature_profile.cpp
 msgid "FileSystem and Import Docks"
@@ -2408,10 +2412,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Não há cena definida para rodar."
-
-#: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "A cena atual nunca foi salva. Por favor salve antes de rodá-la."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -3954,7 +3954,7 @@ msgstr "Grupos"
 
 #: editor/groups_editor.cpp
 msgid "Nodes Not in Group"
-msgstr "Nodes fora do Grupo"
+msgstr "Nós fora do Grupo"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
@@ -4052,7 +4052,7 @@ msgstr "Erro ao rodar script pós-importação:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
-msgstr "Você retornou um objeto derivado de nó no método `post import ()`?"
+msgstr "Você retornou um objeto derivado de Nó no método `post_import()`?"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -4481,7 +4481,7 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
-"O reprodutor de animações não tem caminho de nó raiz válido, então não é "
+"O reprodutor de animações não tem um caminho de nó raiz válido, então não é "
 "possível obter os nomes das trilhas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -4504,7 +4504,7 @@ msgstr "Nó Renomeado"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node..."
-msgstr "Adicionar nó..."
+msgstr "Adicionar Nó..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -4763,7 +4763,7 @@ msgstr "Viagem"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Nós inicial e final são necessários para uma sub-transição."
+msgstr "Nó inicial e final são necessários para uma sub-transição."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
@@ -5290,15 +5290,14 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
-"Predefinições para os valores de âncoras e margens de um nó de controle."
+msgstr "Predefinições para os valores de âncoras e margens de um nó Control."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Quando ativo, os nós de Controle móveis mudam suas âncoras em vez de suas "
+"Quando ativo, os nós Control móveis mudam suas âncoras em vez de suas "
 "margens."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7527,7 +7526,7 @@ msgstr "Usar Espaço Local"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Use Snap"
+msgstr "Use Encaixar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8997,11 +8996,11 @@ msgstr "Converte um valor em radianos para graus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
-msgstr "Exponencial de Base e."
+msgstr "Exponencial de base e."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 Exponential."
-msgstr "Exponencial na base 2."
+msgstr "Exponencial de base 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer less than or equal to the parameter."
@@ -9021,7 +9020,7 @@ msgstr "Logaritmo natural."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 logarithm."
-msgstr "Logaritmo de base-2."
+msgstr "Logaritmo de base 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
@@ -9395,8 +9394,8 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Retorna decaimento com base no produto escalar da normal da superfície com o "
-"a direção de visão da câmera (passe as entradas associadas a ele)."
+"Retorna decaimento com base no produto escalar da normal da superfície com a "
+"direção de visão da câmera (passe as entradas associadas a ele)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10626,6 +10625,11 @@ msgstr "Cenas instanciadas não podem se tornar raiz"
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "Tornar Raiz o Nó"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Deletar nó \"%s\" e seus filhos?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -11915,11 +11919,11 @@ msgstr "Localizar Tipo de Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr "Copiar Nodes"
+msgstr "Copiar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr "Recortar Nodes"
+msgstr "Recortar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Function"
@@ -11951,7 +11955,7 @@ msgstr "Nome da propriedade de índice inválido."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr "Objeto base não é um nó!"
+msgstr "Objeto base não é um Nó!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
@@ -12049,10 +12053,9 @@ msgstr ""
 "na predefinição."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Keystore de liberação icorretamente configurada na predefinição de "
+"Keystore de liberação incorretamente configurada na predefinição de "
 "exportação."
 
 #: platform/android/export/export.cpp
@@ -12097,21 +12100,18 @@ msgstr ""
 "\"Use Custom Build\" precisa estar ativo para ser possível utilizar plugins."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
-"\"Degrees Of Freedom\" só é válido quando o \"Oculus Mobile VR\" está no "
-"\"Mode Xr\"."
+"\"Degrees Of Freedom\" só é válido quando o \"Xr Mode\" é \"Oculus Mobile VR"
+"\"."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
-"\"Hand Tracking\" só é válido quando o\"Oculus Mobile VR\" está no \"Xr Mode"
-"\"."
+"\"Hand Tracking\" só é válido quando o \"Xr Mode\" é \"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12326,6 +12326,12 @@ msgid ""
 msgstr ""
 "Uma forma deve ser fornecida para que o nó CollisionShape2D funcione. Por "
 "favor, crie um recurso de forma para ele!"
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12807,7 +12813,7 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
-"A sugestão de dica não será exibida quando o Filtro do Mouse do controle "
+"A Sugestão de Dica não será exibida quando o Filtro do Mouse do controle "
 "estiver definido como \"Ignorar\". Para resolver isto, defina o Filtro do "
 "Mouse como \"Parar\" ou \"Passar\"."
 
@@ -12840,8 +12846,8 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"Um ScrollContainer foi feito para trabalhar com um componente filho único.\n"
-"Use um container como filho (VBox, HBox, etc.) ou um Control e defina o "
+"Um ScrollContainer foi feito para trabalhar com um único componente filho.\n"
+"Use um contêiner como filho (VBox, HBox, etc.) ou um Control e defina o "
 "tamanho mínimo manualmente."
 
 #: scene/gui/tree.cpp
@@ -12871,7 +12877,7 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
-"O tamanho da viewport deve ser maior do que 0 para renderizar qualquer coisa."
+"O tamanho da Viewport deve ser maior do que 0 para renderizar qualquer coisa."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
@@ -12900,6 +12906,9 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constantes não podem serem modificadas."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "A cena atual nunca foi salva. Por favor salve antes de rodá-la."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Não está no caminho de recursos."

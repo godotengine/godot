@@ -2338,11 +2338,6 @@ msgid "There is no defined scene to run."
 msgstr "No s'ha definit cap escena per executar."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"L'escena actual no s'ha desat encara. Desa l'escena abans d'executar-la."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "No s'ha pogut començar el subprocés!"
 
@@ -10818,6 +10813,11 @@ msgid "Make node as Root"
 msgstr "Convertir node en arrel"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Voleu suprimir el node \"%s\" i els seus fills?"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
 msgstr "Suprimir %d nodes?"
 
@@ -12585,6 +12585,12 @@ msgstr ""
 "S'ha de proporcionar una forma perquè *CollisionShape2D pugui funcionar. "
 "Creeu-li un recurs de forma (shape)!"
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -13160,6 +13166,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "L'escena actual no s'ha desat encara. Desa l'escena abans d'executar-la."
 
 #~ msgid "Not in resource path."
 #~ msgstr "Fora del camí dels recursos."
