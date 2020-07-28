@@ -88,7 +88,7 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 }
 
-void CodeEdit::_line_edited_from(int p_line) {
+void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 	int line_count = get_line_count();
 	if (line_count != cached_line_count) {
 		int lc = line_count;
@@ -119,7 +119,7 @@ CodeEdit::CodeEdit() {
 	set_gutter_type(0, GUTTER_TPYE_CUSTOM);
 	set_gutter_custom_draw(0, this, "_line_number_draw_callback");
 
-	connect("line_edited_from", callable_mp(this, &CodeEdit::_line_edited_from));
+	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));
 
 	connect("gutter_added", callable_mp(this, &CodeEdit::_update_gutter_indexes));
