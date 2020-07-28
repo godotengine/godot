@@ -1055,28 +1055,25 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	/* clang-format off */
 	EM_ASM({
-		Module.listeners = {};
+		// Bind native event listeners.
+		// Module.listeners, and Module.drop_handler are defined in native/utils.js
 		const canvas = Module['canvas'];
 		const send_notification = cwrap('send_notification', null, ['number']);
 		const notifications = arguments;
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
-			Module.listeners[event] = send_notification.bind(null, notifications[index]);
-			canvas.addEventListener(event, Module.listeners[event]);
+			Module.listeners.add(canvas, event, send_notification.bind(null, notifications[index]), true);
 		});
 		// Clipboard
 		const update_clipboard = cwrap('update_clipboard', null, ['string']);
-		Module.listeners['paste'] = function(evt) {
+		Module.listeners.add(window, 'paste', function(evt) {
 			update_clipboard(evt.clipboardData.getData('text'));
-		};
-		window.addEventListener('paste', Module.listeners['paste'], true);
-		Module.listeners['dragover'] = function(ev) {
+		}, false);
+		// Drag an drop
+		Module.listeners.add(canvas, 'dragover', function(ev) {
 			// Prevent default behavior (which would try to open the file(s))
 			ev.preventDefault();
-		};
-		// Drag an drop
-		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
-		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
-		canvas.addEventListener('drop', Module.listeners['drop'], false);
+		}, false);
+		Module.listeners.add(canvas, 'drop', Module.drop_handler, false);
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -1172,15 +1169,7 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize_async() {
 	EM_ASM({
-		const canvas = Module['canvas'];
-		Object.entries(Module.listeners).forEach(function(kv) {
-			if (kv[0] == 'paste') {
-				window.removeEventListener(kv[0], kv[1], true);
-			} else {
-				canvas.removeEventListener(kv[0], kv[1]);
-			}
-		});
-		Module.listeners = {};
+		Module.listeners.clear();
 	});
 	if (audio_driver_javascript) {
 		audio_driver_javascript->finish_async();
