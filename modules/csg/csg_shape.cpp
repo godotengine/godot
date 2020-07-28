@@ -518,9 +518,10 @@ void CSGShape3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (parent) {
+		if (parent && last_visible != is_visible()) {
 			parent->_make_dirty();
 		}
+		last_visible = is_visible();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -628,6 +629,7 @@ CSGShape3D::CSGShape3D() {
 	parent = nullptr;
 	brush = nullptr;
 	dirty = false;
+	last_visible = is_visible();
 	snap = 0.001;
 	use_collision = false;
 	collision_layer = 1;
