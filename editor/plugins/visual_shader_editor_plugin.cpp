@@ -887,7 +887,7 @@ void VisualShaderEditor::_update_graph() {
 			expression_syntax_highlighter->set_symbol_color(symbol_color);
 			expression_syntax_highlighter->set_function_color(function_color);
 			expression_syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-			expression_syntax_highlighter->add_color_region("//", "", comment_color, false);
+			expression_syntax_highlighter->add_color_region("//", "", comment_color, true);
 
 			expression_box->set_text(expression);
 			expression_box->set_context_menu_enabled(false);
@@ -1756,7 +1756,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			syntax_highlighter->set_function_color(function_color);
 			syntax_highlighter->clear_color_regions();
 			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-			syntax_highlighter->add_color_region("//", "", comment_color, false);
+			syntax_highlighter->add_color_region("//", "", comment_color, true);
 
 			error_text->add_theme_font_override("font", get_theme_font("status_source", "EditorFonts"));
 			error_text->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
