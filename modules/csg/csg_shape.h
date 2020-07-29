@@ -52,6 +52,7 @@ public:
 private:
 	Operation operation;
 	CSGShape *parent;
+	CSGShape *last_parent;
 
 	CSGBrush *brush;
 
