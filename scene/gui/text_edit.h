@@ -83,17 +83,13 @@ private:
 			bool marked : 1;
 			bool hidden : 1;
 			bool safe : 1;
-			bool has_info : 1;
 			int wrap_amount_cache : 24;
-			Ref<Texture2D> info_icon;
-			String info;
 			String data;
 			Line() {
 				width_cache = 0;
 				marked = false;
 				hidden = false;
 				safe = false;
-				has_info = false;
 				wrap_amount_cache = 0;
 			}
 		};
@@ -121,25 +117,12 @@ private:
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
-		void set_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
-			if (p_icon.is_null()) {
-				text.write[p_line].has_info = false;
-				return;
-			}
-			text.write[p_line].info_icon = p_icon;
-			text.write[p_line].info = p_info;
-			text.write[p_line].has_info = true;
-		}
-		bool has_info_icon(int p_line) const { return text[p_line].has_info; }
-		const Ref<Texture2D> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
-		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
 		void clear();
 		void clear_width_cache();
 		void clear_wrap_cache();
-		void clear_info_icons();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
 
 		/* Gutters. */
@@ -314,8 +297,6 @@ private:
 	int line_length_guideline_soft_col;
 	int line_length_guideline_hard_col;
 	bool hiding_enabled;
-	bool draw_info_gutter;
-	int info_gutter_width;
 	bool draw_minimap;
 	int minimap_width;
 	Point2 minimap_char_size;
@@ -429,8 +410,6 @@ private:
 	Size2 get_minimum_size() const override;
 	int _get_control_height() const;
 
-	int get_row_height() const;
-
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
@@ -493,12 +472,10 @@ protected:
 
 		int row_height;
 		int line_spacing;
-		int info_gutter_width;
 		int minimap_width;
 		Cache() {
 			row_height = 0;
 			line_spacing = 0;
-			info_gutter_width = 0;
 			minimap_width = 0;
 		}
 	} cache;
@@ -602,9 +579,6 @@ public:
 	void set_line_as_safe(int p_line, bool p_safe);
 	bool is_line_set_as_safe(int p_line) const;
 
-	void set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info = "");
-	void clear_info_icons();
-
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
 	void fold_all_lines();
@@ -623,6 +597,7 @@ public:
 	String get_text();
 	String get_line(int line) const;
 	void set_line(int line, String new_text);
+	int get_row_height() const;
 	void backspace_at_cursor();
 
 	void indent_left();
@@ -750,12 +725,6 @@ public:
 	void set_show_line_length_guidelines(bool p_show);
 	void set_line_length_guideline_soft_column(int p_column);
 	void set_line_length_guideline_hard_column(int p_column);
-
-	void set_draw_info_gutter(bool p_draw);
-	bool is_drawing_info_gutter() const;
-
-	void set_info_gutter_width(int p_gutter_width);
-	int get_info_gutter_width() const;
 
 	void set_draw_minimap(bool p_draw);
 	bool is_drawing_minimap() const;

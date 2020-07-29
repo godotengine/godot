@@ -935,7 +935,6 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_draw_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
 	text_editor->set_line_numbers_zero_padded(EditorSettings::get_singleton()->get("text_editor/appearance/line_numbers_zero_padded"));
 	text_editor->set_draw_bookmarks_gutter(EditorSettings::get_singleton()->get("text_editor/appearance/show_bookmark_gutter"));
-	text_editor->set_draw_info_gutter(EditorSettings::get_singleton()->get("text_editor/appearance/show_info_gutter"));
 	text_editor->set_hiding_enabled(EditorSettings::get_singleton()->get("text_editor/appearance/code_folding"));
 	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/appearance/code_folding"));
 	text_editor->set_wrap_enabled(EditorSettings::get_singleton()->get("text_editor/appearance/word_wrap"));
