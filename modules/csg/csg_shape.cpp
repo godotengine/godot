@@ -508,7 +508,10 @@ void CSGShape3D::_notification(int p_what) {
 			set_collision_mask(collision_mask);
 		}
 
-		_make_dirty();
+		if (!_get_brush() || parentn && last_parent != Object::cast_to<CSGShape3D>(parentn)) {
+			_make_dirty();
+		}
+		last_parent = parent;
 	}
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
@@ -627,6 +630,7 @@ void CSGShape3D::_bind_methods() {
 CSGShape3D::CSGShape3D() {
 	operation = OPERATION_UNION;
 	parent = nullptr;
+	last_parent = nullptr;
 	brush = nullptr;
 	dirty = false;
 	last_visible = is_visible();
