@@ -141,7 +141,8 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draws multiple, parallel lines with a uniform [code]color[/code]. [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
+				Draws multiple, parallel lines with a uniform [code]color[/code].
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -156,7 +157,8 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draws multiple, parallel lines with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				Draws multiple, parallel lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently not implemented and have no effect.
 			</description>
 		</method>
 		<method name="draw_multimesh">
