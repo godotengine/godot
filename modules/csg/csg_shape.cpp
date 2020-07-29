@@ -508,7 +508,10 @@ void CSGShape3D::_notification(int p_what) {
 			set_collision_mask(collision_mask);
 		}
 
-		_make_dirty();
+		if (!_get_brush() || (parentn && last_parent != Object::cast_to<CSGShape3D>(parentn))) {
+			_make_dirty();
+		}
+		last_parent = parent;
 	}
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
@@ -518,9 +521,10 @@ void CSGShape3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (parent) {
+		if (parent && last_visible != is_visible()) {
 			parent->_make_dirty();
 		}
+		last_visible = is_visible();
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -626,8 +630,10 @@ void CSGShape3D::_bind_methods() {
 CSGShape3D::CSGShape3D() {
 	operation = OPERATION_UNION;
 	parent = nullptr;
+	last_parent = NULL;
 	brush = nullptr;
 	dirty = false;
+	last_visible = is_visible();
 	snap = 0.001;
 	use_collision = false;
 	collision_layer = 1;

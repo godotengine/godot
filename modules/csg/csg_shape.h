@@ -52,12 +52,14 @@ public:
 private:
 	Operation operation;
 	CSGShape3D *parent;
+	CSGShape3D *last_parent;
 
 	CSGBrush *brush;
 
 	AABB node_aabb;
 
 	bool dirty;
+	bool last_visible;
 	float snap;
 
 	bool use_collision;
