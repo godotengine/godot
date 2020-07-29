@@ -280,7 +280,7 @@ class RaytraceLightBaker {
 	Vector2 _compute_lightmap_size(const PlotMesh &p_plot_mesh);
 	Vector<Color> _get_bake_texture(Ref<Image> p_image, const Vector2 &p_bake_size, const Color &p_color_mul, const Color &p_color_add);
 	Vector3 _fix_sample_position(const Vector3 &p_position, const Vector3 &p_normal, const Vector3 &p_tangent, const Vector3 &p_bitangent, const Vector2 &p_texel_size);
-	void _plot_triangle(Vector2 *p_vertices, Vector3 *p_positions, Vector3 *p_normals, Vector2 *p_uvs, const Vector<Color> &p_albedo_texture, const Vector<Color> &p_emission_texture, int p_width, int p_height, Vector<LightMapElement> &r_texels, int *r_lightmap_indices);
+	void _plot_triangle(Vector2 *p_vertices, Vector3 *p_positions, Vector3 *p_normals, Vector2 *p_uvs, const Vector<Color> &p_albedo_texture, const Vector<Color> &p_emission_texture, int p_width, int p_height, LightMapElement *r_texels, int &r_lightmap_index, int *r_lightmap_indices);
 	void _make_lightmap(const PlotMesh &p_plot_mesh, int p_idx);
 
 	bool _cast_shadow_ray(RaytraceEngine::Ray &r_ray);

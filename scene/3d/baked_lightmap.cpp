@@ -494,8 +494,12 @@ void RaytraceLightBaker::_make_lightmap(const RaytraceLightBaker::PlotMesh &p_pl
 	Vector<int> &lightmap_indices = scene_lightmap_indices.write[p_idx];
 
 	lightmap_indices.resize(buffer_size);
+	lightmap.resize(buffer_size);
+
+	int lightmap_index = 0;
 
 	int *lightmap_indices_ptr = lightmap_indices.ptrw();
+	LightMapElement *lightmap_ptr = lightmap.ptrw();
 
 	for (int i = 0; i < lightmap_indices.size(); ++i) {
 		lightmap_indices_ptr[i] = -1;
@@ -615,13 +619,14 @@ void RaytraceLightBaker::_make_lightmap(const RaytraceLightBaker::PlotMesh &p_pl
 					}
 				}
 
-				_plot_triangle(uv2s, vtxs, normal, uvs, albedo_texture, emission_texture, size.x, size.y, lightmap, lightmap_indices_ptr);
+				_plot_triangle(uv2s, vtxs, normal, uvs, albedo_texture, emission_texture, size.x, size.y, lightmap_ptr, lightmap_index, lightmap_indices_ptr);
 			}
 
 		} else {
 			// TODO non-indexed
 		}
 	}
+	lightmap.resize(lightmap_index);
 }
 
 bool RaytraceLightBaker::_cast_shadow_ray(RaytraceEngine::Ray &r_ray) {
@@ -738,30 +743,24 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 
 	LightMapElement &texel = r_texels[p_idx];
 
-	const static int samples_per_quality[4] = { 64, 128, 512, 1024 };
+	const static int samples_per_quality[4] = { 64, 128, 256, 512 };
 
 	int samples = samples_per_quality[bake_quality];
 
 	static thread_local std::random_device r;
 	static thread_local std::seed_seq seed{ r(), r(), r(), r(), r(), r(), r(), r() };
 	static thread_local std::mt19937 generator(seed);
-
-	float spread = Math::deg2rad(89.9);
-	std::uniform_real_distribution<float> spread_distribution(0.0, spread);
-	std::uniform_real_distribution<float> rotation_distribution(0.0f, Math_PI * 2.0);
-	std::uniform_real_distribution<float> russian_roulette_distribution(0.0, 1.0);
+	std::uniform_real_distribution<float> uniform_dist(0.0, 1.0);
 
 	Vector3 accum;
-	int n_paths = 0;
 
-	for (int i = 0; n_paths < samples * 2 || i < samples; ++i) {
+	for (int i = 0; i < samples; ++i) {
 		Vector3 color = Vector3();
 		Vector3 throughput = Vector3(1.0f, 1.0f, 1.0f);
 
 		Vector3 position = texel.pos;
 		Vector3 normal = texel.normal;
 		Vector3 direction;
-		n_paths += 1;
 
 		for (int depth = 0; depth < bounces; depth++) {
 
@@ -770,15 +769,19 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 			Vector3 bitangent = tangent.cross(normal).normalized();
 			Basis normal_xform = Basis(tangent, bitangent, normal).transposed();
 
-			float random_angle1 = spread_distribution(generator);
-			float random_angle2 = rotation_distribution(generator);
+			float u1 = uniform_dist(generator);
+			float u2 = uniform_dist(generator);
 
-			Basis rot(Vector3(0, 0, 1), random_angle2);
-			Vector3 axis(0, sin(random_angle1), cos(random_angle1));
-			axis = rot.xform(axis);
+			float radius = Math::sqrt(u1);
+			float theta = 2 * Math_PI * u2;
+
+			Vector3 axis = Vector3(radius * Math::cos(theta), radius * Math::sin(theta), Math::sqrt(MAX(0.0f, 1 - u1)));
+
 			direction = normal_xform.xform(axis).normalized();
 
-			throughput *= normal.dot(direction);
+			// We can skip multiplying throughput by cos(theta) because de sampling PDF is also cos(theta) and they cancel each other
+			//float pdf = normal.dot(direction);
+			//throughput *= normal.dot(direction)/pdf;
 
 			RaytraceEngine::Ray ray(position + normal * bias * 2, direction, bias);
 			bool hit = RaytraceEngine::get_singleton()->intersect(ray);
@@ -838,22 +841,10 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 			throughput *= sample.albedo;
 			color += throughput * sample.direct_light;
 
-			// Direct light path
-			if (depth > 0) {
-				Vector3 direct_vector = sample.pos - texel.pos;
-				RaytraceEngine::Ray direct_ray(texel.pos, direct_vector.normalized(), bias, direct_vector.length() - bias * 2.0);
-				if (!RaytraceEngine::get_singleton()->intersect(direct_ray)) {
-					float direct_cos_theta = MAX(0.0f, texel.normal.dot(direct_vector.normalized()));
-					color += direct_cos_theta * sample.emission;
-					color += direct_cos_theta * sample.albedo * sample.direct_light;
-				}
-				n_paths += 1;
-			}
-
 			// Russian Roulette
 			// https://computergraphics.stackexchange.com/questions/2316/is-russian-roulette-really-the-answer
 			const float p = throughput[throughput.max_axis()];
-			if (russian_roulette_distribution(generator) > p)
+			if (uniform_dist(generator) > p)
 				break;
 			throughput *= 1.0f / p;
 
@@ -863,7 +854,7 @@ void RaytraceLightBaker::_compute_ray_trace(uint32_t p_idx, LightMapElement *r_t
 		accum += color;
 	}
 
-	texel.output += accum / n_paths;
+	texel.output += accum / samples;
 }
 
 Error RaytraceLightBaker::_compute_indirect_light(unsigned int mesh_id) {
@@ -921,7 +912,9 @@ Vector3 RaytraceLightBaker::_fix_sample_position(const Vector3 &p_position, cons
 		for (int j = -1; j <= 1; j += 1) {
 			if (i == 0 && j == 0) continue;
 			Vector3 offset = Vector3(half_size.x * i, half_size.y * j, 0.0);
-			Vector3 ray_vector = tangent_basis.xform_inv(offset);
+			Vector3 rotated_offset = tangent_basis.xform_inv(offset);
+			Vector3 target = p_position + rotated_offset;
+			Vector3 ray_vector = target - corrected;
 
 			float ray_length = ray_vector.length();
 			Vector3 ray_direction = ray_vector.normalized();
@@ -939,7 +932,7 @@ Vector3 RaytraceLightBaker::_fix_sample_position(const Vector3 &p_position, cons
 	return corrected;
 }
 
-void RaytraceLightBaker::_plot_triangle(Vector2 *p_vertices, Vector3 *p_positions, Vector3 *p_normals, Vector2 *p_uvs, const Vector<Color> &p_albedo_texture, const Vector<Color> &p_emission_texture, int p_width, int p_height, Vector<LightMapElement> &r_texels, int *r_lightmap_indices) {
+void RaytraceLightBaker::_plot_triangle(Vector2 *p_vertices, Vector3 *p_positions, Vector3 *p_normals, Vector2 *p_uvs, const Vector<Color> &p_albedo_texture, const Vector<Color> &p_emission_texture, int p_width, int p_height, LightMapElement *r_texels, int &r_lightmap_index, int *r_lightmap_indices) {
 	Vector2 pv0 = p_vertices[0];
 	Vector2 pv1 = p_vertices[1];
 	Vector2 pv2 = p_vertices[2];
@@ -1070,18 +1063,19 @@ void RaytraceLightBaker::_plot_triangle(Vector2 *p_vertices, Vector3 *p_position
 
 			pos = _fix_sample_position(pos, normal, tangent, bitangent, texel_size);
 
-			LightMapElement texel;
-			texel.normal = normal;
-			texel.pos = pos;
-			texel.albedo = Vector3(c.r, c.g, c.b);
-			texel.alpha = c.a;
-			texel.emission = Vector3(e.r, e.g, e.b);
-			texel.direct_light = Vector3();
-			texel.output = Vector3();
+			if (c.a > 0.0f) {
+				r_lightmap_indices[ofs] = r_lightmap_index;
 
-			if (texel.alpha > 0.0f) {
-				r_lightmap_indices[ofs] = r_texels.size();
-				r_texels.push_back(texel);
+				LightMapElement &texel = r_texels[r_lightmap_index];
+				texel.normal = normal;
+				texel.pos = pos;
+				texel.albedo = Vector3(c.r, c.g, c.b);
+				texel.alpha = c.a;
+				texel.emission = Vector3(e.r, e.g, e.b);
+				texel.direct_light = Vector3();
+				texel.output = Vector3();
+
+				++r_lightmap_index;
 			}
 		}
 	}
@@ -1367,7 +1361,6 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 		int best_atlas_memory = 0x7FFFFFFF;
 		float best_atlas_mem_utilization = 0;
 		Vector<AtlasOffset> best_atlas_offsets;
-		float best_recovery_scale = 1.0f;
 		Vector<Size2i> best_scaled_sizes;
 
 		int first_try_mem_occupied = 0;
@@ -1476,7 +1469,6 @@ BakedLightmap::BakeError RaytraceLightBaker::bake(Node *p_base_node, Node *p_fro
 					best_atlas_memory = mem_used;
 					best_atlas_mem_utilization = mem_utilization;
 					best_scaled_sizes = scaled_sizes;
-					best_recovery_scale = recovery_scale;
 					if (recovery_percent == 0) {
 						first_try_mem_occupied = mem_occupied;
 						first_try_mem_used = mem_used;

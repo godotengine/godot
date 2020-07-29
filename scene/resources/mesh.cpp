@@ -1131,9 +1131,11 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;
 
 	// Keep only the scale
-	Transform transform = p_base_transform;
-	transform.origin = Vector3();
-	transform.looking_at(Vector3(1, 0, 0), Vector3(0, 1, 0));
+	Basis b = p_base_transform.get_basis();
+	Vector3 scale = Vector3(b.get_axis(0).length(), b.get_axis(1).length(), b.get_axis(2).length());
+
+	Transform transform;
+	transform.scale(scale);
 
 	Basis normal_basis = transform.basis.inverse().transposed();
 

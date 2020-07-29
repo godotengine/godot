@@ -46,6 +46,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	// set up input mesh
 	xatlas::MeshDecl input_mesh;
+	input_mesh.epsilon = CMP_EPSILON * 0.5f;
 	input_mesh.indexData = p_indices;
 	input_mesh.indexCount = p_index_count;
 	input_mesh.indexFormat = xatlas::IndexFormat::UInt32;
