@@ -32,8 +32,6 @@
 
 #include "core/list.h"
 
-#ifdef DEBUG_ENABLED
-
 #include "test_astar.h"
 #include "test_basis.h"
 #include "test_class_db.h"
@@ -54,37 +52,12 @@
 
 #include "thirdparty/doctest/doctest.h"
 
-const char **tests_get_names() {
-	static const char *test_names[] = {
-		"*",
-		"all",
-		"math",
-		"basis",
-		"physics_2d",
-		"physics_3d",
-		"render",
-		"oa_hash_map",
-		"class_db",
-		"gui",
-		"shaderlang",
-		"gd_tokenizer",
-		"gd_parser",
-		"gd_compiler",
-		"gd_bytecode",
-		"ordered_hash_map",
-		"astar",
-		nullptr
-	};
-
-	return test_names;
-}
-
 int test_main(int argc, char *argv[]) {
-	// doctest runner for when legacy unit tests are no  found
+	// Doctest runner.
 	doctest::Context test_context;
 	List<String> valid_arguments;
 
-	// clean arguments of --test from the args
+	// Clean arguments of "--test" from the args.
 	int argument_count = 0;
 	for (int x = 0; x < argc; x++) {
 		if (strncmp(argv[x], "--test", 6) != 0) {
@@ -92,15 +65,14 @@ int test_main(int argc, char *argv[]) {
 			argument_count++;
 		}
 	}
-
-	// convert godot command line arguments back to standard arguments.
+	// Convert Godot command line arguments back to standard arguments.
 	char **args = new char *[valid_arguments.size()];
 	for (int x = 0; x < valid_arguments.size(); x++) {
-		// operation to convert godot string to non wchar string
+		// Operation to convert Godot string to non wchar string.
 		const char *str = valid_arguments[x].utf8().ptr();
-		// allocate the string copy
+		// Allocate the string copy.
 		args[x] = new char[strlen(str) + 1];
-		// copy this into memory
+		// Copy this into memory.
 		std::memcpy(args[x], str, strlen(str) + 1);
 	}
 
@@ -109,22 +81,8 @@ int test_main(int argc, char *argv[]) {
 	test_context.setOption("order-by", "name");
 	test_context.setOption("abort-after", 5);
 	test_context.setOption("no-breaks", true);
+
 	delete[] args;
+
 	return test_context.run();
 }
-
-#else
-
-const char **tests_get_names() {
-	static const char *test_names[] = {
-		nullptr
-	};
-
-	return test_names;
-}
-
-int test_main(int argc, char *argv[]) {
-	return 0;
-}
-
-#endif
