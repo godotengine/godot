@@ -81,6 +81,10 @@ class ScriptTextEditor : public ScriptEditorBase {
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
+	int connection_gutter = -1;
+	void _gutter_clicked(int p_line, int p_gutter);
+	void _update_gutter_indexes();
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;
@@ -154,6 +158,7 @@ protected:
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	Map<String, Ref<EditorSyntaxHighlighter>> highlighters;
@@ -168,8 +173,6 @@ protected:
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
-
-	void _lookup_connections(int p_row, String p_method);
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
