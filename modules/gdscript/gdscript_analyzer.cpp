@@ -2019,7 +2019,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		GDScriptParser::ClassNode *outer = base_class->outer;
 		while (outer != nullptr) {
 			if (outer->has_member(name)) {
-				const GDScriptParser::ClassNode::Member &member = base_class->get_member(name);
+				const GDScriptParser::ClassNode::Member &member = outer->get_member(name);
 				if (member.type == GDScriptParser::ClassNode::Member::CONSTANT) {
 					// TODO: Make sure loops won't cause problem. And make special error message for those.
 					// For out-of-order resolution:
