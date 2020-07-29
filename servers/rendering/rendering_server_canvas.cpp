@@ -496,85 +496,56 @@ void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Po
 
 	pline->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, RID(), RID(), RID(), RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, RID());
 
-	if (true || p_width <= 1) {
-#define TODO make thick lines possible
-		Vector<int> indices;
-		int pc = p_points.size();
-		indices.resize((pc - 1) * 2);
-		{
-			int *iptr = indices.ptrw();
-			for (int i = 0; i < (pc - 1); i++) {
-				iptr[i * 2 + 0] = i;
-				iptr[i * 2 + 1] = i + 1;
-			}
-		}
-
-		pline->primitive = RS::PRIMITIVE_LINES;
-		pline->specular_shininess = Color(1, 1, 1, 1);
-		pline->polygon.create(indices, p_points, p_colors);
+	Vector<int> triangle_indices;
+	Vector<Point2> triangle_points;
+	Vector<Color> triangle_colors;
+	int pc = p_points.size();
+	triangle_indices.resize((pc - 1) * 6);
+	triangle_points.resize(pc * 2);
+	if (p_colors.size() == 0) {
+		triangle_colors.push_back(Color(1, 1, 1, 1));
+	} else if (p_colors.size() == 1) {
+		triangle_colors = p_colors;
 	} else {
-#if 0
-		//make a trianglestrip for drawing the line...
-		Vector2 prev_t;
-		pline->triangles.resize(p_points.size() * 2);
-		if (p_antialiased) {
-			pline->lines.resize(p_points.size() * 2);
-		}
-
-		if (p_colors.size() == 0) {
-			pline->triangle_colors.push_back(Color(1, 1, 1, 1));
-			if (p_antialiased) {
-				pline->line_colors.push_back(Color(1, 1, 1, 1));
-			}
-		} else if (p_colors.size() == 1) {
-			pline->triangle_colors = p_colors;
-			pline->line_colors = p_colors;
+		if (p_colors.size() != p_points.size()) {
+			triangle_colors.push_back(p_colors[0]);
 		} else {
-			if (p_colors.size() != p_points.size()) {
-				pline->triangle_colors.push_back(p_colors[0]);
-				pline->line_colors.push_back(p_colors[0]);
-			} else {
-				pline->triangle_colors.resize(pline->triangles.size());
-				pline->line_colors.resize(pline->lines.size());
-			}
+			triangle_colors.resize(pc * 2);
 		}
-
-		for (int i = 0; i < p_points.size(); i++) {
-
-			Vector2 t;
-			if (i == p_points.size() - 1) {
-				t = prev_t;
-			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
-				if (i == 0) {
-					prev_t = t;
-				}
-			}
-
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
-
-			if (p_antialiased) {
-				pline->lines.write[i] = p_points[i] + tangent;
-				pline->lines.write[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
-				if (pline->line_colors.size() > 1) {
-					pline->line_colors.write[i] = p_colors[i];
-					pline->line_colors.write[p_points.size() * 2 - i - 1] = p_colors[i];
-				}
-			}
-
-			pline->triangles.write[i * 2 + 0] = p_points[i] + tangent;
-			pline->triangles.write[i * 2 + 1] = p_points[i] - tangent;
-
-			if (pline->triangle_colors.size() > 1) {
-
-				pline->triangle_colors.write[i * 2 + 0] = p_colors[i];
-				pline->triangle_colors.write[i * 2 + 1] = p_colors[i];
-			}
-
-			prev_t = t;
-		}
-#endif
 	}
+	//make triangles for drawing the line...
+	Vector2 prev_t;
+
+	for (int i = 0; i < pc; i++) {
+		Vector2 t;
+		if (i == pc - 1) {
+			t = prev_t;
+		} else {
+			t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+			if (i == 0) {
+				prev_t = t;
+			}
+		}
+		Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+
+		triangle_points.write[i * 2 + 0] = p_points[i] + tangent;
+		triangle_points.write[i * 2 + 1] = p_points[i] - tangent;
+		if (triangle_colors.size() > 1) {
+			triangle_colors.write[i * 2 + 0] = p_colors[i];
+			triangle_colors.write[i * 2 + 1] = p_colors[i];
+		}
+		prev_t = t;
+		if (i != pc - 1) {
+			const int quad_indices[6] = { 0, 1, 2, 2, 1, 3 };
+			for (int j = 0; j < 6; j++) {
+				triangle_indices.write[i * 6 + j] = i * 2 + quad_indices[j];
+			}
+		}
+	}
+
+	pline->primitive = RS::PRIMITIVE_TRIANGLES;
+	pline->specular_shininess = Color(1, 1, 1, 1);
+	pline->polygon.create(triangle_indices, triangle_points, triangle_colors);
 }
 
 void RenderingServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
