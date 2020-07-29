@@ -257,6 +257,7 @@
 			</argument>
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
+				[b]Note:[/b] The provided key must be 32 bytes long.
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass">
