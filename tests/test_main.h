@@ -31,11 +31,6 @@
 #ifndef TEST_MAIN_H
 #define TEST_MAIN_H
 
-#include "core/list.h"
-#include "core/os/main_loop.h"
-#include "core/ustring.h"
-
-const char **tests_get_names();
 int test_main(int argc, char *argv[]);
 
 #endif // TEST_MAIN_H
