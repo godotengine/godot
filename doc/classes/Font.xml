@@ -26,6 +26,7 @@
 			</argument>
 			<description>
 				Draw [code]string[/code] into a canvas item using the font at a given position, with [code]modulate[/code] color, and optionally clipping the width. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_string].
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
