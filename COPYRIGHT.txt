@@ -30,7 +30,7 @@
 # (e.g. a public domain dedication), but as far as Godot Engine is concerned
 # the library is considered as a whole under the Zlib license.
 #
-# Nota: When linking dynamically against thirdparty libraries instead of
+# Note: When linking dynamically against thirdparty libraries instead of
 # building them into the Godot binary, you may remove the corresponding
 # license details from this file.
 
@@ -62,40 +62,34 @@ Copyright: 2006-2020, assimp team
  2014-2021, Godot Engine contributors.
 License: BSD-3-clause
 
-Files: ./platform/android/java/lib/aidl/com/android/vending/licensing/
+Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
- ./platform/android/java/lib/src/com/google/android/vending/expansion/downloader/
- ./platform/android/java/lib/src/com/google/android/vending/licensing/
+ ./platform/android/java/lib/src/com/google/android/*
  ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerCompat.java
  ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerV16.java
 Comment: The Android Open Source Project
-Copyright: 2008-2013, The Android Open Source Project
+Copyright: 2008-2016, The Android Open Source Project
+ 2002, Google, Inc.
 License: Apache-2.0
 
-Files: ./platform/android/java/src/com/android/vending/licensing/util/Base64.java
- ./platform/android/java/src/com/android/vending/licensing/util/Base64DecoderException.java
-Comment: The Android Open Source Project
-Copyright: 2002, Google Inc.
-License: Apache-2.0
-
-Files: ./servers/physics/gjk_epa.cpp
- ./servers/physics/joints/generic_6dof_joint_sw.cpp
- ./servers/physics/joints/generic_6dof_joint_sw.h
- ./servers/physics/joints/hinge_joint_sw.cpp
- ./servers/physics/joints/hinge_joint_sw.h
- ./servers/physics/joints/jacobian_entry_sw.h
- ./servers/physics/joints/pin_joint_sw.cpp
- ./servers/physics/joints/pin_joint_sw.h
- ./servers/physics/joints/slider_joint_sw.cpp
- ./servers/physics/joints/slider_joint_sw.h
+Files: ./servers/physics_3d/gjk_epa.cpp
+ ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.cpp
+ ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.h
+ ./servers/physics_3d/joints/hinge_joint_3d_sw.cpp
+ ./servers/physics_3d/joints/hinge_joint_3d_sw.h
+ ./servers/physics_3d/joints/jacobian_entry_3d_sw.h
+ ./servers/physics_3d/joints/pin_joint_3d_sw.cpp
+ ./servers/physics_3d/joints/pin_joint_3d_sw.h
+ ./servers/physics_3d/joints/slider_joint_3d_sw.cpp
+ ./servers/physics_3d/joints/slider_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
  2007-2021, Juan Linietsky, Ariel Manzur.
  2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
-Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
- ./servers/physics/joints/cone_twist_joint_sw.h
+Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
+ ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
  2007-2021, Juan Linietsky, Ariel Manzur.
