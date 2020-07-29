@@ -4889,6 +4889,7 @@ void TextEdit::_update_caches() {
 	cache.folded_eol_icon = get_theme_icon("GuiEllipsis", "EditorIcons");
 	cache.executing_icon = get_theme_icon("MainPlay", "EditorIcons");
 	text.set_font(cache.font);
+	text.clear_width_cache();
 
 	if (syntax_highlighter.is_valid()) {
 		syntax_highlighter->set_text_edit(this);
