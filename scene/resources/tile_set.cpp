@@ -72,6 +72,8 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		what = what.right(9);
 		if (what == "bitmask_mode") {
 			autotile_set_bitmask_mode(id, (BitmaskMode)((int)p_value));
+		} else if (what == "binding_group") {
+			autotile_set_binding_group(id, p_value);
 		} else if (what == "icon_coordinate") {
 			autotile_set_icon_coordinate(id, p_value);
 		} else if (what == "tile_size") {
@@ -238,6 +240,8 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		what = what.right(9);
 		if (what == "bitmask_mode") {
 			r_ret = autotile_get_bitmask_mode(id);
+		} else if (what == "binding_group") {
+			r_ret = autotile_get_binding_group(id);
 		} else if (what == "icon_coordinate") {
 			r_ret = autotile_get_icon_coordinate(id);
 		} else if (what == "tile_size") {
@@ -334,6 +338,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, pre + "tile_mode", PROPERTY_HINT_ENUM, "SINGLE_TILE,AUTO_TILE,ATLAS_TILE", PROPERTY_USAGE_NOEDITOR));
 		if (tile_get_tile_mode(id) == AUTO_TILE) {
 			p_list->push_back(PropertyInfo(Variant::INT, pre + "autotile/bitmask_mode", PROPERTY_HINT_ENUM, "2X2,3X3 (minimal),3X3", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(Variant::STRING, pre + "autotile/binding_group", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/bitmask_flags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "autotile/icon_coordinate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "autotile/tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
@@ -383,6 +388,17 @@ void TileSet::autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode) {
 TileSet::BitmaskMode TileSet::autotile_get_bitmask_mode(int p_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), BITMASK_2X2);
 	return tile_map[p_id].autotile_data.bitmask_mode;
+}
+
+void TileSet::autotile_set_binding_group(int p_id, const String &p_binding_group) {
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].autotile_data.binding_group = p_binding_group;
+	emit_changed();
+}
+
+String TileSet::autotile_get_binding_group(int p_id) const {
+	ERR_FAIL_COND_V(!tile_map.has(p_id), String());
+	return tile_map[p_id].autotile_data.binding_group;
 }
 
 void TileSet::tile_set_texture(int p_id, const Ref<Texture2D> &p_texture) {
@@ -1041,6 +1057,8 @@ bool TileSet::has_tile(int p_id) const {
 bool TileSet::is_tile_bound(int p_drawn_id, int p_neighbor_id) {
 	if (p_drawn_id == p_neighbor_id) {
 		return true;
+	} else if (autotile_get_binding_group(p_drawn_id) != "" && autotile_get_binding_group(p_drawn_id) == autotile_get_binding_group(p_neighbor_id)) {
+		return true;
 	} else if (get_script_instance() != nullptr) {
 		if (get_script_instance()->has_method("_is_tile_bound")) {
 			Variant ret = get_script_instance()->call("_is_tile_bound", p_drawn_id, p_neighbor_id);
@@ -1103,6 +1121,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("autotile_get_bitmask", "id", "coord"), &TileSet::autotile_get_bitmask);
 	ClassDB::bind_method(D_METHOD("autotile_set_bitmask_mode", "id", "mode"), &TileSet::autotile_set_bitmask_mode);
 	ClassDB::bind_method(D_METHOD("autotile_get_bitmask_mode", "id"), &TileSet::autotile_get_bitmask_mode);
+	ClassDB::bind_method(D_METHOD("autotile_set_binding_group", "id", "binding_group"), &TileSet::autotile_set_binding_group);
+	ClassDB::bind_method(D_METHOD("autotile_get_binding_group", "id"), &TileSet::autotile_get_binding_group);
 	ClassDB::bind_method(D_METHOD("autotile_set_spacing", "id", "spacing"), &TileSet::autotile_set_spacing);
 	ClassDB::bind_method(D_METHOD("autotile_get_spacing", "id"), &TileSet::autotile_get_spacing);
 	ClassDB::bind_method(D_METHOD("autotile_set_size", "id", "size"), &TileSet::autotile_set_size);

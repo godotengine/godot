@@ -89,6 +89,7 @@ public:
 
 	struct AutotileData {
 		BitmaskMode bitmask_mode = BITMASK_2X2;
+		String binding_group;
 		// Default size to prevent invalid value
 		Size2 size = Size2(64, 64);
 		Vector2 icon_coord = Vector2(0, 0);
@@ -143,6 +144,9 @@ public:
 
 	void autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode);
 	BitmaskMode autotile_get_bitmask_mode(int p_id) const;
+
+	void autotile_set_binding_group(int p_id, const String &p_binding_group);
+	String autotile_get_binding_group(int p_id) const;
 
 	void tile_set_name(int p_id, const String &p_name);
 	String tile_get_name(int p_id) const;

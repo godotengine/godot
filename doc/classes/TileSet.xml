@@ -85,6 +85,16 @@
 				Returns the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
+		<method name="autotile_get_binding_group" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns the binding group of the autotile.
+				The binding group would be used to autotile two different tiles that share the same binding group.
+			</description>
+		</method>
 		<method name="autotile_get_icon_coordinate" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -181,6 +191,17 @@
 			</argument>
 			<description>
 				Sets the [enum BitmaskMode] of the autotile.
+			</description>
+		</method>
+		<method name="autotile_set_binding_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="binding_group" type="String">
+			</argument>
+			<description>
+				Sets the binding group of the autotile.
 			</description>
 		</method>
 		<method name="autotile_set_icon_coordinate">

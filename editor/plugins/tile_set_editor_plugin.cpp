@@ -2429,6 +2429,7 @@ void TileSetEditor::_undo_tile_removal(int p_id) {
 		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_size", p_id, tileset->autotile_get_size(p_id));
 		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_spacing", p_id, tileset->autotile_get_spacing(p_id));
 		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask_mode", p_id, tileset->autotile_get_bitmask_mode(p_id));
+		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_binding_group", p_id, tileset->autotile_get_binding_group(p_id));
 	}
 }
 
@@ -3441,6 +3442,8 @@ bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value
 
 		if (name2 == "autotile_bitmask_mode") {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/bitmask_mode", p_value, &v);
+		} else if (name2 == "autotile_binding_group") {
+			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/binding_group", p_value, &v);
 		} else if (name2 == "subtile_size") {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/tile_size", p_value, &v);
 		} else if (name2 == "subtile_spacing") {
@@ -3507,6 +3510,8 @@ bool TilesetEditorContext::_get(const StringName &p_name, Variant &r_ret) const 
 
 		if (name == "autotile_bitmask_mode") {
 			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/bitmask_mode", &v);
+		} else if (name == "autotile_binding_group") {
+			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/binding_group", &v);
 		} else if (name == "subtile_size") {
 			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/tile_size", &v);
 		} else if (name == "subtile_spacing") {
@@ -3566,6 +3571,7 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::INT, "tile_tile_mode", PROPERTY_HINT_ENUM, "SINGLE_TILE,AUTO_TILE,ATLAS_TILE"));
 		if (tileset->tile_get_tile_mode(id) == TileSet::AUTO_TILE) {
 			p_list->push_back(PropertyInfo(Variant::INT, "tile_autotile_bitmask_mode", PROPERTY_HINT_ENUM, "2X2,3X3 (minimal),3X3"));
+			p_list->push_back(PropertyInfo(Variant::STRING, "tile_autotile_binding_group"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_subtile_size"));
 			p_list->push_back(PropertyInfo(Variant::INT, "tile_subtile_spacing", PROPERTY_HINT_RANGE, "0, 256, 1"));
 		} else if (tileset->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
