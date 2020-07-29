@@ -817,8 +817,8 @@
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings.
-				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of 0 means that all items are split.
+				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings. The [code]delimiter[/code] can be of any length.
+				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of [code]0[/code] means that all items are split.
 				Example:
 				[codeblock]
 				var some_string = "One,Two,Three,Four"
@@ -827,6 +827,7 @@
 				print(some_array[0]) # Prints "One"
 				print(some_array[1]) # Prints "Two,Three,Four"
 				[/codeblock]
+				If you need to split strings with more complex rules, use the [RegEx] class instead.
 			</description>
 		</method>
 		<method name="split_floats">
