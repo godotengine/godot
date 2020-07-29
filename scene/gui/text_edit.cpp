@@ -167,12 +167,6 @@ void TextEdit::Text::clear_wrap_cache() {
 	}
 }
 
-void TextEdit::Text::clear_info_icons() {
-	for (int i = 0; i < text.size(); i++) {
-		text.write[i].has_info = false;
-	}
-}
-
 void TextEdit::Text::clear() {
 	text.clear();
 	insert(0, "");
@@ -204,7 +198,6 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 	line.marked = false;
 	line.safe = false;
 	line.hidden = false;
-	line.has_info = false;
 	line.width_cache = -1;
 	line.wrap_amount_cache = -1;
 	line.data = p_text;
@@ -277,10 +270,6 @@ void TextEdit::_update_scrollbars() {
 
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
 	int total_width = text.get_max_width(true) + vmin.x + gutters_width + gutter_padding;
-
-	if (draw_info_gutter) {
-		total_width += cache.info_gutter_width;
-	}
 
 	if (draw_minimap) {
 		total_width += cache.minimap_width;
@@ -572,13 +561,6 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = false;
 			}
 
-			if (draw_info_gutter) {
-				info_gutter_width = (get_row_height());
-				cache.info_gutter_width = info_gutter_width;
-			} else {
-				cache.info_gutter_width = 0;
-			}
-
 			cache.minimap_width = 0;
 			if (draw_minimap) {
 				cache.minimap_width = minimap_width;
@@ -588,7 +570,7 @@ void TextEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
-			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.info_gutter_width;
+			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding;
 
 			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
@@ -1081,31 +1063,6 @@ void TextEdit::_notification(int p_what) {
 							}
 
 							gutter_offset += gutter.width;
-						}
-
-						// Draw info icons.
-						if (draw_info_gutter && text.has_info_icon(line)) {
-							int vertical_gap = (get_row_height() * 40) / 100;
-							int horizontal_gap = (cache.info_gutter_width * 30) / 100;
-							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width;
-
-							Ref<Texture2D> info_icon = text.get_info_icon(line);
-							// Ensure the icon fits the gutter size.
-							Size2i icon_size = info_icon->get_size();
-							if (icon_size.width > cache.info_gutter_width - horizontal_gap) {
-								icon_size.width = cache.info_gutter_width - horizontal_gap;
-							}
-							if (icon_size.height > get_row_height() - horizontal_gap) {
-								icon_size.height = get_row_height() - horizontal_gap;
-							}
-
-							Size2i icon_pos;
-							int xofs = horizontal_gap - (info_icon->get_width() / 4);
-							int yofs = vertical_gap - (info_icon->get_height() / 4);
-							icon_pos.x = gutter_left + xofs + ofs_x;
-							icon_pos.y = ofs_y + yofs;
-
-							draw_texture_rect(info_icon, Rect2(icon_pos, icon_size));
 						}
 					}
 
@@ -1783,10 +1740,6 @@ void TextEdit::backspace_at_cursor() {
 		set_line_as_hidden(prev_line, true);
 	}
 
-	if (text.has_info_icon(cursor.line)) {
-		set_line_info_icon(prev_line, text.get_info_icon(cursor.line), text.get_info(cursor.line));
-	}
-
 	if (auto_brace_completion_enabled &&
 			cursor.column > 0 &&
 			_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
@@ -1974,7 +1927,7 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		row = text.size() - 1;
 		col = text[row].size();
 	} else {
-		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.info_gutter_width);
+		int colx = p_mouse.x - (cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding);
 		colx += cursor.x_ofs;
 		col = get_char_pos_for_line(colx, row, wrap_index);
 		if (is_wrap_enabled() && wrap_index < times_line_wraps(row)) {
@@ -2019,7 +1972,7 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 
 	// Calculate final pixel position
 	int y = (row - get_v_scroll_offset() + 1 /*Bottom of line*/) * get_row_height();
-	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding + cache.info_gutter_width - cursor.x_ofs;
+	int x = cache.style_normal->get_margin(MARGIN_LEFT) + gutters_width + gutter_padding - cursor.x_ofs;
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
 		if (cache.font != nullptr) {
@@ -2168,17 +2121,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					left_margin += gutters[i].width;
 				}
 
-				// Emit info clicked.
-				if (draw_info_gutter && text.has_info_icon(row)) {
-					if (mb->get_position().x > left_margin - 6 && mb->get_position().x <= left_margin + cache.info_gutter_width - 3) {
-						emit_signal("info_clicked", row, text.get_info(row));
-						return;
-					}
-				}
-
 				// Unfold on folded icon click.
 				if (is_folded(row)) {
-					left_margin += cache.info_gutter_width + gutter_padding + text.get_line_width(row) - cursor.x_ofs;
+					left_margin += gutter_padding + text.get_line_width(row) - cursor.x_ofs;
 					if (mb->get_position().x > left_margin && mb->get_position().x <= left_margin + cache.folded_eol_icon->get_width() + 3) {
 						unfold_line(row);
 						return;
@@ -3768,12 +3713,8 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	if (shift_first_line) {
 		text.move_gutters(p_line, p_line + 1);
 		text.set_hidden(p_line + 1, text.is_hidden(p_line));
-		if (text.has_info_icon(p_line)) {
-			text.set_info_icon(p_line + 1, text.get_info_icon(p_line), text.get_info(p_line));
-		}
 
 		text.set_hidden(p_line, false);
-		text.set_info_icon(p_line, nullptr, "");
 	}
 
 	text.set_line_wrap_amount(p_line, -1);
@@ -4031,7 +3972,7 @@ int TextEdit::get_total_visible_rows() const {
 }
 
 void TextEdit::_update_wrap_at() {
-	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
+	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width - wrap_right_offset;
 	update_cursor_wrap_offset();
 	text.clear_wrap_cache();
 
@@ -4066,7 +4007,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4101,7 +4042,7 @@ void TextEdit::center_viewport_to_cursor() {
 	}
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.info_gutter_width - cache.minimap_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - gutters_width - gutter_padding - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	}
@@ -4556,7 +4497,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 	_get_mouse_pos(p_pos, row, col);
 
 	int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
-	int gutter = left_margin + gutters_width + cache.info_gutter_width;
+	int gutter = left_margin + gutters_width;
 	if (p_pos.x < gutter) {
 		for (int i = 0; i < gutters.size(); i++) {
 			if (!gutters[i].draw) {
@@ -4570,15 +4511,6 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 			}
 			left_margin += gutters[i].width;
 		}
-
-		// Info icons.
-		if (draw_info_gutter && p_pos.x > left_margin - 6 && p_pos.x <= left_margin + cache.info_gutter_width - 3) {
-			if (text.has_info_icon(row)) {
-				return CURSOR_POINTING_HAND;
-			}
-			return CURSOR_ARROW;
-		}
-
 		return CURSOR_ARROW;
 	}
 
@@ -5455,17 +5387,6 @@ void TextEdit::set_line_as_safe(int p_line, bool p_safe) {
 bool TextEdit::is_line_set_as_safe(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	return text.is_safe(p_line);
-}
-
-void TextEdit::set_line_info_icon(int p_line, Ref<Texture2D> p_icon, String p_info) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_info_icon(p_line, p_icon, p_info);
-	update();
-}
-
-void TextEdit::clear_info_icons() {
-	text.clear_info_icons();
-	update();
 }
 
 void TextEdit::set_line_as_hidden(int p_line, bool p_hidden) {
@@ -6544,24 +6465,6 @@ void TextEdit::set_line_length_guideline_hard_column(int p_column) {
 	update();
 }
 
-void TextEdit::set_draw_info_gutter(bool p_draw) {
-	draw_info_gutter = p_draw;
-	update();
-}
-
-bool TextEdit::is_drawing_info_gutter() const {
-	return draw_info_gutter;
-}
-
-void TextEdit::set_info_gutter_width(int p_gutter_width) {
-	info_gutter_width = p_gutter_width;
-	update();
-}
-
-int TextEdit::get_info_gutter_width() const {
-	return info_gutter_width;
-}
-
 void TextEdit::set_draw_minimap(bool p_draw) {
 	draw_minimap = p_draw;
 	update();
@@ -6886,7 +6789,6 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_added"));
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
-	ADD_SIGNAL(MethodInfo("info_clicked", PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::STRING, "info")));
 	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
@@ -6919,8 +6821,6 @@ TextEdit::TextEdit() {
 	_update_caches();
 	cache.row_height = 1;
 	cache.line_spacing = 1;
-	info_gutter_width = 0;
-	cache.info_gutter_width = 0;
 	set_default_cursor_shape(CURSOR_IBEAM);
 
 	indent_size = 4;
@@ -6987,7 +6887,6 @@ TextEdit::TextEdit() {
 	line_length_guidelines = false;
 	line_length_guideline_soft_col = 80;
 	line_length_guideline_hard_col = 100;
-	draw_info_gutter = false;
 	hiding_enabled = false;
 	next_operation_is_complex = false;
 	scroll_past_end_of_file_enabled = false;

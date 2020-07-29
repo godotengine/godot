@@ -334,6 +334,7 @@ bool ScriptTextEditor::show_members_overview() {
 }
 
 void ScriptTextEditor::update_settings() {
+	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, EditorSettings::get_singleton()->get("text_editor/appearance/show_info_gutter"));
 	code_editor->update_editor_settings();
 }
 
@@ -903,7 +904,14 @@ void ScriptTextEditor::update_toggle_scripts_button() {
 
 void ScriptTextEditor::_update_connected_methods() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
-	text_edit->clear_info_icons();
+	for (int i = 0; i < text_edit->get_line_count(); i++) {
+		if (text_edit->get_line_gutter_metadata(i, connection_gutter) == "") {
+			continue;
+		}
+		text_edit->set_line_gutter_metadata(i, connection_gutter, "");
+		text_edit->set_line_gutter_icon(i, connection_gutter, nullptr);
+		text_edit->set_line_gutter_clickable(i, connection_gutter, false);
+	}
 	missing_connections.clear();
 
 	if (!script_is_valid) {
@@ -943,8 +951,10 @@ void ScriptTextEditor::_update_connected_methods() {
 				for (int j = 0; j < functions.size(); j++) {
 					String name = functions[j].get_slice(":", 0);
 					if (name == connection.callable.get_method()) {
-						line = functions[j].get_slice(":", 1).to_int();
-						text_edit->set_line_info_icon(line - 1, get_parent_control()->get_theme_icon("Slot", "EditorIcons"), connection.callable.get_method());
+						line = functions[j].get_slice(":", 1).to_int() - 1;
+						text_edit->set_line_gutter_metadata(line, connection_gutter, connection.callable.get_method());
+						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon("Slot", "EditorIcons"));
+						text_edit->set_line_gutter_clickable(line, connection_gutter, true);
 						methods_found.insert(connection.callable.get_method());
 						break;
 					}
@@ -974,14 +984,32 @@ void ScriptTextEditor::_update_connected_methods() {
 	}
 }
 
-void ScriptTextEditor::_lookup_connections(int p_row, String p_method) {
+void ScriptTextEditor::_update_gutter_indexes() {
+	for (int i = 0; i < code_editor->get_text_editor()->get_gutter_count(); i++) {
+		if (code_editor->get_text_editor()->get_gutter_name(i) == "connection_gutter") {
+			connection_gutter = i;
+			break;
+		}
+	}
+}
+
+void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
+	if (p_gutter != connection_gutter) {
+		return;
+	}
+
+	String method = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
+	if (method == "") {
+		return;
+	}
+
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
 		return;
 	}
 
 	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
-	connection_info_dialog->popup_connections(p_method, nodes);
+	connection_info_dialog->popup_connections(method, nodes);
 }
 
 void ScriptTextEditor::_edit_option(int p_op) {
@@ -1307,6 +1335,16 @@ void ScriptTextEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_hig
 
 void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
+}
+
+void ScriptTextEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_row_height());
+		} break;
+		default:
+			break;
+	}
 }
 
 void ScriptTextEditor::_bind_methods() {
@@ -1636,7 +1674,9 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
-	code_editor->get_text_editor()->connect("info_clicked", callable_mp(this, &ScriptTextEditor::_lookup_connections));
+	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
+	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
+	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
 	code_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
 	code_editor->show_toggle_scripts_button();
 
@@ -1754,6 +1794,13 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	connection_gutter = 1;
+	code_editor->get_text_editor()->add_gutter(connection_gutter);
+	code_editor->get_text_editor()->set_gutter_name(connection_gutter, "connection_gutter");
+	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, false);
+	code_editor->get_text_editor()->set_gutter_overwritable(connection_gutter, true);
+	code_editor->get_text_editor()->set_gutter_type(connection_gutter, TextEdit::GUTTER_TPYE_ICON);
 
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
