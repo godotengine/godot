@@ -1029,15 +1029,18 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 #define SET_EM_CALLBACK(target, ev, cb)                               \
 	result = emscripten_set_##ev##_callback(target, NULL, true, &cb); \
 	EM_CHECK(ev)
+#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
+	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
+	EM_CHECK(ev)
 #define SET_EM_CALLBACK_NOTARGET(ev, cb)                      \
 	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
 	SET_EM_CALLBACK(id.get_data(), mousedown, mouse_button_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
+	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
+	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
 	SET_EM_CALLBACK(id.get_data(), wheel, wheel_callback)
 	SET_EM_CALLBACK(id.get_data(), touchstart, touch_press_callback)
 	SET_EM_CALLBACK(id.get_data(), touchmove, touchmove_callback)
