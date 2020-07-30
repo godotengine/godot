@@ -678,14 +678,15 @@ public:
 			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 52,
 			SORT_KEY_OPAQUE_DEPTH_LAYER_MASK = 0xF,
 //64 bits unsupported in MSVC
-#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 49)
-#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 48)
-#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 47)
+#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 50)
+#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 49)
+#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 48)
+#define SORT_KEY_LIGHTMAP_LAYERED_FLAG (uint64_t(1) << 47)
 #define SORT_KEY_LIGHTMAP_FLAG (uint64_t(1) << 46)
 #define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 45)
 #define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 44)
 			SORT_KEY_SHADING_SHIFT = 44,
-			SORT_KEY_SHADING_MASK = 63,
+			SORT_KEY_SHADING_MASK = 127,
 			//44-28 material index
 			SORT_KEY_MATERIAL_INDEX_SHIFT = 28,
 			//28-8 geometry index

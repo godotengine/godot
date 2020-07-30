@@ -2397,6 +2397,9 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 		if (e->instance->lightmap.is_valid()) {
 			e->sort_key |= SORT_KEY_LIGHTMAP_FLAG;
+			if (e->instance->lightmap_slice != -1) {
+				e->sort_key |= SORT_KEY_LIGHTMAP_LAYERED_FLAG;
+			}
 		}
 
 		if (!e->instance->lightmap_capture_data.empty()) {
