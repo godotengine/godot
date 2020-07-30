@@ -48,6 +48,9 @@
 // which are used by error macros which call into `OS::print_error`, effectively
 // disabling any error messages to be printed from the engine side (not tests).
 #define ERR_PRINT_OFF _print_error_enabled = false;
+
+// NOTE: This is always re-enabled before each test case or subcase is run if
+// using "godot_console" test reporter (default).
 #define ERR_PRINT_ON _print_error_enabled = true;
 
 // Stringify all `Variant` compatible types for doctest output by default.
