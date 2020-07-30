@@ -188,7 +188,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	if (p_mode != PROCESS_CACHE && align != ALIGN_FILL)
 		wofs += line_ofs;
 
-	int begin = wofs;
+	int begin = margin;
 
 	Ref<Font> cfont = _find_font(it);
 	if (cfont.is_null())
