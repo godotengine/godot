@@ -196,7 +196,6 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 	Line line;
 	line.gutters.resize(gutter_count);
 	line.marked = false;
-	line.safe = false;
 	line.hidden = false;
 	line.width_cache = -1;
 	line.wrap_amount_cache = -1;
@@ -4723,7 +4722,6 @@ void TextEdit::_update_caches() {
 	cache.font = get_theme_font("font");
 	cache.caret_color = get_theme_color("caret_color");
 	cache.caret_background_color = get_theme_color("caret_background_color");
-	cache.safe_line_number_color = get_theme_color("safe_line_number_color");
 	cache.font_color = get_theme_color("font_color");
 	cache.font_color_selected = get_theme_color("font_color_selected");
 	cache.font_color_readonly = get_theme_color("font_color_readonly");
@@ -5376,17 +5374,6 @@ void TextEdit::set_line_as_marked(int p_line, bool p_marked) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	text.set_marked(p_line, p_marked);
 	update();
-}
-
-void TextEdit::set_line_as_safe(int p_line, bool p_safe) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_safe(p_line, p_safe);
-	update();
-}
-
-bool TextEdit::is_line_set_as_safe(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	return text.is_safe(p_line);
 }
 
 void TextEdit::set_line_as_hidden(int p_line, bool p_hidden) {

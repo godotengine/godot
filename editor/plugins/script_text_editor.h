@@ -85,6 +85,10 @@ class ScriptTextEditor : public ScriptEditorBase {
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _update_gutter_indexes();
 
+	int line_number_gutter = -1;
+	Color default_line_number_color = Color(1, 1, 1);
+	Color safe_line_number_color = Color(1, 1, 1);
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;
