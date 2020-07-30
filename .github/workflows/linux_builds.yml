@@ -9,7 +9,7 @@ env:
 jobs:
   linux-editor:
     runs-on: "ubuntu-20.04"
-    name: Editor w/ Mono (target=release_debug, tools=yes)
+    name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
 
     steps:
       - uses: actions/checkout@v2

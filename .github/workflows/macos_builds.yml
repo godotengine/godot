@@ -10,7 +10,7 @@ jobs:
   macos-editor:
     runs-on: "macos-latest"
 
-    name: Editor (target=release_debug, tools=yes)
+    name: Editor (target=release_debug, tools=yes, tests=yes)
 
     steps:
       - uses: actions/checkout@v2
