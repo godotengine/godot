@@ -132,18 +132,13 @@ void CSGShape3D::_make_dirty() {
 		return;
 	}
 
-	if (dirty) {
-		return;
+	if (parent) {
+		parent->_make_dirty();
+	} else if (!dirty) {
+		call_deferred("_update_shape");
 	}
 
 	dirty = true;
-
-	if (parent) {
-		parent->_make_dirty();
-	} else {
-		//only parent will do
-		call_deferred("_update_shape");
-	}
 }
 
 CSGBrush *CSGShape3D::_get_brush() {
