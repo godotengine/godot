@@ -112,7 +112,7 @@
 			</argument>
 			<description>
 				Returns the arc tangent of [code]s[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
-				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[code] and [code]x[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
 				[codeblock]
 				a = atan(0.5) # a is 0.463648
 				[/codeblock]
