@@ -1809,6 +1809,9 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
+	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
+
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
 	code_editor->get_text_editor()->set_gutter_name(connection_gutter, "connection_gutter");

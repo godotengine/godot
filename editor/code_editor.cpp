@@ -1685,8 +1685,6 @@ CodeTextEditor::CodeTextEditor() {
 	find_replace_bar->set_text_edit(text_editor);
 
 	text_editor->set_draw_line_numbers(true);
-	text_editor->set_draw_breakpoints_gutter(true);
-	text_editor->set_draw_executing_lines_gutter(true);
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);
 
