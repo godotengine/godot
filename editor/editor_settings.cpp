@@ -445,7 +445,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_line_numbers", true);
 	_initial_set("text_editor/appearance/line_numbers_zero_padded", false);
 	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
-	_initial_set("text_editor/appearance/show_breakpoint_gutter", true);
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
 	_initial_set("text_editor/appearance/word_wrap", false);
