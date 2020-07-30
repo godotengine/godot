@@ -1134,6 +1134,10 @@
 		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="" default="true">
 			Lower-end override for [member rendering/quality/shading/force_lambert_over_burley] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/gles2/compatibility/enable_high_float.Android" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] and available on the target device, enables high floating point precision for all shader computations in GLES2.
+			[b]Warning:[/b] High floating point precision can be extremely slow on older devices and is often not available at all. Use with caution.
+		</member>
 		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
 		</member>
