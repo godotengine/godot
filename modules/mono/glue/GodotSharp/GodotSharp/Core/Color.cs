@@ -827,44 +827,22 @@ namespace Godot
 
             if (color[0] == '#')
             {
-                color = color.Substring(1, color.Length - 1);
+                color = color.Substring(1);
             }
 
-            bool alpha;
-
-            switch (color.Length)
+            // Check if the amount of hex digits is valid.
+            int len = color.Length;
+            if (!(len == 3 || len == 4 || len == 6 || len == 8))
             {
-                case 8:
-                    alpha = true;
-                    break;
-                case 6:
-                    alpha = false;
-                    break;
-                default:
-                    return false;
+                return false;
             }
 
-            if (alpha)
-            {
-                if (ParseCol8(color, 0) < 0)
+            // Check if each hex digit is valid.
+            for (int i = 0; i < len; i++) {
+                if (ParseCol4(color, i) == -1)
                 {
                     return false;
                 }
-            }
-
-            int from = alpha ? 2 : 0;
-
-            if (ParseCol8(color, from + 0) < 0)
-            {
-                return false;
-            }
-            if (ParseCol8(color, from + 2) < 0)
-            {
-                return false;
-            }
-            if (ParseCol8(color, from + 4) < 0)
-            {
-                return false;
             }
 
             return true;

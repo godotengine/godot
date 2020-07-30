@@ -296,7 +296,7 @@ Color Color::html(const String &p_rgba) {
 		return Color();
 	}
 	if (color[0] == '#') {
-		color = color.substr(1, color.length() - 1);
+		color = color.substr(1);
 	}
 
 	// If enabled, use 1 hex digit per channel instead of 2.
@@ -347,39 +347,20 @@ bool Color::html_is_valid(const String &p_color) {
 		return false;
 	}
 	if (color[0] == '#') {
-		color = color.substr(1, color.length() - 1);
+		color = color.substr(1);
 	}
 
-	bool alpha = false;
-
-	if (color.length() == 8) {
-		alpha = true;
-	} else if (color.length() == 6) {
-		alpha = false;
-	} else {
+	// Check if the amount of hex digits is valid.
+	int len = color.length();
+	if (!(len == 3 || len == 4 || len == 6 || len == 8)) {
 		return false;
 	}
 
-	if (alpha) {
-		int a = _parse_col8(color, 0);
-		if (a < 0) {
+	// Check if each hex digit is valid.
+	for (int i = 0; i < len; i++) {
+		if (_parse_col4(color, i) == -1) {
 			return false;
 		}
-	}
-
-	int from = alpha ? 2 : 0;
-
-	int r = _parse_col8(color, from + 0);
-	if (r < 0) {
-		return false;
-	}
-	int g = _parse_col8(color, from + 2);
-	if (g < 0) {
-		return false;
-	}
-	int b = _parse_col8(color, from + 4);
-	if (b < 0) {
-		return false;
 	}
 
 	return true;
