@@ -82,14 +82,12 @@ private:
 			int width_cache : 24;
 			bool marked : 1;
 			bool hidden : 1;
-			bool safe : 1;
 			int wrap_amount_cache : 24;
 			String data;
 			Line() {
 				width_cache = 0;
 				marked = false;
 				hidden = false;
-				safe = false;
 				wrap_amount_cache = 0;
 			}
 		};
@@ -115,8 +113,6 @@ private:
 		bool is_marked(int p_line) const { return text[p_line].marked; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
-		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
@@ -455,7 +451,6 @@ protected:
 		Color completion_font_color;
 		Color caret_color;
 		Color caret_background_color;
-		Color safe_line_number_color;
 		Color font_color;
 		Color font_color_selected;
 		Color font_color_readonly;
@@ -576,8 +571,6 @@ public:
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
 	void set_line_as_marked(int p_line, bool p_marked);
-	void set_line_as_safe(int p_line, bool p_safe);
-	bool is_line_set_as_safe(int p_line) const;
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;

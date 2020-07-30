@@ -170,6 +170,16 @@ void ScriptTextEditor::_load_theme_settings() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->clear_keywords();
 
+	Color updated_safe_line_number_color = EDITOR_GET("text_editor/highlighting/safe_line_number_color");
+	if (updated_safe_line_number_color != safe_line_number_color) {
+		safe_line_number_color = updated_safe_line_number_color;
+		for (int i = 0; i < text_edit->get_line_count(); i++) {
+			if (text_edit->get_line_gutter_item_color(i, line_number_gutter) != default_line_number_color) {
+				text_edit->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
+			}
+		}
+	}
+
 	Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
 	Color completion_background_color = EDITOR_GET("text_editor/highlighting/completion_background_color");
 	Color completion_selected_color = EDITOR_GET("text_editor/highlighting/completion_selected_color");
@@ -178,7 +188,6 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color completion_font_color = EDITOR_GET("text_editor/highlighting/completion_font_color");
 	Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
 	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
-	Color safe_line_number_color = EDITOR_GET("text_editor/highlighting/safe_line_number_color");
 	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
 	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
 	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
@@ -203,7 +212,6 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_theme_color_override("completion_font_color", completion_font_color);
 	text_edit->add_theme_color_override("font_color", text_color);
 	text_edit->add_theme_color_override("line_number_color", line_number_color);
-	text_edit->add_theme_color_override("safe_line_number_color", safe_line_number_color);
 	text_edit->add_theme_color_override("caret_color", caret_color);
 	text_edit->add_theme_color_override("caret_background_color", caret_background_color);
 	text_edit->add_theme_color_override("font_color_selected", text_selected_color);
@@ -541,16 +549,16 @@ void ScriptTextEditor::_validate_script() {
 		te->set_line_as_marked(i, line == i);
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
-				te->set_line_as_safe(i, true);
+				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 				last_is_safe = true;
 			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().empty())) {
-				te->set_line_as_safe(i, true);
+				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			} else {
-				te->set_line_as_safe(i, false);
+				te->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);
 				last_is_safe = false;
 			}
 		} else {
-			te->set_line_as_safe(i, false);
+			te->set_line_gutter_item_color(line, 1, default_line_number_color);
 		}
 	}
 
@@ -988,7 +996,12 @@ void ScriptTextEditor::_update_gutter_indexes() {
 	for (int i = 0; i < code_editor->get_text_editor()->get_gutter_count(); i++) {
 		if (code_editor->get_text_editor()->get_gutter_name(i) == "connection_gutter") {
 			connection_gutter = i;
-			break;
+			continue;
+		}
+
+		if (code_editor->get_text_editor()->get_gutter_name(i) == "line_numbers") {
+			line_number_gutter = i;
+			continue;
 		}
 	}
 }
@@ -1679,6 +1692,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
 	code_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
 	code_editor->show_toggle_scripts_button();
+	_update_gutter_indexes();
 
 	editor_box->add_child(warnings_panel);
 	warnings_panel->add_theme_font_override(
