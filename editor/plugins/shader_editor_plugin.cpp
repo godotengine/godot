@@ -358,28 +358,11 @@ void ShaderEditor::_params_changed() {
 }
 
 void ShaderEditor::_editor_settings_changed() {
-	shader_editor->get_text_editor()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
-	shader_editor->get_text_editor()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/cursor/scroll_past_end_of_file"));
-	shader_editor->get_text_editor()->set_indent_size(EditorSettings::get_singleton()->get("text_editor/indent/size"));
-	shader_editor->get_text_editor()->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
-	shader_editor->get_text_editor()->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
-	shader_editor->get_text_editor()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
-	shader_editor->get_text_editor()->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/indent/draw_spaces"));
-	shader_editor->get_text_editor()->set_draw_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
-	shader_editor->get_text_editor()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
-	shader_editor->get_text_editor()->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
-	shader_editor->get_text_editor()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
-	shader_editor->get_text_editor()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
+	shader_editor->update_editor_settings();
+
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
-	shader_editor->get_text_editor()->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
-	shader_editor->get_text_editor()->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/smooth_scrolling"));
-	shader_editor->get_text_editor()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
-	shader_editor->get_text_editor()->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));
-	shader_editor->get_text_editor()->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/navigation/minimap_width") * EDSCALE);
-	shader_editor->get_text_editor()->set_show_line_length_guidelines(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_length_guidelines"));
-	shader_editor->get_text_editor()->set_line_length_guideline_soft_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_soft_column"));
-	shader_editor->get_text_editor()->set_line_length_guideline_hard_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_hard_column"));
 	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
+	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
 
 void ShaderEditor::_bind_methods() {
