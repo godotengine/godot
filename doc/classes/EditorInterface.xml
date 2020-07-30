@@ -51,8 +51,8 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the editor's [Viewport] instance.
-				[b]Note:[/b] This returns the main editor viewport containing the whole editor, not the 2D or 3D viewports specifically.
+				Returns the main editor control. Use this as a parent for main screens.
+				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
 			</description>
 		</method>
 		<method name="get_file_system_dock">
