@@ -34,7 +34,7 @@
 #include "core/variant.h"
 #include "core/variant_parser.h"
 
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestVariant {
 

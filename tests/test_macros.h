@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_main.cpp                                                        */
+/*  test_macros.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_main.h"
+#ifndef TEST_MACROS_H
+#define TEST_MACROS_H
 
-#include "core/list.h"
+// See documentation for doctest at:
+// https://github.com/onqtam/doctest/blob/master/doc/markdown/readme.md#reference
+#include "thirdparty/doctest/doctest.h"
 
-#include "test_astar.h"
-#include "test_basis.h"
-#include "test_class_db.h"
-#include "test_gdscript.h"
-#include "test_gui.h"
-#include "test_math.h"
-#include "test_oa_hash_map.h"
-#include "test_ordered_hash_map.h"
-#include "test_physics_2d.h"
-#include "test_physics_3d.h"
-#include "test_render.h"
-#include "test_shader_lang.h"
-#include "test_string.h"
-#include "test_validate_testing.h"
-#include "test_variant.h"
+// The test is skipped with this, run pending tests with `--test --no-skip`.
+#define TEST_CASE_PENDING(name) TEST_CASE(name *doctest::skip())
 
-#include "modules/modules_tests.gen.h"
+// Temporarily disable error prints to test failure paths.
+// This allows to avoid polluting the test summary with error messages.
+// The `_print_error_enabled` boolean is defined in `core/print_string.cpp` and
+// works at global scope. It's used by various loggers in `should_log()` method,
+// which are used by error macros which call into `OS::print_error`, effectively
+// disabling any error messages to be printed from the engine side (not tests).
+#define ERR_PRINT_OFF _print_error_enabled = false;
+#define ERR_PRINT_ON _print_error_enabled = true;
 
-#include "tests/test_macros.h"
-
-int test_main(int argc, char *argv[]) {
-	// Doctest runner.
-	doctest::Context test_context;
-	List<String> valid_arguments;
-
-	// Clean arguments of "--test" from the args.
-	int argument_count = 0;
-	for (int x = 0; x < argc; x++) {
-		if (strncmp(argv[x], "--test", 6) != 0) {
-			valid_arguments.push_back(String(argv[x]));
-			argument_count++;
-		}
-	}
-	// Convert Godot command line arguments back to standard arguments.
-	char **args = new char *[valid_arguments.size()];
-	for (int x = 0; x < valid_arguments.size(); x++) {
-		// Operation to convert Godot string to non wchar string.
-		const char *str = valid_arguments[x].utf8().ptr();
-		// Allocate the string copy.
-		args[x] = new char[strlen(str) + 1];
-		// Copy this into memory.
-		std::memcpy(args[x], str, strlen(str) + 1);
-	}
-
-	test_context.applyCommandLine(valid_arguments.size(), args);
-
-	test_context.setOption("order-by", "name");
-	test_context.setOption("abort-after", 5);
-	test_context.setOption("no-breaks", true);
-
-	delete[] args;
-
-	return test_context.run();
-}
+#endif // TEST_MACROS_H
