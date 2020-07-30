@@ -75,7 +75,7 @@ bool DisplayServerJavaScript::check_size_force_redraw() {
 	if (last_width != canvas_width || last_height != canvas_height) {
 		last_width = canvas_width;
 		last_height = canvas_height;
-		// Update the framebuffer size and for redraw.
+		// Update the framebuffer size for redraw.
 		emscripten_set_canvas_element_size(DisplayServerJavaScript::canvas_id, canvas_width, canvas_height);
 		return true;
 	}
@@ -1103,7 +1103,11 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
 	last_width = p_size.x;
 	last_height = p_size.y;
-	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
+	double scale = EM_ASM_DOUBLE({
+		return window.devicePixelRatio || 1;
+	});
+	emscripten_set_canvas_element_size(canvas_id, p_size.x * scale, p_size.y * scale);
+	emscripten_set_element_css_size(canvas_id, p_size.x, p_size.y);
 }
 
 Size2i DisplayServerJavaScript::window_get_size(WindowID p_window) const {
