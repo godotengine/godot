@@ -565,6 +565,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
                 index += 1
 
+    f.write(make_footer())
+
 
 def escape_rst(text, until_pos=-1):  # type: (str) -> str
     # Escape \ character, otherwise it ends up as an escape character in rst
@@ -986,13 +988,28 @@ def make_method_signature(
     out += " **)**"
 
     if isinstance(method_def, MethodDef) and method_def.qualifiers is not None:
-        out += " " + method_def.qualifiers
+        # Use substitutions for abbreviations. This is used to display tooltips on hover.
+        # See `make_footer()` for descriptions.
+        for qualifier in method_def.qualifiers.split():
+            out += " |" + qualifier + "|"
 
     return ret_type, out
 
 
 def make_heading(title, underline):  # type: (str, str) -> str
     return title + "\n" + (underline * len(title)) + "\n\n"
+
+
+def make_footer():  # type: () -> str
+    # Generate reusable abbreviation substitutions.
+    # This way, we avoid bloating the generated rST with duplicate abbreviations.
+    # fmt: off
+    return (
+        ".. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`\n"
+        ".. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`\n"
+        ".. |vararg| replace:: :abbr:`vararg (This method accepts any number of arguments after the ones described here.)`"
+    )
+    # fmt: on
 
 
 def make_url(link):  # type: (str) -> str
