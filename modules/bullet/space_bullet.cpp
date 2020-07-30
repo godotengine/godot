@@ -391,11 +391,11 @@ void SpaceBullet::remove_from_any_queue(CollisionObjectBullet *p_co) {
 }
 
 void SpaceBullet::flush_queries() {
-	for (uint32_t i = 0; i < queue_pre_flush.size(); i += 1) {
+	for (uint32_t i = 0; i < uint32_t(queue_pre_flush.size()); i += 1) {
 		queue_pre_flush[i]->dispatch_callbacks();
 		queue_pre_flush[i]->is_in_flush_queue = false;
 	}
-	for (uint32_t i = 0; i < queue_flush.size(); i += 1) {
+	for (uint32_t i = 0; i < uint32_t(queue_flush.size()); i += 1) {
 		queue_flush[i]->dispatch_callbacks();
 		queue_flush[i]->is_in_flush_queue = false;
 	}
@@ -404,7 +404,7 @@ void SpaceBullet::flush_queries() {
 }
 
 void SpaceBullet::step(real_t p_delta_time) {
-	for (uint32_t i = 0; i < collision_objects.size(); i += 1) {
+	for (uint32_t i = 0; i < uint32_t(collision_objects.size()); i += 1) {
 		collision_objects[i]->pre_process();
 	}
 
@@ -1011,6 +1011,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		normalLine->set_material_override(blue_mat);
 	}
 #endif
+	p_body->pre_process();
 
 	btTransform body_transform;
 	G_TO_B(p_from, body_transform);
