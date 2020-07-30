@@ -361,6 +361,9 @@ void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
 
 void RigidCollisionObjectBullet::reload_shapes() {
 	need_shape_reload = true;
+	if (space) {
+		space->add_to_flush_queue(this);
+	}
 }
 
 void RigidCollisionObjectBullet::do_reload_shapes() {

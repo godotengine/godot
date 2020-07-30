@@ -338,6 +338,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 }
 
 void RigidBodyBullet::dispatch_callbacks() {
+	pre_process();
 	RigidCollisionObjectBullet::dispatch_callbacks();
 
 	/// The check isFirstTransformChanged is necessary in order to call integrated forces only when the first transform is sent
