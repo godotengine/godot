@@ -233,8 +233,12 @@ bool CodeEdit::is_line_numbers_zero_padded() const {
 void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
 	String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
 
-	int yofs = region.position.y + (cache.row_height - cache.font->get_height()) / 2;
-	cache.font->draw(get_canvas_item(), Point2(region.position.x, yofs + cache.font->get_ascent()), fc, line_number_color);
+	int yofs = p_region.position.y + (cache.row_height - cache.font->get_height()) / 2;
+	Color number_color = get_line_gutter_item_color(p_line, line_number_gutter);
+	if (number_color == Color(1, 1, 1)) {
+		number_color = line_number_color;
+	}
+	cache.font->draw(get_canvas_item(), Point2(p_region.position.x, yofs + cache.font->get_ascent()), fc, number_color);
 }
 
 /* Fold Gutter */
