@@ -101,7 +101,7 @@ bool OS_JavaScript::check_size_force_redraw() {
 	if (last_width != canvas_width || last_height != canvas_height) {
 		last_width = canvas_width;
 		last_height = canvas_height;
-		// Update the framebuffer size and for redraw.
+		// Update the framebuffer size for redraw.
 		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), canvas_width, canvas_height);
 		return true;
 	}
@@ -159,7 +159,11 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 			emscripten_exit_soft_fullscreen();
 			window_maximized = false;
 		}
-		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), p_size.x, p_size.y);
+		double scale = EM_ASM_DOUBLE({
+			return window.devicePixelRatio || 1;
+		});
+		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), p_size.x * scale, p_size.y * scale);
+		emscripten_set_element_css_size(canvas_id.utf8().get_data(), p_size.x, p_size.y);
 	}
 }
 
@@ -1147,9 +1151,8 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.canvasResizedCallback = NULL;
 			emscripten_enter_soft_fullscreen(canvas_id.utf8().get_data(), &strategy);
 		} else {
-			emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), windowed_size.width, windowed_size.height);
+			set_window_size(Size2(windowed_size.width, windowed_size.height));
 		}
-		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), windowed_size.width, windowed_size.height);
 		just_exited_fullscreen = false;
 	}
 
