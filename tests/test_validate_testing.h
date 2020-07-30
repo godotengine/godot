@@ -33,10 +33,26 @@
 
 #include "core/os/os.h"
 
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
-TEST_CASE("Validate Test will always pass") {
-	CHECK(true);
+TEST_SUITE("Validate tests") {
+	TEST_CASE("Always pass") {
+		CHECK(true);
+	}
+	TEST_CASE_PENDING("Pending tests are skipped") {
+		if (!doctest::getContextOptions()->no_skip) { // Normal run.
+			FAIL("This should be skipped if `--no-skip` is NOT set (missing `doctest::skip()` decorator?)");
+		} else {
+			CHECK_MESSAGE(true, "Pending test is run with `--no-skip`");
+		}
+	}
+	TEST_CASE("Muting Godot error messages") {
+		ERR_PRINT_OFF;
+		CHECK_MESSAGE(!_print_error_enabled, "Error printing should be disabled.");
+		ERR_PRINT("Still waiting for Godot!"); // This should never get printed!
+		ERR_PRINT_ON;
+		CHECK_MESSAGE(_print_error_enabled, "Error printing should be re-enabled.");
+	}
 }
 
 #endif // TEST_VALIDATE_TESTING_H

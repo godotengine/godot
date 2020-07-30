@@ -44,7 +44,7 @@
 #include "modules/regex/regex.h"
 #endif
 
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestString {
 
