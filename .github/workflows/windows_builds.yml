@@ -14,7 +14,7 @@ jobs:
     runs-on: "windows-latest"
 
     # Windows Editor - checkout with the plugin
-    name: Editor (target=release_debug, tools=yes)
+    name: Editor (target=release_debug, tools=yes, tests=yes)
 
     steps:
     - uses: actions/checkout@v2
