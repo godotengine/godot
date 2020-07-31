@@ -655,8 +655,7 @@ CSGShape::~CSGShape() {
 //////////////////////////////////
 
 CSGBrush *CSGCombiner::_build_brush() {
-
-	return NULL; //does not build anything
+	return memnew(CSGBrush); //does not build anything
 }
 
 CSGCombiner::CSGCombiner() {
