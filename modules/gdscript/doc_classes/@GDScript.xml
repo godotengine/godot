@@ -734,16 +734,17 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				Parse JSON text to a Variant (use [method typeof] to check if it is what you expect).
-				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert all numerical values to [float] types.
-				Note that JSON objects do not preserve key order like Godot dictionaries, thus you should not rely on keys being in a certain order if a dictionary is constructed from JSON. In contrast, JSON arrays retain the order of their elements:
+				Parse JSON text to a Variant. (Use [method typeof] to check if the Variant's type is what you expect.)
+				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, parsing a JSON text will convert all numerical values to [float] types.
+				[b]Note:[/b] JSON objects do not preserve key order like Godot dictionaries, thus, you should not rely on keys being in a certain order if a dictionary is constructed from JSON. In contrast, JSON arrays retain the order of their elements:
 				[codeblock]
-				p = parse_json('["a", "b", "c"]')
-				if typeof(p) == TYPE_ARRAY:
-				    print(p[0]) # Prints a
+				var p = JSON.parse('["hello", "world", "!"]')
+				if typeof(p.result) == TYPE_ARRAY:
+				    print(p.result[0]) # Prints "hello"
 				else:
-				    print("unexpected results")
+				    push_error("Unexpected results.")
 				[/codeblock]
+				See also [JSON] for an alternative way to parse JSON text.
 			</description>
 		</method>
 		<method name="polar2cartesian">
@@ -1216,12 +1217,16 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-				Converts a Variant [code]var[/code] to JSON text and return the result. Useful for serializing data to store or send over the network.
+				Converts a [Variant] [code]var[/code] to JSON text and return the result. Useful for serializing data to store or send over the network.
 				[codeblock]
+				# Both numbers below are integers.
 				a = { "a": 1, "b": 2 }
 				b = to_json(a)
 				print(b) # {"a":1, "b":2}
+				# Both numbers above are floats, even if they display without any decimal places.
 				[/codeblock]
+				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a [Variant] to JSON text will convert all numerical values to [float] types.
+				See also [JSON] for an alternative way to convert a [Variant] to JSON text.
 			</description>
 		</method>
 		<method name="type_exists">
@@ -1264,9 +1269,9 @@
 				j = to_json([1, 2, 3])
 				v = validate_json(j)
 				if not v:
-				    print("valid")
+				    print("Valid JSON.")
 				else:
-				    prints("invalid", v)
+				    push_error("Invalid JSON: " + v)
 				[/codeblock]
 			</description>
 		</method>
