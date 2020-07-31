@@ -174,6 +174,8 @@ class VisualShaderNode : public Resource {
 	int port_preview;
 
 	Map<int, Variant> default_input_values;
+	Map<int, bool> connected_input_ports;
+	Map<int, int> connected_output_ports;
 
 protected:
 	bool simple_decl;
@@ -212,6 +214,14 @@ public:
 	int get_output_port_for_preview() const;
 
 	virtual bool is_port_separator(int p_index) const;
+
+	bool is_output_port_connected(int p_port) const;
+	void set_output_port_connected(int p_port, bool p_connected);
+	bool is_input_port_connected(int p_port) const;
+	void set_input_port_connected(int p_port, bool p_connected);
+	virtual bool is_generate_input_var(int p_port) const;
+
+	virtual bool is_code_generated() const;
 
 	virtual Vector<StringName> get_editable_properties() const;
 

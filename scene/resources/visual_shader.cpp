@@ -64,6 +64,40 @@ bool VisualShaderNode::is_port_separator(int p_index) const {
 	return false;
 }
 
+bool VisualShaderNode::is_output_port_connected(int p_port) const {
+	if (connected_output_ports.has(p_port)) {
+		return connected_output_ports[p_port] > 0;
+	}
+	return false;
+}
+
+void VisualShaderNode::set_output_port_connected(int p_port, bool p_connected) {
+	if (p_connected) {
+		connected_output_ports[p_port]++;
+	} else {
+		connected_output_ports[p_port]--;
+	}
+}
+
+bool VisualShaderNode::is_input_port_connected(int p_port) const {
+	if (connected_input_ports.has(p_port)) {
+		return connected_input_ports[p_port];
+	}
+	return false;
+}
+
+void VisualShaderNode::set_input_port_connected(int p_port, bool p_connected) {
+	connected_input_ports[p_port] = p_connected;
+}
+
+bool VisualShaderNode::is_generate_input_var(int p_port) const {
+	return true;
+}
+
+bool VisualShaderNode::is_code_generated() const {
+	return true;
+}
+
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	return Vector<VisualShader::DefaultTextureParam>();
 }
@@ -387,6 +421,7 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 			g->connections.erase(E);
 			if (E->get().from_node == p_id) {
 				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
+				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
 			}
 		}
 		E = N;
@@ -482,6 +517,8 @@ void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from
 	c.to_port = p_to_port;
 	g->connections.push_back(c);
 	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
+	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
+	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
 
 	_queue_update();
 }
@@ -514,6 +551,8 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	c.to_port = p_to_port;
 	g->connections.push_back(c);
 	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
+	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
+	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
 
 	_queue_update();
 	return OK;
@@ -528,6 +567,8 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
 			g->connections.erase(E);
 			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
+			g->nodes[p_from_node].node->set_output_port_connected(p_from_port, false);
+			g->nodes[p_to_node].node->set_input_port_connected(p_to_port, false);
 			_queue_update();
 			return;
 		}
@@ -1078,6 +1119,36 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 	// then this node
 
+	Vector<VisualShader::DefaultTextureParam> params = vsnode->get_default_texture_parameters(type, node);
+	for (int i = 0; i < params.size(); i++) {
+		def_tex_params.push_back(params[i]);
+	}
+
+	Ref<VisualShaderNodeInput> input = vsnode;
+	bool skip_global = input.is_valid() && for_preview;
+
+	if (!skip_global) {
+
+		global_code += vsnode->generate_global(get_mode(), type, node);
+
+		String class_name = vsnode->get_class_name();
+		if (class_name == "VisualShaderNodeCustom") {
+			class_name = vsnode->get_script_instance()->get_script()->get_path();
+		}
+		if (!r_classes.has(class_name)) {
+			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);
+			for (int i = 0; i < TYPE_MAX; i++) {
+				global_code_per_func[Type(i)] += vsnode->generate_global_per_func(get_mode(), Type(i), node);
+			}
+			r_classes.insert(class_name);
+		}
+	}
+
+	if (!vsnode->is_code_generated()) { // just generate globals and ignore locals
+		processed.insert(node);
+		return OK;
+	}
+
 	code += "// " + vsnode->get_caption() + ":" + itos(node) + "\n";
 	Vector<String> input_vars;
 
@@ -1124,6 +1195,9 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = "vec3(" + src_var + " ? 1.0 : 0.0)";
 			}
 		} else {
+			if (!vsnode->is_generate_input_var(i)) {
+				continue;
+			}
 
 			Variant defval = vsnode->get_input_port_default_value(i);
 			if (defval.get_type() == Variant::REAL || defval.get_type() == Variant::INT) {
@@ -1188,33 +1262,6 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				default: {
 				}
 			}
-		}
-	}
-
-	Vector<VisualShader::DefaultTextureParam> params = vsnode->get_default_texture_parameters(type, node);
-	for (int i = 0; i < params.size(); i++) {
-		def_tex_params.push_back(params[i]);
-	}
-
-	Ref<VisualShaderNodeInput> input = vsnode;
-	bool skip_global = input.is_valid() && for_preview;
-
-	if (!skip_global) {
-		Ref<VisualShaderNodeUniform> uniform = vsnode;
-		if (!uniform.is_valid() || !uniform->is_global_code_generated()) {
-			global_code += vsnode->generate_global(get_mode(), type, node);
-		}
-
-		String class_name = vsnode->get_class_name();
-		if (class_name == "VisualShaderNodeCustom") {
-			class_name = vsnode->get_script_instance()->get_script()->get_path();
-		}
-		if (!r_classes.has(class_name)) {
-			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);
-			for (int i = 0; i < TYPE_MAX; i++) {
-				global_code_per_func[Type(i)] += vsnode->generate_global_per_func(get_mode(), Type(i), node);
-			}
-			r_classes.insert(class_name);
 		}
 	}
 
