@@ -132,7 +132,7 @@ def configure(env):
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
-        env.extra_suffix += "s"
+        env.extra_suffix += "."
 
         if env["use_ubsan"]:
             env.Append(
@@ -141,15 +141,17 @@ def configure(env):
                 ]
             )
             env.Append(LINKFLAGS=["-fsanitize=undefined"])
-            env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
+            env.extra_suffix += "u"
 
         if env["use_asan"]:
             env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
+            env.extra_suffix += "a"
 
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
+            env.extra_suffix += "t"
 
     ## Dependencies
 

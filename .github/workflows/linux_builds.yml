@@ -156,7 +156,7 @@ jobs:
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
-          ./bin/godot.linuxbsd.tools.64s --test
+          ./bin/godot.linuxbsd.tools.64.ua --test
 
       # Download, unzip and setup SwiftShader library [d4550ab8d3f]
       - name: Download SwiftShader
@@ -177,13 +177,13 @@ jobs:
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
         run: |
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64.ua --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
       # Run test project
       - name: Run project
         run: |
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64s 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run bin/godot.linuxbsd.tools.64.ua 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
   linux-template-mono:
