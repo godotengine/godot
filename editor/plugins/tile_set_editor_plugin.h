@@ -49,6 +49,8 @@ class TileSetEditor : public HSplitContainer {
 	enum TextureButtons {
 		TOOL_TILESET_ADD_TEXTURE,
 		TOOL_TILESET_REMOVE_TEXTURE,
+		TOOL_TILESET_DEC_TEXTURE_INDEX,
+		TOOL_TILESET_INC_TEXTURE_INDEX,
 		TOOL_TILESET_CREATE_SCENE,
 		TOOL_TILESET_MERGE_SCENE,
 		TOOL_TILESET_MAX
@@ -166,6 +168,9 @@ class TileSetEditor : public HSplitContainer {
 
 	void add_texture(Ref<Texture2D> p_texture);
 	void remove_texture(Ref<Texture2D> p_texture);
+	void increment_texture_index(Ref<Texture> p_texture);
+	void decrement_texture_index(Ref<Texture> p_texture);
+	void change_texture_index(int p_from, int p_to);
 
 	Ref<Texture2D> get_current_texture();
 

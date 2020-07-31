@@ -272,6 +272,8 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("edit", &TileSetEditor::edit);
 	ClassDB::bind_method("add_texture", &TileSetEditor::add_texture);
 	ClassDB::bind_method("remove_texture", &TileSetEditor::remove_texture);
+	ClassDB::bind_method("increment_texture_index", &TileSetEditor::increment_texture_index);
+	ClassDB::bind_method("decrement_texture_index", &TileSetEditor::decrement_texture_index);
 	ClassDB::bind_method("update_texture_list_icon", &TileSetEditor::update_texture_list_icon);
 	ClassDB::bind_method("update_workspace_minsize", &TileSetEditor::update_workspace_minsize);
 }
@@ -285,6 +287,8 @@ void TileSetEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]->set_icon(get_theme_icon("ToolAddNode", "EditorIcons"));
 			tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->set_icon(get_theme_icon("Remove", "EditorIcons"));
+			tileset_toolbar_buttons[TOOL_TILESET_DEC_TEXTURE_INDEX]->set_icon(get_theme_icon("MoveUp", "EditorIcons"));
+			tileset_toolbar_buttons[TOOL_TILESET_INC_TEXTURE_INDEX]->set_icon(get_theme_icon("MoveDown", "EditorIcons"));
 			tileset_toolbar_tools->set_icon(get_theme_icon("Tools", "EditorIcons"));
 
 			tool_workspacemode[WORKSPACE_EDIT]->set_icon(get_theme_icon("Edit", "EditorIcons"));
@@ -350,6 +354,16 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tileset_toolbar_button_pressed), varray(TOOL_TILESET_REMOVE_TEXTURE));
 	tileset_toolbar_container->add_child(tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]);
 	tileset_toolbar_buttons[TOOL_TILESET_REMOVE_TEXTURE]->set_tooltip(TTR("Remove selected Texture from TileSet."));
+
+	tileset_toolbar_buttons[TOOL_TILESET_DEC_TEXTURE_INDEX] = memnew(Button);
+	tileset_toolbar_buttons[TOOL_TILESET_DEC_TEXTURE_INDEX]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tileset_toolbar_button_pressed), varray(TOOL_TILESET_DEC_TEXTURE_INDEX));
+	tileset_toolbar_container->add_child(tileset_toolbar_buttons[TOOL_TILESET_DEC_TEXTURE_INDEX]);
+	tileset_toolbar_buttons[TOOL_TILESET_DEC_TEXTURE_INDEX]->set_tooltip(TTR("Decreases texture index."));
+
+	tileset_toolbar_buttons[TOOL_TILESET_INC_TEXTURE_INDEX] = memnew(Button);
+	tileset_toolbar_buttons[TOOL_TILESET_INC_TEXTURE_INDEX]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tileset_toolbar_button_pressed), varray(TOOL_TILESET_INC_TEXTURE_INDEX));
+	tileset_toolbar_container->add_child(tileset_toolbar_buttons[TOOL_TILESET_INC_TEXTURE_INDEX]);
+	tileset_toolbar_buttons[TOOL_TILESET_INC_TEXTURE_INDEX]->set_tooltip(TTR("Increases texture index."));
 
 	Control *toolbar_separator = memnew(Control);
 	toolbar_separator->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -656,6 +670,18 @@ void TileSetEditor::_on_tileset_toolbar_button_pressed(int p_index) {
 				err_dialog->set_text(TTR("You haven't selected a texture to remove."));
 				err_dialog->popup_centered(Size2(300, 60));
 			}
+		} break;
+		case TOOL_TILESET_DEC_TEXTURE_INDEX: {
+			undo_redo->create_action(TTR("Decrement Texture Index"));
+			undo_redo->add_do_method(this, "decrement_texture_index", get_current_texture());
+			undo_redo->add_undo_method(this, "increment_texture_index", get_current_texture());
+			undo_redo->commit_action();
+		} break;
+		case TOOL_TILESET_INC_TEXTURE_INDEX: {
+			undo_redo->create_action(TTR("Increment Texture Index"));
+			undo_redo->add_do_method(this, "increment_texture_index", get_current_texture());
+			undo_redo->add_undo_method(this, "decrement_texture_index", get_current_texture());
+			undo_redo->commit_action();
 		} break;
 		case TOOL_TILESET_CREATE_SCENE: {
 			cd->set_text(TTR("Create from scene? This will overwrite all current tiles."));
@@ -3118,7 +3144,7 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 }
 
 void TileSetEditor::add_texture(Ref<Texture2D> p_texture) {
-	texture_list->add_item(p_texture->get_path().get_file());
+	texture_list->add_item(vformat("%s: %s", texture_list->get_item_count(), p_texture->get_path().get_file()));
 	texture_map.insert(p_texture->get_rid(), p_texture);
 	texture_list->set_item_metadata(texture_list->get_item_count() - 1, p_texture->get_rid());
 }
@@ -3132,6 +3158,47 @@ void TileSetEditor::remove_texture(Ref<Texture2D> p_texture) {
 	if (!get_current_texture().is_valid()) {
 		_on_texture_list_selected(-1);
 		workspace_overlay->update();
+	}
+}
+
+void TileSetEditor::change_texture_index(int p_from, int p_to) {
+	Ref<Texture> from_texture = texture_map[texture_list->get_item_metadata(p_from)];
+	Ref<Texture> next_texture = texture_map[texture_list->get_item_metadata(p_to)];
+	texture_list->set_item_text(p_from, vformat("%s: %s", p_from, next_texture->get_path().get_file()));
+	texture_list->set_item_text(p_to, vformat("%s: %s", p_to, from_texture->get_path().get_file()));
+	texture_list->set_item_metadata(p_from, next_texture->get_rid());
+	texture_list->set_item_metadata(p_to, from_texture->get_rid());
+	texture_list->select(p_to);
+
+	List<int> ids;
+	tileset->get_tile_list(&ids);
+
+	for (List<int>::Element *E = ids.front(); E; E = E->next()) {
+		RID current_rid = tileset->tile_get_texture(E->get())->get_rid();
+
+		if (current_rid == from_texture->get_rid()) {
+			tileset->tile_set_texture(E->get(), next_texture);
+		} else if (current_rid == next_texture->get_rid()) {
+			tileset->tile_set_texture(E->get(), from_texture);
+		}
+	}
+
+	update_texture_list();
+}
+
+void TileSetEditor::increment_texture_index(Ref<Texture> p_texture) {
+	int prev_index = texture_list->find_metadata(p_texture->get_rid());
+	int next_index = prev_index + 1;
+	if (next_index < texture_list->get_item_count()) {
+		change_texture_index(prev_index, next_index);
+	}
+}
+
+void TileSetEditor::decrement_texture_index(Ref<Texture> p_texture) {
+	int prev_index = texture_list->find_metadata(p_texture->get_rid());
+	int next_index = prev_index - 1;
+	if (next_index >= 0) {
+		change_texture_index(prev_index, next_index);
 	}
 }
 
