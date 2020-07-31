@@ -31,7 +31,7 @@
 #ifndef CONVEX_POLYGON_SHAPE_2D_H
 #define CONVEX_POLYGON_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class ConvexPolygonShape2D : public Shape2D {
 	GDCLASS(ConvexPolygonShape2D, Shape2D);

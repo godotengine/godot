@@ -31,8 +31,8 @@
 #include "mesh.h"
 
 #include "core/pair.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "surface_tool.h"
 
 #include <stdlib.h>

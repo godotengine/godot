@@ -38,13 +38,13 @@
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/ray_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_margin_shape_3d.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape_3d.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_margin_shape_3d.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
 	if (get_script_instance()) {

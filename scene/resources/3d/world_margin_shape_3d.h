@@ -31,7 +31,7 @@
 #ifndef WORLD_MARGIN_SHAPE_3D_H
 #define WORLD_MARGIN_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class WorldMarginShape3D : public Shape3D {
 	GDCLASS(WorldMarginShape3D, Shape3D);

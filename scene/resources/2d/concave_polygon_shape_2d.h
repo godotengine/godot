@@ -31,7 +31,7 @@
 #ifndef CONCAVE_POLYGON_SHAPE_2D_H
 #define CONCAVE_POLYGON_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class ConcavePolygonShape2D : public Shape2D {
 	GDCLASS(ConcavePolygonShape2D, Shape2D);

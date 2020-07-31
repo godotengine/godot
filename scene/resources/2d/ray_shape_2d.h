@@ -31,7 +31,7 @@
 #ifndef RAY_SHAPE_2D_H
 #define RAY_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class RayShape2D : public Shape2D {
 	GDCLASS(RayShape2D, Shape2D);

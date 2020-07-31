@@ -31,7 +31,7 @@
 #ifndef CIRCLE_SHAPE_2D_H
 #define CIRCLE_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class CircleShape2D : public Shape2D {
 	GDCLASS(CircleShape2D, Shape2D);

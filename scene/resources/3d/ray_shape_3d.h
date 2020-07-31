@@ -30,7 +30,7 @@
 
 #ifndef RAY_SHAPE_H
 #define RAY_SHAPE_H
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class RayShape3D : public Shape3D {
 	GDCLASS(RayShape3D, Shape3D);

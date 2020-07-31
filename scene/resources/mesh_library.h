@@ -35,7 +35,7 @@
 #include "core/resource.h"
 #include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
-#include "shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class MeshLibrary : public Resource {
 	GDCLASS(MeshLibrary, Resource);

@@ -31,7 +31,7 @@
 #ifndef CAPSULE_SHAPE_H
 #define CAPSULE_SHAPE_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class CapsuleShape3D : public Shape3D {
 	GDCLASS(CapsuleShape3D, Shape3D);

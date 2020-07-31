@@ -32,9 +32,9 @@
 #define RESOURCEIMPORTERSCENE_H
 
 #include "core/io/resource_importer.h"
+#include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/shape_3d.h"
 
 class Material;
 

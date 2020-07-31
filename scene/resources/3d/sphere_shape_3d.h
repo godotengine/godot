@@ -31,7 +31,7 @@
 #ifndef SPHERE_SHAPE_3D_H
 #define SPHERE_SHAPE_3D_H
 
-#include "scene/resources/shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class SphereShape3D : public Shape3D {
 	GDCLASS(SphereShape3D, Shape3D);

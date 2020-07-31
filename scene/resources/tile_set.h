@@ -35,8 +35,8 @@
 #include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 #include "scene/resources/texture.h"
 
 class TileSet : public Resource {

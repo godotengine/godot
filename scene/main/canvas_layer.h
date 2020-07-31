@@ -32,7 +32,7 @@
 #define CANVAS_LAYER_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_2d.h"
+#include "scene/resources/2d/world_2d.h"
 
 class Viewport;
 class CanvasLayer : public Node {

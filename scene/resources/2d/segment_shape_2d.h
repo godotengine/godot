@@ -31,7 +31,7 @@
 #ifndef SEGMENT_SHAPE_2D_H
 #define SEGMENT_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class SegmentShape2D : public Shape2D {
 	GDCLASS(SegmentShape2D, Shape2D);

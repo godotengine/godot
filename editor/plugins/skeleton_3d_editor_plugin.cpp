@@ -40,8 +40,8 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/physics_joint_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
 
 void BoneTransformEditor::create_editors() {
 	const Color section_color = get_theme_color("prop_subsection", "Editor");

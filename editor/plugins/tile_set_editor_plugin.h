@@ -33,8 +33,8 @@
 
 #include "editor/editor_node.h"
 #include "scene/2d/sprite_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
 
 #define WORKSPACE_MARGIN Vector2(10, 10)

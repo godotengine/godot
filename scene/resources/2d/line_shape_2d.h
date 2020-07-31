@@ -31,7 +31,7 @@
 #ifndef LINE_SHAPE_2D_H
 #define LINE_SHAPE_2D_H
 
-#include "scene/resources/shape_2d.h"
+#include "scene/resources/2d/shape_2d.h"
 
 class LineShape2D : public Shape2D {
 	GDCLASS(LineShape2D, Shape2D);

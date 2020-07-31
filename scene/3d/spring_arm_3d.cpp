@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "scene/3d/collision_object_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
 void SpringArm3D::_notification(int p_what) {

@@ -35,9 +35,9 @@
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/self_list.h"
+#include "scene/resources/2d/world_2d.h"
+#include "scene/resources/3d/world_3d.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
 
 #undef Window
 

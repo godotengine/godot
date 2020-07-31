@@ -32,13 +32,13 @@
 
 #include "collision_object_2d.h"
 #include "core/engine.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/line_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/line_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 	update();

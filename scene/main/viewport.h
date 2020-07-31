@@ -33,8 +33,8 @@
 
 #include "core/math/transform_2d.h"
 #include "scene/main/node.h"
+#include "scene/resources/2d/world_2d.h"
 #include "scene/resources/texture.h"
-#include "scene/resources/world_2d.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
 
