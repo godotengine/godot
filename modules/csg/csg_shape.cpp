@@ -646,7 +646,7 @@ CSGShape3D::~CSGShape3D() {
 //////////////////////////////////
 
 CSGBrush *CSGCombiner3D::_build_brush() {
-	return nullptr; //does not build anything
+	return memnew(CSGBrush); //does not build anything
 }
 
 CSGCombiner3D::CSGCombiner3D() {
