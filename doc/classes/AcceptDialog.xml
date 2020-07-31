@@ -76,6 +76,7 @@
 	<signals>
 		<signal name="cancelled">
 			<description>
+				Emitted when the dialog is closed or the button created with [method add_cancel] is pressed.
 			</description>
 		</signal>
 		<signal name="confirmed">

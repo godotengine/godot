@@ -6,20 +6,38 @@
 	<description>
 		Generic array which can contain several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.).
 		[b]Example:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var array = ["One", 2, 3, "Four"]
 		print(array[0]) # One.
 		print(array[2]) # 3.
 		print(array[-1]) # Four.
 		array[2] = "Three"
 		print(array[-2]) # Three.
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var array = new Godot.Collections.Array{"One", 2, 3, "Four"};
+		GD.Print(array[0]); // One.
+		GD.Print(array[2]); // 3.
+		GD.Print(array[array.Count - 1]); // Four.
+		array[2] = "Three";
+		GD.Print(array[array.Count - 2]); // Three.
+		[/csharp]
+		[/codeblocks]
 		Arrays can be concatenated using the [code]+[/code] operator:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var array1 = ["One", 2]
 		var array2 = [3, "Four"]
 		print(array1 + array2) # ["One", 2, 3, "Four"]
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// Array concatenation is not possible with C# arrays, but is with Godot.Collections.Array.
+		var array1 = new Godot.Collections.Array("One", 2);
+		var array2 = new Godot.Collections.Array(3, "Four");
+		GD.Print(array1 + array2); // Prints [One, 2, 3, Four]
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array which can be modified independently of the original array, use [method duplicate].
 	</description>
 	<tutorials>
@@ -228,18 +246,39 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the array contains the given value.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(["inside", 7].has("inside")) # True
 				print(["inside", 7].has("outside")) # False
 				print(["inside", 7].has(7)) # True
 				print(["inside", 7].has("7")) # False
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var arr = new Godot.Collections.Array{"inside", 7};
+				// has is renamed to Contains
+				GD.Print(arr.Contains("inside")); // True
+				GD.Print(arr.Contains("outside")); // False
+				GD.Print(arr.Contains(7)); // True
+				GD.Print(arr.Contains("7")); // False
+				[/csharp]
+				[/codeblocks]
+
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# Will evaluate to `true`.
 				if 2 in [2, 4, 6, 8]:
-				    pass
-				[/codeblock]
+				    print("Containes!")
+				[/gdscript]
+				[csharp]
+				// As there is no "in" keyword in C#, you have to use Contains
+				var array = new Godot.Collections.Array{2, 4, 6, 8};
+				if (array.Contains(2))
+				{
+				    GD.Print("Containes!");
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="hash">
@@ -377,11 +416,16 @@
 			<description>
 				Sorts the array.
 				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var strings = ["string1", "string2", "string10", "string11"]
 				strings.sort()
 				print(strings) # Prints [string1, string10, string11, string2]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// There is no sort support for Godot.Collections.Array
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -394,7 +438,8 @@
 			<description>
 				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				class MyCustomSorter:
 				    static func sort_ascending(a, b):
 				        if a[0] &lt; b[0]:
@@ -404,7 +449,11 @@
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
 				my_items.sort_custom(MyCustomSorter, "sort_ascending")
 				print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// There is no custom sort support for Godot.Collections.Array
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
