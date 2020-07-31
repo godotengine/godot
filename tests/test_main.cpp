@@ -70,7 +70,8 @@ int test_main(int argc, char *argv[]) {
 	char **args = new char *[valid_arguments.size()];
 	for (int x = 0; x < valid_arguments.size(); x++) {
 		// Operation to convert Godot string to non wchar string.
-		const char *str = valid_arguments[x].utf8().ptr();
+		CharString cs = valid_arguments[x].utf8();
+		const char *str = cs.get_data();
 		// Allocate the string copy.
 		args[x] = new char[strlen(str) + 1];
 		// Copy this into memory.
