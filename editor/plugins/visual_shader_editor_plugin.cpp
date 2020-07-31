@@ -874,6 +874,8 @@ void VisualShaderEditor::_update_graph() {
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 			Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
+			Color number_color = EDITOR_GET("text_editor/highlighting/number_color");
+			Color members_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
 
 			expression_box->set_syntax_highlighter(expression_syntax_highlighter);
 			expression_box->add_theme_color_override("background_color", background_color);
@@ -884,8 +886,10 @@ void VisualShaderEditor::_update_graph() {
 
 			expression_box->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
 			expression_box->add_theme_color_override("font_color", text_color);
+			expression_syntax_highlighter->set_number_color(number_color);
 			expression_syntax_highlighter->set_symbol_color(symbol_color);
 			expression_syntax_highlighter->set_function_color(function_color);
+			expression_syntax_highlighter->set_member_variable_color(members_color);
 			expression_syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 			expression_syntax_highlighter->add_color_region("//", "", comment_color, true);
 
@@ -1743,6 +1747,8 @@ void VisualShaderEditor::_notification(int p_what) {
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 			Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
+			Color number_color = EDITOR_GET("text_editor/highlighting/number_color");
+			Color members_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
 
 			preview_text->add_theme_color_override("background_color", background_color);
 
@@ -1752,8 +1758,10 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			preview_text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
 			preview_text->add_theme_color_override("font_color", text_color);
+			syntax_highlighter->set_number_color(number_color);
 			syntax_highlighter->set_symbol_color(symbol_color);
 			syntax_highlighter->set_function_color(function_color);
+			syntax_highlighter->set_member_variable_color(members_color);
 			syntax_highlighter->clear_color_regions();
 			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 			syntax_highlighter->add_color_region("//", "", comment_color, true);
