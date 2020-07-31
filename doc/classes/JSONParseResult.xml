@@ -15,21 +15,21 @@
 			The error type if the JSON source was not successfully parsed. See the [enum Error] constants.
 		</member>
 		<member name="error_line" type="int" setter="set_error_line" getter="get_error_line" default="-1">
-			The line number where the error occurred if JSON source was not successfully parsed.
+			The line number where the error occurred if the JSON source was not successfully parsed.
 		</member>
 		<member name="error_string" type="String" setter="set_error_string" getter="get_error_string" default="&quot;&quot;">
-			The error message if JSON source was not successfully parsed. See the [enum Error] constants.
+			The error message if the JSON source was not successfully parsed. See the [enum Error] constants.
 		</member>
 		<member name="result" type="Variant" setter="set_result" getter="get_result">
-			A [Variant] containing the parsed JSON. Use [method @GDScript.typeof] or the [code]is[/code] keyword to check if it is what you expect. For example, if the JSON source starts with curly braces ([code]{}[/code]), a [Dictionary] will be returned. If the JSON source starts with braces ([code][][/code]), an [Array] will be returned.
-			[b]Note:[/b] The JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert all numerical values to float types.
+			A [Variant] containing the parsed JSON. Use [method @GDScript.typeof] or the [code]is[/code] keyword to check if it is what you expect. For example, if the JSON source starts with curly braces ([code]{}[/code]), a [Dictionary] will be returned. If the JSON source starts with brackets ([code][][/code]), an [Array] will be returned.
+			[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, parsing a JSON text will convert all numerical values to [float] types.
 			[b]Note:[/b] JSON objects do not preserve key order like Godot dictionaries, thus, you should not rely on keys being in a certain order if a dictionary is constructed from JSON. In contrast, JSON arrays retain the order of their elements:
 			[codeblock]
 			var p = JSON.parse('["hello", "world", "!"]')
 			if typeof(p.result) == TYPE_ARRAY:
 			    print(p.result[0]) # Prints "hello"
 			else:
-			    print("unexpected results")
+			    push_error("Unexpected results.")
 			[/codeblock]
 		</member>
 	</members>

@@ -15,7 +15,7 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				Parses a JSON encoded string and returns a [JSONParseResult] containing the result.
+				Parses a JSON-encoded string and returns a [JSONParseResult] containing the result.
 			</description>
 		</method>
 		<method name="print">
@@ -29,6 +29,7 @@
 			</argument>
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
+				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
 			</description>
 		</method>
 	</methods>
