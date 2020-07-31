@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   GODOT_BASE_BRANCH: 3.2
   SCONS_CACHE_LIMIT: 4096
-  EM_VERSION: latest
+  EM_VERSION: 1.39.20
   EM_CACHE_FOLDER: 'emsdk-cache'
 
 jobs:
