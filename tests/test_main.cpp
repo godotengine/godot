@@ -84,6 +84,9 @@ int test_main(int argc, char *argv[]) {
 	test_context.setOption("abort-after", 5);
 	test_context.setOption("no-breaks", true);
 
+	for (int x = 0; x < valid_arguments.size(); x++) {
+		delete[] args[x];
+	}
 	delete[] args;
 
 	return test_context.run();
