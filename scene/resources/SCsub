@@ -2,6 +2,19 @@
 
 Import("env")
 
+if not env["disable_3d"]:
+    env.add_source_files(env.scene_sources, "3d/*.cpp")
+else:
+    sources_3d = [
+        "3d/concave_polygon_shape_3d.cpp",  # Needed by `Mesh`, `Shape3D`.
+        "3d/convex_polygon_shape_3d.cpp",  # Needed by `Mesh`, `Shape3D`.
+        "3d/shape_3d.cpp",  # Needed by `Mesh`.
+        "3d/world_3d.cpp",  # Needed by `SceneTree`, `Viewport`.
+    ]
+    env.add_source_files(env.scene_sources, sources_3d)
+
+env.add_source_files(env.scene_sources, "2d/*.cpp")
+
 env.add_source_files(env.scene_sources, "*.cpp")
 
 SConscript("default_theme/SCsub")
