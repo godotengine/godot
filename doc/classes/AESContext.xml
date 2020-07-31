@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		This class provides access to AES encryption/decryption of raw data. Both AES-ECB and AES-CBC mode are supported.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		extends Node
 
 		var aes = AESContext.new()
@@ -35,7 +36,45 @@
 		    aes.finish()
 		    # Check CBC
 		    assert(decrypted == data.to_utf8())
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+		using System.Diagnostics;
+
+		public class Example : Node
+		{
+		    public AESContext Aes = new AESContext();
+		    public override void _Ready()
+		    {
+		        string key = "My secret key!!!"; // Key must be either 16 or 32 bytes.
+		        string data = "My secret text!!"; // Data size must be multiple of 16 bytes, apply padding if needed.
+		        // Encrypt ECB
+		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8());
+		        byte[] encrypted = Aes.Update(data.ToUTF8());
+		        Aes.Finish();
+		        // Decrypt ECB
+		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8());
+		        byte[] decrypted = Aes.Update(encrypted);
+		        Aes.Finish();
+		        // Check ECB
+		        Debug.Assert(decrypted == data.ToUTF8());
+
+		        string iv = "My secret iv!!!!"; // IV must be of exactly 16 bytes.
+		        // Encrypt CBC
+		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8(), iv.ToUTF8());
+		        encrypted = Aes.Update(data.ToUTF8());
+		        Aes.Finish();
+		        // Decrypt CBC
+		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8(), iv.ToUTF8());
+		        decrypted = Aes.Update(encrypted);
+		        Aes.Finish();
+		        // Check CBC
+		        Debug.Assert(decrypted == data.ToUTF8());
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>

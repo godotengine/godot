@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		An Animation resource contains data used to animate everything in the engine. Animations are divided into tracks, and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# This creates an animation that makes the node "Enemy" move to the right by
 		# 100 pixels in 0.5 seconds.
 		var animation = Animation.new()
@@ -13,7 +14,17 @@
 		animation.track_set_path(track_index, "Enemy:position:x")
 		animation.track_insert_key(track_index, 0.0, 0)
 		animation.track_insert_key(track_index, 0.5, 100)
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// This creates an animation that makes the node "Enemy" move to the right by
+		// 100 pixels in 0.5 seconds.
+		var animation = new Animation();
+		int trackIndex = animation.AddTrack(Animation.TrackType.Value);
+		animation.TrackSetPath(trackIndex, "Enemy:position:x");
+		animation.TrackInsertKey(trackIndex, 0.0f, 0);
+		animation.TrackInsertKey(trackIndex, 0.5f, 100);
+		[/csharp]
+		[/codeblocks]
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
