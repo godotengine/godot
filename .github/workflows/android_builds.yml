@@ -10,7 +10,7 @@ jobs:
   android-template:
     runs-on: "ubuntu-20.04"
 
-    name: Template (target=release, tools=no)
+    name: Template (target=release, tools=no, disable_3d=yes)
 
     steps:
       - uses: actions/checkout@v2
@@ -70,4 +70,4 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=android target=release tools=no
+          scons -j2 verbose=yes warnings=all werror=yes platform=android target=release tools=no disable_3d=yes
