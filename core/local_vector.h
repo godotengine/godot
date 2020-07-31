@@ -73,10 +73,10 @@ public:
 
 	void remove(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		count--;
 		for (U i = p_index; i < count; i++) {
 			data[i] = data[i + 1];
 		}
-		count--;
 		if (!__has_trivial_destructor(T) && !force_trivial) {
 			data[count].~T();
 		}
