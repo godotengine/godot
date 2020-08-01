@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		An expression can be made of any arithmetic operation, built-in math function call, method call of a passed instance, or built-in type construction call.
-		An example expression text using the built-in math functions could be [code]sqrt(pow(3,2) + pow(4,2))[/code].
+		An example expression text using the built-in math functions could be [code]sqrt(pow(3, 2) + pow(4, 2))[/code].
 		In the following example we use a [LineEdit] node to write our expression and show the result.
 		[codeblock]
 		onready var expression = Expression.new()
