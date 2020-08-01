@@ -71,6 +71,10 @@ static StringName get_real_class_name(const StringName &p_source) {
 	return p_source;
 }
 
+void GDScriptAnalyzer::cleanup() {
+	underscore_map.clear();
+}
+
 static GDScriptParser::DataType make_callable_type(const MethodInfo &p_info) {
 	GDScriptParser::DataType type;
 	type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;

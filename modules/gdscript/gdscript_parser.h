@@ -1335,6 +1335,7 @@ public:
 		void print_tree(const GDScriptParser &p_parser);
 	};
 #endif // DEBUG_ENABLED
+	static void cleanup();
 };
 
 #endif // GDSCRIPT_PARSER_H
