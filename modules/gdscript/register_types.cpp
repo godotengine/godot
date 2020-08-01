@@ -35,6 +35,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "gdscript.h"
+#include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
 
@@ -148,4 +149,7 @@ void unregister_gdscript_types() {
 	EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 	gdscript_translation_parser_plugin.unref();
 #endif // TOOLS_ENABLED
+
+	GDScriptParser::cleanup();
+	GDScriptAnalyzer::cleanup();
 }

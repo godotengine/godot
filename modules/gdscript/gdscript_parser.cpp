@@ -94,6 +94,10 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
+void GDScriptParser::cleanup() {
+	builtin_types.clear();
+}
+
 GDScriptFunctions::Function GDScriptParser::get_builtin_function(const StringName &p_name) {
 	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
 		if (p_name == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i))) {
