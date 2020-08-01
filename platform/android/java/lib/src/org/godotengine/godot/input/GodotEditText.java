@@ -32,12 +32,13 @@ package org.godotengine.godot.input;
 
 import org.godotengine.godot.*;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ResultReceiver;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.AttributeSet;
@@ -47,6 +48,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -67,8 +69,8 @@ public class GodotEditText extends EditText {
 	// Fields
 	// ===========================================================
 	private GodotView mView;
-	private View mKeyboardView;
-	private PopupWindow mKeyboardWindow;
+	private KeyboardPopup mKeyboardPopup;
+	private boolean mHideKeyboardRequested = false;
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
@@ -90,10 +92,114 @@ public class GodotEditText extends EditText {
 		}
 	}
 
+	private class KeyboardPopup extends PopupWindow implements OnGlobalLayoutListener {
+		private GodotEditText mEditText;
+		private ViewGroup mLayout;
+		private boolean mShowingKeyboard = false;
+		private boolean mIsPortrait = false;
+		private int mKeyboardHeight = 0;
+
+		public KeyboardPopup(final Godot context, final GodotEditText editText) {
+			super(context);
+
+			mEditText = editText;
+
+			setWidth(0);
+			setHeight(LayoutParams.MATCH_PARENT);
+
+			setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+			setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+			setFocusable(true); // for the text edit to work
+			setTouchable(false); // inputs need to go through
+		}
+
+		public void show(final View parentView) {
+			// Create a popup window with an invisible layout for the virtual keyboard,
+			// so the view can be resized to get the vk height without resizing the main godot view.
+			final FrameLayout keyboardLayout = new FrameLayout(getContext());
+			keyboardLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+			keyboardLayout.setVisibility(View.INVISIBLE);
+			mLayout = keyboardLayout;
+
+			setContentView(mLayout);
+
+			mLayout.addView(mEditText);
+			getContentView().getViewTreeObserver().addOnGlobalLayoutListener(this);
+			showAtLocation(parentView, Gravity.NO_GRAVITY, 0, 0);
+		}
+
+		public void hide() {
+			mLayout.removeView(mEditText);
+			getContentView().getViewTreeObserver().removeOnGlobalLayoutListener(this);
+			dismiss();
+			mEditText.onKeyboardPopupClosed();
+
+			GodotLib.setVirtualKeyboardHeight(0);
+		}
+
+		@Override
+		public void onGlobalLayout() {
+			Godot godotActivity = (Godot)getContext();
+
+			// Use size first to calculate the exact height of the keyboard alone.
+			Point screenSize = new Point();
+			godotActivity.getWindowManager().getDefaultDisplay().getSize(screenSize);
+
+			View keyboardView = getContentView();
+			Rect gameSize = new Rect();
+			keyboardView.getWindowVisibleDisplayFrame(gameSize);
+
+			int keyboardHeight = screenSize.y - gameSize.bottom;
+
+			final int previousHeight = mKeyboardHeight;
+			mKeyboardHeight = keyboardHeight;
+
+			// Adjust final height from real size to take other decorations into account
+			// like the navigation bar in portrait mode.
+			if (godotActivity.isImmersiveUsed()) {
+				Point realScreenSize = new Point();
+				godotActivity.getWindowManager().getDefaultDisplay().getRealSize(realScreenSize);
+				keyboardHeight = realScreenSize.y - gameSize.bottom;
+			}
+
+			GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+
+			// Detect orientation changes to avoid closing the keyboard.
+			boolean wasPortrait = mIsPortrait;
+			//mIsPortrait = gameSize.right < gameSize.bottom;
+			mIsPortrait = screenSize.x < screenSize.y;
+			if (mIsPortrait != wasPortrait) {
+				mShowingKeyboard = false;
+				mKeyboardHeight = 0;
+			}
+
+			if (mShowingKeyboard) {
+				// Wait for the keyboard to be fully initialized
+				// to avoid false positive detection during transition from closing state to re-open.
+				if ((mKeyboardHeight == 0) && (previousHeight > 0)) {
+					// Keyboard has been hidden by user, close popup.
+					hide();
+				}
+			} else {
+				// Popup has started, initialize keyboard
+				final InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.showSoftInput(mEditText, 0, new ResultReceiver(null) {
+					@Override
+					protected void onReceiveResult(int resultCode, Bundle resultData) {
+						if (resultCode == InputMethodManager.RESULT_SHOWN || resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
+							// Keyboard showing success, can be hidden by user.
+							mShowingKeyboard = true;
+						}
+					}
+				});
+			}
+		}
+	}
+
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public GodotEditText(final Context context, final GodotView view) {
+	public GodotEditText(final Godot context, final GodotView view) {
 		super(context);
 
 		setPadding(0, 0, 0, 0);
@@ -104,41 +210,24 @@ public class GodotEditText extends EditText {
 		mInputWrapper = new GodotTextInputWrapper(mView, this);
 		setOnEditorActionListener(mInputWrapper);
 		view.requestFocus();
-
-		// Create a popup window with an invisible layout for the virtual keyboard,
-		// so the view can be resized to get the vk height without resizing the main godot view.
-		final FrameLayout keyboardLayout = new FrameLayout(context);
-		keyboardLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-		keyboardLayout.setVisibility(View.INVISIBLE);
-		keyboardLayout.addView(this);
-		mKeyboardView = keyboardLayout;
-
-		mKeyboardWindow = new PopupWindow(keyboardLayout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		mKeyboardWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-		mKeyboardWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
-		mKeyboardWindow.setFocusable(true); // for the text edit to work
-		mKeyboardWindow.setTouchable(false); // inputs need to go through
-
-		keyboardLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-			@Override
-			public void onGlobalLayout() {
-				Point fullSize = new Point();
-				((Activity)mView.getContext()).getWindowManager().getDefaultDisplay().getSize(fullSize);
-				Rect gameSize = new Rect();
-				mKeyboardWindow.getContentView().getWindowVisibleDisplayFrame(gameSize);
-
-				final int keyboardHeight = fullSize.y - gameSize.bottom;
-				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
-			}
-		});
 	}
 
-	public void onInitView() {
-		mKeyboardWindow.showAtLocation(mView, Gravity.NO_GRAVITY, 0, 0);
+	public void showKeyboardPopup() {
+		mKeyboardPopup = new KeyboardPopup((Godot)getContext(), this);
+		mKeyboardPopup.show(mView);
 	}
 
-	public void onDestroyView() {
-		mKeyboardWindow.dismiss();
+	public void hideKeyboardPopup() {
+		if (mKeyboardPopup != null) {
+			mKeyboardPopup.hide();
+		}
+	}
+
+	public void onKeyboardPopupClosed() {
+		mKeyboardPopup = null;
+		mView.requestFocus();
+
+		mHideKeyboardRequested = false;
 	}
 
 	public boolean isMultiline() {
@@ -148,30 +237,36 @@ public class GodotEditText extends EditText {
 	private void handleMessage(final Message msg) {
 		switch (msg.what) {
 			case HANDLER_OPEN_IME_KEYBOARD: {
-				GodotEditText edit = (GodotEditText)msg.obj;
-				String text = edit.mOriginText;
-				if (edit.requestFocus()) {
-					edit.removeTextChangedListener(edit.mInputWrapper);
-					setMaxInputLength(edit);
-					edit.setText("");
-					edit.append(text);
-					if (msg.arg2 != -1) {
-						edit.setSelection(msg.arg1, msg.arg2);
-						edit.mInputWrapper.setSelection(true);
-					} else {
-						edit.mInputWrapper.setSelection(false);
+				if (!mHideKeyboardRequested) {
+					GodotEditText edit = (GodotEditText)msg.obj;
+					String text = edit.mOriginText;
+
+					// Start keyboard popup if not already showing.
+					if (mKeyboardPopup == null) {
+						showKeyboardPopup();
 					}
 
-					int inputType = InputType.TYPE_CLASS_TEXT;
-					if (edit.isMultiline()) {
-						inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
-					}
-					edit.setInputType(inputType);
+					if (edit.requestFocus()) {
+						edit.removeTextChangedListener(edit.mInputWrapper);
+						setMaxInputLength(edit);
+						edit.setText("");
+						edit.append(text);
+						if (msg.arg2 != -1) {
+							edit.setSelection(msg.arg1, msg.arg2);
+							edit.mInputWrapper.setSelection(true);
+						} else {
+							edit.mInputWrapper.setSelection(false);
+						}
 
-					edit.mInputWrapper.setOriginText(text);
-					edit.addTextChangedListener(edit.mInputWrapper);
-					final InputMethodManager imm = (InputMethodManager)mKeyboardView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.showSoftInput(edit, 0);
+						int inputType = InputType.TYPE_CLASS_TEXT;
+						if (edit.isMultiline()) {
+							inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+						}
+						edit.setInputType(inputType);
+
+						edit.mInputWrapper.setOriginText(text);
+						edit.addTextChangedListener(edit.mInputWrapper);
+					}
 				}
 			} break;
 
@@ -179,9 +274,13 @@ public class GodotEditText extends EditText {
 				GodotEditText edit = (GodotEditText)msg.obj;
 
 				edit.removeTextChangedListener(mInputWrapper);
-				final InputMethodManager imm = (InputMethodManager)mKeyboardView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+
 				edit.mView.requestFocus();
+
+				// Force close keyboard popup right away.
+				hideKeyboardPopup();
+
+				mHideKeyboardRequested = false;
 			} break;
 		}
 	}
@@ -231,13 +330,21 @@ public class GodotEditText extends EditText {
 		msg.arg1 = p_cursor_start;
 		msg.arg2 = p_cursor_end;
 		sHandler.sendMessage(msg);
+
+		mHideKeyboardRequested = false;
 	}
 
 	public void hideKeyboard() {
-		final Message msg = new Message();
-		msg.what = HANDLER_CLOSE_IME_KEYBOARD;
-		msg.obj = this;
-		sHandler.sendMessage(msg);
+		mHideKeyboardRequested = true;
+	}
+
+	public void onGodotMainLoopStep() {
+		if (mHideKeyboardRequested) {
+			final Message msg = new Message();
+			msg.what = HANDLER_CLOSE_IME_KEYBOARD;
+			msg.obj = this;
+			sHandler.sendMessage(msg);
+		}
 	}
 
 	// ===========================================================

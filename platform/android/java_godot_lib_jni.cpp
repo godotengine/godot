@@ -261,6 +261,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		++step;
 	}
 
+	godot_java->on_godot_main_loop_step(env);
+
 	os_android->process_accelerometer(accelerometer);
 	os_android->process_gravity(gravity);
 	os_android->process_magnetometer(magnetometer);

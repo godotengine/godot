@@ -132,6 +132,10 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	private boolean activityResumed;
 	private int mState;
 
+	public boolean isImmersiveUsed() {
+		return use_immersive;
+	}
+
 	// Used to dispatch events to the main thread.
 	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
@@ -243,9 +247,8 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	private boolean use_apk_expansion;
 
 	public GodotView mView;
-	private boolean godot_initialized = false;
-
 	private GodotEditText mEditText;
+	private boolean godot_initialized = false;
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
@@ -302,6 +305,14 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGodotMainLoopStarted();
 		}
+	}
+
+	/**
+	 * Invoked on the render thread on each step of the Godot main loop.
+	 */
+	@CallSuper
+	protected void onGodotMainLoopStep() {
+		mEditText.onGodotMainLoopStep();
 	}
 
 	/**
@@ -694,19 +705,10 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	@Override
 	protected void onStart() {
 		super.onStart();
-
-		mView.post(new Runnable() {
-			@Override
-			public void run() {
-				mEditText.onInitView();
-			}
-		});
 	}
 
 	@Override
 	protected void onDestroy() {
-		mEditText.onDestroyView();
-
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
 		}
