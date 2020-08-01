@@ -32,10 +32,14 @@
 
 #include "emws_server.h"
 #include "core/os/os.h"
+#include "core/dictionary.h"
 
 Error EMWSServer::listen(int p_port, Vector<String> p_protocols, bool gd_mp_api) {
 
 	return FAILED;
+}
+
+void EMWSServer::set_headers(Dictionary headers) {
 }
 
 bool EMWSServer::is_listening() const {

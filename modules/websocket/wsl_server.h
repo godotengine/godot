@@ -39,6 +39,7 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
+#include "core/dictionary.h"
 
 #define WSL_SERVER_TIMEOUT 1000
 
@@ -65,6 +66,7 @@ private:
 		bool has_request;
 		CharString response;
 		int response_sent;
+		Dictionary headers;
 
 		PendingPeer();
 
@@ -79,9 +81,11 @@ private:
 	List<Ref<PendingPeer> > _pending;
 	Ref<TCP_Server> _server;
 	Vector<String> _protocols;
+	Dictionary _headers;
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
+	void set_headers(Dictionary headers);
 	Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;

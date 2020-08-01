@@ -33,6 +33,9 @@
 #include "wsl_server.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/dictionary.h"
+#include "core/ordered_hash_map.h"
+#include "core/variant.h"
 
 WSLServer::PendingPeer::PendingPeer() {
 	use_ssl = false;
@@ -134,6 +137,16 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 				s += "Sec-WebSocket-Accept: " + WSLPeer::compute_key_response(key) + "\r\n";
 				if (protocol != "")
 					s += "Sec-WebSocket-Protocol: " + protocol + "\r\n";
+
+				Array keys = headers.keys();
+
+				for (int i = 0; i < keys.size(); i++) {
+					const String &key = keys[i];
+					const String &value = headers[key];
+
+					s += key + ": " + value + "\r\n";
+				}
+
 				s += "\r\n";
 				response = s.utf8();
 				has_request = true;
@@ -153,6 +166,11 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 	if (response_sent < response.size() - 1)
 		return ERR_BUSY;
 	return OK;
+}
+
+
+void WSLServer::set_headers(Dictionary headers) {
+	_headers = headers;
 }
 
 Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
@@ -237,6 +255,7 @@ void WSLServer::poll() {
 		}
 		peer->tcp = conn;
 		peer->time = OS::get_singleton()->get_ticks_msec();
+		peer->headers = _headers;
 		_pending.push_back(peer);
 	}
 }

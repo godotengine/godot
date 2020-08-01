@@ -33,6 +33,7 @@
 
 #include "core/crypto/crypto.h"
 #include "core/reference.h"
+#include "core/dictionary.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 
@@ -52,6 +53,7 @@ protected:
 
 public:
 	virtual void poll() = 0;
+	virtual void set_headers(Dictionary headers) = 0;
 	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
 	virtual void stop() = 0;
 	virtual bool is_listening() const = 0;
