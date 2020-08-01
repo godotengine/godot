@@ -38,20 +38,33 @@
 TEST_SUITE("Validate tests") {
 	TEST_CASE("Always pass") {
 		CHECK(true);
+		REQUIRE(true);
+	}
+	TEST_CASE("Checks with a message") {
+		CHECK_MSG(true, "Should print a message after successful check.");
+		REQUIRE_MSG(true, "Should print a message after successful require check.");
+	}
+	TEST_CASE("Test fail condition") {
+		bool something_bad_happened = false;
+		TEST_FAIL_COND(something_bad_happened); // If this is false, then OK.
+	}
+	TEST_CASE("Test fail condition with rationale") {
+		bool something_bad_happened = false;
+		TEST_FAIL_COND_MSG(something_bad_happened, "If this is false, then OK.");
 	}
 	TEST_CASE_PENDING("Pending tests are skipped") {
 		if (!doctest::getContextOptions()->no_skip) { // Normal run.
 			FAIL("This should be skipped if `--no-skip` is NOT set (missing `doctest::skip()` decorator?)");
 		} else {
-			CHECK_MESSAGE(true, "Pending test is run with `--no-skip`");
+			CHECK_MSG(true, "Pending test is run with `--no-skip`");
 		}
 	}
 	TEST_CASE("Muting Godot error messages") {
 		ERR_PRINT_OFF;
-		CHECK_MESSAGE(!_print_error_enabled, "Error printing should be disabled.");
+		CHECK_MSG(!_print_error_enabled, "Error printing should be disabled.");
 		ERR_PRINT("Still waiting for Godot!"); // This should never get printed!
 		ERR_PRINT_ON;
-		CHECK_MESSAGE(_print_error_enabled, "Error printing should be re-enabled.");
+		CHECK_MSG(_print_error_enabled, "Error printing should be re-enabled.");
 	}
 }
 
