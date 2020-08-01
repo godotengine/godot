@@ -898,6 +898,7 @@ void Physics2DServerSW::body_apply_torque_impulse(RID p_body, real_t p_torque) {
 	_update_shapes();
 
 	body->apply_torque_impulse(p_torque);
+	body->wakeup();
 }
 
 void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2 &p_pos, const Vector2 &p_impulse) {
