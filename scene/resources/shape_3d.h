@@ -56,7 +56,7 @@ public:
 	virtual RID get_rid() const override { return shape; }
 
 	Ref<ArrayMesh> get_debug_mesh();
-	virtual Vector<Vector3> get_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
+	virtual Vector<Vector3> get_debug_mesh_lines() const = 0; // { return Vector<Vector3>(); }
 	/// Returns the radius of a sphere that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
 

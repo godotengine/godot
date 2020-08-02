@@ -31,7 +31,7 @@
 #include "height_map_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() {
+Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 
 	if ((map_width != 0) && (map_depth != 0)) {

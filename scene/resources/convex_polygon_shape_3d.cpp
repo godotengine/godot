@@ -32,7 +32,7 @@
 #include "core/math/quick_hull.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() {
+Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points = get_points();
 
 	if (points.size() > 3) {

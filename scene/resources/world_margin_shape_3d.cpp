@@ -32,7 +32,7 @@
 
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
+Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() const {
 	Plane p = get_plane();
 	Vector<Vector3> points;
 

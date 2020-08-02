@@ -48,7 +48,7 @@ public:
 	void set_slips_on_slope(bool p_active);
 	bool get_slips_on_slope() const;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() override;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
 	RayShape3D();
