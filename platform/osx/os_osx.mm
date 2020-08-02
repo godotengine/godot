@@ -145,7 +145,9 @@ void OS_OSX::finalize() {
 
 	delete_main_loop();
 
-	memdelete(joypad_osx);
+	if (joypad_osx) {
+		memdelete(joypad_osx);
+	}
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {

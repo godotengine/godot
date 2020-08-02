@@ -54,8 +54,6 @@ TEST_SUITE("Validate tests") {
 		CHECK_MESSAGE(_print_error_enabled, "Error printing should be re-enabled.");
 	}
 	TEST_CASE("Stringify Variant types") {
-		ClassDB::init(); // For objects.
-
 		Variant var;
 		INFO(var);
 
@@ -185,8 +183,6 @@ TEST_SUITE("Validate tests") {
 				<< var << " " << vec2 << " " << rect2 << " " << color);
 
 		CHECK(true); // So all above prints.
-
-		ClassDB::cleanup();
 	}
 }
 
