@@ -2,6 +2,11 @@
 [vertex]
 
 layout(location = 0) in highp vec2 vertex;
+
+#ifdef USE_LIGHT_ANGLE
+layout(location = 2) in highp float light_angle;
+#endif
+
 /* clang-format on */
 layout(location = 3) in vec4 color_attrib;
 
@@ -248,12 +253,32 @@ VERTEX_SHADER_CODE
 	pos = outvec.xy;
 #endif
 
+#ifdef USE_LIGHT_ANGLE
+	// we add a fixed offset because we are using the sign later,
+	// and don't want floating point error around 0.0
+	float la = abs(light_angle) - 1.0;
+
+	// vector light angle
+	vec4 vla;
+	vla.xy = vec2(cos(la), sin(la));
+	vla.zw = vec2(-vla.y, vla.x);
+	vla.zw *= sign(light_angle);
+
+	// apply the transform matrix.
+	// The rotate will be encoded in the transform matrix for single rects,
+	// and just the flips in the light angle.
+	// For batching we will encode the rotation and the flips
+	// in the light angle, and can use the same shader.
+	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(vla.xy, 0.0, 0.0))).xy);
+	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(vla.zw, 0.0, 0.0))).xy);
+#else
 	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(1.0, 0.0, 0.0, 0.0))).xy);
 	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(0.0, 1.0, 0.0, 0.0))).xy);
 #ifdef USE_TEXTURE_RECT
 	local_rot.xy *= sign(src_rect.z);
 	local_rot.zw *= sign(src_rect.w);
 #endif
+#endif // not using light angle
 
 #endif
 }
