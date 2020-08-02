@@ -282,6 +282,16 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
 }
 
+void OS_Android::set_low_processor_usage_mode(bool p_enabled) {
+	if (p_enabled) {
+		WARN_PRINT("Low-processor usage mode is not supported on Android and iOS.");
+	}
+}
+
+bool OS_Android::is_in_low_processor_usage_mode() const {
+	return false;
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		return true;

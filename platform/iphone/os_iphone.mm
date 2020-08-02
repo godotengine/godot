@@ -326,6 +326,16 @@ void OSIPhone::vibrate_handheld(int p_duration_ms) {
 	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
+void OSIPhone::set_low_processor_usage_mode(bool p_enabled) {
+	if (p_enabled) {
+		WARN_PRINT("Low-processor usage mode is not supported on Android and iOS.");
+	}
+}
+
+bool OSIPhone::is_in_low_processor_usage_mode() const {
+	return false;
+}
+
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "mobile";
 }
