@@ -1679,7 +1679,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err == ERR_FILE_CANT_OPEN || err == ERR_FILE_NOT_FOUND) {
 				config.instance(); // new config
 			} else if (err != OK) {
-				show_warning(TTR("Error trying to save layout!"));
+				show_warning(TTR("An error occurred while trying to save the editor layout.\nMake sure the editor's user data path is writable."));
 				return;
 			}
 
@@ -1691,7 +1691,7 @@ void EditorNode::_dialog_action(String p_file) {
 			_update_layouts_menu();
 
 			if (p_file == "Default") {
-				show_warning(TTR("Default editor layout overridden."));
+				show_warning(TTR("Default editor layout overridden.\nTo restore the Default layout to its base settings, use the Delete Layout option and delete the Default layout."));
 			}
 
 		} break;
@@ -1722,7 +1722,7 @@ void EditorNode::_dialog_action(String p_file) {
 			_update_layouts_menu();
 
 			if (p_file == "Default") {
-				show_warning(TTR("Restored default layout to base settings."));
+				show_warning(TTR("Restored the Default layout to its base settings."));
 			}
 
 		} break;
