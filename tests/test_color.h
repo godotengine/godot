@@ -39,9 +39,7 @@ namespace TestColor {
 
 TEST_CASE("[Color] Constructor methods") {
 	const Color blue_rgba = Color(0.25098, 0.376471, 1, 0.501961);
-	// HTML currently uses ARGB notation, which is contrary to the CSS standard.
-	// This may be changed to RGBA in 4.0.
-	const Color blue_html = Color::html("#804060ff");
+	const Color blue_html = Color::html("#4060ff80");
 	const Color blue_hex = Color::hex(0x4060ff80);
 	const Color blue_hex64 = Color::hex64(0x4040'6060'ffff'8080);
 
@@ -118,10 +116,10 @@ TEST_CASE("[Color] Conversion methods") {
 	const Color cyan_transparent = Color(0, 1, 1, 0);
 
 	CHECK_MESSAGE(
-			cyan.to_html() == "ff00ffff",
+			cyan.to_html() == "00ffffff",
 			"The returned RGB HTML color code should match the expected value.");
 	CHECK_MESSAGE(
-			cyan_transparent.to_html() == "0000ffff",
+			cyan_transparent.to_html() == "00ffff00",
 			"The returned RGBA HTML color code should match the expected value.");
 	CHECK_MESSAGE(
 			cyan.to_argb32() == 0xff00ffff,
