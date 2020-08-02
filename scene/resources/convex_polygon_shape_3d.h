@@ -46,7 +46,7 @@ public:
 	void set_points(const Vector<Vector3> &p_points);
 	Vector<Vector3> get_points() const;
 
-	virtual Vector<Vector3> get_debug_mesh_lines() override;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual real_t get_enclosing_radius() const override;
 
 	ConvexPolygonShape3D();
