@@ -429,7 +429,7 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_param(PARAM_SHADOW_BIAS, 0.05);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
-	blend_splits = false;
+	set_blend_splits(true);
 }
 
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {

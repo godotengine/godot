@@ -12,8 +12,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
-			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits.
+		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="true">
+			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. This property has a moderate impact on performance. Consider disabling it when targeting low-end GPUs.
 		</member>
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight3D.ShadowDepthRange" default="0">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
