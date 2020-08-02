@@ -48,7 +48,7 @@ class OS_LinuxBSD : public OS_Unix {
 	bool force_quit;
 
 #ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad;
+	JoypadLinux *joypad = nullptr;
 #endif
 
 #ifdef ALSA_ENABLED
