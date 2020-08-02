@@ -372,7 +372,11 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	AcceptDialog::set_swap_cancel_ok(GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok())));
+	bool swap_cancel_ok = false;
+	if (DisplayServer::get_singleton()) {
+		swap_cancel_ok = GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok()));
+	}
+	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
 #endif
 
 	/* REGISTER 3D */
@@ -912,8 +916,10 @@ void register_scene_types() {
 		}
 	}
 
-	// Always make the default theme to avoid invalid default font/icon/style in the given theme
-	make_default_theme(default_theme_hidpi, font);
+	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
+	if (RenderingServer::get_singleton()) {
+		make_default_theme(default_theme_hidpi, font);
+	}
 
 	if (theme_path != String()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
