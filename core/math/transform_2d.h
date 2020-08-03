@@ -100,6 +100,8 @@ struct Transform2D {
 	Transform2D orthonormalized() const;
 	bool is_equal_approx(const Transform2D &p_transform) const;
 
+	Transform2D looking_at(const Vector2 &p_target) const;
+
 	bool operator==(const Transform2D &p_transform) const;
 	bool operator!=(const Transform2D &p_transform) const;
 
