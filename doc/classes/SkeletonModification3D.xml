@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification3D" inherits="Resource" version="4.0">
+	<brief_description>
+		A resource that operates on bones in a [Skeleton3D].
+	</brief_description>
+	<description>
+		This resource provides an interface that can be expanded so code that operates on bones in a [Skeleton3D] can be mixed and matched together to create complex interactions.
+		This is used to provide Godot with a flexible and powerful Inverse Kinematics solution that can be adapted for many different uses.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="execute" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Executes the given modification. This is where the modification performs whatever function it is designed to do.
+			</description>
+		</method>
+		<method name="setup_modification" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Sets up the modification so it can be executed. This function should be called automatically by the [SkeletonModificationStack3D] containing this modification.
+				If you need to initialize a modification before use, this is the place to do it!
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
+			When true, the modification's [method execute] function will be called by the [SkeletonModificationStack3D].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

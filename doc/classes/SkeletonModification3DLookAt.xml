@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification3DLookAt" inherits="SkeletonModification3D" version="4.0">
+	<brief_description>
+		A modification that rotates a bone to look at a target.
+	</brief_description>
+	<description>
+		This [SkeletonModification3D] rotates a bone to look a target. This is extremely helpful for moving character's heads to look at the player, rotating a turret to look at a target, or any other case where you want to make a bone rotate towards something quickly and easily.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="bone_index" type="int" setter="set_bone_index" getter="get_bone_index" default="-2">
+			The bone index of the bone that should be operated on by this modification.
+			When possible, this will also update the [member bone_name] based on data provided by the [Skeleton3D].
+		</member>
+		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
+			The name of the bone that should be operated on by this modification.
+			When possible, this will also update the [member bone_index] based on data provided by the [Skeleton3D].
+		</member>
+		<member name="lock_rotation_x" type="bool" setter="set_lock_rotation_x" getter="get_lock_rotation_x" default="false">
+			When true, rotation on the X axis will be ignored/locked in place.
+		</member>
+		<member name="lock_rotation_y" type="bool" setter="set_lock_rotation_y" getter="get_lock_rotation_y" default="false">
+			When true, rotation on the Y axis will be ignored/locked in place.
+		</member>
+		<member name="lock_rotation_z" type="bool" setter="set_lock_rotation_z" getter="get_lock_rotation_z" default="false">
+			When true, rotation on the Z axis will be ignored/locked in place.
+		</member>
+		<member name="rotation_offset" type="Vector3" setter="set_rotation_offset" getter="get_rotation_offset" default="Vector3( 0, 0, 0 )">
+			The amount of extra rotation applied after performing the modification. This allows you to adjust if necessary, or offset the rotation if the bone's forward direction does not line up with the forward direction of the 3D model being used.
+			[b]Note:[/b] The rotation has to be in degrees!
+		</member>
+		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The NodePath to the node that is the target for the modification.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
