@@ -22,7 +22,7 @@
 			<argument index="0" name="joint_idx" type="int">
 			</argument>
 			<description>
-				Returns the [PhysicalBone2D] node at [joint_idx].
+				Returns the [PhysicalBone2D] node at [code]joint_idx[/code].
 			</description>
 		</method>
 		<method name="physical_bone_set_node">
@@ -33,7 +33,7 @@
 			<argument index="1" name="physicalbone2d_node" type="NodePath">
 			</argument>
 			<description>
-				Sets the [PhysicalBone2D] node at [joint_idx].
+				Sets the [PhysicalBone2D] node at [code]joint_idx[/code].
 				[b]Note[/b]: This is just the index used for this modification, not the bone index used in the [Skeleton2D].
 			</description>
 		</method>

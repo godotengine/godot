@@ -36,7 +36,7 @@
 			<argument index="0" name="joint_idx" type="int">
 			</argument>
 			<description>
-				Returns whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint. See [method ccdik_joint_set_joint_constraint_invert] for details.
+				Returns whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint. See [method ccdik_joint_set_constraint_angle_invert] for details.
 			</description>
 		</method>
 		<method name="ccdik_joint_get_constraint_angle_max" qualifiers="const">
