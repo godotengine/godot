@@ -897,8 +897,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 }
 
 void RigidBodyBullet::reload_space_override_modificator() {
-	// Make sure that kinematic bodies have their total gravity calculated
-	if (!is_active() && PhysicsServer3D::BODY_MODE_KINEMATIC != mode) {
+	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
 		return;
 	}
 
