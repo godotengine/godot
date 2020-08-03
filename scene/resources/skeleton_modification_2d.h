@@ -343,4 +343,106 @@ public:
 	~SkeletonModification2DFABRIK();
 };
 
+///////////////////////////////////////
+// SkeletonModification2DJiggle
+///////////////////////////////////////
+
+class SkeletonModification2DJiggle : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DJiggle, SkeletonModification2D);
+
+private:
+	struct Jiggle_Joint_Data2D {
+		int bone_idx = -1;
+		NodePath bone2d_node;
+		ObjectID bone2d_node_cache;
+
+		bool override_defaults = false;
+		float stiffness = 3;
+		float mass = 0.75;
+		float damping = 0.75;
+		bool use_gravity = false;
+		Vector2 gravity = Vector2(0, 6.0);
+
+		Vector2 force = Vector2(0, 0);
+		Vector2 acceleration = Vector2(0, 0);
+		Vector2 velocity = Vector2(0, 0);
+		Vector2 last_position = Vector2(0, 0);
+		Vector2 dynamic_position = Vector2(0, 0);
+
+		Vector2 last_noncollision_position = Vector2(0, 0);
+	};
+
+	Vector<Jiggle_Joint_Data2D> jiggle_data_chain;
+
+	NodePath target_node;
+	ObjectID target_node_cache;
+	void update_target_cache();
+
+	float stiffness = 3;
+	float mass = 0.75;
+	float damping = 0.75;
+	bool use_gravity = false;
+	Vector2 gravity = Vector2(0, 6);
+
+	bool use_colliders = false;
+	uint32_t collision_mask = 1;
+
+	void jiggle_joint_update_bone2d_cache(int p_joint_idx);
+	void _execute_jiggle_joint(int p_joint_idx, Node2D *target, float delta);
+	void _update_jiggle_joint_data();
+
+protected:
+	static void _bind_methods();
+	bool _set(const StringName &p_path, const Variant &p_value);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
+
+	void set_stiffness(float p_stiffness);
+	float get_stiffness() const;
+	void set_mass(float p_mass);
+	float get_mass() const;
+	void set_damping(float p_damping);
+	float get_damping() const;
+	void set_use_gravity(bool p_use_gravity);
+	bool get_use_gravity() const;
+	void set_gravity(Vector2 p_gravity);
+	Vector2 get_gravity() const;
+
+	void set_use_colliders(bool p_use_colliders);
+	bool get_use_colliders() const;
+	void set_collision_mask(int p_mask);
+	int get_collision_mask() const;
+
+	int get_jiggle_data_chain_length();
+	void set_jiggle_data_chain_length(int p_new_length);
+
+	void jiggle_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath jiggle_joint_get_bone2d_node(int p_joint_idx) const;
+	void jiggle_joint_set_bone_index(int p_joint_idx, int p_bone_idx);
+	int jiggle_joint_get_bone_index(int p_joint_idx) const;
+
+	void jiggle_joint_set_override(int p_joint_idx, bool p_override);
+	bool jiggle_joint_get_override(int p_joint_idx) const;
+	void jiggle_joint_set_stiffness(int p_joint_idx, float p_stiffness);
+	float jiggle_joint_get_stiffness(int p_joint_idx) const;
+	void jiggle_joint_set_mass(int p_joint_idx, float p_mass);
+	float jiggle_joint_get_mass(int p_joint_idx) const;
+	void jiggle_joint_set_damping(int p_joint_idx, float p_damping);
+	float jiggle_joint_get_damping(int p_joint_idx) const;
+	void jiggle_joint_set_use_gravity(int p_joint_idx, bool p_use_gravity);
+	bool jiggle_joint_get_use_gravity(int p_joint_idx) const;
+	void jiggle_joint_set_gravity(int p_joint_idx, Vector2 p_gravity);
+	Vector2 jiggle_joint_get_gravity(int p_joint_idx) const;
+
+	SkeletonModification2DJiggle();
+	~SkeletonModification2DJiggle();
+};
+
 #endif // SKELETONMODIFICATION2D_H
