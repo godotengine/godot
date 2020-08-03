@@ -55,6 +55,7 @@
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
+#include "scene/2d/physical_bone_2d.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/position_2d.h"
@@ -665,6 +666,9 @@ void register_scene_types() {
 	ClassDB::register_class<SkeletonModification2DFABRIK>();
 	ClassDB::register_class<SkeletonModification2DJiggle>();
 	ClassDB::register_class<SkeletonModification2DTwoBoneIK>();
+
+	ClassDB::register_class<PhysicalBone2D>();
+	ClassDB::register_class<SkeletonModification2DPhysicalBones>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
