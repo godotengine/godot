@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification2DLookAt" inherits="SkeletonModification2D" version="4.0">
+	<brief_description>
+		A modification that rotates a [Bone2D] node to look at a target.
+	</brief_description>
+	<description>
+		This [SkeletonModification2D] rotates a bone to look a target. This is extremely helpful for moving character's head to look at the player, rotating a turret to look at a target, or any other case where you want to make a bone rotate towards something quickly and easily.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="additional_rotation" type="float" setter="set_additional_rotation" getter="get_additional_rotation" default="0.0">
+			The amount of additional rotation to be applied after performing the modification. This allows you to adjust the results.
+		</member>
+		<member name="bone2d_node" type="NodePath" setter="set_bone2d_node" getter="get_bone2d_node" default="NodePath(&quot;&quot;)">
+			The [Bone2D] node that the modification will operate on.
+		</member>
+		<member name="bone_index" type="int" setter="set_bone_index" getter="get_bone_index" default="-1">
+			The index of the [Bone2D] node that the modification will oeprate on.
+		</member>
+		<member name="constraint_angle_invert" type="bool" setter="set_constraint_angle_invert" getter="get_constraint_angle_invert" default="false">
+			Sets whether the modification uses an inverted joint constraint.
+			An inverted joint constraint only constraints the [Bone2D] to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
+		</member>
+		<member name="constraint_angle_max" type="float" setter="set_constraint_angle_max" getter="get_constraint_angle_max" default="6.28319">
+			The LookAt modifcation constraint's maximum allowed angle.
+		</member>
+		<member name="constraint_angle_min" type="float" setter="set_constraint_angle_min" getter="get_constraint_angle_min" default="0.0">
+			The LookAt modifcation constraint's minimum allowed angle.
+		</member>
+		<member name="enable_constraint" type="bool" setter="set_enable_constraint" getter="get_enable_constraint" default="false">
+			If [code]true[/code], then constraints will be applied when solving.
+		</member>
+		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The NodePath to the node that is the target for the LookAt modification. This node is what the modification will rotate the [Bone2D] to.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
