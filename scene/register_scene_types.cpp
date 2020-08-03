@@ -170,6 +170,7 @@
 #include "scene/resources/skeleton_modification_2d_stackholder.h"
 #include "scene/resources/skeleton_modification_2d_twoboneik.h"
 #include "scene/resources/skeleton_modification_stack_2d.h"
+#include "scene/resources/skeleton_modification_3d.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -749,6 +750,9 @@ void register_scene_types() {
 	ClassDB::register_class<WorldMarginShape3D>();
 	ClassDB::register_class<ConvexPolygonShape3D>();
 	ClassDB::register_class<ConcavePolygonShape3D>();
+
+	ClassDB::register_class<SkeletonModificationStack3D>();
+	ClassDB::register_virtual_class<SkeletonModification3D>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
