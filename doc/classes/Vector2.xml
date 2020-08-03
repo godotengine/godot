@@ -33,7 +33,8 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns this vector's angle with respect to the X axis, or [code](1, 0)[/code] vector, in radians.
+				Returns this vector's angle with respect to the positive X axis, or [code](1, 0)[/code] vector, in radians.
+				For example, [code]Vector2.RIGHT.angle()[/code] will return zero, [code]Vector2.DOWN.angle()[/code] will return [code]PI / 2[/code] (a quarter turn, or 90 degrees), and [code]Vector2(1, -1).angle()[/code] will return [code]-PI / 4[/code] (a negative eighth turn, or -45 degrees).
 				Equivalent to the result of [method @GDScript.atan2] when called with the vector's [member y] and [member x] as parameters: [code]atan2(y, x)[/code].
 			</description>
 		</method>
