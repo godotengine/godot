@@ -99,8 +99,6 @@ private:
 	real_t spOv_angularDump;
 	int spOv_priority;
 
-	bool isScratched;
-
 	InOutEventCallback eventsCallbacks[2];
 
 public:
@@ -142,11 +140,11 @@ public:
 	_FORCE_INLINE_ void set_spOv_priority(int p_priority) { spOv_priority = p_priority; }
 	_FORCE_INLINE_ int get_spOv_priority() { return spOv_priority; }
 
-	virtual void main_shape_changed();
-	virtual void do_reload_body();
-	virtual void set_space(SpaceBullet *p_space);
+	virtual void main_shape_changed() override;
+	virtual void do_reload_body() override;
+	virtual void set_space(SpaceBullet *p_space) override;
 
-	virtual void dispatch_callbacks();
+	virtual void dispatch_callbacks() override;
 	void call_event(CollisionObjectBullet *p_otherObject, PhysicsServer::AreaBodyStatus p_status);
 	void set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 	void scratch();
@@ -155,9 +153,9 @@ public:
 	// Dispatch the callbacks and removes from overlapping list
 	void remove_overlap(CollisionObjectBullet *p_object, bool p_notify);
 
-	virtual void on_collision_filters_change();
-	virtual void on_collision_checker_start() {}
-	virtual void on_collision_checker_end() { isTransformChanged = false; }
+	virtual void do_reload_collision_filters() override;
+	virtual void on_collision_checker_start() override {}
+	virtual void on_collision_checker_end() override { isTransformChanged = false; }
 
 	void add_overlap(CollisionObjectBullet *p_otherObject);
 	void put_overlap_as_exit(int p_index);
@@ -169,8 +167,8 @@ public:
 	void set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method);
 	bool has_event_callback(Type p_callbackObjectType);
 
-	virtual void on_enter_area(AreaBullet *p_area);
-	virtual void on_exit_area(AreaBullet *p_area);
+	virtual void on_enter_area(AreaBullet *p_area) override;
+	virtual void on_exit_area(AreaBullet *p_area) override;
 };
 
 #endif

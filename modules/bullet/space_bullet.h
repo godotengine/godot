@@ -111,16 +111,22 @@ class SpaceBullet : public RIDBullet {
 	real_t linear_damp;
 	real_t angular_damp;
 
+	Vector<CollisionObjectBullet *> queue_pre_flush;
+	Vector<CollisionObjectBullet *> queue_flush;
 	Vector<CollisionObjectBullet *> collision_objects;
 	Vector<AreaBullet *> areas;
 
 	Vector<Vector3> contactDebug;
-	int contactDebugCount;
-	real_t delta_time;
+	uint32_t contactDebugCount = 0;
+	real_t delta_time = 0.;
 
 public:
 	SpaceBullet();
 	virtual ~SpaceBullet();
+
+	void add_to_flush_queue(CollisionObjectBullet *p_co);
+	void add_to_pre_flush_queue(CollisionObjectBullet *p_co);
+	void remove_from_any_queue(CollisionObjectBullet *p_co);
 
 	void flush_queries();
 	real_t get_delta_time() { return delta_time; }
@@ -174,7 +180,9 @@ public:
 		contactDebugCount = 0;
 	}
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
-		if (contactDebugCount < contactDebug.size()) contactDebug.write[contactDebugCount++] = p_contact;
+		if (contactDebugCount < uint32_t(contactDebug.size())) {
+			contactDebug.write[contactDebugCount++] = p_contact;
+		}
 	}
 	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contactDebug; }
 	_FORCE_INLINE_ int get_debug_contact_count() { return contactDebugCount; }

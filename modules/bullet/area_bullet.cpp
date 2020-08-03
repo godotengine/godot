@@ -54,8 +54,7 @@ AreaBullet::AreaBullet() :
 		spOv_gravityMag(10),
 		spOv_linearDump(0.1),
 		spOv_angularDump(0.1),
-		spOv_priority(0),
-		isScratched(false) {
+		spOv_priority(0) {
 
 	btGhost = bulletnew(btGhostObject);
 	reload_shapes();
@@ -64,8 +63,9 @@ AreaBullet::AreaBullet() :
 	/// In order to use collision objects as trigger, you have to disable the collision response.
 	set_collision_enabled(false);
 
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 5; ++i) {
 		call_event_res_ptr[i] = &call_event_res[i];
+	}
 }
 
 AreaBullet::~AreaBullet() {
@@ -75,9 +75,7 @@ AreaBullet::~AreaBullet() {
 }
 
 void AreaBullet::dispatch_callbacks() {
-	if (!isScratched)
-		return;
-	isScratched = false;
+	RigidCollisionObjectBullet::dispatch_callbacks();
 
 	// Reverse order because I've to remove EXIT objects
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
@@ -122,9 +120,9 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 }
 
 void AreaBullet::scratch() {
-	if (isScratched)
-		return;
-	isScratched = true;
+	if (space != nullptr) {
+		space->add_to_pre_flush_queue(this);
+	}
 }
 
 void AreaBullet::clear_overlaps(bool p_notify) {
@@ -180,9 +178,9 @@ void AreaBullet::do_reload_body() {
 
 void AreaBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
+
 	if (space) {
 		clear_overlaps(false);
-		isScratched = false;
 
 		// Remove this object form the physics world
 		space->unregister_collision_object(this);
@@ -197,7 +195,7 @@ void AreaBullet::set_space(SpaceBullet *p_space) {
 	}
 }
 
-void AreaBullet::on_collision_filters_change() {
+void AreaBullet::do_reload_collision_filters() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
