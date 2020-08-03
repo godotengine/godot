@@ -55,6 +55,7 @@
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
+#include "scene/2d/physical_bone_2d.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/position_2d.h"
@@ -160,6 +161,15 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/skeleton_modification_2d_ccdik.h"
+#include "scene/resources/skeleton_modification_2d_fabrik.h"
+#include "scene/resources/skeleton_modification_2d_jiggle.h"
+#include "scene/resources/skeleton_modification_2d_lookat.h"
+#include "scene/resources/skeleton_modification_2d_physicalbones.h"
+#include "scene/resources/skeleton_modification_2d_stackholder.h"
+#include "scene/resources/skeleton_modification_2d_twoboneik.h"
+#include "scene/resources/skeleton_modification_stack_2d.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -661,6 +671,18 @@ void register_scene_types() {
 	ClassDB::register_class<ParallaxLayer>();
 	ClassDB::register_class<TouchScreenButton>();
 	ClassDB::register_class<RemoteTransform2D>();
+
+	ClassDB::register_class<SkeletonModificationStack2D>();
+	ClassDB::register_class<SkeletonModification2D>();
+	ClassDB::register_class<SkeletonModification2DLookAt>();
+	ClassDB::register_class<SkeletonModification2DCCDIK>();
+	ClassDB::register_class<SkeletonModification2DFABRIK>();
+	ClassDB::register_class<SkeletonModification2DJiggle>();
+	ClassDB::register_class<SkeletonModification2DTwoBoneIK>();
+	ClassDB::register_class<SkeletonModification2DStackHolder>();
+
+	ClassDB::register_class<PhysicalBone2D>();
+	ClassDB::register_class<SkeletonModification2DPhysicalBones>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

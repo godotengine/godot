@@ -689,11 +689,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8));
 	_initial_set("editors/2d/smart_snapping_line_color", Color(0.9, 0.1, 0.1));
 	_initial_set("editors/2d/bone_width", 5);
-	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
-	_initial_set("editors/2d/bone_color2", Color(0.6, 0.6, 0.6, 0.9));
-	_initial_set("editors/2d/bone_selected_color", Color(0.9, 0.45, 0.45, 0.9));
-	_initial_set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.9));
-	_initial_set("editors/2d/bone_outline_color", Color(0.35, 0.35, 0.35));
+	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.7));
+	_initial_set("editors/2d/bone_color2", Color(0.6, 0.6, 0.6, 0.7));
+	_initial_set("editors/2d/bone_selected_color", Color(0.9, 0.45, 0.45, 0.7));
+	_initial_set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.7));
+	_initial_set("editors/2d/bone_outline_color", Color(0.35, 0.35, 0.35, 0.5));
 	_initial_set("editors/2d/bone_outline_size", 2);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
 	_initial_set("editors/2d/constrain_editor_view", true);
