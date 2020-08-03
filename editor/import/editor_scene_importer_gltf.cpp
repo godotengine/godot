@@ -1226,6 +1226,12 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				const Ref<Material> &mat = state.materials[material];
 
 				mesh.mesh->surface_set_material(mesh.mesh->get_surface_count() - 1, mat);
+			} else {
+				Ref<StandardMaterial3D> mat;
+				mat.instance();
+				mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+				mesh.mesh->surface_set_material(mesh.mesh->get_surface_count() - 1, mat);
 			}
 		}
 
@@ -1386,6 +1392,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("name")) {
 			material->set_name(d["name"]);
 		}
+		material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		if (d.has("pbrMetallicRoughness")) {
 			const Dictionary &mr = d["pbrMetallicRoughness"];
