@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bone_attachment_3d.h                                                 */
+/*  skeleton_modification_stack_3d.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,64 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_ATTACHMENT_H
-#define BONE_ATTACHMENT_H
+#ifndef SKELETONMODIFICATIONSTACK3D_H
+#define SKELETONMODIFICATIONSTACK3D_H
 
+#include "core/templates/local_vector.h"
 #include "scene/3d/skeleton_3d.h"
 
-class BoneAttachment3D : public Node3D {
-	GDCLASS(BoneAttachment3D, Node3D);
+class Skeleton3D;
+class SkeletonModification3D;
 
-	bool bound = false;
-	String bone_name;
-	int bone_idx = -1;
-
-	bool override_pose = false;
-	int override_mode = 0;
-	bool _override_dirty = false;
-
-	enum OVERRIDE_MODES {
-		MODE_GLOBAL_POSE,
-		MODE_LOCAL_POSE,
-		MODE_CUSTOM_POSE
-	};
-
-	bool use_external_skeleton = false;
-	NodePath external_skeleton_node;
-	ObjectID external_skeleton_node_cache;
-
-	void _check_bind();
-	void _check_unbind();
-
-	void _transform_changed();
-	void _update_external_skeleton_cache();
-	Skeleton3D *_get_skeleton3d();
+class SkeletonModificationStack3D : public Resource {
+	GDCLASS(SkeletonModificationStack3D, Resource);
+	friend class Skeleton3D;
+	friend class SkeletonModification3D;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _notification(int p_what);
-
 	static void _bind_methods();
+	virtual void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual bool _set(const StringName &p_path, const Variant &p_value);
+	virtual bool _get(const StringName &p_path, Variant &r_ret) const;
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	Skeleton3D *skeleton = nullptr;
+	bool is_setup = false;
+	bool enabled = false;
+	real_t strength = 1.0;
 
-	void set_bone_name(const String &p_name);
-	String get_bone_name() const;
+	enum EXECUTION_MODE {
+		execution_mode_process,
+		execution_mode_physics_process,
+	};
 
-	void set_bone_idx(const int &p_idx);
-	int get_bone_idx() const;
+	LocalVector<Ref<SkeletonModification3D>> modifications = LocalVector<Ref<SkeletonModification3D>>();
+	int modifications_count = 0;
 
-	void set_override_pose(bool p_override);
-	bool get_override_pose() const;
-	void set_override_mode(int p_mode);
-	int get_override_mode() const;
+	virtual void setup();
+	virtual void execute(real_t p_delta, int p_execution_mode);
 
-	void set_use_external_skeleton(bool p_external_skeleton);
-	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
-	NodePath get_external_skeleton() const;
+	void enable_all_modifications(bool p_enable);
+	Ref<SkeletonModification3D> get_modification(int p_mod_idx) const;
+	void add_modification(Ref<SkeletonModification3D> p_mod);
+	void delete_modification(int p_mod_idx);
+	void set_modification(int p_mod_idx, Ref<SkeletonModification3D> p_mod);
 
-	virtual void on_bone_pose_update(int p_bone_index);
+	void set_modification_count(int p_count);
+	int get_modification_count() const;
 
-	BoneAttachment3D();
+	void set_skeleton(Skeleton3D *p_skeleton);
+	Skeleton3D *get_skeleton() const;
+
+	bool get_is_setup() const;
+
+	void set_enabled(bool p_enabled);
+	bool get_enabled() const;
+
+	void set_strength(real_t p_strength);
+	real_t get_strength() const;
+
+	SkeletonModificationStack3D();
 };
 
-#endif // BONE_ATTACHMENT_H
+#endif // SKELETONMODIFICATIONSTACK3D_H
