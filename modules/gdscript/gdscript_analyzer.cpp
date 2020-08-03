@@ -494,7 +494,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 					if (member.variable->initializer != nullptr) {
 						if (!is_type_compatible(datatype, member.variable->initializer->get_datatype(), true)) {
-							push_error(vformat(R"(Value of type "%s" cannot be assigned to variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
+							push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
 						} else if (datatype.builtin_type == Variant::INT && member.variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
 #ifdef DEBUG_ENABLED
 							parser->push_warning(member.variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
@@ -989,7 +989,7 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 
 		if (p_variable->initializer != nullptr) {
 			if (!is_type_compatible(type, p_variable->initializer->get_datatype(), true)) {
-				push_error(vformat(R"(Value of type "%s" cannot be assigned to variable of type "%s".)", p_variable->initializer->get_datatype().to_string(), type.to_string()), p_variable->initializer);
+				push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", p_variable->initializer->get_datatype().to_string(), type.to_string()), p_variable->initializer);
 #ifdef DEBUG_ENABLED
 			} else if (type.builtin_type == Variant::INT && p_variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
 				parser->push_warning(p_variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
