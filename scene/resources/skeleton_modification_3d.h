@@ -112,4 +112,54 @@ public:
 	SkeletonModification3D();
 };
 
+///////////////////////////////////////
+// SkeletonModification3DLookAt
+///////////////////////////////////////
+
+class SkeletonModification3DLookAt : public SkeletonModification3D {
+	GDCLASS(SkeletonModification3DLookAt, SkeletonModification3D);
+
+private:
+	String bone_name = "";
+	int bone_idx = -1;
+	NodePath target_node;
+	ObjectID target_node_cache;
+
+	Vector3 additional_rotation = Vector3(1, 0, 0);
+	bool lock_rotation_x = false;
+	bool lock_rotation_y = false;
+	bool lock_rotation_z = false;
+
+	void update_cache();
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void execute(float delta);
+	virtual void setup_modification(SkeletonModificationStack3D *p_stack);
+
+	void set_bone_name(String p_name);
+	String get_bone_name() const;
+
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
+
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
+
+	void set_rotation_offset(Vector3 p_offset);
+	Vector3 get_rotation_offset() const;
+
+	void set_lock_rotation_x(bool p_lock);
+	void set_lock_rotation_y(bool p_lock);
+	void set_lock_rotation_z(bool p_lock);
+	bool get_lock_rotation_x() const;
+	bool get_lock_rotation_y() const;
+	bool get_lock_rotation_z() const;
+
+	SkeletonModification3DLookAt();
+	~SkeletonModification3DLookAt();
+};
+
 #endif // SKELETONMODIFICATION3D_H
