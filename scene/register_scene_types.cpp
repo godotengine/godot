@@ -664,6 +664,7 @@ void register_scene_types() {
 	ClassDB::register_class<SkeletonModification2DCCDIK>();
 	ClassDB::register_class<SkeletonModification2DFABRIK>();
 	ClassDB::register_class<SkeletonModification2DJiggle>();
+	ClassDB::register_class<SkeletonModification2DTwoBoneIK>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

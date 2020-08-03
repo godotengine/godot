@@ -2056,3 +2056,502 @@ SkeletonModification2DJiggle::SkeletonModification2DJiggle() {
 
 SkeletonModification2DJiggle::~SkeletonModification2DJiggle() {
 }
+
+///////////////////////////////////////
+// TwoBoneIK
+///////////////////////////////////////
+
+bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Variant &p_value) {
+	String path = p_path;
+
+	if (path == "joint_one_bone_idx") {
+		set_joint_one_bone_idx(p_value);
+	} else if (path == "joint_one_bone2d_node") {
+		set_joint_one_bone2d_node(p_value);
+	} else if (path == "joint_one_enable_constraint") {
+		set_joint_one_enable_constraint(p_value);
+	} else if (path == "joint_one_constraint_angle_min") {
+		set_joint_one_constraint_angle_min(Math::deg2rad(float(p_value)));
+	} else if (path == "joint_one_constraint_angle_max") {
+		set_joint_one_constraint_angle_max(Math::deg2rad(float(p_value)));
+	} else if (path == "joint_one_constraint_angle_invert") {
+		set_joint_one_constraint_angle_invert(p_value);
+	} else if (path == "joint_one_constraint_in_localspace") {
+		set_joint_one_constraint_in_localspace(p_value);
+	} else if (path == "joint_two_bone_idx") {
+		set_joint_two_bone_idx(p_value);
+	} else if (path == "joint_two_bone2d_node") {
+		set_joint_two_bone2d_node(p_value);
+	} else if (path == "joint_two_enable_constraint") {
+		set_joint_two_enable_constraint(p_value);
+	} else if (path == "joint_two_constraint_angle_min") {
+		set_joint_two_constraint_angle_min(Math::deg2rad(float(p_value)));
+	} else if (path == "joint_two_constraint_angle_max") {
+		set_joint_two_constraint_angle_max(Math::deg2rad(float(p_value)));
+	} else if (path == "joint_two_constraint_angle_invert") {
+		set_joint_two_constraint_angle_invert(p_value);
+	} else if (path == "joint_two_constraint_in_localspace") {
+		set_joint_two_constraint_in_localspace(p_value);
+	}
+
+	return true;
+}
+
+bool SkeletonModification2DTwoBoneIK::_get(const StringName &p_path, Variant &r_ret) const {
+	String path = p_path;
+
+	if (path == "joint_one_bone_idx") {
+		r_ret = get_joint_one_bone_idx();
+	} else if (path == "joint_one_bone2d_node") {
+		r_ret = get_joint_one_bone2d_node();
+	} else if (path == "joint_one_enable_constraint") {
+		r_ret = get_joint_one_enable_constraint();
+	} else if (path == "joint_one_constraint_angle_min") {
+		r_ret = Math::rad2deg(get_joint_one_constraint_angle_min());
+	} else if (path == "joint_one_constraint_angle_max") {
+		r_ret = Math::rad2deg(get_joint_one_constraint_angle_max());
+	} else if (path == "joint_one_constraint_angle_invert") {
+		r_ret = get_joint_one_constraint_angle_invert();
+	} else if (path == "joint_one_constraint_in_localspace") {
+		r_ret = get_joint_one_constraint_in_localspace();
+	} else if (path == "joint_two_bone_idx") {
+		r_ret = get_joint_two_bone_idx();
+	} else if (path == "joint_two_bone2d_node") {
+		r_ret = get_joint_two_bone2d_node();
+	} else if (path == "joint_two_enable_constraint") {
+		r_ret = get_joint_two_enable_constraint();
+	} else if (path == "joint_two_constraint_angle_min") {
+		r_ret = Math::rad2deg(get_joint_two_constraint_angle_min());
+	} else if (path == "joint_two_constraint_angle_max") {
+		r_ret = Math::rad2deg(get_joint_two_constraint_angle_max());
+	} else if (path == "joint_two_constraint_angle_invert") {
+		r_ret = get_joint_two_constraint_angle_invert();
+	} else if (path == "joint_two_constraint_in_localspace") {
+		r_ret = get_joint_two_constraint_in_localspace();
+	}
+
+	return true;
+}
+
+void SkeletonModification2DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::INT, "joint_one_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "joint_one_bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "joint_one_enable_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	if (joint_one_enable_constraint) {
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_one_constraint_angle_min", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_one_constraint_angle_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_one_constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_one_constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	}
+
+	p_list->push_back(PropertyInfo(Variant::INT, "joint_two_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "joint_two_bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "joint_two_enable_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	if (joint_two_enable_constraint) {
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two_constraint_angle_min", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two_constraint_angle_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_two_constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_two_constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	}
+}
+
+void SkeletonModification2DTwoBoneIK::execute(float delta) {
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+			"Modification is not setup and therefore cannot execute!");
+	if (!enabled) {
+		return;
+	}
+
+	if (target_node_cache.is_null()) {
+		update_target_cache();
+		WARN_PRINT("Target cache is out of date. Updating...");
+		return;
+	}
+
+	if (joint_one_bone2d_node_cache.is_null() && !joint_one_bone2d_node.is_empty()) {
+		update_joint_one_bone2d_cache();
+		WARN_PRINT("Joint One Bone2D node cache is out of date. Updating...");
+	}
+	if (joint_two_bone2d_node_cache.is_null() && !joint_two_bone2d_node.is_empty()) {
+		update_joint_two_bone2d_cache();
+		WARN_PRINT("Joint Two Bone2D node cache is out of date. Updating...");
+	}
+
+	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+	ERR_FAIL_COND_MSG(!target, "Target node is not a Node2D-based node. Cannot execute modification!");
+	ERR_FAIL_COND_MSG(!target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!");
+
+	Bone2D *joint_one_bone = stack->skeleton->get_bone(joint_one_bone_idx);
+	ERR_FAIL_COND_MSG(joint_one_bone == nullptr, "Joint one bone_idx does not point to a valid bone! Cannot execute modification!");
+	Bone2D *joint_two_bone = stack->skeleton->get_bone(joint_two_bone_idx);
+	ERR_FAIL_COND_MSG(joint_one_bone == nullptr, "Joint two bone_idx does not point to a valid bone! Cannot execute modification!");
+
+	// Adopted from the links below:
+	// http://theorangeduck.com/page/simple-two-joint
+	// https://www.alanzucconi.com/2018/05/02/ik-2d-2/
+	// With modifications by TwistedTwigleg
+	Vector2 target_difference = target->get_global_transform().get_origin() - joint_one_bone->get_global_transform().get_origin();
+	float joint_one_to_target = target_difference.length();
+	float angle_atan = Math::atan2(target_difference.y, target_difference.x);
+
+	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().x, joint_one_bone->get_global_scale().y);
+	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
+	bool override_angles_due_to_out_of_range = false;
+
+	if (bone_one_length + bone_two_length < joint_one_to_target) {
+		override_angles_due_to_out_of_range = true;
+	} else if (joint_one_to_target < target_minimum_distance) {
+		joint_one_to_target = target_minimum_distance;
+	}
+
+	if (!override_angles_due_to_out_of_range) {
+		float angle_0 = Math::acos(((joint_one_to_target * joint_one_to_target) + (bone_one_length * bone_one_length) - (bone_two_length * bone_two_length)) / (2.0 * joint_one_to_target * bone_one_length));
+		float angle_1 = Math::acos(((bone_two_length * bone_two_length) + (bone_one_length * bone_one_length) - (joint_one_to_target * joint_one_to_target)) / (2.0 * bone_two_length * bone_one_length));
+
+		if (flip_bend_direction) {
+			angle_0 = -angle_0;
+			angle_1 = -angle_1;
+		}
+
+		joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
+		joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
+	} else {
+		joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
+		joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
+	}
+
+	// global constrains
+	if (joint_one_enable_constraint && !joint_one_constraint_in_localspace) {
+		joint_one_bone->set_global_rotation(clamp_angle(joint_one_bone->get_global_rotation(), joint_one_constraint_angle_min, joint_one_constraint_angle_max, joint_one_constraint_angle_invert));
+	}
+	if (joint_two_enable_constraint && !joint_two_constraint_in_localspace) {
+		joint_two_bone->set_global_rotation(clamp_angle(joint_two_bone->get_global_rotation(), joint_two_constraint_angle_min, joint_two_constraint_angle_max, joint_two_constraint_angle_invert));
+	}
+
+	// local constrains
+	if (joint_one_enable_constraint && joint_one_constraint_in_localspace) {
+		joint_one_bone->set_rotation(clamp_angle(joint_one_bone->get_rotation(), joint_one_constraint_angle_min, joint_one_constraint_angle_max, joint_one_constraint_angle_invert));
+	}
+	if (joint_two_enable_constraint && joint_two_constraint_in_localspace) {
+		joint_two_bone->set_rotation(clamp_angle(joint_two_bone->get_rotation(), joint_two_constraint_angle_min, joint_two_constraint_angle_max, joint_two_constraint_angle_invert));
+	}
+
+	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
+	stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), stack->strength, true);
+}
+
+void SkeletonModification2DTwoBoneIK::setup_modification(SkeletonModificationStack2D *p_stack) {
+	stack = p_stack;
+
+	if (stack) {
+		is_setup = true;
+		update_target_cache();
+		update_joint_one_bone2d_cache();
+		update_joint_two_bone2d_cache();
+	}
+}
+
+void SkeletonModification2DTwoBoneIK::update_target_cache() {
+	if (!is_setup || !stack) {
+		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		return;
+	}
+
+	target_node_cache = ObjectID();
+	if (stack->skeleton) {
+		if (stack->skeleton->is_inside_tree()) {
+			if (stack->skeleton->has_node(target_node)) {
+				Node *node = stack->skeleton->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+						"Cannot update cache: Target node is this modification's skeleton or cannot be found!");
+				target_node_cache = node->get_instance_id();
+			}
+		}
+	}
+}
+
+void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
+	if (!is_setup || !stack) {
+		WARN_PRINT("Cannot update update joint one Bone2D cache: modification is not properly setup!");
+		return;
+	}
+
+	joint_one_bone2d_node_cache = ObjectID();
+	if (stack->skeleton) {
+		if (stack->skeleton->is_inside_tree()) {
+			if (stack->skeleton->has_node(joint_one_bone2d_node)) {
+				Node *node = stack->skeleton->get_node(joint_one_bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+						"Cannot update update joint one Bone2D cache: node is this modification's skeleton or cannot be found!");
+				joint_one_bone2d_node_cache = node->get_instance_id();
+
+				Bone2D *bone = Object::cast_to<Bone2D>(node);
+				if (bone) {
+					joint_one_bone_idx = bone->get_index_in_skeleton();
+				} else {
+					ERR_FAIL_MSG("update joint one Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
+				}
+			}
+		}
+	}
+}
+
+void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
+	if (!is_setup || !stack) {
+		WARN_PRINT("Cannot update update joint two Bone2D cache: modification is not properly setup!");
+		return;
+	}
+
+	joint_two_bone2d_node_cache = ObjectID();
+	if (stack->skeleton) {
+		if (stack->skeleton->is_inside_tree()) {
+			if (stack->skeleton->has_node(joint_two_bone2d_node)) {
+				Node *node = stack->skeleton->get_node(joint_two_bone2d_node);
+				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+						"Cannot update update joint two Bone2D cache: node is this modification's skeleton or cannot be found!");
+				joint_two_bone2d_node_cache = node->get_instance_id();
+
+				Bone2D *bone = Object::cast_to<Bone2D>(node);
+				if (bone) {
+					joint_two_bone_idx = bone->get_index_in_skeleton();
+				} else {
+					ERR_FAIL_MSG("update joint two Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
+				}
+			}
+		}
+	}
+}
+
+void SkeletonModification2DTwoBoneIK::set_target_node(const NodePath &p_target_node) {
+	target_node = p_target_node;
+	update_target_cache();
+}
+
+NodePath SkeletonModification2DTwoBoneIK::get_target_node() const {
+	return target_node;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_bone2d_node(const NodePath &p_target_node) {
+	joint_one_bone2d_node = p_target_node;
+	update_joint_one_bone2d_cache();
+	_change_notify();
+}
+
+void SkeletonModification2DTwoBoneIK::set_target_minimum_distance(float p_distance) {
+	ERR_FAIL_COND_MSG(p_distance < 0, "Target minimum distance cannot be less than zero!");
+	target_minimum_distance = p_distance;
+}
+
+float SkeletonModification2DTwoBoneIK::get_target_minimum_distance() const {
+	return target_minimum_distance;
+}
+
+void SkeletonModification2DTwoBoneIK::set_flip_bend_direction(bool p_flip_direction) {
+	flip_bend_direction = p_flip_direction;
+}
+
+bool SkeletonModification2DTwoBoneIK::get_flip_bend_direction() const {
+	return flip_bend_direction;
+}
+
+NodePath SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node() const {
+	return joint_one_bone2d_node;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node(const NodePath &p_target_node) {
+	joint_two_bone2d_node = p_target_node;
+	update_joint_two_bone2d_cache();
+	_change_notify();
+}
+
+NodePath SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node() const {
+	return joint_two_bone2d_node;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
+	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
+
+	if (is_setup) {
+		if (stack->skeleton) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+			joint_one_bone_idx = p_bone_idx;
+			joint_one_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+			joint_one_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+		} else {
+			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
+			joint_one_bone_idx = p_bone_idx;
+		}
+	} else {
+		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
+		joint_one_bone_idx = p_bone_idx;
+	}
+
+	_change_notify();
+}
+
+int SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx() const {
+	return joint_one_bone_idx;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
+	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
+
+	if (is_setup) {
+		if (stack->skeleton) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+			joint_two_bone_idx = p_bone_idx;
+			joint_two_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+			joint_two_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+		} else {
+			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
+			joint_two_bone_idx = p_bone_idx;
+		}
+	} else {
+		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
+		joint_two_bone_idx = p_bone_idx;
+	}
+
+	_change_notify();
+}
+
+int SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx() const {
+	return joint_two_bone_idx;
+}
+
+// TwoBoneIK property functions
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_enable_constraint(bool p_constraint) {
+	joint_one_enable_constraint = p_constraint;
+	_change_notify();
+}
+
+bool SkeletonModification2DTwoBoneIK::get_joint_one_enable_constraint() const {
+	return joint_one_enable_constraint;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_min(float p_angle) {
+	joint_one_constraint_angle_min = p_angle;
+}
+
+float SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_min() const {
+	return joint_one_constraint_angle_min;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_max(float p_angle) {
+	joint_one_constraint_angle_max = p_angle;
+}
+
+float SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_max() const {
+	return joint_one_constraint_angle_max;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_invert(bool p_invert) {
+	joint_one_constraint_angle_invert = p_invert;
+}
+
+bool SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_invert() const {
+	return joint_one_constraint_angle_invert;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_in_localspace(bool p_in_localspace) {
+	joint_one_constraint_in_localspace = p_in_localspace;
+}
+
+bool SkeletonModification2DTwoBoneIK::get_joint_one_constraint_in_localspace() const {
+	return joint_one_constraint_in_localspace;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_enable_constraint(bool p_constraint) {
+	joint_two_enable_constraint = p_constraint;
+	_change_notify();
+}
+
+bool SkeletonModification2DTwoBoneIK::get_joint_two_enable_constraint() const {
+	return joint_two_enable_constraint;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_min(float p_angle) {
+	joint_two_constraint_angle_min = p_angle;
+}
+
+float SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_min() const {
+	return joint_two_constraint_angle_min;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_max(float p_angle) {
+	joint_two_constraint_angle_max = p_angle;
+}
+
+float SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_max() const {
+	return joint_two_constraint_angle_max;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_invert(bool p_invert) {
+	joint_two_constraint_angle_invert = p_invert;
+}
+
+bool SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_invert() const {
+	return joint_two_constraint_angle_invert;
+}
+
+void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_in_localspace(bool p_in_localspace) {
+	joint_two_constraint_in_localspace = p_in_localspace;
+}
+
+bool SkeletonModification2DTwoBoneIK::get_joint_two_constraint_in_localspace() const {
+	return joint_two_constraint_in_localspace;
+}
+
+void SkeletonModification2DTwoBoneIK::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification2DTwoBoneIK::set_target_node);
+	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification2DTwoBoneIK::get_target_node);
+
+	ClassDB::bind_method(D_METHOD("set_target_minimum_distance", "minimum_distance"), &SkeletonModification2DTwoBoneIK::set_target_minimum_distance);
+	ClassDB::bind_method(D_METHOD("get_target_minimum_distance"), &SkeletonModification2DTwoBoneIK::get_target_minimum_distance);
+	ClassDB::bind_method(D_METHOD("set_flip_bend_direction", "flip_direction"), &SkeletonModification2DTwoBoneIK::set_flip_bend_direction);
+	ClassDB::bind_method(D_METHOD("get_flip_bend_direction"), &SkeletonModification2DTwoBoneIK::get_flip_bend_direction);
+
+	ClassDB::bind_method(D_METHOD("set_joint_one_bone2d_node", "bone2d_node"), &SkeletonModification2DTwoBoneIK::set_joint_one_bone2d_node);
+	ClassDB::bind_method(D_METHOD("get_joint_one_bone2d_node"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node);
+	ClassDB::bind_method(D_METHOD("set_joint_one_bone_idx", "bone_idx"), &SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx);
+	ClassDB::bind_method(D_METHOD("get_joint_one_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx);
+	ClassDB::bind_method(D_METHOD("set_joint_one_enable_constraint", "enable_constraint"), &SkeletonModification2DTwoBoneIK::set_joint_one_enable_constraint);
+	ClassDB::bind_method(D_METHOD("get_joint_one_enable_constraint"), &SkeletonModification2DTwoBoneIK::get_joint_one_enable_constraint);
+	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_angle_min", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_angle_min"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_angle_max", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_angle_max"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_angle_invert", "invert"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_angle_invert"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_in_localspace", "in_localspace"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_in_localspace);
+	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_in_localspace"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_in_localspace);
+
+	ClassDB::bind_method(D_METHOD("set_joint_two_bone2d_node", "bone2d_node"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node);
+	ClassDB::bind_method(D_METHOD("get_joint_two_bone2d_node"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node);
+	ClassDB::bind_method(D_METHOD("set_joint_two_bone_idx", "bone_idx"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx);
+	ClassDB::bind_method(D_METHOD("get_joint_two_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx);
+	ClassDB::bind_method(D_METHOD("set_joint_two_enable_constraint", "enable_constraint"), &SkeletonModification2DTwoBoneIK::set_joint_two_enable_constraint);
+	ClassDB::bind_method(D_METHOD("get_joint_two_enable_constraint"), &SkeletonModification2DTwoBoneIK::get_joint_two_enable_constraint);
+	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_angle_min", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_angle_min"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_angle_max", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_angle_max"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_angle_invert", "invert"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_angle_invert"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_in_localspace", "in_localspace"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_in_localspace);
+	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_in_localspace"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_in_localspace);
+
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_NONE, ""), "set_target_minimum_distance", "get_target_minimum_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_bend_direction", PROPERTY_HINT_NONE, ""), "set_flip_bend_direction", "get_flip_bend_direction");
+	ADD_GROUP("", "");
+}
+
+SkeletonModification2DTwoBoneIK::SkeletonModification2DTwoBoneIK() {
+	stack = nullptr;
+	is_setup = false;
+	enabled = true;
+}
+
+SkeletonModification2DTwoBoneIK::~SkeletonModification2DTwoBoneIK() {
+}

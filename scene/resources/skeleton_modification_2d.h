@@ -445,4 +445,91 @@ public:
 	~SkeletonModification2DJiggle();
 };
 
+///////////////////////////////////////
+// SkeletonModification2DTwoBoneIK
+///////////////////////////////////////
+
+class SkeletonModification2DTwoBoneIK : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DTwoBoneIK, SkeletonModification2D);
+
+private:
+	NodePath target_node;
+	ObjectID target_node_cache;
+	float target_minimum_distance = 6;
+	bool flip_bend_direction = false;
+
+	NodePath joint_one_bone2d_node;
+	ObjectID joint_one_bone2d_node_cache;
+	int joint_one_bone_idx = -1;
+	bool joint_one_enable_constraint = false;
+	float joint_one_constraint_angle_min = 0;
+	float joint_one_constraint_angle_max = (2.0 * Math_PI);
+	bool joint_one_constraint_angle_invert = false;
+	bool joint_one_constraint_in_localspace = true;
+
+	NodePath joint_two_bone2d_node;
+	ObjectID joint_two_bone2d_node_cache;
+	int joint_two_bone_idx = -1;
+	bool joint_two_enable_constraint = false;
+	float joint_two_constraint_angle_min = 0;
+	float joint_two_constraint_angle_max = (2.0 * Math_PI);
+	bool joint_two_constraint_angle_invert = false;
+	bool joint_two_constraint_in_localspace = true;
+
+	void update_target_cache();
+	void update_joint_one_bone2d_cache();
+	void update_joint_two_bone2d_cache();
+
+protected:
+	static void _bind_methods();
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
+
+	void set_target_minimum_distance(float p_minimum_distance);
+	float get_target_minimum_distance() const;
+	void set_flip_bend_direction(bool p_flip_direction);
+	bool get_flip_bend_direction() const;
+
+	void set_joint_one_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_one_bone2d_node() const;
+	void set_joint_one_bone_idx(int p_bone_idx);
+	int get_joint_one_bone_idx() const;
+	void set_joint_one_enable_constraint(bool p_constraint);
+	bool get_joint_one_enable_constraint() const;
+	void set_joint_one_constraint_angle_min(float p_angle);
+	float get_joint_one_constraint_angle_min() const;
+	void set_joint_one_constraint_angle_max(float p_angle);
+	float get_joint_one_constraint_angle_max() const;
+	void set_joint_one_constraint_angle_invert(bool p_invert);
+	bool get_joint_one_constraint_angle_invert() const;
+	void set_joint_one_constraint_in_localspace(bool p_in_localspace);
+	bool get_joint_one_constraint_in_localspace() const;
+
+	void set_joint_two_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_two_bone2d_node() const;
+	void set_joint_two_bone_idx(int p_bone_idx);
+	int get_joint_two_bone_idx() const;
+	void set_joint_two_enable_constraint(bool p_constraint);
+	bool get_joint_two_enable_constraint() const;
+	void set_joint_two_constraint_angle_min(float p_angle);
+	float get_joint_two_constraint_angle_min() const;
+	void set_joint_two_constraint_angle_max(float p_angle);
+	float get_joint_two_constraint_angle_max() const;
+	void set_joint_two_constraint_angle_invert(bool p_invert);
+	bool get_joint_two_constraint_angle_invert() const;
+	void set_joint_two_constraint_in_localspace(bool p_in_localspace);
+	bool get_joint_two_constraint_in_localspace() const;
+
+	SkeletonModification2DTwoBoneIK();
+	~SkeletonModification2DTwoBoneIK();
+};
+
 #endif // SKELETONMODIFICATION2D_H
