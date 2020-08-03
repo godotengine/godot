@@ -661,6 +661,7 @@ void register_scene_types() {
 	ClassDB::register_class<SkeletonModificationStack2D>();
 	ClassDB::register_virtual_class<SkeletonModification2D>();
 	ClassDB::register_class<SkeletonModification2DLookAt>();
+	ClassDB::register_class<SkeletonModification2DCCDIK>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

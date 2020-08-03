@@ -184,4 +184,78 @@ public:
 	~SkeletonModification2DLookAt();
 };
 
+///////////////////////////////////////
+// SkeletonModification2DCCDIK
+///////////////////////////////////////
+
+class SkeletonModification2DCCDIK : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DCCDIK, SkeletonModification2D);
+
+private:
+	struct CCDIK_Joint_Data2D {
+		int bone_idx = -1;
+		NodePath bone2d_node;
+		ObjectID bone2d_node_cache;
+		bool rotate_from_joint = false;
+
+		bool enable_constraint = false;
+		float constraint_angle_min = 0;
+		float constraint_angle_max = (2.0 * Math_PI);
+		bool constraint_angle_invert = false;
+		bool constraint_in_localspace = true;
+	};
+
+	Vector<CCDIK_Joint_Data2D> ccdik_data_chain;
+
+	NodePath target_node;
+	ObjectID target_node_cache;
+	void update_target_cache();
+
+	NodePath tip_node;
+	ObjectID tip_node_cache;
+	void update_tip_cache();
+
+	void ccdik_joint_update_bone2d_cache(int p_joint_idx);
+	void _execute_ccdik_joint(int p_joint_idx, Node2D *target, Node2D *tip);
+
+protected:
+	static void _bind_methods();
+	bool _set(const StringName &p_path, const Variant &p_value);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
+	void set_tip_node(const NodePath &p_tip_node);
+	NodePath get_tip_node() const;
+
+	int get_ccdik_data_chain_length();
+	void set_ccdik_data_chain_length(int p_new_length);
+
+	void ccdik_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath ccdik_joint_get_bone2d_node(int p_joint_idx) const;
+	void ccdik_joint_set_bone_index(int p_joint_idx, int p_bone_idx);
+	int ccdik_joint_get_bone_index(int p_joint_idx) const;
+
+	void ccdik_joint_set_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint);
+	bool ccdik_joint_get_rotate_from_joint(int p_joint_idx) const;
+	void ccdik_joint_set_enable_constraint(int p_joint_idx, bool p_constraint);
+	bool ccdik_joint_get_enable_constraint(int p_joint_idx) const;
+	void ccdik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min);
+	float ccdik_joint_get_constraint_angle_min(int p_joint_idx) const;
+	void ccdik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max);
+	float ccdik_joint_get_constraint_angle_max(int p_joint_idx) const;
+	void ccdik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert);
+	bool ccdik_joint_get_constraint_angle_invert(int p_joint_idx) const;
+	void ccdik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
+	bool ccdik_joint_get_constraint_in_localspace(int p_joint_idx) const;
+
+	SkeletonModification2DCCDIK();
+	~SkeletonModification2DCCDIK();
+};
+
 #endif // SKELETONMODIFICATION2D_H
