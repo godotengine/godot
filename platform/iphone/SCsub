@@ -15,10 +15,18 @@ iphone_lib = [
     "icloud.mm",
     "ios.mm",
     "gl_view_gesture_recognizer.m",
+    "api/ios_singleton.mm",
+    "plugin/godot_plugin_registery.mm",
+    "objc_utils.mm"
+]
+
+plugin_lib = [
+    "plugin/godot_plugin.m"
 ]
 
 env_ios = env.Clone()
 ios_lib = env_ios.add_library("iphone", iphone_lib)
+ios_plugin_lib = env_ios.add_library("#bin/libgodot_plugin" + env["LIBSUFFIX"], plugin_lib)
 
 # (iOS) Enable module support
 env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
@@ -35,4 +43,4 @@ def combine_libs(target=None, source=None, env=None):
     )
 
 
-combine_command = env_ios.Command("#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], combine_libs)
+combine_command = env_ios.Command("#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib, ios_plugin_lib] + env_ios["LIBS"], combine_libs)

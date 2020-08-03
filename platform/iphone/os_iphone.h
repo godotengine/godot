@@ -42,6 +42,7 @@
 #include "in_app_store.h"
 #include "ios.h"
 #include "main/input_default.h"
+#include "plugin/godot_plugin_registery.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"

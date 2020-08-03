@@ -164,6 +164,12 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
+	//---------------------
+	GodotPluginRegistery *reg = memnew(GodotPluginRegistery);
+	reg->register_plugin_classes();
+	
+	//---------------------
+
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
