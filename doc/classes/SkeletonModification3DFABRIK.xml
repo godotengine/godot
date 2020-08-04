@@ -92,7 +92,7 @@
 			<argument index="0" name="joint_idx" type="int">
 			</argument>
 			<description>
-				Sets the [Node3D]-based node that will be used as the tip of the FABRIK joint at [code]joint_idx[/code]. 
+				Sets the [Node3D]-based node that will be used as the tip of the FABRIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
 		<method name="fabrik_joint_set_auto_calculate_length">
