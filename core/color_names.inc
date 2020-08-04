@@ -23,7 +23,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("chartreuse", Color(0.50, 1.00, 0.00));
 	_named_colors.insert("chocolate", Color(0.82, 0.41, 0.12));
 	_named_colors.insert("coral", Color(1.00, 0.50, 0.31));
-	_named_colors.insert("cornflower", Color(0.39, 0.58, 0.93));
+	_named_colors.insert("cornflowerblue", Color(0.39, 0.58, 0.93));
 	_named_colors.insert("cornsilk", Color(1.00, 0.97, 0.86));
 	_named_colors.insert("crimson", Color(0.86, 0.08, 0.24));
 	_named_colors.insert("cyan", Color(0.00, 1.00, 1.00));
