@@ -28,7 +28,7 @@ namespace Godot
             {"chartreuse", new Color(0.50f, 1.00f, 0.00f)},
             {"chocolate", new Color(0.82f, 0.41f, 0.12f)},
             {"coral", new Color(1.00f, 0.50f, 0.31f)},
-            {"cornflower", new Color(0.39f, 0.58f, 0.93f)},
+            {"cornflowerblue", new Color(0.39f, 0.58f, 0.93f)},
             {"cornsilk", new Color(1.00f, 0.97f, 0.86f)},
             {"crimson", new Color(0.86f, 0.08f, 0.24f)},
             {"cyan", new Color(0.00f, 1.00f, 1.00f)},
@@ -171,12 +171,12 @@ namespace Godot
         public static Color Blue { get { return namedColors["blue"]; } }
         public static Color BlueViolet { get { return namedColors["blueviolet"]; } }
         public static Color Brown { get { return namedColors["brown"]; } }
-        public static Color BurlyWood { get { return namedColors["burlywood"]; } }
+        public static Color Burlywood { get { return namedColors["burlywood"]; } }
         public static Color CadetBlue { get { return namedColors["cadetblue"]; } }
         public static Color Chartreuse { get { return namedColors["chartreuse"]; } }
         public static Color Chocolate { get { return namedColors["chocolate"]; } }
         public static Color Coral { get { return namedColors["coral"]; } }
-        public static Color Cornflower { get { return namedColors["cornflower"]; } }
+        public static Color CornflowerBlue { get { return namedColors["cornflowerblue"]; } }
         public static Color Cornsilk { get { return namedColors["cornsilk"]; } }
         public static Color Crimson { get { return namedColors["crimson"]; } }
         public static Color Cyan { get { return namedColors["cyan"]; } }
@@ -236,7 +236,7 @@ namespace Godot
         public static Color LightSteelBlue { get { return namedColors["lightsteelblue"]; } }
         public static Color LightYellow { get { return namedColors["lightyellow"]; } }
         public static Color Lime { get { return namedColors["lime"]; } }
-        public static Color Limegreen { get { return namedColors["limegreen"]; } }
+        public static Color LimeGreen { get { return namedColors["limegreen"]; } }
         public static Color Linen { get { return namedColors["linen"]; } }
         public static Color Magenta { get { return namedColors["magenta"]; } }
         public static Color Maroon { get { return namedColors["maroon"]; } }
@@ -280,7 +280,7 @@ namespace Godot
         public static Color Salmon { get { return namedColors["salmon"]; } }
         public static Color SandyBrown { get { return namedColors["sandybrown"]; } }
         public static Color SeaGreen { get { return namedColors["seagreen"]; } }
-        public static Color SeaShell { get { return namedColors["seashell"]; } }
+        public static Color Seashell { get { return namedColors["seashell"]; } }
         public static Color Sienna { get { return namedColors["sienna"]; } }
         public static Color Silver { get { return namedColors["silver"]; } }
         public static Color SkyBlue { get { return namedColors["skyblue"]; } }
