@@ -278,30 +278,41 @@ void Skeleton3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// This is active only if the skeleton animates the physical bones
 			// and the state of the bone is not active.
-			if (animate_physical_bones) {
-				for (int i = 0; i < bones.size(); i += 1) {
-					if (bones[i].physical_bone) {
-						if (bones[i].physical_bone->is_simulating_physics() == false) {
-							bones[i].physical_bone->reset_to_rest_position();
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (animate_physical_bones) {
+					for (int i = 0; i < bones.size(); i += 1) {
+						if (bones[i].physical_bone) {
+							if (bones[i].physical_bone->is_simulating_physics() == false) {
+								bones[i].physical_bone->reset_to_rest_position();
+							}
 						}
 					}
 				}
 			}
+
+			if (modification_stack.is_valid()) {
+				if (modification_stack->execution_mode == SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process) {
+					execute_modifications(get_physics_process_delta_time());
+				}
+			}
+
 		} break;
 #endif // _3D_DISABLED
 
 #ifndef _3D_DISABLED
 		case NOTIFICATION_READY: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				set_physics_process_internal(true);
-				set_process_internal(true);
-			}
+			set_physics_process_internal(true);
+			set_process_internal(true);
 		} break;
 #endif // _3D_DISABLED
 
 #ifndef _3D_DISABLED
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			execute_modifications(get_process_delta_time());
+			if (modification_stack.is_valid()) {
+				if (modification_stack->execution_mode == SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process) {
+					execute_modifications(get_process_delta_time());
+				}
+			}
 		} break;
 #endif // _3D_DISABLED
 	}
