@@ -37,6 +37,7 @@
 #include "test_class_db.h"
 #include "test_color.h"
 #include "test_gdscript.h"
+#include "test_gradient.h"
 #include "test_gui.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
