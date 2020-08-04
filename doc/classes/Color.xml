@@ -336,7 +336,7 @@
 			Black color.
 		</constant>
 		<constant name="blanchedalmond" value="Color( 1, 0.92, 0.8, 1 )">
-			Blanche almond color.
+			Blanched almond color.
 		</constant>
 		<constant name="blue" value="Color( 0, 0, 1, 1 )">
 			Blue color.
@@ -348,7 +348,7 @@
 			Brown color.
 		</constant>
 		<constant name="burlywood" value="Color( 0.87, 0.72, 0.53, 1 )">
-			Burly wood color.
+			Burlywood color.
 		</constant>
 		<constant name="cadetblue" value="Color( 0.37, 0.62, 0.63, 1 )">
 			Cadet blue color.
@@ -362,8 +362,8 @@
 		<constant name="coral" value="Color( 1, 0.5, 0.31, 1 )">
 			Coral color.
 		</constant>
-		<constant name="cornflower" value="Color( 0.39, 0.58, 0.93, 1 )">
-			Cornflower color.
+		<constant name="cornflowerblue" value="Color( 0.39, 0.58, 0.93, 1 )">
+			Cornflower Blue color.
 		</constant>
 		<constant name="cornsilk" value="Color( 1, 0.97, 0.86, 1 )">
 			Corn silk color.
