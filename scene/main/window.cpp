@@ -553,7 +553,9 @@ void Window::_update_viewport_size() {
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
 	Transform2D stretch_transform;
+#ifdef MODULE_FREETYPE_ENABLED
 	float font_oversampling = 1.0;
+#endif
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
 		stretch_transform = Transform2D();
@@ -632,7 +634,9 @@ void Window::_update_viewport_size() {
 				final_size = screen_size;
 				final_size_override = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
+#ifdef MODULE_FREETYPE_ENABLED
 				font_oversampling = screen_size.x / viewport_size.x;
+#endif
 
 				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
 				stretch_transform.scale(scale);
@@ -655,6 +659,7 @@ void Window::_update_viewport_size() {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServer::INVALID_WINDOW_ID);
 	}
 
+#ifdef MODULE_FREETYPE_ENABLED
 	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
@@ -664,6 +669,7 @@ void Window::_update_viewport_size() {
 			DynamicFont::update_oversampling();
 		}
 	}
+#endif
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
 

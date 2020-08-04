@@ -137,6 +137,7 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("modules_enabled_by_default", "If no, only build modules declared (e.g., in custom.py)", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 
@@ -209,16 +210,21 @@ for path in module_search_paths:
 
 # Add module options.
 for name, path in modules_detected.items():
-    enabled = True
-    sys.path.insert(0, path)
-    import config
+    if env_base["modules_enabled_by_default"]:
+        enabled = True
 
-    try:
-        enabled = config.is_enabled()
-    except AttributeError:
-        pass
-    sys.path.remove(path)
-    sys.modules.pop("config")
+        sys.path.insert(0, path)
+        import config
+
+        try:
+            enabled = config.is_enabled()
+        except AttributeError:
+            pass
+        sys.path.remove(path)
+        sys.modules.pop("config")
+    else:
+        enabled = False
+
     opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
