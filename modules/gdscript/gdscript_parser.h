@@ -1087,6 +1087,7 @@ private:
 	ClassNode *current_class = nullptr;
 	FunctionNode *current_function = nullptr;
 	SuiteNode *current_suite = nullptr;
+	String current_group;
 
 	CompletionContext completion_context;
 	CompletionCall completion_call;
@@ -1215,6 +1216,8 @@ private:
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	template <MultiplayerAPI::RPCMode t_mode>
 	bool network_annotations(const AnnotationNode *p_annotation, Node *p_target);
+	bool tooltip_annotation(const AnnotationNode *p_annotation, Node *p_target);
+	bool group_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable();

@@ -2674,6 +2674,8 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					prop_info.hint = export_info.hint;
 					prop_info.hint_string = export_info.hint_string;
 					prop_info.usage = export_info.usage;
+					prop_info.custom_tooltip = export_info.custom_tooltip;
+					prop_info.export_path = export_info.export_path;
 #ifdef TOOLS_ENABLED
 					if (variable->initializer != nullptr && variable->initializer->type == GDScriptParser::Node::LITERAL) {
 						p_script->member_default_values[name] = static_cast<const GDScriptParser::LiteralNode *>(variable->initializer)->value;

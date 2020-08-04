@@ -146,6 +146,9 @@ struct PropertyInfo {
 	String hint_string;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
 
+	String custom_tooltip;
+	String export_path;
+
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const {
 		PropertyInfo pi = *this;
 		pi.usage |= p_fl;

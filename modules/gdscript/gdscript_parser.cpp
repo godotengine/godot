@@ -144,6 +144,9 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@remotesync"), AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_REMOTESYNC>);
 	register_annotation(MethodInfo("@mastersync"), AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_MASTERSYNC>);
 	register_annotation(MethodInfo("@puppetsync"), AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<MultiplayerAPI::RPC_MODE_PUPPETSYNC>);
+	// Inspector stuff
+	register_annotation(MethodInfo("@tooltip", { Variant::STRING, "tooltip_text" }), AnnotationInfo::VARIABLE, &GDScriptParser::tooltip_annotation);
+	register_annotation(MethodInfo("@group", { Variant::STRING, "group_name" }), AnnotationInfo::VARIABLE, &GDScriptParser::group_annotation);
 	// TODO: Warning annotations.
 }
 
@@ -790,6 +793,8 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 	end_statement("variable declaration");
 
 	variable->export_info.name = variable->identifier->name;
+	// Make the current group the export path of the property.
+	variable->export_info.export_path = current_group;
 
 	return variable;
 }
@@ -2906,6 +2911,26 @@ bool GDScriptParser::network_annotations(const AnnotationNode *p_annotation, Nod
 			return false; // Unreachable.
 	}
 
+	return true;
+}
+
+bool GDScriptParser::tooltip_annotation(const AnnotationNode *p_annotation, Node *p_node) {
+	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, R"("@tooltip" annotation can only be applied to class variables.)");
+
+	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	variable->export_info.custom_tooltip = p_annotation->resolved_arguments[0];
+	return true;
+}
+
+bool GDScriptParser::group_annotation(const AnnotationNode *p_annotation, Node *p_node) {
+	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, R"("@group" annotation can only be applied to class variables.)");
+
+	// Persist the group name so that further variables will also be added to the group.
+	String group_name = p_annotation->resolved_arguments[0];
+	current_group = group_name + "/";
+
+	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	variable->export_info.export_path = current_group;
 	return true;
 }
 

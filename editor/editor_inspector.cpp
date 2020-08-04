@@ -1634,7 +1634,8 @@ void EditorInspector::update_tree() {
 			continue;
 		}
 
-		String basename = p.name;
+		// Append the export path with the name so that properties are correctly grouped.
+		String basename = p.export_path + p.name;
 
 		if (subgroup != "") {
 			if (subgroup_base != "") {
@@ -1870,6 +1871,8 @@ void EditorInspector::update_tree() {
 					ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
 					if (doc_hint != String()) {
 						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
+					} else if (p.custom_tooltip != String()) {
+						ep->set_tooltip(property_prefix + p.name + "::" + p.custom_tooltip);
 					} else {
 						ep->set_tooltip(property_prefix + p.name);
 					}
