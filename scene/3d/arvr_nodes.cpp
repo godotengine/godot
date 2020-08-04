@@ -195,7 +195,7 @@ void ARVRController::_notification(int p_what) {
 			ERR_FAIL_NULL(arvr_server);
 
 			// find the tracker for our controller
-			ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+			Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 			if (tracker == NULL) {
 				// this controller is currently turned off
 				is_active = false;
@@ -282,7 +282,7 @@ String ARVRController::get_controller_name(void) const {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, String());
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
 		return String("Not connected");
 	};
@@ -295,7 +295,7 @@ int ARVRController::get_joystick_id() const {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, 0);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
 		// No tracker? no joystick id... (0 is our first joystick)
 		return -1;
@@ -327,7 +327,7 @@ real_t ARVRController::get_rumble() const {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, 0.0);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
 		return 0.0;
 	};
@@ -340,7 +340,7 @@ void ARVRController::set_rumble(real_t p_rumble) {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker != NULL) {
 		tracker->set_rumble(p_rumble);
 	};
@@ -359,7 +359,7 @@ ARVRPositionalTracker::TrackerHand ARVRController::get_hand() const {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, ARVRPositionalTracker::TRACKER_HAND_UNKNOWN);
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
 	if (tracker == NULL) {
 		return ARVRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	};
@@ -417,7 +417,7 @@ void ARVRAnchor::_notification(int p_what) {
 			ERR_FAIL_NULL(arvr_server);
 
 			// find the tracker for our anchor
-			ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
+			Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
 			if (tracker == NULL) {
 				// this anchor is currently not available
 				is_active = false;
@@ -489,7 +489,7 @@ String ARVRAnchor::get_anchor_name(void) const {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, String());
 
-	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
+	Ref<ARVRPositionalTracker> tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_ANCHOR, anchor_id);
 	if (tracker == NULL) {
 		return String("Not connected");
 	};

@@ -54,6 +54,7 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_imgs", "y_img", "cbcr_img"), &CameraFeed::set_YCbCr_imgs);
 	ClassDB::bind_method(D_METHOD("_set_external", "width", "height"), &CameraFeed::set_external);
 	ClassDB::bind_method(D_METHOD("_allocate_texture", "width", "height", "format", "texture_type", "data_type"), &CameraFeed::allocate_texture);
+	ClassDB::bind_method(D_METHOD("get_texture", "which"), &CameraFeed::get_texture);
 
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");

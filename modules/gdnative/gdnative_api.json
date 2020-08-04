@@ -6422,7 +6422,7 @@
       "type": "ANDROID",
       "version": {
         "major": 1,
-        "minor": 1
+        "minor": 2
       },
       "next": null,
       "api": [
@@ -6447,6 +6447,12 @@
         {
           "name": "godot_android_is_activity_resumed",
           "return_type": "bool",
+          "arguments": [
+          ]
+        },
+        {
+          "name": "godot_android_get_display_rotation",
+          "return_type": "int",
           "arguments": [
           ]
         }

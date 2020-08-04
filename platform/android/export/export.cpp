@@ -1005,7 +1005,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 							if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
 								// Update the focus awareness meta-data value
-								encode_uint32(xr_mode_index == /* XRMode.OVR */ 1 && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
+								encode_uint32(xr_mode_index == XR_MODE_OVR && focus_awareness ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 							}
 						}
 
@@ -1029,7 +1029,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						Vector<bool> feature_required_list;
 						Vector<int> feature_versions;
 
-						if (xr_mode_index == 1 /* XRMode.OVR */) {
+						if (xr_mode_index == XR_MODE_OVR) {
 							// Check for degrees of freedom
 							int dof_index = p_preset->get("xr_features/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
 
@@ -2102,7 +2102,7 @@ public:
 		int degrees_of_freedom = p_preset->get("xr_features/degrees_of_freedom");
 		int hand_tracking = p_preset->get("xr_features/hand_tracking");
 		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
-		if (xr_mode_index != /* XRMode.OVR*/ 1) {
+		if (xr_mode_index != XR_MODE_OVR) {
 			if (degrees_of_freedom > 0) {
 				valid = false;
 				err += TTR("\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\".");
