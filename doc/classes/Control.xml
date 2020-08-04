@@ -11,6 +11,7 @@
 		Only one [Control] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
 		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_*_override[/code] methods, like [method add_font_override]. You can override the theme with the inspector.
+		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use [method get_color], [method get_constant], [method get_font], [method get_icon], [method get_stylebox], and the [code]add_*_override[/code] methods provided by this class.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
@@ -95,7 +96,17 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses. If the [code]color[/code] is empty or invalid, the override is cleared and the color from assigned [Theme] is used.
+				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses.
+				[b]Note:[/b] Unlike other theme overrides, there is no way to undo a color override without manually assigning the previous color.
+				[b]Example of overriding a label's color and resetting it later:[/b]
+				[codeblock]
+				# Override the child node "MyLabel"'s font color to orange.
+				$MyLabel.add_color_override("font_color", Color(1, 0.5, 0))
+
+				# Reset the color by creating a new node to get the default value:
+				var default_label_color = Label.new().get_color("font_color")
+				$MyLabel.add_color_override("font_color", default_label_color)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_constant_override">
@@ -106,7 +117,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is empty or invalid, the override is cleared and the constant from assigned [Theme] is used.
+				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is [code]0[/code], the override is cleared and the constant from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_font_override">
@@ -117,7 +128,7 @@
 			<argument index="1" name="font" type="Font">
 			</argument>
 			<description>
-				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is empty or invalid, the override is cleared and the font from assigned [Theme] is used.
+				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is [code]null[/code] or invalid, the override is cleared and the font from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_icon_override">
@@ -128,7 +139,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is empty or invalid, the override is cleared and the icon from assigned [Theme] is used.
+				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is [code]null[/code] or invalid, the override is cleared and the icon from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_shader_override">
@@ -139,7 +150,7 @@
 			<argument index="1" name="shader" type="Shader">
 			</argument>
 			<description>
-				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is empty or invalid, the override is cleared and the shader from assigned [Theme] is used.
+				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is [code]null[/code] or invalid, the override is cleared and the shader from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_stylebox_override">
@@ -151,6 +162,19 @@
 			</argument>
 			<description>
 				Overrides the [StyleBox] with given [code]name[/code] in the [member theme] resource the control uses. If [code]stylebox[/code] is empty or invalid, the override is cleared and the [StyleBox] from assigned [Theme] is used.
+				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
+				[codeblock]
+				# The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
+				# Resources are shared across instances, so we need to duplicate it
+				# to avoid modifying the appearance of all other buttons.
+				var new_stylebox_normal = $MyButton.get_stylebox("normal").duplicate()
+				new_stylebox_normal.border_width_top = 3
+				new_stylebox_normal.border_color = Color(0, 1, 0.5)
+				$MyButton.add_stylebox_override("normal", new_stylebox_normal)
+
+				# Remove the stylebox override:
+				$MyButton.add_stylebox_override("normal", null)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="can_drop_data" qualifiers="virtual">
