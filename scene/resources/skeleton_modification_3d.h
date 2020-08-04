@@ -55,7 +55,16 @@ public:
 	Skeleton3D *skeleton;
 	bool is_setup = false;
 	bool enabled = true;
-	float strength = 0.0;
+	float strength = 1.0;
+
+	enum EXECUTION_MODE {
+		execution_mode_process,
+		execution_mode_physics_process,
+	};
+	int execution_mode = execution_mode_process;
+
+	void set_execution_mode(int p_mode);
+	int get_execution_mode();
 
 	Vector<Ref<SkeletonModification3D>> modifications;
 	int modifications_count = 0;
@@ -368,6 +377,8 @@ private:
 		Vector3 velocity = Vector3(0, 0, 0);
 		Vector3 last_position = Vector3(0, 0, 0);
 		Vector3 dynamic_position = Vector3(0, 0, 0);
+
+		Vector3 last_noncollision_position = Vector3(0, 0, 0);
 	};
 
 	NodePath target_node;
@@ -379,6 +390,9 @@ private:
 	float damping = 0.75;
 	bool use_gravity = false;
 	Vector3 gravity = Vector3(0, -6.0, 0);
+
+	bool use_colliders = false;
+	uint32_t collision_mask = 1;
 
 	void update_cache();
 	void _execute_jiggle_joint(int p_joint_idx, Node3D *target, float delta);
@@ -408,6 +422,11 @@ public:
 	bool get_use_gravity() const;
 	void set_gravity(Vector3 p_gravity);
 	Vector3 get_gravity() const;
+
+	void set_use_colliders(bool p_use_colliders);
+	bool get_use_colliders() const;
+	void set_collision_mask(int p_mask);
+	int get_collision_mask() const;
 
 	int get_jiggle_data_chain_length();
 	void set_jiggle_data_chain_length(int p_new_length);

@@ -98,9 +98,6 @@ void SkeletonModificationStack3D::execute(float delta) {
 		return;
 	}
 
-	// NOTE: is needed for CCDIK.
-	skeleton->clear_bones_local_pose_override();
-
 	for (int i = 0; i < modifications.size(); i++) {
 		if (!modifications[i].is_valid()) {
 			continue;
@@ -187,6 +184,14 @@ float SkeletonModificationStack3D::get_strength() const {
 	return strength;
 }
 
+void SkeletonModificationStack3D::set_execution_mode(int p_mode) {
+	execution_mode = p_mode;
+}
+
+int SkeletonModificationStack3D::get_execution_mode() {
+	return execution_mode;
+}
+
 void SkeletonModificationStack3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("setup"), &SkeletonModificationStack3D::setup);
 	ClassDB::bind_method(D_METHOD("execute", "delta"), &SkeletonModificationStack3D::execute);
@@ -200,6 +205,9 @@ void SkeletonModificationStack3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modification_count"), &SkeletonModificationStack3D::set_modification_count);
 	ClassDB::bind_method(D_METHOD("get_modification_count"), &SkeletonModificationStack3D::get_modification_count);
 
+	ClassDB::bind_method(D_METHOD("set_execution_mode", "mode"), &SkeletonModificationStack3D::set_execution_mode);
+	ClassDB::bind_method(D_METHOD("get_execution_mode"), &SkeletonModificationStack3D::get_execution_mode);
+
 	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModificationStack3D::get_is_setup);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModificationStack3D::set_enabled);
@@ -210,6 +218,7 @@ void SkeletonModificationStack3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_modification_count", "get_modification_count");
 }
 
@@ -219,7 +228,7 @@ SkeletonModificationStack3D::SkeletonModificationStack3D() {
 	is_setup = false;
 	enabled = false;
 	modifications_count = 0;
-	strength = 0;
+	strength = 1.0;
 }
 
 ///////////////////////////////////////
@@ -570,6 +579,14 @@ void SkeletonModification3DCCDIK::execute(float delta) {
 		update_tip_cache();
 		WARN_PRINT("Tip cache is out of date. Updating...");
 		return;
+	}
+
+	// Reset the local bone overrides for CCDIK affected nodes
+	// TODO: this is needed for CCDIK, but I'm not sure the CCDIK implementation is correct. Will need to investigate.
+	for (int i = 0; i < ccdik_data_chain.size(); i++) {
+		stack->skeleton->set_bone_local_pose_override(ccdik_data_chain[i].bone_idx,
+				stack->skeleton->get_bone_local_pose_override(ccdik_data_chain[i].bone_idx),
+				0.0, false);
 	}
 
 	Node3D *node_target = Object::cast_to<Node3D>(ObjectDB::get_instance(target_node_cache));
@@ -1519,6 +1536,13 @@ bool SkeletonModification3DJiggle::_set(const StringName &p_path, const Variant 
 			jiggle_joint_set_gravity(which, p_value);
 		}
 		return true;
+	} else {
+		if (path == "use_colliders") {
+			set_use_colliders(p_value);
+		} else if (path == "collision_mask") {
+			set_collision_mask(p_value);
+		}
+		return true;
 	}
 	return true;
 }
@@ -1549,11 +1573,23 @@ bool SkeletonModification3DJiggle::_get(const StringName &p_path, Variant &r_ret
 			r_ret = jiggle_joint_get_gravity(which);
 		}
 		return true;
+	} else {
+		if (path == "use_colliders") {
+			r_ret = get_use_colliders();
+		} else if (path == "collision_mask") {
+			r_ret = get_collision_mask();
+		}
+		return true;
 	}
 	return true;
 }
 
 void SkeletonModification3DJiggle::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::BOOL, "use_colliders", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	if (use_colliders) {
+		p_list->push_back(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS, "", PROPERTY_USAGE_DEFAULT));
+	}
+
 	for (int i = 0; i < jiggle_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
@@ -1618,6 +1654,36 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 	jiggle_data_chain.write[p_joint_idx].dynamic_position += jiggle_data_chain[p_joint_idx].velocity + jiggle_data_chain[p_joint_idx].force;
 	jiggle_data_chain.write[p_joint_idx].dynamic_position += new_bone_trans.origin - jiggle_data_chain[p_joint_idx].last_position;
 	jiggle_data_chain.write[p_joint_idx].last_position = new_bone_trans.origin;
+
+	// Collision detection/response
+	// (Does not run in the editor, unlike the 2D version. Not sure why though...)
+	if (use_colliders) {
+		if (stack->execution_mode == SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process) {
+			Ref<World3D> world_3d = stack->skeleton->get_world_3d();
+			ERR_FAIL_COND(world_3d.is_null());
+			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
+			PhysicsDirectSpaceState3D::RayResult ray_result;
+
+			// Convert to world transforms, which is what the physics server needs
+			Transform new_bone_trans_world = stack->skeleton->global_pose_to_world_transform(new_bone_trans);
+			Transform dynamic_position_world = stack->skeleton->global_pose_to_world_transform(Transform(Basis(), jiggle_data_chain[p_joint_idx].dynamic_position));
+
+			// Add exception support?
+			bool ray_hit = space_state->intersect_ray(new_bone_trans_world.origin, dynamic_position_world.get_origin(),
+					ray_result, Set<RID>(), collision_mask);
+
+			if (ray_hit) {
+				jiggle_data_chain.write[p_joint_idx].dynamic_position = jiggle_data_chain[p_joint_idx].last_noncollision_position;
+				jiggle_data_chain.write[p_joint_idx].acceleration = Vector3(0, 0, 0);
+				jiggle_data_chain.write[p_joint_idx].velocity = Vector3(0, 0, 0);
+			} else {
+				jiggle_data_chain.write[p_joint_idx].last_noncollision_position = jiggle_data_chain[p_joint_idx].dynamic_position;
+			}
+
+		} else {
+			WARN_PRINT("Jiggle modifier: You cannot detect colliders without the stack mode being set to _physics_process!");
+		}
+	}
 
 	// Get the forward direction that the basis is facing in right now.
 	stack->skeleton->update_bone_rest_forward_vector(jiggle_data_chain[p_joint_idx].bone_idx);
@@ -1737,6 +1803,23 @@ void SkeletonModification3DJiggle::set_gravity(Vector3 p_gravity) {
 
 Vector3 SkeletonModification3DJiggle::get_gravity() const {
 	return gravity;
+}
+
+void SkeletonModification3DJiggle::set_use_colliders(bool p_use_collider) {
+	use_colliders = p_use_collider;
+	_change_notify();
+}
+
+bool SkeletonModification3DJiggle::get_use_colliders() const {
+	return use_colliders;
+}
+
+void SkeletonModification3DJiggle::set_collision_mask(int p_mask) {
+	collision_mask = p_mask;
+}
+
+int SkeletonModification3DJiggle::get_collision_mask() const {
+	return collision_mask;
 }
 
 // Jiggle joint data functions
@@ -1866,6 +1949,11 @@ void SkeletonModification3DJiggle::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_gravity"), &SkeletonModification3DJiggle::get_use_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "gravity"), &SkeletonModification3DJiggle::set_gravity);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &SkeletonModification3DJiggle::get_gravity);
+
+	ClassDB::bind_method(D_METHOD("set_use_colliders", "use_colliders"), &SkeletonModification3DJiggle::set_use_colliders);
+	ClassDB::bind_method(D_METHOD("get_use_colliders"), &SkeletonModification3DJiggle::get_use_colliders);
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &SkeletonModification3DJiggle::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SkeletonModification3DJiggle::get_collision_mask);
 
 	// Jiggle joint data functions
 	ClassDB::bind_method(D_METHOD("jiggle_joint_set_bone_name", "joint_idx", "name"), &SkeletonModification3DJiggle::jiggle_joint_set_bone_name);
