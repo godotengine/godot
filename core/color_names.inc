@@ -23,7 +23,6 @@ static void _populate_named_colors() {
 	_named_colors.insert("chartreuse", Color(0.50, 1.00, 0.00));
 	_named_colors.insert("chocolate", Color(0.82, 0.41, 0.12));
 	_named_colors.insert("coral", Color(1.00, 0.50, 0.31));
-	_named_colors.insert("cornflower", Color(0.39, 0.58, 0.93)); // for compatibility
 	_named_colors.insert("cornflowerblue", Color(0.39, 0.58, 0.93));
 	_named_colors.insert("cornsilk", Color(1.00, 0.97, 0.86));
 	_named_colors.insert("crimson", Color(0.86, 0.08, 0.24));
@@ -167,7 +166,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("BLUE", Color(0.00, 0.00, 1.00));
 	_named_colors.insert("BLUE_VIOLET", Color(0.54, 0.17, 0.89));
 	_named_colors.insert("BROWN", Color(0.65, 0.16, 0.16));
-	_named_colors.insert("BURLYWOOD", Color(0.87, 0.72, 0.53));
+	_named_colors.insert("BURLY_WOOD", Color(0.87, 0.72, 0.53));
 	_named_colors.insert("CADET_BLUE", Color(0.37, 0.62, 0.63));
 	_named_colors.insert("CHARTREUSE", Color(0.50, 1.00, 0.00));
 	_named_colors.insert("CHOCOLATE", Color(0.82, 0.41, 0.12));
@@ -263,7 +262,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("PALE_GOLDENROD", Color(0.93, 0.91, 0.67));
 	_named_colors.insert("PALE_GREEN", Color(0.60, 0.98, 0.60));
 	_named_colors.insert("PALE_TURQUOISE", Color(0.69, 0.93, 0.93));
-	_named_colors.insert("PALE_VIOLETRED", Color(0.86, 0.44, 0.58));
+	_named_colors.insert("PALE_VIOLET_RED", Color(0.86, 0.44, 0.58));
 	_named_colors.insert("PAPAYA_WHIP", Color(1.00, 0.94, 0.84));
 	_named_colors.insert("PEACH_PUFF", Color(1.00, 0.85, 0.73));
 	_named_colors.insert("PERU", Color(0.80, 0.52, 0.25));
@@ -280,7 +279,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("SALMON", Color(0.98, 0.50, 0.45));
 	_named_colors.insert("SANDY_BROWN", Color(0.96, 0.64, 0.38));
 	_named_colors.insert("SEA_GREEN", Color(0.18, 0.55, 0.34));
-	_named_colors.insert("SEASHELL", Color(1.00, 0.96, 0.93));
+	_named_colors.insert("SEA_SHELL", Color(1.00, 0.96, 0.93));
 	_named_colors.insert("SIENNA", Color(0.63, 0.32, 0.18));
 	_named_colors.insert("SILVER", Color(0.75, 0.75, 0.75));
 	_named_colors.insert("SKY_BLUE", Color(0.53, 0.81, 0.92));
