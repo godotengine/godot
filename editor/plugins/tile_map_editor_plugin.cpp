@@ -886,17 +886,17 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		rect.position += tile_ofs;
 	}
 
-	rect.position = p_xform.xform(rect.position);
-	rect.size *= sc;
-
 	Color modulate = node->get_tileset()->tile_get_modulate(p_cell);
 	modulate.a = 0.5;
 
+	Transform2D old_transform = p_viewport->get_viewport_transform();
+	p_viewport->draw_set_transform_matrix(p_xform); // Take into account TileMap transformation when displaying cell
 	if (r.has_no_area()) {
 		p_viewport->draw_texture_rect(t, rect, false, modulate, p_transpose);
 	} else {
 		p_viewport->draw_texture_rect_region(t, rect, r, modulate, p_transpose);
 	}
+	p_viewport->draw_set_transform_matrix(old_transform);
 }
 
 void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
