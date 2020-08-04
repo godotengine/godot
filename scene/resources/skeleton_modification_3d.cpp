@@ -546,7 +546,7 @@ void SkeletonModification3DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 				PROPERTY_HINT_ENUM, "From Tip, From Joint, Free", PROPERTY_USAGE_DEFAULT));
 
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "enable_joint_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		if (ccdik_data_chain[i].enable_constraint == true) {
+		if (ccdik_data_chain[i].enable_constraint) {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "joint_constraint_angle_min", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "joint_constraint_angle_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "joint_constraint_angles_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
@@ -1032,11 +1032,11 @@ void SkeletonModification3DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "auto_calculate_length", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
-		if (fabrik_data_chain[i].auto_calculate_length == false) {
+		if (!fabrik_data_chain[i].auto_calculate_length) {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "length", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		} else {
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "use_tip_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-			if (fabrik_data_chain[i].use_tip_node == true) {
+			if (fabrik_data_chain[i].use_tip_node) {
 				p_list->push_back(PropertyInfo(Variant::NODE_PATH, base_string + "tip_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D", PROPERTY_USAGE_DEFAULT));
 			}
 		}
@@ -1561,12 +1561,12 @@ void SkeletonModification3DJiggle::_get_property_list(List<PropertyInfo> *p_list
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "override_defaults", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
-		if (jiggle_data_chain[i].override_defaults == true) {
+		if (jiggle_data_chain[i].override_defaults) {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "stiffness", PROPERTY_HINT_RANGE, "0, 1000, 0.01", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "mass", PROPERTY_HINT_RANGE, "0, 1000, 0.01", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "damping", PROPERTY_HINT_RANGE, "0, 1, 0.01", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "use_gravity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-			if (jiggle_data_chain[i].use_gravity == true) {
+			if (jiggle_data_chain[i].use_gravity) {
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, base_string + "gravity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 			}
 		}
@@ -1633,7 +1633,7 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 
 void SkeletonModification3DJiggle::_update_jiggle_joint_data() {
 	for (int i = 0; i < jiggle_data_chain.size(); i++) {
-		if (jiggle_data_chain[i].override_defaults == false) {
+		if (!jiggle_data_chain[i].override_defaults) {
 			jiggle_joint_set_stiffness(i, stiffness);
 			jiggle_joint_set_mass(i, mass);
 			jiggle_joint_set_damping(i, damping);
@@ -2251,7 +2251,7 @@ NodePath SkeletonModification3DTwoBoneIK::get_pole_node() const {
 
 void SkeletonModification3DTwoBoneIK::set_auto_calculate_joint_length(bool p_calculate) {
 	auto_calculate_joint_length = p_calculate;
-	if (p_calculate == true) {
+	if (p_calculate) {
 		calculate_joint_lengths();
 	}
 	_change_notify();
