@@ -2328,7 +2328,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	ExpressionNode *grouped = parse_expression(false);
 	pop_multiline();
-	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after grouping expression.)*");
+	if (grouped == nullptr) {
+		push_error(R"(Expected grouping expression.)");
+	} else {
+		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after grouping expression.)*");
+	}
 	return grouped;
 }
 
