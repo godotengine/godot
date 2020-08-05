@@ -1,4 +1,5 @@
 // Names from https://en.wikipedia.org/wiki/X11_color_names
+// and https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.colors?view=netcore-3.1
 #include "core/map.h"
 
 static Map<String, Color> _named_colors;
