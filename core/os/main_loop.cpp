@@ -47,6 +47,7 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_PAUSED);
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_IN);
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_OUT);
+	BIND_CONSTANT(NOTIFICATION_TEXT_SERVER_CHANGED);
 
 	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
 };

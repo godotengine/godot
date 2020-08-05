@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main_loop.h                                                          */
+/*  test_lru.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#ifndef TEST_LRU_H
+#define TEST_LRU_H
 
-#include "core/input/input_event.h"
-#include "core/object/reference.h"
-#include "core/object/script_language.h"
+#include "core/templates/lru.h"
+#include "core/templates/vector.h"
 
-class MainLoop : public Object {
-	GDCLASS(MainLoop, Object);
-	OBJ_CATEGORY("Main Loop");
+#include "tests/test_macros.h"
 
-	Ref<Script> init_script;
+namespace TestLRU {
 
-protected:
-	static void _bind_methods();
+TEST_CASE("[LRU] Store and read") {
+	LRUCache<int, int> lru;
 
-public:
-	enum {
-		//make sure these are replicated in Node
-		NOTIFICATION_OS_MEMORY_WARNING = 2009,
-		NOTIFICATION_TRANSLATION_CHANGED = 2010,
-		NOTIFICATION_WM_ABOUT = 2011,
-		NOTIFICATION_CRASH = 2012,
-		NOTIFICATION_OS_IME_UPDATE = 2013,
-		NOTIFICATION_APPLICATION_RESUMED = 2014,
-		NOTIFICATION_APPLICATION_PAUSED = 2015,
-		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
-		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
-	};
+	lru.set_capacity(3);
+	lru.insert(1, 1);
+	lru.insert(50, 2);
+	lru.insert(100, 5);
 
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
-	virtual void finish();
+	CHECK(lru.has(1));
+	CHECK(lru.has(50));
+	CHECK(lru.has(100));
+	CHECK(!lru.has(200));
 
-	void set_init_script(const Ref<Script> &p_init_script);
+	CHECK(lru.get(1) == 1);
+	CHECK(lru.get(50) == 2);
+	CHECK(lru.get(100) == 5);
 
-	MainLoop() {}
-	virtual ~MainLoop() {}
-};
+	CHECK(lru.getptr(1) != nullptr);
+	CHECK(lru.getptr(1000) == nullptr);
 
-#endif // MAIN_LOOP_H
+	lru.insert(600, 600); // Erase <50>
+	CHECK(lru.has(600));
+	CHECK(!lru.has(50));
+}
+
+TEST_CASE("[LRU] Resize and clear") {
+	LRUCache<int, int> lru;
+
+	lru.set_capacity(3);
+	lru.insert(1, 1);
+	lru.insert(2, 2);
+	lru.insert(3, 3);
+
+	CHECK(lru.get_capacity() == 3);
+
+	lru.set_capacity(5);
+	CHECK(lru.get_capacity() == 5);
+
+	CHECK(lru.has(1));
+	CHECK(lru.has(2));
+	CHECK(lru.has(3));
+	CHECK(!lru.has(4));
+
+	lru.set_capacity(2);
+	CHECK(lru.get_capacity() == 2);
+
+	CHECK(!lru.has(1));
+	CHECK(lru.has(2));
+	CHECK(lru.has(3));
+	CHECK(!lru.has(4));
+
+	lru.clear();
+	CHECK(!lru.has(1));
+	CHECK(!lru.has(2));
+	CHECK(!lru.has(3));
+	CHECK(!lru.has(4));
+}
+} // namespace TestLRU
+
+#endif // TEST_LRU_H

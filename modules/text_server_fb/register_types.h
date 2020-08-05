@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main_loop.h                                                          */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#ifndef TEXT_SERVER_FB_REGISTER_TYPES_H
+#define TEXT_SERVER_FB_REGISTER_TYPES_H
 
-#include "core/input/input_event.h"
-#include "core/object/reference.h"
-#include "core/object/script_language.h"
+#define MODULE_TEXT_SERVER_FB_HAS_PREREGISTER
 
-class MainLoop : public Object {
-	GDCLASS(MainLoop, Object);
-	OBJ_CATEGORY("Main Loop");
+void preregister_text_server_fb_types();
+void register_text_server_fb_types();
+void unregister_text_server_fb_types();
 
-	Ref<Script> init_script;
-
-protected:
-	static void _bind_methods();
-
-public:
-	enum {
-		//make sure these are replicated in Node
-		NOTIFICATION_OS_MEMORY_WARNING = 2009,
-		NOTIFICATION_TRANSLATION_CHANGED = 2010,
-		NOTIFICATION_WM_ABOUT = 2011,
-		NOTIFICATION_CRASH = 2012,
-		NOTIFICATION_OS_IME_UPDATE = 2013,
-		NOTIFICATION_APPLICATION_RESUMED = 2014,
-		NOTIFICATION_APPLICATION_PAUSED = 2015,
-		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
-		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
-	};
-
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
-	virtual void finish();
-
-	void set_init_script(const Ref<Script> &p_init_script);
-
-	MainLoop() {}
-	virtual ~MainLoop() {}
-};
-
-#endif // MAIN_LOOP_H
+#endif // TEXT_SERVER_FB_REGISTER_TYPES_H
