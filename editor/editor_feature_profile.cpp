@@ -40,6 +40,7 @@
 #include "editor/editor_settings.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
+	TTRC("2D Editor"),
 	TTRC("3D Editor"),
 	TTRC("Script Editor"),
 	TTRC("Asset Library"),
@@ -60,6 +61,7 @@ const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
+	"2d",
 	"3d",
 	"script",
 	"asset_lib",
@@ -295,6 +297,7 @@ void EditorFeatureProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_to_file", "path"), &EditorFeatureProfile::save_to_file);
 	ClassDB::bind_method(D_METHOD("load_from_file", "path"), &EditorFeatureProfile::load_from_file);
 
+	BIND_ENUM_CONSTANT(FEATURE_2D);
 	BIND_ENUM_CONSTANT(FEATURE_3D);
 	BIND_ENUM_CONSTANT(FEATURE_SCRIPT);
 	BIND_ENUM_CONSTANT(FEATURE_ASSET_LIB);
