@@ -2350,9 +2350,9 @@ void register_variant_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
 
-	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_X", Vector3::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Y", Vector3::AXIS_Y);
-	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Z", Vector3::AXIS_Z);
+	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_X", Vector3i::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Y", Vector3i::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Z", Vector3i::AXIS_Z);
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
@@ -2366,8 +2366,8 @@ void register_variant_methods() {
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_X", Vector2::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);
 
-	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_X", Vector2::AXIS_X);
-	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_Y", Vector2::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_X", Vector2i::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_Y", Vector2i::AXIS_Y);
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
