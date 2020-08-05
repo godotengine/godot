@@ -227,6 +227,8 @@ private:
 
 	void _execute_ccdik_joint(int p_joint_idx, Node3D *target, Node3D *tip);
 
+	Quat _quat_from_two_vectors(Vector3 u, Vector3 v);
+
 protected:
 	static void _bind_methods();
 	bool _get(const StringName &p_path, Variant &r_ret) const;
