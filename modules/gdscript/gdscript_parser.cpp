@@ -2584,6 +2584,10 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			type->type_chain.push_back(type_element);
 		}
 	}
+	
+	if (match(GDScriptTokenizer::Token::QUESTION_MARK)) {
+		type->nullable = true;
+	}
 
 	return type;
 }
@@ -3706,6 +3710,9 @@ void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
 				push_text(".");
 			}
 			print_identifier(p_type->type_chain[i]);
+		}
+		if (p_type->nullable) {
+			push_text("?");
 		}
 	}
 }

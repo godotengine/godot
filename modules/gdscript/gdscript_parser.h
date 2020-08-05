@@ -120,6 +120,7 @@ public:
 		bool is_constant = false;
 		bool is_meta_type = false;
 		bool is_coroutine = false; // For function calls.
+		bool is_nullable = false;
 
 		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
@@ -948,6 +949,7 @@ public:
 
 	struct TypeNode : public Node {
 		Vector<IdentifierNode *> type_chain;
+		bool nullable = false;
 
 		TypeNode() {
 			type = TYPE;
