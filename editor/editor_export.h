@@ -294,6 +294,7 @@ class EditorExportPlugin : public Reference {
 	bool skipped;
 
 	Vector<String> ios_frameworks;
+	Vector<String> ios_embedded_frameworks;
 	Vector<String> ios_project_static_libs;
 	String ios_plist_content;
 	String ios_linker_flags;
@@ -308,6 +309,7 @@ class EditorExportPlugin : public Reference {
 
 	_FORCE_INLINE_ void _export_end() {
 		ios_frameworks.clear();
+		ios_embedded_frameworks.clear();
 		ios_bundle_files.clear();
 		ios_plist_content = "";
 		ios_linker_flags = "";
@@ -326,6 +328,7 @@ protected:
 	void add_shared_object(const String &p_path, const Vector<String> &tags);
 
 	void add_ios_framework(const String &p_path);
+	void add_ios_embedded_framework(const String &p_path);
 	void add_ios_project_static_lib(const String &p_path);
 	void add_ios_plist_content(const String &p_plist_content);
 	void add_ios_linker_flags(const String &p_flags);
@@ -341,6 +344,7 @@ protected:
 
 public:
 	Vector<String> get_ios_frameworks() const;
+	Vector<String> get_ios_embedded_frameworks() const;
 	Vector<String> get_ios_project_static_libs() const;
 	String get_ios_plist_content() const;
 	String get_ios_linker_flags() const;
