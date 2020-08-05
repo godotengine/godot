@@ -8,7 +8,7 @@
 		It uses floating point coordinates.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="Rect2">

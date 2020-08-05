@@ -8,7 +8,7 @@
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Matrices and transforms">https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
 	</tutorials>
 	<methods>
 		<method name="Transform2D">
