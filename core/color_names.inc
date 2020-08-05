@@ -205,9 +205,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("GOLD", Color(1.00, 0.84, 0.00));
 	_named_colors.insert("GOLDENROD", Color(0.85, 0.65, 0.13));
 	_named_colors.insert("GRAY", Color(0.75, 0.75, 0.75));
-	_named_colors.insert("WEB_GRAY", Color(0.50, 0.50, 0.50));
 	_named_colors.insert("GREEN", Color(0.00, 1.00, 0.00));
-	_named_colors.insert("WEB_GREEN", Color(0.00, 0.50, 0.00));
 	_named_colors.insert("GREEN_YELLOW", Color(0.68, 1.00, 0.18));
 	_named_colors.insert("HONEYDEW", Color(0.94, 1.00, 0.94));
 	_named_colors.insert("HOT_PINK", Color(1.00, 0.41, 0.71));
@@ -237,7 +235,6 @@ static void _populate_named_colors() {
 	_named_colors.insert("LINEN", Color(0.98, 0.94, 0.90));
 	_named_colors.insert("MAGENTA", Color(1.00, 0.00, 1.00));
 	_named_colors.insert("MAROON", Color(0.69, 0.19, 0.38));
-	_named_colors.insert("WEB_MAROON", Color(0.50, 0.00, 0.00));
 	_named_colors.insert("MEDIUM_AQUAMARINE", Color(0.40, 0.80, 0.67));
 	_named_colors.insert("MEDIUM_BLUE", Color(0.00, 0.00, 0.80));
 	_named_colors.insert("MEDIUM_ORCHID", Color(0.73, 0.33, 0.83));
@@ -270,7 +267,6 @@ static void _populate_named_colors() {
 	_named_colors.insert("PLUM", Color(0.87, 0.63, 0.87));
 	_named_colors.insert("POWDER_BLUE", Color(0.69, 0.88, 0.90));
 	_named_colors.insert("PURPLE", Color(0.63, 0.13, 0.94));
-	_named_colors.insert("WEB_PURPLE", Color(0.50, 0.00, 0.50));
 	_named_colors.insert("REBECCA_PURPLE", Color(0.40, 0.20, 0.60));
 	_named_colors.insert("RED", Color(1.00, 0.00, 0.00));
 	_named_colors.insert("ROSY_BROWN", Color(0.74, 0.56, 0.56));
@@ -292,9 +288,13 @@ static void _populate_named_colors() {
 	_named_colors.insert("TEAL", Color(0.00, 0.50, 0.50));
 	_named_colors.insert("THISTLE", Color(0.85, 0.75, 0.85));
 	_named_colors.insert("TOMATO", Color(1.00, 0.39, 0.28));
-	_named_colors.insert("TURQUOISE", Color(0.25, 0.88, 0.82));
 	_named_colors.insert("TRANSPARENT", Color(1.00, 1.00, 1.00, 0.00));
+	_named_colors.insert("TURQUOISE", Color(0.25, 0.88, 0.82));
 	_named_colors.insert("VIOLET", Color(0.93, 0.51, 0.93));
+	_named_colors.insert("WEB_GRAY", Color(0.50, 0.50, 0.50));
+	_named_colors.insert("WEB_GREEN", Color(0.00, 0.50, 0.00));
+	_named_colors.insert("WEB_MAROON", Color(0.50, 0.00, 0.00));
+	_named_colors.insert("WEB_PURPLE", Color(0.50, 0.00, 0.50));
 	_named_colors.insert("WHEAT", Color(0.96, 0.87, 0.70));
 	_named_colors.insert("WHITE", Color(1.00, 1.00, 1.00));
 	_named_colors.insert("WHITE_SMOKE", Color(0.96, 0.96, 0.96));
