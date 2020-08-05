@@ -54,6 +54,7 @@ struct GDScriptDataType {
 	Kind kind = UNINITIALIZED;
 
 	bool has_type = false;
+	bool is_nullable = false;
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
 	Ref<Script> script_type;
@@ -61,6 +62,11 @@ struct GDScriptDataType {
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		if (!has_type) {
 			return true; // Can't type check
+		}
+
+		if (is_nullable && p_variant.get_type() == Variant::NIL) {
+			// Nullable types will always accept null.
+			return true;
 		}
 
 		switch (kind) {

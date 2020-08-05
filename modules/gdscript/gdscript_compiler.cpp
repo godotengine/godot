@@ -121,6 +121,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 
 	GDScriptDataType result;
 	result.has_type = true;
+	result.is_nullable = p_datatype.is_nullable;
 
 	switch (p_datatype.kind) {
 		case GDScriptParser::DataType::VARIANT: {
