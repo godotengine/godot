@@ -398,12 +398,17 @@ Color Color::named(const String &p_name) {
 	}
 	String name = p_name;
 	// Normalize name
-	name = name.replace(" ", "");
-	name = name.replace("-", "");
-	name = name.replace("_", "");
+	// name = name.replace(" ", "");
+	// name = name.replace("-", "");
+	// name = name.replace("_", "");
+	// name = name.replace("'", "");
+	// name = name.replace(".", "");
+	// name = name.to_lower();
+	name = name.replace(" ", "_");
+	name = name.replace("-", "_");
 	name = name.replace("'", "");
 	name = name.replace(".", "");
-	name = name.to_lower();
+	name = name.to_upper();
 
 	const Map<String, Color>::Element *color = _named_colors.find(name);
 	ERR_FAIL_NULL_V_MSG(color, Color(), "Invalid color name: " + p_name + ".");
