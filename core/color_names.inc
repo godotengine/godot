@@ -153,7 +153,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("yellow", Color(1.00, 1.00, 0.00));
 	_named_colors.insert("yellowgreen", Color(0.60, 0.80, 0.20));
 
-	// You're a pedant
+	// UPPERCASE_NAMES
 	_named_colors.insert("ALICE_BLUE", Color(0.94, 0.97, 1.00));
 	_named_colors.insert("ANTIQUE_WHITE", Color(0.98, 0.92, 0.84));
 	_named_colors.insert("AQUA", Color(0.00, 1.00, 1.00));
