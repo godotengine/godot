@@ -2331,8 +2331,8 @@ void register_variant_methods() {
 
 	/* REGISTER CONSTANTS */
 
-	_populate_named_colors();
-	for (Map<String, Color>::Element *color = _named_colors.front(); color; color = color->next()) {
+	_populate_named_colors_uppercase();
+	for (Map<String, Color>::Element *color = _named_colors_uppercase.front(); color; color = color->next()) {
 		_VariantCall::add_variant_constant(Variant::COLOR, color->key(), color->value());
 	}
 
