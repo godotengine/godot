@@ -5,7 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
-		<link>https://github.com/godotengine/godot-demo-projects/tree/master/audio/generator</link>
+		<link title="Audio generator demo project">https://github.com/godotengine/godot-demo-projects/tree/master/audio/generator</link>
 	</tutorials>
 	<methods>
 		<method name="can_push_buffer" qualifiers="const">

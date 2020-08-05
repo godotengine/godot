@@ -8,7 +8,7 @@
 		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through [XRServer].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_camera_feed_id">

@@ -11,8 +11,8 @@
 		- Adjustments
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
+		<link title="Environment and post-processing">https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
+		<link title="Light transport in game engines">https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
 	</tutorials>
 	<methods>
 		<method name="is_glow_level_enabled" qualifiers="const">

@@ -26,7 +26,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
+		<link title="Importing 3D scenes: Custom script">https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
 	</tutorials>
 	<methods>
 		<method name="get_source_file" qualifiers="const">

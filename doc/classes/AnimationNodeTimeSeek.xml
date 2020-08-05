@@ -7,7 +7,7 @@
 		This node can be used to cause a seek command to happen to any sub-children of the graph. After setting the time, this value returns to -1.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 	</methods>

@@ -73,7 +73,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+		<link title="GDScript basics: Dictionary">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
