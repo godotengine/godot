@@ -2584,7 +2584,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			type->type_chain.push_back(type_element);
 		}
 	}
-	
+
 	if (match(GDScriptTokenizer::Token::QUESTION_MARK)) {
 		type->nullable = true;
 	}
