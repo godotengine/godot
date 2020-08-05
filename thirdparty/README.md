@@ -143,6 +143,12 @@ Use UI font variant if available, because it has tight vertical metrics and good
 - Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
 - License: Apache 2.0
 
+### Tamsyn
+- Upstream: http://www.fial.com/~scott/tamsyn-font/
+- Version: 1.11
+- License: Tamsyn
+
+Extracted "0..9,A..F" characters for hex code printing.
 
 ## freetype
 

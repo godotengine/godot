@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main_loop.h                                                          */
+/*  font_fb.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,53 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#ifndef FONT_FALLBACK_H
+#define FONT_FALLBACK_H
 
-#include "core/input/input_event.h"
-#include "core/object/reference.h"
-#include "core/object/script_language.h"
+#include "servers/text_server.h"
 
-class MainLoop : public Object {
-	GDCLASS(MainLoop, Object);
-	OBJ_CATEGORY("Main Loop");
+struct FontDataFallback {
+	Map<String, bool> lang_support_overrides;
+	Map<String, bool> script_support_overrides;
+	bool valid = false;
 
-	Ref<Script> init_script;
+	virtual void clear_cache() = 0;
 
-protected:
-	static void _bind_methods();
+	virtual Error load_from_file(const String &p_filename, int p_base_size) = 0;
+	virtual Error load_from_memory(const uint8_t *p_data, size_t p_size, int p_base_size) = 0;
 
-public:
-	enum {
-		//make sure these are replicated in Node
-		NOTIFICATION_OS_MEMORY_WARNING = 2009,
-		NOTIFICATION_TRANSLATION_CHANGED = 2010,
-		NOTIFICATION_WM_ABOUT = 2011,
-		NOTIFICATION_CRASH = 2012,
-		NOTIFICATION_OS_IME_UPDATE = 2013,
-		NOTIFICATION_APPLICATION_RESUMED = 2014,
-		NOTIFICATION_APPLICATION_PAUSED = 2015,
-		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
-		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
-	};
+	virtual float get_height(int p_size) const = 0;
+	virtual float get_ascent(int p_size) const = 0;
+	virtual float get_descent(int p_size) const = 0;
 
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
-	virtual void finish();
+	virtual float get_underline_position(int p_size) const = 0;
+	virtual float get_underline_thickness(int p_size) const = 0;
 
-	void set_init_script(const Ref<Script> &p_init_script);
+	virtual void set_antialiased(bool p_antialiased) = 0;
+	virtual bool get_antialiased() const = 0;
 
-	MainLoop() {}
-	virtual ~MainLoop() {}
+	virtual void set_hinting(TextServer::Hinting p_hinting) = 0;
+	virtual TextServer::Hinting get_hinting() const = 0;
+
+	virtual void set_distance_field_hint(bool p_distance_field) = 0;
+	virtual bool get_distance_field_hint() const = 0;
+
+	virtual void set_force_autohinter(bool p_enabeld) = 0;
+	virtual bool get_force_autohinter() const = 0;
+
+	virtual bool has_outline() const = 0;
+	virtual float get_base_size() const = 0;
+
+	virtual bool has_char(char32_t p_char) const = 0;
+	virtual String get_supported_chars() const = 0;
+
+	virtual Vector2 get_advance(char32_t p_char, int p_size) const = 0;
+	virtual Vector2 get_kerning(char32_t p_char, char32_t p_next, int p_size) const = 0;
+
+	virtual Vector2 draw_glyph(RID p_canvas, int p_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const = 0;
+	virtual Vector2 draw_glyph_outline(RID p_canvas, int p_size, int p_outline_size, const Vector2 &p_pos, uint32_t p_index, const Color &p_color) const = 0;
+
+	virtual ~FontDataFallback(){};
 };
 
-#endif // MAIN_LOOP_H
+#endif // FONT_FALLBACK_H

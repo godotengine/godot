@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main_loop.h                                                          */
+/*  lru.h                                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,99 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#ifndef LRU_H
+#define LRU_H
 
-#include "core/input/input_event.h"
-#include "core/object/reference.h"
-#include "core/object/script_language.h"
+#include "core/math/math_funcs.h"
+#include "hash_map.h"
+#include "list.h"
 
-class MainLoop : public Object {
-	GDCLASS(MainLoop, Object);
-	OBJ_CATEGORY("Main Loop");
+template <class TKey, class TData>
+class LRUCache {
+private:
+	struct Pair {
+		TKey key;
+		TData data;
 
-	Ref<Script> init_script;
-
-protected:
-	static void _bind_methods();
-
-public:
-	enum {
-		//make sure these are replicated in Node
-		NOTIFICATION_OS_MEMORY_WARNING = 2009,
-		NOTIFICATION_TRANSLATION_CHANGED = 2010,
-		NOTIFICATION_WM_ABOUT = 2011,
-		NOTIFICATION_CRASH = 2012,
-		NOTIFICATION_OS_IME_UPDATE = 2013,
-		NOTIFICATION_APPLICATION_RESUMED = 2014,
-		NOTIFICATION_APPLICATION_PAUSED = 2015,
-		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
-		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
-		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
+		Pair() {}
+		Pair(const TKey &p_key, const TData &p_data) :
+				key(p_key),
+				data(p_data) {
+		}
 	};
 
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
-	virtual void finish();
+	typedef typename List<Pair>::Element *Element;
 
-	void set_init_script(const Ref<Script> &p_init_script);
+	List<Pair> _list;
+	HashMap<TKey, Element> _map;
+	size_t capacity;
 
-	MainLoop() {}
-	virtual ~MainLoop() {}
+public:
+	const TData *insert(const TKey &p_key, const TData &p_value) {
+		Element *e = _map.getptr(p_key);
+		Element n = _list.push_front(Pair(p_key, p_value));
+
+		if (e) {
+			_list.erase(*e);
+			_map.erase(p_key);
+		}
+		_map[p_key] = _list.front();
+
+		while (_map.size() > capacity) {
+			Element d = _list.back();
+			_map.erase(d->get().key);
+			_list.pop_back();
+		}
+
+		return &n->get().data;
+	}
+
+	void clear() {
+		_map.clear();
+		_list.clear();
+	}
+
+	bool has(const TKey &p_key) const {
+		return _map.getptr(p_key);
+	}
+
+	const TData &get(const TKey &p_key) {
+		Element *e = _map.getptr(p_key);
+		CRASH_COND(!e);
+		_list.move_to_front(*e);
+		return (*e)->get().data;
+	};
+
+	const TData *getptr(const TKey &p_key) {
+		Element *e = _map.getptr(p_key);
+		if (!e) {
+			return nullptr;
+		} else {
+			_list.move_to_front(*e);
+			return &(*e)->get().data;
+		}
+	}
+
+	_FORCE_INLINE_ size_t get_capacity() const { return capacity; }
+
+	void set_capacity(size_t p_capacity) {
+		if (capacity > 0) {
+			capacity = p_capacity;
+			while (_map.size() > capacity) {
+				Element d = _list.back();
+				_map.erase(d->get().key);
+				_list.pop_back();
+			}
+		}
+	}
+
+	LRUCache() {
+		capacity = 64;
+	}
+
+	LRUCache(int p_capacity) {
+		capacity = p_capacity;
+	}
 };
 
-#endif // MAIN_LOOP_H
+#endif

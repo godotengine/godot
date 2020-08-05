@@ -157,6 +157,11 @@ Copyright: 2018, Source Foundry Authors
   2003, Bitstream Inc.
 License: Expat and Bitstream Vera Fonts Copyright
 
+Files: ./thirdparty/fonts/Tamsyn*.png
+Comment: Tamsyn font
+Copyright: 2015, Scott Fial
+License: Tamsyn
+
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
 Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
@@ -1632,6 +1637,18 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
+
+License: Tamsyn
+ Tamsyn font is free.  You are hereby granted permission to use, copy, modify,
+ and distribute it as you see fit.
+ .
+ Tamsyn font is provided "as is" without any express or implied warranty.
+ .
+ The author makes no representations about the suitability of this font for
+ a particular purpose.
+ .
+ In no event will the author be held liable for damages arising from the use
+ of this font.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied
