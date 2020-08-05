@@ -44,11 +44,13 @@
 
 //TODO: Implement CylinderShape and HeightMapShape?
 
-void CollisionShape3D::make_convex_from_brothers() {
+void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
 	if (!p) {
 		return;
 	}
+
+	Vector<Vector3> vertices;
 
 	for (int i = 0; i < p->get_child_count(); i++) {
 		Node *n = p->get_child(i);
@@ -56,11 +58,22 @@ void CollisionShape3D::make_convex_from_brothers() {
 		if (mi) {
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {
-				Ref<Shape3D> s = m->create_convex_shape();
-				set_shape(s);
+				for (int j = 0; j < m->get_surface_count(); j++) {
+					Array a = m->surface_get_arrays(j);
+					if (!a.empty()) {
+						Vector<Vector3> v = a[RenderingServer::ARRAY_VERTEX];
+						for (int k = 0; k < v.size(); k++) {
+							vertices.append(mi->get_transform().xform(v[k]));
+						}
+					}
+				}
 			}
 		}
 	}
+
+	Ref<ConvexPolygonShape3D> shape = memnew(ConvexPolygonShape3D);
+	shape->set_points(vertices);
+	set_shape(shape);
 }
 
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
@@ -137,8 +150,8 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape3D::get_shape);
 	ClassDB::bind_method(D_METHOD("set_disabled", "enable"), &CollisionShape3D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape3D::is_disabled);
-	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape3D::make_convex_from_brothers);
-	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("make_convex_from_siblings"), &CollisionShape3D::make_convex_from_siblings);
+	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_siblings", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape3D::_update_debug_shape);
 
