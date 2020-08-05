@@ -927,11 +927,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->connect("item_edited", this, "_animation_name_edited");
 	animations->set_allow_reselect(true);
 
+	HBoxContainer *hbc_anim_speed = memnew(HBoxContainer);
+	hbc_anim_speed->add_child(memnew(Label(TTR("Speed:"))));
+	vbc_animlist->add_child(hbc_anim_speed);
 	anim_speed = memnew(SpinBox);
-	vbc_animlist->add_margin_child(TTR("Speed (FPS):"), anim_speed);
+	anim_speed->set_suffix(TTR("FPS"));
 	anim_speed->set_min(0);
 	anim_speed->set_max(100);
 	anim_speed->set_step(0.01);
+	anim_speed->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc_anim_speed->add_child(anim_speed);
 	anim_speed->connect("value_changed", this, "_animation_fps_changed");
 
 	anim_loop = memnew(CheckButton);
