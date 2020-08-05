@@ -2419,7 +2419,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	} else {
 		call->callee = p_previous_operand;
 
-		if (call->callee->type == Node::IDENTIFIER) {
+		if (call->callee == nullptr) {
+			push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
+		} else if (call->callee->type == Node::IDENTIFIER) {
 			call->function_name = static_cast<IdentifierNode *>(call->callee)->name;
 			make_completion_context(COMPLETION_METHOD, call->callee);
 		} else if (call->callee->type == Node::SUBSCRIPT) {

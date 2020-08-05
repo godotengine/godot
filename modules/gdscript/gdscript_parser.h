@@ -383,6 +383,14 @@ public:
 		CallNode() {
 			type = CALL;
 		}
+
+		Type get_callee_type() const {
+			if (callee == nullptr) {
+				return Type::NONE;
+			} else {
+				return callee->type;
+			}
+		}
 	};
 
 	struct CastNode : public ExpressionNode {

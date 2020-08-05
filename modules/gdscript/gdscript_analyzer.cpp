@@ -872,7 +872,8 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	// Use int, Vector2, Vector3 instead, which also can be used as range iterators.
 	if (p_for->list && p_for->list->type == GDScriptParser::Node::CALL) {
 		GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_for->list);
-		if (call->callee->type == GDScriptParser::Node::IDENTIFIER) {
+		GDScriptParser::Node::Type callee_type = call->get_callee_type();
+		if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 			GDScriptParser::IdentifierNode *callee = static_cast<GDScriptParser::IdentifierNode *>(call->callee);
 			if (callee->name == "range") {
 				list_resolved = true;
@@ -1608,9 +1609,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 		all_is_constant = all_is_constant && p_call->arguments[i]->is_constant;
 	}
 
+	GDScriptParser::Node::Type callee_type = p_call->get_callee_type();
 	GDScriptParser::DataType call_type;
 
-	if (!p_call->is_super && p_call->callee->type == GDScriptParser::Node::IDENTIFIER) {
+	if (!p_call->is_super && callee_type == GDScriptParser::Node::IDENTIFIER) {
 		// Call to name directly.
 		StringName function_name = p_call->function_name;
 		Variant::Type builtin_type = GDScriptParser::get_builtin_type(function_name);
@@ -1785,10 +1787,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 	if (p_call->is_super) {
 		base_type = parser->current_class->base_type;
 		is_self = true;
-	} else if (p_call->callee->type == GDScriptParser::Node::IDENTIFIER) {
+	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
 		is_self = true;
-	} else if (p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
 		if (!subscript->is_attribute) {
 			// Invalid call. Error already sent in parser.
@@ -1825,9 +1827,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 	} else {
 		// Check if the name exists as something else.
 		bool found = false;
-		if (!p_call->is_super) {
+		if (!p_call->is_super && callee_type != GDScriptParser::Node::NONE) {
 			GDScriptParser::IdentifierNode *callee_id;
-			if (p_call->callee->type == GDScriptParser::Node::IDENTIFIER) {
+			if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 				callee_id = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
 			} else {
 				// Can only be attribute.
@@ -1835,13 +1837,13 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 			}
 			if (callee_id) {
 				reduce_identifier_from_base(callee_id, &base_type);
-				GDScriptParser::DataType callee_type = callee_id->get_datatype();
-				if (callee_type.is_set() && !callee_type.is_variant()) {
+				GDScriptParser::DataType callee_datatype = callee_id->get_datatype();
+				if (callee_datatype.is_set() && !callee_datatype.is_variant()) {
 					found = true;
-					if (callee_type.builtin_type == Variant::CALLABLE) {
+					if (callee_datatype.builtin_type == Variant::CALLABLE) {
 						push_error(vformat(R"*(Name "%s" is a Callable. You can call it with "%s.call()" instead.)*", p_call->function_name, p_call->function_name), p_call->callee);
 					} else {
-						push_error(vformat(R"*(Name "%s" called as a function but is a "%s".)*", p_call->function_name, callee_type.to_string()), p_call->callee);
+						push_error(vformat(R"*(Name "%s" called as a function but is a "%s".)*", p_call->function_name, callee_datatype.to_string()), p_call->callee);
 					}
 #ifdef DEBUG_ENABLED
 				} else if (!is_self) {
