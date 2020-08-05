@@ -331,9 +331,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		return result;
 	}
 
-	if (p_type->nullable) {
-		result.is_nullable = true;
-	}
+	result.is_nullable = p_type->nullable;
 
 	StringName first = p_type->type_chain[0]->name;
 
