@@ -331,6 +331,10 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		return result;
 	}
 
+	if (p_type->nullable) {
+		result.is_nullable = true;
+	}
+
 	StringName first = p_type->type_chain[0]->name;
 
 	if (first == "Variant") {
@@ -2927,6 +2931,11 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 
 	if (p_source.kind == GDScriptParser::DataType::VARIANT) {
 		// TODO: This is acceptable but unsafe. Make sure unsafe line is set.
+		return true;
+	}
+
+	if (p_source.is_nullable && p_target.kind == GDScriptParser::DataType::BUILTIN && p_target.builtin_type == Variant::NIL) {
+		// Allow null on a parameter that is marked nullable.
 		return true;
 	}
 
