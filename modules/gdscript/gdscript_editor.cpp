@@ -1259,8 +1259,10 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 					GDScriptParser::CompletionContext c = p_context;
 					c.current_line = call->start_line;
 
+					GDScriptParser::Node::Type callee_type = call->get_callee_type();
+
 					GDScriptCompletionIdentifier base;
-					if (call->callee->type == GDScriptParser::Node::IDENTIFIER || call->is_super) {
+					if (callee_type == GDScriptParser::Node::IDENTIFIER || call->is_super) {
 						// Simple call, so base is 'self'.
 						if (p_context.current_class) {
 							base.type.kind = GDScriptParser::DataType::CLASS;
@@ -1271,7 +1273,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						} else {
 							break;
 						}
-					} else if (call->callee->type == GDScriptParser::Node::SUBSCRIPT && static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->is_attribute) {
+					} else if (callee_type == GDScriptParser::Node::SUBSCRIPT && static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->is_attribute) {
 						if (!_guess_expression_type(c, static_cast<const GDScriptParser::SubscriptNode *>(call->callee)->base, base)) {
 							found = false;
 							break;
@@ -2290,6 +2292,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptParser::DataType base_type;
 	bool _static = false;
 	const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_call);
+	GDScriptParser::Node::Type callee_type = GDScriptParser::Node::NONE;
 
 	GDScriptCompletionIdentifier connect_base;
 
@@ -2319,14 +2322,14 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			i++;
 		}
 		return;
-	} else if (call->is_super || call->callee->type == GDScriptParser::Node::IDENTIFIER) {
+	} else if (call->is_super || callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base = p_context.base;
 
 		if (p_context.current_class) {
 			base_type = p_context.current_class->get_datatype();
 			_static = !p_context.current_function || p_context.current_function->is_static;
 		}
-	} else if (call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
 
 		if (subscript->is_attribute) {
