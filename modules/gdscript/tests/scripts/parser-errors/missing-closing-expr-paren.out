@@ -1,4 +1,2 @@
 GDTEST_PARSER_ERROR
-Expected closing ")" after grouping expression.
-Expected end of statement after variable declaration, found "Dedent" instead.
-Missing unindent at the end of function declaration.
+Expected ')' in expression

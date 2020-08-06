@@ -1,4 +1,2 @@
 GDTEST_PARSER_ERROR
-Expected closing ")" after call arguments.
-Expected end of statement after expression, found "Dedent" instead.
-Missing unindent at the end of function declaration.
+Expected ',' or ')'

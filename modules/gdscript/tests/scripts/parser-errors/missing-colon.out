@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Expected ":" after "if" condition.
+':' expected at end of line.

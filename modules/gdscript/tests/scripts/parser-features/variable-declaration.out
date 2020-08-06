@@ -1,1 +1,3 @@
-Parser bug: invalid inheritance.
+GDTEST_OK
+1 42 2 23
+OK
