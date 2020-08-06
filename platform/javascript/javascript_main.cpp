@@ -39,6 +39,17 @@
 static OS_JavaScript *os = nullptr;
 static uint64_t target_ticks = 0;
 
+extern "C" EMSCRIPTEN_KEEPALIVE void _request_quit_callback(char *p_filev[], int p_filec) {
+	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+	if (ds) {
+		Variant event = int(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
+		Variant *eventp = &event;
+		Variant ret;
+		Callable::CallError ce;
+		ds->window_event_callback.call((const Variant **)&eventp, 1, ret, ce);
+	}
+}
+
 void exit_callback() {
 	emscripten_cancel_main_loop(); // After this, we can exit!
 	Main::cleanup();
@@ -102,6 +113,12 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->get_main_loop()->init();
+	// Expose method for requesting quit.
+	EM_ASM({
+		Module['request_quit'] = function() {
+			ccall("_request_quit_callback", null, []);
+		};
+	});
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
