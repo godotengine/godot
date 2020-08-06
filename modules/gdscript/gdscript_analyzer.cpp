@@ -1406,23 +1406,25 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 			break;
 	}
 
-	bool compatible = true;
-	GDScriptParser::DataType op_type = p_assignment->assigned_value->get_datatype();
-	if (vop != Variant::OP_EQUAL) {
-		op_type = get_operation_type(vop, p_assignment->assignee->get_datatype(), p_assignment->assigned_value->get_datatype(), compatible);
-	}
-
-	if (compatible) {
-		compatible = is_type_compatible(p_assignment->assignee->get_datatype(), op_type, true);
-		if (!compatible) {
-			if (p_assignment->assignee->get_datatype().is_hard_type()) {
-				push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", p_assignment->assigned_value->get_datatype().to_string(), p_assignment->assignee->get_datatype().to_string()), p_assignment->assigned_value);
-			} else {
-				// TODO: Warning in this case.
-			}
+	if (!p_assignment->assignee->get_datatype().is_variant() && !p_assignment->assigned_value->get_datatype().is_variant()) {
+		bool compatible = true;
+		GDScriptParser::DataType op_type = p_assignment->assigned_value->get_datatype();
+		if (vop != Variant::OP_EQUAL) {
+			op_type = get_operation_type(vop, p_assignment->assignee->get_datatype(), p_assignment->assigned_value->get_datatype(), compatible);
 		}
-	} else {
-		push_error(vformat(R"(Invalid operands "%s" and "%s" for assignment operator.)", p_assignment->assignee->get_datatype().to_string(), p_assignment->assigned_value->get_datatype().to_string()), p_assignment);
+
+		if (compatible) {
+			compatible = is_type_compatible(p_assignment->assignee->get_datatype(), op_type, true);
+			if (!compatible) {
+				if (p_assignment->assignee->get_datatype().is_hard_type()) {
+					push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", p_assignment->assigned_value->get_datatype().to_string(), p_assignment->assignee->get_datatype().to_string()), p_assignment->assigned_value);
+				} else {
+					// TODO: Warning in this case.
+				}
+			}
+		} else {
+			push_error(vformat(R"(Invalid operands "%s" and "%s" for assignment operator.)", p_assignment->assignee->get_datatype().to_string(), p_assignment->assigned_value->get_datatype().to_string()), p_assignment);
+		}
 	}
 
 	if (p_assignment->assignee->get_datatype().has_no_type() || p_assignment->assigned_value->get_datatype().is_variant()) {
