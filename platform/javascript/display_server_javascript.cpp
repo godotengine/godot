@@ -892,15 +892,18 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #define SET_EM_CALLBACK(target, ev, cb)                                  \
 	result = emscripten_set_##ev##_callback(target, nullptr, true, &cb); \
 	EM_CHECK(ev)
+#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
+	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
+	EM_CHECK(ev)
 #define SET_EM_CALLBACK_NOTARGET(ev, cb)                         \
 	result = emscripten_set_##ev##_callback(nullptr, true, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
+	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
+	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
 	SET_EM_CALLBACK(canvas_id, wheel, wheel_callback)
 	SET_EM_CALLBACK(canvas_id, touchstart, touch_press_callback)
 	SET_EM_CALLBACK(canvas_id, touchmove, touchmove_callback)
