@@ -27,6 +27,8 @@ Function('return this')()['Engine'] = (function() {
 	/** @constructor */
 	function Engine() {
 		this.canvas = null;
+		this.vkInput = null;
+		this.vkTextArea = null;
 		this.executableName = '';
 		this.rtenv = null;
 		this.customLocale = null;
@@ -113,6 +115,8 @@ Function('return this')()['Engine'] = (function() {
 			}
 			me.rtenv['locale'] = locale;
 			me.rtenv['canvas'] = me.canvas;
+			me.rtenv['vkInput'] = me.vkInput;
+			me.rtenv['vkTextArea'] = me.vkTextArea;
 			me.rtenv['thisProgram'] = me.executableName;
 			me.rtenv['resizeCanvasOnStart'] = me.resizeCanvasOnStart;
 			me.rtenv['noExitRuntime'] = true;
@@ -168,6 +172,14 @@ Function('return this')()['Engine'] = (function() {
 		this.resizeCanvasOnStart = enabled;
 	};
 
+	Engine.prototype.setVirtualKeyboardInput = function(inputElem) {
+		this.vkInput = inputElem;
+	};
+
+	Engine.prototype.setVirtualKeyboardTextArea = function(textAreaElem) {
+		this.vkTextArea = textAreaElem;
+	};
+
 	Engine.prototype.setLocale = function(locale) {
 		this.customLocale = locale;
 	};
@@ -207,18 +219,18 @@ Function('return this')()['Engine'] = (function() {
 		if (this.rtenv)
 			this.rtenv.onExecute = onExecute;
 		this.onExecute = onExecute;
-	}
+	};
 
 	Engine.prototype.setOnExit = function(onExit) {
 		this.onExit = onExit;
-	}
+	};
 
 	Engine.prototype.copyToFS = function(path, buffer) {
 		if (this.rtenv == null) {
 			throw new Error("Engine must be inited before copying files");
 		}
 		this.rtenv['copyToFS'](path, buffer);
-	}
+	};
 
 	// Closure compiler exported engine methods.
 	/** @export */
@@ -233,6 +245,8 @@ Function('return this')()['Engine'] = (function() {
 	Engine.prototype['setUnloadAfterInit'] = Engine.prototype.setUnloadAfterInit;
 	Engine.prototype['setCanvas'] = Engine.prototype.setCanvas;
 	Engine.prototype['setCanvasResizedOnStart'] = Engine.prototype.setCanvasResizedOnStart;
+	Engine.prototype['setVirtualKeyboardInput'] = Engine.prototype.setVirtualKeyboardInput;
+	Engine.prototype['setVirtualKeyboardTextArea'] = Engine.prototype.setVirtualKeyboardTextArea;
 	Engine.prototype['setLocale'] = Engine.prototype.setLocale;
 	Engine.prototype['setExecutableName'] = Engine.prototype.setExecutableName;
 	Engine.prototype['setProgressFunc'] = Engine.prototype.setProgressFunc;

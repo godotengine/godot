@@ -592,6 +592,12 @@ EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const Em
 	Ref<InputEventScreenTouch> ev;
 	ev.instance();
 	int lowest_id_index = -1;
+	if (p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART) {
+		EM_ASM({
+			Module['vkInput'].blur();
+			Module['vkTextArea'].blur();
+		});
+	}
 	for (int i = 0; i < p_event->numTouches; ++i) {
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
 		if (lowest_id_index == -1 || touch.identifier < p_event->touches[lowest_id_index].identifier)
@@ -633,6 +639,50 @@ EM_BOOL DisplayServerJavaScript::touchmove_callback(int p_event_type, const Emsc
 
 bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
 	return EM_ASM_INT({ return 'ontouchstart' in window; });
+}
+
+// Virtual Keyboard
+extern "C" EMSCRIPTEN_KEEPALIVE void input_text_callback(const char *p_text) {
+	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+	if (ds && !ds->input_text_callback.is_null()) {
+		Variant event = String(p_text);
+		Variant *eventp = &event;
+		Variant ret;
+		Callable::CallError ce;
+		ds->input_text_callback.call((const Variant **)&eventp, 1, ret, ce);
+	}
+}
+
+void DisplayServerJavaScript::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	int end = p_cursor_end == -1 ? p_cursor_start : p_cursor_end;
+	/* clang-format off */
+	EM_ASM({
+		const text = UTF8ToString($0);
+		const multiline = $1;
+		const start = $2;
+		const end = $3;
+		if (multiline) {
+			const textarea = Module['vkTextArea'];
+			textarea.style.display = "";
+			textarea.value = text;
+			textarea.focus();
+			textarea.setSelectionRange(start, end);
+		} else {
+			const input = Module['vkInput'];
+			input.style.display = "";
+			input.value = text;
+			input.focus();
+			input.setSelectionRange(start, end);
+		}
+	}, p_existing_text.utf8().get_data(), p_multiline, p_cursor_start, end);
+	/* clang-format on */
+}
+
+void DisplayServerJavaScript::virtual_keyboard_hide() {
+	EM_ASM({
+		Module['vkInput'].blur();
+		Module['vkTextArea'].blur();
+	});
 }
 
 // Gamepad
@@ -934,6 +984,22 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 		Module.listeners.add(window, 'paste', function(evt) {
 			update_clipboard(evt.clipboardData.getData('text'));
 		}, false);
+		// Virtual Keyboard
+		const vk_input = Module['vkInput'];
+		const input_text_callback = cwrap('input_text_callback', null, ['string']);
+		Module.listeners.add(vk_input, 'input', function(evt) {
+			input_text_callback(vk_input.value);
+		}, true);
+		Module.listeners.add(vk_input, 'blur', function(evt) {
+			vk_input.style.display = 'none';
+		}, true);
+		const vk_text_area = Module['vkTextArea'];
+		Module.listeners.add(vk_text_area, 'input', function(evt) {
+			input_text_callback(vk_text_area.value);
+		}, true);
+		Module.listeners.add(vk_text_area, 'blur', function(evt) {
+			vk_text_area.style.display = 'none';
+		}, true);
 		// Drag an drop
 		Module.listeners.add(canvas, 'dragover', function(ev) {
 			// Prevent default behavior (which would try to open the file(s))
@@ -970,8 +1036,10 @@ bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_MOUSE:
-		case FEATURE_TOUCHSCREEN:
 			return true;
+		case FEATURE_TOUCHSCREEN:
+		case FEATURE_VIRTUAL_KEYBOARD: // No way to reliably detect virtual keyboard. Assume on when touchscreen is available.
+			return EM_ASM_INT({ return 'ontouchstart' in window }) != 0;
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_ICON:
@@ -979,7 +1047,6 @@ bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:
 		//case FEATURE_ORIENTATION:
-		//case FEATURE_VIRTUAL_KEYBOARD:
 		default:
 			return false;
 	}
@@ -1049,7 +1116,7 @@ void DisplayServerJavaScript::window_set_input_event_callback(const Callable &p_
 }
 
 void DisplayServerJavaScript::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
-	input_text_callback = p_callable; // TODO unused... do I need this?
+	input_text_callback = p_callable;
 }
 
 void DisplayServerJavaScript::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {

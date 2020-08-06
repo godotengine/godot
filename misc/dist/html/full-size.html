@@ -115,6 +115,8 @@
 $GODOT_HEAD_INCLUDE
 </head>
 <body>
+	<input id='vkInput' type="text" style='display: none; position: absolute; background: transparent; z-index: -1; left: 0;'>
+	<textarea id='vkTextArea' style='display: none; position: absolute; background: transparent; padding: 0px !important; margin: 0px !important; width: 0px !important; height: 0px !important; overflow: hidden; z-index: -1; left: 0;'></textarea>
 	<canvas id='canvas'>
 		HTML5 canvas appears to be unsupported in the current browser.<br />
 		Please try updating or use a different browser.
@@ -254,6 +256,9 @@ $GODOT_HEAD_INCLUDE
 					setStatusMode('indeterminate');
 				}
 			});
+
+			engine.setVirtualKeyboardInput(document.getElementById('vkInput'));
+			engine.setVirtualKeyboardTextArea(document.getElementById('vkTextArea'));
 
 			function displayFailureNotice(err) {
 				var msg = err.message || err;

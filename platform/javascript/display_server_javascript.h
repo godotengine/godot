@@ -129,6 +129,10 @@ public:
 	// touch
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
+	// virtual keyboard
+	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) override;
+	virtual void virtual_keyboard_hide() override;
+
 	// clipboard
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
