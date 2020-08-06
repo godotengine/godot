@@ -982,6 +982,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	}
 #endif
 
+	// Make sure to process the body before using it.
+	p_body->pre_process();
+
 	btTransform body_transform;
 	G_TO_B(p_from, body_transform);
 	UNSCALE_BT_BASIS(body_transform);
