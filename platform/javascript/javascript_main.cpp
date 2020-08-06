@@ -32,12 +32,19 @@
 #include "main/main.h"
 #include "platform/javascript/display_server_javascript.h"
 #include "platform/javascript/os_javascript.h"
+#include "scene/main/node.h"
 
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
 
 static OS_JavaScript *os = nullptr;
 static uint64_t target_ticks = 0;
+
+extern "C" EMSCRIPTEN_KEEPALIVE void _request_quit_callback(char *p_filev[], int p_filec) {
+	if (os && os->get_main_loop()) {
+		os->get_main_loop()->notification(Node::NOTIFICATION_WM_CLOSE_REQUEST);
+	}
+}
 
 void exit_callback() {
 	emscripten_cancel_main_loop(); // After this, we can exit!
@@ -102,6 +109,12 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->get_main_loop()->init();
+	// Expose method for requesting quit.
+	EM_ASM({
+		Module['request_quit'] = function() {
+			ccall("_request_quit_callback", null, []);
+		};
+	});
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
