@@ -1860,6 +1860,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		gui.key_event_accepted = false;
 
+		Control *over = nullptr;
+
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
 
@@ -2054,6 +2056,31 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.drag_data=Variant(); //always clear
 			}*/
 
+			// In case the mouse was released after for example dragging a scrollbar,
+			// check whether the current control is different from the stored one. If
+			// it is different, rather than wait for it to be updated the next time the
+			// mouse is moved, notify the control so that it can e.g. drop the highlight.
+			// This code is duplicated from the mm.is_valid()-case further below.
+			if (gui.mouse_focus) {
+				over = gui.mouse_focus;
+			} else {
+				over = _gui_find_control(mpos);
+			}
+
+			if (gui.mouse_focus_mask == 0 && over != gui.mouse_over) {
+				if (gui.mouse_over) {
+					_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+				}
+
+				_gui_cancel_tooltip();
+
+				if (over) {
+					_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
+				}
+			}
+
+			gui.mouse_over = over;
+
 			set_input_as_handled();
 		}
 	}
@@ -2118,10 +2145,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
+		// These sections of code are reused in the mb.is_valid() case further up
+		// for the purpose of notifying controls about potential changes in focus
+		// when the mousebutton is released.
 		if (gui.mouse_focus) {
 			over = gui.mouse_focus;
-			//recompute focus_inv_xform again here
-
 		} else {
 
 			over = _gui_find_control(mpos);
