@@ -821,7 +821,14 @@ void Viewport::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_WM_MOUSE_EXIT:
+		case NOTIFICATION_WM_MOUSE_EXIT: {
+			_drop_physics_mouseover();
+
+			// Unlike on loss of focus (NOTIFICATION_WM_WINDOW_FOCUS_OUT), do not
+			// drop the gui mouseover here, as a scrollbar may be dragged while the
+			// mouse is outside the window (without the window having lost focus).
+			// See bug #39634
+		} break;
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			_drop_physics_mouseover();
 
