@@ -743,40 +743,28 @@ void Octree<T, use_pairs, AL>::_remove_element(Element *p_element) {
 
 	typename List<typename Element::OctantOwner, AL>::Element *I = p_element->octant_owners.front();
 
-	/* FIRST remove going up normally */
 	for (; I; I = I->next()) {
 
 		Octant *o = I->get().octant;
 
-		if (!use_pairs) // small speedup
+		if (!use_pairs) {
 			o->elements.erase(I->get().E);
-
-		_remove_element_from_octant(p_element, o);
-	}
-
-	/* THEN remove going down */
-
-	I = p_element->octant_owners.front();
-
-	if (use_pairs) {
-
-		for (; I; I = I->next()) {
-
-			Octant *o = I->get().octant;
-
-			// erase children pairs, they are erased ONCE even if repeated
+		} else {
 			pass++;
 			for (int i = 0; i < 8; i++) {
-
-				if (o->children[i])
+				if (o->children[i]) {
 					_unpair_element(p_element, o->children[i]);
+				}
 			}
 
-			if (p_element->pairable)
+			if (p_element->pairable) {
 				o->pairable_elements.erase(I->get().E);
-			else
+			} else {
 				o->elements.erase(I->get().E);
+			}
 		}
+
+		_remove_element_from_octant(p_element, o);
 	}
 
 	p_element->octant_owners.clear();
