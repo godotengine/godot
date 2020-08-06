@@ -202,3 +202,44 @@ Module.drop_handler = (function() {
 		});
 	}
 })();
+
+function EventHandlers() {
+	function Handler(target, event, method, capture) {
+		this.target = target;
+		this.event = event;
+		this.method = method;
+		this.capture = capture;
+	}
+
+	var listeners = [];
+
+	function has(target, event, method, capture) {
+		return listeners.findIndex(function(e) {
+			return e.target === target && e.event === event && e.method === method && e.capture == capture;
+		}) !== -1;
+	}
+
+	this.add = function(target, event, method, capture) {
+		if (has(target, event, method, capture)) {
+			return;
+		}
+		listeners.push(new Handler(target, event, method, capture));
+		target.addEventListener(event, method, capture);
+	};
+
+	this.remove = function(target, event, method, capture) {
+		if (!has(target, event, method, capture)) {
+			return;
+		}
+		target.removeEventListener(event, method, capture);
+	};
+
+	this.clear = function() {
+		listeners.forEach(function(h) {
+			h.target.removeEventListener(h.event, h.method, h.capture);
+		});
+		listeners.length = 0;
+	};
+}
+
+Module.listeners = new EventHandlers();
