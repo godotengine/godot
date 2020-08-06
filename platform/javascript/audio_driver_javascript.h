@@ -46,21 +46,21 @@ public:
 
 	static AudioDriverJavaScript *singleton;
 
-	virtual const char *get_name() const;
+	const char *get_name() const override;
 
-	virtual Error init();
-	virtual void start();
+	Error init() override;
+	void start() override;
 	void resume();
-	virtual float get_latency();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	float get_latency() override;
+	int get_mix_rate() const override;
+	SpeakerMode get_speaker_mode() const override;
+	void lock() override;
+	void unlock() override;
+	void finish() override;
 	void finish_async();
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+	Error capture_start() override;
+	Error capture_stop() override;
 
 	AudioDriverJavaScript();
 };
