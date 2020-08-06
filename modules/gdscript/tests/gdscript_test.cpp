@@ -199,8 +199,8 @@ GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_p
 
 void GDScriptTestRunner::handle_cmdline() {
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
-	String test_cmd = "--test-gdscript";
-	String gen_cmd = "--generate-gdscript-tests";
+	String test_cmd = "--gdscript-test";
+	String gen_cmd = "--gdscript-generate-tests";
 
 	for (List<String>::Element *E = cmdline_args.front(); E != nullptr; E = E->next()) {
 		String &cmd = E->get();
@@ -228,11 +228,13 @@ void GDScriptTestRunner::handle_cmdline() {
 StringName GDScriptTest::test_function_name = StringName();
 
 void GDScriptTest::enable_stdout() {
+	// TODO: this could likely be handled by doctest or `tests/test_macros.h`.
 	// _stdout_enabled = true;
 	// _stderr_enabled = true;
 }
 
 void GDScriptTest::disable_stdout() {
+	// TODO: this could likely be handled by doctest or `tests/test_macros.h`.
 	// _stdout_enabled = false;
 	// _stderr_enabled = false;
 }
