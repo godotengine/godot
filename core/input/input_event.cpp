@@ -617,6 +617,18 @@ String InputEventMouseMotion::as_text() const {
 		case BUTTON_MASK_RIGHT:
 			button_mask_string = "BUTTON_MASK_RIGHT";
 			break;
+		case BUTTON_MASK_WHEEL_UP:
+			button_mask_string = "BUTTON_MASK_WHEEL_UP";
+			break;
+		case BUTTON_MASK_WHEEL_DOWN:
+			button_mask_string = "BUTTON_MASK_WHEEL_DOWN";
+			break;
+		case BUTTON_MASK_WHEEL_LEFT:
+			button_mask_string = "BUTTON_MASK_WHEEL_LEFT";
+			break;
+		case BUTTON_MASK_WHEEL_RIGHT:
+			button_mask_string = "BUTTON_MASK_WHEEL_RIGHT";
+			break;
 		case BUTTON_MASK_XBUTTON1:
 			button_mask_string = "BUTTON_MASK_XBUTTON1";
 			break;

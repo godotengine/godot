@@ -943,6 +943,18 @@
 		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
 			Middle mouse button mask.
 		</constant>
+		<constant name="BUTTON_MASK_WHEEL_UP" value="8" enum="ButtonList">
+			Mouse wheel up mask.
+		</constant>
+		<constant name="BUTTON_MASK_WHEEL_DOWN" value="16" enum="ButtonList">
+			Mouse wheel down mask.
+		</constant>
+		<constant name="BUTTON_MASK_WHEEL_LEFT" value="32" enum="ButtonList">
+			Mouse wheel left mask.
+		</constant>
+		<constant name="BUTTON_MASK_WHEEL_RIGHT" value="64" enum="ButtonList">
+			Mouse wheel right mask.
+		</constant>
 		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
 			Extra mouse button 1 mask.
 		</constant>
