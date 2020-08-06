@@ -31,6 +31,9 @@
 #ifndef TEST_GDSCRIPT_H
 #define TEST_GDSCRIPT_H
 
+#include "gdscript_test.h"
+#include "tests/test_macros.h"
+
 namespace TestGDScript {
 
 enum TestType {
@@ -41,6 +44,19 @@ enum TestType {
 };
 
 void test(TestType p_type);
+
+TEST_SUITE("[Modules][GDScript]") {
+	// GDScript 2.0 is still under heavy construction.
+	// Allow the tests to fail, but do not ignore errors during development.
+	// Update the scripts and expected output as needed.
+	TEST_CASE("Script loading, parsing and compiling" * doctest::may_fail()) {
+		GDScriptTestRunner runner("modules/gdscript/tests/scripts");
+		// TODO: generate expected output for missing files automatically?
+		int fail_count = runner.run_tests();
+		INFO("Make sure `*.out` files have expected results.");
+		REQUIRE_MESSAGE(fail_count == 0, "All GDScript tests should pass.");
+	}
+}
 
 } // namespace TestGDScript
 

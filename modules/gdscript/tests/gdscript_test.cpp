@@ -40,6 +40,8 @@
 #include "core/project_settings.h"
 #include "core/string_builder.h"
 
+#include "tests/test_macros.h"
+
 GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir) {
 	source_dir = p_source_dir;
 	if (!source_dir.ends_with("/")) {
@@ -60,33 +62,31 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir) {
 
 int GDScriptTestRunner::run_tests() {
 	if (!make_tests()) {
-		print_line("An error occured while making the tests.");
+		FAIL("An error occurred while making the tests.");
 		return -1;
 	}
 
 	if (!generate_class_index()) {
-		return -2;
+		FAIL("An error occurred while generating class index.");
+		return -1;
 	}
 
 	int failed = 0;
 	for (int i = 0; i < tests.size(); i++) {
-		OS::get_singleton()->print(".");
 		GDScriptTest test = tests[i];
 		GDScriptTest::TestResult result = test.run_test();
 
+		// TODO: stringify Variant: https://github.com/godotengine/godot/pull/40945.
+		const char *current_test = test.get_source_file().utf8().get_data();
+		String expected = FileAccess::get_file_as_string(test.get_output_file());
+
+		INFO(current_test);
+		CHECK_MESSAGE(result.passed, expected.utf8().get_data());
+
 		if (!result.passed) {
 			failed++;
-			print_line("\nTest failed: " + test.get_source_file());
 		}
 	}
-	OS::get_singleton()->print("\n");
-
-	if (failed == 0) {
-		print_line("All " + itos(tests.size()) + " tests passed.");
-	} else {
-		print_line(itos(failed) + " test(s) from " + itos(tests.size()) + " failed.");
-	}
-
 	return failed;
 }
 

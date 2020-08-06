@@ -103,12 +103,12 @@ int test_main(int argc, char *argv[]) {
 		// Copy this into memory.
 		memcpy(doctest_args[x], str, strlen(str) + 1);
 	}
-
-	test_context.applyCommandLine(test_args.size(), doctest_args);
-
 	test_context.setOption("order-by", "name");
-	test_context.setOption("abort-after", 5);
+	test_context.setOption("abort-after", 20);
 	test_context.setOption("no-breaks", true);
+
+	// Allow the command-line to override doctest options above.
+	test_context.applyCommandLine(test_args.size(), doctest_args);
 
 	for (int x = 0; x < test_args.size(); x++) {
 		delete[] doctest_args[x];
