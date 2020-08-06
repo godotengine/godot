@@ -1,0 +1,4 @@
+GDTEST_PARSER_ERROR
+Expect node identifer after "/".
+Expected statement, found "/" instead.
+Expected end of statement after expression, found "Literal" instead.
