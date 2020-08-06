@@ -46,24 +46,6 @@
 #include <emscripten.h>
 #include <stdlib.h>
 
-bool OS_JavaScript::has_touchscreen_ui_hint() const {
-	/* clang-format off */
-	return EM_ASM_INT_V(
-		return 'ontouchstart' in window;
-	);
-	/* clang-format on */
-}
-
-// Audio
-
-int OS_JavaScript::get_audio_driver_count() const {
-	return 1;
-}
-
-const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
-	return "JavaScript";
-}
-
 // Lifecycle
 void OS_JavaScript::initialize() {
 	OS_Unix::initialize_core();
@@ -199,10 +181,6 @@ Error OS_JavaScript::shell_open(String p_uri) {
 
 String OS_JavaScript::get_name() const {
 	return "HTML5";
-}
-
-bool OS_JavaScript::can_draw() const {
-	return true; // Always?
 }
 
 String OS_JavaScript::get_user_data_dir() const {
