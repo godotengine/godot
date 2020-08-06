@@ -634,51 +634,18 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 	ERR_FAIL_INDEX_MSG(ccdik_data.bone_idx, stack->skeleton->get_bone_count(), "CCDIK joint: bone index not found");
 	ERR_FAIL_COND_MSG(ccdik_data.ccdik_axis_vector.length_squared() == 0, "CCDIK joint: axis vector not set!");
 
-	Transform bone_trans = stack->skeleton->get_bone_local_pose_override(ccdik_data.bone_idx);
+	Transform bone_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->get_bone_global_pose(ccdik_data.bone_idx));
 	Transform tip_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(tip->get_global_transform()));
 	Transform target_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform()));
-	
-	Quat ccdik_rotation = _quat_from_two_vectors(tip_trans.origin, target_trans.origin);
-	bone_trans.basis = Basis(ccdik_rotation);
 
-	// TODO: add axis constraints.
+	Plane rotation_plane = Plane(bone_trans.origin, ccdik_data.ccdik_axis_vector);
+	bone_trans.basis.rotate_to_align(rotation_plane.project(tip_trans.origin), rotation_plane.project(target_trans.origin));
+
+	// TODO: make the rotation not snap around like it does currently.
 	// TODO: add angle constraints.
-	// TODO: move the Quat function to the Quat class, if needed.
-
+	
 	stack->skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, bone_trans, stack->strength, true);
 	stack->skeleton->force_update_bone_children_transforms(ccdik_data.bone_idx);
-}
-
-Quat SkeletonModification3DCCDIK::_quat_from_two_vectors(Vector3 u, Vector3 v) {
-	Quat ret_quat = Quat();
-
-	Vector3 v0 = u.normalized();
-	Vector3 v1 = v.normalized();
-	float d = v0.dot(v1);
-
-	if (d >= 1.0) {
-		return Quat();
-	}
-
-	if (d < (1e-6 - 1.0)) {
-		Vector3 axis = Vector3(1, 0, 0).cross(u);
-		if (axis.length_squared() == 0) {
-			axis = Vector3(0, 1, 0).cross(u);
-		}
-		axis = axis.normalized();
-		ret_quat = Quat(axis, Math_PI);
-	} else {
-		float s = Math::sqrt((1+d) * 2);
-		float invs = 1.0 / s;
-		Vector3 c = v0.cross(v1);
-
-		ret_quat.x = c.x * invs;
-		ret_quat.y = c.y * invs;
-		ret_quat.z = c.z * invs;
-		ret_quat = ret_quat.normalized();
-	}
-
-	return ret_quat;
 }
 
 void SkeletonModification3DCCDIK::setup_modification(SkeletonModificationStack3D *p_stack) {
