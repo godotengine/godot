@@ -115,6 +115,8 @@ public:
 	virtual void execute(float delta);
 	virtual void setup_modification(SkeletonModificationStack3D *p_stack);
 
+	float clamp_angle(float angle, float min_bound, float max_bound, bool invert);
+
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
 
@@ -136,7 +138,7 @@ private:
 
 	Vector3 additional_rotation = Vector3(1, 0, 0);
 	bool lock_rotation_to_plane = false;
-	int lock_rotation_plane =  ROTATION_PLANE_X;
+	int lock_rotation_plane = ROTATION_PLANE_X;
 
 	void update_cache();
 
@@ -147,7 +149,6 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-
 	enum ROTATION_PLANE {
 		ROTATION_PLANE_X,
 		ROTATION_PLANE_Y,
@@ -204,7 +205,6 @@ private:
 		int bone_idx = -1;
 		int ccdik_axis = 0;
 		Vector3 ccdik_axis_vector = Vector3(1, 0, 0);
-		Vector3 ccdik_axis_vector_inverse = Vector3(0, 1, 1);
 		int rotate_mode = 0;
 
 		bool enable_constraint = false;
@@ -220,7 +220,7 @@ private:
 	NodePath tip_node;
 	ObjectID tip_node_cache;
 
-	bool perform_in_local_pose = true;
+	bool use_high_quality_solve = true;
 
 	void update_target_cache();
 	void update_tip_cache();
@@ -243,8 +243,8 @@ public:
 	void set_tip_node(const NodePath &p_tip_node);
 	NodePath get_tip_node() const;
 
-	void set_perform_in_local_pose(bool p_perform);
-	bool get_perform_in_local_pose() const;
+	void set_use_high_quality_solve(bool p_solve);
+	bool get_use_high_quality_solve() const;
 
 	String ccdik_joint_get_bone_name(int p_joint_idx) const;
 	void ccdik_joint_set_bone_name(int p_joint_idx, String p_bone_name);
