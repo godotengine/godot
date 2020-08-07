@@ -1374,48 +1374,11 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
 	}
 
-	Variant::Operator vop = Variant::Operator::OP_EQUAL;
-	switch (p_assignment->operation) {
-		case GDScriptParser::AssignmentNode::OP_NONE:
-			vop = Variant::Operator::OP_EQUAL;
-			break;
-		case GDScriptParser::AssignmentNode::OP_ADDITION:
-			vop = Variant::Operator::OP_ADD;
-			break;
-		case GDScriptParser::AssignmentNode::OP_SUBTRACTION:
-			vop = Variant::Operator::OP_SUBTRACT;
-			break;
-		case GDScriptParser::AssignmentNode::OP_MULTIPLICATION:
-			vop = Variant::Operator::OP_MULTIPLY;
-			break;
-		case GDScriptParser::AssignmentNode::OP_DIVISION:
-			vop = Variant::Operator::OP_DIVIDE;
-			break;
-		case GDScriptParser::AssignmentNode::OP_MODULO:
-			vop = Variant::Operator::OP_MODULE;
-			break;
-		case GDScriptParser::AssignmentNode::OP_BIT_SHIFT_LEFT:
-			vop = Variant::Operator::OP_SHIFT_LEFT;
-			break;
-		case GDScriptParser::AssignmentNode::OP_BIT_SHIFT_RIGHT:
-			vop = Variant::Operator::OP_SHIFT_RIGHT;
-			break;
-		case GDScriptParser::AssignmentNode::OP_BIT_AND:
-			vop = Variant::Operator::OP_BIT_AND;
-			break;
-		case GDScriptParser::AssignmentNode::OP_BIT_OR:
-			vop = Variant::Operator::OP_BIT_OR;
-			break;
-		case GDScriptParser::AssignmentNode::OP_BIT_XOR:
-			vop = Variant::Operator::OP_BIT_XOR;
-			break;
-	}
-
 	if (!p_assignment->assignee->get_datatype().is_variant() && !p_assignment->assigned_value->get_datatype().is_variant()) {
 		bool compatible = true;
 		GDScriptParser::DataType op_type = p_assignment->assigned_value->get_datatype();
-		if (vop != Variant::OP_EQUAL) {
-			op_type = get_operation_type(vop, p_assignment->assignee->get_datatype(), p_assignment->assigned_value->get_datatype(), compatible);
+		if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
+			op_type = get_operation_type(p_assignment->variant_op, p_assignment->assignee->get_datatype(), p_assignment->assigned_value->get_datatype(), compatible);
 		}
 
 		if (compatible) {
