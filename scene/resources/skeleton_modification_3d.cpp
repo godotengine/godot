@@ -1112,8 +1112,9 @@ void SkeletonModification3DFABRIK::execute(float delta) {
 		}
 		ERR_FAIL_COND_MSG(fabrik_data_chain[i].length < 0, "Joint " + itos(i) + " has an invalid joint length! Cannot execute!");
 
-		// Apply magnet positions:
 		Transform local_pose_override = stack->skeleton->get_bone_local_pose_override(fabrik_data_chain[i].bone_idx);
+
+		// Apply magnet positions:
 		if (stack->skeleton->get_bone_parent(fabrik_data_chain[i].bone_idx) >= 0) {
 			int parent_bone_idx = stack->skeleton->get_bone_parent(fabrik_data_chain[i].bone_idx);
 			Transform conversion_transform = (stack->skeleton->get_bone_global_pose(parent_bone_idx) * stack->skeleton->get_bone_rest(parent_bone_idx));
@@ -1155,7 +1156,12 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 
 	// Get the direction the final bone is facing in.
 	stack->skeleton->update_bone_rest_forward_vector(final_bone_idx);
-	Vector3 direction = final_joint_trans.xform(stack->skeleton->get_bone_axis_forward_vector(final_bone_idx)).normalized();
+	// Use the global pose so it points in the right direction the bone is currently facing in, not necessarily where the local override is facing.
+	Vector3 direction = stack->skeleton->get_bone_global_pose(final_bone_idx).xform(stack->skeleton->get_bone_axis_forward_vector(final_bone_idx)).normalized();
+
+	if (fabrik_data_chain[final_joint_idx].use_target_basis) {
+		direction = target_global_pose.basis.xform(stack->skeleton->get_bone_axis_forward_vector(final_bone_idx)).normalized();
+	}
 
 	// set the position of the final joint to the target position
 	final_joint_trans.origin = target_global_pose.origin - (direction * fabrik_data_chain[final_joint_idx].length);
@@ -1214,7 +1220,6 @@ void SkeletonModification3DFABRIK::chain_apply() {
 				Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(current_bone_idx);
 				// Rotate the bone towards the target:
 				current_trans.basis.rotate_to_align(forward_vector, current_trans.origin.direction_to(target_global_pose.origin));
-
 			} else { // Use the target's Basis...
 				Vector3 tmp_scale = current_trans.basis.get_scale();
 				current_trans.basis = target_global_pose.basis.orthonormalized();
