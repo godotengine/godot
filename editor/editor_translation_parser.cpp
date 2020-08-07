@@ -54,7 +54,7 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 		// Add user's collected translatable messages with context or plurals.
 		for (int i = 0; i < ids_ctx_plural.size(); i++) {
 			Array arr = ids_ctx_plural[i];
-			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into msgids_ctx_plural of EditorTranslationParserPlugin parse_file() method should have the form [\"message\",\"context\",\"plural message\"]");
+			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `parse_file()` method should have the form [\"message\", \"context\", \"plural message\"]");
 
 			Vector<String> id_ctx_plural;
 			id_ctx_plural.push_back(arr[0]);

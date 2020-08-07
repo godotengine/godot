@@ -78,8 +78,6 @@ def _add_additional_location(msgctx, msg, location):
 
     if msg_pos == -1:
         print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-    # NOTE FOR MENTORS: When I tested on my computer (windows) I need the extra \n#: to make the locations print line by line.
-    # but it worked before without \n# so I will leave it like before
     main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
 
 
@@ -171,7 +169,7 @@ print("Updating the editor.pot template...")
 for fname in matches:
     # NOTE FOR MENTORS: When I tested on windows I need to add encoding="utf8" at the end to be able to open the file.
     # maybe on Linux there's no need.
-    with open(fname, "r") as f:
+    with open(fname, "r", encoding="utf8") as f:
         process_file(f, fname)
 
 with open("editor.pot", "w") as f:

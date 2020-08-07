@@ -4285,9 +4285,8 @@ String TTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	// Return message based on English plural rule if translation is not possible.
 	if (p_n == 1) {
 		return p_text;
-	} else {
-		return p_text_plural;
 	}
+	return p_text_plural;
 }
 
 String DTR(const String &p_text, const String &p_context) {
@@ -4312,9 +4311,8 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	// Return message based on English plural rule if translation is not possible.
 	if (p_n == 1) {
 		return text;
-	} else {
-		return text_plural;
 	}
+	return text_plural;
 }
 #endif
 
@@ -4344,7 +4342,6 @@ String RTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	// Return message based on English plural rule if translation is not possible.
 	if (p_n == 1) {
 		return p_text;
-	} else {
-		return p_text_plural;
 	}
+	return p_text_plural;
 }
