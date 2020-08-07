@@ -1476,7 +1476,9 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 	}
 	current_suite->has_continue = true;
 	end_statement(R"("continue")");
-	return alloc_node<ContinueNode>();
+	ContinueNode *cont = alloc_node<ContinueNode>();
+	cont->is_for_match = is_continue_match;
+	return cont;
 }
 
 GDScriptParser::ForNode *GDScriptParser::parse_for() {
@@ -1495,10 +1497,12 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	// Save break/continue state.
 	bool could_break = can_break;
 	bool could_continue = can_continue;
+	bool was_continue_match = is_continue_match;
 
 	// Allow break/continue.
 	can_break = true;
 	can_continue = true;
+	is_continue_match = false;
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (n_for->variable) {
@@ -1511,6 +1515,7 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	// Reset break/continue state.
 	can_break = could_break;
 	can_continue = could_continue;
+	is_continue_match = was_continue_match;
 
 	return n_for;
 }
@@ -1645,8 +1650,10 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	// Save continue state.
 	bool could_continue = can_continue;
+	bool was_continue_match = is_continue_match;
 	// Allow continue for match.
 	can_continue = true;
+	is_continue_match = true;
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (branch->patterns.size() > 0) {
@@ -1663,6 +1670,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	// Restore continue state.
 	can_continue = could_continue;
+	is_continue_match = was_continue_match;
 
 	return branch;
 }
@@ -1820,16 +1828,19 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	// Save break/continue state.
 	bool could_break = can_break;
 	bool could_continue = can_continue;
+	bool was_continue_match = is_continue_match;
 
 	// Allow break/continue.
 	can_break = true;
 	can_continue = true;
+	is_continue_match = false;
 
 	n_while->loop = parse_suite(R"("while" block)");
 
 	// Reset break/continue state.
 	can_break = could_break;
 	can_continue = could_continue;
+	is_continue_match = was_continue_match;
 
 	return n_while;
 }
