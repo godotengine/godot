@@ -2005,7 +2005,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 		push_error(vformat(R"(Expected expression after "%s" operator.")", op.get_name()));
 	}
 
-	// TODO: Store the Variant operator here too (in the node).
 	// TODO: Also for unary, ternary, and assignment.
 	switch (op.type) {
 		case GDScriptTokenizer::Token::PLUS:
@@ -2167,39 +2166,50 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	switch (previous.type) {
 		case GDScriptTokenizer::Token::EQUAL:
 			assignment->operation = AssignmentNode::OP_NONE;
+			assignment->variant_op = Variant::OP_MAX;
 #ifdef DEBUG_ENABLED
 			has_operator = false;
 #endif
 			break;
 		case GDScriptTokenizer::Token::PLUS_EQUAL:
 			assignment->operation = AssignmentNode::OP_ADDITION;
+			assignment->variant_op = Variant::OP_ADD;
 			break;
 		case GDScriptTokenizer::Token::MINUS_EQUAL:
 			assignment->operation = AssignmentNode::OP_SUBTRACTION;
+			assignment->variant_op = Variant::OP_SUBTRACT;
 			break;
 		case GDScriptTokenizer::Token::STAR_EQUAL:
 			assignment->operation = AssignmentNode::OP_MULTIPLICATION;
+			assignment->variant_op = Variant::OP_MULTIPLY;
 			break;
 		case GDScriptTokenizer::Token::SLASH_EQUAL:
 			assignment->operation = AssignmentNode::OP_DIVISION;
+			assignment->variant_op = Variant::OP_DIVIDE;
 			break;
 		case GDScriptTokenizer::Token::PERCENT_EQUAL:
 			assignment->operation = AssignmentNode::OP_MODULO;
+			assignment->variant_op = Variant::OP_MODULE;
 			break;
 		case GDScriptTokenizer::Token::LESS_LESS_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_SHIFT_LEFT;
+			assignment->variant_op = Variant::OP_SHIFT_LEFT;
 			break;
 		case GDScriptTokenizer::Token::GREATER_GREATER_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_SHIFT_RIGHT;
+			assignment->variant_op = Variant::OP_SHIFT_RIGHT;
 			break;
 		case GDScriptTokenizer::Token::AMPERSAND_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_AND;
+			assignment->variant_op = Variant::OP_BIT_AND;
 			break;
 		case GDScriptTokenizer::Token::PIPE_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_OR;
+			assignment->variant_op = Variant::OP_BIT_OR;
 			break;
 		case GDScriptTokenizer::Token::CARET_EQUAL:
 			assignment->operation = AssignmentNode::OP_BIT_XOR;
+			assignment->variant_op = Variant::OP_BIT_XOR;
 			break;
 		default:
 			break; // Unreachable.
