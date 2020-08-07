@@ -43,6 +43,8 @@ struct _PHashTranslationCmp {
 };
 
 void PHashTranslation::generate(const Ref<Translation> &p_from) {
+	// This method compresses a Translation instance.
+	// Right now it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
 #ifdef TOOLS_ENABLED
 	List<StringName> keys;
 	p_from->get_message_list(&keys);
@@ -213,9 +215,7 @@ bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 StringName PHashTranslation::get_message(const StringName &p_src_text, const StringName &p_context) const {
-	if (String(p_context) != "") {
-		WARN_PRINT("The use of context is not yet supported in PHashTranslation.");
-	}
+	// p_context passed in is ignore. The use of context is not yet supported in PHashTranslation.
 
 	int htsize = hash_table.size();
 
@@ -272,7 +272,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text, const Str
 }
 
 StringName PHashTranslation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
-	WARN_PRINT("The use of plurals translation is not yet supported in PHashTranslation.");
+	// The use of plurals translation is not yet supported in PHashTranslation.
 	return get_message(p_src_text, p_context);
 }
 

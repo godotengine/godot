@@ -271,7 +271,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			msg_temp += TTRN("Node is in one group.", "Node is in {num} groups.", num_groups).format(arr, "{num}");
 		}
 		if (num_connections >= 1 || num_groups >= 1) {
-			msg_temp += TTR("\nClick to show signals dock.");
+			msg_temp += "\n" + TTR("Click to show signals dock.");
 		}
 
 		Ref<Texture2D> icon_temp;
