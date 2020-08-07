@@ -505,6 +505,9 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					member.variable->set_datatype(datatype); // Allow recursive usage.
 					reduce_expression(member.variable->initializer);
 					datatype = member.variable->initializer->get_datatype();
+					if (datatype.type_source != GDScriptParser::DataType::UNDETECTED) {
+						datatype.type_source = GDScriptParser::DataType::INFERRED;
+					}
 				}
 
 				if (member.variable->datatype_specifier != nullptr) {
@@ -540,6 +543,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					} else if (datatype.builtin_type == Variant::NIL) {
 						push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value is "null".)", member.variable->identifier->name), member.variable->initializer);
 					}
+					datatype.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 				}
 
 				datatype.is_constant = false;
@@ -914,6 +918,7 @@ void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScript
 				p_suite->datatype.type_source = GDScriptParser::DataType::UNDETECTED;
 			} else {
 				p_suite->set_datatype(p_statement->get_datatype());
+				p_suite->datatype.type_source = GDScriptParser::DataType::INFERRED;
 			}
 			break;
 		default:

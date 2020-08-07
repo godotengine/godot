@@ -1039,7 +1039,7 @@ void GDScriptTokenizer::check_indent() {
 			// First time indenting, choose character now.
 			indent_char = current_indent_char;
 		} else if (current_indent_char != indent_char) {
-			Token error = make_error(vformat("Used \"%c\" for indentation instead \"%c\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
+			Token error = make_error(vformat("Used \"%s\" for indentation instead \"%s\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
 			error.start_line = line;
 			error.start_column = 1;
 			error.leftmost_column = 1;
