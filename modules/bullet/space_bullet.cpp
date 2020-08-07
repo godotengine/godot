@@ -79,6 +79,7 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	GodotAllContactResultCallback btResult(&collision_object_point, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
 
 	// The results is already populated by GodotAllConvexResultCallback
@@ -98,6 +99,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 	btResult.m_collisionFilterMask = p_collision_mask;
 	btResult.m_pickRay = p_pick_ray;
 
+	space->flush_dirty();
 	space->dynamicsWorld->rayTest(btVec_from, btVec_to, btResult);
 	if (btResult.hasHit()) {
 		B_TO_G(btResult.m_hitPointWorld, r_result.position);
@@ -145,6 +147,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
 	shape->destroy_bt_shape(btShape);
@@ -185,6 +188,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 
+	space->flush_dirty();
 	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, space->dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 	if (btResult.hasHit()) {
@@ -240,6 +244,8 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
+
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
 	r_result_count = btQuery.m_count;
@@ -272,6 +278,8 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
+
+	space->flush_dirty();
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
 	shape->destroy_bt_shape(btShape);
@@ -317,6 +325,7 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 
 			input.m_transformB = body_transform * child_transform;
 
+			space->flush_dirty();
 			btPointCollector result;
 			btGjkPairDetector gjk_pair_detector(&point_shape, convex_shape, space->gjk_simplex_solver, space->gjk_epa_pen_solver);
 			gjk_pair_detector.getClosestPoints(input, result, nullptr);
@@ -363,11 +372,22 @@ void SpaceBullet::add_to_flush_queue(CollisionObjectBullet *p_co) {
 	}
 }
 
+void SpaceBullet::add_to_dirty_queue(CollisionObjectBullet *p_co) {
+	if (p_co->is_in_dirty_queue == false) {
+		p_co->is_in_dirty_queue = true;
+		queue_dirty.push_back(p_co);
+	}
+}
+
 void SpaceBullet::remove_from_any_queue(CollisionObjectBullet *p_co) {
 	if (p_co->is_in_flush_queue) {
 		p_co->is_in_flush_queue = false;
 		queue_pre_flush.erase(p_co);
 		queue_flush.erase(p_co);
+	}
+	if (p_co->is_in_dirty_queue) {
+		p_co->is_in_dirty_queue = false;
+		queue_dirty.erase(p_co);
 	}
 }
 
@@ -384,7 +404,17 @@ void SpaceBullet::flush_queries() {
 	queue_flush.clear();
 }
 
+void SpaceBullet::flush_dirty() {
+	for (uint32_t i = 0; i < queue_dirty.size(); i += 1) {
+		queue_dirty[i]->flush_dirty();
+		queue_dirty[i]->is_in_dirty_queue = false;
+	}
+	queue_dirty.clear();
+}
+
 void SpaceBullet::step(real_t p_delta_time) {
+	flush_dirty();
+
 	for (uint32_t i = 0; i < collision_objects.size(); i += 1) {
 		collision_objects[i]->pre_process();
 	}
@@ -981,6 +1011,9 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		normalLine->set_material_override(blue_mat);
 	}
 #endif
+
+	ERR_FAIL_COND_V_MSG(p_body->get_space() == nullptr, false, "The body is not part of any space.");
+	p_body->get_space()->flush_dirty();
 
 	btTransform body_transform;
 	G_TO_B(p_from, body_transform);

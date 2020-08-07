@@ -112,6 +112,7 @@ class SpaceBullet : public RIDBullet {
 
 	LocalVector<CollisionObjectBullet *> queue_pre_flush;
 	LocalVector<CollisionObjectBullet *> queue_flush;
+	LocalVector<CollisionObjectBullet *> queue_dirty;
 	LocalVector<CollisionObjectBullet *> collision_objects;
 	LocalVector<AreaBullet *> areas;
 
@@ -125,9 +126,11 @@ public:
 
 	void add_to_flush_queue(CollisionObjectBullet *p_co);
 	void add_to_pre_flush_queue(CollisionObjectBullet *p_co);
+	void add_to_dirty_queue(CollisionObjectBullet *p_co);
 	void remove_from_any_queue(CollisionObjectBullet *p_co);
 
 	void flush_queries();
+	void flush_dirty();
 	real_t get_delta_time() { return delta_time; }
 	void step(real_t p_delta_time);
 

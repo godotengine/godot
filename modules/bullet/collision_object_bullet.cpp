@@ -165,13 +165,36 @@ bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet 
 	return !bt_collision_object->checkCollideWith(p_otherCollisionObject->bt_collision_object);
 }
 
+void CollisionObjectBullet::set_collision_layer(uint32_t p_layer) {
+	if (collisionLayer != p_layer) {
+		collisionLayer = p_layer;
+		needs_collision_filters_reload = true;
+		if (likely(space)) {
+			space->add_to_dirty_queue(this);
+		}
+	}
+}
+
+void CollisionObjectBullet::set_collision_mask(uint32_t p_mask) {
+	if (collisionMask != p_mask) {
+		collisionMask = p_mask;
+		needs_collision_filters_reload = true;
+		if (likely(space)) {
+			space->add_to_dirty_queue(this);
+		}
+	}
+}
+
 void CollisionObjectBullet::reload_body() {
 	needs_body_reload = true;
+	if (likely(space)) {
+		space->add_to_dirty_queue(this);
+	}
 }
 
 void CollisionObjectBullet::dispatch_callbacks() {}
 
-void CollisionObjectBullet::pre_process() {
+void CollisionObjectBullet::flush_dirty() {
 	if (needs_body_reload) {
 		do_reload_body();
 	} else if (needs_collision_filters_reload) {
@@ -180,6 +203,8 @@ void CollisionObjectBullet::pre_process() {
 	needs_body_reload = false;
 	needs_collision_filters_reload = false;
 }
+
+void CollisionObjectBullet::pre_process() {}
 
 void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
 	collisionsEnabled = p_enabled;
@@ -342,12 +367,12 @@ bool RigidCollisionObjectBullet::is_shape_disabled(int p_index) {
 	return !shapes[p_index].active;
 }
 
-void RigidCollisionObjectBullet::pre_process() {
+void RigidCollisionObjectBullet::flush_dirty() {
 	if (need_shape_reload) {
 		do_reload_shapes();
 		need_shape_reload = false;
 	}
-	CollisionObjectBullet::pre_process();
+	CollisionObjectBullet::flush_dirty();
 }
 
 void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
@@ -361,6 +386,9 @@ void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
 
 void RigidCollisionObjectBullet::reload_shapes() {
 	need_shape_reload = true;
+	if (likely(space)) {
+		space->add_to_dirty_queue(this);
+	}
 }
 
 void RigidCollisionObjectBullet::do_reload_shapes() {
