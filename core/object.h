@@ -719,8 +719,7 @@ public:
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	StringName tr(const StringName &p_message, const StringName &p_context = "") const; // translate message (internationalization)
-	////I'm returning as String here because when I test the API, if I return StringName, I need to wrap it with String() to use format string, which is inconvenient.
+	String tr(const StringName &p_message, const StringName &p_context = "") const; // translate message (internationalization)
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	bool _is_queued_for_deletion = false; // set to true by SceneTree::queue_delete()
