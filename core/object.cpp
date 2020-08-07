@@ -1432,7 +1432,7 @@ void Object::initialize_class() {
 	initialized = true;
 }
 
-StringName Object::tr(const StringName &p_message, const StringName &p_context) const {
+String Object::tr(const StringName &p_message, const StringName &p_context) const {
 	if (!_can_translate || !TranslationServer::get_singleton()) {
 		return p_message;
 	}
@@ -1444,9 +1444,8 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 		// Return message based on English plural rule if translation is not possible.
 		if (p_n == 1) {
 			return p_message;
-		} else {
-			return p_message_plural;
 		}
+		return p_message_plural;
 	}
 	return TranslationServer::get_singleton()->translate_plural(p_message, p_message_plural, p_n, p_context);
 }

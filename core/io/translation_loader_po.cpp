@@ -32,6 +32,7 @@
 
 #include "core/os/file_access.h"
 #include "core/translation.h"
+#include "core/translation_po.h"
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	enum Status {
@@ -39,7 +40,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		STATUS_READING_ID,
 		STATUS_READING_STRING,
 		STATUS_READING_CONTEXT,
-		STATUS_READING_PLURAL
+		STATUS_READING_PLURAL,
 	};
 
 	Status status = STATUS_NONE;
@@ -54,7 +55,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}
 
-	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
+	Ref<TranslationPO> translation = Ref<TranslationPO>(memnew(TranslationPO));
 	int line = 1;
 	int plural_forms = 0;
 	int plural_index = -1;
