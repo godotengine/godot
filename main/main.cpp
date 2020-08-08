@@ -372,7 +372,7 @@ void Main::print_help(const char *p_binary) {
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 #ifdef TESTS_ENABLED
 	for (int x = 0; x < argc; x++) {
-		if (strncmp(argv[x], "--test", 6) == 0) {
+		if ((strncmp(argv[x], "--test", 6) == 0) && (strlen(argv[x]) == 6)) {
 			tests_need_run = true;
 			OS::get_singleton()->initialize();
 			StringName::setup();
