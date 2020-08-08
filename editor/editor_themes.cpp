@@ -35,7 +35,10 @@
 #include "editor_icons.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
+
+#ifdef SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
+#endif
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -81,7 +84,8 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
-Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
+#ifdef SVG_ENABLED
+static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
 
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
@@ -102,6 +106,7 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 
 	return icon;
 }
+#endif
 
 #ifndef ADD_CONVERT_COLOR
 #define ADD_CONVERT_COLOR(dictionary, old_color, new_color) dictionary[Color::html(old_color)] = Color::html(new_color)
