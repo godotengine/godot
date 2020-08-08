@@ -82,6 +82,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 	const String &str = text_edit->get_line(p_line);
 	const int line_length = str.length();
 	Color prev_color;
+
+	if (in_region != -1 && str.length() == 0) {
+		color_region_cache[p_line] = in_region;
+	}
 	for (int j = 0; j < str.length(); j++) {
 		Dictionary highlighter_info;
 
