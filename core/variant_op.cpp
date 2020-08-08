@@ -373,6 +373,61 @@ bool Variant::booleanize() const {
 		_RETURN_FAIL                                                                                                           \
 	}
 
+#define DEFAULT_OP_LOCALMEM_NUM_DIV(m_prefix, m_op_name, m_name, m_op, m_type)                                                                                                                                                                                                \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                                                                                                                                                  \
+		if (p_b.type == INT) {                                                                                                                                                                                                                                                \
+			if (unlikely(p_b._data._int == 0)) {                                                                                                                                                                                                                              \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._int);                                                                                                                                                                                   \
+		}                                                                                                                                                                                                                                                                     \
+		if (p_b.type == FLOAT) {                                                                                                                                                                                                                                              \
+			if (unlikely(p_b._data._float == 0)) {                                                                                                                                                                                                                            \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._float);                                                                                                                                                                                 \
+		}                                                                                                                                                                                                                                                                     \
+		if (p_b.type == VECTOR2) {                                                                                                                                                                                                                                            \
+			if (unlikely((*reinterpret_cast<const Vector2 *>(p_b._data._mem)).x == 0 || (*reinterpret_cast<const Vector2 *>(p_b._data._mem)).y == 0)) {                                                                                                                       \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const Vector2 *>(p_a._data._mem) m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem));                                                                                                                                              \
+		}                                                                                                                                                                                                                                                                     \
+		if (p_b.type == VECTOR2I) {                                                                                                                                                                                                                                           \
+			if (unlikely((*reinterpret_cast<const Vector2i *>(p_b._data._mem)).x == 0 || (*reinterpret_cast<const Vector2i *>(p_b._data._mem)).y == 0)) {                                                                                                                     \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const Vector2i *>(p_a._data._mem) m_op *reinterpret_cast<const Vector2i *>(p_b._data._mem));                                                                                                                                            \
+		}                                                                                                                                                                                                                                                                     \
+		if (p_b.type == VECTOR3) {                                                                                                                                                                                                                                            \
+			if (unlikely((*reinterpret_cast<const Vector3 *>(p_b._data._mem)).x == 0 || (*reinterpret_cast<const Vector3 *>(p_b._data._mem)).y == 0 || (*reinterpret_cast<const Vector3 *>(p_b._data._mem)).z == 0)) {                                                        \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const Vector3 *>(p_a._data._mem) m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem));                                                                                                                                              \
+		}                                                                                                                                                                                                                                                                     \
+		if (p_b.type == VECTOR3I) {                                                                                                                                                                                                                                           \
+			if (unlikely((*reinterpret_cast<const Vector3i *>(p_b._data._mem)).x == 0 || (*reinterpret_cast<const Vector3i *>(p_b._data._mem)).y == 0 || (*reinterpret_cast<const Vector3i *>(p_b._data._mem)).z == 0)) {                                                     \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const Vector3i *>(p_a._data._mem) m_op *reinterpret_cast<const Vector3i *>(p_b._data._mem));                                                                                                                                            \
+		}                                                                                                                                                                                                                                                                     \
+		if (p_b.type == COLOR) {                                                                                                                                                                                                                                              \
+			if (unlikely((*reinterpret_cast<const Color *>(p_b._data._mem)).r == 0 || (*reinterpret_cast<const Color *>(p_b._data._mem)).g == 0 || (*reinterpret_cast<const Color *>(p_b._data._mem)).b == 0 || (*reinterpret_cast<const Color *>(p_b._data._mem)).a == 0)) { \
+				r_valid = false;                                                                                                                                                                                                                                              \
+				_RETURN("Division By Zero");                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                 \
+			_RETURN(*reinterpret_cast<const Color *>(p_a._data._mem) m_op *reinterpret_cast<const Color *>(p_b._data._mem));                                                                                                                                                  \
+		}                                                                                                                                                                                                                                                                     \
+                                                                                                                                                                                                                                                                              \
+		_RETURN_FAIL                                                                                                                                                                                                                                                          \
+	}
+
 #define DEFAULT_OP_PTR(m_op, m_name, m_sub)                \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {               \
 		if (p_b.type == m_name)                            \
@@ -1172,11 +1227,19 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, INT, _int);
 			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, FLOAT, _float);
+
+			DEFAULT_OP_LOCALMEM_NUM_DIV(math, OP_DIVIDE, VECTOR2I, /, Vector2i);
+			DEFAULT_OP_LOCALMEM_NUM_DIV(math, OP_DIVIDE, VECTOR3I, /, Vector3i);
+
+#ifdef DEBUG_ENABLED
+			DEFAULT_OP_LOCALMEM_NUM_DIV(math, OP_DIVIDE, VECTOR2, /, Vector2);
+			DEFAULT_OP_LOCALMEM_NUM_DIV(math, OP_DIVIDE, VECTOR3, /, Vector3);
+			DEFAULT_OP_LOCALMEM_NUM_DIV(math, OP_DIVIDE, COLOR, /, Color);
+#else
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2, /, Vector2);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2I, /, Vector2i);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR3, /, Vector3);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR3I, /, Vector3i);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, COLOR, /, Color);
+#endif
 
 			CASE_TYPE(math, OP_DIVIDE, NIL)
 			CASE_TYPE(math, OP_DIVIDE, BOOL)
