@@ -5204,6 +5204,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				int last_assign = -1; // Incremented by 1 right before the assignment.
 				String enum_name;
 				Dictionary enum_dict;
+				int enum_start_line = tokenizer->get_token_line();
 
 				tokenizer->advance();
 				if (tokenizer->is_token_literal(0, true)) {
@@ -5340,6 +5341,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					ConstantNode *cn = alloc_node<ConstantNode>();
 					cn->value = enum_dict;
 					cn->datatype = _type_from_variant(cn->value);
+					cn->line = enum_start_line;
 
 					enum_constant.expression = cn;
 					enum_constant.type = cn->datatype;
