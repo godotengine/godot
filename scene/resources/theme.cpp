@@ -610,8 +610,8 @@ void Theme::get_color_list(StringName p_type, List<StringName> *p_list) const {
 	}
 }
 
-void Theme::set_constant(const StringName &p_name, const StringName &p_type, int p_constant) {
-	bool new_value = !constant_map.has(p_type) || !constant_map[p_type].has(p_name);
+void Theme::set_constant(const StringName &p_name, const StringName &p_type, float p_constant) {
+	const bool new_value = !constant_map.has(p_type) || !constant_map[p_type].has(p_name);
 	constant_map[p_type][p_name] = p_constant;
 
 	if (new_value) {
@@ -620,7 +620,7 @@ void Theme::set_constant(const StringName &p_name, const StringName &p_type, int
 	}
 }
 
-int Theme::get_constant(const StringName &p_name, const StringName &p_type) const {
+float Theme::get_constant(const StringName &p_name, const StringName &p_type) const {
 	if (constant_map.has(p_type) && constant_map[p_type].has(p_name)) {
 		return constant_map[p_type][p_name];
 	} else {

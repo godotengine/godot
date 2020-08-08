@@ -110,7 +110,7 @@
 			</description>
 		</method>
 		<method name="get_constant" qualifiers="const">
-			<return type="int">
+			<return type="float">
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
@@ -286,7 +286,7 @@
 			</argument>
 			<argument index="1" name="type" type="StringName">
 			</argument>
-			<argument index="2" name="constant" type="int">
+			<argument index="2" name="constant" type="float">
 			</argument>
 			<description>
 				Sets the theme's constant to [code]constant[/code] at [code]name[/code] in [code]type[/code].
