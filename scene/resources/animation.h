@@ -182,7 +182,7 @@ private:
 	};
 
 	struct AnimationTrack : public Track {
-		Vector<TKey<AnimationKey> > values;
+		Vector<TKey<AnimationKey>> values;
 
 		AnimationTrack() {
 			type = TYPE_ANIMATION;

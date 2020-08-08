@@ -149,7 +149,7 @@ class AnimationTrackEditTypeAnimation : public AnimationTrackEdit {
 	float len_resizing_rel;
 
 public:
-	virtual void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void _gui_input(const Ref<InputEvent> &p_event) override;
 
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;

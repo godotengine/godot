@@ -718,7 +718,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								int dir = sgn(p_delta);
 								bool fromEnd = (dir < 0);
 
-								player->play(anim_name, -1, speed_scale*dir, fromEnd);
+								player->play(anim_name, -1, speed_scale * dir, fromEnd);
 								player->seek(local_pos);
 
 								nc->animation_playing = true;

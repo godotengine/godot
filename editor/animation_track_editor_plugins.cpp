@@ -1222,8 +1222,8 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 1.5;
 
-		int h = get_size().height;
-		Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
+		int sh = get_size().height;
+		Rect2 rect = Rect2(from_x, (sh - fh) / 2, to_x - from_x, fh);
 
 		Color color = get_theme_color("font_color", "Label");
 		Color bg = color;

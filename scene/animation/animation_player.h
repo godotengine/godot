@@ -183,7 +183,6 @@ private:
 		float length;
 
 		BlockData() {
-
 			this->pos = -1;
 			this->length = -1;
 		}

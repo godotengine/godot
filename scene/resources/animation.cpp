@@ -283,7 +283,6 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					an->values.clear();
 
 					for (int i = 0; i < valcount; i++) {
-
 						Dictionary d2 = clips[i];
 						if (!d2.has("start_offset"))
 							continue;
@@ -2529,7 +2528,6 @@ void Animation::animation_track_set_key_start_offset(int p_track, int p_key, flo
 }
 
 float Animation::animation_track_get_key_start_offset(int p_track, int p_key) const {
-
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	const Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, 0);
@@ -2559,7 +2557,6 @@ void Animation::animation_track_set_key_end_offset(int p_track, int p_key, float
 }
 
 float Animation::animation_track_get_key_end_offset(int p_track, int p_key) const {
-
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	const Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, 0);

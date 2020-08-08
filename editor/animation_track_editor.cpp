@@ -380,8 +380,8 @@ public:
 					setting = false;
 					return true;
 				}
-				if (name == "start_offset") {
 
+				if (name == "start_offset") {
 					float value = p_value;
 
 					setting = true;
@@ -396,8 +396,8 @@ public:
 					setting = false;
 					return true;
 				}
-				if (name == "end_offset") {
 
+				if (name == "end_offset") {
 					float value = p_value;
 
 					setting = true;
@@ -412,7 +412,6 @@ public:
 					setting = false;
 					return true;
 				}
-
 			} break;
 		}
 
