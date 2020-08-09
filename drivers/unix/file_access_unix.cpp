@@ -105,6 +105,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 		switch (st.st_mode & S_IFMT) {
 			case S_IFLNK:
 			case S_IFREG:
+			case S_IFIFO:
 				break;
 			default:
 				return ERR_FILE_CANT_OPEN;
