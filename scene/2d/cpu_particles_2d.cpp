@@ -785,7 +785,11 @@ void CPUParticles2D::_particles_process(float p_delta) {
 					p.transform[2] = emission_points.get(random_idx);
 
 					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
-						p.velocity = emission_normals.get(random_idx);
+						Vector2 normal = emission_normals.get(random_idx);
+						Transform2D m2;
+						m2.set_axis(0, normal);
+						m2.set_axis(1, normal.tangent());
+						p.velocity = m2.basis_xform(p.velocity);
 					}
 
 					if (emission_colors.size() == pc) {
