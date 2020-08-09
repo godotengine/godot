@@ -60,6 +60,14 @@ void ContextGL_Windows::make_current() {
 	wglMakeCurrent(hDC, hRC);
 }
 
+HDC ContextGL_Windows::get_hdc() {
+	return hDC;
+}
+
+HGLRC ContextGL_Windows::get_hglrc() {
+	return hRC;
+}
+
 int ContextGL_Windows::get_window_width() {
 
 	return OS::get_singleton()->get_video_mode().width;

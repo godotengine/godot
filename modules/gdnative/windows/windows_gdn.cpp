@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  windows_gdn.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,56 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#include "modules/gdnative/gdnative.h"
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
-
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
-
-#include "core/error_list.h"
-#include "core/os/os.h"
-
-#include <windows.h>
-
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
-
-class ContextGL_Windows {
-
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
-	bool vsync_via_compositor;
-
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
-
-	static bool should_vsync_via_compositor();
-
-public:
-	void release_current();
-
-	void make_current();
-
-	HDC get_hdc();
-	HGLRC get_hglrc();
-
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
-};
-
+#ifdef WIN32
+#include "platform/windows/os_windows.h"
+/*
+#else
+#define HDC void *
+#define HGLRC void *
+*/
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void *GDAPI godot_windows_get_hdc() {
+#if defined(WIN32) && (defined(OPENGL_ENABLED) || defined(GLES_ENABLED))
+	OS_Windows *os_windows = (OS_Windows *)OS::get_singleton();
+	return os_windows->get_gl_context()->get_hdc();
+#else
+	return NULL;
+#endif
+}
+
+void *GDAPI godot_windows_get_hglrc() {
+#if defined(WIN32) && (defined(OPENGL_ENABLED) || defined(GLES_ENABLED))
+	OS_Windows *os_windows = (OS_Windows *)OS::get_singleton();
+	return os_windows->get_gl_context()->get_hglrc();
+#else
+	return NULL;
+#endif
+}
+
+#ifdef __cplusplus
+}
 #endif

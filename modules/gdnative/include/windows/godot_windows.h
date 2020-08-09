@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  godot_windows.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,56 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#ifndef GODOT_WINDOWS_GDN_H
+#define GODOT_WINDOWS_GDN_H
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+#include <gdnative/gdnative.h>
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
-
-#include "core/error_list.h"
-#include "core/os/os.h"
-
+/* for some reason including windows.h here makes things go boeboe so we always return as void *
+#ifdef WIN32
 #include <windows.h>
-
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
-
-class ContextGL_Windows {
-
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
-	bool vsync_via_compositor;
-
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
-
-	static bool should_vsync_via_compositor();
-
-public:
-	void release_current();
-
-	void make_current();
-
-	HDC get_hdc();
-	HGLRC get_hglrc();
-
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
-};
-
+#else
+#define HDC void *
+#define HGLRC void *
 #endif
+*/
+
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+void *GDAPI godot_windows_get_hdc();
+void *GDAPI godot_windows_get_hglrc();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* !GODOT_WINDOWS_GDN_H */

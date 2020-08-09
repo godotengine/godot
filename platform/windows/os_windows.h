@@ -411,6 +411,8 @@ protected:
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+	ContextGL_Windows *get_gl_context();
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	String get_stdin_string(bool p_block);
 

@@ -6651,6 +6651,29 @@
           ]
         }
       ]
+    },
+    {
+      "name": "windows",
+      "type": "WINDOWS",
+      "version": {
+        "major": 1,
+        "minor": 1
+      },
+      "next": null,
+      "api": [
+        {
+          "name": "godot_windows_get_hdc",
+          "return_type": "void *",
+          "arguments": [
+          ]
+        },
+        {
+          "name": "godot_windows_get_hglrc",
+          "return_type": "void *",
+          "arguments": [
+          ]
+        }
+      ]
     }
   ]
 }

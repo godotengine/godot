@@ -1852,6 +1852,10 @@ void OS_Windows::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
+ContextGL_Windows *OS_Windows::get_gl_context() {
+	return gl_context;
+}
+
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
 
 	if (!is_no_window_mode_enabled())

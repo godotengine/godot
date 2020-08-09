@@ -9,6 +9,7 @@ env_gdnative.add_source_files(env.modules_sources, "register_types.cpp")
 env_gdnative.add_source_files(env.modules_sources, "android/*.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative/*.cpp")
 env_gdnative.add_source_files(env.modules_sources, "nativescript/*.cpp")
+env_gdnative.add_source_files(env.modules_sources, "windows/*.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
 env_gdnative.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
 
