@@ -269,6 +269,8 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			draw_texture(reload_icon, revert_rect.position, color2);
+			// Use a bold font to make it more obvious that the property was modified from the default.
+			font = EditorNode::get_singleton()->get_gui_base()->get_theme_font("bold", "EditorFonts");
 		} else {
 			revert_rect = Rect2();
 		}
