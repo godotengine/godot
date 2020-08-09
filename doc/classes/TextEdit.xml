@@ -482,6 +482,9 @@
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Vertical scroll sensitivity.
 		</member>
+		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
+			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+		</member>
 		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled" default="false">
 			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
 		</member>

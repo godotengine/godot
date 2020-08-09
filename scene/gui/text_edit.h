@@ -435,6 +435,8 @@ private:
 	bool context_menu_enabled;
 	bool shortcut_keys_enabled;
 
+	bool virtual_keyboard_enabled = true;
+
 	int executing_line;
 
 	void _generate_context_menu();
@@ -817,6 +819,9 @@ public:
 
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
+
+	void set_virtual_keyboard_enabled(bool p_enable);
+	bool is_virtual_keyboard_enabled() const;
 
 	PopupMenu *get_menu() const;
 
