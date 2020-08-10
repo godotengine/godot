@@ -2286,10 +2286,17 @@ bool OS_Windows::is_window_focused() const {
 }
 
 void OS_Windows::set_console_visible(bool p_enabled) {
-	if (console_visible == p_enabled)
+	if (console_visible == p_enabled) {
 		return;
-	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-	console_visible = p_enabled;
+	}
+	if (p_enabled && GetConsoleWindow() == nullptr) { // Open new console if not attached.
+		own_console = true;
+		AllocConsole();
+	}
+	if (own_console) { // Note: Do not hide parent console.
+		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
+		console_visible = p_enabled;
+	}
 }
 
 bool OS_Windows::is_console_visible() const {
@@ -3697,7 +3704,19 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	minimized = false;
 	was_maximized = false;
 	window_focused = true;
-	console_visible = IsWindowVisible(GetConsoleWindow());
+	own_console = false;
+
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE *_file = nullptr;
+		freopen_s(&_file, "CONOUT$", "w", stdout);
+		freopen_s(&_file, "CONOUT$", "w", stderr);
+		freopen_s(&_file, "CONIN$", "r", stdin);
+
+		printf("\n");
+		console_visible = true;
+	} else {
+		console_visible = false;
+	}
 
 	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");

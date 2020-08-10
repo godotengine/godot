@@ -406,6 +406,7 @@ protected:
 	bool borderless;
 	bool window_focused;
 	bool console_visible;
+	bool own_console;
 	bool was_maximized;
 
 public:

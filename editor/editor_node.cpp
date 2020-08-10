@@ -2745,10 +2745,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case SETTINGS_TOGGLE_CONSOLE: {
-
 			bool was_visible = OS::get_singleton()->is_console_visible();
 			OS::get_singleton()->set_console_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
 
