@@ -549,6 +549,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 
+#ifdef _USE_TWO_VERTICES_WITH_THIN_LINES				
 				if (line->width <= 1) {
 					Vector2 verts[2] = {
 						Vector2(line->from.x, line->from.y),
@@ -565,7 +566,9 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					if (line->antialiased)
 						glDisable(GL_LINE_SMOOTH);
 #endif
-				} else {
+				} else 
+#endif				
+				{
 					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
 
 					Vector2 verts[4] = {
