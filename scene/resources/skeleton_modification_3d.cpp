@@ -430,8 +430,10 @@ void SkeletonModification3DLookAt::setup_modification(SkeletonModificationStack3
 
 void SkeletonModification3DLookAt::set_bone_name(String p_name) {
 	bone_name = p_name;
-	if (stack && stack->skeleton) {
-		bone_idx = stack->skeleton->find_bone(bone_name);
+	if (stack) {
+		if (stack->skeleton) {
+			bone_idx = stack->skeleton->find_bone(bone_name);
+		}
 	}
 	_change_notify();
 }
@@ -657,7 +659,6 @@ void SkeletonModification3DCCDIK::execute(float delta) {
 	}
 
 	// Reset the local bone overrides for CCDIK affected nodes
-	// TODO: this is needed for CCDIK, but I'm not sure the CCDIK implementation is correct. Will need to investigate.
 	for (int i = 0; i < ccdik_data_chain.size(); i++) {
 		stack->skeleton->set_bone_local_pose_override(ccdik_data_chain[i].bone_idx,
 				stack->skeleton->get_bone_local_pose_override(ccdik_data_chain[i].bone_idx),
@@ -1072,7 +1073,7 @@ void SkeletonModification3DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 			}
 		}
 
-		// Cannot apply magnet to the origin of the chain, it will not do anything, so do not include this property for the origin.
+		// Cannot apply magnet to the origin of the chain, as it will not do anything.
 		if (i > 0) {
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, base_string + "magnet_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		}
@@ -1089,8 +1090,6 @@ void SkeletonModification3DFABRIK::execute(float delta) {
 	if (!enabled) {
 		return;
 	}
-
-	// TODO: support a single dummy tip/final bone? This will allow for setting the magnet position on a two bone FABRIK chain.
 
 	if (target_node_cache.is_null()) {
 		update_target_cache();
@@ -2179,7 +2178,7 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		ERR_FAIL_COND_MSG(!tip->is_inside_tree(), "Tip node is not in the scene tree. Cannot execute modification!");
 		bone_two_tip_trans = stack->skeleton->world_transform_to_global_pose(tip->get_global_transform());
 	} else {
-		// TODO: Needs testing!
+		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
 		bone_two_tip_trans = bone_two_trans;
 		bone_two_tip_trans.origin += bone_two_trans.basis.xform(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx)).normalized() * joint_two_length;
 	}
@@ -2222,6 +2221,7 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 	if (use_pole_node) {
 		// Update bone_two_trans so its at the latest position, with the rotation of bone_one_trans taken into account, then look at the target.
 		bone_two_trans = stack->skeleton->local_pose_to_global_pose(joint_two_bone_idx, stack->skeleton->get_bone_local_pose_override(joint_two_bone_idx));
+		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
 		Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx);
 		bone_two_trans.basis.rotate_to_align(forward_vector, bone_two_trans.origin.direction_to(target_trans.origin));
 

@@ -303,6 +303,10 @@ void Skeleton3D::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			set_physics_process_internal(true);
 			set_process_internal(true);
+
+			if (modification_stack.is_valid()) {
+				set_modification_stack(modification_stack);
+			}
 		} break;
 #endif // _3D_DISABLED
 
@@ -1123,6 +1127,12 @@ void Skeleton3D::execute_modifications(float delta) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}
+
+	// Needed to avoid the issue where the stack looses reference to the skeleton when the scene is saved.
+	if (modification_stack->skeleton != this) {
+		modification_stack->set_skeleton(this);
+	}
+
 	modification_stack->execute(delta);
 }
 
