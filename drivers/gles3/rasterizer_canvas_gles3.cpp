@@ -716,6 +716,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glVertexAttrib4f(VS::ARRAY_COLOR, line->color.r, line->color.g, line->color.b, line->color.a);
 
+#ifdef _USE_TWO_VERTICES_WITH_THIN_LINES
 				if (line->width <= 1) {
 					Vector2 verts[2] = {
 						Vector2(line->from.x, line->from.y),
@@ -733,7 +734,9 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					if (line->antialiased)
 						glDisable(GL_LINE_SMOOTH);
 #endif
-				} else {
+				} else 
+#endif				
+				{
 					//thicker line
 
 					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
