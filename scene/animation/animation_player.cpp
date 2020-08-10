@@ -588,97 +588,59 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					continue;
 				}
 
-				if (p_seeked) {
-					//find whathever should be playing
-					int idx = a->track_find_key(i, p_time);
-					if (idx < 0) {
-						continue;
-					}
+				bool stop = false;
 
+				if (p_seeked)
+					nc->audio_idx = -1;
+
+				int idx = a->track_find_key(i, p_time);
+				if (idx != -1) {
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-					if (!stream.is_valid()) {
-						nc->node->call("stop");
-						nc->audio_playing = false;
-						playing_caches.erase(nc);
-					} else {
-						float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-						start_ofs += p_time - a->track_get_key_time(i, idx);
-						float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-						float len = stream->get_length();
+					if (stream.is_valid()) {
+						BlockData &b = blockData;
+						get_audio_play_block(b, a, i, idx, p_time);
+						if (b.length > 0) {
+							if (nc->audio_idx != idx) {
+								nc->audio_idx = idx;
 
-						if (start_ofs > len - end_ofs) {
-							nc->node->call("stop");
-							nc->audio_playing = false;
-							playing_caches.erase(nc);
-							continue;
-						}
+								float local_pos = get_local_audio_pos(a, i, idx, p_time);
 
-						nc->node->call("set_stream", stream);
-						nc->node->call("play", start_ofs);
+								nc->node->call("set_stream", stream);
+								nc->node->call("play", local_pos);
 
-						nc->audio_playing = true;
-						playing_caches.insert(nc);
-						if (len && end_ofs > 0) { //force a end at a time
-							nc->audio_len = len - start_ofs - end_ofs;
-						} else {
-							nc->audio_len = 0;
-						}
+								nc->audio_playing = true;
+								playing_caches.insert(nc);
 
-						nc->audio_start = p_time;
-					}
-
-				} else {
-					//find stuff to play
-					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play);
-					if (to_play.size()) {
-						int idx = to_play.back()->get();
-
-						Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-						if (!stream.is_valid()) {
-							nc->node->call("stop");
-							nc->audio_playing = false;
-							playing_caches.erase(nc);
-						} else {
-							float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-							float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-							float len = stream->get_length();
-
-							nc->node->call("set_stream", stream);
-							nc->node->call("play", start_ofs);
-
-							nc->audio_playing = true;
-							playing_caches.insert(nc);
-							if (len && end_ofs > 0) { //force a end at a time
-								nc->audio_len = len - start_ofs - end_ofs;
-							} else {
-								nc->audio_len = 0;
+								nc->audio_start = b.pos;
+								nc->audio_len = b.length;
 							}
-
-							nc->audio_start = p_time;
-						}
-					} else if (nc->audio_playing) {
-						bool loop = a->has_loop();
-
-						bool stop = false;
-
-						if (!loop && p_time < nc->audio_start) {
+						} else {
 							stop = true;
-						} else if (nc->audio_len > 0) {
-							float len = nc->audio_start > p_time ? (a->get_length() - nc->audio_start) + p_time : p_time - nc->audio_start;
-
-							if (len > nc->audio_len) {
-								stop = true;
-							}
 						}
+					} else {
+						stop = true;
+					}
+				}
 
-						if (stop) {
-							//time to stop
-							nc->node->call("stop");
-							nc->audio_playing = false;
-							playing_caches.erase(nc);
+				if (!stop && nc->audio_playing) {
+					int dir = sgn(p_delta);
+					if ((dir > 0 && p_time < nc->audio_start) || (dir > 0 && p_time >= a->get_length()) || (dir < 0 && p_time > nc->audio_start) || (dir < 0 && p_time <= 0)) {
+						stop = true;
+
+					} else {
+						float audio_clamp_len = MAX(MIN((nc->audio_start + nc->audio_len), a->get_length()), 0);
+						float value = audio_clamp_len - p_time;
+						if (value <= 0) {
+							stop = true;
 						}
 					}
+				}
+
+				if (stop) {
+					//time to stop
+					nc->node->call("stop");
+					nc->audio_playing = false;
+					playing_caches.erase(nc);
 				}
 
 			} break;
@@ -768,6 +730,37 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 			} break;
 		}
 	}
+}
+
+float AnimationPlayer::get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time) {
+	return (p_time - a->track_get_key_time(p_track, p_key)) + a->audio_track_get_key_start_offset(p_track, p_key);
+}
+
+void AnimationPlayer::get_audio_play_block(BlockData &b, Animation *a, int p_track, int p_key, float p_time) {
+	get_audio_block(b, a, p_track, p_key);
+	float local_pos = p_time - blockData.pos;
+	float newLen = blockData.length - local_pos;
+
+	b.pos = p_time;
+	b.length = newLen;
+}
+
+void AnimationPlayer::get_audio_block(BlockData &b, Animation *a, int p_track, int p_key) {
+	Ref<AudioStream> stream = a->audio_track_get_key_stream(p_track, p_key);
+	if (stream.is_valid()) {
+		float start_ofs = a->audio_track_get_key_start_offset(p_track, p_key);
+		float end_ofs = a->audio_track_get_key_end_offset(p_track, p_key);
+		float length = stream->get_length();
+
+		length = MIN(MAX(0, length - start_ofs - end_ofs), length);
+
+		b.pos = a->track_get_key_time(p_track, p_key);
+		b.length = length;
+		return;
+	}
+
+	b.pos = a->track_get_key_time(p_track, p_key);
+	b.length = 0;
 }
 
 float AnimationPlayer::get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time) {

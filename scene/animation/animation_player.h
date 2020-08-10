@@ -106,6 +106,8 @@ private:
 		uint64_t accum_pass = 0;
 
 		bool audio_playing = false;
+
+		int audio_idx;
 		float audio_start = 0.0;
 		float audio_len = 0.0;
 
@@ -252,6 +254,11 @@ private:
 
 	void _node_removed(Node *p_node);
 	void _stop_playing_caches();
+
+	float get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time);
+
+	void get_audio_play_block(BlockData &b, Animation *a, int p_track, int p_key, float p_time);
+	void get_audio_block(BlockData &b, Animation *a, int p_track, int p_key);
 
 	float get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time);
 	float get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player);
