@@ -32,59 +32,325 @@
 	@author AndreaCatania
 */
 
+// TODO write unit tests to make sure all cases are covered.
+
 #include "interpolator.h"
 
 #include "core/ustring.h"
 
-void Interpolator::bind_methods() {
+void Interpolator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_variable", "default", "fallback"), &Interpolator::register_variable);
 	ClassDB::bind_method(D_METHOD("set_variable_custom_interpolator", "var_id", "object", "function_name"), &Interpolator::set_variable_custom_interpolator);
 
 	ClassDB::bind_method(D_METHOD("epoch_insert", "var_id", "value"), &Interpolator::epoch_insert);
-
-	// TODO remove these below, was just a test.
-	ClassDB::bind_method(D_METHOD("terminate_init"), &Interpolator::terminate_init);
-	ClassDB::bind_method(D_METHOD("begin_write", "epoch"), &Interpolator::begin_write);
-	ClassDB::bind_method(D_METHOD("end_write"), &Interpolator::end_write);
+	ClassDB::bind_method(D_METHOD("pop_epoch", "epoch"), &Interpolator::pop_epoch);
+	ClassDB::bind_method(D_METHOD("get_last_pop_epoch"), &Interpolator::get_last_pop_epoch);
 
 	BIND_ENUM_CONSTANT(FALLBACK_INTERPOLATE);
 	BIND_ENUM_CONSTANT(FALLBACK_DEFAULT);
-	BIND_ENUM_CONSTANT(FALLBACK_NEW);
-	BIND_ENUM_CONSTANT(FALLBACK_OLD);
+	BIND_ENUM_CONSTANT(FALLBACK_NEW_OR_NEAREST);
+	BIND_ENUM_CONSTANT(FALLBACK_OLD_OR_NEAREST);
 }
 
-Interpolator::Interpolator() {
-}
+Interpolator::Interpolator() {}
 
 int Interpolator::register_variable(const Variant &p_default, Fallback p_fallback) {
 	ERR_FAIL_COND_V_MSG(init_phase == false, -1, "You cannot add another variable at this point.");
 	const uint32_t id = variables.size();
-	VariableInfo vi;
-	vi.id = id;
-	vi.default_value = p_default;
-	variables.push_back(vi);
+	variables.push_back(VariableInfo{ p_default, p_fallback, ObjectID(), StringName() });
 	return id;
 }
 
 void Interpolator::set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name) {
-#warning "Implement this"
-	CRASH_NOW_MSG("TODO Implement this please.");
+	ERR_FAIL_COND_MSG(init_phase == false, "You cannot add another variable at this point.");
+	ERR_FAIL_INDEX_MSG(uint32_t(p_var_id), variables.size(), "The variable_id passed is unknown.");
+	variables[p_var_id].fallback = FALLBACK_CUSTOM_INTERPOLATOR;
+	variables[p_var_id].custom_interpolator_object = p_object->get_instance_id();
+	variables[p_var_id].custom_interpolator_function = p_function_name;
 }
 
 void Interpolator::terminate_init() {
 	init_phase = false;
-	buffer.resize(variables.size());
 }
 
 void Interpolator::begin_write(uint64_t p_epoch) {
+	ERR_FAIL_COND_MSG(write_position != UINT32_MAX, "You can't call this function twice.");
+	ERR_FAIL_COND_MSG(init_phase, "You cannot write data while the buffer is not fully initialized, call `terminate_init`.");
+
+	// Make room for this epoch.
+	// Insert the epoch sorted in the buffer.
+	write_position = UINT32_MAX;
+	for (uint32_t i = 0; i < epochs.size(); i += 1) {
+		if (epochs[i] >= p_epoch) {
+			write_position = i;
+			break;
+		}
+	}
+
+	if (write_position < UINT32_MAX) {
+		if (epochs[write_position] == p_epoch) {
+			// This epoch already exists, nothing to do.
+			return;
+		} else {
+			// Make room.
+			epochs.push_back(UINT64_MAX);
+			buffer.push_back(Vector<Variant>());
+			// Sort the epochs.
+			for (int i = epochs.size() - 1; i >= int(write_position); i -= 1) {
+				epochs[uint32_t(i) + 1] = epochs[uint32_t(i)];
+				buffer[uint32_t(i) + 1] = buffer[uint32_t(i)];
+			}
+			// Init the new epoch.
+			epochs[write_position] = p_epoch;
+			buffer[write_position].clear();
+			buffer[write_position].resize(variables.size());
+		}
+	} else {
+		// No sort needed.
+		write_position = epochs.size();
+		epochs.push_back(p_epoch);
+		buffer.push_back(Vector<Variant>());
+		buffer[write_position].resize(variables.size());
+	}
+
+	// Set defaults.
+	Variant *ptr = buffer[write_position].ptrw();
+	for (uint32_t i = 0; i < variables.size(); i += 1) {
+		ptr[i] = variables[i].default_value;
+	}
 }
 
 void Interpolator::epoch_insert(int p_var_id, Variant p_value) {
+	ERR_FAIL_COND_MSG(write_position == UINT32_MAX, "Please call `begin_write` before.");
+	const uint32_t var_id(p_var_id);
+	ERR_FAIL_INDEX_MSG(var_id, variables.size(), "The variable_id passed is unknown.");
+	ERR_FAIL_COND_MSG(variables[var_id].default_value.get_type() != p_value.get_type(), "The variable: " + itos(p_var_id) + " expects the variable type: " + Variant::get_type_name(variables[var_id].default_value.get_type()) + ", and not: " + Variant::get_type_name(p_value.get_type()));
+	buffer[write_position].write[var_id] = p_value;
 }
 
 void Interpolator::end_write() {
+	ERR_FAIL_COND_MSG(write_position == UINT32_MAX, "You can't call this function before starting the epoch with `begin_write`.");
+	write_position = UINT32_MAX;
 }
 
-void Interpolator::pop_epoch(uint64_t p_epoch, LocalVector<Variant> &r_vector) {
-	r_vector.clear();
+Variant interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta) {
+	ERR_FAIL_COND_V(p_v1.get_type() != p_v2.get_type(), p_v1);
+
+	switch (p_v1.get_type()) {
+		case Variant::Type::INT:
+			return int(Math::round(Math::lerp(real_t(p_v1), real_t(p_v2), p_delta)));
+		case Variant::Type::FLOAT:
+			return Math::lerp(p_v1, p_v2, p_delta);
+		case Variant::Type::VECTOR2:
+			return Vector2(p_v1).lerp(Vector2(p_v2), p_delta);
+		case Variant::Type::VECTOR2I:
+			return Vector2i(
+					int(Math::round(Math::lerp(Vector2i(p_v1)[0], Vector2i(p_v2)[0], p_delta))),
+					int(Math::round(Math::lerp(Vector2i(p_v1)[1], Vector2i(p_v2)[1], p_delta))));
+		case Variant::Type::TRANSFORM2D:
+			return Transform2D(p_v1).interpolate_with(Transform2D(p_v2), p_delta);
+		case Variant::Type::VECTOR3:
+			return Vector3(p_v1).lerp(Vector3(p_v2), p_delta);
+		case Variant::Type::VECTOR3I:
+			return Vector3i(
+					int(Math::round(Math::lerp(Vector3i(p_v1)[0], Vector3i(p_v2)[0], p_delta))),
+					int(Math::round(Math::lerp(Vector3i(p_v1)[1], Vector3i(p_v2)[1], p_delta))),
+					int(Math::round(Math::lerp(Vector3i(p_v1)[2], Vector3i(p_v2)[2], p_delta))));
+		case Variant::Type::QUAT:
+			return Quat(p_v1).slerp(Quat(p_v2), p_delta);
+		case Variant::Type::BASIS:
+			return Basis(p_v1).slerp(Basis(p_v2), p_delta);
+		case Variant::Type::TRANSFORM:
+			return Transform(p_v1).interpolate_with(Transform(p_v2), p_delta);
+		default:
+			return p_delta > 0.5 ? p_v2 : p_v1;
+	}
+}
+
+Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch) {
+	ERR_FAIL_COND_V_MSG(init_phase, Vector<Variant>(), "You can't pop data if the interpolator is not fully initialized.");
+	ERR_FAIL_COND_V_MSG(write_position != UINT32_MAX, Vector<Variant>(), "You can't pop data while writing the epoch");
+
+	// Search the epoch.
+	uint32_t position = UINT32_MAX;
+	for (uint32_t i = 0; i < epochs.size(); i += 1) {
+		if (epochs[i] >= p_epoch) {
+			position = i;
+			break;
+		}
+	}
+
+	ObjectID cache_object_id;
+	Object *cache_object = nullptr;
+
+	Vector<Variant> data;
+	if (unlikely(position == UINT32_MAX)) {
+		data.resize(variables.size());
+		Variant *ptr = data.ptrw();
+		if (buffer.size() == 0) {
+			// No data found, set all to default.
+			for (uint32_t i = 0; i < variables.size(); i += 1) {
+				ptr[i] = variables[i].default_value;
+			}
+		} else {
+			// No new data.
+			for (uint32_t i = 0; i < variables.size(); i += 1) {
+				switch (variables[i].fallback) {
+					case FALLBACK_DEFAULT:
+						ptr[i] = variables[i].default_value;
+						break;
+					case FALLBACK_INTERPOLATE: // No way to interpolate, so just send the nearest.
+					case FALLBACK_NEW_OR_NEAREST: // No new data, so send the nearest.
+					case FALLBACK_OLD_OR_NEAREST: // Just send the oldest, as desired.
+						ptr[i] = buffer[buffer.size() - 1][i];
+						break;
+					case FALLBACK_CUSTOM_INTERPOLATOR:
+						ptr[i] = variables[i].default_value;
+
+						if (cache_object_id != variables[i].custom_interpolator_object) {
+							ERR_CONTINUE_MSG(variables[i].custom_interpolator_object.is_null(), "The variable: " + itos(i) + " has a custom interpolator, but the function is invalid.");
+
+							Object *o = ObjectDB::get_instance(variables[i].custom_interpolator_object);
+							ERR_CONTINUE_MSG(o == nullptr, "The variable: " + itos(i) + " has a custom interpolator, but the function is invalid.");
+
+							cache_object_id = variables[i].custom_interpolator_object;
+							cache_object = o;
+						}
+
+						ptr[i] = cache_object->call(
+								variables[i].custom_interpolator_function,
+								epochs[buffer.size() - 1],
+								buffer[buffer.size() - 1][i],
+								-1,
+								variables[i].default_value,
+								0.0);
+
+						if (ptr[i].get_type() != variables[i].default_value.get_type()) {
+							ERR_PRINT("The variable: " + itos(i) + " custom interpolator [" + variables[i].custom_interpolator_function + "], returned a different variant type. Expected: " + Variant::get_type_name(variables[i].default_value.get_type()) + ", returned: " + Variant::get_type_name(ptr[i].get_type()));
+							ptr[i] = variables[i].default_value;
+						}
+						break;
+				}
+			}
+		}
+	} else if (unlikely(epochs[position] == p_epoch)) {
+		// Precise data.
+		data = buffer[position];
+	} else if (unlikely(position == 0)) {
+		// No old data.
+		data.resize(variables.size());
+		Variant *ptr = data.ptrw();
+		for (uint32_t i = 0; i < variables.size(); i += 1) {
+			switch (variables[i].fallback) {
+				case FALLBACK_DEFAULT:
+					ptr[i] = variables[i].default_value;
+					break;
+				case FALLBACK_INTERPOLATE: // No way to interpolate, so just send the nearest.
+				case FALLBACK_NEW_OR_NEAREST: // Just send the newer data as desired.
+				case FALLBACK_OLD_OR_NEAREST: // No old data, so send nearest.
+					ptr[i] = buffer[0][i];
+					break;
+				case FALLBACK_CUSTOM_INTERPOLATOR:
+					ptr[i] = variables[i].default_value;
+					if (cache_object_id != variables[i].custom_interpolator_object) {
+						ERR_CONTINUE_MSG(variables[i].custom_interpolator_object.is_null(), "The variable: " + itos(i) + " has a custom interpolator, but the function is invalid.");
+
+						Object *o = ObjectDB::get_instance(variables[i].custom_interpolator_object);
+						ERR_CONTINUE_MSG(o == nullptr, "The variable: " + itos(i) + " has a custom interpolator, but the function is invalid.");
+
+						cache_object_id = variables[i].custom_interpolator_object;
+						cache_object = o;
+					}
+
+					ptr[i] = cache_object->call(
+							variables[i].custom_interpolator_function,
+							-1,
+							variables[i].default_value,
+							epochs[0],
+							buffer[0][i],
+							1.0);
+
+					if (ptr[i].get_type() != variables[i].default_value.get_type()) {
+						ERR_PRINT("The variable: " + itos(i) + " custom interpolator [" + variables[i].custom_interpolator_function + "], returned a different variant type. Expected: " + Variant::get_type_name(variables[i].default_value.get_type()) + ", returned: " + Variant::get_type_name(ptr[i].get_type()));
+						ptr[i] = variables[i].default_value;
+					}
+					break;
+			}
+		}
+	} else {
+		// Enought data to do anything needed.
+		data.resize(variables.size());
+		Variant *ptr = data.ptrw();
+		for (uint32_t i = 0; i < variables.size(); i += 1) {
+			switch (variables[i].fallback) {
+				case FALLBACK_DEFAULT:
+					ptr[i] = variables[i].default_value;
+					break;
+				case FALLBACK_INTERPOLATE: {
+					const real_t delta = real_t(p_epoch - epochs[position - 1]) / real_t(epochs[position] - epochs[position - 1]);
+					ptr[i] = interpolate(
+							buffer[position - 1][i],
+							buffer[position][i],
+							delta);
+				} break;
+				case FALLBACK_NEW_OR_NEAREST:
+					ptr[i] = buffer[position][i];
+					break;
+				case FALLBACK_OLD_OR_NEAREST:
+					ptr[i] = buffer[position - 1][i];
+					break;
+				case FALLBACK_CUSTOM_INTERPOLATOR: {
+					ptr[i] = variables[i].default_value;
+
+					if (cache_object_id != variables[i].custom_interpolator_object) {
+						ERR_CONTINUE_MSG(variables[i].custom_interpolator_object.is_null(), "The variable: " + itos(i) + " has a custom interpolator, but the function is invalid.");
+
+						Object *o = ObjectDB::get_instance(variables[i].custom_interpolator_object);
+						ERR_CONTINUE_MSG(o == nullptr, "The variable: " + itos(i) + " has a custom interpolator, but the function is invalid.");
+
+						cache_object_id = variables[i].custom_interpolator_object;
+						cache_object = o;
+					}
+
+					const real_t delta = real_t(p_epoch - epochs[position - 1]) / real_t(epochs[position] - epochs[position - 1]);
+
+					ptr[i] = cache_object->call(
+							variables[i].custom_interpolator_function,
+							epochs[position - 1],
+							buffer[position - 1][i],
+							epochs[position],
+							buffer[position][i],
+							delta);
+
+					if (ptr[i].get_type() != variables[i].default_value.get_type()) {
+						ERR_PRINT("The variable: " + itos(i) + " custom interpolator [" + variables[i].custom_interpolator_function + "], returned a different variant type. Expected: " + Variant::get_type_name(variables[i].default_value.get_type()) + ", returned: " + Variant::get_type_name(ptr[i].get_type()));
+						ptr[i] = variables[i].default_value;
+					}
+				} break;
+			}
+		}
+	}
+
+	if (unlikely(position == UINT32_MAX && buffer.size() > 1)) {
+		// Remove all the elements but last. This happens when the p_epoch is
+		// bigger than the one already stored into the queue.
+		epochs[0] = epochs[buffer.size() - 1];
+		buffer[0] = buffer[buffer.size() - 1];
+		epochs.resize(1);
+		buffer.resize(1);
+	} else if (position >= 2) {
+		// Remove the old elements, but leave the one used to interpolate.
+		for (uint32_t i = 0; i < position - 1; i += 1) {
+			epochs.remove(0);
+			buffer.remove(0);
+		}
+	}
+
+	last_pop_epoch = MAX(p_epoch, last_pop_epoch);
+
+	return data;
+}
+
+uint64_t Interpolator::get_last_pop_epoch() const {
+	return last_pop_epoch;
 }

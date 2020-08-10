@@ -45,23 +45,29 @@ public:
 	enum Fallback {
 		FALLBACK_INTERPOLATE,
 		FALLBACK_DEFAULT,
-		FALLBACK_OLD,
-		FALLBACK_NEW
+		FALLBACK_OLD_OR_NEAREST,
+		FALLBACK_NEW_OR_NEAREST,
+		FALLBACK_CUSTOM_INTERPOLATOR
 	};
 
 private:
 	struct VariableInfo {
 		// TODO Do we need a name?
-		int id;
 		Variant default_value;
+		Fallback fallback;
+		ObjectID custom_interpolator_object;
+		StringName custom_interpolator_function;
 	};
 
 	LocalVector<VariableInfo> variables;
-	LocalVector<LocalVector<Variant>> buffer;
+	LocalVector<uint64_t> epochs;
+	LocalVector<Vector<Variant>> buffer;
 
 	bool init_phase = true;
+	uint32_t write_position = UINT32_MAX;
+	uint64_t last_pop_epoch = 0;
 
-	static void bind_methods();
+	static void _bind_methods();
 
 public:
 	Interpolator();
@@ -74,7 +80,8 @@ public:
 	void epoch_insert(int p_var_id, Variant p_value);
 	void end_write();
 
-	void pop_epoch(uint64_t p_epoch, LocalVector<Variant> &r_vector);
+	Vector<Variant> pop_epoch(uint64_t p_epoch);
+	uint64_t get_last_pop_epoch() const;
 };
 
 VARIANT_ENUM_CAST(Interpolator::Fallback);
