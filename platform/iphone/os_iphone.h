@@ -84,8 +84,6 @@ private:
 	virtual void finalize() override;
 
 	String user_data_dir;
-	String unique_id;
-	String locale_code;
 
 	bool is_focused = false;
 
@@ -118,10 +116,8 @@ public:
 	void set_user_data_dir(String p_dir);
 	virtual String get_user_data_dir() const override;
 
-	void set_locale(String p_locale);
 	virtual String get_locale() const override;
 
-	void set_unique_id(String p_id);
 	virtual String get_unique_id() const override;
 
 	virtual void vibrate_handheld(int p_duration_ms = 500) override;

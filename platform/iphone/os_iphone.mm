@@ -305,20 +305,20 @@ String OSIPhone::get_user_data_dir() const {
 	return user_data_dir;
 }
 
-void OSIPhone::set_locale(String p_locale) {
-	locale_code = p_locale;
-}
-
 String OSIPhone::get_locale() const {
-	return locale_code;
-}
+	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
 
-void OSIPhone::set_unique_id(String p_id) {
-	unique_id = p_id;
+	if (preferedLanguage) {
+		return String::utf8([preferedLanguage UTF8String]).replace("-", "_");
+	}
+
+	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+	return String::utf8([localeIdentifier UTF8String]).replace("-", "_");
 }
 
 String OSIPhone::get_unique_id() const {
-	return unique_id;
+	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
+	return String::utf8([uuid UTF8String]);
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
