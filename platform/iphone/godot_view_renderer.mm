@@ -44,7 +44,6 @@
 
 @interface GodotViewRenderer ()
 
-@property(assign, nonatomic) BOOL hasFinishedLocaleSetup;
 @property(assign, nonatomic) BOOL hasFinishedProjectDataSetup;
 @property(assign, nonatomic) BOOL hasStartedMain;
 @property(assign, nonatomic) BOOL hasFinishedSetup;
@@ -58,9 +57,8 @@
 		return NO;
 	}
 
-	if (!self.hasFinishedLocaleSetup) {
-		[self setupLocaleAndUUID];
-		return YES;
+	if (!OS::get_singleton()) {
+		exit(0);
 	}
 
 	if (!self.hasFinishedProjectDataSetup) {
@@ -77,33 +75,6 @@
 	self.hasFinishedSetup = YES;
 
 	return NO;
-}
-
-- (void)setupLocaleAndUUID {
-	self.hasFinishedLocaleSetup = YES;
-
-	if (!OS::get_singleton()) {
-		exit(0);
-	}
-
-	NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
-	OSIPhone::get_singleton()->set_locale(String::utf8([locale_code UTF8String]));
-
-	NSString *uuid;
-	if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
-		uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
-	} else {
-		// before iOS 6, so just generate an identifier and store it
-		uuid = [[NSUserDefaults standardUserDefaults] objectForKey:@"identiferForVendor"];
-		if (!uuid) {
-			CFUUIDRef cfuuid = CFUUIDCreate(NULL);
-			uuid = [(NSString *)CFUUIDCreateString(NULL, cfuuid) autorelease];
-			CFRelease(cfuuid);
-			[[NSUserDefaults standardUserDefaults] setObject:uuid forKey:@"identifierForVendor"];
-		}
-	}
-
-	OSIPhone::get_singleton()->set_unique_id(String::utf8([uuid UTF8String]));
 }
 
 - (void)setupProjectData {
