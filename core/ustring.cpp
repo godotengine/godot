@@ -3071,6 +3071,7 @@ String String::repeat(int p_count) const {
 	const CharType *src = this->c_str();
 
 	new_string.resize(length() * p_count + 1);
+	new_string[length() * p_count] = 0;
 
 	for (int i = 0; i < p_count; i++)
 		for (int j = 0; j < length(); j++)
