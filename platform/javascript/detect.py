@@ -71,6 +71,8 @@ def configure(env):
             )
         # Tools need more memory. Initial stack memory in bytes. See `src/settings.js` in emscripten repository (will be renamed to INITIAL_MEMORY).
         env.Append(LINKFLAGS=["-s", "TOTAL_MEMORY=33554432"])
+    elif env["builtin_icu"]:
+        env.Append(CCFLAGS=["-frtti"])
     else:
         # Disable exceptions and rtti on non-tools (template) builds
         # These flags help keep the file size down.
