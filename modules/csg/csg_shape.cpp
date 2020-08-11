@@ -116,7 +116,7 @@ bool CSGShape3D::get_collision_layer_bit(int p_bit) const {
 }
 
 bool CSGShape3D::is_root_shape() const {
-	return !parent;
+	return !parent_shape;
 }
 
 void CSGShape3D::set_snap(float p_snap) {
@@ -127,21 +127,18 @@ float CSGShape3D::get_snap() const {
 	return snap;
 }
 
-void CSGShape3D::_make_dirty() {
-	if (!is_inside_tree()) {
-		return;
+void CSGShape3D::_make_dirty(bool p_parent_removing) {
+	if ((p_parent_removing || is_root_shape()) && !dirty) {
+		call_deferred("_update_shape"); // Must be deferred; otherwise, is_root_shape() will use the previous parent
 	}
-
-	if (parent) {
-		parent->_make_dirty();
-	} else if (!dirty) {
-		call_deferred("_update_shape");
+	if (!is_root_shape()) {
+		parent_shape->_make_dirty();
 	}
 
 	dirty = true;
 }
 
-CSGBrush *CSGShape3D::_get_brush() {
+CSGBrush *CSGShape3D::_get_brush(bool p_collision) {
 	if (dirty) {
 		if (brush) {
 			memdelete(brush);
@@ -149,13 +146,12 @@ CSGBrush *CSGShape3D::_get_brush() {
 		brush = nullptr;
 
 		CSGBrush *n = _build_brush();
+		CSGBrush *nc = memnew(CSGBrush);
+		nc->copy_from(*n, Transform());
 
 		for (int i = 0; i < get_child_count(); i++) {
 			CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
 			if (!child) {
-				continue;
-			}
-			if (!child->is_visible_in_tree()) {
 				continue;
 			}
 
@@ -163,32 +159,64 @@ CSGBrush *CSGShape3D::_get_brush() {
 			if (!n2) {
 				continue;
 			}
-			if (!n) {
-				n = memnew(CSGBrush);
+			if (child->is_visible()) {
+				if (!n) {
+					n = memnew(CSGBrush);
+					n->copy_from(*n2, child->get_transform());
+				} else {
+					CSGBrush *nn = memnew(CSGBrush);
+					CSGBrush *nn2 = memnew(CSGBrush);
+					nn2->copy_from(*n2, child->get_transform());
 
-				n->copy_from(*n2, child->get_transform());
+					CSGBrushOperation bop;
 
-			} else {
-				CSGBrush *nn = memnew(CSGBrush);
-				CSGBrush *nn2 = memnew(CSGBrush);
-				nn2->copy_from(*n2, child->get_transform());
-
-				CSGBrushOperation bop;
-
-				switch (child->get_operation()) {
-					case CSGShape3D::OPERATION_UNION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap);
-						break;
-					case CSGShape3D::OPERATION_INTERSECTION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
-						break;
-					case CSGShape3D::OPERATION_SUBTRACTION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap);
-						break;
+					switch (child->get_operation()) {
+						case CSGShape3D::OPERATION_UNION:
+							bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap);
+							break;
+						case CSGShape3D::OPERATION_INTERSECTION:
+							bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
+							break;
+						case CSGShape3D::OPERATION_SUBTRACTION:
+							bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap);
+							break;
+					}
+					memdelete(nn2);
+					memdelete(n);
+					n = nn;
 				}
-				memdelete(n);
-				memdelete(nn2);
-				n = nn;
+			}
+
+			CSGBrush *nc2 = child->_get_brush(true);
+			if (!nc2) {
+				continue;
+			}
+			if (child->is_using_collision()) {
+				if (!nc) {
+					nc = memnew(CSGBrush);
+					nc->copy_from(*nc2, child->get_transform());
+				} else {
+					CSGBrush *nn = memnew(CSGBrush);
+					CSGBrush *nn2 = memnew(CSGBrush);
+					nn2->copy_from(*nc2, child->get_transform());
+
+					CSGBrushOperation bop;
+
+					switch (child->get_operation()) {
+						case CSGShape3D::OPERATION_UNION:
+							bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *nc, *nn2, *nn, snap);
+							break;
+						case CSGShape3D::OPERATION_INTERSECTION:
+							bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *nc, *nn2, *nn, snap);
+							break;
+						case CSGShape3D::OPERATION_SUBTRACTION:
+							bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *nc, *nn2, *nn, snap);
+							break;
+					}
+					memdelete(nn2);
+					memdelete(nc);
+					nc = nn;
+				}
 			}
 		}
 
@@ -209,11 +237,12 @@ CSGBrush *CSGShape3D::_get_brush() {
 		}
 
 		brush = n;
+		collision_brush = nc;
 
 		dirty = false;
 	}
 
-	return brush;
+	return p_collision ? collision_brush : brush;
 }
 
 int CSGShape3D::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
@@ -271,7 +300,7 @@ void CSGShape3D::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const
 }
 
 void CSGShape3D::_update_shape() {
-	if (parent) {
+	if (!is_root_shape()) {
 		return;
 	}
 
@@ -334,27 +363,6 @@ void CSGShape3D::_update_shape() {
 		if (calculate_tangents) {
 			surfaces.write[i].tansw = surfaces.write[i].tans.ptrw();
 		}
-	}
-
-	// Update collision faces.
-	if (root_collision_shape.is_valid()) {
-		Vector<Vector3> physics_faces;
-		physics_faces.resize(n->faces.size() * 3);
-		Vector3 *physicsw = physics_faces.ptrw();
-
-		for (int i = 0; i < n->faces.size(); i++) {
-			int order[3] = { 0, 1, 2 };
-
-			if (n->faces[i].invert) {
-				SWAP(order[1], order[2]);
-			}
-
-			physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
-			physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
-			physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
-		}
-
-		root_collision_shape->set_faces(physics_faces);
 	}
 
 	//fill arrays
@@ -449,6 +457,32 @@ void CSGShape3D::_update_shape() {
 	}
 
 	set_base(root_mesh->get_rid());
+
+	_update_collision_faces();
+}
+
+void CSGShape3D::_update_collision_faces() {
+	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
+		CSGBrush *n = _get_brush(true);
+		ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
+		Vector<Vector3> physics_faces;
+		physics_faces.resize(n->faces.size() * 3);
+		Vector3 *physicsw = physics_faces.ptrw();
+
+		for (int i = 0; i < n->faces.size(); i++) {
+			int order[3] = { 0, 1, 2 };
+
+			if (n->faces[i].invert) {
+				SWAP(order[1], order[2]);
+			}
+
+			physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
+			physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
+			physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
+		}
+
+		root_collision_shape->set_faces(physics_faces);
+	}
 }
 
 AABB CSGShape3D::get_aabb() const {
@@ -482,60 +516,67 @@ Vector<Face3> CSGShape3D::get_faces(uint32_t p_usage_flags) const {
 }
 
 void CSGShape3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		Node *parentn = get_parent();
-		if (parentn) {
-			parent = Object::cast_to<CSGShape3D>(parentn);
-			if (parent) {
-				set_base(RID());
-				root_mesh.unref();
+	switch (p_what) {
+		case NOTIFICATION_PARENTED: {
+			Node *parentn = get_parent();
+			if (parentn) {
+				parent_shape = Object::cast_to<CSGShape3D>(parentn);
+				if (parent_shape) {
+					set_base(RID());
+					root_mesh.unref();
+				}
 			}
-		}
-
-		if (use_collision && is_root_shape()) {
-			root_collision_shape.instance();
-			root_collision_instance = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
-			PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-			PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-			PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-			PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
-			set_collision_layer(collision_layer);
-			set_collision_mask(collision_mask);
-		}
-
-		_make_dirty();
-	}
-
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-		}
-	}
-
-	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
-		if (parent) {
-			parent->_make_dirty();
-		}
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (parent) {
-			parent->_make_dirty();
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent) {
-			parent->_make_dirty();
-		}
-		parent = nullptr;
-
-		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-			PhysicsServer3D::get_singleton()->free(root_collision_instance);
-			root_collision_instance = RID();
-			root_collision_shape.unref();
-		}
-		_make_dirty();
+			if (!brush || parent_shape) {
+				// Update this node if uninitialized, or both this node and its new parent if it gets added to another CSG shape
+				_make_dirty();
+			}
+			last_visible = is_visible();
+		}; break;
+		case NOTIFICATION_UNPARENTED: {
+			if (!is_root_shape()) {
+				// Update this node and its previous parent only if it's currently being removed from another CSG shape
+				_make_dirty(true); // Must be forced since is_root_shape() uses the previous parent
+			}
+			parent_shape = nullptr;
+		}; break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_root_shape() && last_visible != is_visible()) {
+				// Update this node's parent only if its own visibility has changed, not the visibility of antecedent nodes
+				parent_shape->_make_dirty();
+			}
+			last_visible = is_visible();
+		}; break;
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			if (!is_root_shape()) {
+				// Update this node's parent only if its own transformation has changed, not the transformation of antecedent nodes
+				parent_shape->_make_dirty();
+			}
+		}; break;
+		case NOTIFICATION_ENTER_TREE: {
+			if (use_collision && is_root_shape()) {
+				root_collision_shape.instance();
+				root_collision_instance = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
+				PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
+				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+				set_collision_layer(collision_layer);
+				set_collision_mask(collision_mask);
+				_update_collision_faces();
+			}
+		}; break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
+				PhysicsServer3D::get_singleton()->free(root_collision_instance);
+				root_collision_instance = RID();
+				root_collision_shape.unref();
+			}
+		}; break;
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+			}
+		}; break;
 	}
 }
 
@@ -556,16 +597,6 @@ void CSGShape3D::set_calculate_tangents(bool p_calculate_tangents) {
 
 bool CSGShape3D::is_calculating_tangents() const {
 	return calculate_tangents;
-}
-
-void CSGShape3D::_validate_property(PropertyInfo &property) const {
-	bool is_collision_prefixed = property.name.begins_with("collision_");
-	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
-		//hide collision if not root
-		property.usage = PROPERTY_USAGE_NOEDITOR;
-	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
-	}
 }
 
 Array CSGShape3D::get_meshes() const {
@@ -626,9 +657,10 @@ void CSGShape3D::_bind_methods() {
 
 CSGShape3D::CSGShape3D() {
 	operation = OPERATION_UNION;
-	parent = nullptr;
+	parent_shape = nullptr;
 	brush = nullptr;
 	dirty = false;
+	last_visible = false;
 	snap = 0.001;
 	use_collision = false;
 	collision_layer = 1;

@@ -51,13 +51,15 @@ public:
 
 private:
 	Operation operation;
-	CSGShape3D *parent;
+	CSGShape3D *parent_shape;
 
 	CSGBrush *brush;
+	CSGBrush *collision_brush;
 
 	AABB node_aabb;
 
 	bool dirty;
+	bool last_visible;
 	float snap;
 
 	bool use_collision;
@@ -103,18 +105,17 @@ private:
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
 	void _update_shape();
+	void _update_collision_faces();
 
 protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
-	void _make_dirty();
+	void _make_dirty(bool p_parent_removing = false);
 
 	static void _bind_methods();
 
 	friend class CSGCombiner3D;
-	CSGBrush *_get_brush();
-
-	virtual void _validate_property(PropertyInfo &property) const override;
+	CSGBrush *_get_brush(bool p_collision = false);
 
 public:
 	Array get_meshes() const;
