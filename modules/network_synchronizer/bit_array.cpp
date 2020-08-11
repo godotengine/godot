@@ -37,6 +37,10 @@
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
 
+BitArray::BitArray(Vector<uint8_t> p_bytes) :
+		bytes(p_bytes) {
+}
+
 void BitArray::resize_in_bytes(int p_bytes) {
 	bytes.resize(p_bytes);
 }

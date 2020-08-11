@@ -72,10 +72,14 @@ private:
 public:
 	Interpolator();
 
+	void clear();
+	void reset();
+
 	int register_variable(const Variant &p_default, Fallback p_fallback);
 	void set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name);
 	void terminate_init();
 
+	uint32_t epochs_count() const;
 	void begin_write(uint64_t p_epoch);
 	void epoch_insert(int p_var_id, Variant p_value);
 	void end_write();

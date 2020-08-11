@@ -75,6 +75,8 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
+	ClassDB::bind_method(D_METHOD("mark_epoch_as_important"), &NetworkedController::mark_epoch_as_important);
+
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &NetworkedController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
 
@@ -82,6 +84,7 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_inputs"), &NetworkedController::_rpc_doll_send_inputs);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &NetworkedController::_rpc_doll_notify_connection_status);
+	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch"), &NetworkedController::_rpc_doll_send_epoch);
 
 	ClassDB::bind_method(D_METHOD("is_server_controller"), &NetworkedController::is_server_controller);
 	ClassDB::bind_method(D_METHOD("is_player_controller"), &NetworkedController::is_player_controller);
@@ -92,6 +95,10 @@ void NetworkedController::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	BIND_VMETHOD(MethodInfo("collect_epoch_data", PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	BIND_VMETHOD(MethodInfo("setup_interpolator", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator")));
+	BIND_VMETHOD(MethodInfo("parse_epoch_data", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
+	BIND_VMETHOD(MethodInfo("epoch_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::ARRAY, "interpolated_data")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
@@ -111,6 +118,7 @@ NetworkedController::NetworkedController() {
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_doll_send_epoch", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
 void NetworkedController::set_player_input_storage_size(int p_size) {
@@ -181,6 +189,11 @@ uint64_t NetworkedController::get_current_input_id() const {
 	return controller->get_current_input_id();
 }
 
+void NetworkedController::mark_epoch_as_important() {
+	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function must be called only within the function `collect_epoch_data`.");
+	static_cast<ServerController *>(controller)->is_epoch_important = true;
+}
+
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "You can set doll activation only on server");
 	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equal to the Master `peer_id`, which is not allowed.");
@@ -201,7 +214,7 @@ void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	}
 }
 
-const Vector<int> &NetworkedController::get_active_doll_peers() const {
+const LocalVector<int> &NetworkedController::get_active_doll_peers() const {
 	return active_doll_peers;
 }
 
@@ -291,8 +304,8 @@ bool NetworkedController::has_scene_synchronizer() const {
 void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(get_tree()->is_network_server() == false);
 
-	const Vector<int> &peers = get_active_doll_peers();
-	for (int i = 0; i < peers.size(); i += 1) {
+	const LocalVector<int> &peers = get_active_doll_peers();
+	for (uint32_t i = 0; i < peers.size(); i += 1) {
 		// This is an active doll, Let's send the data.
 		const int peer_id = peers[i];
 		rpc_unreliable_id(peer_id, "_rpc_doll_send_inputs", p_data);
@@ -313,21 +326,25 @@ void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data
 }
 
 void NetworkedController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controller's node has the same name across all peers.");
-	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controller`s node has the same name across all peers.");
+	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 
 	controller->receive_inputs(p_data);
 }
 
 void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controller's node has the same name across all peers.");
-	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controller`s node has the same name across all peers.");
+	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 
 	if (p_open) {
 		static_cast<DollController *>(controller)->open_flow();
 	} else {
 		static_cast<DollController *>(controller)->close_flow();
 	}
+}
+
+void NetworkedController::_rpc_doll_send_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
+	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
+
+	static_cast<DollController *>(controller)->receive_epoch(p_epoch, p_data);
 }
 
 void NetworkedController::process(real_t p_delta) {
@@ -372,10 +389,17 @@ void NetworkedController::_notification(int p_what) {
 				controller = memnew(DollController(this));
 			}
 
-			ERR_FAIL_COND_MSG(has_method("collect_inputs") == false, "In your script you must inherit the virtual method `collect_inputs` to correctly use the `PlayerNetController`.");
-			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `PlayerNetController`.");
-			ERR_FAIL_COND_MSG(has_method("are_inputs_different") == false, "In your script you must inherit the virtual method `are_inputs_different` to correctly use the `PlayerNetController`.");
-			ERR_FAIL_COND_MSG(has_method("count_input_size") == false, "In your script you must inherit the virtual method `count_input_size` to correctly use the `PlayerNetController`.");
+			ERR_FAIL_COND_MSG(has_method("collect_inputs") == false, "In your script you must inherit the virtual method `collect_inputs` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("are_inputs_different") == false, "In your script you must inherit the virtual method `are_inputs_different` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("count_input_size") == false, "In your script you must inherit the virtual method `count_input_size` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("collect_epoch_data") == false, "In your script you must inherit the virtual method `collect_epoch_data` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("setup_interpolator") == false, "In your script you must inherit the virtual method `setup_interpolator` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("parse_epoch_data") == false, "In your script you must inherit the virtual method `parse_epoch_data` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("epoch_process") == false, "In your script you must inherit the virtual method `epoch_process` to correctly use the `NetworkedController`.");
+
+			controller->ready();
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
@@ -410,6 +434,8 @@ void ServerController::process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
+
+	doll_sync(p_delta);
 
 	calculates_player_tick_rate(p_delta);
 	adjust_player_tick_rate(p_delta);
@@ -670,6 +696,37 @@ bool ServerController::fetch_next_input() {
 	}
 
 	return is_new_input;
+}
+
+void ServerController::doll_sync(real_t p_delta) {
+	// Epoch advances anyway.
+	epoch += 1;
+
+	// TODO this should not happen each frame.
+	// TODO consider to also use is_epoch_important to estabish if report the packet.
+	epoch_state_data.begin_write();
+	node->call("collect_epoch_data", &epoch_state_data);
+	epoch_state_data.dry();
+
+	// Sent the collected data.
+	const LocalVector<int> &peers = node->get_active_doll_peers();
+	for (uint32_t i = 0; i < peers.size(); i += 1) {
+		if (is_epoch_important) {
+			node->rpc_id(
+					peers[i],
+					"_rpc_doll_send_epoch",
+					epoch,
+					epoch_state_data.get_buffer().get_bytes());
+		} else {
+#warning TODO make sure that this peer really need this data.
+			node->rpc_unreliable_id(
+					peers[i],
+					"_rpc_doll_send_epoch",
+					epoch,
+					epoch_state_data.get_buffer().get_bytes());
+		}
+	}
+	is_epoch_important = false;
 }
 
 void ServerController::calculates_player_tick_rate(real_t p_delta) {
@@ -981,7 +1038,25 @@ DollController::DollController(NetworkedController *p_node) :
 		time_bank(0) {
 }
 
+void DollController::ready() {
+	interpolator.reset();
+	node->call("setup_interpolator", &interpolator);
+	interpolator.terminate_init();
+}
+
 void DollController::process(real_t p_delta) {
+	if (interpolator.epochs_count() < 2) {
+		// At least we need 2 epochs to process this.
+		return;
+	}
+
+	const uint64_t frame_epoch = epoch;
+	epoch += 1;
+
+	node->call("process_epoch", interpolator.pop_epoch(frame_epoch));
+
+	// TODO remove all below.
+	return;
 	server_controller.calculates_player_tick_rate(p_delta);
 
 	// Lock mechanism when the server don't update anymore this doll!
@@ -1056,6 +1131,15 @@ bool DollController::process_instant(int p_i, real_t p_delta) {
 
 uint64_t DollController::get_current_input_id() const {
 	return server_controller.current_input_buffer_id;
+}
+
+void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
+	DataBuffer buffer(p_data);
+	buffer.begin_read();
+
+	interpolator.begin_write(p_epoch);
+	node->call("parse_epoch_data", &interpolator, &buffer);
+	interpolator.end_write();
 }
 
 void DollController::open_flow() {

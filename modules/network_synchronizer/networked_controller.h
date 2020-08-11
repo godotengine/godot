@@ -37,6 +37,7 @@
 #include "core/math/transform.h"
 #include "core/node_path.h"
 #include "input_buffer.h"
+#include "interpolator.h"
 #include "net_utilities.h"
 #include <deque>
 #include <vector>
@@ -137,9 +138,9 @@ private:
 
 	SceneSynchronizer *scene_synchronizer = nullptr;
 
-	Vector<int> active_doll_peers;
+	LocalVector<int> active_doll_peers;
 	// Disabled peers is used to stop information propagation to a particular peer.
-	Vector<int> disabled_doll_peers;
+	LocalVector<int> disabled_doll_peers;
 
 	bool packet_missing = false;
 	bool has_player_new_input = false;
@@ -184,8 +185,10 @@ public:
 		return inputs_buffer;
 	}
 
+	void mark_epoch_as_important();
+
 	void set_doll_peer_active(int p_peer_id, bool p_active);
-	const Vector<int> &get_active_doll_peers() const;
+	const LocalVector<int> &get_active_doll_peers() const;
 
 	void _on_peer_connection_change(int p_peer_id);
 	void update_active_doll_peers();
@@ -217,6 +220,7 @@ public:
 	/* On puppet rpc functions. */
 	void _rpc_doll_send_inputs(Vector<uint8_t> p_data);
 	void _rpc_doll_notify_connection_status(bool p_open);
+	void _rpc_doll_send_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
 
 	void process(real_t p_delta);
 
@@ -246,6 +250,7 @@ struct Controller {
 
 	virtual ~Controller() {}
 
+	virtual void ready(){};
 	virtual void process(real_t p_delta) = 0;
 	virtual void receive_inputs(Vector<uint8_t> p_data) = 0;
 	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) = 0;
@@ -265,23 +270,30 @@ struct ServerController : public Controller {
 	NetworkTracer network_tracer;
 	std::deque<FrameSnapshotSkinny> snapshots;
 
+	/// Used to sync the dolls.
+	DataBuffer epoch_state_data;
+	uint64_t epoch = 0;
+	bool is_epoch_important = false;
+
 	ServerController(
 			NetworkedController *p_node,
 			int p_traced_frames);
 
-	virtual void process(real_t p_delta);
-	virtual void receive_inputs(Vector<uint8_t> p_data);
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
-	virtual int notify_input_checked(uint64_t p_input_id);
-	virtual uint64_t last_known_input() const;
-	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_input_id() const;
+	virtual void process(real_t p_delta) override;
+	virtual void receive_inputs(Vector<uint8_t> p_data) override;
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
+	virtual int notify_input_checked(uint64_t p_input_id) override;
+	virtual uint64_t last_known_input() const override;
+	virtual uint64_t get_stored_input_id(int p_i) const override;
+	virtual bool process_instant(int p_i, real_t p_delta) override;
+	virtual uint64_t get_current_input_id() const override;
 
 	int get_inputs_count() const;
 
 	/// Fetch the next inputs, returns true if the input is new.
 	bool fetch_next_input();
+
+	void doll_sync(real_t p_delta);
 
 	/// This function updates the `tick_additional_speed` so that the `frames_inputs`
 	/// size is enough to reduce the missing packets to 0.
@@ -309,14 +321,14 @@ struct PlayerController : public Controller {
 
 	PlayerController(NetworkedController *p_node);
 
-	virtual void process(real_t p_delta);
-	virtual void receive_inputs(Vector<uint8_t> p_data);
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
-	virtual int notify_input_checked(uint64_t p_input_id);
-	virtual uint64_t last_known_input() const;
-	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_input_id() const;
+	virtual void process(real_t p_delta) override;
+	virtual void receive_inputs(Vector<uint8_t> p_data) override;
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
+	virtual int notify_input_checked(uint64_t p_input_id) override;
+	virtual uint64_t last_known_input() const override;
+	virtual uint64_t get_stored_input_id(int p_i) const override;
+	virtual bool process_instant(int p_i, real_t p_delta) override;
+	virtual uint64_t get_current_input_id() const override;
 
 	real_t get_pretended_delta(real_t p_iteration_per_second) const;
 
@@ -350,16 +362,22 @@ struct DollController : public Controller {
 	bool is_flow_open;
 	real_t time_bank;
 
+	Interpolator interpolator;
+	uint64_t epoch = 0;
+
 	DollController(NetworkedController *p_node);
 
-	virtual void process(real_t p_delta);
-	virtual void receive_inputs(Vector<uint8_t> p_data);
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
-	virtual int notify_input_checked(uint64_t p_input_id);
-	virtual uint64_t last_known_input() const;
-	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_input_id() const;
+	virtual void ready() override;
+	virtual void process(real_t p_delta) override;
+	virtual void receive_inputs(Vector<uint8_t> p_data) override;
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
+	virtual int notify_input_checked(uint64_t p_input_id) override;
+	virtual uint64_t last_known_input() const override;
+	virtual uint64_t get_stored_input_id(int p_i) const override;
+	virtual bool process_instant(int p_i, real_t p_delta) override;
+	virtual uint64_t get_current_input_id() const override;
+
+	void receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
 
 	void open_flow();
 	void close_flow();
@@ -378,14 +396,14 @@ struct NoNetController : public Controller {
 
 	NoNetController(NetworkedController *p_node);
 
-	virtual void process(real_t p_delta);
-	virtual void receive_inputs(Vector<uint8_t> p_data);
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
-	virtual int notify_input_checked(uint64_t p_input_id);
-	virtual uint64_t last_known_input() const;
-	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_input_id() const;
+	virtual void process(real_t p_delta) override;
+	virtual void receive_inputs(Vector<uint8_t> p_data) override;
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
+	virtual int notify_input_checked(uint64_t p_input_id) override;
+	virtual uint64_t last_known_input() const override;
+	virtual uint64_t get_stored_input_id(int p_i) const override;
+	virtual bool process_instant(int p_i, real_t p_delta) override;
+	virtual uint64_t get_current_input_id() const override;
 };
 
 #endif

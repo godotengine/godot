@@ -41,6 +41,9 @@ class BitArray {
 	Vector<uint8_t> bytes;
 
 public:
+	BitArray() {}
+	BitArray(Vector<uint8_t> p_bytes);
+
 	const Vector<uint8_t> &get_bytes() const {
 		return bytes;
 	}

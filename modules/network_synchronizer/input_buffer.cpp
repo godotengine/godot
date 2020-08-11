@@ -110,8 +110,7 @@ DataBuffer::DataBuffer() :
 DataBuffer::DataBuffer(const BitArray &p_buffer) :
 		bit_offset(0),
 		is_reading(true),
-		buffer(p_buffer) {
-}
+		buffer(p_buffer) {}
 
 int DataBuffer::get_buffer_size() const {
 	return buffer.get_bytes().size();

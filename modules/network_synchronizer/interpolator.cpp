@@ -46,6 +46,11 @@ void Interpolator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pop_epoch", "epoch"), &Interpolator::pop_epoch);
 	ClassDB::bind_method(D_METHOD("get_last_pop_epoch"), &Interpolator::get_last_pop_epoch);
 
+	// used to do the tests.
+	//ClassDB::bind_method(D_METHOD("terminate_init"), &Interpolator::terminate_init);
+	//ClassDB::bind_method(D_METHOD("begin_write", "epoch"), &Interpolator::begin_write);
+	//ClassDB::bind_method(D_METHOD("end_write"), &Interpolator::end_write);
+
 	BIND_ENUM_CONSTANT(FALLBACK_INTERPOLATE);
 	BIND_ENUM_CONSTANT(FALLBACK_DEFAULT);
 	BIND_ENUM_CONSTANT(FALLBACK_NEW_OR_NEAREST);
@@ -53,6 +58,23 @@ void Interpolator::_bind_methods() {
 }
 
 Interpolator::Interpolator() {}
+
+void Interpolator::clear() {
+	epochs.clear();
+	buffer.clear();
+
+	write_position = UINT32_MAX;
+}
+
+void Interpolator::reset() {
+	variables.clear();
+	epochs.clear();
+	buffer.clear();
+
+	init_phase = true;
+	write_position = UINT32_MAX;
+	last_pop_epoch = 0;
+}
 
 int Interpolator::register_variable(const Variant &p_default, Fallback p_fallback) {
 	ERR_FAIL_COND_V_MSG(init_phase == false, -1, "You cannot add another variable at this point.");
@@ -71,6 +93,10 @@ void Interpolator::set_variable_custom_interpolator(int p_var_id, Object *p_obje
 
 void Interpolator::terminate_init() {
 	init_phase = false;
+}
+
+uint32_t Interpolator::epochs_count() const {
+	return epochs.size();
 }
 
 void Interpolator::begin_write(uint64_t p_epoch) {
