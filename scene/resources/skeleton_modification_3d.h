@@ -312,7 +312,6 @@ private:
 	Transform origin_global_pose = Transform();
 
 	void chain_backwards();
-	void chain_forwards();
 	void chain_apply();
 
 protected:
