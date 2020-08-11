@@ -107,7 +107,7 @@ private:
 
 		bool audio_playing = false;
 
-		int audio_idx;
+		int audio_idx = -1;
 		float audio_start = 0.0;
 		float audio_len = 0.0;
 
