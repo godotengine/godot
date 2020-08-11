@@ -82,12 +82,15 @@
 # Calamander <Calamander@yandex.ru>, 2020.
 # Terminator <fresh-ter@yandex.com>, 2020.
 # Anatoly Kuznetsov <muffinnorth@yandex.ru>, 2020.
+# kyanukovich <ianu0001@algonquinlive.com>, 2020.
+# Ron788 <ustinov200511@gmail.com>, 2020.
+# Daniel <dan.ef1999@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-23 02:44+0000\n"
-"Last-Translator: Anatoly Kuznetsov <muffinnorth@yandex.ru>\n"
+"PO-Revision-Date: 2020-08-01 11:14+0000\n"
+"Last-Translator: Daniel <dan.ef1999@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -7419,7 +7422,7 @@ msgstr "Свободный вид, право"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "Freelook Forward"
+msgstr "Обзор вперёд"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
@@ -8172,11 +8175,11 @@ msgstr "Удалить выбранную текстуру из TileSet."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
-msgstr "Создать из сцены"
+msgstr "Создать из Сцены"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from Scene"
-msgstr "Слияние из сцены"
+msgstr "Слияние из Сцены"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "New Single Tile"
@@ -9578,7 +9581,7 @@ msgstr "Файл пакета"
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr "Свойства"
+msgstr "Возможности"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -10599,9 +10602,8 @@ msgid "Make node as Root"
 msgstr "Сделать узел корневым"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Удалить узел «%s» и его дочерние элементы?"
+msgstr "Удалить узел «%d» и его дочерние элементы?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12300,6 +12302,9 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Полигональные фигуры не предназначены для использования или редактирования "
+"непосредственно через узел \"CollisionShape2D\". Пожалуйста, используйте "
+"вместо этого узел \"CollisionPolygon2D\" ."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

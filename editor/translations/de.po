@@ -54,12 +54,13 @@
 # Jacqueline Ulken <Jacqueline.Ulken@protonmail.com>, 2020.
 # Günther Bohn <ciscouser@gmx.de>, 2020.
 # Tom Wor <mail@tomwor.com>, 2020.
+# Bjarne Hiller <bjarne.hiller@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-28 09:51+0000\n"
-"Last-Translator: Tom Wor <mail@tomwor.com>\n"
+"PO-Revision-Date: 2020-08-05 16:58+0000\n"
+"Last-Translator: Bjarne Hiller <bjarne.hiller@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -9610,7 +9611,7 @@ msgstr "Pack-Datei"
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr "Funktionen"
+msgstr "Eigenschaften"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -10637,9 +10638,8 @@ msgid "Make node as Root"
 msgstr "Node zur Szenenwurzel machen"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Node „%s“ und Unterobjekte löschen?"
+msgstr "%d Nodes und ihre Unterobjekte löschen?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12346,6 +12346,9 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Polygon basierte Formen sollten nicht direkt in CollisionShape2D-Nodes "
+"genutzt oder bearbeitet werden. Zu diesem Zweck sollte das CollsionPolygon2D-"
+"Node verwendet werden."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

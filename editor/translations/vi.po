@@ -13,12 +13,15 @@
 # Peter Anh <peteranh3105@gmail.com>, 2019.
 # Dũng Đinh <dqdthanhthanh@gmail.com>, 2019.
 # Steve Dang <bynguu@outlook.com>, 2020.
+# Harry Mitchell <minhyh0987@gmail.com>, 2020.
+# HSGamer <huynhqtienvtag@gmail.com>, 2020.
+# LetterC67 <hoangdeptoong@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-28 09:51+0000\n"
-"Last-Translator: Steve Dang <bynguu@outlook.com>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: LetterC67 <hoangdeptoong@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -73,31 +76,31 @@ msgstr "Khi cuộc gọi đến '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -121,7 +124,7 @@ msgstr "Giá trị:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Thêm Khoá Tại Đây"
+msgstr "Chèn Khóa Tại Đây"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
@@ -137,23 +140,23 @@ msgstr "Thêm điểm Bezier"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Di chuyển điểm Bezier"
+msgstr "Di chuyển các điểm Bezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Nhân đôi Các Key của Animation"
+msgstr "Nhân đôi các Animation Key"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Xóa phím Anim"
+msgstr "Xóa các Animation Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Đổi thời gian khung hình"
+msgstr "Đổi thời gian khung hình Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Đổi Transition Animation"
+msgstr "Đổi Animation Chuyển tiếp"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -161,7 +164,7 @@ msgstr "Đổi Transform Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Đổi giá trị khung hình"
+msgstr "Đổi giá trị khung hình Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
@@ -12597,7 +12600,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
-msgstr ""
+msgstr "Chọn một màu từ cửa sổ biên tập"
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"

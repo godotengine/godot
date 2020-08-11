@@ -20,12 +20,13 @@
 # Filip Vincůrek <vincurek.f@gmail.com>, 2020.
 # Ondrej Pavelka <ondrej.pavelka@outlook.com>, 2020.
 # Zbyněk <zbynek.fiala@gmail.com>, 2020.
+# Daniel Kříž <Daniel.kriz@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-28 09:51+0000\n"
-"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Daniel Kříž <Daniel.kriz@protonmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -8184,9 +8185,8 @@ msgid "Occlusion"
 msgstr "Editovat polygon"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation"
-msgstr "Vytvořit Navigation Mesh"
+msgstr "Navigace"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8965,7 +8965,7 @@ msgstr "Vrátí hyperbolický kosinus parametru."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
-msgstr "Konvertuje množství v radiánech na stupně."
+msgstr "Konvertuje hodnotu v radiánech na stupně."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
@@ -9022,7 +9022,7 @@ msgstr "Vrátí hodnotu prvního parametru umocněného druhým."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
-msgstr "Konvertuje množství ve stupních na radiány."
+msgstr "Konvertuje hodnotu ve stupních na radiány."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / scalar"
@@ -9521,7 +9521,7 @@ msgstr "Soubour balíčk"
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr "Funkce"
+msgstr "Vlastnosti"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -10387,7 +10387,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr ""
+msgstr "Odsazení"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -10475,7 +10475,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
-msgstr ""
+msgstr "Chybí rodič pro instancování scény."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -10489,7 +10489,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
-msgstr ""
+msgstr "Scéna/Scény instance"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10501,9 +10501,8 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Připojit skript"
+msgstr "Odpojit skript"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10534,9 +10533,8 @@ msgid "Instantiated scenes can't become root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make node as Root"
-msgstr "Dává smysl!"
+msgstr "Nastavit uzel jako zdrojový"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10693,9 +10691,8 @@ msgid "Reparent to New Node"
 msgstr "Přidat/Vytvořit nový uzel"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make Scene Root"
-msgstr "Dává smysl!"
+msgstr "Nastav scénu jako zdrojovou"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -10795,6 +10792,8 @@ msgid ""
 "Node is locked.\n"
 "Click to unlock it."
 msgstr ""
+"Uzel je zamčený.\n"
+"Klikněte pro odemčení."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -11219,16 +11218,15 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Vyberte závislosti knihovny pro tento vstup"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "Odstranit signál"
+msgstr "Odstranit aktuální vstup"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Stiskněte dvakrát pro vytvoření nového vstupu"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
@@ -12647,16 +12645,15 @@ msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 msgid "Raw"
-msgstr ""
+msgstr "Raw"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "Přepni mezi hexadecimálními a kódovými hodnotami."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Přidat aktuální barvu jako předvolbu"
+msgstr "Přidat aktuální barvu jako předvolbu."
 
 #: scene/gui/container.cpp
 msgid ""
@@ -12730,11 +12727,11 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"Velikost pohledu musí být větší než 0, aby bylo možné cokoliv renderovat."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "Neplatný zdroj pro shader."
+msgstr "Neplatný zdroj pro náhled."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
@@ -12747,15 +12744,15 @@ msgstr "Neplatný zdroj pro shader."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
-msgstr ""
+msgstr "Přiřazeno funkci."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to uniform."
-msgstr ""
+msgstr "Přiřazeno uniformu."
 
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
-msgstr ""
+msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."

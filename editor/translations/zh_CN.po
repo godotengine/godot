@@ -68,12 +68,14 @@
 # 无双流 <1257678024@qq.com>, 2020.
 # ZhangXinyu <zhang2xinyu@outlook.com>, 2020.
 # Silence Tai <silence.m@hotmail.com>, 2020.
+# MintSoda <lionlxh@qq.com>, 2020.
+# Gardner Belgrade <hapenia@sina.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-07-26 15:41+0000\n"
-"Last-Translator: yzt <834950797@qq.com>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Gardner Belgrade <hapenia@sina.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -100,7 +102,7 @@ msgstr "没有足够的字节来解码，或格式无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "表达式中包含得%i无效（未传递）"
+msgstr "表达式中包含的%i无效（未传递）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -3756,7 +3758,7 @@ msgstr "创建脚本"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
-msgstr "在文件中查找"
+msgstr "跨文件查找"
 
 #: editor/find_in_files.cpp
 msgid "Find:"
@@ -5317,7 +5319,7 @@ msgstr "重置缩放"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "选择模式"
+msgstr "鼠标模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -10399,7 +10401,6 @@ msgid "Make node as Root"
 msgstr "将节点设置为根节点"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
 msgstr "是否删除节点“%s”及其子节点？"
 
@@ -12048,6 +12049,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"基于多边形的形状不应该被 CollisionShape2D 节点直接使用或编辑。请使用 "
+"CollisionPolygon2D 节点。"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12258,7 +12261,7 @@ msgstr "平面形状无法正常工作，未来版本将被删除。请勿使用
 #: scene/3d/collision_shape.cpp
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
-msgstr "ConcavePolygonShape仅支持静态RigidBody。"
+msgstr "ConcavePolygonShape 只支持静态模式下的 RigidBody。"
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

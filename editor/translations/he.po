@@ -14,12 +14,13 @@
 # test test <ugbdvwpeikvyzwaadt@awdrt.org>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # Daniel Kariv <danielkariv98@gmail.com>, 2020.
+# Ziv D <wizdavid@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-07 21:28+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Ziv D <wizdavid@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -258,7 +259,7 @@ msgstr "החלפת נתיב רצועה"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "הפעל/כבה רצועה"
+msgstr "הפעל/כבה רצועה."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -340,9 +341,8 @@ msgid "Change Animation Update Mode"
 msgstr "שינוי מצב עדכון הנפשה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "החלפת ערך מילון"
+msgstr "שינוי מצב אינטרפולציה בהנפשה"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
@@ -554,9 +554,8 @@ msgid "Edit"
 msgstr "עריכה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "שקופיות ההנפשה"
+msgstr "מאפייני ההנפשה."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -712,12 +711,11 @@ msgstr "%d הוחלף."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr "d% התאמות."
+msgstr "%d התאמות."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-#, fuzzy
 msgid "%d matches."
-msgstr "אין תוצאות"
+msgstr "%d התאמות."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -831,9 +829,8 @@ msgid "Extra Call Arguments:"
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Receiver Method:"
-msgstr "מאפייני פריט."
+msgstr "שיטת המקלט:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -933,9 +930,8 @@ msgid "Disconnect All"
 msgstr "ניתוק"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "עריכה"
+msgstr "עריכה..."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1395,9 +1391,8 @@ msgid "Add Bus"
 msgstr "הוספת אפיק"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "שמירת פריסת אפיקי השמע בתור…"
+msgstr "הוסף אפיק שמע חדש לפריסה זו."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1603,9 +1598,8 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "קובץ התבנית לא נמצא:"
+msgstr "תבנית ניפוי שגיאות מותאמת אישית לא נמצאה."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1718,9 +1712,8 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Error saving profile to path: '%s'."
-msgstr "שגיאה בשמירה"
+msgstr "שגיאה בשמירת פרופיל לנתיב 's%'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
@@ -1899,14 +1892,12 @@ msgid "Move Favorite Down"
 msgstr "העברת מועדף למטה"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "מעבר לתיקייה שמעל"
+msgstr "מעבר לתיקיה הקודמת."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "מעבר לתיקייה שמעל"
+msgstr "מעבר לתיקיה הבאה."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
@@ -1914,9 +1905,8 @@ msgid "Go to parent folder."
 msgstr "מעבר לתיקייה שמעל"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "חיפוש במחלקות"
+msgstr "רענן קבצים."
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
@@ -1924,19 +1914,16 @@ msgid "(Un)favorite current folder."
 msgstr "לא ניתן ליצור תיקייה."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "החלפת מצב תצוגה לקבצים מוסתרים"
+msgstr "הצג/הסתר קבצים מוסתרים."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "View items as a grid of thumbnails."
-msgstr "צפייה בפריטים כרשת של תמונות ממוזערות"
+msgstr "הצג פריטים כרשת של תמונות ממוזערות."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "View items as a list."
-msgstr "הצגת פריטים כרשימה"
+msgstr "הצג פריטים כרשימה."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -2759,9 +2746,8 @@ msgid "Project"
 msgstr "מיזם"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project Settings..."
-msgstr "הגדרות מיזם"
+msgstr "הגדרות מיזם..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -2777,27 +2763,24 @@ msgid "Shut Down Version Control"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export..."
-msgstr "ייצוא"
+msgstr "ייצוא..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "לפתוח את מנהל המיזמים?"
+msgstr "פתיחת תיקיית נתוני המיזם"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "כלים"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Orphan Resource Explorer..."
-msgstr "דפדפן משאבים יתומים"
+msgstr "סייר משאבים יתומים ..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2883,9 +2866,8 @@ msgid "Editor"
 msgstr "עורך"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "הגדרות עורך"
+msgstr "הגדרות העורך..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -2911,9 +2893,8 @@ msgid "Toggle System Console"
 msgstr "החלפת מצב"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Data/Settings Folder"
-msgstr "הגדרות עורך"
+msgstr "פתח תיקיית נתונים/הגדרות של העורך"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
@@ -3527,9 +3508,8 @@ msgid ""
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting URL:"
-msgstr "שגיאה בבקשת כתובת: "
+msgstr "שגיאה בבקשת כתובת:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
@@ -3858,14 +3838,12 @@ msgid "Cancel"
 msgstr ""
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find: "
-msgstr "איתור"
+msgstr "איתור "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace: "
-msgstr "להחליף"
+msgstr "להחליף "
 
 #: editor/find_in_files.cpp
 #, fuzzy
@@ -4812,9 +4790,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "מעברון"
+msgstr "מעברון: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -9679,9 +9656,8 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr " קבצים"
+msgstr "קובץ ארכיון"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9734,9 +9710,8 @@ msgid "Export Project"
 msgstr "ייצוא מיזם"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export mode?"
-msgstr "ייצוא מיזם"
+msgstr "מצב הייצוא?"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -9744,9 +9719,8 @@ msgid "Export All"
 msgstr "ייצוא"
 
 #: editor/project_export.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "ZIP File"
-msgstr " קבצים"
+msgstr "קובץ ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
@@ -10488,9 +10462,8 @@ msgid "Node type"
 msgstr "איתור סוג מפרק"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Current scene name"
-msgstr "הסצנה הנוכחית לא נשמרה. לפתוח בכל זאת?"
+msgstr "שם סצנה נוכחית"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -10686,7 +10659,7 @@ msgstr "מחיקת שורה"
 #: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Delete %d nodes?"
-msgstr "מחיקת שורה"
+msgstr "מחק %d מפרקים?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -10697,9 +10670,8 @@ msgid "Delete node \"%s\" and its children?"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "מחיקת שורה"
+msgstr "מחק מפרק \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -12507,7 +12479,7 @@ msgstr "ARVROrigin דורש מפרק צאצא מסוג ARVRCamera"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"

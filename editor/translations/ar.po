@@ -43,12 +43,13 @@
 # HeroFight dev <abdkafi2002@gmail.com>, 2020.
 # أحمد مصطفى الطبراني <eltabaraniahmed@gmail.com>, 2020.
 # ChemicalInk <aladdinalkhafaji@gmail.com>, 2020.
+# Musab Alasaifer <mousablasefer@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-21 13:41+0000\n"
-"Last-Translator: ChemicalInk <aladdinalkhafaji@gmail.com>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Musab Alasaifer <mousablasefer@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -5619,9 +5620,8 @@ msgid "Divide grid step by 2"
 msgstr "قسم خطوة الشبكة بـ 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "أظهر"
+msgstr "إظهار شامل"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5963,9 +5963,8 @@ msgstr ""
 "هذا هو الخيار الأسرع (لكنه الأقل دقة) للكشف عن وقوع التصادم."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "إنشاء متصادم محدب قريب"
+msgstr "إنشاء أشقاء تصادم محدب متعددة"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6020,11 +6019,12 @@ msgid "Remove item %d?"
 msgstr "مسح العنصر %d؟"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Update from existing scene?:\n"
 "%s"
-msgstr "تحديث من المشهد"
+msgstr ""
+"التحديث من المشهد المتواجد؟:\n"
+"%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Mesh Library"
@@ -6146,12 +6146,10 @@ msgstr "إنشاء مُضلع التنقل"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles"
-msgstr "تحويل إلي %s"
+msgstr "تحويل إلى %s"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Generating Visibility Rect"
 msgstr "توليد Rect الرؤية"
 
@@ -6173,23 +6171,20 @@ msgid "The geometry's faces don't contain any area."
 msgstr "الوجوه الهندسية لا تتضمن أي منطقة."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "The geometry doesn't contain any faces."
-msgstr "العقدة لا تحتوي على هندسة (الوجوه)."
+msgstr "الهندسة لا تحتوي على وجوه."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "\"%s\" doesn't inherit from Spatial."
 msgstr "\"%s\" لا يرث الفراغي Spatial."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "\"%s\" doesn't contain geometry."
-msgstr "العقدة لا تحتوي على هندسة."
+msgstr "\"%s\" لا تحتوي على هندسة."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "\"%s\" doesn't contain face geometry."
-msgstr "العقدة لا تحتوي على هندسة."
+msgstr "\"%s\" لا تحتوي على هندسة وجه."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -6249,9 +6244,8 @@ msgid "Add Point to Curve"
 msgstr "أضف نقطة للمنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Split Curve"
-msgstr "تحرير منحنى العقدة"
+msgstr "تقسيم المنحنى"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
@@ -6882,49 +6876,42 @@ msgid "Debugger"
 msgstr "مُنقح الأخطاء"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Search Results"
-msgstr "إبحث في المساعدة"
+msgstr "نتائج البحث"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Recent Scripts"
-msgstr "إخلاء المشاهد الحالية"
+msgstr "إخلاء النصوص البرمجية الحديثة"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Connections to method:"
-msgstr "صلها بالعقدة:"
+msgstr "الاتصالات لدالة:"
 
 #: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Source"
-msgstr "مورد"
+msgstr "مصدر"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr "الهدف"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr "قطع إتصال'%s' من '%s'"
+msgstr ""
+"الدالة المتصلة '%s' للاشارة '%s' مفقودة من العقدة '%s' إلى العقدة '%s'."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
 msgstr "(تجاهل)"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Line"
-msgstr "الخط:"
+msgstr "خط"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Function"
-msgstr "مسح المهمة"
+msgstr "انتقل الى الوظيفة البرمجية"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
@@ -6974,9 +6961,8 @@ msgid "Bookmarks"
 msgstr "المحفوظات"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "مسح النقاط"
+msgstr "نقاط التكسّر"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7025,66 +7011,56 @@ msgid "Complete Symbol"
 msgstr "رمز التمام"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Evaluate Selection"
-msgstr "تكبير المحدد"
+msgstr "تقييم الاختيار"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "تشذيب الفراغات البيضاء الزائدة"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Indent to Spaces"
-msgstr "تحويل إلي %s"
+msgstr "تحويل المسافة البادئة إلى مسافات"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Indent to Tabs"
-msgstr "تحويل إلي %s"
+msgstr "تحويل المسافة البادئة إلى تبويبات"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "مسافة بادئة تلقائية"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Find in Files..."
-msgstr "فلتر الملفات..."
+msgstr "جِد في الملفات..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "مساعدة سياقية"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Bookmark"
-msgstr "إلغاء/تفعيل وضع النظرة  الحرة"
+msgstr "تبديل العلامة المرجعية"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Bookmark"
-msgstr "إذهب إلي الخطوة التالية"
+msgstr "الانتقال إلى العلامة المرجعية التالية"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Bookmark"
-msgstr "إذهب إلي الخطوة السابقة"
+msgstr "الانتقال إلى العلامة المرجعية السابقة"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Remove All Bookmarks"
-msgstr "مسح الكل"
+msgstr "إزالة جميع الإشارات المرجعية"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Function..."
-msgstr "مسح المهمة"
+msgstr "الذهاب إلى وظيفة برمجية..."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Line..."
-msgstr "إذهب إلي الخط"
+msgstr "الذهاب إلى خط..."
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -7096,14 +7072,12 @@ msgid "Remove All Breakpoints"
 msgstr "إزالة جميع نقاط التكسّر"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Breakpoint"
-msgstr "إذهب إلي الخطوة التالية"
+msgstr "الذهاب إلى نقطة التكسّر التالية"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Breakpoint"
-msgstr "إذهب إلي الخطوة السابقة"
+msgstr "الذهاب إلى نقطة التكسّر السابقة"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid ""
@@ -7122,9 +7096,8 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "لا يملك هذا الهكيل أيّة عظام، أنشئ بعض عُقد العظام ثنائية البُعد كأبناء."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Rest Pose from Bones"
-msgstr "أنشئ نقاط إنبعاث من الشبكة"
+msgstr "إنشاء وضعية الراحة من العظام"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
@@ -7143,23 +7116,20 @@ msgid "Set Bones to Rest Pose"
 msgstr "تحديد العظام لتكون في وضعية الراحة"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
-#, fuzzy
 msgid "Create physical bones"
-msgstr "أنشئ ميش التنقل"
+msgstr "إنشاء عظام مادية"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Skeleton"
 msgstr "الهيكل"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
-#, fuzzy
 msgid "Create physical skeleton"
-msgstr "إنشاء حل C#‎"
+msgstr "إنشاء هيكل عظمي مادي"
 
 #: editor/plugins/skeleton_ik_editor_plugin.cpp
-#, fuzzy
 msgid "Play IK"
-msgstr "تشغيل"
+msgstr "تشغيل IK"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -7352,12 +7322,11 @@ msgstr "المستمع الصوتي"
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Enable Doppler"
-msgstr "تغيير خط الحركة"
+msgstr "تفعيل دوبلر"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Cinematic Preview"
-msgstr "يُنشئ مستعرضات الميش"
+msgstr "معاينة سينمائية"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
@@ -7419,6 +7388,12 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"انقر للتبديل بين حالات الرؤية.\n"
+"\n"
+"العين المفتوحة: الأداة مرئية.\n"
+"العين المغلقة: الأداة مخفية.\n"
+"العين نصف مفتوحة: الأداة مرئية أيضا من خلال الأسطح المعتمة (\"الأشعة السينية"
+"\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7496,9 +7471,8 @@ msgid "Transform"
 msgstr "التحوّل"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Object to Floor"
-msgstr "الكبس إلي الشبكة"
+msgstr "محاذاة الشيء إلى الأرض"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -7542,9 +7516,8 @@ msgstr "إظهار الشبكة"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Settings..."
-msgstr "جاري الإعداد..."
+msgstr "اعدادات..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -7612,48 +7585,40 @@ msgid "Nameless gizmo"
 msgstr "أداة (gizmo) غير مسماة"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Mesh2D"
-msgstr "إنشاء شبكة الخطوط العريضة"
+msgstr "إنشاء Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh2D Preview"
-msgstr "يُنشئ مستعرضات الميش"
+msgstr "معاينة Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon2D"
-msgstr "إنشاء بولي"
+msgstr "إنشاء مُضلع ثنائي الأبعاد"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
 msgstr "مُعاينة المُضلع ثنائي الأبعاد"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D"
-msgstr "إنشاء مُضلع التنقل"
+msgstr "إنشاء مُضلع تصادم ثنائي الأبعاد"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "إنشاء مُضلع التنقل"
+msgstr "معاينة مُضلع التصادم ثنائي الأبعاد"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create LightOccluder2D"
-msgstr "أنشئ شكل مُطبق"
+msgstr "إنشاء LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "أنشئ شكل مُطبق"
+msgstr "معاينة LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Sprite is empty!"
-msgstr "الميش فارغ!"
+msgstr "الرسومية فارغة!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Can't convert a sprite using animation frames to mesh."
@@ -7666,27 +7631,24 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "هندسياً غير صالح، لا يمكن استبداله بسطح (mesh)."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Mesh2D"
-msgstr "تحويل إلي %s"
+msgstr "تحويل إلى Mesh2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
 msgstr "هندسياصً غير صالح، لا يمكن إنشاء مُضلّع."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to Polygon2D"
-msgstr "تحويل إلي %s"
+msgstr "تحويل إلى مُضلع ثنائي الأبعاد"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
 msgstr "هندسياً غير صالح، لا يمكن إنشاء مُضلع تصادم."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "إنشاء مُضلع التنقل"
+msgstr "إنشاء شقيق لمُضلع التصادم ثنائي الأبعاد"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
@@ -7714,9 +7676,8 @@ msgid "Grow (Pixels): "
 msgstr "التكبير (Pixels): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Update Preview"
-msgstr "إستعراض"
+msgstr "تحديث المُعاينة"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Settings:"
@@ -7787,9 +7748,8 @@ msgid "Animation Frames:"
 msgstr "إطارات الرسومات المتحركة:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add a Texture from File"
-msgstr "التقط من البيكسل"
+msgstr "إضافة ملمس من الملف"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
@@ -7812,9 +7772,8 @@ msgid "Move (After)"
 msgstr "تحريك (للتالي)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select Frames"
-msgstr "تحديد الوضع"
+msgstr "تحديد الإطارات"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
@@ -7926,23 +7885,20 @@ msgid "Create From Current Editor Theme"
 msgstr "إنشاء مستمد من موضوع Theme المحرر الحالي"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Button"
-msgstr "إلغاء/تفعيل التشغيل التلقائي"
+msgstr "زر التبديل"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled Button"
-msgstr "معطّل"
+msgstr "زر معطّل"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
 msgstr "عنصر"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled Item"
-msgstr "معطّل"
+msgstr "عنصر معطّل"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Check Item"
@@ -7969,14 +7925,12 @@ msgid "Submenu"
 msgstr "القائمة الفرعية"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Subitem 1"
-msgstr "عنصر"
+msgstr "العنصر الفرعي 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Subitem 2"
-msgstr "عنصر"
+msgstr "العنصر الفرعي 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -7987,9 +7941,8 @@ msgid "Many"
 msgstr "العديد"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled LineEdit"
-msgstr "معطّل"
+msgstr "تعديل الخط معطّل"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -8004,18 +7957,16 @@ msgid "Tab 3"
 msgstr "علامة التبويب 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editable Item"
-msgstr "عنصر انتقاء"
+msgstr "عنصر قابل للتعديل"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subtree"
 msgstr "الشجرة الفرعية"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "بكثير، خيارات عديدة،!"
+msgstr "يمتلك، خيارات، عديدة"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -8039,9 +7990,8 @@ msgid "Color"
 msgstr "اللون"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme File"
-msgstr "إفتح ملف"
+msgstr "ملف الثيم"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
@@ -8054,9 +8004,8 @@ msgstr "اسم غير صالح."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cut Selection"
-msgstr "نصف المُحدد"
+msgstr "قص المُحدد"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -8092,9 +8041,8 @@ msgid "Disable Autotile"
 msgstr "تعطيل البلاط التلقائي Autotile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Priority"
-msgstr "تعديل المصافي"
+msgstr "تمكين الأولوية"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -8123,14 +8071,12 @@ msgid "Pick Tile"
 msgstr "اختيار البلاط"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Left"
-msgstr "وضع التدوير"
+msgstr "تدوير لليسار"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Right"
-msgstr "وضع التدوير"
+msgstr "تدوير لليمين"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip Horizontally"
@@ -8141,9 +8087,8 @@ msgid "Flip Vertically"
 msgstr "القلب عموديًا"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Transform"
-msgstr "تحويل تغيير التحريك"
+msgstr "محو التَحَوّل"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet."
@@ -8184,9 +8129,8 @@ msgid "Select the next shape, subtile, or Tile."
 msgstr "اختر الشكل أو البلاط الفرعي أو البلاط التالي."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "التبويب السابق"
+msgstr "الإحداثيات السابقة"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
@@ -8267,9 +8211,8 @@ msgid "Erase bitmask."
 msgstr "زر الفأرة الأيمن: مسح النقطة."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create a new rectangle."
-msgstr "إنشاء %s جديد"
+msgstr "إنشاء مستطيل جديد."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
@@ -8544,9 +8487,8 @@ msgid "Add a commit message"
 msgstr "إضافة رسالة إجراء"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-#, fuzzy
 msgid "Commit Changes"
-msgstr "مزامنة تغييرات الكود"
+msgstr "اقتراف التعديلا"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
@@ -9342,9 +9284,8 @@ msgid "Vector constant."
 msgstr "ثابت المُتجه."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector uniform."
-msgstr "التعين للإنتظام."
+msgstr "مُتجهات موحدة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10164,9 +10105,8 @@ msgid "Settings saved OK."
 msgstr "تيسّر حفظ الإعدادات."
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Moved Input Action Event"
-msgstr "حرك النقطة داخل المنحنى"
+msgstr "حدث إجراء إدخال الذي تم نقله"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
@@ -10361,9 +10301,8 @@ msgid "Select Method"
 msgstr "إختر طريقة"
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Batch Rename"
-msgstr "إعادة التسمية"
+msgstr "إعادة تسمية الدفعة"
 
 #: editor/rename_dialog.cpp
 msgid "Prefix"
@@ -10386,9 +10325,8 @@ msgid "Substitute"
 msgstr "استبدال"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Node name"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: editor/rename_dialog.cpp
 msgid "Node's parent name, if available"
@@ -10427,9 +10365,8 @@ msgid "Initial value for the counter"
 msgstr "القيمة المبدئية للعداد"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Step"
-msgstr "خطوة (ثانية):"
+msgstr "الخطوة"
 
 #: editor/rename_dialog.cpp
 msgid "Amount by which counter is incremented for each node"
@@ -10476,9 +10413,8 @@ msgid "To Uppercase"
 msgstr "لأحرف كبيرة Uppercase"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Reset"
-msgstr "إرجاع التكبير"
+msgstr "إعادة تعيين"
 
 #: editor/rename_dialog.cpp
 msgid "Regular Expression Error"
@@ -10551,9 +10487,8 @@ msgid "Instance Child Scene"
 msgstr "نمذجة المشهد الابن"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "إلحاق نص برمجي"
+msgstr "فصل النص البرمجي"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10586,19 +10521,16 @@ msgid "Instantiated scenes can't become root"
 msgstr "لا يمكن أن تصبح المشاهد المنمذجة مشاهد رئيسة (جذر)"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make node as Root"
-msgstr "حفظ المشهد"
+msgstr "جعل العقدة المشهد الرئيس"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "حذف العُقدة \"%s\" مع جميع أبنائها؟"
+msgstr "حذف العُقدة %d مع جميع أبنائها؟"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr "إنشاء عقدة"
+msgstr "حذف العُقد %d"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -10609,9 +10541,8 @@ msgid "Delete node \"%s\" and its children?"
 msgstr "حذف العُقدة \"%s\" مع جميع أبنائها؟"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "إنشاء عقدة"
+msgstr "حذف العقدة \"%s\"؟"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10667,9 +10598,8 @@ msgid "User Interface"
 msgstr "واجهة المستخدم"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Other Node"
-msgstr "إنشاء عقدة"
+msgstr "عقدة أخرى"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -10722,9 +10652,8 @@ msgid "Load As Placeholder"
 msgstr "تحميله كعنصر نائب"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Open Documentation"
-msgstr "فُتح مؤخراً"
+msgstr "فتح الوثائق"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10732,15 +10661,16 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"لا يمكن إرفاق نص برمجي: لا توجد لغات مسجلة.\n"
+"ربما يكون هذا بسبب أن المحرر تم إنشاؤه مع تعطيل جميع وحدات اللغة."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr "إضافة عُقدة ابن"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Expand/Collapse All"
-msgstr "طوي الكل"
+msgstr "توسيع / طي الكل"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
@@ -10752,9 +10682,8 @@ msgid "Reparent to New Node"
 msgstr "إنشاء %s جديد"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make Scene Root"
-msgstr "حفظ المشهد"
+msgstr "جعل المشهد الرئيس"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -10773,9 +10702,8 @@ msgid "Delete (No Confirm)"
 msgstr "حذف (دون تأكيد)"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Add/Create a New Node."
-msgstr "إنشاء %s جديد"
+msgstr "إضافة/إنشاء عقدة جديدة."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10786,14 +10714,12 @@ msgstr ""
 "موروث."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
 msgstr "إلحاق نص برمجي موجود أو جديد للعُقدة المختارة."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "مسح النص البرمجي للعُقدة المختارة."
+msgstr "فصل النص البرمجي من العُقدة المختارة."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10808,9 +10734,8 @@ msgid "Clear Inheritance? (No Undo!)"
 msgstr "مسح الموروث؟ (لا تراجع!)"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Toggle Visible"
-msgstr "أظهر الملفات المخفية"
+msgstr "تشغيل/إطفاء  الوضوحية"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy

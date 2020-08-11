@@ -18,11 +18,12 @@
 # Tilto_ <tilto0822@develable.xyz>, 2020.
 # Myeongjin Lee <aranet100@gmail.com>, 2020.
 # Doyun Kwon <caen4516@gmail.com>, 2020.
+# Jun Hyung Shin <shmishmi79@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-29 15:26+0000\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
 "Last-Translator: Ch. <ccwpc@hanmail.net>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -7359,7 +7360,6 @@ msgid "XForm Dialog"
 msgstr "XForm 대화 상자"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Click to toggle between visibility states.\n"
 "\n"
@@ -10461,9 +10461,8 @@ msgid "Make node as Root"
 msgstr "노드를 루트로 만들기"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "노드 \"%s\"와(과) 자식을 삭제할까요?"
+msgstr "%d 개의 노드와 모든 자식 노드를 삭제할까요?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12141,6 +12140,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"폴리곤 기반 Shape는 CollisionShape2D에 추가하거나 거기서 편집하게끔 설계하지 "
+"않았습니다. 대신 CollisionPolygon2D 노드를 사용하십시오."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

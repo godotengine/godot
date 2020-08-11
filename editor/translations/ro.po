@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Calin Sopterean <csopterean@gmail.com>, 2018.
-# Filip <filipanton@tutanota.com>, 2018.
+# Filip <filipanton@tutanota.com>, 2018, 2020.
 # Nitroretro <nitroretro@protonmail.com>, 2018.
 # TigerxWood <TigerxWood@gmail.com>, 2018.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-19 01:27+0000\n"
-"Last-Translator: f0roots <f0rootss@gmail.com>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Filip <filipanton@tutanota.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -1720,7 +1720,7 @@ msgstr "Nou"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importă"
+msgstr "Importare"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2142,23 +2142,23 @@ msgstr "Nod"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "Intrare RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "Intrare RSET"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "Ieșire RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "Ieșire RSET"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr "Fereastra Noua"
+msgstr "Fereastră Nouă"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -2251,11 +2251,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "Nu pot salva peste scena care este înca deschisă!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr "Imposibil de încărcat MeshLibrary pentru unire!"
+msgstr "Nu pot încarca MeshLibrary pentru combinare!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
@@ -2378,7 +2378,7 @@ msgstr "Resurse modificate %s salvate."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr ""
+msgstr "Un nod rădăcină este necesar pentru a salva scena."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2406,11 +2406,11 @@ msgstr "Exportă Librăria de Mesh-uri"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Această operațiune nu poate fi făcută fără un nod de bază."
+msgstr "Această operațiune nu poate fi făcută fără un nod rădăcină."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "Exportă Setul de Plăci"
+msgstr "Exportă Tile Setul"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
@@ -2422,25 +2422,27 @@ msgstr "Scena curentă nu este salvată. Deschizi oricum?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr "Nu se poate reîncărca o scenă care nu a fost salvată niciodată."
+msgstr "Nu pot reîncărca o scenă care nu a fost salvată niciodată."
 
 #: editor/editor_node.cpp
 msgid "Reload Saved Scene"
-msgstr "Reîncărcare scenă salvată"
+msgstr "Reîncarcă scenă salvată"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Scena actuală are modificări nesalvate.\n"
+"Reîncărcați scena salvată? Această acțiune nu poate fi anulată."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "Execută Rapid Scena..."
+msgstr "Rulează Rapid Scena..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr "Închidere"
+msgstr "Închide"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
@@ -2448,7 +2450,7 @@ msgstr "Ieși din editor?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr "Deschizi Managerul de Proiect?"
+msgstr "Deschide Managerul de Proiect?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -2603,12 +2605,14 @@ msgid "Undo Close Tab"
 msgstr "Anulare fila Închidere"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "Închideți Alte File"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "Închidere file la dreapta"
 
 #: editor/editor_node.cpp
 msgid "Close All Tabs"
@@ -2738,20 +2742,23 @@ msgid "Version Control"
 msgstr "Control versiune"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Configurați controlul versiunii"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Închidere control versiune"
 
 #: editor/editor_node.cpp
 msgid "Export..."
 msgstr "Export..."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Install Android Build Template..."
-msgstr ""
+msgstr "Instalare șablon compilare Android..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
@@ -2867,15 +2874,15 @@ msgstr "Editor"
 
 #: editor/editor_node.cpp
 msgid "Editor Settings..."
-msgstr "Setările editorului..."
+msgstr "Setări Editor..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "Schema Editorului"
+msgstr "Schema Editor"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
-msgstr "Salvează captură de ecran"
+msgstr "Captură de ecran"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
@@ -2886,23 +2893,20 @@ msgid "Toggle Fullscreen"
 msgstr "Comutare ecran complet"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle System Console"
-msgstr "Modul de Comutare"
+msgstr "Cumutează Consola de Sistem"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Data/Settings Folder"
-msgstr "Setări ale Editorului"
+msgstr "Deschide Dosarul De Date/Setări"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "Deschidere dosarul de date editor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Settings Folder"
-msgstr "Setări ale Editorului"
+msgstr "Deschide Dosarul de Setări Editor"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features..."
@@ -2935,13 +2939,12 @@ msgid "Q&A"
 msgstr "Întrebări și Răspunsuri"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Reimportă"
+msgstr "Raportează o Eroare"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Trimite Feedbackul Docs"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -2960,8 +2963,9 @@ msgid "Play"
 msgstr "Rulează"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Întrerupeți executarea scenei pentru depanare."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
@@ -3001,17 +3005,14 @@ msgid "Spins when the editor window redraws."
 msgstr "Se rotește când fereastra editorului se redeschide."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Continuu"
+msgstr "Actualizare continuă"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Modificări ale Actualizării"
+msgstr "Actualizează Doar La Modificare"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Hide Update Spinner"
 msgstr "Dezactivează Cercul de Actualizare"
 
@@ -3024,9 +3025,8 @@ msgid "Inspector"
 msgstr "Inspector"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand Bottom Panel"
-msgstr "Extinde toate"
+msgstr "Extinde Panoul De Jos"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -3039,11 +3039,11 @@ msgstr "Nu Salva"
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
+"Android construi șablon lipsește, vă rugăm să instalați șabloane relevante."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Templates"
-msgstr "Administrează Șabloanele de Export"
+msgstr "Gestionați șabloanele"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3069,9 +3069,8 @@ msgid "Import Templates From ZIP File"
 msgstr "Importă Șabloane Dintr-o Arhivă ZIP"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Exportă Managerul de Șabloane"
+msgstr "Pachetul cu șabloane"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
@@ -3126,9 +3125,8 @@ msgid "Warning!"
 msgstr ""
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "No sub-resources found."
-msgstr "Nicio sursă de suprafață specificată."
+msgstr "Nu s-a găsit nici o sub-resursă."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3143,9 +3141,8 @@ msgid "Main Script:"
 msgstr "Script principal:"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Edit Plugin"
-msgstr "Editează Poligon"
+msgstr "Editare Plugin"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -3269,9 +3266,8 @@ msgid "New Script"
 msgstr ""
 
 #: editor/editor_properties.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Extend Script"
-msgstr "Execută Scriptul"
+msgstr "Extinde Script"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -3317,14 +3313,12 @@ msgid "Remove Item"
 msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "New Key:"
-msgstr "Nume nou:"
+msgstr "Cheie Nouă:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "New Value:"
-msgstr "Nume nou:"
+msgstr "Valoare Nouă:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
@@ -3384,7 +3378,6 @@ msgid "Import From Node:"
 msgstr "Importă Din Nod:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Redownload"
 msgstr "Descarcă din nou"
 
@@ -3426,9 +3419,8 @@ msgid "Can't open export templates zip."
 msgstr "Nu se pot deschide șabloanele de export zip."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "Format nevalid versiune.txt în șabloane."
+msgstr "Formatul versiune.txt nevalid din interiorul șabloanelor: % s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -3495,9 +3487,8 @@ msgid "Download Complete."
 msgstr "Descărcare Completă."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cannot remove temporary file:"
-msgstr "Nu se poate șterge:"
+msgstr "Nu pot sterge fișierul temporar:"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3556,9 +3547,8 @@ msgid "SSL Handshake Error"
 msgstr "Eroare SSL Handshake"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uncompressing Android Build Sources"
-msgstr "Decomprimare Asset-uri"
+msgstr "Decomprimare Surse de compilare Android"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -3579,12 +3569,11 @@ msgstr "Elimină Șablon"
 #: editor/export_template_manager.cpp
 #, fuzzy
 msgid "Select Template File"
-msgstr "Selectează fișierul șablon"
+msgstr "Selectare fișier șablon"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Godot Export Templates"
-msgstr "Administrează Șabloanele de Export"
+msgstr "Șabloane de export Godot"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3665,14 +3654,12 @@ msgid "New Inherited Scene"
 msgstr "Nouă scenă moștenită"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Set As Main Scene"
-msgstr "Alege o Scenă Principală"
+msgstr "Setează ca scenă principală"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open Scenes"
-msgstr "Deschide o scenă"
+msgstr "Deschide Scene"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -3683,9 +3670,8 @@ msgid "Add to Favorites"
 msgstr "Adauga la Favorite"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Remove from Favorites"
-msgstr "Elimină din Grup"
+msgstr "Eliminare din Preferințe"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -3712,26 +3698,22 @@ msgid "New Scene..."
 msgstr "Scenă nouă..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "New Script..."
-msgstr "Deschide un script rapid..."
+msgstr "Script nou ..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Resource..."
-msgstr "Salvați Resursa Ca..."
+msgstr "Resursă nouă ..."
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Expand All"
-msgstr "Extinde toate"
+msgstr "Extinde Toate"
 
 #: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Collapse All"
-msgstr "Restrânge toate"
+msgstr "Reduceți Toate"
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3741,28 +3723,24 @@ msgid "Rename"
 msgstr "Redenumește"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Previous Folder/File"
-msgstr "Fila anterioară"
+msgstr "Folder/Fișier Anterior"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Next Folder/File"
-msgstr "Creați Director"
+msgstr "Folder/Fișier Următor"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
 msgstr "Rescanează Sistemul de Fișiere"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle Split Mode"
-msgstr "Modul de Comutare"
+msgstr "Comută Modul Split"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Search files"
-msgstr "Căutare Clase"
+msgstr "Căută fișiere"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -3777,27 +3755,24 @@ msgid "Move"
 msgstr "Mută"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "There is already file or folder with the same name in this location."
-msgstr "Un fișier sau un director cu acest nume există deja."
+msgstr "Există deja un fișier sau un dosar cu același nume în această locație."
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Create Scene"
-msgstr "Salvează Scena"
+msgstr "Crează scenă"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
 msgstr ""
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Find in Files"
-msgstr "%d mai multe fișiere"
+msgstr "Caută în fișiere"
 
 #: editor/find_in_files.cpp
 msgid "Find:"
@@ -3839,19 +3814,16 @@ msgid "Replace: "
 msgstr "Înlocuiți: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace all (no undo)"
-msgstr "Înlocuiți Tot"
+msgstr "Înlocuiește tot (fără anulare)"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Searching..."
-msgstr "Se Salvează..."
+msgstr "Caut..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Search complete"
-msgstr "Căutați Text"
+msgstr "Căutare completă"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3866,28 +3838,24 @@ msgid "Group name already exists."
 msgstr "Numele grupului există deja."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Invalid group name."
-msgstr "Nume nevalid."
+msgstr "Nume de grup nevalid."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Rename Group"
-msgstr "Grupuri"
+msgstr "Renumește Grupul"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Delete Group"
-msgstr "Șterge Schema"
+msgstr "Șterge Grupul"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Grupuri"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes Not in Group"
-msgstr "Adaugă în Grup"
+msgstr "Nodurile Nu Sunt în Grup"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #: editor/scene_tree_editor.cpp
@@ -3895,23 +3863,20 @@ msgid "Filter nodes"
 msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes in Group"
-msgstr "Adaugă în Grup"
+msgstr "Noduri în Grup"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
 msgstr ""
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group Editor"
-msgstr "Deschide Editorul de Scripturi"
+msgstr "Editor Grup"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Manage Groups"
-msgstr "Grupuri"
+msgstr "Gestionați grupuri"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -4023,9 +3988,8 @@ msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Schimbarea driver-ului video necesită restartarea editorului."
+msgstr "Modificarea tipului de fișier importat necesită repornirea editorului."
 
 #: editor/import_dock.cpp
 msgid ""
@@ -4037,14 +4001,12 @@ msgid "Failed to load resource."
 msgstr "Încărcarea resursei a eșuat."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Expand All Properties"
-msgstr "Extinde toate proprietăţile"
+msgstr "Extindeți toate proprietățile"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Collapse All Properties"
-msgstr "Restrânge toate proprietăţile"
+msgstr "Reduceți toate proprietățile"
 
 #: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -4116,19 +4078,16 @@ msgid "MultiNode Set"
 msgstr "Set MultiNod"
 
 #: editor/node_dock.cpp
-#, fuzzy
 msgid "Select a single node to edit its signals and groups."
-msgstr "Selectează un Nod pentru a edita Semnalele și Grupurile."
+msgstr "Selectați un singur nod pentru a-i edita semnalele și grupurile."
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Edit a Plugin"
-msgstr "Editează Poligon"
+msgstr "Editează un Plugin"
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Create a Plugin"
-msgstr "Crează Poligon"
+msgstr "Crează un plugin"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Plugin Name:"
@@ -4152,9 +4111,8 @@ msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon"
-msgstr "Crează Poligon"
+msgstr "Crează poligon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -4174,12 +4132,10 @@ msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Erase points."
-msgstr "RMB: Șterge Punctul."
+msgstr "Șterge puncte."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon"
 msgstr "Editează Poligon"
 
@@ -4188,14 +4144,12 @@ msgid "Insert Point"
 msgstr "Inserează Punct"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon (Remove Point)"
-msgstr "Editează Poligon (Elimină Punct)"
+msgstr "Editează Poligon (Șterge puncte)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Remove Polygon And Point"
-msgstr "Elimină Poligon Și Punct"
+msgstr "Șterge Poligon Și Punct"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4214,19 +4168,16 @@ msgstr "Încărca..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Move Node Point"
-msgstr "Deplasare punct"
+msgstr "Mută punct nod"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Limits"
-msgstr "Schimbă Timpul Amestecului"
+msgstr "Modifică limitele BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "Schimbă Timpul Amestecului"
+msgstr "Modifică etichetele BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -9632,9 +9583,8 @@ msgid "Make Patch"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Pack File"
-msgstr "Pachet Fișier"
+msgstr "Împachetează Fișierul"
 
 #: editor/project_export.cpp
 msgid "Features"
