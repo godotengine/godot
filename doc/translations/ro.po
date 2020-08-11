@@ -1,4 +1,4 @@
-# Romanian translation of the Godot Engine class reference.
+# LANGUAGE translation of the Godot Engine class reference.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.

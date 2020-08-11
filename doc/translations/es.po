@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-08-05 16:58+0000\n"
+"PO-Revision-Date: 2020-08-11 14:39+0000\n"
 "Last-Translator: paco <pacosoftfree@protonmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
@@ -39123,20 +39123,29 @@ msgstr ""
 "Específico de la plataforma Android."
 
 #: doc/classes/MainLoop.xml:154 doc/classes/Node.xml:973
+#, fuzzy
 msgid ""
 "Notification received from the OS when the application is focused, i.e. when "
 "changing the focus from the OS desktop or a thirdparty application to any "
 "open window of the Godot instance.\n"
 "Implemented on desktop platforms."
 msgstr ""
+"Notificación recibida del sistema operativo cuando el ratón entra en la "
+"ventana del juego.\n"
+"Implementado en plataformas de escritorio y web."
 
 #: doc/classes/MainLoop.xml:158 doc/classes/Node.xml:977
+#, fuzzy
 msgid ""
 "Notification received from the OS when the application is defocused, i.e. "
 "when changing the focus from any open window of the Godot instance to the OS "
 "desktop or a thirdparty application.\n"
 "Implemented on desktop platforms."
 msgstr ""
+"Notificación recibida del sistema operativo cuando se envía una solicitud de "
+"cierre (por ejemplo, cerrando la ventana con un botón de \"Cerrar\" o "
+"[kbd]Alt + F4[/kbd]).\n"
+"Implementado en plataformas de escritorio."
 
 #: doc/classes/MarginContainer.xml:4
 msgid "Simple margin container."
@@ -40840,24 +40849,32 @@ msgid ""
 "Returns the documentation string that was previously set with "
 "[code]godot_nativescript_set_class_documentation[/code]."
 msgstr ""
+"Devuelve la string de documentación que se estableció previamente con "
+"[code]godot_nativescript_set_class_documentation[/code]."
 
 #: modules/gdnative/doc_classes/NativeScript.xml:23
 msgid ""
 "Returns the documentation string that was previously set with "
 "[code]godot_nativescript_set_method_documentation[/code]."
 msgstr ""
+"Devuelve la string de documentación que se estableció previamente con "
+"[code]godot_nativescript_set_method_documentation[/code]."
 
 #: modules/gdnative/doc_classes/NativeScript.xml:32
 msgid ""
 "Returns the documentation string that was previously set with "
 "[code]godot_nativescript_set_property_documentation[/code]."
 msgstr ""
+"Devuelve la string de documentación que se estableció previamente con "
+"[code]godot_nativescript_set_property_documentation[/code]."
 
 #: modules/gdnative/doc_classes/NativeScript.xml:41
 msgid ""
 "Returns the documentation string that was previously set with "
 "[code]godot_nativescript_set_signal_documentation[/code]."
 msgstr ""
+"Devuelve la string de documentación que se estableció previamente con "
+"[code]godot_nativescript_set_signal_documentation[/code]."
 
 #: modules/gdnative/doc_classes/NativeScript.xml:48
 msgid ""
@@ -40867,10 +40884,15 @@ msgid ""
 "passed to the native constructor function. This will change with in a future "
 "API extension."
 msgstr ""
+"Construye un nuevo objeto del tipo base con un script de este tipo ya "
+"adjunto.\n"
+"[i]Nota [/i]: Cualquier argumento que se pase a esta función será ignorado y "
+"no se pasará a la función constructora nativa. Esto cambiará con una futura "
+"extensión de la API."
 
 #: doc/classes/Navigation2D.xml:4
 msgid "2D navigation and pathfinding node."
-msgstr ""
+msgstr "Navegación 2D y nodo de búsqueda de caminos."
 
 #: doc/classes/Navigation2D.xml:7
 msgid ""
@@ -40878,6 +40900,9 @@ msgid ""
 "as a collection of [NavigationPolygon] resources. These are automatically "
 "collected from child [NavigationRegion2D] nodes."
 msgstr ""
+"Navigation2D proporciona navegación y busqueda de caminos dentro de un área "
+"2D, especificada como una colección de recursos de [NavigationPolygon]. "
+"Estos se recogen automáticamente de los nodos hijos de [NavigationRegion2D]."
 
 #: doc/classes/Navigation2D.xml:18 doc/classes/Navigation3D.xml:18
 #: doc/classes/NavigationServer2D.xml:175
@@ -40885,12 +40910,16 @@ msgid ""
 "Returns the point closest to the provided [code]to_point[/code] on the "
 "navigation mesh surface."
 msgstr ""
+"Devuelve el punto más cercano al [code]to_point[/code] proporcionado en la "
+"superficie de la malla de navegación."
 
 #: doc/classes/Navigation2D.xml:27 doc/classes/Navigation3D.xml:36
 msgid ""
 "Returns the owner region RID for the point returned by [method "
 "get_closest_point]."
 msgstr ""
+"Devuelve la región propietaria RID para el punto devuelto por [method "
+"get_closest_point]."
 
 #: doc/classes/Navigation2D.xml:46
 msgid ""
@@ -40898,10 +40927,14 @@ msgid ""
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the path "
 "is smoothed by merging path segments where possible."
 msgstr ""
+"Devuelve el camino entre dos puntos dados. Los puntos están en el espacio de "
+"coordenadas locales. Si [code]optimize[/code] es [code]true[/code] (el valor "
+"por defecto), el camino se suaviza fusionando los segmentos de camino cuando "
+"es posible."
 
 #: doc/classes/Navigation3D.xml:4
 msgid "Mesh-based navigation and pathfinding node."
-msgstr ""
+msgstr "Nodo de navegación y busqueda de caminos basado en una malla."
 
 #: doc/classes/Navigation3D.xml:7
 msgid ""
@@ -40911,16 +40944,24 @@ msgid ""
 "also assists with aligning navigation agents with the meshes they are "
 "navigating on."
 msgstr ""
+"Proporciona navegación y búsqueda de caminos dentro de una colección de "
+"[NavigationMesh]es. Estos serán recogidos automáticamente de los nodos hijos "
+"de [NavigationRegion3D]. Además de la búsqueda básica, esta clase también "
+"ayuda a alinear los agentes de navegación con las mallas en las que están "
+"navegando."
 
 #: doc/classes/Navigation3D.xml:27
 msgid ""
 "Returns the normal for the point returned by [method get_closest_point]."
 msgstr ""
+"Devuelve la normalidad para el punto devuelto por [method get_closest_point]."
 
 #: doc/classes/Navigation3D.xml:49 doc/classes/NavigationServer3D.xml:212
 msgid ""
 "Returns the closest point between the navigation surface and the segment."
 msgstr ""
+"Devuelve el punto más cercano entre la superficie de navegación y el "
+"segmento."
 
 #: doc/classes/Navigation3D.xml:68
 msgid ""
@@ -40929,16 +40970,23 @@ msgid ""
 "agent properties associated with each [NavigationMesh] (radius, height, "
 "etc.) are considered in the path calculation, otherwise they are ignored."
 msgstr ""
+"Devuelve el camino entre dos puntos dados. Los puntos están en el espacio de "
+"coordenadas locales. Si [code]optimize[/code] es [code]true[/code] (el valor "
+"por defecto), las propiedades del agente asociadas a cada [NavigationMesh] "
+"(radio, altura, etc.) se consideran en el cálculo del camino, de lo "
+"contrario se ignoran."
 
 #: doc/classes/Navigation3D.xml:78
 msgid ""
 "Defines which direction is up. By default, this is [code](0, 1, 0)[/code], "
 "which is the world's \"up\" direction."
 msgstr ""
+"Define qué dirección es hacia arriba. Por defecto, esto es [code](0, 1, 0)[/"
+"code], que es la dirección \"arriba\" del mundo."
 
 #: doc/classes/NavigationAgent2D.xml:4
 msgid "2D Agent used in navigation for collision avoidance."
-msgstr ""
+msgstr "Agente 2D utilizado en la navegación para evitar colisiones."
 
 #: doc/classes/NavigationAgent2D.xml:7
 msgid ""
@@ -40948,6 +40996,12 @@ msgid ""
 "can be done by having the agent as a child of a [Navigation2D] node, or "
 "using [method set_navigation]. [NavigationAgent2D] is physics safe."
 msgstr ""
+"Agente 2D que se utiliza en la navegación para llegar a un lugar mientras se "
+"evitan los obstáculos estáticos y dinámicos. Los obstáculos dinámicos se "
+"evitan usando la evitación de colisiones RVO. El agente necesita datos de "
+"navegación para funcionar correctamente. Esto puede hacerse teniendo el "
+"agente como hijo de un nodo [Navigation2D], o usando [method "
+"set_navigation]. [NavigationAgent2D] que es seguro para la física."
 
 #: doc/classes/NavigationAgent2D.xml:16 doc/classes/NavigationAgent3D.xml:16
 msgid ""
@@ -40955,28 +41009,37 @@ msgid ""
 "position. The user must set the target location with [method "
 "set_target_location] in order for this to be accurate."
 msgstr ""
+"Devuelve la distancia al lugar del objetivo, usando la posición global del "
+"agente. El usuario debe establecer la ubicación del objetivo con [method "
+"set_target_location] para que esto sea preciso."
 
 #: doc/classes/NavigationAgent2D.xml:23
 msgid ""
 "Returns the reachable final location in global coordinates. This can change "
 "if the navigation path is altered in any way."
 msgstr ""
+"Devuelve la ubicación final alcanzable en coordenadas globales. Esto puede "
+"cambiar si la ruta de navegación se altera de alguna manera."
 
 #: doc/classes/NavigationAgent2D.xml:30 doc/classes/NavigationAgent3D.xml:30
 msgid "Returns the path from start to finish in global coordinates."
-msgstr ""
+msgstr "Devuelve el camino de principio a fin en coordenadas globales."
 
 #: doc/classes/NavigationAgent2D.xml:37
 msgid ""
 "Returns which index the agent is currently on in the navigation path's "
 "[PackedVector2Array]."
 msgstr ""
+"Devuelve el índice en el que se encuentra actualmente el agente en la ruta "
+"de navegación de [PackedVector2Array]."
 
 #: doc/classes/NavigationAgent2D.xml:44
 msgid ""
 "Returns the [Navigation2D] node that the agent is using for its navigation "
 "system."
 msgstr ""
+"Devuelve el nodo [Navigation2D] que el agente está usando para su sistema de "
+"navegación."
 
 #: doc/classes/NavigationAgent2D.xml:51
 msgid ""
@@ -40984,20 +41047,29 @@ msgid ""
 "that there are no static objects in the way. If the agent does not have a "
 "navigation path, it will return the position of the agent's parent."
 msgstr ""
+"Devuelve un [Vector2] en coordenadas globales, al que se puede desplazar, "
+"asegurándose de que no haya objetos estáticos en el camino. Si el agente no "
+"tiene una ruta de navegación, devolverá la posición del padre del agente."
 
 #: doc/classes/NavigationAgent2D.xml:58
 msgid "Returns the user defined [Vector2] after setting the target location."
 msgstr ""
+"Devuelve el [Vector2] definido por el usuario después de establecer la "
+"ubicación del objetivo."
 
 #: doc/classes/NavigationAgent2D.xml:65 doc/classes/NavigationAgent3D.xml:65
 msgid "Returns true if the navigation path's final location has been reached."
 msgstr ""
+"Vuelve a ser cierto si se ha alcanzado la ubicación final de la ruta de "
+"navegación."
 
 #: doc/classes/NavigationAgent2D.xml:72 doc/classes/NavigationAgent3D.xml:72
 msgid ""
 "Returns true if the target location is reachable. The target location is set "
 "using [method set_target_location]."
 msgstr ""
+"Devuelve verdadero si la ubicación del objetivo es alcanzable. La ubicación "
+"de destino se establece mediante [method set_target_location]."
 
 #: doc/classes/NavigationAgent2D.xml:79 doc/classes/NavigationAgent3D.xml:79
 msgid ""
@@ -41006,18 +41078,27 @@ msgid ""
 "the target location. It should always be possible to reach the final "
 "location though. See [method get_final_location]."
 msgstr ""
+"Vuelve verdadero si se alcanza la ubicación del objetivo. La ubicación de "
+"destino se establece mediante [method set_target_location]. Puede que no "
+"siempre sea posible alcanzar la ubicación de destino. Sin embargo, siempre "
+"debería ser posible llegar a la ubicación final. Ver [method "
+"get_final_location]."
 
 #: doc/classes/NavigationAgent2D.xml:88
 msgid ""
 "Sets the [Navigation2D] node used by the agent. Useful when you don't want "
 "to make the agent a child of a [Navigation2D] node."
 msgstr ""
+"Establece el nodo [Navegación2D] utilizado por el agente. Es útil cuando no "
+"quieres hacer del agente un hijo de un nodo [Navigation2D]."
 
 #: doc/classes/NavigationAgent2D.xml:97 doc/classes/NavigationAgent3D.xml:97
 msgid ""
 "Sets the user desired final location. This will clear the current navigation "
 "path."
 msgstr ""
+"Establece la ubicación final deseada por el usuario. Esto despejará la ruta "
+"de navegación actual."
 
 #: doc/classes/NavigationAgent2D.xml:106 doc/classes/NavigationAgent3D.xml:106
 msgid ""
@@ -41025,18 +41106,21 @@ msgid ""
 "adjust the velocity to avoid collisions. Once the adjustment to the velocity "
 "is complete, it will emit the [signal velocity_computed] signal."
 msgstr ""
+"Envía el paso en velocidad al algoritmo de evitación de colisiones. Ajustará "
+"la velocidad para evitar las colisiones. Una vez completado el ajuste de la "
+"velocidad, emitirá la [signal velocity_computed]."
 
 #: doc/classes/NavigationAgent2D.xml:112 doc/classes/NavigationAgent3D.xml:118
 msgid "The maximum number of neighbors for the agent to consider."
-msgstr ""
+msgstr "El número máximo de vecinos a considerar por el agente."
 
 #: doc/classes/NavigationAgent2D.xml:115 doc/classes/NavigationAgent3D.xml:121
 msgid "The maximum speed that an agent can move."
-msgstr ""
+msgstr "La máxima velocidad que un agente puede alcanzar."
 
 #: doc/classes/NavigationAgent2D.xml:118 doc/classes/NavigationAgent3D.xml:124
 msgid "The distance to search for other agents."
-msgstr ""
+msgstr "La distancia para buscar otros agentes."
 
 #: doc/classes/NavigationAgent2D.xml:121 doc/classes/NavigationAgent3D.xml:127
 msgid ""
@@ -41044,10 +41128,14 @@ msgid ""
 "final location. This can happen due to trying to avoid collisions. When the "
 "maximum distance is exceeded, it recalculates the ideal path."
 msgstr ""
+"La distancia máxima que se permite al agente para alejarse del camino ideal "
+"hasta la ubicación final. Esto puede suceder debido a que se intenta evitar "
+"las colisiones. Cuando se excede la distancia máxima, se recalcula el camino "
+"ideal."
 
 #: doc/classes/NavigationAgent2D.xml:124 doc/classes/NavigationAgent3D.xml:130
 msgid "The radius of the agent."
-msgstr ""
+msgstr "El radio del agente."
 
 #: doc/classes/NavigationAgent2D.xml:127 doc/classes/NavigationAgent3D.xml:133
 msgid ""
@@ -41055,6 +41143,9 @@ msgid ""
 "will allow an agent to not have to hit a point on the path exactly, but in "
 "the area."
 msgstr ""
+"El umbral de distancia antes de que se considere que se ha alcanzado un "
+"objetivo. Esto permitirá que un agente no tenga que llegar a un punto en el "
+"camino exactamente, sino en el área."
 
 #: doc/classes/NavigationAgent2D.xml:130 doc/classes/NavigationAgent3D.xml:136
 msgid ""
@@ -41063,30 +41154,39 @@ msgid ""
 "other agents. The larger the number, the sooner the agent will respond to "
 "other agents, but less freedom in choosing its velocities. Must be positive."
 msgstr ""
+"La cantidad mínima de tiempo durante el cual las velocidades de este agente, "
+"que se calculan con el algoritmo de evitación de colisiones, son seguras con "
+"respecto a otros agentes. Cuanto mayor sea el número, más pronto el agente "
+"responderá a otros agentes, pero menos libertad para elegir sus velocidades. "
+"Debe ser positivo."
 
 #: doc/classes/NavigationAgent2D.xml:136 doc/classes/NavigationAgent3D.xml:142
 msgid "Notifies when the final location is reached."
-msgstr ""
+msgstr "Notifica cuando se alcanza la ubicación final."
 
 #: doc/classes/NavigationAgent2D.xml:141 doc/classes/NavigationAgent3D.xml:147
 msgid "Notifies when the navigation path changes."
-msgstr ""
+msgstr "Notifica cuando la ruta de navegación cambia."
 
 #: doc/classes/NavigationAgent2D.xml:146 doc/classes/NavigationAgent3D.xml:152
 msgid ""
 "Notifies when the player defined target, set with [method "
 "set_target_location], is reached."
 msgstr ""
+"Notifica cuando se alcanza el objetivo definido por el jugador, establecido "
+"con [method set_target_location]."
 
 #: doc/classes/NavigationAgent2D.xml:153 doc/classes/NavigationAgent3D.xml:159
 msgid ""
 "Notifies when the collision avoidance velocity is calculated. Emitted by "
 "[method set_velocity]."
 msgstr ""
+"Notifica cuando se calcula la velocidad de prevención de colisiones. Emitido "
+"por [method set_velocity]."
 
 #: doc/classes/NavigationAgent3D.xml:4
 msgid "3D Agent used in navigation for collision avoidance."
-msgstr ""
+msgstr "Agente 3D utilizado en la navegación para evitar colisiones."
 
 #: doc/classes/NavigationAgent3D.xml:7
 msgid ""
@@ -41096,6 +41196,12 @@ msgid ""
 "can be done by having the agent as a child of a [Navigation3D] node, or "
 "using [method set_navigation]. [NavigationAgent3D] is physics safe."
 msgstr ""
+"Agente 3D que se utiliza en la navegación para llegar a un lugar mientras se "
+"evitan los obstáculos estáticos y dinámicos. Los obstáculos dinámicos se "
+"evitan usando la evitación de colisiones RVO. El agente necesita los datos "
+"de navegación para funcionar correctamente. Esto puede hacerse teniendo el "
+"agente como hijo de un nodo [Navigation3D], o usando [method "
+"set_navigation]. [NavigationAgent3D] es seguro para la física."
 
 #: doc/classes/NavigationAgent3D.xml:23
 msgid ""
@@ -41103,18 +41209,25 @@ msgid ""
 "if the navigation path is altered in any way. Because of this, it would be "
 "best to check this each frame."
 msgstr ""
+"Devuelve la ubicación final alcanzable en coordenadas globales. Esto puede "
+"cambiar si la ruta de navegación se altera de alguna manera. Debido a esto, "
+"sería mejor comprobar esto en cada fotograma."
 
 #: doc/classes/NavigationAgent3D.xml:37
 msgid ""
 "Returns which index the agent is currently on in the navigation path's "
 "[PackedVector3Array]."
 msgstr ""
+"Devuelve el índice en el que se encuentra el agente en la ruta de navegación "
+"[PackedVector3Array]."
 
 #: doc/classes/NavigationAgent3D.xml:44
 msgid ""
 "Returns the [Navigation3D] node that the agent is using for its navigation "
 "system."
 msgstr ""
+"Devuelve el nodo [Navegación3D] que el agente está usando para su sistema de "
+"navegación."
 
 #: doc/classes/NavigationAgent3D.xml:51
 msgid ""
@@ -41122,29 +41235,39 @@ msgid ""
 "that there are no static objects in the way. If the agent does not have a "
 "navigation path, it will return the origin of the agent's parent."
 msgstr ""
+"Devuelve un [Vector3] en coordenadas globales, al que se puede desplazar, "
+"asegurándose de que no haya objetos estáticos en el camino. Si el agente no "
+"tiene una ruta de navegación, devolverá el origen del padre del agente."
 
 #: doc/classes/NavigationAgent3D.xml:58
 msgid "Returns the user defined [Vector3] after setting the target location."
 msgstr ""
+"Devuelve el [Vector3] definido por el usuario después de establecer la "
+"ubicación del objetivo."
 
 #: doc/classes/NavigationAgent3D.xml:88
 msgid ""
 "Sets the [Navigation3D] node used by the agent. Useful when you don't want "
 "to make the agent a child of a [Navigation3D] node."
 msgstr ""
+"Establece el nodo [Navigation3D] utilizado por el agente. Es útil cuando no "
+"quieres hacer del agente un hijo de un nodo [Navigation3D]."
 
 #: doc/classes/NavigationAgent3D.xml:112
 msgid "The agent height offset to match the navigation mesh height."
 msgstr ""
+"La altura del agente se compensa con la altura de la malla de navegación."
 
 #: doc/classes/NavigationAgent3D.xml:115
 msgid ""
 "Ignores collisions on the Y axis. Must be true to move on a horizontal plane."
 msgstr ""
+"Ignora las colisiones en el eje Y. Debe ser cierto para moverse en un plano "
+"horizontal."
 
 #: doc/classes/NavigationObstacle2D.xml:4
 msgid "2D Obstacle used in navigation for collision avoidance."
-msgstr ""
+msgstr "Obstáculo 2D utilizado en la navegación para evitar colisiones."
 
 #: doc/classes/NavigationObstacle2D.xml:7
 msgid ""
@@ -41153,22 +41276,30 @@ msgid ""
 "as a child of a [Navigation2D] node, or using [method set_navigation]. "
 "[NavigationObstacle2D] is physics safe."
 msgstr ""
+"Obstáculo 2D utilizado en la navegación para evitar colisiones. El obstáculo "
+"necesita datos de navegación para funcionar correctamente. Esto puede "
+"hacerse teniendo el obstáculo como hijo de un nodo [Navigation2D], o usando "
+"[method set_navigation]. [NavigationObstacle2D] es seguro para la física."
 
 #: doc/classes/NavigationObstacle2D.xml:16
 msgid ""
 "Returns the [Navigation2D] node that the obstacle is using for its "
 "navigation system."
 msgstr ""
+"Devuelve el nodo [Navigation2D] que el obstáculo está usando para su sistema "
+"de navegación."
 
 #: doc/classes/NavigationObstacle2D.xml:25
 msgid ""
 "Sets the [Navigation2D] node used by the obstacle. Useful when you don't "
 "want to make the obstacle a child of a [Navigation2D] node."
 msgstr ""
+"Establece el nodo [Navigation2D] utilizado por el obstáculo. Es útil cuando "
+"no quieres que el obstáculo sea hijo de un nodo [Navigation2D]."
 
 #: doc/classes/NavigationObstacle3D.xml:4
 msgid "3D Obstacle used in navigation for collision avoidance."
-msgstr ""
+msgstr "Obstáculo 3D utilizado en la navegación para evitar colisiones."
 
 #: doc/classes/NavigationObstacle3D.xml:7
 msgid ""
@@ -41177,24 +41308,34 @@ msgid ""
 "as a child of a [Navigation3D] node, or using [method set_navigation]. "
 "[NavigationObstacle3D] is physics safe."
 msgstr ""
+"Obstáculo 3D utilizado en la navegación para evitar colisiones. El obstáculo "
+"necesita datos de navegación para funcionar correctamente. Esto puede "
+"hacerse teniendo el obstáculo como hijo de un nodo [Navigation3D], o usando "
+"[method set_navigation]. [NavigationObstacle3D] es seguro para la física."
 
 #: doc/classes/NavigationObstacle3D.xml:16
 msgid ""
 "Returns the [Navigation3D] node that the obstacle is using for its "
 "navigation system."
 msgstr ""
+"Devuelve el nodo [Navegación3D] que el obstáculo está usando para su sistema "
+"de navegación."
 
 #: doc/classes/NavigationObstacle3D.xml:25
 msgid ""
 "Sets the [Navigation3D] node used by the obstacle. Useful when you don't "
 "want to make the obstacle a child of a [Navigation3D] node."
 msgstr ""
+"Establece el nodo [Navegación3D] utilizado por el obstáculo. Es útil cuando "
+"no quieres que el obstáculo sea hijo de un nodo [Navigation3D]."
 
 #: doc/classes/NavigationPolygon.xml:4
 msgid ""
 "A node that has methods to draw outlines or use indices of vertices to "
 "create navigation polygons."
 msgstr ""
+"Un nodo que tiene métodos para dibujar contornos o usar índices de vértices "
+"para crear polígonos de navegación."
 
 #: doc/classes/NavigationPolygon.xml:7
 msgid ""
@@ -41220,6 +41361,27 @@ msgid ""
 "$NavigationRegion2D.navpoly = polygon\n"
 "[/codeblock]"
 msgstr ""
+"Hay dos formas de crear polígonos. O bien usando el método [method "
+"add_outline], o bien usando el método [method add_polygon].\n"
+"Usando el método [method add_outline]:\n"
+"[codeblock]\n"
+"var poligono = NavigationPolygon.new()\n"
+"var contorno = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), "
+"Vector2(50, 50), Vector2(50, 0)])\n"
+"poligono.add_outline(contorno)\n"
+"poligono.make_polygons_from_outlines()\n"
+"$NavigationRegion2D.navpoly = poligono\n"
+"[/codeblock]\n"
+"Usando [method add_polygon] y los índices del array de vértices.\n"
+"[codeblock]\n"
+"var poligono = NavigationPolygon.new()\n"
+"var vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), "
+"Vector2(50, 50), Vector2(50, 0)])\n"
+"poligono.set_vertices(vertices)\n"
+"var indices = PackedInt32Array(0, 3, 1)\n"
+"polygon.add_polygon(indices)\n"
+"$NavigationRegion2D.navpoly = poligono\n"
+"[/codeblock]"
 
 #: doc/classes/NavigationPolygon.xml:35
 msgid ""
@@ -41228,6 +41390,10 @@ msgid ""
 "make_polygons_from_outlines] in order for this array to be converted to "
 "polygons that the engine will use."
 msgstr ""
+"Añade un [PackedVector2Array] que contiene los vértices de un contorno al "
+"array interno que contiene todos los contornos. Tienes que llamar a [method "
+"make_polygons_from_outlines] para que este array se convierta en polígonos "
+"que el motor utilizará."
 
 #: doc/classes/NavigationPolygon.xml:46
 msgid ""
@@ -41236,77 +41402,103 @@ msgid ""
 "to call [method make_polygons_from_outlines] in order for this array to be "
 "converted to polygons that the engine will use."
 msgstr ""
+"Añade un [PackedVector2Array] que contiene los vértices de un contorno al "
+"array interno que contiene todos los contornos en una posición fija. Tienes "
+"que llamar a [method make_polygons_from_outlines] para que este array se "
+"convierta en polígonos que el motor utilizará."
 
 #: doc/classes/NavigationPolygon.xml:55
 msgid ""
 "Adds a polygon using the indices of the vertices you get when calling "
 "[method get_vertices]."
 msgstr ""
+"Añade un polígono usando los índices de los vértices que obtienes al llamar "
+"a [method get_vertices]."
 
 #: doc/classes/NavigationPolygon.xml:62
 msgid ""
 "Clears the array of the outlines, but it doesn't clear the vertices and the "
 "polygons that were created by them."
 msgstr ""
+"Limpia el array de los contornos, pero no limpia los vértices y los "
+"polígonos que fueron creados por ellos."
 
 #: doc/classes/NavigationPolygon.xml:69
 msgid ""
 "Clears the array of polygons, but it doesn't clear the array of outlines and "
 "vertices."
 msgstr ""
+"Limpia el array de polígonos, pero no limpia el array de contornos y "
+"vértices."
 
 #: doc/classes/NavigationPolygon.xml:78
 msgid ""
 "Returns a [PackedVector2Array] containing the vertices of an outline that "
 "was created in the editor or by script."
 msgstr ""
+"Devuelve un [PackedVector2Array] que contiene los vértices de un contorno "
+"que fue creado en el editor o mediante un script."
 
 #: doc/classes/NavigationPolygon.xml:85
 msgid ""
 "Returns the number of outlines that were created in the editor or by script."
 msgstr ""
+"Devuelve el número de contornos que fueron creados en el editor o por el "
+"script."
 
 #: doc/classes/NavigationPolygon.xml:94
 msgid ""
 "Returns a [PackedInt32Array] containing the indices of the vertices of a "
 "created polygon."
 msgstr ""
+"Devuelve un [PackedInt32Array] que contiene los índices de los vértices de "
+"un polígono creado."
 
 #: doc/classes/NavigationPolygon.xml:101
 msgid "Returns the count of all polygons."
-msgstr ""
+msgstr "Devuelve el recuento de todos los polígonos."
 
 #: doc/classes/NavigationPolygon.xml:108
 msgid ""
 "Returns a [PackedVector2Array] containing all the vertices being used to "
 "create the polygons."
 msgstr ""
+"Devuelve un [PackedVector2Array] que contiene todos los vértices que se "
+"están usando para crear los polígonos."
 
 #: doc/classes/NavigationPolygon.xml:115
 msgid "Creates polygons from the outlines added in the editor or by script."
 msgstr ""
+"Crea polígonos a partir de los contornos añadidos en el editor o por el "
+"script."
 
 #: doc/classes/NavigationPolygon.xml:124
 msgid ""
 "Removes an outline created in the editor or by script. You have to call "
 "[method make_polygons_from_outlines] for the polygons to update."
 msgstr ""
+"Elimina un esquema creado en el editor o por el guión. Tienes que llamar a "
+"[method make_polygons_from_outlines] para que los polígonos se actualicen."
 
 #: doc/classes/NavigationPolygon.xml:135
 msgid ""
 "Changes an outline created in the editor or by script. You have to call "
 "[method make_polygons_from_outlines] for the polygons to update."
 msgstr ""
+"Cambia un contorno creado en el editor o por el script. Tienes que llamar a "
+"[method make_polygons_from_outlines] para que los polígonos se actualicen."
 
 #: doc/classes/NavigationPolygon.xml:144
 msgid ""
 "Sets the vertices that can be then indexed to create polygons with the "
 "[method add_polygon] method."
 msgstr ""
+"Establece los vértices que pueden ser indexados para crear polígonos con el "
+"método [method add_polygon]."
 
 #: doc/classes/NavigationRegion3D.xml:4
 msgid "A region of the navigation map."
-msgstr ""
+msgstr "Una región del mapa de navegación."
 
 #: doc/classes/NavigationRegion3D.xml:7
 msgid ""
@@ -41314,6 +41506,9 @@ msgid ""
 "navigated and what cannot, based on the [NavigationMesh] resource. This "
 "should be a child of a [Navigation3D] node (even not a direct child)."
 msgstr ""
+"Una región del mapa de navegación. Le dice al nodo [Navegation3D] lo que "
+"puede ser navegado y lo que no, basado en el recurso [NavigationMesh]. Este "
+"debe ser un hijo de un nodo [Navigation3D] (aunque no sea un hijo directo)."
 
 #: doc/classes/NavigationRegion3D.xml:16
 msgid ""
@@ -41321,26 +41516,32 @@ msgid ""
 "navigation baking is not a cheap operation. This can be done at runtime. "
 "When it is completed, it automatically sets the new [NavigationMesh]."
 msgstr ""
+"Cocina la [NavigationMesh]. El cocinado se hace en un hilo separado porque "
+"el cocinado de navegación no es una operación barata. Esto se puede hacer en "
+"tiempo de ejecución. Cuando se completa, automáticamente establece la nueva "
+"[NavigationMesh]."
 
 #: doc/classes/NavigationRegion3D.xml:22
 msgid "Determines if the [NavigationRegion3D] is enabled or disabled."
-msgstr ""
+msgstr "Determina si la [NavigationRegion3D] está activada o desactivada."
 
 #: doc/classes/NavigationRegion3D.xml:25
 msgid "The [NavigationMesh] resource to use."
-msgstr ""
+msgstr "El recurso [NavigationMesh] a utilizar."
 
 #: doc/classes/NavigationRegion3D.xml:31
 msgid "Notifies when the navigation mesh bake operation is completed."
 msgstr ""
+"Notifica cuando la operación de cocinado de la malla de navegación se ha "
+"completado."
 
 #: doc/classes/NavigationRegion3D.xml:36
 msgid "Notifies when the [NavigationMesh] has changed."
-msgstr ""
+msgstr "Notifica cuando la [NavigationMesh] ha cambiado."
 
 #: doc/classes/NavigationServer2D.xml:4
 msgid "Server interface for low-level 2D navigation access"
-msgstr ""
+msgstr "Interfaz de servidor para el acceso a la navegación 2D de bajo nivel"
 
 #: doc/classes/NavigationServer2D.xml:7
 msgid ""
@@ -41350,22 +41551,27 @@ msgid ""
 "means that you can request any change to the map, using any thread, without "
 "worrying."
 msgstr ""
+"NavigationServer2D es el servidor responsable de toda la navegación 2D. Crea "
+"los agentes, mapas y regiones para que la navegación funcione como se "
+"espera. Esto mantiene un registro de cualquier llamada y las ejecuta durante "
+"la fase de sincronización. Esto significa que puede solicitar cualquier "
+"cambio en el mapa, usando cualquier hilo, sin preocuparse."
 
 #: doc/classes/NavigationServer2D.xml:16 doc/classes/NavigationServer3D.xml:16
 msgid "Creates the agent."
-msgstr ""
+msgstr "Crea el agente."
 
 #: doc/classes/NavigationServer2D.xml:25 doc/classes/NavigationServer3D.xml:25
 msgid "Returns true if the map got changed the previous frame."
-msgstr ""
+msgstr "Devuelve verdadero si el mapa fue cambiado en el fotograma anterior."
 
 #: doc/classes/NavigationServer2D.xml:40 doc/classes/NavigationServer3D.xml:40
 msgid "Callback called at the end of the RVO process."
-msgstr ""
+msgstr "La llamada de hecha al final del proceso de RVO."
 
 #: doc/classes/NavigationServer2D.xml:51 doc/classes/NavigationServer3D.xml:51
 msgid "Puts the agent in the map."
-msgstr ""
+msgstr "Pone al agente en el mapa."
 
 #: doc/classes/NavigationServer2D.xml:62 doc/classes/NavigationServer3D.xml:62
 msgid ""
@@ -41373,10 +41579,14 @@ msgid ""
 "navigation. The larger this number, the longer the running time of the "
 "simulation. If the number is too low, the simulation will not be safe."
 msgstr ""
+"Establece el número máximo de otros agentes que el agente tiene en cuenta en "
+"la navegación. Cuanto mayor sea este número, mayor será el tiempo de "
+"ejecución de la simulación. Si el número es demasiado bajo, la simulación no "
+"será segura."
 
 #: doc/classes/NavigationServer2D.xml:73 doc/classes/NavigationServer3D.xml:73
 msgid "Sets the maximum speed of the agent. Must be positive."
-msgstr ""
+msgstr "Establece la velocidad máxima del agente. Debe ser positivo."
 
 #: doc/classes/NavigationServer2D.xml:84 doc/classes/NavigationServer3D.xml:84
 msgid ""
@@ -41384,20 +41594,24 @@ msgid ""
 "the navigation. The larger this number, the longer the running time of the "
 "simulation. If the number is too low, the simulation will not be safe."
 msgstr ""
+"Establece la distancia máxima a otros agentes que este agente tiene en "
+"cuenta en la navegación. Cuanto mayor sea este número, mayor será el tiempo "
+"de ejecución de la simulación. Si el número es demasiado bajo, la simulación "
+"no será segura."
 
 #: doc/classes/NavigationServer2D.xml:95 doc/classes/NavigationServer3D.xml:95
 msgid "Sets the position of the agent in world space."
-msgstr ""
+msgstr "Establece la posición del agente en el espacio del mundo."
 
 #: doc/classes/NavigationServer2D.xml:106
 #: doc/classes/NavigationServer3D.xml:106
 msgid "Sets the radius of the agent."
-msgstr ""
+msgstr "Establece el radio del agente."
 
 #: doc/classes/NavigationServer2D.xml:117
 #: doc/classes/NavigationServer3D.xml:117
 msgid "Sets the new target velocity."
-msgstr ""
+msgstr "Establece la nueva velocidad del objetivo."
 
 #: doc/classes/NavigationServer2D.xml:128
 #: doc/classes/NavigationServer3D.xml:128
@@ -41408,26 +41622,31 @@ msgid ""
 "agents, but the less freedom this agent has in choosing its velocities. Must "
 "be positive."
 msgstr ""
+"La cantidad mínima de tiempo durante el cual las velocidades del agente que "
+"se calculan mediante la simulación son seguras con respecto a otros agentes. "
+"Cuanto mayor sea este número, antes responderá este agente a la presencia de "
+"otros agentes, pero menos libertad tiene este agente para elegir sus "
+"velocidades. Debe ser positivo."
 
 #: doc/classes/NavigationServer2D.xml:139
 #: doc/classes/NavigationServer3D.xml:139
 msgid "Sets the current velocity of the agent."
-msgstr ""
+msgstr "Establece la velocidad actual del agente."
 
 #: doc/classes/NavigationServer2D.xml:148
 #: doc/classes/NavigationServer3D.xml:148
 msgid "Destroy the RID"
-msgstr ""
+msgstr "Destruye el RID"
 
 #: doc/classes/NavigationServer2D.xml:155
 #: doc/classes/NavigationServer3D.xml:155
 msgid "Create a new map."
-msgstr ""
+msgstr "Crear un nuevo mapa."
 
 #: doc/classes/NavigationServer2D.xml:164
 #: doc/classes/NavigationServer3D.xml:164
 msgid "Returns the map cell size."
-msgstr ""
+msgstr "Devuelve el tamaño de la celda del mapa."
 
 #: doc/classes/NavigationServer2D.xml:186
 #: doc/classes/NavigationServer3D.xml:197
@@ -41435,62 +41654,72 @@ msgid ""
 "Returns the owner region RID for the point returned by [method "
 "map_get_closest_point]."
 msgstr ""
+"Devuelve la región propietaria RID para el punto devuelto por [method "
+"map_get_closest_point]."
 
 #: doc/classes/NavigationServer2D.xml:195
 msgid ""
 "Returns the edge connection margin of the map. The edge connection margin is "
 "a distance used to connect two regions."
 msgstr ""
+"Devuelve el margen de conexión del borde del mapa. El margen de conexión del "
+"borde es una distancia usada para conectar dos regiones."
 
 #: doc/classes/NavigationServer2D.xml:210
 msgid ""
 "Returns the navigation path to reach the destination from the origin, while "
 "avoiding static obstacles."
 msgstr ""
+"Devuelve la ruta de navegación para llegar al destino desde el origen, "
+"evitando los obstáculos estáticos."
 
 #: doc/classes/NavigationServer2D.xml:219
 #: doc/classes/NavigationServer3D.xml:254
 msgid "Returns true if the map is active."
-msgstr ""
+msgstr "Devuelve verdadero si el mapa está activo."
 
 #: doc/classes/NavigationServer2D.xml:230
 #: doc/classes/NavigationServer3D.xml:265
 msgid "Sets the map active."
-msgstr ""
+msgstr "Establece el mapa a activo."
 
 #: doc/classes/NavigationServer2D.xml:241
 #: doc/classes/NavigationServer3D.xml:276
 msgid "Set the map cell size used to weld the navigation mesh polygons."
 msgstr ""
+"Establece el tamaño de la celda del mapa usada para soldar los polígonos de "
+"la malla de navegación."
 
 #: doc/classes/NavigationServer2D.xml:252
 msgid ""
 "Set the map edge connection margin used to weld the compatible region edges."
 msgstr ""
+"Establece el margen de conexión del borde del mapa usado para soldar los "
+"bordes de la región compatible."
 
 #: doc/classes/NavigationServer2D.xml:259
 #: doc/classes/NavigationServer3D.xml:327
 msgid "Creates a new region."
-msgstr ""
+msgstr "Crea una nueva región."
 
 #: doc/classes/NavigationServer2D.xml:270
 #: doc/classes/NavigationServer3D.xml:338
 msgid "Sets the map for the region."
-msgstr ""
+msgstr "Establece el mapa de la región."
 
 #: doc/classes/NavigationServer2D.xml:281
 #: doc/classes/NavigationServer3D.xml:349
 msgid "Sets the navigation mesh for the region."
-msgstr ""
+msgstr "Establece la malla de navegación para la región."
 
 #: doc/classes/NavigationServer2D.xml:292
 #: doc/classes/NavigationServer3D.xml:360
 msgid "Sets the global transformation for the region."
-msgstr ""
+msgstr "Establece la transformación global de la región."
 
 #: doc/classes/NavigationServer3D.xml:4
 msgid "Server interface for low-level 3D navigation access"
-msgstr ""
+msgstr "Interfaz de servidor para el acceso a la navegación 3D de bajo nivel"
 
 #: doc/classes/NavigationServer3D.xml:7
 msgid ""
@@ -41500,38 +41729,48 @@ msgid ""
 "means that you can request any change to the map, using any thread, without "
 "worrying."
 msgstr ""
+"NavigationServer3D es el servidor responsable de toda la navegación 3D. Crea "
+"los agentes, mapas y regiones para que la navegación funcione como se "
+"espera. Esto mantiene un registro de cualquier llamada y las ejecuta durante "
+"la fase de sincronización. Esto significa que puede solicitar cualquier "
+"cambio en el mapa, usando cualquier hilo, sin preocuparse."
 
 #: doc/classes/NavigationServer3D.xml:175
 msgid ""
 "Returns the point closest to the provided [code]point[/code] on the "
 "navigation mesh surface."
 msgstr ""
+"Devuelve el punto más cercano al [code]point[/code] provisto en la "
+"superficie de la malla de navegación."
 
 #: doc/classes/NavigationServer3D.xml:186
 msgid ""
 "Returns the normal for the point returned by [method map_get_closest_point]."
 msgstr ""
+"Devuelve la normal para el punto devuelto por [method map_get_closest_point]."
 
 #: doc/classes/NavigationServer3D.xml:221
 msgid "Returns the edge connection margin of the map."
-msgstr ""
+msgstr "Devuelve el margen de conexión del borde del mapa."
 
 #: doc/classes/NavigationServer3D.xml:236
 msgid "Returns the navigation path to reach the destination from the origin."
-msgstr ""
+msgstr "Devuelve la ruta de navegación para llegar al destino desde el origen."
 
 #: doc/classes/NavigationServer3D.xml:245
 msgid "Returns the map's up direction."
-msgstr ""
+msgstr "Devuelve la dirección del mapa hacia arriba."
 
 #: doc/classes/NavigationServer3D.xml:287
 msgid ""
 "Set the map edge connection margein used to weld the compatible region edges."
 msgstr ""
+"Establece el margen de la conexión del borde del mapa que se uso para soldar "
+"los bordes de la región compatible."
 
 #: doc/classes/NavigationServer3D.xml:298
 msgid "Sets the map up direction."
-msgstr ""
+msgstr "Establece la dirección del mapa."
 
 #: doc/classes/NavigationServer3D.xml:307
 msgid ""
@@ -41540,20 +41779,26 @@ msgid ""
 "called in the main thread.\n"
 "Note: This function is not thread safe."
 msgstr ""
+"Procesa los agentes de evitación de colisiones.\n"
+"El resultado de este proceso es necesario para el servidor de física, por lo "
+"que debe ser llamado en el hilo principal.\n"
+"Nota: Esta función no es segura para el hilo."
 
 #: doc/classes/NavigationServer3D.xml:320
 msgid "Bakes the navigation mesh."
-msgstr ""
+msgstr "Cocina la malla de navegación."
 
 #: doc/classes/NavigationServer3D.xml:369
 msgid "Control activation of this server."
-msgstr ""
+msgstr "Controla la activación de este servidor."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:4
 msgid ""
 "PacketPeer implementation using the [url=http://enet.bespin.org/index."
 "html]ENet[/url] library."
 msgstr ""
+"Implementación de PacketPeer usando la biblioteca [url=http://enet.bespin."
+"org/index.html]ENet[/url]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:7
 msgid ""
@@ -41561,6 +41806,9 @@ msgid ""
 "network_peer] after being initialized as either a client or server. Events "
 "can then be handled by connecting to [SceneTree] signals."
 msgstr ""
+"Una implementación de PacketPeer que debe ser pasada a [member SceneTree."
+"network_peer] después de ser inicializada como cliente o servidor. Los "
+"eventos se pueden manejar entonces conectándose a las señales de [SceneTree]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:10
 #: doc/classes/NetworkedMultiplayerPeer.xml:10
@@ -41568,10 +41816,12 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/networking/"
 "high_level_multiplayer.html"
 msgstr ""
+"https://docs.godotengine.org/es/latest/tutorials/networking/"
+"high_level_multiplayer.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:11
 msgid "http://enet.bespin.org/usergroup0.html"
-msgstr ""
+msgstr "http://enet.bespin.org/usergroup0.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:20
 msgid ""
@@ -41580,6 +41830,10 @@ msgid ""
 "disconnecting them. If this is a client it simply closes the connection to "
 "the server."
 msgstr ""
+"Cierra la conexión. Ignorado si no se establece ninguna conexión "
+"actualmente. Si se trata de un servidor, intenta notificar a todos los "
+"clientes antes de desconectarlos por la fuerza. Si se trata de un cliente, "
+"simplemente cierra la conexión con el servidor."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:37
 msgid ""
@@ -41602,6 +41856,26 @@ msgid ""
 "code] is specified, the client will also listen to the given port; this is "
 "useful for some NAT traversal techniques."
 msgstr ""
+"Crear el cliente que se conecta a un servidor en la [code]address[/code] "
+"usando el [code]port[/code] especificado. La dirección especificada debe ser "
+"un nombre de dominio completamente cualificado (por ejemplo, [code]\"www."
+"example.com\"[/code]) o una dirección IP en formato IPv4 o IPv6 (por "
+"ejemplo, [code]\"192.168.1.1\"[/code]). El [code]port[/code] es el puerto en "
+"el que el servidor está escuchando. Los parámetros [code]in_bandwith[/code] "
+"y [code]out_bandwidth[/code] pueden utilizarse para limitar el ancho de "
+"banda de entrada y de salida al número dado de bytes por segundo. El valor "
+"predeterminado de 0 significa ancho de banda ilimitado. Tenga en cuenta que "
+"el ENet dejará caer estratégicamente paquetes en lados específicos de una "
+"conexión entre pares para asegurarse de que el ancho de banda del par no se "
+"vea sobrepasado. Los parámetros de ancho de banda también determinan el "
+"tamaño de la ventana de una conexión que limita la cantidad de paquetes "
+"confiables que pueden estar en tránsito en un momento dado. Devuelve "
+"[constant OK] si se creó un cliente, [constant ERR_ALREADY_IN_USE] si esta "
+"instancia NetworkedMultiplayerENet ya tiene una conexión abierta (en cuyo "
+"caso necesita llamar primero a [method close_connection]) o [constant "
+"ERR_CANT_CREATE] si no se pudo crear el cliente. Si se especifica "
+"[code]client_port[/code], el cliente también escuchará el puerto dado; esto "
+"es útil para algunas técnicas de travesía de NAT."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:52
 msgid ""
@@ -41620,34 +41894,56 @@ msgid ""
 "case you need to call [method close_connection] first) or [constant "
 "ERR_CANT_CREATE] if the server could not be created."
 msgstr ""
+"Crear un servidor que escuche las conexiones a través de [code]port[/code]. "
+"El puerto debe ser un puerto disponible y no utilizado entre 0 y 65535. "
+"Tenga en cuenta que los puertos por debajo de 1024 son privilegiados y "
+"pueden requerir permisos elevados dependiendo de la plataforma. Para cambiar "
+"la interfaz en la que escucha el servidor, utilice [method set_bind_ip]. La "
+"IP por defecto es el comodín [code]\"*\"[/code], que escucha en todas las "
+"interfaces disponibles. [code]max_clients[/code] es el número máximo de "
+"clientes que se permiten a la vez, se puede utilizar cualquier número hasta "
+"4095, aunque el número alcanzable de clientes simultáneos puede ser muy "
+"inferior y depende de la aplicación. Para más detalles sobre los parámetros "
+"de ancho de banda, véase [method create_client]. Devuelve [constant OK] si "
+"se ha creado un servidor, [constant ERR_ALREADY_IN_USE] si esta instancia "
+"NetworkedMultiplayerENet ya tiene una conexión abierta (en cuyo caso hay que "
+"llamar primero a [method close_connection]) o [constant ERR_CANT_CREATE] si "
+"no se ha podido crear el servidor."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:63
 msgid ""
 "Disconnect the given peer. If \"now\" is set to [code]true[/code], the "
 "connection will be closed immediately without flushing queued messages."
 msgstr ""
+"Desconecta el par dado. Si \"ahora\" está configurado como [code]true[/"
+"code], la conexión se cerrará inmediatamente sin eliminar los mensajes de la "
+"cola."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:70
 msgid ""
 "Returns the channel of the last packet fetched via [method PacketPeer."
 "get_packet]."
 msgstr ""
+"Devuelve el canal del último paquete obtenido a través del [method "
+"PacketPeer.get_packet]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:77
 msgid ""
 "Returns the channel of the next packet that will be retrieved via [method "
 "PacketPeer.get_packet]."
 msgstr ""
+"Devuelve el canal del siguiente paquete que será recuperado a través del "
+"[method PacketPeer.get_packet]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:86
 #: modules/websocket/doc_classes/WebSocketServer.xml:33
 msgid "Returns the IP address of the given peer."
-msgstr ""
+msgstr "Devuelve la dirección IP del par dado."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:95
 #: modules/websocket/doc_classes/WebSocketServer.xml:42
 msgid "Returns the remote port of the given peer."
-msgstr ""
+msgstr "Devuelve el puerto remoto del par dado."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:104
 msgid ""
@@ -41656,6 +41952,10 @@ msgid ""
 "needs to be in IPv4 or IPv6 address format, for example: "
 "[code]\"192.168.1.1\"[/code]."
 msgstr ""
+"La IP usada cuando se crea un servidor. Está configurada por defecto con el "
+"comodín [code]\"*\"[/code], que se une a todas las interfaces disponibles. "
+"La IP dada debe estar en formato de dirección IPv4 o IPv6, por ejemplo: "
+"[code]\"192.168.1.1\"[/code]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:113
 msgid ""
@@ -41663,6 +41963,12 @@ msgid ""
 "code]. For servers, you must also setup the [CryptoKey] via [method "
 "set_dtls_key]."
 msgstr ""
+"Configure el [X509Certificate] para usarlo cuando [member use_dtls] sea "
+"[code]true[/code Configure el [X509Certificate] para usarlo cuando [member "
+"use_dtls] sea [code]true[/code]. Para los servidores, también debe "
+"configurar la [CryptoKey] mediante el [method set_dtls_key].]. Para los "
+"servidores, también debe configurar la [CryptoKey] a través de [method "
+"set_dtls_key]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:122
 msgid ""
@@ -41670,6 +41976,9 @@ msgid ""
 "code]. Remember to also call [method set_dtls_certificate] to setup your "
 "[X509Certificate]."
 msgstr ""
+"Configure el [X509Certificate] para usarlo cuando [member use_dtls] sea "
+"[code]true[/code]. Para los servidores, también debe configurar la "
+"[CryptoKey] mediante el [method set_dtls_key]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:128
 msgid ""
@@ -41678,8 +41987,14 @@ msgid ""
 "NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED]). This is the "
 "only way to use ordering with the RPC system."
 msgstr ""
+"Fuerza el orden de los paquetes cuando se utiliza [constant "
+"NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE] (por lo que se comporta "
+"de manera similar a [constant NetworkedMultiplayerPeer."
+"TRANSFER_MODE_UNRELIABLE_ORDERED]). Esta es la única manera de usar el "
+"sistema de pedidos con el sistema RPC."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:131
+#, fuzzy
 msgid ""
 "The number of channels to be used by ENet. Channels are used to separate "
 "different kinds of data. In reliable or ordered mode, for example, the "
@@ -41688,6 +42003,9 @@ msgid ""
 "status of a packet in one channel won't stall the delivery of other packets "
 "in another channel."
 msgstr ""
+"El número de canales que será usado por ENet. Los canales se usan para "
+"separar diferentes tipos de datos. En el modo fiable u ordenado, por "
+"ejemplo, la orden de entrega de paquetes se asegura por cada canal."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:134
 msgid ""
@@ -41695,12 +42013,18 @@ msgid ""
 "tradeoffs of compression speed versus bandwidth, you may need to test which "
 "one works best for your use case if you use compression at all."
 msgstr ""
+"El método de compresión utilizado para los paquetes de red. Estos tienen "
+"diferentes compensaciones de velocidad de compresión versus ancho de banda, "
+"puede que necesite probar cuál funciona mejor para su caso de uso, si es que "
+"utiliza la compresión en absoluto."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:137
 msgid ""
 "Enable or disable certificate verification when [member use_dtls] "
 "[code]true[/code]."
 msgstr ""
+"Habilitar o deshabilitar la verificación del certificado cuando [member "
+"use_dtls] [code]true[/code]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:141
 msgid ""
@@ -41709,8 +42033,14 @@ msgid ""
 "is [code]false[/code], clients won't be automatically notified of other "
 "peers and won't be able to send them packets through the server."
 msgstr ""
+"Habilitar o deshabilitar la función del servidor que notifica a los clientes "
+"de la conexión/desconexión de otros compañeros, y retransmitir mensajes "
+"entre ellos. Cuando esta opción es [code]false[/code], los clientes no serán "
+"notificados automáticamente de la conexión/desconexión de otros compañeros y "
+"no podrán enviarles paquetes a través del servidor."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:144
+#, fuzzy
 msgid ""
 "Set the default channel to be used to transfer data. By default, this value "
 "is [code]-1[/code] which means that ENet will only use 2 channels: one for "
@@ -41720,6 +42050,13 @@ msgid ""
 "that channel for sending data. See [member channel_count] for more "
 "information about ENet channels."
 msgstr ""
+"Establezca el canal predeterminado que se utilizará para la transferencia de "
+"datos. Por defecto, este valor es [code]-1[/code], lo que significa que ENet "
+"sólo utilizará 2 canales, uno para los paquetes fiables y otro para los no "
+"fiables. El canal [code]0[/code] está reservado y no puede ser utilizado. "
+"Ajustar este miembro a cualquier valor entre [code]0[/code] y [member "
+"channel_count] (excluido) obligará a ENet a utilizar ese canal para enviar "
+"datos."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:148
 msgid ""
@@ -41732,16 +42069,27 @@ msgid ""
 "clients, have a look at the [member dtls_verify] option, and configure the "
 "certificate accordingly via [method set_dtls_certificate]."
 msgstr ""
+"Cuando esta habilitado, el cliente o servidor creado por este par, usará "
+"[PacketPeerDTLS] en lugar de los sockets UDP en bruto para comunicarse con "
+"el par remoto. Esto hará que la comunicación se cifre con DTLS a costa de un "
+"mayor uso de recursos y un tamaño de paquete potencialmente mayor.\n"
+"Nota: Al crear un servidor DTLS, asegúrese de configurar el par clave/"
+"certificado mediante [method set_dtls_key] y [method set_dtls_certificate]. "
+"Para los clientes DTLS, eche un vistazo a la opción [member dtls_verify], y "
+"configure el certificado en consecuencia a través de [method "
+"set_dtls_certificate]."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:154
 msgid ""
 "No compression. This uses the most bandwidth, but has the upside of "
 "requiring the fewest CPU resources."
 msgstr ""
+"No hay compresión. Esto utiliza la mayor cantidad de ancho de banda, pero "
+"tiene la ventaja de que requiere menos recursos de CPU."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:157
 msgid "ENet's built-in range encoding."
-msgstr ""
+msgstr "La codificación de rango incorporada de ENet."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:160
 msgid ""
@@ -41749,6 +42097,9 @@ msgid ""
 "resources compared to [constant COMPRESS_ZLIB], at the expense of using more "
 "bandwidth."
 msgstr ""
+"[url=http://fastlz.org/]Compresión FastLZ[/url]. Esta opción utiliza menos "
+"recursos de CPU en comparación con [constant COMPRESS_ZLIB], a expensas de "
+"utilizar más ancho de banda."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:163
 msgid ""
@@ -41756,39 +42107,48 @@ msgid ""
 "bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using "
 "more CPU resources."
 msgstr ""
+"[url=https://www.zlib.net/]Zlib[/url] compresión. Esta opción utiliza menos "
+"ancho de banda en comparación con [constant COMPRESS_FASTLZ], a expensas de "
+"utilizar más recursos de la CPU."
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:166
 msgid "[url=https://facebook.github.io/zstd/]Zstandard[/url] compression."
-msgstr ""
+msgstr "[url=https://facebook.github.io/zstd/]Compresión estándar [/url]."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:4
 msgid "A high-level network interface to simplify multiplayer interactions."
 msgstr ""
+"Una interfaz de red de alto nivel para simplificar las interacciones "
+"multijugador."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:7
 msgid ""
 "Manages the connection to network peers. Assigns unique IDs to each client "
 "connected to the server."
 msgstr ""
+"Gestiona la conexión con los compañeros de la red. Asigna identificaciones "
+"únicas a cada cliente conectado al servidor."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:17
 msgid ""
 "Returns the current state of the connection. See [enum ConnectionStatus]."
-msgstr ""
+msgstr "Devuelve el estado actual de la conexión. Ver [enum ConnectionStatus]."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:24
 msgid ""
 "Returns the ID of the [NetworkedMultiplayerPeer] who sent the most recent "
 "packet."
 msgstr ""
+"Devuelve el ID del [NetworkedMultiplayerPeer] que envió el paquete más "
+"reciente."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:31
 msgid "Returns the ID of this [NetworkedMultiplayerPeer]."
-msgstr ""
+msgstr "Devuelve el ID de este [NetworkedMultiplayerPeer]."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:38
 msgid "Waits up to 1 second to receive a new network event."
-msgstr ""
+msgstr "Espera hasta 1 segundo para recibir un nuevo evento de red."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:47
 msgid ""
@@ -41799,38 +42159,48 @@ msgid ""
 "peer ID to send to all peers except that one. By default, the target peer is "
 "[constant TARGET_PEER_BROADCAST]."
 msgstr ""
+"Establece el par al que se enviarán los paquetes.\n"
+"El [code]id[/code] puede ser uno de: [constant TARGET_PEER_BROADCAST] para "
+"enviar a todos los pares conectados, [constant TARGET_PEER_SERVER] para "
+"enviar al par que actúa como servidor, un ID de par válido para enviar a ese "
+"par específico, un ID de par negativo para enviar a todos los pares excepto "
+"a ese. Por defecto, el par objetivo es [constant TARGET_PEER_BROADCAST]."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:54
 msgid ""
 "If [code]true[/code], this [NetworkedMultiplayerPeer] refuses new "
 "connections."
 msgstr ""
+"Si [code]true[/code], este [NetworkedMultiplayerPeer] rechaza las nuevas "
+"conexiones."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:57
 msgid ""
 "The manner in which to send packets to the [code]target_peer[/code]. See "
 "[enum TransferMode]."
 msgstr ""
+"La manera de enviar paquetes al [code]target_peer[/code]. Véase [enum "
+"TransferMode]."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:63
 msgid "Emitted when a connection attempt fails."
-msgstr ""
+msgstr "Emitido cuando falla un intento de conexión."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:68
 msgid "Emitted when a connection attempt succeeds."
-msgstr ""
+msgstr "Emitido cuando un intento de conexión tiene éxito."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:75
 msgid "Emitted by the server when a client connects."
-msgstr ""
+msgstr "Emitido por el servidor cuando un cliente se conecta."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:82
 msgid "Emitted by the server when a client disconnects."
-msgstr ""
+msgstr "Emitido por el servidor cuando un cliente se desconecta."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:87
 msgid "Emitted by clients when the server disconnects."
-msgstr ""
+msgstr "Emitido por los clientes cuando el servidor se desconecta."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:93
 msgid ""
@@ -41839,6 +42209,10 @@ msgid ""
 "TRANSFER_MODE_UNRELIABLE_ORDERED]. Use for non-critical data, and always "
 "consider whether the order matters."
 msgstr ""
+"No se reconocen los paquetes, no se hacen intentos de reenvío de los "
+"paquetes perdidos. Los paquetes pueden llegar en cualquier orden. "
+"Potencialmente más rápido que [constant TRANSFER_MODE_UNRELIABLE_ORDERED]. "
+"Utilícela para datos no críticos, y siempre considere si el orden importa."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:96
 msgid ""
@@ -41848,6 +42222,12 @@ msgid ""
 "would be outdated if received late due to resend attempt(s) anyway, for "
 "example movement and positional data."
 msgstr ""
+"No se reconocen los paquetes, no se hacen intentos de reenvío de los "
+"paquetes perdidos. Los paquetes se reciben en el orden en que fueron "
+"enviados. Potencialmente más rápido que [constant TRANSFER_MODE_RELIABLE]. "
+"Se utiliza para datos no críticos o datos que estarían desactualizados si se "
+"recibieran tarde debido a un intento de reenvío de todas formas, por "
+"ejemplo, datos de movimiento y de posición."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:99
 msgid ""
@@ -41858,32 +42238,44 @@ msgid ""
 "order, for example an ability being triggered or a chat message. Consider "
 "carefully if the information really is critical, and use sparingly."
 msgstr ""
+"Los paquetes deben ser recibidos y se debe intentar reenviarlos hasta que se "
+"acuse recibo de los mismos. Los paquetes deben ser recibidos en el orden en "
+"que fueron enviados. Es el modo de transferencia más fiable, pero "
+"potencialmente el más lento debido a la sobrecarga. Se utiliza para los "
+"datos críticos que deben transmitirse y llegar en orden, por ejemplo, una "
+"capacidad que se está activando o un mensaje de chat. Considere "
+"cuidadosamente si la información es realmente crítica, y utilícela con "
+"moderación."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:102
 msgid "The ongoing connection disconnected."
-msgstr ""
+msgstr "La conexión en curso se ha desconectado."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:105
 msgid "A connection attempt is ongoing."
-msgstr ""
+msgstr "Un intento de conexión está en curso."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:108
 msgid "The connection attempt succeeded."
-msgstr ""
+msgstr "El intento de conexión tuvo éxito."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:111
 msgid "Packets are sent to the server and then redistributed to other peers."
 msgstr ""
+"Los paquetes se envían al servidor y luego se redistribuyen a otros pares."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml:114
 msgid "Packets are sent to the server alone."
-msgstr ""
+msgstr "Los paquetes se envían sólo al servidor."
 
 #: doc/classes/NinePatchRect.xml:4
 msgid ""
 "Scalable texture-based frame that tiles the texture's centers and sides, but "
 "keeps the corners' original size. Perfect for panels and dialog boxes."
 msgstr ""
+"Un fotograma escalable basado en la textura que enmarca el centro y los "
+"lados de la textura, pero mantiene el tamaño original de las esquinas. "
+"Perfecto para paneles y cuadros de diálogo."
 
 #: doc/classes/NinePatchRect.xml:7
 msgid ""
@@ -41892,30 +42284,41 @@ msgid ""
 "grid. When you scale the node, it tiles the texture's sides horizontally or "
 "vertically, the center on both axes but it doesn't scale or tile the corners."
 msgstr ""
+"También conocido como paneles de 9 cortes, el NinePatchRect produce paneles "
+"limpios de cualquier tamaño, basados en una pequeña textura. Para ello, "
+"divide la textura en una cuadrícula de 3×3. Cuando escalas el nodo, se "
+"nivelan los lados de la textura horizontal o verticalmente, el centro en "
+"ambos ejes, pero no se escalan o se nivelan las esquinas."
 
 #: doc/classes/NinePatchRect.xml:18
 msgid ""
 "Returns the size of the margin identified by the given [enum Margin] "
 "constant."
 msgstr ""
+"Devuelve el tamaño del margen identificado por la constante [enum Margin] "
+"dada."
 
 #: doc/classes/NinePatchRect.xml:29
 msgid ""
 "Sets the size of the margin identified by the given [enum Margin] constant "
 "to [code]value[/code] in pixels."
 msgstr ""
+"Establece el tamaño del margen identificado por la constante [enum Margin] "
+"dada a [code]value[/code] en píxeles."
 
 #: doc/classes/NinePatchRect.xml:35 doc/classes/NinePatchRect.xml:38
 #: doc/classes/NinePatchRect.xml:72 doc/classes/NinePatchRect.xml:75
 #: doc/classes/NinePatchRect.xml:78
 msgid "Doesn't do anything at the time of writing."
-msgstr ""
+msgstr "No hace nada en el momento de escribir este artículo."
 
 #: doc/classes/NinePatchRect.xml:41
 msgid ""
 "If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's "
 "borders."
 msgstr ""
+"Si [code]true[/code], dibuja el centro del panel. Si no, sólo dibuja los "
+"bordes de los 9 cortes."
 
 #: doc/classes/NinePatchRect.xml:45
 msgid ""
@@ -41923,18 +42326,22 @@ msgid ""
 "bottom corners and side will have a height of 16 pixels. You can set all 4 "
 "margin values individually to create panels with non-uniform borders."
 msgstr ""
+"La altura de la fila inferior del 9-cortes. Un margen de 16 significa que "
+"las esquinas inferiores y el lado de los 9 cortes tendrán una altura de 16 "
+"píxeles. Puede establecer los 4 valores de margen individualmente para crear "
+"paneles con bordes no uniformes."
 
 #: doc/classes/NinePatchRect.xml:48
 msgid "The height of the 9-slice's left column."
-msgstr ""
+msgstr "La altura de la columna izquierda del 9-cortes."
 
 #: doc/classes/NinePatchRect.xml:51
 msgid "The height of the 9-slice's right column."
-msgstr ""
+msgstr "La altura de la columna derecha del 9-cortes."
 
 #: doc/classes/NinePatchRect.xml:54
 msgid "The height of the 9-slice's top row."
-msgstr ""
+msgstr "La altura de la fila superior de los 9-cortes."
 
 #: doc/classes/NinePatchRect.xml:57
 msgid ""
@@ -41943,18 +42350,22 @@ msgid ""
 "other properties are relative to this one. If the rect is empty, "
 "NinePatchRect will use the whole texture."
 msgstr ""
+"Región rectangular de la textura de la que tomar la muestra. Si trabajas con "
+"un atlas, usa esta propiedad para definir el área que el 9-cortes debe usar. "
+"Todas las demás propiedades son relativas a esta. Si el rectángulo está "
+"vacío, el NinePatchRect usará toda la textura."
 
 #: doc/classes/NinePatchRect.xml:60
 msgid "The node's texture resource."
-msgstr ""
+msgstr "El recurso de textura del nodo."
 
 #: doc/classes/NinePatchRect.xml:66
 msgid "Emitted when the node's texture changes."
-msgstr ""
+msgstr "Emitido cuando la textura del nodo cambia."
 
 #: doc/classes/Node.xml:4
 msgid "Base class for all [i]scene[/i] objects."
-msgstr ""
+msgstr "Clase base para todos los objetos [i]escena[/i]."
 
 #: doc/classes/Node.xml:7
 msgid ""
@@ -42015,12 +42426,76 @@ msgid ""
 "(make sure node names are the same on all peers). Also, take a look at the "
 "high-level networking tutorial and corresponding demos."
 msgstr ""
+"Los nodos son los bloques de construcción de Godot. Pueden ser asignados "
+"como hijos de otro nodo, lo que resulta en un esquema de árbol. Un nodo dado "
+"puede contener cualquier número de nodos como hijos con el requisito de que "
+"todos los hermanos (hijos directos de un nodo) deben tener nombres únicos.\n"
+"Un árbol de nodos se denomina [i]scene[/i]. Las escenas pueden ser guardadas "
+"en el disco y luego instanciadas en otras escenas. Esto permite una gran "
+"flexibilidad en la arquitectura y el modelo de datos de los proyectos de "
+"Godot.\n"
+"[b]Árbol de escenas:[/b] El [SceneTree] contiene el árbol de nodos activo. "
+"Cuando se añade un nodo al árbol de la escena, recibe la notificación "
+"[constant NOTIFICATION_ENTER_TREE] y se dispara su llamada [method "
+"_enter_tree]. Los nodos hijos siempre se añaden [i]después de[/i] su nodo "
+"padre, es decir, la llamada de retorno [method _enter_tree] de un nodo padre "
+"se disparará antes que la de su hijo.\n"
+"Una vez que todos los nodos se han añadido al árbol de la escena, reciben la "
+"notificación [constant NOTIFICATION_READY] y se activan sus respectivas "
+"devoluciones de llamada [method _ready]. Para grupos de nodos, la llamada de "
+"retorno [method _ready] se hace en orden inverso, comenzando con los hijos y "
+"subiendo hasta los nodos padres.\n"
+"Esto significa que cuando se añade un nodo al árbol de la escena, se utiliza "
+"el siguiente orden para las devoluciones de llamada: [method _enter_tree] "
+"del padre, [method _enter_tree] de los hijos, [method _ready] de los hijos y "
+"finalmente [method _ready] del padre (de forma recursiva para todo el árbol "
+"de la escena).\n"
+"b]Procesamiento:[/b] Los nodos pueden anular el estado de \"proceso\", de "
+"modo que reciben una llamada en cada fotograma solicitándoles que procesen "
+"(hagan algo). El procesamiento normal (devolución de llamada [method "
+"_process], alternado con [method set_process]) ocurre lo más rápido posible "
+"y depende de la velocidad de fotogramas, por lo que el tiempo de "
+"procesamiento [i]delta[/i] se pasa como argumento. El procesamiento de la "
+"física (devolución de llamada [method _physics_process], conmutada con "
+"[method set_physics_process]) ocurre un número fijo de veces por segundo (60 "
+"por defecto) y es útil para el código relacionado con el motor de física.\n"
+"Los nodos también pueden procesar eventos de entrada. Cuando estén "
+"presentes, la función [method _input] será llamada para cada entrada que el "
+"programa reciba. En muchos casos, esto puede ser exagerado (a menos que se "
+"use para proyectos simples), y la función [method _unhandled_input] podría "
+"ser preferida; se llama cuando el evento de entrada no fue manejado por "
+"nadie más (típicamente, nodos GUI [Control]), asegurando que el nodo sólo "
+"recibe los eventos que estaban destinados a él.\n"
+"Para realizar un seguimiento de la jerarquía de escenas (especialmente "
+"cuando se instalan escenas en otras escenas), se puede establecer un "
+"\"propietario\" para el nodo con la propiedad [member owner]. Esto mantiene "
+"un registro de quién instala qué. Sin embargo, esto es muy útil cuando se "
+"escriben editores y herramientas.\n"
+"Finalmente, cuando un nodo se libera con [method Object.free] o [method "
+"queue_free], también liberará a todos sus hijos.\n"
+"[b]Grupos:[/b] Los nodos pueden ser añadidos a tantos grupos como quieras "
+"para que sea fácil de manejar, puedes crear grupos como \"enemigos\" o "
+"\"coleccionables\" por ejemplo, dependiendo de tu juego. Ver [method "
+"add_to_group], [method is_in_group] y [method remove_from_group]. Entonces "
+"puedes recuperar todos los nodos de estos grupos, iterarlos e incluso llamar "
+"a los métodos de los grupos a través de los métodos de [SceneTree].\n"
+"[b]Conexión en red con los nodos:[/b] Después de conectarse a un servidor (o "
+"hacer uno, ver [NetworkedMultiplayerENet]), es posible usar el sistema RPC "
+"(remote procedure call) incorporado para comunicarse a través de la red. "
+"Llamando a [method rpc] con un nombre de método, se llamará localmente y en "
+"todos los pares conectados (pares = clientes y el servidor que acepta las "
+"conexiones). Para identificar qué nodo recibe la llamada RPC, Godot "
+"utilizará su [NodePath] (asegúrese de que los nombres de los nodos son los "
+"mismos en todos los pares). Además, echa un vistazo al tutorial de redes de "
+"alto nivel y a las demostraciones correspondientes."
 
 #: doc/classes/Node.xml:20
 msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "scenes_and_nodes.html"
 msgstr ""
+"https://docs.godotengine.org/es/latest/getting_started/step_by_step/"
+"scenes_and_nodes.html"
 
 #: doc/classes/Node.xml:27
 msgid ""
@@ -42031,6 +42506,12 @@ msgid ""
 "Corresponds to the [constant NOTIFICATION_ENTER_TREE] notification in "
 "[method Object._notification]."
 msgstr ""
+"Llamado cuando el nodo entra en el [SceneTree] (por ejemplo, al instalarse, "
+"al cambiar de escena o después de llamar a [method add_child] en un script). "
+"Si el nodo tiene hijos, su llamada a [method _enter_tree] se llamará "
+"primero, y luego la de los hijos.\n"
+"Corresponde a la notificación [constant NOTIFICATION_ENTER_TREE] en [method "
+"Object._notification]."
 
 #: doc/classes/Node.xml:35
 msgid ""
@@ -42043,6 +42524,15 @@ msgid ""
 "the node has already left the active tree, connect to the [signal "
 "tree_exited]."
 msgstr ""
+"Llamado cuando el nodo está a punto de salir del [SceneTree] (por ejemplo, "
+"al liberarse, al cambiar de escena o después de llamar a [method "
+"remove_child] en un script). Si el nodo tiene hijos, su llamada a [method "
+"_exit_tree] se llamará al final, después de que todos sus hijos hayan dejado "
+"el árbol.\n"
+"Corresponde a la notificación [constant NOTIFICATION_EXIT_TREE] en [method "
+"Object._notification] y a la señal [signal tree_exiting]. Para ser "
+"notificado cuando el nodo ya ha dejado el árbol activo, conéctese al [signal "
+"tree_exited]."
 
 #: doc/classes/Node.xml:43
 msgid ""
@@ -42052,6 +42542,12 @@ msgid ""
 "Call [method update_configuration_warning] when the warning needs to be "
 "updated for this node."
 msgstr ""
+"La string devuelta por este método se muestra como una advertencia en el "
+"Scene Dock si el script que la tsobreescribe es un script [code]tool[/"
+"code].\n"
+"Devolver una string vacía no produce ninguna advertencia.\n"
+"Llame a [method update_configuration_warning] cuando necesite actualizar el "
+"aviso para este nodo."
 
 #: doc/classes/Node.xml:54
 msgid ""
@@ -42068,6 +42564,18 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
+"Llamado cuando hay un evento de entrada. El evento de entrada se propaga a "
+"través del árbol de nodos hasta que un nodo lo consume.\n"
+"Sólo se llama si el procesamiento de entrada está activado, lo que se hace "
+"automáticamente si este método se anula, y se puede conmutar con [method "
+"set_process_input].\n"
+"Para consumir el evento de entrada y evitar que se propague a otros nodos, "
+"se puede llamar al [method Viewport.set_input_as_handled].\n"
+"Para la entrada del juego, [method _unhandled_input] y [method "
+"_unhandled_key_input] suelen ser más adecuados ya que permiten que la GUI "
+"intercepte los eventos primero.\n"
+"[b]Nota:[/b] Este método sólo se llama si el nodo está presente en el árbol "
+"de la escena (es decir, si no es huérfano)."
 
 #: doc/classes/Node.xml:67
 msgid ""
@@ -42082,6 +42590,17 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
+"Llamado durante el paso de procesamiento físico del bucle principal. El "
+"procesamiento físico significa que la velocidad de fotograma está "
+"sincronizada con la física, es decir, la variable [code]delta[/code] debe "
+"ser constante.\n"
+"Sólo se llama si se habilita el procesamiento físico, lo que se hace "
+"automáticamente si se anula este método, y puede conmutarse con [method "
+"set_physics_process].\n"
+"Corresponde a la notificación [constante NOTIFICATION_PHYSICS_PROCESS] en "
+"[method Object._notification].\n"
+"[b]Nota:[/b] Este método sólo se llama si el nodo está presente en el árbol "
+"de la escena (es decir, si no es huérfano)."
 
 #: doc/classes/Node.xml:79
 msgid ""
@@ -42095,6 +42614,17 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
+"Llamado durante la etapa de procesamiento del bucle principal. El "
+"procesamiento se realiza en cada fotograma y lo más rápido posible, por lo "
+"que el tiempo [code]delta[/code] desde el fotograma anterior no es "
+"constante.\n"
+"Sólo se llama si el procesamiento está habilitado, lo que se hace "
+"automáticamente si este método es anulado, y puede ser conmutado con [method "
+"set_process].\n"
+"Corresponde a la notificación [constant NOTIFICATION_PROCESS] en [método "
+"Object._notification].\n"
+"[b]Nota:[/b] Este método sólo se llama si el nodo está presente en el árbol "
+"de la escena (es decir, si no es huérfano)."
 
 #: doc/classes/Node.xml:89
 msgid ""
@@ -42113,6 +42643,21 @@ msgid ""
 "another call with [method request_ready], which may be called anywhere "
 "before adding the node again."
 msgstr ""
+"Se llama cuando el nodo está \"listo\", es decir, cuando tanto el nodo como "
+"sus hijos han entrado en el árbol de la escena. Si el nodo tiene hijos, sus "
+"llamadas [method _ready] se activan primero, y el nodo padre recibirá la "
+"notificación de listo después.\n"
+"Corresponde a la notificación [constant NOTIFICATION_READY] en [method "
+"Object._notification]. Véase también la palabra clave [code]onready[/code] "
+"para las variables.\n"
+"Normalmente se utiliza para la inicialización. Para una inicialización aún "
+"más temprana, se puede utilizar [método Object._init]. Véase también [method "
+"_enter_tree].\n"
+"[b]Nota:[/b] [method _ready] puede ser llamado sólo una vez para cada nodo. "
+"Después de eliminar un nodo del árbol de la escena y volver a añadirlo, "
+"[code]_ready[/code] no se llamará por segunda vez. Esto puede ser obviado "
+"con la petición de otra llamada con [method request_ready], que puede ser "
+"llamada en cualquier lugar antes de añadir el nodo de nuevo."
 
 #: doc/classes/Node.xml:101
 msgid ""
@@ -42130,6 +42675,19 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
+"Llamado cuando un [InputEvent] no ha sido consumido por [method _input] o "
+"cualquier GUI. El evento de entrada se propaga a través del árbol de nodos "
+"hasta que un nodo lo consume.\n"
+"Sólo se llama si se activa el procesamiento de entrada no manejado, lo que "
+"se hace automáticamente si se anula este método, y se puede conmutar con "
+"[method set_process_unhandled_input].\n"
+"Para consumir el evento de entrada y evitar que se propague a otros nodos, "
+"se puede llamar al [method Viewport.set_input_as_handled].\n"
+"Para la entrada del juego, este y [method _unhandled_key_input] suelen "
+"encajar mejor que [method _input] ya que permiten que la GUI intercepte los "
+"eventos primero.\n"
+"[b]Nota:[/b] Este método sólo se llama si el nodo está presente en el árbol "
+"de la escena (es decir, si no es huérfano)."
 
 #: doc/classes/Node.xml:114
 msgid ""
@@ -42147,6 +42705,19 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
+"Llamado cuando un [InputEventKey] no ha sido consumido por [method _input] o "
+"cualquier GUI. El evento de entrada se propaga a través del árbol de nodos "
+"hasta que un nodo lo consume.\n"
+"Sólo se llama si se activa el procesamiento de entrada de clave no "
+"manipulada, lo que se hace automáticamente si se anula este método, y se "
+"puede conmutar con [method set_process_unhandled_key_input].\n"
+"Para consumir el evento de entrada y evitar que se propague a otros nodos, "
+"se puede llamar al [method Viewport.set_input_as_handled].\n"
+"Para la entrada del juego, esto y [method _unhandled_input] suelen encajar "
+"mejor que [method _input] ya que permiten que la GUI intercepte los eventos "
+"primero.\n"
+"[b]Nota:[/b] Este método sólo se llama si el nodo está presente en el árbol "
+"de la escena (es decir, si no es huérfano)."
 
 #: doc/classes/Node.xml:129
 msgid ""
@@ -42176,6 +42747,32 @@ msgid ""
 "owner], the newly added [Node] will not be visible in the scene tree, though "
 "it will be visible in the 2D/3D view."
 msgstr ""
+"Añade un nodo infantil. Los nodos pueden tener cualquier número de niños, "
+"pero cada niño debe tener un nombre único. Los nodos hijos se eliminan "
+"automáticamente cuando se elimina el nodo padre, por lo que una escena "
+"entera puede ser eliminada eliminando su nodo superior.\n"
+"Si [code]legible_unique_name[/code] es [code]true[/code], el nodo hijo "
+"tendrá un nombre legible para los humanos basado en el nombre del nodo que "
+"se instale en lugar de su tipo.\n"
+"[b]Nota:[/b] Si el nodo hijo ya tiene un padre, la función fallará. Use "
+"[method remove_child] primero para eliminar el nodo de su padre actual. Por "
+"ejemplo:\n"
+"[codeblock]\n"
+"if child_node.get_parent():\n"
+"    child_node.get_parent().remove_child(child_node)\n"
+"add_child(child_node)\n"
+"[/codeblock]\n"
+"Si necesita que el nodo hijo se añada debajo de un nodo específico en la "
+"lista de hijos, use [method add_sibling] en lugar de este método.\n"
+"[b]Nota:[/b] Si quieres que un hijo sea perseguido en un [PackedScene], "
+"debes establecer [member owner] además de llamar a [method add_child]. Esto "
+"es típicamente relevante para los scripts de la herramienta [url=https://"
+"godot.readthedocs.io/es/latest/tutorials/misc/running_code_in_the_editor."
+"html]tool[/url] y para los plugins de edición [/url] de [url=https://godot."
+"readthedocs.io/es/latest/tutorials/plugins/editor/index.html]. Si se llama a "
+"[method add_child] sin establecer [member owner], el [Node] recién agregado "
+"no será visible en el árbol de la escena, aunque sí lo será en la vista "
+"2D/3D."
 
 #: doc/classes/Node.xml:149
 msgid ""
@@ -42187,6 +42784,13 @@ msgid ""
 "Use [method add_child] instead of this method if you don't need the child "
 "node to be added below a specific node in the list of children."
 msgstr ""
+"Añade un nodo [code]sibling[/code] al nodo padre de la corriente, al mismo "
+"nivel que ese nodo, justo debajo de él.\n"
+"Si [code]legible_unique_name[/code] es [code]true[/code], el nodo hijo "
+"tendrá un nombre legible para los humanos basado en el nombre del nodo que "
+"se instale en lugar de su tipo.\n"
+"Usa [method add_child] en lugar de este método si no necesitas que el nodo "
+"hijo se añada debajo de un nodo específico en la lista de hijos."
 
 #: doc/classes/Node.xml:162
 msgid ""
@@ -42198,6 +42802,15 @@ msgid ""
 "The [code]persistent[/code] option is used when packing node to "
 "[PackedScene] and saving to file. Non-persistent groups aren't stored."
 msgstr ""
+"Añade el nodo a un grupo. Los grupos ayudan a nombrar y organizar un "
+"subconjunto de nodos, por ejemplo \"enemigos\" o \"coleccionables\". Un nodo "
+"puede estar en cualquier número de grupos. A los nodos se les puede asignar "
+"un grupo en cualquier momento, pero no se añadirán hasta que estén dentro "
+"del árbol de la escena (ver [method is_inside_tree]). Vea las notas en la "
+"descripción, y los métodos de grupo en [SceneTree].\n"
+"La opción [code]persistent[/code] se usa cuando se empaqueta el nodo en "
+"[PackedScene] y se guarda en un archivo. Los grupos no persistentes no se "
+"almacenan."
 
 #: doc/classes/Node.xml:170
 msgid ""
@@ -42206,6 +42819,10 @@ msgid ""
 "scene tree is not paused, and [code]false[/code] if the node is not in the "
 "tree."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo puede procesar mientras el árbol de la "
+"escena está en pausa (ver [member pause_mode]). Siempre devuelve [code]true[/"
+"code] si el árbol de la escena no está pausado, y [code]false[/code] si el "
+"nodo no está en el árbol."
 
 #: doc/classes/Node.xml:179
 msgid ""
@@ -42216,6 +42833,13 @@ msgid ""
 "constructor arguments (i.e. needs to supply arguments to [method Object."
 "_init] method). In that case, the node will be duplicated without a script."
 msgstr ""
+"Duplica el nodo, devolviendo un nuevo nodo.\n"
+"Puedes afinar el comportamiento usando las [code]flags[/code] (ver [enum "
+"DuplicateFlags]).\n"
+"[b]Nota:[/b] No funcionará correctamente si el nodo contiene un script con "
+"argumentos de constructor (es decir, necesita suministrar argumentos al "
+"método [method Object._init]). En ese caso, el nodo se duplicará sin un "
+"script."
 
 #: doc/classes/Node.xml:194
 msgid ""
@@ -42229,6 +42853,17 @@ msgid ""
 "whose owner is this node. This is especially important for scenes "
 "instantiated through a script, because those scenes don't have an owner."
 msgstr ""
+"Encuentra un descendiente de este nodo cuyo nombre coincide con [code]mask[/"
+"code] como en el [method String.match] (es decir, distingue entre mayúsculas "
+"y minúsculas, pero [code]\"*\"[/code] coincide con cero o más caracteres y "
+"[code]\"?\"[/code] coincide con cualquier carácter individual excepto con "
+"[code]\".\"[/code]).\n"
+"[b]Nota:[/b] No coincide con la ruta completa, sólo con los nombres de los "
+"nodos individuales.\n"
+"Si [code]owned[/code] es [code]true[/code], este método sólo encuentra nodos "
+"cuyo propietario es este nodo. Esto es especialmente importante para las "
+"escenas instanciadas a través de un guión, porque esas escenas no tienen "
+"dueño."
 
 #: doc/classes/Node.xml:205
 msgid ""
@@ -42239,6 +42874,13 @@ msgid ""
 "[b]Note:[/b] It does not match against the full path, just against "
 "individual node names."
 msgstr ""
+"Encuentra el primer padre del nodo actual cuyo nombre coincide con "
+"[code]mask[/code] como en el [method String.match] (es decir, distingue "
+"entre mayúsculas y minúsculas, pero [code]\"*\"[/code] coincide con cero o "
+"más caracteres y [code]\"?\"[/code] coincide con cualquier carácter "
+"individual excepto con [code]\".\"[/code]).\n"
+"[b]Nota:[/b] No coincide con la ruta completa, sólo con los nombres de los "
+"nodos individuales."
 
 #: doc/classes/Node.xml:215
 msgid ""
@@ -42246,30 +42888,38 @@ msgid ""
 "method is often used for iterating all children of a node.\n"
 "To access a child node via its name, use [method get_node]."
 msgstr ""
+"Devuelve un nodo hijo por su índice (ver [method get_child_count]). Este "
+"método se usa a menudo para iterar todos los hijos de un nodo.\n"
+"Para acceder a un nodo hijo a través de su nombre, usa [method get_node]."
 
 #: doc/classes/Node.xml:223
 msgid "Returns the number of child nodes."
-msgstr ""
+msgstr "Devuelve el número de nodos infantiles."
 
 #: doc/classes/Node.xml:230
 msgid "Returns an array of references to node's children."
-msgstr ""
+msgstr "Devuelve un array de referencias a los hijos del nodo."
 
 #: doc/classes/Node.xml:237
 msgid "Returns an array listing the groups that the node is a member of."
 msgstr ""
+"Devuelve un array que enumerando los grupos de los que el nodo es miembro."
 
 #: doc/classes/Node.xml:244
 msgid ""
 "Returns the node's order in the scene tree branch. For example, if called on "
 "the first child node the position is [code]0[/code]."
 msgstr ""
+"Devuelve el orden del nodo en la rama del árbol de la escena. Por ejemplo, "
+"si se llama al primer nodo hijo la posición es [code]0[/code]."
 
 #: doc/classes/Node.xml:251
 msgid ""
 "Returns the peer ID of the network master for this node. See [method "
 "set_network_master]."
 msgstr ""
+"Devuelve el ID del par del maestro de la red para este nodo. Ver [method "
+"set_network_master]."
 
 #: doc/classes/Node.xml:260
 msgid ""
@@ -42300,6 +42950,32 @@ msgid ""
 "get_node(\"/root/MyGame\")\n"
 "[/codeblock]"
 msgstr ""
+"Busca un nodo. El [NodePath] puede ser un camino relativo (desde el nodo "
+"actual) o un camino absoluto (en el árbol de la escena) a un nodo. Si la "
+"ruta no existe, se devuelve una instancia [code]null[/code] y se registra un "
+"error. Los intentos de acceder a los métodos en el valor de retorno darán "
+"como resultado un error \"Attempt to call <method> on a null instance\".\n"
+"[b]Nota:[/b] La búsqueda de rutas absolutas sólo funciona cuando el nodo "
+"está dentro del árbol de la escena (ver [method is_inside_tree]).\n"
+"[b]Ejemplo:[/b] Supongamos que tu nodo actual es Character y el siguiente "
+"árbol:\n"
+"[codeblock]\n"
+"/root\n"
+"/root/Personaje\n"
+"/root/Personaje/Espada\n"
+"/root/Personaje/Mochila/Daga\n"
+"/root/MiJuego\n"
+"/root/Pantano/Caimán\n"
+"/root/Pantano/Mosquito\n"
+"/root/Pantano/Goblin\n"
+"[/codeblock]\n"
+"Las posibles rutas son:\n"
+"[codeblock]\n"
+"get_node(\"Espada\")\n"
+"get_node(\"Mochila/Daga\")\n"
+"get_node(\"../Pantano/Caimán\")\n"
+"get_node(\"/root/MiJuego\")\n"
+"[/codeblock]"
 
 #: doc/classes/Node.xml:288
 msgid ""
@@ -42322,33 +42998,58 @@ msgid ""
 "[[CollisionShape2D:1161], [RectangleShape2D:1156], :extents]\n"
 "[/codeblock]"
 msgstr ""
+"Busca un nodo y uno de sus recursos como se especifica en el subnombre de "
+"[NodePath] (por ejemplo, [code]Area2D/CollisionShape2D:shape[/code]). Si se "
+"especifican varios recursos anidados en el [NodePath], el último será "
+"recuperado.\n"
+"El valor de retorno es un array de tamaño 3: el primer índice apunta al "
+"[Node] (o al [code]null[/code] si no se encuentra), el segundo índice apunta "
+"al [Resource] (o al [code]null[/code] si no se encuentra), y el tercero es "
+"el [NodePath] restante, si lo hay.\n"
+"Por ejemplo, suponiendo que [code]Area2D/CollisionShape2D[/code] es un nodo "
+"válido y que a su propiedad [code]shape[/code] se le ha asignado un recurso "
+"[RectangleShape2D], se podría tener este tipo de salida:\n"
+"[codeblock]\n"
+"print(get_node_and_resource(\"Area2D/CollisionShape2D\")) # "
+"[[CollisionShape2D:1161], Null, ]\n"
+"print(get_node_and_resource(\"Area2D/CollisionShape2D:shape\")) # "
+"[[CollisionShape2D:1161], [RectangleShape2D:1156], ]\n"
+"print(get_node_and_resource(\"Area2D/CollisionShape2D:shape:extents\")) # "
+"[[CollisionShape2D:1161], [RectangleShape2D:1156], :extents]\n"
+"[/codeblock]"
 
 #: doc/classes/Node.xml:304
 msgid ""
 "Similar to [method get_node], but does not log an error if [code]path[/code] "
 "does not point to a valid [Node]."
 msgstr ""
+"Similar a [method get_node], pero no registra un error si [code]path[/code] "
+"no apunta a un [Node] válido."
 
 #: doc/classes/Node.xml:311
-#, fuzzy
 msgid ""
 "Returns the parent node of the current node, or a [code]null instance[/code] "
 "if the node lacks a parent."
 msgstr ""
-"Devuelve el ultimo element del array, or [code]null[/code] si este esta "
-"vacio."
+"Devuelve el nodo padre del nodo actual, o una instancia [code]null [/code] "
+"si el nodo carece de un padre."
 
 #: doc/classes/Node.xml:318
 msgid ""
 "Returns the absolute path of the current node. This only works if the "
 "current node is inside the scene tree (see [method is_inside_tree])."
 msgstr ""
+"Devuelve la ruta absoluta del nodo actual. Esto sólo funciona si el nodo "
+"actual está dentro del árbol de la escena (ver [method is_inside_tree])."
 
 #: doc/classes/Node.xml:327
 msgid ""
 "Returns the relative [NodePath] from this node to the specified [code]node[/"
 "code]. Both nodes must be in the same scene or the function will fail."
 msgstr ""
+"Devuelve la ruta relativa [NodePath] de este nodo al [code]node[/code] "
+"especificado. Ambos nodos deben estar en la misma escena o la función "
+"fallará."
 
 #: doc/classes/Node.xml:334
 msgid ""
@@ -42357,31 +43058,39 @@ msgid ""
 "unless the frames per second is changed via [member Engine."
 "iterations_per_second]."
 msgstr ""
+"Devuelve el tiempo transcurrido desde el último fotograma vinculado a la "
+"física (ver [method _physics_process]). Este es siempre un valor constante "
+"en el procesamiento de la física, a menos que se cambien las tramas por "
+"segundo a través del [member Engine.iterations_per_second]."
 
 #: doc/classes/Node.xml:341
 msgid ""
 "Returns the time elapsed (in seconds) since the last process callback. This "
 "value may vary from frame to frame."
 msgstr ""
+"Devuelve el tiempo transcurrido (en segundos) desde la última llamada del "
+"proceso. Este valor puede variar de un fotograma a otro."
 
 #: doc/classes/Node.xml:348
 msgid ""
 "Returns [code]true[/code] if this is an instance load placeholder. See "
 "[InstancePlaceholder]."
 msgstr ""
+"Devuelve [code]true[/code] si se trata de un marcador de posición de carga "
+"de instancia. Ver [InstancePlaceholder]."
 
 #: doc/classes/Node.xml:355
 msgid "Returns the [SceneTree] that contains this node."
-msgstr ""
+msgstr "Devuelve el [SceneTree] que contiene este nodo."
 
 #: doc/classes/Node.xml:362
 msgid "Returns the node's [Viewport]."
-msgstr ""
+msgstr "Devuelve el [Viewport] del nodo."
 
 #: doc/classes/Node.xml:371
 msgid ""
 "Returns [code]true[/code] if the node that the [NodePath] points to exists."
-msgstr ""
+msgstr "Devuelve [code]true[/code] si el nodo al que apunta [NodePath] existe."
 
 #: doc/classes/Node.xml:380
 msgid ""
@@ -42390,82 +43099,112 @@ msgid ""
 "shape[/code]. Properties with a non-[Resource] type (e.g. nodes or primitive "
 "math types) are not considered resources."
 msgstr ""
+"Devuelve [code]true[/code] si el [NodePath] apunta a un nodo válido y su "
+"subnombre apunta a un recurso válido, por ejemplo, [code]Area2D/"
+"CollisionShape2D:shape[/code]. Las propiedades que no son de tipo [Resource] "
+"(por ejemplo, nodos o tipos matemáticos primitivos) no se consideran "
+"recursos."
 
 #: doc/classes/Node.xml:389
 msgid ""
 "Returns [code]true[/code] if the given node is a direct or indirect child of "
 "the current node."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo dado es un hijo directo o indirecto "
+"del nodo actual."
 
 #: doc/classes/Node.xml:396
 msgid ""
 "Returns [code]true[/code] if the node is folded (collapsed) in the Scene "
 "dock."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo está plegado (colapsado) en el muelle "
+"de la escena."
 
 #: doc/classes/Node.xml:405
 msgid ""
 "Returns [code]true[/code] if the given node occurs later in the scene "
 "hierarchy than the current node."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo dado se produce más tarde en la "
+"jerarquía de la escena que el nodo actual."
 
 #: doc/classes/Node.xml:414
 msgid ""
 "Returns [code]true[/code] if this node is in the specified group. See notes "
 "in the description, and the group methods in [SceneTree]."
 msgstr ""
+"Devuelve [code]true[/code] si este nodo está en el grupo especificado. Vea "
+"las notas en la descripción, y los métodos de grupo en [SceneTree]."
 
 #: doc/classes/Node.xml:421
 msgid ""
 "Returns [code]true[/code] if this node is currently inside a [SceneTree]."
 msgstr ""
+"Devuelve [code]true[/code] si este nodo está actualmente dentro de un "
+"[SceneTree]."
 
 #: doc/classes/Node.xml:428
 msgid ""
 "Returns [code]true[/code] if the local system is the master of this node."
 msgstr ""
+"Devuelve [code]true[/code] si el sistema local es el maestro de este nodo."
 
 #: doc/classes/Node.xml:435
 msgid ""
 "Returns [code]true[/code] if physics processing is enabled (see [method "
 "set_physics_process])."
 msgstr ""
+"Devuelve [code]true[/code] si el procesamiento de la física está activado "
+"(véase [method set_physics_process])."
 
 #: doc/classes/Node.xml:442
 msgid ""
 "Returns [code]true[/code] if internal physics processing is enabled (see "
 "[method set_physics_process_internal])."
 msgstr ""
+"Devuelve [code]true[/code] si el procesamiento de la física interna está "
+"activado (véase [method set_physics_process_internal])."
 
 #: doc/classes/Node.xml:449
 msgid ""
 "Returns [code]true[/code] if processing is enabled (see [method "
 "set_process])."
 msgstr ""
+"Devuelve [code]true[/code] si el procesamiento está activado (véase [method "
+"set_process])."
 
 #: doc/classes/Node.xml:456
 msgid ""
 "Returns [code]true[/code] if the node is processing input (see [method "
 "set_process_input])."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo está procesando la entrada (ver "
+"[method set_process_input])."
 
 #: doc/classes/Node.xml:463
 msgid ""
 "Returns [code]true[/code] if internal processing is enabled (see [method "
 "set_process_internal])."
 msgstr ""
+"Devuelve [code]true[/code] si el procesamiento interno está activado (véase "
+"[method set_process_internal])."
 
 #: doc/classes/Node.xml:470
 msgid ""
 "Returns [code]true[/code] if the node is processing unhandled input (see "
 "[method set_process_unhandled_input])."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo está procesando una entrada no "
+"manejada (ver [method set_process_unhandled_input])."
 
 #: doc/classes/Node.xml:477
 msgid ""
 "Returns [code]true[/code] if the node is processing unhandled key input (see "
 "[method set_process_unhandled_key_input])."
 msgstr ""
+"Devuelve [code]true[/code] si el nodo está procesando una entrada de clave "
+"no manejada (ver [method set_process_unhandled_key_input])."
 
 #: doc/classes/Node.xml:488
 msgid ""
@@ -42473,12 +43212,17 @@ msgid ""
 "Since calls, signals, etc are performed by tree order, changing the order of "
 "children nodes may be useful."
 msgstr ""
+"Mueve un nodo hijo a una posición diferente (orden) entre los otros hijos. "
+"Dado que las llamadas, señales, etc. se realizan por orden de árbol, cambiar "
+"el orden de los nodos hijos puede ser útil."
 
 #: doc/classes/Node.xml:495
 msgid ""
 "Prints all stray nodes (nodes outside the [SceneTree]). Used for debugging. "
 "Works only in debug builds."
 msgstr ""
+"Imprime todos los nodos perdidos (nodos fuera del [SceneTree]). Se utiliza "
+"para la depuración. Funciona sólo en construcciones de depuración."
 
 #: doc/classes/Node.xml:502
 msgid ""
@@ -42495,6 +43239,18 @@ msgid ""
 "TheGame/SplashScreen/Camera2D\n"
 "[/codeblock]"
 msgstr ""
+"Imprime el árbol a stdout. Se utiliza principalmente para fines de "
+"depuración. Esta versión muestra la ruta relativa al nodo actual, y es buena "
+"para copiar/pegar en la función [method get_node].\n"
+"[b]Ejemplo de salida:[/b]\n"
+"[codeblock]\n"
+"ElJuego\n"
+"ElJuego/Menu\n"
+"ElJuego/Menu/Label\n"
+"ElJuego/Menu/Camera2D\n"
+"ElJuego/PantallaInicial\n"
+"ElJuego/PantallaInicial/Camera2D\n"
+"[/codeblock]"
 
 #: doc/classes/Node.xml:518
 msgid ""
@@ -42511,6 +43267,18 @@ msgid ""
 "       ┖╴Camera2D\n"
 "[/codeblock]"
 msgstr ""
+"Similar al [method print_tree], este imprime el árbol a stdout. Esta versión "
+"muestra una representación más gráfica similar a la que se muestra en el "
+"inspector de escenas. Es útil para inspeccionar árboles más grandes.\n"
+"[b]Ejemplo de salida:[/b]\n"
+"[codeblock]\n"
+" ┖╴ElJuego\n"
+"    ┠╴Menu\n"
+"    ┃  ┠╴Label\n"
+"    ┃  ┖╴Camera2D\n"
+"    ┖-PantallaInicial\n"
+"       ┖╴Camera2D\n"
+"[/codeblock]"
 
 #: doc/classes/Node.xml:540
 msgid ""
@@ -42521,12 +43289,20 @@ msgid ""
 "[code]parent_first[/code] is [code]false[/code], the children will be called "
 "first."
 msgstr ""
+"Llama al método dado (si está presente) con los argumentos dados en "
+"[code]args[/code] en este nodo y recursivamente en todos sus hijos. Si el "
+"argumento [code]parent_first[/code] es [code]true[/code], el método será "
+"llamado primero al nodo actual, y luego a todos sus hijos. Si "
+"[code]parent_first[/code] es [code]false[/code], los hijos serán llamados "
+"primero."
 
 #: doc/classes/Node.xml:549
 msgid ""
 "Notifies the current node and all its children recursively by calling "
 "[method Object.notification] on all of them."
 msgstr ""
+"Notifica al nodo actual y a todos sus hijos de forma recursiva llamando al "
+"[method Object.notification] en todos ellos."
 
 #: doc/classes/Node.xml:556
 msgid ""
@@ -42536,6 +43312,11 @@ msgid ""
 "Object.is_queued_for_deletion] to check whether a node will be deleted at "
 "the end of the frame."
 msgstr ""
+"Coloca en cola un nodo para su eliminación al final del fotograma actual. "
+"Cuando se elimine, todos sus nodos hijos también serán eliminados. Este "
+"método asegura que es seguro borrar el nodo, al contrario que el [method "
+"Object.free]. Utilice [method Object.is_queued_for_deletion] para comprobar "
+"si un nodo será eliminado al final del fotograma."
 
 #: doc/classes/Node.xml:563
 msgid ""
@@ -42545,6 +43326,11 @@ msgid ""
 "list, the higher they are drawn. After using [code]raise[/code], a Control "
 "will be drawn on top of their siblings."
 msgstr ""
+"Mueve este nodo al fondo de la jerarquía de los hijos del nodo padre. Esto "
+"suele ser útil en los GUI (nodos [Control]), porque su orden de dibujo "
+"depende de su orden en el árbol, es decir, cuanto más lejos estén en la "
+"lista de nodos, más alto se dibujarán. Después de usar [code]raise[/code], "
+"un Control se dibujará encima de sus hermanos."
 
 #: doc/classes/Node.xml:570
 msgid ""
@@ -42552,23 +43338,31 @@ msgid ""
 "it exists). All event subscriptions that pass by the removed node will be "
 "unsubscribed."
 msgstr ""
+"Quita un nodo y pone a todos sus hijos como hijos del nodo padre (si "
+"existe). Todas las suscripciones de eventos que pasen por el nodo eliminado "
+"serán canceladas."
 
 #: doc/classes/Node.xml:579
 msgid ""
 "Removes a child node. The node is NOT deleted and must be deleted manually."
 msgstr ""
+"Elimina un nodo hijo. El nodo NO se elimina y debe ser eliminado manualmente."
 
 #: doc/classes/Node.xml:588
 msgid ""
 "Removes a node from a group. See notes in the description, and the group "
 "methods in [SceneTree]."
 msgstr ""
+"Elimina un nodo de un grupo. Vea las notas en la descripción, y los métodos "
+"de grupo en [SceneTree]."
 
 #: doc/classes/Node.xml:599
 msgid ""
 "Replaces a node in a scene by the given one. Subscriptions that pass through "
 "this node will be lost."
 msgstr ""
+"Reemplaza un nodo en una escena por el dado. Las suscripciones que pasen por "
+"este nodo se perderán."
 
 #: doc/classes/Node.xml:606
 msgid ""
@@ -42580,6 +43374,13 @@ msgid ""
 "which case, [code]_ready[/code] will be called in the same order as it would "
 "normally)."
 msgstr ""
+"Solicita que se llame de nuevo a [code]_ready[/code]. Tenga en cuenta que el "
+"método no se llamará inmediatamente, sino que está programado para cuando el "
+"nodo se añada de nuevo al árbol de la escena (véase [method _ready]). "
+"[code]_ready[/code] se llama sólo para el nodo que lo ha solicitado, lo que "
+"significa que necesita solicitar ready para cada niño si quiere que también "
+"llamen a [code]_ready[/code] (en cuyo caso, se llamará a [code]_ready[/code] "
+"en el mismo orden que normalmente)."
 
 #: doc/classes/Node.xml:615
 msgid ""
@@ -42597,6 +43398,21 @@ msgid ""
 "like [code]server_disconnected[/code] or by checking [code]SceneTree."
 "network_peer.get_connection_status() == CONNECTION_CONNECTED[/code]."
 msgstr ""
+"Envía una solicitud de llamada de procedimiento a distancia para el "
+"[code]method[/code] dado a los pares en la red (y localmente), opcionalmente "
+"enviando todos los argumentos adicionales como argumentos al método llamado "
+"por la RPC. La solicitud de llamada sólo será recibida por nodos con el "
+"mismo [NodePath], incluyendo exactamente el mismo nombre de nodo. El "
+"comportamiento depende de la configuración de la RPC para el método dado, "
+"véase [method rpc_config]. Los métodos no están expuestos a las RPC por "
+"defecto. Véase también [method rset] y [method rset_config] para las "
+"propiedades. Devuelve una [Variant] vacía.\n"
+"[b]Nota:[/b] Sólo se pueden utilizar RPCs de forma segura en clientes "
+"después de haber recibido la señal [code]connected_to_server[/code] de la "
+"[SceneTree]. También es necesario hacer un seguimiento del estado de la "
+"conexión, ya sea por las señales de [SceneTree] como "
+"[code]server_disconnected[/code] o comprobando [code]SceneTree.network_peer."
+"get_connection_status() == CONNECTION_CONNECTED[/code]."
 
 #: doc/classes/Node.xml:627
 msgid ""
@@ -42608,6 +43424,13 @@ msgid ""
 "By default, methods are not exposed to networking (and RPCs). See also "
 "[method rset] and [method rset_config] for properties."
 msgstr ""
+"Cambia el modo RPC para el [code]method[/code] dado al [code]mode[/code] "
+"dado. Ver [enum MultiplayerAPI.RPCMode]. Una alternativa es anotar los "
+"métodos y propiedades con las palabras clave correspondientes ([code]remote[/"
+"code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], "
+"[code]mastersync[/code], [code]puppetsync[/code]). Por defecto, los métodos "
+"no están expuestos a las redes (y a los RPC). Ver también [method rset] y "
+"[method rset_config] para las propiedades."
 
 #: doc/classes/Node.xml:638
 msgid ""
@@ -42615,12 +43438,17 @@ msgid ""
 "(see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty "
 "[Variant]."
 msgstr ""
+"Envía un [method rpc] a un par específico identificado por [code]peer_id[/"
+"code] (véase [method NetworkedMultiplayerPeer.set_target_peer]). Devuelve "
+"una [Variant] vacía."
 
 #: doc/classes/Node.xml:647
 msgid ""
 "Sends a [method rpc] using an unreliable protocol. Returns an empty "
 "[Variant]."
 msgstr ""
+"Envía un [method rpc] usando un protocolo poco fiable. Devuelve una "
+"[Variant] vacía."
 
 #: doc/classes/Node.xml:658
 msgid ""
@@ -42628,6 +43456,9 @@ msgid ""
 "using an unreliable protocol (see [method NetworkedMultiplayerPeer."
 "set_target_peer]). Returns an empty [Variant]."
 msgstr ""
+"Envía un [método rpc] a un par específico identificado por [code]peer_id[/"
+"code] utilizando un protocolo poco fiable (véase [method "
+"NetworkedMultiplayerPeer.set_target_peer]). Devuelve una [Variant] vacía."
 
 #: doc/classes/Node.xml:669
 msgid ""
@@ -42636,6 +43467,10 @@ msgid ""
 "rset_config]. See also [method rpc] for RPCs for methods, most information "
 "applies to this method as well."
 msgstr ""
+"Cambia remotamente el valor de una propiedad en otros pares (y localmente). "
+"El comportamiento depende de la configuración RPC de la propiedad dada, ver "
+"[method rset_config]. Véase también [method rpc] para los métodos RPC, la "
+"mayoría de la información se aplica también a este método."
 
 #: doc/classes/Node.xml:680
 msgid ""
@@ -42647,18 +43482,30 @@ msgid ""
 "By default, properties are not exposed to networking (and RPCs). See also "
 "[method rpc] and [method rpc_config] for methods."
 msgstr ""
+"Cambia el modo RPC para la [code]property[/code] dada al [code]mode[/code] "
+"dado. Ver [enum MultiplayerAPI.RPCMode]. Una alternativa es anotar los "
+"métodos y propiedades con las palabras clave correspondientes ([code]remote[/"
+"code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], "
+"[code]mastersync[/code], [code]puppetsync[/code]). Por defecto, las "
+"propiedades no están expuestas a las redes (y a los RPCs). Ver también "
+"[method rpc] y [method rpc_config] para los métodos."
 
 #: doc/classes/Node.xml:693
 msgid ""
 "Remotely changes the property's value on a specific peer identified by "
 "[code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer])."
 msgstr ""
+"Cambia remotamente el valor de la propiedad en un par específico "
+"identificado por [code]peer_id[/code] (véase el [method "
+"NetworkedMultiplayerPeer.set_target_peer])."
 
 #: doc/classes/Node.xml:704
 msgid ""
 "Remotely changes the property's value on other peers (and locally) using an "
 "unreliable protocol."
 msgstr ""
+"Cambia remotamente el valor de la propiedad en otros pares (y localmente) "
+"usando un protocolo poco fiable."
 
 #: doc/classes/Node.xml:717
 msgid ""
@@ -42666,10 +43513,13 @@ msgid ""
 "[code]peer_id[/code] using an unreliable protocol (see [method "
 "NetworkedMultiplayerPeer.set_target_peer])."
 msgstr ""
+"Cambia remotamente el valor de la propiedad en un par específico "
+"identificado por [code]peer_id[/code] utilizando un protocolo poco fiable "
+"(véase el [method NetworkedMultiplayerPeer.set_target_peer])."
 
 #: doc/classes/Node.xml:726
 msgid "Sets the folded state of the node in the Scene dock."
-msgstr ""
+msgstr "Establece el estado de plegado del nodo en el muelle de la escena."
 
 #: doc/classes/Node.xml:737
 msgid ""
@@ -42680,6 +43530,13 @@ msgid ""
 "defaults to peer ID 1 (the server). If [code]recursive[/code], the given "
 "peer is recursively set as the master for all children of this node."
 msgstr ""
+"Establece el maestro de la red del nodo al par con el ID del par dado. El "
+"maestro de la red es el par que tiene autoridad sobre el nodo de la red. "
+"Útil en conjunción con las palabras clave [code]master[/code] y "
+"[code]puppet[/code]. Heredado del nodo padre por defecto, que en última "
+"instancia es el ID del par 1 (el servidor). Si [code]recursive[/code], el "
+"par dado se establece recursivamente como el maestro para todos los hijos de "
+"este nodo."
 
 #: doc/classes/Node.xml:746
 msgid ""
@@ -42691,6 +43548,13 @@ msgid ""
 "if [method _physics_process] is overridden. Any calls to this before [method "
 "_ready] will be ignored."
 msgstr ""
+"Activa o desactiva el procesamiento físico (es decir, la velocidad de "
+"fotogramas fijos). Cuando un nodo está siendo procesado, recibirá una "
+"[constant NOTIFICATION_PHYSICS_PROCESS] a un intervalo fijo (normalmente 60 "
+"FPS, ver [member Engine.iterations_per_second] para cambiar) (y se llamará a "
+"la devolución de llamada de [method _physics_process] si existe). Se "
+"habilita automáticamente si se anula [method _physics_process]. Cualquier "
+"llamada a esto antes de [method _ready] será ignorada."
 
 #: doc/classes/Node.xml:755
 msgid ""
@@ -42701,6 +43565,13 @@ msgid ""
 "([method set_physics_process]). Only useful for advanced uses to manipulate "
 "built-in nodes' behaviour."
 msgstr ""
+"Habilita o deshabilita la física interna de este nodo. El procesamiento de "
+"la física interna ocurre de forma aislada de las llamadas normales de "
+"[method _physics_process] y es usado por algunos nodos internamente para "
+"garantizar el correcto funcionamiento incluso si el nodo está en pausa o el "
+"procesamiento de la física está deshabilitado para el scripting ([method "
+"set_physics_process]). Sólo es útil para usos avanzados para manipular el "
+"comportamiento de los nodos incorporados."
 
 #: doc/classes/Node.xml:764
 msgid ""
@@ -42710,6 +43581,11 @@ msgid ""
 "if [method _process] is overridden. Any calls to this before [method _ready] "
 "will be ignored."
 msgstr ""
+"Habilita o deshabilita el procesamiento. Cuando un nodo está siendo "
+"procesado, recibirá una [constant NOTIFICATION_PROCESS] en cada fotograma "
+"dibujado (y se llamará a la devolución de llamada [method _process] si "
+"existe). Se habilita automáticamente si se anula [method _process]. "
+"Cualquier llamada a esto antes de [method _ready] será ignorada."
 
 #: doc/classes/Node.xml:773
 msgid ""
@@ -42717,6 +43593,9 @@ msgid ""
 "Enabled automatically if [method _input] is overridden. Any calls to this "
 "before [method _ready] will be ignored."
 msgstr ""
+"Habilita o deshabilita el procesamiento de la entrada. ¡Esto no es necesario "
+"para los controles GUI! Se activa automáticamente si se anula [method "
+"_input]. Cualquier llamada a esto antes de [method _ready] será ignorada."
 
 #: doc/classes/Node.xml:782
 msgid ""
@@ -42726,6 +43605,13 @@ msgid ""
 "paused or processing is disabled for scripting ([method set_process]). Only "
 "useful for advanced uses to manipulate built-in nodes' behaviour."
 msgstr ""
+"Habilita o deshabilita el procesamiento interno de este nodo. El "
+"procesamiento interno ocurre de forma aislada de las llamadas normales de "
+"[method _process] y es usado por algunos nodos internamente para garantizar "
+"el correcto funcionamiento incluso si el nodo está en pausa o el "
+"procesamiento está deshabilitado para la escritura ([method set_process]). "
+"Sólo es útil para usos avanzados para manipular el comportamiento de los "
+"nodos incorporados."
 
 #: doc/classes/Node.xml:791
 msgid ""
@@ -42734,6 +43620,11 @@ msgid ""
 "(usually by a [Control]). Enabled automatically if [method _unhandled_input] "
 "is overridden. Any calls to this before [method _ready] will be ignored."
 msgstr ""
+"Permite el procesamiento de entradas sin manejar. ¡Esto no es necesario para "
+"los controles GUI! Permite que el nodo reciba todas las entradas que no "
+"hayan sido manejadas previamente (normalmente por un [Control]). Se habilita "
+"automáticamente si se anula [method _unhandled_input]. Cualquier llamada a "
+"esto antes de [method _ready] será ignorada."
 
 #: doc/classes/Node.xml:800
 msgid ""
@@ -42741,11 +43632,16 @@ msgid ""
 "_unhandled_key_input] is overridden. Any calls to this before [method "
 "_ready] will be ignored."
 msgstr ""
+"Permite el procesamiento de entradas de claves sin manejar. Se activa "
+"automáticamente si se anula [method _unhandled_key_input]. Cualquier llamada "
+"a esto antes de [method _ready] será ignorada."
 
 #: doc/classes/Node.xml:809
 msgid ""
 "Sets whether this is an instance load placeholder. See [InstancePlaceholder]."
 msgstr ""
+"Establece si se trata de un marcador de posición de carga de instancia. Ver "
+"[InstancePlaceholder]."
 
 #: doc/classes/Node.xml:816
 msgid ""
@@ -42753,24 +43649,34 @@ msgid ""
 "Use [method _get_configuration_warning] to setup the warning message to "
 "display."
 msgstr ""
+"Actualiza la advertencia que se muestra para este nodo en el Scene Dock.\n"
+"Utiliza [method _get_configuration_warning] para configurar el mensaje de "
+"advertencia a mostrar."
 
 #: doc/classes/Node.xml:823
 msgid ""
 "The override to the default [MultiplayerAPI]. Set to [code]null[/code] to "
 "use the default [SceneTree] one."
 msgstr ""
+"La anulación del valor por defecto [MultiplayerAPI]. La anulación a "
+"[code]null[/code] para usar la predeterminada [SceneTree]."
 
 #: doc/classes/Node.xml:826
 msgid ""
 "When a scene is instanced from a file, its topmost node contains the "
 "filename from which it was loaded."
 msgstr ""
+"Cuando una escena es instanciada desde un archivo, su nodo superior contiene "
+"el nombre del archivo desde el cual fue cargado."
 
 #: doc/classes/Node.xml:829
 msgid ""
 "The [MultiplayerAPI] instance associated with this node. Either the [member "
 "custom_multiplayer], or the default SceneTree one (if inside tree)."
 msgstr ""
+"La instancia [MultiplayerAPI] asociada a este nodo. O bien el [member "
+"custom_multiplayer], o el predeterminado SceneTree uno (si está dentro del "
+"árbol)."
 
 #: doc/classes/Node.xml:832
 msgid ""
@@ -42778,6 +43684,9 @@ msgid ""
 "nodes from the same parent). When set to an existing name, the node will be "
 "automatically renamed."
 msgstr ""
+"El nombre del nodo. Este nombre es único entre los hermanos (otros nodos "
+"hijos del mismo padre). Cuando se establece un nombre existente, el nodo "
+"será renombrado automáticamente."
 
 #: doc/classes/Node.xml:835
 msgid ""
@@ -42787,10 +43696,16 @@ msgid ""
 "allows for the creation of complex [SceneTree]s, with instancing and "
 "subinstancing."
 msgstr ""
+"El dueño del nodo. Un nodo puede tener cualquier otro nodo como propietario "
+"(siempre que sea un padre, abuelo, etc. válido ascendente en el árbol). "
+"Cuando se guarda un nodo (usando [PackedScene]), todos los nodos que posee "
+"se guardarán con él. Esto permite la creación de [SceneTree] complejos, con "
+"instanciación y subinstanciación."
 
 #: doc/classes/Node.xml:838
 msgid "Pause mode. How the node will behave if the [SceneTree] is paused."
 msgstr ""
+"Modo de pausa. Cómo se comportará el nodo si el [SceneTree] está en pausa."
 
 #: doc/classes/Node.xml:841
 msgid ""
@@ -42800,116 +43715,144 @@ msgid ""
 "process priority value is [i]lower[/i] will have their processing callbacks "
 "executed first."
 msgstr ""
+"La prioridad del nodo en el orden de ejecución de las llamadas de "
+"procesamiento habilitadas (es decir, [constant NOTIFICATION_PROCESS], "
+"[constant NOTIFICATION_PHYSICS_PROCESS] y sus contrapartes internas). Los "
+"nodos cuyo valor de prioridad de proceso sea [i]lower[/i] tendrán sus "
+"devoluciones de procesamiento ejecutadas primero."
 
 #: doc/classes/Node.xml:847
 msgid "Emitted when the node is ready."
-msgstr ""
+msgstr "Emitido cuando el nodo esté listo."
 
 #: doc/classes/Node.xml:852
 msgid "Emitted when the node is renamed."
-msgstr ""
+msgstr "Emitido cuando el nodo es renombrado."
 
 #: doc/classes/Node.xml:857
 msgid "Emitted when the node enters the tree."
-msgstr ""
+msgstr "Emitido cuando el nodo entra en el árbol."
 
 #: doc/classes/Node.xml:862
 msgid "Emitted after the node exits the tree and is no longer active."
-msgstr ""
+msgstr "Emitido después de que el nodo sale del árbol y ya no está activo."
 
 #: doc/classes/Node.xml:867
 msgid ""
 "Emitted when the node is still active but about to exit the tree. This is "
 "the right place for de-initialization (or a \"destructor\", if you will)."
 msgstr ""
+"Emitido cuando el nodo está todavía activo pero a punto de salir del árbol. "
+"Este es el lugar adecuado para la des-inicialización (o un \"destructor\", "
+"si se quiere)."
 
 #: doc/classes/Node.xml:873
 msgid "Notification received when the node enters a [SceneTree]."
-msgstr ""
+msgstr "Notificación recibida cuando el nodo entra en un [SceneTree]."
 
 #: doc/classes/Node.xml:876
 msgid "Notification received when the node is about to exit a [SceneTree]."
 msgstr ""
+"Notificación recibida cuando el nodo está a punto de salir de un [SceneTree]."
 
 #: doc/classes/Node.xml:879
 msgid "Notification received when the node is moved in the parent."
-msgstr ""
+msgstr "Notificación recibida cuando el nodo se mueve en el padre."
 
 #: doc/classes/Node.xml:882
 msgid "Notification received when the node is ready. See [method _ready]."
 msgstr ""
+"Notificación recibida cuando el nodo esté listo. Véase [method _ready]."
 
 #: doc/classes/Node.xml:885
 msgid "Notification received when the node is paused."
-msgstr ""
+msgstr "Notificación recibida cuando el nodo está en pausa."
 
 #: doc/classes/Node.xml:888
 msgid "Notification received when the node is unpaused."
-msgstr ""
+msgstr "Notificación recibida cuando el nodo no está en pausa."
 
 #: doc/classes/Node.xml:891
 msgid ""
 "Notification received every frame when the physics process flag is set (see "
 "[method set_physics_process])."
 msgstr ""
+"Notificación recibida en cada fotograma cuando se fija el indicador de "
+"proceso físico (ver [method set_physics_process])."
 
 #: doc/classes/Node.xml:894
 msgid ""
 "Notification received every frame when the process flag is set (see [method "
 "set_process])."
 msgstr ""
+"Notificación recibida en cada fotograma cuando se fija el indicador de "
+"proceso (véase [method set_process])."
 
 #: doc/classes/Node.xml:897
 msgid ""
 "Notification received when a node is set as a child of another node.\n"
 "[b]Note:[/b] This doesn't mean that a node entered the [SceneTree]."
 msgstr ""
+"Notificación recibida cuando un nodo se establece como hijo de otro nodo.\n"
+"[b]Nota:[/b] Esto no significa que un nodo haya entrado en el [SceneTree]."
 
 #: doc/classes/Node.xml:901
 msgid ""
 "Notification received when a node is unparented (parent removed it from the "
 "list of children)."
 msgstr ""
+"Notificación recibida cuando un nodo no tiene padre (el padre o la madre lo "
+"ha eliminado de la lista de hijos)."
 
 #: doc/classes/Node.xml:904
 msgid "Notification received when the node is instanced."
-msgstr ""
+msgstr "Notificación recibida cuando el nodo es instanciado."
 
 #: doc/classes/Node.xml:907
 msgid "Notification received when a drag begins."
-msgstr ""
+msgstr "Notificación recibida cuando comienza un arrastre."
 
 #: doc/classes/Node.xml:910
 msgid "Notification received when a drag ends."
-msgstr ""
+msgstr "Notificación recibida cuando termina un arrastre."
 
 #: doc/classes/Node.xml:913
 msgid "Notification received when the node's [NodePath] changed."
-msgstr ""
+msgstr "Notificación recibida cuando el [NodePath] del nodo cambió."
 
 #: doc/classes/Node.xml:916
 msgid ""
 "Notification received every frame when the internal process flag is set (see "
 "[method set_process_internal])."
 msgstr ""
+"Notificación recibida en cada fotograma cuando se fija el indicador de "
+"proceso interno (véase [method set_process_internal])."
 
 #: doc/classes/Node.xml:919
 msgid ""
 "Notification received every frame when the internal physics process flag is "
 "set (see [method set_physics_process_internal])."
 msgstr ""
+"Notificación recibida en cada fotograma cuando se fija el flag de proceso de "
+"física interna (véase [method set_physics_process_internal])."
 
 #: doc/classes/Node.xml:922
 msgid ""
 "Notification received from the OS when the mouse enters the game window.\n"
 "Implemented on desktop and web platforms."
 msgstr ""
+"Notificación recibida del sistema operativo cuando el ratón entra en la "
+"ventana del juego.\n"
+"Implementado en plataformas de escritorio y web."
 
 #: doc/classes/Node.xml:926
 msgid ""
 "Notification received from the OS when the mouse leaves the game window.\n"
 "Implemented on desktop and web platforms."
 msgstr ""
+"Notificación recibida del sistema operativo cuando el ratón sale de la "
+"ventana del juego.\n"
+"Implementado en plataformas de escritorio y web."
 
 #: doc/classes/Node.xml:930
 msgid ""
@@ -42935,6 +43878,10 @@ msgid ""
 "the window with a \"Close\" button or [kbd]Alt + F4[/kbd]).\n"
 "Implemented on desktop platforms."
 msgstr ""
+"Notificación recibida del sistema operativo cuando se envía una solicitud de "
+"cierre (por ejemplo, cerrando la ventana con un botón de \"Cerrar\" o "
+"[kbd]Alt + F4[/kbd]).\n"
+"Implementado en plataformas de escritorio."
 
 #: doc/classes/Node.xml:940
 msgid ""
@@ -42942,32 +43889,37 @@ msgid ""
 "pressing the \"Back\" button on Android).\n"
 "Specific to the Android platform."
 msgstr ""
+"Notificación recibida del sistema operativo cuando se envía una solicitud de "
+"retroceso (por ejemplo, pulsando el botón \"Back\" en Android).\n"
+"Específico de la plataforma Android."
 
 #: doc/classes/Node.xml:981
 msgid ""
 "Inherits pause mode from the node's parent. For the root node, it is "
 "equivalent to [constant PAUSE_MODE_STOP]. Default."
 msgstr ""
+"Heredó el modo de pausa del padre del nodo. Para el nodo raíz, es "
+"equivalente a [constant PAUSE_MODE_STOP]. Por defecto."
 
 #: doc/classes/Node.xml:984
 msgid "Stops processing when the [SceneTree] is paused."
-msgstr ""
+msgstr "Detiene el procesamiento cuando el [SceneTree] está en pausa."
 
 #: doc/classes/Node.xml:987
 msgid "Continue to process regardless of the [SceneTree] pause state."
-msgstr ""
+msgstr "Continúe el proceso sin importar el estado de pausa de [SceneTree]."
 
 #: doc/classes/Node.xml:990
 msgid "Duplicate the node's signals."
-msgstr ""
+msgstr "Duplica las señales del nodo."
 
 #: doc/classes/Node.xml:993
 msgid "Duplicate the node's groups."
-msgstr ""
+msgstr "Duplica los grupos del nodo."
 
 #: doc/classes/Node.xml:996
 msgid "Duplicate the node's scripts."
-msgstr ""
+msgstr "Duplica los scripts del nodo."
 
 #: doc/classes/Node.xml:999
 msgid ""
@@ -42975,12 +43927,17 @@ msgid ""
 "An instance stays linked to the original so when the original changes, the "
 "instance changes too."
 msgstr ""
+"Duplicar usando instancias.\n"
+"Una instancia permanece ligado al original, así que cuando el original "
+"cambia, la instancia también cambia."
 
 #: doc/classes/Node2D.xml:4
 msgid ""
 "A 2D game object, inherited by all 2D-related nodes. Has a position, "
 "rotation, scale, and Z index."
 msgstr ""
+"Un objeto de juego en 2D, heredado por todos los nodos relacionados con el "
+"2D. Tiene una posición, rotación, escala e índice Z."
 
 #: doc/classes/Node2D.xml:7
 msgid ""
@@ -42989,29 +43946,36 @@ msgid ""
 "Node2D as a parent node to move, scale and rotate children in a 2D project. "
 "Also gives control of the node's render order."
 msgstr ""
+"Un objeto de juego 2D, con una transformada (posición, rotación y escala). "
+"Todos los nodos 2D, incluyendo los objetos de física y los sprites, heredan "
+"de Node2D. Utiliza Node2D como nodo padre para mover, escalar y rotar a los "
+"niños en un proyecto 2D. También da control del orden de renderización del "
+"nodo."
 
 #: doc/classes/Node2D.xml:19
 msgid "Multiplies the current scale by the [code]ratio[/code] vector."
-msgstr ""
+msgstr "Multiplica la escala actual por el vector [code]ratio[/code]."
 
 #: doc/classes/Node2D.xml:28
 msgid ""
 "Returns the angle between the node and the [code]point[/code] in radians."
-msgstr ""
+msgstr "Devuelve el ángulo entre el nodo y el [code]point[/code] en radianes."
 
 #: doc/classes/Node2D.xml:37
 msgid "Returns the [Transform2D] relative to this node's parent."
-msgstr ""
+msgstr "Devuelve el [Transform2D] relativo al padre de este nodo."
 
 #: doc/classes/Node2D.xml:46
 msgid "Adds the [code]offset[/code] vector to the node's global position."
-msgstr ""
+msgstr "Añade el vector [code]offset[/code] a la posición global del nodo."
 
 #: doc/classes/Node2D.xml:55
 msgid ""
 "Rotates the node so it points towards the [code]point[/code], which is "
 "expected to use global coordinates."
 msgstr ""
+"Gira el nodo para que apunte hacia el [code]punto[/code], que se espera que "
+"utilice coordenadas globales."
 
 #: doc/classes/Node2D.xml:66
 msgid ""
@@ -43019,6 +43983,9 @@ msgid ""
 "_process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/"
 "code], normalizes the movement."
 msgstr ""
+"Aplica una traducción local en el eje X del nodo basada en la [code]delta[/"
+"code] del [method Node._process]. Si [code]scaled[/code] es [code]false[/"
+"code], normaliza el movimiento."
 
 #: doc/classes/Node2D.xml:77
 msgid ""
@@ -43026,12 +43993,16 @@ msgid ""
 "_process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/"
 "code], normalizes the movement."
 msgstr ""
+"Aplica una traducción local en el eje Y del nodo basada en el [method Node."
+"_process]'s [code]delta[/code]. Si [code]scaled[/code] es [code]false[/"
+"code], normaliza el movimiento."
 
 #: doc/classes/Node2D.xml:86
 msgid ""
 "Applies a rotation to the node, in radians, starting from its current "
 "rotation."
 msgstr ""
+"Aplica una rotación al nodo, en radianes, a partir de su rotación actual."
 
 #: doc/classes/Node2D.xml:95
 msgid ""
@@ -43042,6 +44013,13 @@ msgid ""
 "applying it to a node's own position will give an incorrect result, as it "
 "will incorporate the node's own transformation into its global position."
 msgstr ""
+"Transforma la posición local proporcionada en una posición en el espacio de "
+"coordenadas globales. Se espera que la entrada sea local en relación con el "
+"[Node2D] al que se llama. Por ejemplo, aplicar este método a las posiciones "
+"de los nodos hijos transformará correctamente sus posiciones en el espacio "
+"de coordenadas globales, pero aplicarlo a la propia posición de un nodo dará "
+"un resultado incorrecto, ya que incorporará la propia transformación del "
+"nodo en su posición global."
 
 #: doc/classes/Node2D.xml:104
 msgid ""
@@ -43050,51 +44028,57 @@ msgid ""
 "g. It is appropriate for determining the positions of child nodes, but it is "
 "not appropriate for determining its own position relative to its parent."
 msgstr ""
+"Transforma la posición global proporcionada en una posición en el espacio de "
+"coordenadas locales. La salida será local en relación con el [Node2D] al que "
+"se llama. Por ejemplo, es apropiado para determinar las posiciones de los "
+"nodos hijos, pero no es apropiado para determinar su propia posición en "
+"relación con su padre."
 
 #: doc/classes/Node2D.xml:113
 msgid ""
 "Translates the node by the given [code]offset[/code] in local coordinates."
 msgstr ""
+"Traduce el nodo por el [code]offset[/code] dado en coordenadas locales."
 
 #: doc/classes/Node2D.xml:119
 msgid "Global position."
-msgstr ""
+msgstr "Posición global."
 
 #: doc/classes/Node2D.xml:122
 msgid "Global rotation in radians."
-msgstr ""
+msgstr "Rotación global en radianes."
 
 #: doc/classes/Node2D.xml:125
 msgid "Global rotation in degrees."
-msgstr ""
+msgstr "Rotación global en grados."
 
 #: doc/classes/Node2D.xml:128
 msgid "Global scale."
-msgstr ""
+msgstr "Escala global."
 
 #: doc/classes/Node2D.xml:131
 msgid "Global [Transform2D]."
-msgstr ""
+msgstr "[Transform2D] Global."
 
 #: doc/classes/Node2D.xml:134
 msgid "Position, relative to the node's parent."
-msgstr ""
+msgstr "Posición, relativa al padre del nodo."
 
 #: doc/classes/Node2D.xml:137
 msgid "Rotation in radians, relative to the node's parent."
-msgstr ""
+msgstr "Rotación en radianes, en relación con el padre del nodo."
 
 #: doc/classes/Node2D.xml:140
 msgid "Rotation in degrees, relative to the node's parent."
-msgstr ""
+msgstr "Rotación en grados, en relación con el padre del nodo."
 
 #: doc/classes/Node2D.xml:143
 msgid "The node's scale. Unscaled value: [code](1, 1)[/code]."
-msgstr ""
+msgstr "La escala del nodo. Valor no escalado: [code](1, 1)[/code]."
 
 #: doc/classes/Node2D.xml:150
 msgid "Local [Transform2D]."
-msgstr ""
+msgstr "[Transform2D] Local ."
 
 #: doc/classes/Node2D.xml:153
 msgid ""
@@ -43102,16 +44086,23 @@ msgid ""
 "index. If this node's Z index is 2 and its parent's effective Z index is 3, "
 "then this node's effective Z index will be 2 + 3 = 5."
 msgstr ""
+"Si [code]true[/code], el índice Z del nodo es relativo al índice Z de su "
+"padre. Si el índice Z de este nodo es 2 y el índice Z efectivo de su padre "
+"es 3, entonces el índice Z efectivo de este nodo será 2 + 3 = 5."
 
 #: doc/classes/Node2D.xml:156
 msgid ""
 "Z index. Controls the order in which the nodes render. A node with a higher "
 "Z index will display in front of others."
 msgstr ""
+"Índice Z. Controla el orden en el que los nodos se renderizan. Un nodo con "
+"un índice Z más alto se mostrará delante de los demás."
 
 #: doc/classes/Node3D.xml:4
 msgid "Most basic 3D game object, parent of all 3D-related nodes."
 msgstr ""
+"El objeto de juego 3D más básico, padre de todos los nodos relacionados con "
+"el 3D."
 
 #: doc/classes/Node3D.xml:7
 msgid ""
@@ -43128,70 +44119,107 @@ msgid ""
 "parameters must have angles specified as [i]radians[/i]. To convert degrees "
 "to radians, use [method @GDScript.deg2rad]."
 msgstr ""
+"El objeto más básico de un juego en 3D, con un [Transform] 3D y ajustes de "
+"visibilidad. Todos los demás objetos de juegos 3D heredan de Node3D. Utiliza "
+"[Node3D] como nodo padre para mover, escalar, rotar y mostrar/esconder a los "
+"hijos en un proyecto 3D.\n"
+"Las operaciones de afinación (rotar, escalar, traducir) ocurren en el "
+"sistema de coordenadas locales del padre, a menos que el objeto [Node3D] se "
+"establezca como de nivel superior. Las operaciones afines en este sistema de "
+"coordenadas corresponden a operaciones afines directas en la transformación "
+"de [Node3D]. La palabra local a continuación se refiere a este sistema de "
+"coordenadas. El sistema de coordenadas que está unido al propio objeto "
+"[Node3D] se denomina sistema de coordenadas objeto-local.\n"
+"[b]Nota:[/b] A menos que se especifique lo contrario, todos los métodos que "
+"tienen parámetros de ángulo deben tener ángulos especificados como "
+"[i]radianes[/i]. Para convertir los grados en radianes, utilice [método "
+"@GDScript.deg2rad]."
 
 #: doc/classes/Node3D.xml:12
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 msgstr ""
+"https://docs.godotengine.org/es/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Node3D.xml:26
 msgid ""
 "Returns the parent [Node3D], or an empty [Object] if no parent exists or "
 "parent is not of type [Node3D]."
 msgstr ""
+"Devuelve el padre [Node3D], o un [Object] vacío si no existe un padre o el "
+"padre no es de tipo [Node3D]."
 
 #: doc/classes/Node3D.xml:33
 msgid ""
 "Returns the current [World3D] resource this [Node3D] node is registered to."
 msgstr ""
+"Devuelve el recurso actual [World3D] al que este nodo [Node3D] está "
+"registrado."
 
 #: doc/classes/Node3D.xml:44
 msgid ""
 "Rotates the global (world) transformation around axis, a unit [Vector3], by "
 "specified angle in radians. The rotation axis is in global coordinate system."
 msgstr ""
+"Gira la transformación global (del mundo) alrededor del eje, una unidad "
+"[Vector3], por un ángulo especificado en radianes. El eje de rotación está "
+"en el sistema de coordenadas globales."
 
 #: doc/classes/Node3D.xml:53
 msgid ""
 "Scales the global (world) transformation by the given [Vector3] scale "
 "factors."
 msgstr ""
+"Escala la transformación global (del mundo) por los factores de escala "
+"[Vector3] dados."
 
 #: doc/classes/Node3D.xml:62
 msgid ""
 "Moves the global (world) transformation by [Vector3] offset. The offset is "
 "in global coordinate system."
 msgstr ""
+"Mueve la transformación global (del mundo) por el desplazamiento del "
+"[Vector3]. El desplazamiento está en el sistema de coordenadas globales."
 
 #: doc/classes/Node3D.xml:69
 msgid ""
 "Disables rendering of this node. Changes [member visible] to [code]false[/"
 "code]."
 msgstr ""
+"Desactiva la representación de este nodo. Cambia [member visible] por "
+"[code]false[/code]."
 
 #: doc/classes/Node3D.xml:76
 msgid ""
 "Returns whether node notifies about its local transformation changes. "
 "[Node3D] will not propagate this by default."
 msgstr ""
+"Devuelve si el nodo notifica sobre sus cambios de transformación local. "
+"[Nodo3D] no propagará esto por defecto."
 
 #: doc/classes/Node3D.xml:83
 msgid ""
 "Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its "
 "local transformation scale."
 msgstr ""
+"Devuelve si este nodo utiliza una escala de [code](1, 1, 1)[/code] o su "
+"escala de transformación local."
 
 #: doc/classes/Node3D.xml:90
 msgid ""
 "Returns whether this node is set as Toplevel, that is whether it ignores its "
 "parent nodes transformations."
 msgstr ""
+"Devuelve si este nodo se establece como Toplevel, es decir, si ignora las "
+"transformaciones de sus nodos padres."
 
 #: doc/classes/Node3D.xml:97
 msgid ""
 "Returns whether the node notifies about its global and local transformation "
 "changes. [Node3D] will not propagate this by default."
 msgstr ""
+"Devuelve si el nodo notifica sobre sus cambios de transformación global y "
+"local. [Nodo3D] no propagará esto por defecto."
 
 #: doc/classes/Node3D.xml:115
 msgid ""
@@ -43202,6 +44230,13 @@ msgid ""
 "perpendicular to both the [code]target[/code] and [code]up[/code] vectors.\n"
 "Operations take place in global space."
 msgstr ""
+"Se rota a sí mismo para que el eje -Z local apunte hacia la posición del "
+"[code]target[/code].\n"
+"La transformación girará primero alrededor del vector [code]up[/code] dado, "
+"y luego se alineará completamente con el objetivo mediante una nueva "
+"rotación alrededor de un eje perpendicular tanto al vector [code]target[/"
+"code] como al [code]up[/code].\n"
+"Las operaciones tienen lugar en el espacio global."
 
 #: doc/classes/Node3D.xml:130
 msgid ""
@@ -43209,6 +44244,9 @@ msgid ""
 "itself to point toward the [code]target[/code] as per [method look_at]. "
 "Operations take place in global space."
 msgstr ""
+"Mueve el nodo a la posición [code]position[/code] especificada, y luego se "
+"rota para apuntar hacia el [code]target[/code] según el [method look_at]. "
+"Las operaciones tienen lugar en el espacio global."
 
 #: doc/classes/Node3D.xml:137
 msgid ""
@@ -43216,42 +44254,57 @@ msgid ""
 "its rotation and translation by performing Gram-Schmidt orthonormalization "
 "on this node's [Transform]."
 msgstr ""
+"Restablece las transformaciones de este nodo (como escala, sesgo y "
+"conicidad) preservando su rotación y traslación al realizar la "
+"ortonormalización de Gram-Schmidt en la [Transform] de este nodo."
 
 #: doc/classes/Node3D.xml:148
 msgid ""
 "Rotates the local transformation around axis, a unit [Vector3], by specified "
 "angle in radians."
 msgstr ""
+"Gira la transformación local alrededor del eje, una unidad [Vector3], por un "
+"ángulo especificado en radianes."
 
 #: doc/classes/Node3D.xml:159
 msgid ""
 "Rotates the local transformation around axis, a unit [Vector3], by specified "
 "angle in radians. The rotation axis is in object-local coordinate system."
 msgstr ""
+"Gira la transformación local alrededor del eje, una unidad [Vector3], por un "
+"ángulo especificado en radianes. El eje de rotación está en el sistema de "
+"coordenadas locales del objeto."
 
 #: doc/classes/Node3D.xml:168
 msgid "Rotates the local transformation around the X axis by angle in radians."
 msgstr ""
+"Gira la transformación local alrededor del eje X por el ángulo en radianes."
 
 #: doc/classes/Node3D.xml:177
 msgid "Rotates the local transformation around the Y axis by angle in radians."
 msgstr ""
+"Gira la transformación local alrededor del eje Y por el ángulo en radianes."
 
 #: doc/classes/Node3D.xml:186
 msgid "Rotates the local transformation around the Z axis by angle in radians."
 msgstr ""
+"Gira la transformación local alrededor del eje Z por el ángulo en radianes."
 
 #: doc/classes/Node3D.xml:195
 msgid ""
 "Scales the local transformation by given 3D scale factors in object-local "
 "coordinate system."
 msgstr ""
+"Escala la transformación local mediante factores de escala tridimensionales "
+"dados en el sistema de coordenadas objeto-local."
 
 #: doc/classes/Node3D.xml:204
 msgid ""
 "Makes the node ignore its parents transformations. Node transformations are "
 "only in global space."
 msgstr ""
+"Hace que el nodo ignore las transformaciones de sus padres. Las "
+"transformaciones del nodo sólo se dan en el espacio global."
 
 #: doc/classes/Node3D.xml:213
 msgid ""
@@ -43259,48 +44312,65 @@ msgid ""
 "transformation scale. Changes to the local transformation scale are "
 "preserved."
 msgstr ""
+"Establece si el nodo utiliza una escala de [code](1, 1, 1)[/code] o su "
+"escala de transformación local. Los cambios en la escala de transformación "
+"local se conservan."
 
 #: doc/classes/Node3D.xml:220
 msgid ""
 "Reset all transformations for this node (sets its [Transform] to the "
 "identity matrix)."
 msgstr ""
+"Reinicia todas las transformaciones para este nodo (establece su [Transform] "
+"a la matriz de identidad)."
 
 #: doc/classes/Node3D.xml:229
 msgid ""
 "Sets whether the node ignores notification that its transformation (global "
 "or local) changed."
 msgstr ""
+"Establece si el nodo ignora la notificación de que su transformación (global "
+"o local) ha cambiado."
 
 #: doc/classes/Node3D.xml:238
 msgid ""
 "Sets whether the node notifies about its local transformation changes. "
 "[Node3D] will not propagate this by default."
 msgstr ""
+"Establece si el nodo notifica sobre sus cambios de transformación local. "
+"[Nodo3D] no propagará esto por defecto."
 
 #: doc/classes/Node3D.xml:247
 msgid ""
 "Sets whether the node notifies about its global and local transformation "
 "changes. [Node3D] will not propagate this by default."
 msgstr ""
+"Establece si el nodo notifica sobre sus cambios de transformación global y "
+"local. [Node3D] no propagará esto por defecto."
 
 #: doc/classes/Node3D.xml:254
 msgid ""
 "Enables rendering of this node. Changes [member visible] to [code]true[/"
 "code]."
 msgstr ""
+"Permite la representación de este nodo. Cambia [member visible] a "
+"[code]true[/code]."
 
 #: doc/classes/Node3D.xml:263
 msgid ""
 "Transforms [code]local_point[/code] from this node's local space to world "
 "space."
 msgstr ""
+"Transforma [code]local_point[/code] del espacio local de este nodo al "
+"espacio mundial."
 
 #: doc/classes/Node3D.xml:272
 msgid ""
 "Transforms [code]global_point[/code] from world space to this node's local "
 "space."
 msgstr ""
+"Transforma [code]global_point[/code] del espacio mundial al espacio local de "
+"este nodo."
 
 #: doc/classes/Node3D.xml:281
 msgid ""
@@ -43310,25 +44380,34 @@ msgid ""
 "offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) "
 "to the X coordinate."
 msgstr ""
+"Cambia la posición del nodo por el desplazamiento dado [Vector3].\n"
+"Observe que la traslación [code]offset[/code] se ve afectada por la escala "
+"del nodo, de modo que si se escalara por ejemplo por [code](10, 1, 1)[/"
+"code], una traslación por un offset de [code](2, 0, 0)[/code] añadiría en "
+"realidad 20 ([code]2 * 10[/code]) a la coordenada X."
 
 #: doc/classes/Node3D.xml:291
 msgid ""
 "Changes the node's position by the given offset [Vector3] in local space."
 msgstr ""
+"Cambia la posición del nodo por el desplazamiento dado [Vector3] en el "
+"espacio local."
 
 #: doc/classes/Node3D.xml:298
 msgid "Updates the [Node3DGizmo] of this node."
-msgstr ""
+msgstr "Actualiza el [Nodo3DGizmo] de este nodo."
 
 #: doc/classes/Node3D.xml:304
 msgid ""
 "The [Node3DGizmo] for this node. Used for example in [EditorNode3DGizmo] as "
 "custom visualization and editing handles in Editor."
 msgstr ""
+"El [Node3DGizmo] para este nodo. Usado por ejemplo en [EditorNode3DGizmo] "
+"como visualización personalizada y manejadores de edición en el Editor."
 
 #: doc/classes/Node3D.xml:307
 msgid "World3D space (global) [Transform] of this node."
-msgstr ""
+msgstr "World3D espacio (global) [Transform] de este nodo."
 
 #: doc/classes/Node3D.xml:310
 msgid ""
@@ -43342,24 +44421,36 @@ msgid ""
 "point numbers. Therefore, applying affine operations on the rotation \"vector"
 "\" is not meaningful."
 msgstr ""
+"Parte de la rotación de la transformación local en radianes, especificada en "
+"términos de ángulos YXZ-Euler en el formato (ángulo X, ángulo Y, ángulo Z).\n"
+"[b]Nota:[/b] En el sentido matemático, la rotación es una matriz y no un "
+"vector. Los tres ángulos de Euler, que son los tres parámetros "
+"independientes de la parametrización del ángulo de Euler de la matriz de "
+"rotación, se almacenan en una estructura de datos [Vector3] no porque la "
+"rotación sea un vector, sino sólo porque el [Vector3] existe como una "
+"estructura de datos conveniente para almacenar 3 números reales. Por lo "
+"tanto, la aplicación de operaciones afines en el \"vector\" de rotación no "
+"es significativa."
 
 #: doc/classes/Node3D.xml:314
 msgid ""
 "Rotation part of the local transformation in degrees, specified in terms of "
 "YXZ-Euler angles in the format (X angle, Y angle, Z angle)."
 msgstr ""
+"Parte de la rotación de la transformación local en grados, especificada en "
+"términos de ángulos YXZ-Euler en el formato (ángulo X, ángulo Y, ángulo Z)."
 
 #: doc/classes/Node3D.xml:317
 msgid "Scale part of the local transformation."
-msgstr ""
+msgstr "Parte de Escala de la transformación local."
 
 #: doc/classes/Node3D.xml:320
 msgid "Local space [Transform] of this node, with respect to the parent node."
-msgstr ""
+msgstr "El espacio local [Transform] de este nodo, con respecto al nodo padre."
 
 #: doc/classes/Node3D.xml:323
 msgid "Local translation of this node."
-msgstr ""
+msgstr "Traducción local de este nodo."
 
 #: doc/classes/Node3D.xml:326
 msgid ""
@@ -43370,7 +44461,7 @@ msgstr ""
 
 #: doc/classes/Node3D.xml:332
 msgid "Emitted when node visibility changes."
-msgstr ""
+msgstr "Emitido cuando cambia la visibilidad del nodo."
 
 #: doc/classes/Node3D.xml:338
 msgid ""
@@ -43379,26 +44470,36 @@ msgid ""
 "In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first "
 "need to ask for it, with [method set_notify_transform]."
 msgstr ""
+"Los nodos de Node3D reciben esta notificación cuando su transformación "
+"global cambia. Esto significa que o bien el nodo actual o bien un nodo padre "
+"cambió su transformación.\n"
+"Para que [constant NOTIFICATION_TRANSFORM_CHANGED] funcione, los usuarios "
+"primero tienen que pedirlo, con [method set_notify_transform]."
 
 #: doc/classes/Node3D.xml:342
 msgid ""
 "Node3D nodes receives this notification when they are registered to new "
 "[World3D] resource."
 msgstr ""
+"Los nodos de Node3D reciben esta notificación cuando se registran en el "
+"nuevo recurso [World3D]."
 
 #: doc/classes/Node3D.xml:345
 msgid ""
 "Node3D nodes receives this notification when they are unregistered from "
 "current [World3D] resource."
 msgstr ""
+"Los nodos de Node3D reciben esta notificación cuando no están registrados en "
+"el recurso actual [World3D]."
 
 #: doc/classes/Node3D.xml:348
 msgid "Node3D nodes receives this notification when their visibility changes."
 msgstr ""
+"Los nodos de Node3D reciben esta notificación cuando su visibilidad cambia."
 
 #: doc/classes/NodePath.xml:4
 msgid "Pre-parsed scene tree path."
-msgstr ""
+msgstr "Camino del árbol de la escena pre-parseado."
 
 #: doc/classes/NodePath.xml:7
 msgid ""
@@ -43431,6 +44532,36 @@ msgid ""
 "@\"/root/MyAutoload\" # If you have an autoloaded node or scene.\n"
 "[/codeblock]"
 msgstr ""
+"Una ruta relativa o absoluta pre-parseada en un árbol de escena, para ser "
+"usada con [method Node.get_node] y funciones similares. Puede hacer "
+"referencia a un nodo, a un recurso dentro de un nodo o a una propiedad de un "
+"nodo o recurso. Por ejemplo, [code]\"Path2D/PathFollow2D/Sprite2D:texture:"
+"size\"[/code] se referiría a la propiedad [code]size[/code] del recurso "
+"[code]texture[/code] en el nodo llamado [code]\"Sprite2D\"[/code] que es "
+"hijo de los otros nodos nombrados en el camino.\n"
+"Normalmente sólo pasarás una string a [method Node.get_node] y se convertirá "
+"automáticamente, pero puede que ocasionalmente quieras analizar un camino "
+"por adelantado con [NodePath] o la sintaxis literal [code]@\"path\"[/code]. "
+"Exportar una variable [NodePath] te dará un widget de selección de nodos en "
+"el panel de propiedades del editor, que a menudo puede ser útil.\n"
+"Una [NodePath] está compuesta por una lista de nombres de nodos separados "
+"por barras (como una ruta de sistema de archivos) y una lista opcional de "
+"\"subnombres\" separados por dos puntos que pueden ser recursos o "
+"propiedades.\n"
+"Algunos ejemplos de NodePaths son los siguientes:\n"
+"[bloque de código]\n"
+"# Sin barra inclinada significa que es relativa al nodo actual.\n"
+"@\"A\" # Hijo inmediato A\n"
+"@\"A/B\" # El hijo de A B\n"
+"@\".\" # El nodo actual.\n"
+"@\"..\" # El nodo padre.\n"
+"@\"../C\" # El nodo hermano C.\n"
+"# Una barra inclinada significa que es absoluta del Árbol de Escenas.\n"
+"@\"/root\" # Equivalente a get_tree().get_root().\n"
+"@\"/root/Main\" # Si el nodo raíz de tu escena principal se llamara \"Main"
+"\".\n"
+"@\"/root/MyAutoload\" # Si tienes un nodo o escena autocargada.\n"
+"[/codeblock]"
 
 #: doc/classes/NodePath.xml:33
 msgid ""
@@ -43459,6 +44590,32 @@ msgid ""
 "\"/root/Level/Path2D\"\n"
 "[/codeblock]"
 msgstr ""
+"Crea un NodePath a partir de una string, por ejemplo, [code]\"Path2D/"
+"PathFollow2D/Sprite2D:texture:size\"[/code]. Un camino es absoluto si "
+"comienza con una barra. Los caminos absolutos sólo son válidos en el árbol "
+"de escenas global, no dentro de las escenas individuales. En un camino "
+"relativo, [code]\".\"[/code] y [code]\"..\"[/code] indican el nodo actual y "
+"su padre.\n"
+"Los \"subnombres\" incluidos opcionalmente después de la ruta al nodo "
+"objetivo pueden apuntar a recursos o propiedades, y también pueden "
+"anidarse.\n"
+"Ejemplos de NodePaths válidos (suponiendo que esos nodos existan y tengan "
+"los recursos o propiedades referenciados):\n"
+"[codeblock]\n"
+"# Apunta al nodo Sprite2D\n"
+"\"Path2D/PathFollow2D/Sprite2D\"\n"
+"# Apunta al nodo Sprite2D y su recurso de \"textura\".\n"
+"# get_node() recuperaría \"Sprite2D\", mientras que get_node_and_resource()\n"
+"# recuperaría tanto el nodo Sprite2D como el recurso de \"textura\".\n"
+"\"Path2D/PathFollow2D/Sprite2D:texture\"\n"
+"# Apunta al nodo Sprite2D y su propiedad de \"posición\".\n"
+"\"Path2D/PathFollow2D/Sprite2D:position\"\n"
+"# Apunta al nodo Sprite2D y al componente \"x\" de su propiedad \"posición"
+"\".\n"
+"\"Path2D/PathFollow2D/Sprite2D:position:x\"\n"
+"# Camino absoluto (desde la \"raíz\")\n"
+"\"/root/Level/Path2D\"\n"
+"[/codeblock]"
 
 #: doc/classes/NodePath.xml:56
 msgid ""
@@ -43475,6 +44632,18 @@ msgid ""
 "print(property_path) # :position:x\n"
 "[/codeblock]"
 msgstr ""
+"Devuelve un camino de nodos con un carácter de dos puntos ([code]:[/code]) "
+"preparado, transformándolo en un camino de propiedades puras sin nombre de "
+"nodo (por defecto para resolver desde el nodo actual).\n"
+"[codeblock]\n"
+"# Esto será analizado como una ruta de nodo a la propiedad \"x\" en el nodo "
+"\"posición\".\n"
+"var node_path = NodePath(\"position:x\")\n"
+"# Esto será analizado como una ruta de nodo al componente \"x\" de la "
+"propiedad \"position\" en el nodo actual\n"
+"var ruta_propiedad = node_path. get_as_property_path()\n"
+"print(ruta_propiedad) # :position:x\n"
+"[/codeblock]"
 
 #: doc/classes/NodePath.xml:70
 msgid ""
@@ -43485,6 +44654,14 @@ msgid ""
 "print(nodepath.get_concatenated_subnames()) # texture:load_path\n"
 "[/codeblock]"
 msgstr ""
+"Devuelve todos los subnombres concatenados con un carácter de dos puntos "
+"([code]:[/code]) como separador, es decir, el lado derecho del primer punto "
+"del recorrido de un nodo.\n"
+"[codeblock]\n"
+"var ruta_nodo = NodePath(\"Path2D/PathFollow2D/Sprite2D:texture:load_path"
+"\")\n"
+"print(ruta_nodo.get_concatenated_subnames()) #textura:texture:load_path\n"
+"[/codebloque]"
 
 #: doc/classes/NodePath.xml:83
 msgid ""
@@ -43497,6 +44674,14 @@ msgid ""
 "print(node_path.get_name(2)) # Sprite\n"
 "[/codeblock]"
 msgstr ""
+"Obtiene el nombre del nodo indicado por [code]idx[/code] (0 a [method "
+"get_name_count]).\n"
+"[codeblock]\n"
+"var ruta_nodo = NodePath(\"Path2D/PathFollow2D/Sprite2D\")\n"
+"print(ruta_nodo.get_name(0)) # Path2D\n"
+"print(ruta_nodo.get_name(1)) # PathFollow2D\n"
+"print(ruta_nodo.get_name(2)) # Sprite\n"
+"[/codebloque]"
 
 #: doc/classes/NodePath.xml:96
 msgid ""
@@ -43504,6 +44689,9 @@ msgid ""
 "get_subname_count]) are not included.\n"
 "For example, [code]\"Path2D/PathFollow2D/Sprite2D\"[/code] has 3 names."
 msgstr ""
+"Obtiene el número de nombres de los nodos que componen el camino. Los "
+"subnombres (ver [method get_subname_count]) no están incluidos.\n"
+"Por ejemplo, [code]\"Path2D/PathFollow2D/Sprite2D\"[/code] tiene 3 nombres."
 
 #: doc/classes/NodePath.xml:106
 msgid ""
@@ -43516,6 +44704,14 @@ msgid ""
 "print(node_path.get_subname(1)) # load_path\n"
 "[/codeblock]"
 msgstr ""
+"Obtiene el nombre del recurso o propiedad indicado por [code]idx[/code] (0 a "
+"[method get_subname_count]).\n"
+"[codeblock]\n"
+"var ruta_nodo = NodePath(\"Path2D/PathFollow2D/Sprite2D:textura:load_path"
+"\")\n"
+"print(ruta_nodo.get_subname(0)) # texture\n"
+"print(ruta_nodo.get_subname(1)) # load_path\n"
+"[/codeblock]"
 
 #: doc/classes/NodePath.xml:118
 msgid ""
@@ -43525,6 +44721,11 @@ msgid ""
 "For example, [code]\"Path2D/PathFollow2D/Sprite2D:texture:load_path\"[/code] "
 "has 2 subnames."
 msgstr ""
+"Obtiene el número de nombres de recursos o propiedades (\"subnombres\") en "
+"el camino. Cada subnombre aparece después de un carácter de dos puntos "
+"([code]:[/code]) en la ruta de nodos.\n"
+"Por ejemplo, [code]\"Path2D/PathFollow2D/Sprite2D:texture:load_path\"[/code] "
+"tiene 2 subnombres."
 
 #: doc/classes/NodePath.xml:126
 msgid ""
@@ -43534,14 +44735,20 @@ msgid ""
 "root\"[/code]) or autoloads (e.g. [code]\"/global\"[/code] if a \"global\" "
 "autoload was registered)."
 msgstr ""
+"Devuelve [code]true[/code] si la ruta del nodo es absoluta (en "
+"contraposición a la relativa), lo que significa que comienza con un carácter "
+"de barra inclinada ([code]/[/code]). Las rutas de nodo absolutas pueden "
+"utilizarse para acceder al nodo raíz ([code]\"/root\"[/code]) o a las "
+"autocargas (por ejemplo, [code]\"/global\"[/code] si se registró un "
+"autocarga \"global\")."
 
 #: doc/classes/NodePath.xml:133
 msgid "Returns [code]true[/code] if the node path is empty."
-msgstr ""
+msgstr "Devuelve [code]true[/code] si la ruta del nodo está vacía."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:4
 msgid "[OpenSimplexNoise] filled texture."
-msgstr ""
+msgstr "Textura rellenada [OpenSimplexNoise]."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:7
 msgid ""
@@ -43559,42 +44766,65 @@ msgid ""
 "var image = texture.get_data()\n"
 "[/codeblock]"
 msgstr ""
+"Utiliza un [OpenSimplexNoise] para rellenar los datos de la textura. Puedes "
+"especificar el tamaño de la textura pero ten en cuenta que las texturas más "
+"grandes tardarán más tiempo en generarse y el ruido sin fisuras sólo "
+"funciona con texturas de tamaño cuadrado.\n"
+"NoiseTexture también puede generar texturas de mapa normal.\n"
+"La clase utiliza [Thread]s para generar los datos de la textura "
+"internamente, por lo que el [method Texture2D.get_data] puede devolver "
+"[code]null[/code] si el proceso de generación no se ha completado todavía. "
+"En ese caso, es necesario esperar a que se genere la textura antes de "
+"acceder a los datos:\n"
+"[codeblock]\n"
+"var textura = preload(\"res://ruido.tres\")\n"
+"yield(textura, \"changed\")\n"
+"var imagen = textura.get_data()\n"
+"[/codeblock]"
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:22
 msgid ""
 "If [code]true[/code], the resulting texture contains a normal map created "
 "from the original noise interpreted as a bump map."
 msgstr ""
+"Si [code]true[/code], la textura resultante contiene un mapa normal creado a "
+"partir del ruido original interpretado como un bump map."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:25
 msgid ""
 "Strength of the bump maps used in this texture. A higher value will make the "
 "bump maps appear larger while a lower value will make them appear softer."
 msgstr ""
+"La fuerza de los bump maps usados en esta textura. Un valor más alto hará "
+"que los bump maps parezcan más grandes mientras que un valor más bajo los "
+"hará parecer más suaves."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:28
 msgid "Height of the generated texture."
-msgstr ""
+msgstr "Altura de la textura generada."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:31
 msgid "The [OpenSimplexNoise] instance used to generate the noise."
-msgstr ""
+msgstr "La instancia [OpenSimplexNoise] utilizada para generar el ruido."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:34
 msgid ""
 "Whether the texture can be tiled without visible seams or not. Seamless "
 "textures take longer to generate."
 msgstr ""
+"Si la textura puede ser colocada en azulejos sin costuras visibles o no. Las "
+"texturas sin costuras tardan más tiempo en generarse."
 
 #: modules/opensimplex/doc_classes/NoiseTexture.xml:37
 msgid "Width of the generated texture."
-msgstr ""
+msgstr "El ancho de la textura generada."
 
 #: doc/classes/Object.xml:4
 msgid "Base class for all non built-in types."
-msgstr ""
+msgstr "Clase base para todos los tipos no integrados."
 
 #: doc/classes/Object.xml:7
+#, fuzzy
 msgid ""
 "Every class which is not a built-in type inherits from this class.\n"
 "You can construct Objects from scripting languages, using [code]Object.new()"
@@ -43627,6 +44857,35 @@ msgid ""
 "stored in a variable can become invalid without warning. Therefore, it's "
 "recommended to use [Reference] for data classes instead of [Object]."
 msgstr ""
+"Toda clase que no es un tipo integrado hereda de esta clase.\n"
+"Puedes construir Objetos desde lenguajes de scripting, usando [code]Object."
+"new()[/code] en GDScript, [code]new Object[/code] en C#, o el nodo "
+"\"Construct Object\" en VisualScript.\n"
+"Los objetos no administran la memoria. Si una clase hereda de Object, "
+"tendrás que eliminar manualmente las instancias de la misma. Para ello, "
+"llama al método [method free] desde tu script o elimina la instancia desde C+"
+"+.\n"
+"Algunas clases que extienden a Object añaden gestión de memoria. Este es el "
+"caso de [Reference], que cuenta las referencias y se borra a sí misma "
+"automáticamente cuando deja de estar referenciada. [Node], otro tipo "
+"fundamental, borra todos sus hijos cuando se libera de la memoria.\n"
+"Los objetos exportan propiedades, que son principalmente útiles para el "
+"almacenamiento y la edición, pero no tanto en la programación. Las "
+"propiedades se exportan en [method _get_property_list] y se manejan en "
+"[method _get] y [method _set]. Sin embargo, los lenguajes de scripting y C++ "
+"tienen medios más sencillos para exportarlas.\n"
+"La pertenencia de las propiedades puede ser probada directamente en GDScript "
+"usando [code]in[/code]:\n"
+"[codeblock]\n"
+"var nodo = Node2D.new()\n"
+"print(\"position\" in nodo) # Imprime \"True\".\n"
+"print(\"otra_propiedad\" in nodo) # Imprime \"False\".\n"
+"[/codeblock]\n"
+"El operador [code]in[/code] evaluará a [code]true[/code] siempre que la "
+"clave exista, incluso si el valor es [code]null[/code].\n"
+"Los objetos también reciben notificaciones. Las notificaciones son una forma "
+"sencilla de notificar al objeto sobre diferentes eventos, de modo que todos "
+"ellos pueden ser manejados juntos. Véase [method _notification]."
 
 #: doc/classes/Object.xml:23 doc/classes/Reference.xml:12
 #: doc/classes/Resource.xml:11
@@ -43645,6 +44904,10 @@ msgid ""
 "Returns the given property. Returns [code]null[/code] if the [code]property[/"
 "code] does not exist."
 msgstr ""
+"Método virtual que puede ser anulado para personalizar el valor de retorno "
+"de [method get].\n"
+"Devuelve la propiedad dada. Devuelve [code]null[/code] si la [code]property[/"
+"code] no existe."
 
 #: doc/classes/Object.xml:40
 msgid ""
@@ -43657,10 +44920,19 @@ msgid ""
 "[code]hint_string: String[/code], and [code]usage: int[/code] (see [enum "
 "PropertyUsageFlags])."
 msgstr ""
+"Método virtual que puede ser anulado para personalizar el valor de retorno "
+"de [method get_property_list].\n"
+"Devuelve la lista de propiedades del objeto como un [Array] de "
+"diccionarios.\n"
+"El [Dictionary] de cada propiedad debe contener al menos entradas de "
+"[code]name: String[/code] y [code]type: int[/code] (ver [enum Variant."
+"Type]). Opcionalmente, también puede incluir [code]hint: int[/code] (ver "
+"[enum PropertyHint]), [code]hint_string: String[/code], y [code]usage: int[/"
+"code] (ver [enum PropertyUsageFlags])."
 
 #: doc/classes/Object.xml:49
 msgid "Called when the object is initialized."
-msgstr ""
+msgstr "Se llama cuando el objeto se inicializa."
 
 #: doc/classes/Object.xml:58
 msgid ""
@@ -43670,6 +44942,11 @@ msgid ""
 "NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more "
 "notifications which are also received by this method."
 msgstr ""
+"Llamado cada vez que el objeto recibe una notificación, que se identifica en "
+"[code]what[/code] por una constante. La base [Object] tiene dos constantes "
+"[constant NOTIFICATION_POSTINITIALIZE] y [constant NOTIFICATION_PREDELETE], "
+"pero subclases como [Node] definen muchas más notificaciones que también se "
+"reciben por este método."
 
 #: doc/classes/Object.xml:69
 msgid ""
@@ -43678,6 +44955,10 @@ msgid ""
 "Sets a property. Returns [code]true[/code] if the [code]property[/code] "
 "exists."
 msgstr ""
+"Método virtual que puede ser anulado para personalizar el valor de retorno "
+"de [method set].\n"
+"Establece una propiedad. Devuelve [code]true[/code] si existe la "
+"[code]property[/code]."
 
 #: doc/classes/Object.xml:77
 msgid ""
@@ -43687,6 +44968,11 @@ msgid ""
 "Returns a [String] representing the object. If not overridden, defaults to "
 "[code]\"[ClassName:RID]\"[/code]."
 msgstr ""
+"Método virtual que puede ser anulado para personalizar el valor de retorno "
+"de [method to_string], y por lo tanto la representación del objeto donde se "
+"convierte en una cadena, por ejemplo con [code]print(obj)[/code].\n"
+"Devuelve una [String] que representa el objeto. Si no se anula, por defecto "
+"es [code]\"[ClassName:RID]\"[/code]."
 
 #: doc/classes/Object.xml:89
 msgid ""
@@ -43694,8 +44980,13 @@ msgid ""
 "added as an [Array] of dictionaries, each containing [code]name: String[/"
 "code] and [code]type: int[/code] (see [enum Variant.Type]) entries."
 msgstr ""
+"Añade una [code]signal[/code] definida por el usuario. Los argumentos son "
+"opcionales, pero pueden añadirse como una [Array] de diccionarios, cada uno "
+"de los cuales contiene entradas de [code]name: String[/code] y [code]type: "
+"int[/code] (véase [enum Variant.Type])."
 
 #: doc/classes/Object.xml:98
+#, fuzzy
 msgid ""
 "Calls the [code]method[/code] on the object and returns the result. This "
 "method supports a variable number of arguments, so parameters are passed as "
@@ -43708,8 +44999,15 @@ msgid ""
 "where you should use the same convention as in the C# source (typically "
 "PascalCase)."
 msgstr ""
+"Llama al [code]method[/code] en el objeto y devuelve el resultado. Este "
+"método soporta un número variable de argumentos, por lo que los parámetros "
+"se pasan como una lista separada por comas. Ejemplo:\n"
+"[codeblock]\n"
+"call(\"set\", \"position\", Vector2(42.0, 0.0))\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml:111
+#, fuzzy
 msgid ""
 "Calls the [code]method[/code] on the object during idle time. This method "
 "supports a variable number of arguments, so parameters are passed as a comma "
@@ -43722,6 +45020,12 @@ msgid ""
 "where you should use the same convention as in the C# source (typically "
 "PascalCase)."
 msgstr ""
+"Llama al [code]method[/code] en el objeto durante el tiempo de inactividad. "
+"Este método soporta un número variable de argumentos, por lo que los "
+"parámetros se pasan como una lista separada por comas. Ejemplo:\n"
+"[codeblock]\n"
+"call_deferred(\"set\", \"position\", Vector2(42.0, 0.0))\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml:126
 msgid ""
@@ -43732,14 +45036,24 @@ msgid ""
 "callv(\"set\", [ \"position\", Vector2(42.0, 0.0) ])\n"
 "[/codeblock]"
 msgstr ""
+"Llama al [code]method[/code] en el objeto y devuelve el resultado. A "
+"diferencia de [method call], este método no soporta un número variable de "
+"argumentos, sino que espera que todos los parámetros sean a través de un "
+"único [array].\n"
+"[codeblock]\n"
+"callv(\"set\", [ \"position\", Vector2(42.0, 0.0) ])\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml:136
 msgid ""
 "Returns [code]true[/code] if the object can translate strings. See [method "
 "set_message_translation] and [method tr]."
 msgstr ""
+"Devuelve [code]true[/code] si el objeto puede traducir cadenas. Ver [method "
+"set_message_translation] y [method tr]."
 
 #: doc/classes/Object.xml:151
+#, fuzzy
 msgid ""
 "[b]FIXME:[/b] The syntax changed with the addition of [Callable], this "
 "should be updated.\n"
@@ -43774,6 +45088,40 @@ msgid ""
 "level, weapon_type, damage])\n"
 "[/codeblock]"
 msgstr ""
+"[b]ARREGLAME:[/b] La sintaxis cambió con la adición de [Callable], esto "
+"debería ser actualizado.\n"
+"Conecta una [code]signal[code] a un [code]method[/code] en un objeto "
+"[code]target[/code]. Pasa la señal opcional [code]binds[/code] a la llamada "
+"como un [Array] de parámetros. Estos parámetros se pasarán al método después "
+"de cualquier parámetro utilizado en la llamada a [method emit_signal]. "
+"Utilice [code]flags[/code] para establecer conexiones diferidas o de un solo "
+"disparo. Ver las constantes de [enum ConnectFlags].\n"
+"Una señal [code]signal[/code] sólo puede ser conectada una vez a un "
+"[code]method[/code]. Lanzará un error si ya está conectada, a menos que la "
+"señal se haya conectado con la [constant CONNECT_REFERENCE_COUNTED]. Para "
+"evitar esto, primero, usa [method is_connected] para comprobar las "
+"conexiones existentes.\n"
+"Si el [code]target[/code] se destruye en el ciclo de vida del juego, la "
+"conexión se perderá.\n"
+"Ejemplos:\n"
+"[codeblock]\n"
+"connect(\"pulsado\", self, \"_on_Button_pressed\") # Señal BaseButton \n"
+"connect(\"ha_entrado_en_texto\", self, \"_on_LineEdit_text_entered\") # "
+"Señal LineEdit \n"
+"connect(\"golpe\", self, \"_on_Player_hit\", [ tipo_arma, daño ]) # Señal "
+"User-defined \n"
+"[/codeblock]\n"
+"Un ejemplo de la relación entre [code]binds[/code] pasado a [method connect] "
+"y los parámetros utilizados al llamar a [method emit_signal]:\n"
+"[codeblock]\n"
+"connect(\"golpe\", self, \"_on_Player_hit\", [ tipo_arma, daño ]) # tipo de "
+"arma y daño son pasados en último lugar\n"
+"emit_signal(\"golpe\", \"Señor de la Oscuridad\", 5) # \"Señor de la "
+"Oscuridad\" y 5 son pasados en primer lugar\n"
+"func _on_Player_hit(golpeado_por, nivel, tipo_arma, daño):\n"
+"    print(\"Golpeado por %s (lvl %d) con arma %s con daño %d\" % "
+"[golpeado_por, nivel, tipo_arma, daño]);\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml:178
 msgid ""
@@ -43785,6 +45133,13 @@ msgid ""
 "throw an error. Use [method is_connected] to ensure that the connection "
 "exists."
 msgstr ""
+"[b]ARREGLAME[/b] La sintaxis cambió con el añadido de [Callable], esto "
+"debería ser actualizado.\n"
+"Desconecta una [code]signal[/code] de un [code]method[/code] en el "
+"[code]target[/code] dado.\n"
+"Si intentas desconectar una conexión que no existe, el método arrojará un "
+"error. Utiliza [method is_connected] para asegurarte de que la conexión "
+"existe."
 
 #: doc/classes/Object.xml:189
 msgid ""
@@ -43797,6 +45152,15 @@ msgid ""
 "emit_signal(\"game_over\")\n"
 "[/codeblock]"
 msgstr ""
+"Emite la [code]signal[/code]. La señal debe existir, por lo que debe ser una "
+"señal incorporada de esta clase o de una de sus clases superiores, o una "
+"señal definida por el usuario. Este método admite un número variable de "
+"argumentos, por lo que los parámetros se pasan como una lista separada por "
+"comas. Ejemplo:\n"
+"[codeblock]\n"
+"emit_signal(\"golpe\", tipo_arma, daño)\n"
+"emit_signal(\"Juego_Terminado\")\n"
+"[/codeblock]"
 
 #: doc/classes/Object.xml:200
 msgid ""
@@ -43804,6 +45168,9 @@ msgid ""
 "object will become invalid, e.g. [code]is_instance_valid(object)[/code] will "
 "return [code]false[/code]."
 msgstr ""
+"Borra el objeto de la memoria. Cualquier referencia preexistente al objeto "
+"liberado se convertirá en inválida, por ejemplo, "
+"[code]is_instance_valid(object)[/code] devolverá [code]false[/code]."
 
 #: doc/classes/Object.xml:209
 msgid ""
@@ -43817,7 +45184,7 @@ msgstr ""
 
 #: doc/classes/Object.xml:217
 msgid "Returns the object's class as a [String]."
-msgstr ""
+msgstr "Devuelve la clase del objeto como una [String]."
 
 #: doc/classes/Object.xml:224
 msgid ""
@@ -43829,6 +45196,13 @@ msgid ""
 "- [code]method_name[/code] is the name of the method to which the signal is "
 "connected."
 msgstr ""
+"Devuelve un [Array] de diccionarios con información sobre las señales que "
+"están conectadas al objeto.\n"
+"Cada [Dictionary] contiene tres entradas String:\n"
+"- [code]source[/code] es una referencia al emisor de la señal.\n"
+"- [code]signal_name[/code] es el nombre de la señal conectada.\n"
+"- [code]method_name[/code] es el nombre del método al que está conectada la "
+"señal."
 
 #: doc/classes/Object.xml:237
 msgid ""
@@ -43837,6 +45211,10 @@ msgid ""
 "([code]:[/code]) to access nested properties. Examples: [code]\"position:x"
 "\"[/code] or [code]\"material:next_pass:blend_mode\"[/code]."
 msgstr ""
+"Obtiene la propiedad del objeto indexada por la [NodePath] dada. La ruta del "
+"nodo debe ser relativa al objeto actual y puede utilizar el carácter de dos "
+"puntos ([code]:[/code]) para acceder a las propiedades anidadas. Ejemplos: "
+"[code]\"posición:x\"[/code] o [code]\"material:next_pass:blend_mode\"[/code]."
 
 #: doc/classes/Object.xml:244
 msgid ""
@@ -43844,18 +45222,22 @@ msgid ""
 "This ID can be saved in [EncodedObjectAsID], and can be used to retrieve the "
 "object instance with [method @GDScript.instance_from_id]."
 msgstr ""
+"Devuelve la identificación de instancia única del objeto.\n"
+"Este ID puede guardarse en [EncodedObjectAsID], y puede utilizarse para "
+"recuperar la instancia del objeto con [method @GDScript.instance_from_id]."
 
 #: doc/classes/Object.xml:254
 msgid "Returns the object's metadata entry for the given [code]name[/code]."
 msgstr ""
+"Devuelve la entrada de metadatos del objeto para el [code]name[/code] dado."
 
 #: doc/classes/Object.xml:261
 msgid "Returns the object's metadata as a [PackedStringArray]."
-msgstr ""
+msgstr "Devuelve los metadatos del objeto como un [PackedStringArray]."
 
 #: doc/classes/Object.xml:268
 msgid "Returns the object's methods and their signatures as an [Array]."
-msgstr ""
+msgstr "Devuelve los métodos del objeto y sus firmas como un [Array]."
 
 #: doc/classes/Object.xml:275
 msgid ""
@@ -43866,36 +45248,48 @@ msgid ""
 "[code]hint_string: String[/code], and [code]usage: int[/code] (see [enum "
 "PropertyUsageFlags])."
 msgstr ""
+"Devuelve la lista de propiedades del objeto como una [Array] de "
+"diccionarios.\n"
+"El [Dictionary] de cada propiedad contiene al menos entradas de [code]name: "
+"String[/code] y [code]type: int[/code] (véase [enum Variant.Type]). "
+"Opcionalmente, también puede incluir [code]hint: int[/code] (ver [enum "
+"PropertyHint]), [code]hint_string: String[/code], y [code]usage: int[/code] "
+"(ver [enum PropertyUsageFlags])."
 
 #: doc/classes/Object.xml:283
 msgid ""
 "Returns the object's [Script] instance, or [code]null[/code] if none is "
 "assigned."
 msgstr ""
+"Devuelve la instancia de [Script] del objeto, o [code]null[/code] si no hay "
+"ninguna asignada."
 
 #: doc/classes/Object.xml:292
 msgid "Returns an [Array] of connections for the given [code]signal[/code]."
-msgstr ""
+msgstr "Devuelve un [Array] de conexiones para la [code]signal[/code] dada."
 
 #: doc/classes/Object.xml:299
 msgid "Returns the list of signals as an [Array] of dictionaries."
-msgstr ""
+msgstr "Devuelve la lista de señales como un [Array] de diccionarios."
 
 #: doc/classes/Object.xml:308
 msgid ""
 "Returns [code]true[/code] if a metadata entry is found with the given "
 "[code]name[/code]."
 msgstr ""
+"Devuelve [code]true[/code] si se encuentra una entrada de metadatos con el "
+"[code]name[/code] dado."
 
 #: doc/classes/Object.xml:317
 msgid ""
 "Returns [code]true[/code] if the object contains the given [code]method[/"
 "code]."
 msgstr ""
+"Devuelve [code]true[/code] si el objeto contiene el [code]method[/code] dado."
 
 #: doc/classes/Object.xml:326
 msgid "Returns [code]true[/code] if the given [code]signal[/code] exists."
-msgstr ""
+msgstr "Devuelve [code]true[/code] si existe la [code]signal[/code] dada."
 
 #: doc/classes/Object.xml:335
 msgid ""
@@ -48841,8 +50235,8 @@ msgid ""
 "Returns the orthogonal projection of [code]point[/code] into a point in the "
 "plane."
 msgstr ""
-"Devuelve el nombre de [code]animation[/code] or una string vacia si no se "
-"encuentra."
+"Devuelve el punto más cercano al [code]point[/code] provisto en la "
+"superficie de la malla de navegación."
 
 #: doc/classes/Plane.xml:149
 msgid ""
@@ -52504,7 +53898,7 @@ msgstr ""
 #: doc/classes/ReflectionProbe.xml:38
 #, fuzzy
 msgid "If [code]true[/code], reflections will ignore sky contribution."
-msgstr "Si [code]true[/code], la textura se centrará."
+msgstr "Si [code]true[/code], este nodo se dibuja."
 
 #: doc/classes/ReflectionProbe.xml:41
 msgid ""
@@ -64932,10 +66326,11 @@ msgid "Returns the angle to the given vector, in radians."
 msgstr "Devuelve la tangente del vértice dado."
 
 #: doc/classes/Vector2.xml:65
+#, fuzzy
 msgid ""
 "Returns the angle between the line connecting the two points and the X axis, "
 "in radians."
-msgstr ""
+msgstr "Devuelve el ángulo entre el nodo y el [code]point[/code] en radianes."
 
 #: doc/classes/Vector2.xml:72
 msgid ""
@@ -64992,7 +66387,7 @@ msgstr ""
 #: doc/classes/Vector2.xml:149
 #, fuzzy
 msgid "Returns the distance between this vector and [code]to[/code]."
-msgstr "Devuelve el subdirectorio en el índice [code]idx[/code]."
+msgstr "Devuelve el ángulo entre el nodo y el [code]point[/code] en radianes."
 
 #: doc/classes/Vector2.xml:158
 msgid ""
@@ -65111,7 +66506,9 @@ msgstr ""
 #: doc/classes/Vector2.xml:308 doc/classes/Vector3.xml:309
 #, fuzzy
 msgid "Returns this vector slid along a plane defined by the given normal."
-msgstr "Devuelve el nodo animacion con el nombre dado."
+msgstr ""
+"Devuelve el tamaño del margen identificado por la constante [enum Margin] "
+"dada."
 
 #: doc/classes/Vector2.xml:317 doc/classes/Vector3.xml:318
 msgid ""
@@ -65270,7 +66667,7 @@ msgstr ""
 #: doc/classes/Vector3.xml:118
 #, fuzzy
 msgid "Returns the distance between this vector and [code]b[/code]."
-msgstr "Devuelve el subdirectorio en el índice [code]idx[/code]."
+msgstr "Devuelve el ángulo entre el nodo y el [code]point[/code] en radianes."
 
 #: doc/classes/Vector3.xml:127
 msgid ""
@@ -65330,8 +66727,11 @@ msgid "Returns this vector projected onto another vector [code]b[/code]."
 msgstr "Devuelve el color de la conexión de entrada [code]idx[/code]."
 
 #: doc/classes/Vector3.xml:263
+#, fuzzy
 msgid "Returns this vector reflected from a plane defined by the given normal."
 msgstr ""
+"Devuelve el tamaño del margen identificado por la constante [enum Margin] "
+"dada."
 
 #: doc/classes/Vector3.xml:274
 #, fuzzy
@@ -71890,6 +73290,36 @@ msgstr ""
 #~ "Tanto la luz directa como la indirecta serán cocinadas.\n"
 #~ "[b]Nota:[/b] Debes ocultar la luz si no quieres que aparezca dos veces "
 #~ "(dinámica y cocinada)."
+
+#~ msgid ""
+#~ "Notification received from the OS when the game window is focused.\n"
+#~ "Implemented on all platforms."
+#~ msgstr ""
+#~ "Notificación recibida del sistema operativo cuando la ventana del juego "
+#~ "está enfocada.\n"
+#~ "Implementado en todas las plataformas."
+
+#~ msgid ""
+#~ "Notification received from the OS when the game window is unfocused.\n"
+#~ "Implemented on all platforms."
+#~ msgstr ""
+#~ "Notificación recibida del sistema operativo cuando la ventana del juego "
+#~ "está desenfocada.\n"
+#~ "Implementado en todas las plataformas."
+
+#~ msgid ""
+#~ "Returns whether the node is visible, taking into consideration that its "
+#~ "parents visibility."
+#~ msgstr ""
+#~ "Devuelve si el nodo es visible, teniendo en cuenta que sus padres son "
+#~ "visibles."
+
+#~ msgid ""
+#~ "Returns the [Variant] value of the given [code]property[/code]. If the "
+#~ "[code]property[/code] doesn't exist, this will return [code]null[/code]."
+#~ msgstr ""
+#~ "Devuelve el valor de la [Variant] de la [code]property[/code]. Si la "
+#~ "[code]property[/code] no existe, esto devolverá [code]null[/code]."
 
 #, fuzzy
 #~ msgid ""

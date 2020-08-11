@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-08-04 06:42+0000\n"
-"Last-Translator: Markus Lechner <marcus.lechner@gmail.com>\n"
+"PO-Revision-Date: 2020-08-11 14:39+0000\n"
+"Last-Translator: Günther Bohn <ciscouser@gmx.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -18871,7 +18871,9 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if a scene is currently being played, [code]false[/"
 "code] otherwise. Paused scenes are considered as being played."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn dieser Bereich vollendet ist, ansonsten "
+"[code]false[/code]."
 
 #: doc/classes/EditorInterface.xml:145
 #, fuzzy
@@ -19042,7 +19044,9 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if the handle at index [code]index[/code] is "
 "highlighted by being hovered with the mouse."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn dieser Bereich vollendet ist, ansonsten "
+"[code]false[/code]."
 
 #: doc/classes/EditorNode3DGizmo.xml:156
 msgid ""
@@ -20056,7 +20060,9 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if the setting specified by [code]name[/code] "
 "exists, [code]false[/code] otherwise."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn dieser Bereich vollendet ist, ansonsten "
+"[code]false[/code]."
 
 #: doc/classes/EditorSettings.xml:125
 msgid ""
@@ -22924,36 +22930,40 @@ msgid ""
 msgstr ""
 
 #: modules/mono/doc_classes/GodotSharp.xml:49
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the domain is being finalized, [code]false[/"
 "code] otherwise."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn dieser Bereich vollendet ist, ansonsten "
+"[code]false[/code]."
 
 #: modules/mono/doc_classes/GodotSharp.xml:56
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the Mono runtime is initialized, [code]false[/"
 "code] otherwise."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn die Mono Laufzeit initialisiert ist, "
+"ansonsten [code]false[/code]."
 
 #: modules/mono/doc_classes/GodotSharp.xml:63
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the Mono runtime is shutting down, [code]false[/"
 "code] otherwise."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn die Mono Laufzeit sich beendet, ansonsten "
+"[code]false[/code]."
 
 #: modules/mono/doc_classes/GodotSharp.xml:70
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the scripts domain is loaded, [code]false[/"
 "code] otherwise."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn der Skript Bereich lädt, ansonsten "
+"[code]false[/code]."
 
 #: doc/classes/GPUParticles2D.xml:4
 msgid "2D particle emitter."
-msgstr ""
+msgstr "2D Partikel Emitter."
 
 #: doc/classes/GPUParticles2D.xml:7
 msgid ""
@@ -22985,7 +22995,7 @@ msgstr ""
 
 #: doc/classes/GPUParticles3D.xml:4
 msgid "3D particle emitter."
-msgstr ""
+msgstr "3D Partikel Emitter."
 
 #: doc/classes/GPUParticles3D.xml:7
 msgid ""
@@ -42143,10 +42153,11 @@ msgid "Returns the intersection of this [Rect2i] and b."
 msgstr "Gibt die Größe des Arrays zurück."
 
 #: doc/classes/Rect2i.xml:71
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this [Rect2i] completely encloses another one."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Liefert [code]true[/code] wenn dieser [Rect2i] einen anderen komplett "
+"umschließt."
 
 #: doc/classes/Rect2i.xml:80
 #, fuzzy
@@ -42156,9 +42167,8 @@ msgstr ""
 "Größe, zurück."
 
 #: doc/classes/Rect2i.xml:87
-#, fuzzy
 msgid "Returns the area of the [Rect2i]."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Liefert die Fläche des [Rect2i]."
 
 #: doc/classes/Rect2i.xml:96
 msgid ""
@@ -42179,14 +42189,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Rect2i.xml:129
-#, fuzzy
 msgid "Returns [code]true[/code] if the [Rect2i] is flat or empty."
-msgstr "Gibt [code]true[/code] zurück falls das Array leer ist."
+msgstr "Liefert [code]true[/code] wenn das [Rect2i] leer ist."
 
 #: doc/classes/Rect2i.xml:138
-#, fuzzy
 msgid "Returns [code]true[/code] if the [Rect2i] contains a point."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr "Liefert [code]true[/code] wenn das [Rect2i] einen Punkt beinhaltet."
 
 #: doc/classes/Rect2i.xml:147
 msgid ""
@@ -48902,10 +48910,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml:385
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the length of the string equals [code]0[/code]."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Liefert [code]true[/code] wenn die Länge der Zeichenkette [code]0[/code] ist."
 
 #: doc/classes/String.xml:394
 msgid "Returns [code]true[/code] if the string ends with the given string."
@@ -53988,7 +53996,9 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if a packet with a new address/port combination "
 "was received on the socket."
-msgstr "Gibt [code]true[/code] zurück wenn dieser Vektor normalisiert ist."
+msgstr ""
+"Gibt [code]true[/code] zurück wenn der Skript Bereich lädt, ansonsten "
+"[code]false[/code]."
 
 #: doc/classes/UDPServer.xml:69
 msgid ""
@@ -58770,11 +58780,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeInput.xml:10
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/"
 "index.html"
-msgstr "https://docs.godotengine.org/de/latest/tutorials/math/index.html"
+msgstr ""
+"https://docs.godotengine.org/de/stable/tutorials/shading/shading_reference/"
+"index.html"
 
 #: doc/classes/VisualShaderNodeInput.xml:17
 msgid ""
