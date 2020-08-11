@@ -133,6 +133,36 @@
 				Gets the name of the current action.
 			</description>
 		</method>
+		<method name="get_action_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the ammount of actions.
+			</description>
+		</method>
+		<method name="get_current_action" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the index of the current action.
+			</description>
+		</method>
+		<method name="set_max_actions">
+			<return type="void">
+			</return>
+			<argument index="0" name="max_actions" type="int">
+			</argument>
+			<description>
+				Sets the max ammount of actions. If [code]max_actions[/code] is [code]-1[/code], there is no limit of actions.
+			</description>
+		</method>
+		<method name="get_max_actions" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the max ammount of actions. Returns [code]-1[/code], when there is no limit of actions.
+			</description>
+		</method>
 		<method name="get_version" qualifiers="const">
 			<return type="int">
 			</return>
