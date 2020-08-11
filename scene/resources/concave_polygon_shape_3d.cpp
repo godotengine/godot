@@ -32,7 +32,7 @@
 
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() {
+Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	Set<DrawEdge> edges;
 
 	Vector<Vector3> data = get_faces();
