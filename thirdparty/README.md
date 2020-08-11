@@ -184,6 +184,39 @@ Files extracted from upstream source:
 
 Patches in the `patches` directory should be re-applied after updates.
 
+## Graphite engine
+
+- Upstream: https://github.com/silnrsi/graphite
+- Version: 1.3.14
+- License: MPL-2.0
+
+Files extracted from upstream source:
+- the `include` folder
+- the `src` folder
+- `COPYING`, `ChangeLog`
+
+## HarfBuzz
+
+- Upstream: https://github.com/harfbuzz/harfbuzz
+- Version: 2.7.2
+- License: HarfBuzz
+
+Files extracted from upstream source:
+- the `src` folder
+- `AUTHORS`, `COPYING`, `NEWS`, `THANKS`
+
+## International Components for Unicode
+
+- Upstream: https://github.com/unicode-org/icu
+- Version: 68.1
+- License: Unicode
+
+Files extracted from upstream source:
+- the `common` folder
+- `APIChangeReport.md`, `LICENSE`
+
+Files generated from upstream source:
+- the `icudt68l.dat` built with the provided `godot_data.json` config file (see https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md for instructions)
 
 ## jpeg-compressor
 
