@@ -5,12 +5,14 @@
 #
 # Tomek <kobewi4e@gmail.com>, 2020.
 # wieslaw.mlynarski Wiesław <wieslaw.mlynarski@gmail.com>, 2020.
+# Dawid <marzecdawid@gmail.com>, 2020.
+# Filip Glura <mcmr.slendy@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-06-25 08:53+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2020-07-22 08:42+0000\n"
+"Last-Translator: Filip Glura <mcmr.slendy@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/pl/>\n"
 "Language: pl\n"
@@ -57908,7 +57910,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:26
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "Zwraca przeciwieństwo parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:29
 msgid "Returns [code]1/vector[/code]."
@@ -57916,96 +57918,96 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:32
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "Konwertuje wektor RGB do odpowiednika HSV."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:35
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "Konwertuje wektor HSV do odpowiednika RGB."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:38
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "Zwraca wartość bezwzględną parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:41
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "Zwraca arcus cosinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:44
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Zwraca odwrócony cosinus hiperboliczny parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:47
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "Zwraca arcus sinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:50
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Zwraca odwrócony sinus hiperboliczny parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:53
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "Zwraca arcus tangens parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:56
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Zwraca odwrócony tangens hiperboliczny parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:59
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr ""
+msgstr "Znajduje najbliższą liczbę całkowitą większą lub równą parametrowi."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:62
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "Zwraca cosinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:65
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Zwraca cosinus hiperboliczny parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:68
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Konwertuje wartość w radianach na stopnie."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:71
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "Eksponenta o podstawie e."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:74
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "Eksponenta o podstawie 2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:77
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "Znajduje najbliższą liczbę całkowitą mniejszą lub równą parametrowi."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:80
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Liczy ułamkową część argumentu."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:83
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "Zwraca odwrotność pierwiastka kwadratowego z parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:86
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Logarytm naturalny."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:89
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "Logarytm o podstawie 2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:92
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Konwertuje wartość ze stopni na radiany."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:95
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "Znajduje najbliższą parametrowi liczbę całkowitą."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:98
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "Znajduje najbliższą parametrowi parzystą liczbę całkowitą."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:101
 msgid ""
@@ -58016,23 +58018,23 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:104
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "Zwraca sinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:107
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Zwraca sinus hiperboliczny parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:110
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "Zwraca pierwiastek kwadratowy parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:113
 msgid "Returns the tangent of the parameter."
-msgstr ""
+msgstr "Zwraca tangens parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:116
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Zwraca tangens hiperboliczny parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:119
 msgid ""
@@ -58091,11 +58093,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:29
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "Dzieli wektor przez wektor."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:32
 msgid "Returns the remainder of the two vectors."
-msgstr ""
+msgstr "Zwraca resztę z dwóch wektorów."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:35
 msgid ""
@@ -58113,11 +58115,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:44
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "Liczy iloczyn wektorowy dwóch wektorów."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:47
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "Zwraca arcus tangens parametrów."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:50
 msgid ""

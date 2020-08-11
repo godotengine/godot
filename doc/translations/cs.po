@@ -5,11 +5,13 @@
 #
 # Ondrej Pavelka <ondrej.pavelka@outlook.com>, 2020.
 # Zbyněk <zbynek.fiala@gmail.com>, 2020.
+# Daniel Kříž <Daniel.kriz@protonmail.com>, 2020.
+# Vojtěch Šamla <auzkok@seznam.cz>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-06-25 08:53+0000\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
 "Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "class-reference/cs/>\n"
@@ -46,7 +48,7 @@ msgstr "Signály"
 
 #: doc/tools/makerst.py
 msgid "Enumerations"
-msgstr ""
+msgstr "Výčty"
 
 #: doc/tools/makerst.py
 msgid "Constants"
@@ -62,7 +64,7 @@ msgstr "Popisy metod"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr "Funkce, které jsou součástí GDScriptu."
+msgstr "Vestvavěné funkce GDScriptu."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -114,7 +116,6 @@ msgstr ""
 "Podporované názvy barev jsou stejné jako konstanty definované v [Color]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
-#, fuzzy
 msgid ""
 "Returns the absolute value of parameter [code]s[/code] (i.e. unsigned value, "
 "works for integer and float).\n"
@@ -131,7 +132,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:68
-#, fuzzy
 msgid ""
 "Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of "
 "cosine [code]s[/code].\n"
@@ -140,7 +140,7 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"Vrátí oblouk funkce kosinus hodnoty [code]s[/code] v radiánech. Použijte pro "
+"Vrátí arcus funkce kosinus hodnoty [code]s[/code] v radiánech. Použijte pro "
 "získání úhlu kosinu [code]s[/code].\n"
 "[codeblock]\n"
 "# c je 0.523599 nebo 30 stupňů pokud je konvertováno pomocí rad2deg(s)\n"
@@ -148,7 +148,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:81
-#, fuzzy
 msgid ""
 "Returns the arc sine of [code]s[/code] in radians. Use to get the angle of "
 "sine [code]s[/code].\n"
@@ -157,7 +156,7 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"Vrátí oblouk funkce sinus hodnoty [code]s[/code] v radiánech. Použijte pro "
+"Vrátí arcus funkce sinus hodnoty [code]s[/code] v radiánech. Použijte pro "
 "získání úhlu kosinu [code]s[/code].\n"
 "[codeblock]\n"
 "# s je 0.523599 nebo 30 stupňů pokud je konvertováno pomocí rad2deg(s)\n"
@@ -165,7 +164,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:96
-#, fuzzy
 msgid ""
 "Asserts that the [code]condition[/code] is [code]true[/code]. If the "
 "[code]condition[/code] is [code]false[/code], an error is generated and the "
@@ -349,7 +347,7 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:260
 msgid "Converts from decibels to linear energy (audio)."
-msgstr ""
+msgstr "Převede z decibelů na linearní energii (audio)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:273
 msgid ""
@@ -360,7 +358,7 @@ msgid ""
 "a = dectime(60, 10, 0.1))\n"
 "[/codeblock]"
 msgstr ""
-"Vrátí výsledek [code]value[/code] sníženou o [code]step[/code] * "
+"Vrátí výsledek [code]value[/code] snížený o [code]step[/code] * "
 "[code]amount[/code].\n"
 "[codeblock]\n"
 "# a = 59\n"
@@ -386,6 +384,8 @@ msgid ""
 "Converts a previously converted instance to a dictionary, back into an "
 "instance. Useful for deserializing."
 msgstr ""
+"Převede dříve převedenou instanci na slovník, zpátky na instanci. Užitečné "
+"při deserializaci."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:310
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:90
@@ -444,6 +444,13 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
+"Vrátí floatový zbytek operace [code]a/b[/code] a zachovává znaménko [code]a[/"
+"code].\n"
+"[codeblock]\n"
+"# Zbytek je 1.5\n"
+"var Zbytek = fmod(7, 5.5)\n"
+"[/codeblock]\n"
+"Pro celočíselný zbytek (integerový) používejte % operátor."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:367
 msgid ""
@@ -470,6 +477,28 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
+"Vrací floatový zbytek operace [code]a/b[/code], která se chová stejně k "
+"kladným i záporným hodnotám.\n"
+"[codeblock]\n"
+"var i = 1\n"
+"while i < 5:\n"
+"    prints(i, fposmod(i, 3))\n"
+"    i += 1\n"
+"[/codeblock]\n"
+"Vypisuje:\n"
+"[codeblock]\n"
+"-6 0\n"
+"-5 1\n"
+"-4 2\n"
+"-3 0\n"
+"-2 1\n"
+"-1 0\n"
+"0 0\n"
+"1 1\n"
+"2 2\n"
+"3 0\n"
+"4 1\n"
+"[codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:398
 msgid ""
@@ -485,6 +514,17 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"Vrátí odkaz na specifikovanou funkci [code]funcname[/code] v [code]instance[/"
+"code] uzlu. Funkce nejsou v GDScriptu objekty první třídy, proto používejte "
+"[code]funcref[/code] na ukládání [FuncRed] v proměnné pro pozdější "
+"zavolání.\n"
+"[codeblock]\n"
+"func foo():\n"
+"    return(\"bar\")\n"
+"\n"
+"a = funcref(self, \"foo\")\n"
+"print(a.call_func()) # vytiskne bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:412
 msgid ""
@@ -505,6 +545,22 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
+"Vrátí pole slovníků, které reprezentují aktuální zásobník volání.\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    foo()\n"
+"\n"
+"func foo():\n"
+"    bar()\n"
+"\n"
+"func bar():\n"
+"    print(get_stack())\n"
+"[/codeblock]\n"
+"A to by vypsalo:\n"
+"[codeblock]\n"
+"[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
+"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:435
 msgid ""
@@ -513,6 +569,10 @@ msgid ""
 "print(hash(\"a\")) # Prints 177670\n"
 "[/codeblock]"
 msgstr ""
+"Vrací celočíselný (integerový) hash předané proměnné.\n"
+"[codeblock]\n"
+"print(hash(\"a\")) # Vytiskne 177670\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:447
 msgid ""
@@ -531,6 +591,20 @@ msgid ""
 "[, res://test.gd, bar]\n"
 "[/codeblock]"
 msgstr ""
+"Vrací předanou instanci konvertovanou na slovník (užitečné pro "
+"serializaci).\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var d = inst2dict(self)\n"
+"    print(d.keys())\n"
+"    print(d.values())\n"
+"[/codeblock]\n"
+"Vypíše:\n"
+"[codeblock]\n"
+"[@subpath, @path, foo]\n"
+"[, res://test.gd, bar]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:468
 msgid ""
@@ -544,6 +618,15 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"Vrací Objekt, který odpovídá korespondujícímu [code]instance_id[/code]. "
+"Všechny objekty mají svoje unikátní ID instance.\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var id = get_instance_id()\n"
+"    var inst = instance_from_id(id)\n"
+"    print(inst.foo) # Vytiskne bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:488
 msgid ""
@@ -558,32 +641,48 @@ msgid ""
 "# `ratio` is now 0.75.\n"
 "[/codeblock]"
 msgstr ""
+"Vrátí normalizovanou hodnotu, s tím, že bere v potaz daný rozsah. Jedná se "
+"opak [method lerp].\n"
+"[codeblock]\n"
+"var stred = lerp(20, 30, 0.75)\n"
+"# `stred` teď je 27.5.\n"
+"# Nyní budeme předstírat, že jsme předchozí poměr zapomněli a chceme ho "
+"zpět\n"
+"var pomer = inverse_lerp(20, 30, 27.5)\n"
+"# `pomer` teď je 0.75.\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:506
 msgid ""
 "Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are "
 "approximately equal to each other."
 msgstr ""
+"Vrací [code]true[/code] pokud si jsou [code]a[/code] a [code]b[/code] "
+"přiblížně rovny."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:515
 msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
+"Vrací jestli [code]s[/code] je nekonečná hodnota (je jedno jestli kladné "
+"nekonečno, nebo záporné nekonečno)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:524
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
+"Vrací jestli [code]instance[/code] je platný objekt (tj. nebyl uvolněn z "
+"paměti)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:533
 msgid "Returns whether [code]s[/code] is a NaN (Not-A-Number) value."
-msgstr ""
+msgstr "Vrací jestli [code]s[/code] je hodnota NaN (Not-A-Number)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:542
 msgid "Returns [code]true[/code] if [code]s[/code] is zero or almost zero."
-msgstr ""
+msgstr "Vrací [code]true[/code] pokud [code]s[/code] je nula nebo téměř nula."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:551
 msgid ""
@@ -595,6 +694,13 @@ msgid ""
 "len(a) # Returns 4\n"
 "[/codeblock]"
 msgstr ""
+"Vrací délku proměnné Variant [code]var[/code]. Délka je počet znaků v "
+"řetězci, počet členů pole, velikost slovníku, apod.\n"
+"[b]Note:[/b] Generuje fatální error pokud Variant nemohl poskytnout délku.\n"
+"[codeblock]\n"
+"a = [1, 2, 3, 4]\n"
+"len(a) # Vrací 4\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:569
 msgid ""
@@ -610,6 +716,17 @@ msgid ""
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)\n"
 "[/codeblock]"
 msgstr ""
+"Lineární interpolace mezi dvěma hodnotami normalizovanou hodnout. Toto je "
+"opak [method inverse_lerp].\n"
+"pokud argumenty [code]from[/code] a [code]to[/code] jsou typu [int] nebo "
+"[float], pak navracející hodnota je typu [float].\n"
+"Pokud jsou oba stejného typu vektoru ([Vector2], [Vector3] nebo [Color]), "
+"pak navracející hodnota bude stejného typu ([code]lerp[/code] pak zavolá "
+"metodu [code]lerp[/code] pro odpovídající vektorový typ).\n"
+"[codeblock]\n"
+"lerp(0, 4, 0.75) # Vrací 3.0\n"
+"lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Vrací Vector2(2, 3.5)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:588
 msgid ""
@@ -627,6 +744,19 @@ msgid ""
 "    elapsed += delta\n"
 "[/codeblock]"
 msgstr ""
+"Lineárně interpoluje mezi dvěma uhlý (v radiánech) pomocí normalizované "
+"hodnoty.\n"
+"Podobné jako [method lerp], ale interpoluje správně jenom pokud jsou úhly "
+"okolo [constant @GDScript.TAU].\n"
+"[codeblock]\n"
+"extends Sprite\n"
+"var ubehlo = 0.0\n"
+"func _process(delta):\n"
+"    var min_uhel = deg2rad(0.0)\n"
+"    var max_uhel = deg2rad(90.0)\n"
+"    rotace = lerp_angle(min_uhel, max_uhel, ubehlo)\n"
+"    ubehlo += delta\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:607
 msgid ""
@@ -643,6 +773,18 @@ msgid ""
 "linear2db($Slider.value))\n"
 "[/codeblock]"
 msgstr ""
+"Převede lineární energii na decibely (audio). To může být využité pro "
+"implementaci posuvníků hlasitosti, který se chová víc přirozeně (protože "
+"hlasitost není lineární). Příklad:\n"
+"[codeblock]\n"
+"# \"Posuvník\" referuje na uzel, který dědí Range jako HSlider nebo "
+"VSlider.\n"
+"# Jeho rozsah musí být nastaven, aby se pohyboval mezi 0 a 1.\n"
+"# Změňte jméno busu, pokud byste chtěli měnit hlasitost jenom specifického "
+"busu.\n"
+"AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"Master\"), "
+"linear2db($Posuvník.value))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:622
 msgid ""
@@ -656,6 +798,17 @@ msgid ""
 "[b]Important:[/b] The path must be absolute, a local path will just return "
 "[code]null[/code]."
 msgstr ""
+"Nahraje prostředky ze souboru lokalizovaném na [code]path[/code].\n"
+"[b]Note:[/b] Prostředková cesta (path) může být získana pomocí stisknutí "
+"pravého tlačítka na prostředek v dokovatelném okně Souborový Systém a "
+"vybráním [b]Kopírovat Cestu[/b].\n"
+"[codeblock]\n"
+"# Nahraj scénu zvanou main, která se nachází v kořeni projektového "
+"adresáře.\n"
+"var main = load(\"res://main.tscn\")\n"
+"[/codeblock]\n"
+"[b]Important:[/b] Cesta musí být absolutní! Lokální cesta prostě jenom "
+"navrátí [code]null[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:637
 msgid ""
@@ -667,6 +820,13 @@ msgid ""
 "log(10) # Returns 2.302585\n"
 "[/codeblock]"
 msgstr ""
+"Přirozený logaritmus. Množství času, které je potřeba k dosažení určité "
+"úrovně plynulého růstu.\n"
+"[b]Note[/b] Toto není stejně jako \"log\" funkce na většině kalkulaček, "
+"které používají jako základ logaritmu číslo 10.\n"
+"[codeblock]\n"
+"log(10) # Vrací 2.302585\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:652
 msgid ""
@@ -676,6 +836,11 @@ msgid ""
 "max(-3.99, -4) # Returns -3.99\n"
 "[/codeblock]"
 msgstr ""
+"Vrací větší ze dvou hodnot.\n"
+"[codeblock]\n"
+"max(1, 2) # Vrací 2\n"
+"max(-3.99, -4) # Vrací -3.99\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:667
 msgid ""
@@ -685,6 +850,11 @@ msgid ""
 "min(-3.99, -4) # Returns -4\n"
 "[/codeblock]"
 msgstr ""
+"Vrací menší ze dvou hodnot.\n"
+"[codeblock]\n"
+"min(1, 2) # Vrací 1\n"
+"min(-3.99, -4) # Vrací -4\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:684
 msgid ""
@@ -705,6 +875,13 @@ msgid ""
 "nearest_po2(5) # Returns 8\n"
 "[/codeblock]"
 msgstr ""
+"Vrací nejbližší větší celočíselnou mocninu dvou od integeru [code]hodnota[/"
+"code].\n"
+"[codeblock]\n"
+"nearest_po2(3) # Vrací 4\n"
+"nearest_po2(4) # Vrací 4\n"
+"nearest_po2(5) # Vrací 8\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:711
 msgid ""
@@ -717,6 +894,14 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method char]."
 msgstr ""
+"vrací celé číslo representující daný Unicode znak typu [code]char[/code] v "
+"Unicode kódu.\n"
+"[codeblock]\n"
+"a = ord(\"A\") # a je 65\n"
+"a = ord(\"a\") # a je 97\n"
+"a = ord(\"€\") # a je 8364\n"
+"[/codeblock]\n"
+"Toto je inverzní metoda k [method char]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:726
 msgid ""
@@ -745,6 +930,9 @@ msgid ""
 "from the origin [code]r[/code] and an angle [code]th[/code]) to the "
 "cartesian coordinate system (X and Y axis)."
 msgstr ""
+"Převádí 2D bod vyjádřený v polárním souřadném systému (vzdálenost od počátku "
+"[code]r[/code] a úhel [code]th[/code]) do kartézkého souřadného systému (osy "
+"X a Y)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:757
 msgid ""
@@ -771,6 +959,28 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
+"Vrací celočíselný zbytek výrazu [code]a/b[/code] a chová se stejně k kladným "
+"i záporným číslům.\n"
+"[codeblock]\n"
+"var i = -6\n"
+"while i < 5:\n"
+"    prints(i, posmod(i, 3))\n"
+"    i += 1\n"
+"[/codeblock]\n"
+"Vypíše:\n"
+"[codeblock]\n"
+"-6 0\n"
+"-5 1\n"
+"-4 2\n"
+"-3 0\n"
+"-2 1\n"
+"-1 2\n"
+"0 0\n"
+"1 1\n"
+"2 2\n"
+"3 0\n"
+"4 1\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:788
 msgid ""
@@ -779,6 +989,10 @@ msgid ""
 "pow(2, 5) # Returns 32\n"
 "[/codeblock]"
 msgstr ""
+"Vrací výsledek [code]x[/code] umocněného na [code]y[/code].\n"
+"[codeblock]\n"
+"pow(2, 5) # Vrací 32\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:800
 msgid ""
@@ -57983,7 +58197,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:26
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "Vrátí opačnou hodnotu parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:29
 msgid "Returns [code]1/vector[/code]."
@@ -57999,88 +58213,89 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:38
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "Vrátí absolutní hodnotu parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:41
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "Vrátí arkus kosinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:44
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Vrátí inverzní hyperbolický kosinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:47
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "Vrátí arkus sinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:50
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Vrátí inverzní hyperbolický sinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:53
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "Vrátí arkus tangent parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:56
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Vrátí inverzní hyperbolický tangent parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:59
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr ""
+"Nalezne nejbližší celé číslo, které je větší nebo stejné jako parametr."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:62
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "Vrátí kosinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:65
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Vrátí hyperbolický kosinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:68
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Konvertuje hodnotu v radiánech na stupně."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:71
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "Exponenciál se základem e."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:74
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "Exponenciál se základem 2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:77
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "Nalezne nejbližší celé číslo menší nebo stejné jako parametr."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:80
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Vypočítá desetinnou část argumentu."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:83
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "Vrátí inverzní odmocninu z parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:86
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Přirozený logaritmus."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:89
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "Logaritmus se základem 2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:92
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Konvertuje hodnotu ve stupních na radiány."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:95
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "Nalezne nejbližší celé číslo k parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:98
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "Nalezne nejbližší sudé celé číslo k parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:101
 msgid ""
@@ -58091,23 +58306,23 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:104
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "Vrátí sinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:107
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Vrátí hyperbolický sinus parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:110
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "Vrátí odmocninu parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:113
 msgid "Returns the tangent of the parameter."
-msgstr ""
+msgstr "Vrátí tangens parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:116
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Vrátí hyperbolický tangens parametru."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:119
 msgid ""
@@ -58192,7 +58407,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:47
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "Vrátí arkus tangent parametrů."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:50
 msgid ""

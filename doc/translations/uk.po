@@ -4,11 +4,12 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Yuri Chornoivan <yurchor@ukr.net>, 2020.
+# Kiev Ball <supermensy2@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-06-25 08:53+0000\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/uk/>\n"
@@ -26,7 +27,7 @@ msgstr "Опис"
 
 #: doc/tools/makerst.py
 msgid "Tutorials"
-msgstr "Покрокові настанови"
+msgstr "Туторіали"
 
 #: doc/tools/makerst.py
 msgid "Properties"
@@ -62,7 +63,7 @@ msgstr "Описи методів"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr ""
+msgstr "Вбудовані функції GDScript."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -70,6 +71,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
+"Список основних вбудованих функцій GDScript. Математичні функції та багато "
+"інших програм. Все інше забезпечується об'єктами. (Ключові слова: вбудовані, "
+"глобальні функції.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""
@@ -84,6 +88,16 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
+"Повертає колір, побудований з цілочисельних червоного, зеленого, синього та "
+"альфа каналів. Кожен канал має зберігати 8 бітів інформації в діапазоні від "
+"0 до 255.\n"
+"[code]r8[/code] червоний канал\n"
+"[code]g8[/code] зелений канал\n"
+"[code]b8[/code] синій канал\n"
+"[code]a8[/code] альфа-канал\n"
+"[codeblock]\n"
+"red = Color8(255, 0, 0)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:42
 msgid ""
@@ -94,6 +108,12 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
+"Повертає колір у відповідності зі стандартним [code]name[/code] з "
+"[code]alpha[/code] у діапазоні від 0 до 1.\n"
+"[codeblock]\n"
+"red = ColorN (\"red\", 1)\n"
+"[/codeblock]\n"
+"Підтримувані імена кольорів збігаються з константами, визначеними у [Color]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
 msgid ""
@@ -104,6 +124,12 @@ msgid ""
 "a = abs(-1)\n"
 "[/codeblock]"
 msgstr ""
+"Повертає абсолютне значення параметра [code]s[/code] (тобто значення без "
+"знака, працює для цілих чисел і чисел із рухомою крапкою).\n"
+"[codeblock]\n"
+"# a дорівнює 1\n"
+"a = abs(-1)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:68
 msgid ""
@@ -114,6 +140,13 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
+"Повертає арккосинус [code]s[/code] в радіанах. Використовується для "
+"отримання кута косинуса [code]s[/code].\n"
+"[codeblock]\n"
+"# c дорівнює 0.523599 або 30 градусів, якщо конвертувати за допомогою "
+"rad2deg(s)\n"
+"c = acos(0.866025)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:81
 msgid ""
@@ -124,6 +157,13 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
+"Повертає арксинус [code]s[/code] у радіанах. Використовується для отримання "
+"кута синуса [code]s[/code].\n"
+"[codeblock]\n"
+"# s дорівнює 0.523599 або 30 градусів, якщо конвертувати за допомогою "
+"rad2deg(s)\n"
+"s = asin(0.5)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:96
 msgid ""
@@ -146,6 +186,26 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
+"Перевіряє, чи дорівнює [code]condition[/code] [code]true[/code]. Якщо "
+"[code]condition[/code] дорівнює [code]false[/code], буде згенеровано "
+"помилку, і виконання програми буде припинено, поки ви не продовжите його. Ця "
+"функція виконується тільки у діагностичних збірках, або коли гра "
+"запускається в редакторі. Використовуйте її для діагностики, щоб "
+"переконатися, що вираз дорівнює [code]true[/code] протягом розробки.\n"
+"Якщо заданий, необов'язковий аргумент [code]message[/code], то він буде "
+"показаний у додатку до повідомлення «Assertion failed». Ви можете "
+"скористатися цим для надання додаткових відомостей щодо того, чому перевірку "
+"не було пройдено.\n"
+"[codeblock]\n"
+"# Припустімо, що ви хочете, щоб швидкість (speed) була між 0 і 20\n"
+"speed = -10\n"
+"assert(speed < 20) # Істина, програма продовжить виконання\n"
+"assert(speed >= 0) # Хибність, програму буде зупинено\n"
+"assert(speed >= 0 && speed <20) # Ви можете комбінувати два умовних вирази в "
+"одній перевірці\n"
+"assert(speed < 20, \"speed =%f, але обмеження швидкості дорівнює 20\" "
+"%speed) # Показує повідомлення з уточненням подробиць\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:114
 msgid ""
@@ -158,6 +218,14 @@ msgid ""
 "a = atan(0.5) # a is 0.463648\n"
 "[/codeblock]"
 msgstr ""
+"Повертає арктангенс [code]s[/code] у радіанах. Використовується для "
+"отримання кута за тангенсом кута у тригонометрії: [code]atan(tan(angle)) == "
+"angle[/code].\n"
+"Метод не може знати, в який квадрант повинен потрапляти кут. Дивіться "
+"[method atan2], якщо ви хочете завжди отримувати точний кут.\n"
+"[codeblock]\n"
+"a = atan(0.5) # a дорівнює 0.463648\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:129
 msgid ""
@@ -57867,7 +57935,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:26
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "Повертає значення, яке є протилежним до значення параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:29
 msgid "Returns [code]1/vector[/code]."
@@ -57875,96 +57943,100 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:32
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "Перетворює вектор RGB на еквівалентний колір HSV."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:35
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "Перетворює вектор HSV на еквівалентний колір RGB."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:38
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "Повертає модуль параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:41
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "Повертає арккосинус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:44
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Повертає обернений гіперболічний косинус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:47
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "Повертає арксинус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:50
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Повертає обернений гіперболічний синус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:53
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "Повертає арктангенс параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:56
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Повертає обернений гіперболічний тангенс параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:59
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr ""
+"Знаходить найближче ціле число, яке є більшим або рівним за значення "
+"параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:62
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "Повертає косинус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:65
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Повертає гіперболічний косинус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:68
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Перетворює значення у радіанах на значення у градусах."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:71
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "Показникова функція із основою e (експонента)."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:74
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "Показникова функція із основою 2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:77
 msgid "Finds the nearest integer less than or equal to the parameter."
 msgstr ""
+"Знаходить найближче ціле число, яке є меншим або рівним за значення "
+"параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:80
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Обчислює дробову частину аргументу."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:83
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "Повертає одиницю поділену на квадратний корінь з параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:86
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Натуральний логарифм."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:89
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "Двійковий логарифм."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:92
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Перетворює значення у градусах на значення у радіанах."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:95
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "Знаходить найближче ціле значення до параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:98
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "Знаходить найближче парне ціле значення до параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:101
 msgid ""
@@ -57975,23 +58047,23 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:104
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "Повертає синус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:107
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Повертає гіперболічний синус параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:110
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "Повертає квадратний корінь з параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:113
 msgid "Returns the tangent of the parameter."
-msgstr ""
+msgstr "Повертає тангенс параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:116
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Повертає гіперболічний тангенс параметра."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:119
 msgid ""
@@ -58050,11 +58122,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:29
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "Ділить вектор на вектор."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:32
 msgid "Returns the remainder of the two vectors."
-msgstr ""
+msgstr "Повертає лишок за двома векторами."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:35
 msgid ""
@@ -58072,11 +58144,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:44
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "Обчислює векторний добуток двох векторів."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:47
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "Повертає арктангенс параметрів."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:50
 msgid ""
