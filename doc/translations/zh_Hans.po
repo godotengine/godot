@@ -6,12 +6,14 @@
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2020.
 # fangxvan <2661712415@qq.com>, 2020.
 # yzt <834950797@qq.com>, 2020.
+# 懵逼Kitty <m1330586660@163.com>, 2020.
+# MintSoda <lionlxh@qq.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-06-09 13:36+0000\n"
-"Last-Translator: yzt <834950797@qq.com>\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
+"Last-Translator: MintSoda <lionlxh@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -19,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
@@ -223,6 +225,11 @@ msgid ""
 "a = atan2(0, -1) # a is 3.141593\n"
 "[/codeblock]"
 msgstr ""
+"以弧度返回 [code]y/x[/code] 的反正切。用于获取 [code]y/x[/code] 的切角。为了"
+"求解该值，该方法计算会两个参数的符号以确定象限。\n"
+"[codeblock]\n"
+"a = atan2(0, -1) # a is 3.141593\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:143
 msgid ""
@@ -232,6 +239,10 @@ msgid ""
 "not use this option if the serialized object comes from untrusted sources to "
 "avoid potential security threats (remote code execution)."
 msgstr ""
+"将字节数组解码回一个值。当 [code]allow_objects[/code] 为 [/code]true[code] "
+"时，允许解码对象。\n"
+"[b]警告：[/b]反序列化过的对象可以容纳可执行的代码。如果序列化的对象来自不受信"
+"任的来源，请不要激活此选项，以避免潜在的安全威胁（指远程执行代码）。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:155
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:145
@@ -240,6 +251,8 @@ msgid ""
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
+"将以直角坐标系（X和Y轴）表示的2D点转换为以极坐标系（距原点的距离和角度）表"
+"示。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:164
 msgid ""
@@ -250,6 +263,11 @@ msgid ""
 "i = ceil(1.001) # i is 2\n"
 "[/codeblock]"
 msgstr ""
+"向上舍入 [code]s[/code]，返回不小于 [code]s[/code] 的最小整数值。\n"
+"[codeblock]\n"
+"i = ceil(1.45)  # i is 2\n"
+"i = ceil(1.001) # i is 2\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:177
 msgid ""
@@ -262,6 +280,13 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
+"返回指定Unicode编码位置的字符为字符串（这个编码位置也可以是ASCII编码）。\n"
+"[codeblock]\n"
+"a = char(65)      # a is \"A\"\n"
+"a = char(65 + 32) # a is \"a\"\n"
+"a = char(8364)    # a is \"€\"\n"
+"[/codeblock]\n"
+"This is the inverse of [method ord]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:196
 msgid ""
@@ -277,6 +302,17 @@ msgid ""
 "a = clamp(speed, 1, 20)\n"
 "[/codeblock]"
 msgstr ""
+"Clamp (钳住) [code]value[/code]，返回不低于 [code]min[/code] 且不高于 "
+"[code]max[/code]的值。\n"
+"[codeblock]\n"
+"speed = 1000\n"
+"# a is 20\n"
+"a = clamp(speed, 1, 20)\n"
+"\n"
+"speed = -10\n"
+"# a is 1\n"
+"a = clamp(speed, 1, 20)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:216
 msgid ""
@@ -291,6 +327,16 @@ msgid ""
 "print(a.length())\n"
 "[/codeblock]"
 msgstr ""
+"尽可能以最佳方式将一种类型转换为另一种类型。[code]type[/code] 参数应使用 "
+"[enum Variant.Type] 作为值。\n"
+"[codeblock]\n"
+"a = Vector2(1, 0)\n"
+"# 打印出 1\n"
+"print(a.length())\n"
+"a = convert(a, TYPE_STRING)\n"
+"# 打印出 6 ，因为 \"(1, 0)\" 是6个字符\n"
+"print(a.length())\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:233
 msgid ""
@@ -301,6 +347,12 @@ msgid ""
 "print(cos(PI))\n"
 "[/codeblock]"
 msgstr ""
+"返回角度 [code]s[/code] 为弧度。\n"
+"[codeblock]\n"
+"# 打印出 1 ，然后 -1\n"
+"print(cos(PI * 2))\n"
+"print(cos(PI))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:247
 msgid ""
@@ -310,10 +362,15 @@ msgid ""
 "print(cosh(1))\n"
 "[/codeblock]"
 msgstr ""
+"返回 [code]s[/code] 的双曲余弦值为弧度。\n"
+"[codeblock]\n"
+"# 打印出 1.543081\n"
+"print(cosh(1))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:260
 msgid "Converts from decibels to linear energy (audio)."
-msgstr ""
+msgstr "从分贝转换为线性能量，即电压增益（声学范畴的）。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:273
 msgid ""
@@ -324,6 +381,12 @@ msgid ""
 "a = dectime(60, 10, 0.1))\n"
 "[/codeblock]"
 msgstr ""
+"返回 [code]value[/code] 减少了 [code]step[/code] * [code]amount[/code] 之后的"
+"结果.\n"
+"[codeblock]\n"
+"# a = 59\n"
+"a = dectime(60, 10, 0.1))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:286
 msgid ""
@@ -333,12 +396,17 @@ msgid ""
 "r = deg2rad(180)\n"
 "[/codeblock]"
 msgstr ""
+"将角度转换为弧度。\n"
+"[codeblock]\n"
+"# r 为 3.141593\n"
+"r = deg2rad(180)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:299
 msgid ""
 "Converts a previously converted instance to a dictionary, back into an "
 "instance. Useful for deserializing."
-msgstr ""
+msgstr "将 (由实例转化而来的) 字典转换回实例。用于反序列化。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:310
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:90
@@ -346,6 +414,9 @@ msgid ""
 "Easing function, based on exponent. 0 is constant, 1 is linear, 0 to 1 is "
 "ease-in, 1+ is ease out. Negative values are in-out/out in."
 msgstr ""
+"缓动函数，基于指数。[code]s[/code]是函数的x值，[code]curve[/code]为0时，函数"
+"为常数函数，1是线性函数，0到1是缓入，1+是缓出。0到-1是缓出再缓入，低于-1是缓"
+"入再缓出。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:319
 msgid ""
@@ -357,6 +428,12 @@ msgid ""
 "a = exp(2) # Approximately 7.39\n"
 "[/codeblock]"
 msgstr ""
+"自然指数函数。返回 [b]e[/b] 的 [b]s[/b] 次幂。\n"
+"[b]e[/b]的近似值为2.71828。\n"
+"以其他底数求指数，应使用方法 [method pow]。\n"
+"[codeblock]\n"
+"a = exp(2) # 约为 7.39\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:333
 msgid ""
@@ -26760,7 +26837,7 @@ msgstr ""
 
 #: doc/classes/KinematicBody2D.xml:4
 msgid "Kinematic body 2D node."
-msgstr ""
+msgstr "2D运动体节点。"
 
 #: doc/classes/KinematicBody2D.xml:7
 msgid ""
@@ -26926,7 +27003,7 @@ msgstr ""
 
 #: doc/classes/KinematicBody3D.xml:4
 msgid "Kinematic body 3D node."
-msgstr ""
+msgstr "3D运动体节点。"
 
 #: doc/classes/KinematicBody3D.xml:7
 msgid ""
@@ -32006,7 +32083,7 @@ msgstr ""
 
 #: doc/classes/Node2D.xml:134
 msgid "Position, relative to the node's parent."
-msgstr ""
+msgstr "位置，相对于父节点的位置。"
 
 #: doc/classes/Node2D.xml:137
 msgid "Rotation in radians, relative to the node's parent."
@@ -32014,7 +32091,7 @@ msgstr ""
 
 #: doc/classes/Node2D.xml:140
 msgid "Rotation in degrees, relative to the node's parent."
-msgstr ""
+msgstr "旋转角度，相对于父节点的旋转角度。"
 
 #: doc/classes/Node2D.xml:143
 msgid "The node's scale. Unscaled value: [code](1, 1)[/code]."
@@ -59929,4 +60006,4 @@ msgstr ""
 #: doc/classes/YSort.xml:16
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
-msgstr ""
+msgstr "如果为 [code]true[/code]，则对子节点进行排序，否则将禁用排序。"

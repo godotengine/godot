@@ -9,13 +9,16 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # Nathan <bonnemainsnathan@gmail.com>, 2020.
 # Fox Lahoki <alexbar@live.fr>, 2020.
+# Pierre Caye <pierrecaye@laposte.net>, 2020.
+# Sofiane <Sofiane-77@caramail.fr>, 2020.
+# Gaya <limanegaya@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-18 00:28+0000\n"
-"Last-Translator: Fox Lahoki <alexbar@live.fr>\n"
+"PO-Revision-Date: 2020-07-26 22:51+0000\n"
+"Last-Translator: Gaya <limanegaya@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -23,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
@@ -814,6 +817,18 @@ msgid ""
 "[b]Important:[/b] The path must be absolute, a local path will just return "
 "[code]null[/code]."
 msgstr ""
+"Charge une ressource depuis le système de fichiers localisé à [code]chemin[/"
+"code].\n"
+"[b]Note :[/b] Les chemins des ressources peuvent être obtenus en faisant un "
+"clic droit sur une ressource dans le dock du système de fichiers et en "
+"choisissant [b]Copy Path[/b].\n"
+"[codeblock]\n"
+"# Charger une scène appelée main située dans la racine du répertoire du "
+"projet.\n"
+"var main = load(\"res://main.tscn\")\n"
+"[/codeblock]\n"
+"[b]Important:[/b] Le chemin doit être absolue, un chemin local va juste "
+"retourner [code]null[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:637
 msgid ""
@@ -983,8 +998,15 @@ msgid ""
 "Frame 0 - res://test.gd:16 in function '_process'\n"
 "[/codeblock]"
 msgstr ""
+"Affiche la trace d'appels à l'emplacement du code, ne fonctionne que lorsque "
+"le débogueur est activé.\n"
+"La sortie dans la console ressemblerait à ceci :\n"
+"[codeblock]\n"
+"Frame 0 - res://test.gd:16 in function '_process'\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:841
+#, fuzzy
 msgid ""
 "Prints one or more arguments to strings in the best way possible to standard "
 "error line.\n"
@@ -992,6 +1014,11 @@ msgid ""
 "printerr(\"prints to stderr\")\n"
 "[/codeblock]"
 msgstr ""
+"Affiche un ou plusieurs arguments pour  les chaînes de caractères de la "
+"meilleure façon possible sur la ligne d'erreur.\n"
+"[codeblock]\n"
+"printerr(\"prints to stderr\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:851
 msgid ""
@@ -6323,15 +6350,14 @@ msgid "Removes the first occurrence of a value from the array."
 msgstr ""
 
 #: doc/classes/Array.xml:203
-#, fuzzy
 msgid ""
 "Searches the array for a value and returns its index or [code]-1[/code] if "
 "not found. Optionally, the initial search index can be passed."
 msgstr ""
 "Trouve la première occurrence d'une sous-chaîne de caractères. Retourne le "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
+"position de départ de la sous-chaîne de caractères ou [code]-1[/code] si non "
+"trouvée. Optionnellement, l'index de recherche initial peut être passé (en "
+"tant qu'argument) ."
 
 #: doc/classes/Array.xml:212
 msgid ""
@@ -22350,13 +22376,12 @@ msgid ""
 msgstr ""
 
 #: modules/mono/doc_classes/GodotSharp.xml:49
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the domain is being finalized, [code]false[/"
 "code] otherwise."
 msgstr ""
-"Retourne [code]true[/code] (vrai) si la chaîne de caractères commence par la "
-"chaîne de caractères donnée."
+"Retourne [code]true[/code] si la chaîne de caractères commence par la chaîne "
+"de caractères donnée, ou [code]false[/code] le cas échéant."
 
 #: modules/mono/doc_classes/GodotSharp.xml:56
 #, fuzzy
@@ -22377,11 +22402,12 @@ msgstr ""
 "zéro."
 
 #: modules/mono/doc_classes/GodotSharp.xml:70
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the scripts domain is loaded, [code]false[/"
 "code] otherwise."
-msgstr "Retourne [code]true[/code] (vrai) si la chaîne de caractères est vide."
+msgstr ""
+"Retourne [code]true[/code] si la chaîne de caractères est vide, ou "
+"[code]false[/code] le cas échéant."
 
 #: doc/classes/GPUParticles2D.xml:4
 msgid "2D particle emitter."
@@ -48116,10 +48142,11 @@ msgstr ""
 "et espaces antéposés)."
 
 #: doc/classes/String.xml:384
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the length of the string equals [code]0[/code]."
-msgstr "Retourne [code]true[/code] (vrai) si la chaîne de caractères est vide."
+msgstr ""
+"Retourne [code]true[/code] si la chaîne de caractères est vide (longueur de "
+"la chaîne égale à [code]0[/code])."
 
 #: doc/classes/String.xml:393
 msgid "Returns [code]true[/code] if the string ends with the given string."
@@ -48150,25 +48177,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml:430
-#, fuzzy
 msgid ""
 "Finds the last occurrence of a substring. Returns the starting position of "
 "the substring or [code]-1[/code] if not found."
 msgstr ""
-"Trouve la dernière occurence d'une sous-chaîne de caractère. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée."
+"Trouve la dernière occurrence d'une sous-chaîne de caractère. Retourne la "
+"position de départ de la sous-chaîne de caractères ou [code]-1[/code] si non "
+"trouvée."
 
 #: doc/classes/String.xml:441
-#, fuzzy
 msgid ""
 "Finds the first occurrence of a substring, ignoring case. Returns the "
 "starting position of the substring or [code]-1[/code] if not found. "
 "Optionally, the initial search index can be passed."
 msgstr ""
 "Trouve la première occurence d'une sous-chaîne de caractères. Retourne la "
-"position de départ de la sous-chaîne de caractères ou -1 si non trouvée. "
-"Optionnellement, l'index de recherche initial peut être passé (en tant "
-"qu'argument) ."
+"position de départ de la sous-chaîne de caractères ou [code]-1[/code] si non "
+"trouvée. Optionnellement, l'index de recherche initial peut être passé (en "
+"tant qu'argument) ."
 
 #: doc/classes/String.xml:452
 msgid ""
@@ -58263,7 +58289,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:26
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "Renvoie la valeur opposée du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:29
 #, fuzzy
@@ -58272,101 +58298,97 @@ msgstr "Retourne [code]true[/code] (vrai) si la chaîne de caractères est vide.
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:32
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "Convertit le vecteur RGB en équivalent HSV."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:35
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "Convertit le vecteur HSV en équivalent RGB."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:38
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "Renvoie la valeur absolue du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:41
-#, fuzzy
 msgid "Returns the arc-cosine of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr "Renvoie l'arc cosinus du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:44
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "Renvoie le cosinus hyperbolique inverse du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:47
-#, fuzzy
 msgid "Returns the arc-sine of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en majuscules."
+msgstr "Renvoie l'arc sinus du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:50
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Renvoie le sinus hyperbolique inverse du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:53
-#, fuzzy
 msgid "Returns the arc-tangent of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr "Renvoie l'arc tangente du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:56
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Renvoie la tangente hyperbolique inverse du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:59
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr ""
+"Recherche l'entier le plus proche qui est supérieur ou égal au paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:62
-#, fuzzy
 msgid "Returns the cosine of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en majuscules."
+msgstr "Renvoie le cosinus du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:65
-#, fuzzy
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr "Renvoie le cosinus hyperbolique du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:68
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Convertit une quantité en radians en degrés."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:71
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "Exponentiel en base e."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:74
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "Exponentiel en base 2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:77
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "Recherche l'entier le plus proche inférieur ou égal au paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:80
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Calcule la partie décimale de l'argument."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:83
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "Renvoie l'inverse de la racine carrée du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:86
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Logarithme naturel."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:89
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "Logarithme base-2."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:92
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Convertit une quantité de degrés en radians."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:95
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "Renvoie l'entier le plus proche du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:98
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "Renvoie l'entier pair le plus proche du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:101
 msgid ""
@@ -58376,27 +58398,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:104
-#, fuzzy
 msgid "Returns the sine of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en majuscules."
+msgstr "Renvoie le sinus du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:107
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "Renvoie le sinus hyperbolique du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:110
-#, fuzzy
 msgid "Returns the square root of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr "Renvoie la racine carrée du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:113
-#, fuzzy
 msgid "Returns the tangent of the parameter."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr "Renvoie la tangente du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:116
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "Renvoie la tangente hyperbolique du paramètre."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:119
 msgid ""
@@ -58457,12 +58476,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:29
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "Divise un vecteur par un vecteur."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:32
-#, fuzzy
 msgid "Returns the remainder of the two vectors."
-msgstr "Retourne la chaîne de caractères convertie en minuscules."
+msgstr "Renvoie le reste de deux vecteurs."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:35
 msgid ""
@@ -58480,11 +58498,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:44
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "Calcule le produit vectoriel de deux vecteurs."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:47
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "Renvoie l'arc tangente des paramètres."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:50
 msgid ""
