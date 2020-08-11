@@ -3,6 +3,38 @@
 Import("env")
 Import("env_modules")
 
+env_text_server_adv = env_modules.Clone()
+
+
+def make_icu_data(target, source, env):
+    import os
+
+    dst = target[0].srcnode().abspath
+
+    g = open(dst, "w", encoding="utf-8")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
+    g.write("/* License & terms of use: http://www.unicode.org/copyright.html */\n")
+    g.write("#ifndef _ICU_DATA_H\n")
+    g.write("#define _ICU_DATA_H\n")
+    g.write('#include "unicode/utypes.h"\n')
+    g.write('#include "unicode/udata.h"\n')
+    g.write('#include "unicode/uversion.h"\n')
+
+    f = open(source[0].srcnode().abspath, "rb")
+    buf = f.read()
+    import os.path
+
+    g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
+    g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
+    for i in range(len(buf)):
+        g.write("\t" + str(buf[i]) + ",\n")
+
+    g.write("};\n")
+    g.write("#endif")
+
+
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
 
@@ -93,7 +125,13 @@ if env["builtin_harfbuzz"]:
         ]
     )
     env_harfbuzz.Append(
-        CCFLAGS=["-DHAVE_ICU_BUILTIN", "-DHAVE_ICU", "-DHAVE_FREETYPE", "-DHAVE_GRAPHITE2", "-DGRAPHITE2_STATIC",]
+        CCFLAGS=[
+            "-DHAVE_ICU_BUILTIN",
+            "-DHAVE_ICU",
+            "-DHAVE_FREETYPE",
+            "-DHAVE_GRAPHITE2",
+            "-DGRAPHITE2_STATIC",
+        ]
     )
     env_harfbuzz.disable_warnings()
     env_thirdparty = env_harfbuzz.Clone()
@@ -158,7 +196,13 @@ if env["builtin_graphite"]:
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_graphite.Append(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
-    env_graphite.Append(CCFLAGS=["-DGRAPHITE2_STATIC", "-DGRAPHITE2_NTRACING", "-DGRAPHITE2_NFILEFACE"])
+    env_graphite.Append(
+        CCFLAGS=[
+            "-DGRAPHITE2_STATIC",
+            "-DGRAPHITE2_NTRACING",
+            "-DGRAPHITE2_NFILEFACE",
+        ]
+    )
     env_graphite.disable_warnings()
     env_thirdparty = env_graphite.Clone()
     env_thirdparty.disable_warnings()
@@ -353,7 +397,7 @@ if env["builtin_icu"]:
         "common/uset.cpp",
         "common/uset_props.cpp",
         "common/usetiter.cpp",
-        "common/ushape.cpp",
+        # "common/ushape.cpp",
         "common/usprep.cpp",
         "common/ustack.cpp",
         "common/ustr_cnv.cpp",
@@ -382,12 +426,39 @@ if env["builtin_icu"]:
         "common/wintz.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-    thirdparty_sources += ["icu_data/icudata_stub.cpp"]
+
+    icu_data_name = "icudt68l.dat"
+
+    if env_icu["tools"]:
+        env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
+        env_icu.Command("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name, make_icu_data)
+    else:
+        thirdparty_sources += ["icu_data/icudata_stub.cpp"]
 
     env_icu.Append(CPPPATH=["#thirdparty/icu4c/common/"])
     env_icu.Append(
-        CXXFLAGS=["-DU_STATIC_IMPLEMENTATION", "-DU_COMMON_IMPLEMENTATION", "-DPKGDATA_MODE=static",]
+        CXXFLAGS=[
+            "-DU_STATIC_IMPLEMENTATION",
+            "-DU_COMMON_IMPLEMENTATION",
+            "-DUCONFIG_NO_COLLATION",
+            "-DUCONFIG_NO_CONVERSION",
+            "-DUCONFIG_NO_FORMATTING",
+            "-DUCONFIG_NO_SERVICE",
+            "-DUCONFIG_NO_IDNA",
+            "-DUCONFIG_NO_FILE_IO",
+            "-DUCONFIG_NO_TRANSLITERATION",
+            "-DPKGDATA_MODE=static",
+            "-DICU_DATA_NAME=" + icu_data_name,
+        ]
     )
+    env_text_server_adv.Append(
+        CXXFLAGS=[
+            "-DICU_DATA_NAME=" + icu_data_name,
+        ]
+    )
+
+    if env_icu.msvc:
+        env_icu.AppendUnique(CCFLAGS=["/utf-8"])
 
     env_icu.disable_warnings()
     env_thirdparty = env_icu.Clone()
@@ -407,7 +478,9 @@ if env["builtin_icu"]:
     if not inserted:
         env.Append(LIBS=[lib])
 
-env_text_server_adv = env_modules.Clone()
+if env_text_server_adv["tools"]:
+    env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+
 env_text_server_adv.Append(
     CPPPATH=[
         "#thirdparty/harfbuzz/src",
