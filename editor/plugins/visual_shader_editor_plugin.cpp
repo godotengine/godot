@@ -505,6 +505,42 @@ void VisualShaderEditor::_update_graph() {
 
 	Vector<int> nodes = visual_shader->get_node_list(type);
 
+	VisualShaderNodeUniformRef::clear_uniforms();
+
+	// scan for all uniforms
+
+	for (int t = 0; t < VisualShader::TYPE_MAX; t++) {
+		Vector<int> tnodes = visual_shader->get_node_list((VisualShader::Type)t);
+		for (int i = 0; i < tnodes.size(); i++) {
+			Ref<VisualShaderNode> vsnode = visual_shader->get_node((VisualShader::Type)t, tnodes[i]);
+			Ref<VisualShaderNodeUniform> uniform = vsnode;
+
+			if (uniform.is_valid()) {
+				Ref<VisualShaderNodeScalarUniform> scalar_uniform = vsnode;
+				Ref<VisualShaderNodeVec3Uniform> vec3_uniform = vsnode;
+				Ref<VisualShaderNodeColorUniform> color_uniform = vsnode;
+				Ref<VisualShaderNodeBooleanUniform> bool_uniform = vsnode;
+				Ref<VisualShaderNodeTransformUniform> transform_uniform = vsnode;
+
+				VisualShaderNodeUniformRef::UniformType uniform_type;
+				if (scalar_uniform.is_valid()) {
+					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_SCALAR;
+				} else if (bool_uniform.is_valid()) {
+					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_BOOLEAN;
+				} else if (vec3_uniform.is_valid()) {
+					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_VECTOR;
+				} else if (transform_uniform.is_valid()) {
+					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_TRANSFORM;
+				} else if (color_uniform.is_valid()) {
+					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_COLOR;
+				} else {
+					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_SAMPLER;
+				}
+				VisualShaderNodeUniformRef::add_uniform(uniform->get_uniform_name(), uniform_type);
+			}
+		}
+	}
+
 	Control *offset;
 
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
@@ -2020,6 +2056,41 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> input, St
 	undo_redo->commit_action();
 }
 
+void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform_ref, String p_name) {
+	String prev_name = p_uniform_ref->get_uniform_name();
+
+	if (p_name == prev_name) {
+		return;
+	}
+
+	bool type_changed = p_uniform_ref->get_uniform_type_by_name(p_name) != p_uniform_ref->get_uniform_type_by_name(prev_name);
+
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo->create_action(TTR("UniformRef Name Changed"));
+
+	undo_redo->add_do_method(p_uniform_ref.ptr(), "set_uniform_name", p_name);
+	undo_redo->add_undo_method(p_uniform_ref.ptr(), "set_uniform_name", prev_name);
+
+	if (type_changed) {
+		//restore connections if type changed
+		VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+		int id = visual_shader->find_node_id(type, p_uniform_ref);
+		List<VisualShader::Connection> conns;
+		visual_shader->get_node_connections(type, &conns);
+		for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+			if (E->get().from_node == id) {
+				undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+			}
+		}
+	}
+
+	undo_redo->add_do_method(VisualShaderEditor::get_singleton(), "_update_graph");
+	undo_redo->add_undo_method(VisualShaderEditor::get_singleton(), "_update_graph");
+
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_member_filter_changed(const String &p_text) {
 	_update_options_menu();
 }
@@ -2244,6 +2315,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_paste_nodes", &VisualShaderEditor::_paste_nodes);
 	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
+	ClassDB::bind_method("_uniform_select_item", &VisualShaderEditor::_uniform_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
 	ClassDB::bind_method("_graph_gui_input", &VisualShaderEditor::_graph_gui_input);
 	ClassDB::bind_method("_add_input_port", &VisualShaderEditor::_add_input_port);
@@ -2787,6 +2859,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Expression", "Special", "", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("Fresnel", "Special", "", "VisualShaderNodeFresnel", TTR("Returns falloff based on the dot product of surface normal and view direction of camera (pass associated inputs to it)."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, uniforms and constants.")));
+	add_options.push_back(AddOption("UniformRef", "Special", "", "VisualShaderNodeUniformRef", TTR("A reference to an existing uniform.")));
 
 	add_options.push_back(AddOption("ScalarDerivativeFunc", "Special", "Common", "VisualShaderNodeScalarDerivativeFunc", TTR("(Fragment/Light mode only) Scalar derivative function."), -1, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
 	add_options.push_back(AddOption("VectorDerivativeFunc", "Special", "Common", "VisualShaderNodeVectorDerivativeFunc", TTR("(Fragment/Light mode only) Vector derivative function."), -1, VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
@@ -2913,6 +2986,58 @@ public:
 	}
 };
 
+////////////////
+
+class VisualShaderNodePluginUniformRefEditor : public OptionButton {
+	GDCLASS(VisualShaderNodePluginUniformRefEditor, OptionButton);
+
+	Ref<VisualShaderNodeUniformRef> uniform_ref;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method("_item_selected", &VisualShaderNodePluginUniformRefEditor::_item_selected);
+	}
+
+public:
+	void _notification(int p_what) {
+		if (p_what == NOTIFICATION_READY) {
+			connect("item_selected", this, "_item_selected");
+		}
+	}
+
+	void _item_selected(int p_item) {
+		VisualShaderEditor::get_singleton()->call_deferred("_uniform_select_item", uniform_ref, get_item_text(p_item));
+	}
+
+	void setup(const Ref<VisualShaderNodeUniformRef> &p_uniform_ref) {
+		uniform_ref = p_uniform_ref;
+
+		Ref<Texture> type_icon[6] = {
+			EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"),
+			EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"),
+		};
+
+		add_item("[None]");
+		int to_select = -1;
+		for (int i = 0; i < p_uniform_ref->get_uniforms_count(); i++) {
+			if (p_uniform_ref->get_uniform_name() == p_uniform_ref->get_uniform_name_by_index(i)) {
+				to_select = i + 1;
+			}
+			add_icon_item(type_icon[p_uniform_ref->get_uniform_type_by_index(i)], p_uniform_ref->get_uniform_name_by_index(i));
+		}
+
+		if (to_select >= 0) {
+			select(to_select);
+		}
+	}
+};
+
+////////////////
+
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer);
 	Ref<Resource> parent_resource;
@@ -3011,6 +3136,12 @@ public:
 };
 
 Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
+	if (p_node->is_class("VisualShaderNodeUniformRef")) {
+		//create input
+		VisualShaderNodePluginUniformRefEditor *uniform_editor = memnew(VisualShaderNodePluginUniformRefEditor);
+		uniform_editor->setup(p_node);
+		return uniform_editor;
+	}
 
 	if (p_node->is_class("VisualShaderNodeInput")) {
 		//create input
