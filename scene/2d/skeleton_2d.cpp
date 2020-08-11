@@ -710,6 +710,10 @@ void Skeleton2D::execute_modification(float delta) {
 		bones[i].bone->set_transform(bones.write[i].local_pose_cache);
 	}
 
+	if (modification_stack->skeleton != this) {
+		modification_stack->set_skeleton(this);
+	}
+
 	modification_stack->execute(delta);
 
 	// A hack: Override the CanvasItem transform using the RenderingServer so the local pose override is taken into account.
