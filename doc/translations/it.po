@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-08-04 06:42+0000\n"
+"PO-Revision-Date: 2020-08-11 14:38+0000\n"
 "Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/it/>\n"
@@ -66,7 +66,7 @@ msgstr "Descrizioni Metodo"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr "Funzioni GDScript incluse."
+msgstr "Funzioni GDScript Built-in."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""

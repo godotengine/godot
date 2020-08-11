@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-08-05 16:58+0000\n"
+"PO-Revision-Date: 2020-08-11 14:38+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ja/>\n"
@@ -6009,69 +6009,73 @@ msgid ""
 "Connects the output of an [AnimationNode] as input for another "
 "[AnimationNode], at the input port specified by [code]input_index[/code]."
 msgstr ""
+"ある [AnimationNode] の出力を、[code]input_index[/code] で指定された入力ポー"
+"トに、別の [AnimationNode] の入力として接続します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:47
 msgid "Disconnects the node connected to the specified input."
-msgstr ""
+msgstr "指定された入力に接続されているノードを切断します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:56
 msgid "Returns the sub-node with the specified [code]name[/code]."
-msgstr ""
+msgstr "指定した [code]name[/code] のサブノードを返します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:65
 msgid ""
 "Returns the position of the sub-node with the specified [code]name[/code]."
-msgstr ""
+msgstr "指定した名前 [code]name[/code] のサブノードの位置を返します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:74
 msgid ""
 "Returns [code]true[/code] if a sub-node with specified [code]name[/code] "
 "exists."
 msgstr ""
+"指定された名前 [code]name[/code] のサブノードが存在する場合、[code]true[/"
+"code] を返します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:83
 msgid "Removes a sub-node."
-msgstr ""
+msgstr "サブノードを除去します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:94
 msgid "Changes the name of a sub-node."
-msgstr ""
+msgstr "サブノードの名前を変更します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:105
 msgid "Modifies the position of a sub-node."
-msgstr ""
+msgstr "サブノードの位置を変更します。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:111
 msgid "The global offset of all sub-nodes."
-msgstr ""
+msgstr "すべてのサブノードのグローバルオフセット。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:116
 msgid "The connection was successful."
-msgstr ""
+msgstr "接続成功。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:119
 msgid "The input node is [code]null[/code]."
-msgstr ""
+msgstr "入力ノードが [code]null[/code]。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:122
 msgid "The specified input port is out of range."
-msgstr ""
+msgstr "指定された入力ポートが範囲外。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:125
 msgid "The output node is [code]null[/code]."
-msgstr ""
+msgstr "出力ノードが [code]null[/code]。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:128
 msgid "Input and output nodes are the same."
-msgstr ""
+msgstr "入力と出力ノードが同一。"
 
 #: doc/classes/AnimationNodeBlendTree.xml:131
 msgid "The specified connection already exists."
-msgstr ""
+msgstr "指定された接続は存在済み。"
 
 #: doc/classes/AnimationNodeOneShot.xml:4
 msgid "Plays an animation once in [AnimationNodeBlendTree]."
-msgstr ""
+msgstr "[AnimationNodeBlendTree] 内のアニメーションを1回再生します。"
 
 #: doc/classes/AnimationNodeOneShot.xml:7
 msgid ""
@@ -6079,16 +6083,21 @@ msgid ""
 "sub-animation and return once it finishes. Blend times for fading in and out "
 "can be customized, as well as filters."
 msgstr ""
+"[AnimationNodeBlendTree] に追加するリソース。このノードはサブアニメーションを"
+"実行し、終了すると戻ります。フェードインとフェードアウトのブレンド時間やフィ"
+"ルターをカスタマイズすることができます。"
 
 #: doc/classes/AnimationNodeOneShot.xml:30
 msgid ""
 "If [code]true[/code], the sub-animation will restart automatically after "
 "finishing."
 msgstr ""
+"[code]true[/code] の場合、サブアニメーションの終了後に自動的に再度再生しま"
+"す。"
 
 #: doc/classes/AnimationNodeOneShot.xml:33
 msgid "The delay after which the automatic restart is triggered, in seconds."
-msgstr ""
+msgstr "自動再度再生が開始された後の遅延時間を秒単位で指定します。"
 
 #: doc/classes/AnimationNodeOneShot.xml:36
 msgid ""
@@ -6096,14 +6105,16 @@ msgid ""
 "seconds) between 0 and this value will be added to [member "
 "autorestart_delay]."
 msgstr ""
+"[member autorestart] が [code]true[/code] の場合、0からこの値の間でランダムな"
+"追加遅延時間 (秒単位) が [member autorestart_delay] に追加されます。"
 
 #: doc/classes/AnimationNodeOutput.xml:4
 msgid "Generic output node to be added to [AnimationNodeBlendTree]."
-msgstr ""
+msgstr "[AnimationNodeBlendTree] に追加する汎用出力ノードです。"
 
 #: doc/classes/AnimationNodeStateMachine.xml:4
 msgid "State machine for control of animations."
-msgstr ""
+msgstr "アニメーションを制御するためのステートマシンです。"
 
 #: doc/classes/AnimationNodeStateMachine.xml:7
 msgid ""
@@ -6118,6 +6129,15 @@ msgid ""
 "state_machine.travel(\"some_state\")\n"
 "[/codeblock]"
 msgstr ""
+"グラフで接続される、アニメーションの状態を表す複数のノードを含みます。ノード"
+"の遷移は、最短パスアルゴリズムを使用して、自動またはコードで設定できます。プ"
+"ログラムで制御するには、[AnimationTree] ノードから "
+"[AnimationNodeStateMachinePlayback] オブジェクトを取得してください。\n"
+"[b]例:[/b]\n"
+"[codeblock]\n"
+"var state_machine = $AnimationTree.get(\"parameters/playback\")\n"
+"state_machine.travel(\"some_state\")\n"
+"[/codeblock]"
 
 #: doc/classes/AnimationNodeStateMachine.xml:28
 msgid ""
@@ -20877,8 +20897,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorSettings.xml:55
+#, fuzzy
 msgid "Erases the setting whose name is specified by [code]property[/code]."
-msgstr ""
+msgstr "指定した [code]name[/code] のサブノードを返します。"
 
 #: doc/classes/EditorSettings.xml:62
 msgid "Returns the list of favorite files and directories for this project."
@@ -55796,7 +55817,7 @@ msgstr ""
 #: doc/classes/Vector3.xml:118
 #, fuzzy
 msgid "Returns the distance between this vector and [code]b[/code]."
-msgstr "インデックス [code]point[/code] のポイントの位置を返します。"
+msgstr "指定した [code]name[/code] のサブノードを返します。"
 
 #: doc/classes/Vector3.xml:127
 msgid ""

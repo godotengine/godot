@@ -8,12 +8,14 @@
 # yzt <834950797@qq.com>, 2020.
 # 懵逼Kitty <m1330586660@163.com>, 2020.
 # MintSoda <lionlxh@qq.com>, 2020.
+# Gardner Belgrade <hapenia@sina.com>, 2020.
+# WangYi13 <wyi13@outlook.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-07-31 03:47+0000\n"
-"Last-Translator: MintSoda <lionlxh@qq.com>\n"
+"PO-Revision-Date: 2020-08-11 14:38+0000\n"
+"Last-Translator: WangYi13 <wyi13@outlook.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -445,6 +447,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:334
+#, fuzzy
 msgid ""
 "Rounds [code]s[/code] downward (towards negative infinity), returning the "
 "largest whole number that is not more than [code]s[/code].\n"
@@ -457,6 +460,15 @@ msgid ""
 "[b]Note:[/b] This method returns a float. If you need an integer, you can "
 "use [code]int(s)[/code] directly."
 msgstr ""
+"返回不大于[code]s[/code] 的最大整数。\n"
+"[codeblock]\n"
+"a = floor(2.99)\n"
+"# a is 2.0\n"
+"a = floor(-2.99)\n"
+"# a is -3.0\n"
+"[/codeblock]\n"
+"[b]注:[/b] 这个方法返回一个浮点值，如果需要返回一个整数，可以直接使用"
+"[code]int(s)[/code] 。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:352
 msgid ""
@@ -468,6 +480,12 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
+"返回[code]a/b[/code]的浮点型余数， 符号与 [code]a[/code]一致。\n"
+"[codeblock]\n"
+"var remainder = fmod(7, 5.5)\n"
+"# Remainder is 1.5\n"
+"[/codeblock]\n"
+"如果对整数进行取余操作，请使用操作符 % 。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:368
 msgid ""
@@ -509,6 +527,16 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"返回某一实例节点 [code]instance[/code]中指定函数 [code]funcname[/code]的引"
+"用。 由于函数在GDScript中不是一级对象，所以 使用 [code]funcref[/code] 将函数"
+"引用[FuncRef]存储在一个变量之中以在后续调用它 。\n"
+"[codeblock]\n"
+"func foo():\n"
+"    return(\"bar\")\n"
+"\n"
+"a = funcref(self, \"foo\")\n"
+"print(a.call_func()) # 会打印出\"bar\"\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:413
 msgid ""
@@ -529,6 +557,22 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
+"返回一个数组，其元素为展示当前调用堆栈的字典。\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    foo()\n"
+"\n"
+"func foo():\n"
+"    bar()\n"
+"\n"
+"func bar():\n"
+"    print(get_stack())\n"
+"[/codeblock]\n"
+"输出：\n"
+"[codeblock]\n"
+"[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
+"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:436
 msgid ""
@@ -537,6 +581,10 @@ msgid ""
 "print(hash(\"a\")) # Prints 177670\n"
 "[/codeblock]"
 msgstr ""
+"返回变量的整数哈希值\n"
+"[codeblock]\n"
+"print(hash(\"a\")) # 输出结果： 177670\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:448
 msgid ""
@@ -568,6 +616,14 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"返回id [code]instance_id[/code]所对应的对象。 所有对象都有独有的id。\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var id = get_instance_id()\n"
+"    var inst = instance_from_id(id)\n"
+"    print(inst.foo) # 输出 bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:489
 msgid ""
@@ -582,6 +638,14 @@ msgid ""
 "# `ratio` is now 0.75.\n"
 "[/codeblock]"
 msgstr ""
+"返回给定区间所决定的规范化系数， 是方法 [lerp]的反向过程。\n"
+"[codeblock]\n"
+"var middle = lerp(20, 30, 0.75)\n"
+"# `middle` 为 27.5.\n"
+"# 现在我们不知道系数0.75的值，但是知道归一化结果27.5，计算规范化系数：\n"
+"var ratio = inverse_lerp(20, 30, 27.5)\n"
+"# `ratio` 为 0.75.\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:507
 msgid ""
@@ -598,24 +662,30 @@ msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
+"判断[code]s[/code]是否为无穷大（包括正无穷和负无穷），是返回true，否返回"
+"false。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:527
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
+"判断实例[code]instance[/code]是否为合法对象（如未从内存中删除），是返回true，"
+"否返回false。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:536
+#, fuzzy
 msgid ""
 "Returns whether [code]s[/code] is a NaN (\"Not a Number\" or invalid) value."
-msgstr ""
+msgstr "返回[code]s[/code]是否为NaN（Not-A-Number，非数）值的判断结果。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:545
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [code]s[/code] is zero or almost zero.\n"
 "This method is faster than using [method is_equal_approx] with one value as "
 "zero."
-msgstr ""
+msgstr "如果[code]s[/code] 为0或者很接近0则返回[code]true[/code]。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:555
 msgid ""
@@ -627,6 +697,13 @@ msgid ""
 "len(a) # Returns 4\n"
 "[/codeblock]"
 msgstr ""
+"返回变量[code]var[/code]的长度。 长度指字符串的字符数、数组的元素数、字典的大"
+"小等。\n"
+"[b]注:[/b] 变量无法提供可作为长度的值时会抛出错误。\n"
+"[codeblock]\n"
+"a = [1, 2, 3, 4]\n"
+"len(a) # 返回值：4\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:573
 msgid ""
@@ -642,6 +719,16 @@ msgid ""
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)\n"
 "[/codeblock]"
 msgstr ""
+"由规范化系数在两个数之间线性插值，是方法[method inverse_lerp]的反向过程。\n"
+"如果参数 [code]from[/code]、[code]to[/code]的类型为[int] 或 [float]，返回值类"
+"型为[float]。\n"
+"如果参数 [code]from[/code]、[code]to[/code]的类型为同一类型的矢量"
+"（[Vector2], [Vector3]或 [Color]），则返回值也是相同类型（此时[code]lerp[/"
+"code] 会调用矢量类型的[code]lerp[/code] 方法）。\n"
+"[codeblock]\n"
+"lerp(0, 4, 0.75) # Returns 3.0\n"
+"lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # 返回值： Vector2(2, 3.5)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:592
 msgid ""
@@ -18674,10 +18761,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorInterface.xml:145
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the specified [code]plugin[/code] is enabled. "
 "The plugin name is the same as its directory name."
-msgstr ""
+msgstr "如果[code]s[/code] 为0或者很接近0则返回[code]true[/code]。"
 
 #: doc/classes/EditorInterface.xml:156
 msgid ""
@@ -18835,10 +18923,11 @@ msgid "Returns the Node3D node associated with this gizmo."
 msgstr ""
 
 #: doc/classes/EditorNode3DGizmo.xml:149
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the handle at index [code]index[/code] is "
 "highlighted by being hovered with the mouse."
-msgstr ""
+msgstr "如果[code]a[/code]与[code]b[/code]近似相等，则返回[code]true[/code]。"
 
 #: doc/classes/EditorNode3DGizmo.xml:156
 msgid ""
@@ -19843,10 +19932,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorSettings.xml:116
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the setting specified by [code]name[/code] "
 "exists, [code]false[/code] otherwise."
-msgstr ""
+msgstr "如果[code]a[/code]与[code]b[/code]近似相等，则返回[code]true[/code]。"
 
 #: doc/classes/EditorSettings.xml:125
 msgid ""
@@ -34612,8 +34702,9 @@ msgstr ""
 #: doc/classes/PackedInt32Array.xml:54 doc/classes/PackedInt64Array.xml:54
 #: doc/classes/PackedStringArray.xml:53 doc/classes/PackedVector2Array.xml:53
 #: doc/classes/PackedVector3Array.xml:53
+#, fuzzy
 msgid "Returns [code]true[/code] if the array contains [code]value[/code]."
-msgstr ""
+msgstr "如果[code]s[/code] 为0或者很接近0则返回[code]true[/code]。"
 
 #: doc/classes/PackedByteArray.xml:94
 msgid ""
@@ -54428,9 +54519,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector2.xml:184 doc/classes/Vector3.xml:160
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the vector is normalized, and false otherwise."
-msgstr ""
+msgstr "如果[code]s[/code] 为0或者很接近0则返回[code]true[/code]。"
 
 #: doc/classes/Vector2.xml:191 doc/classes/Vector3.xml:167
 msgid "Returns the length (magnitude) of this vector."
