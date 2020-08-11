@@ -7,12 +7,16 @@
 # So Wieso <sowieso@dukun.de>, 2020.
 # artism90 <artism90@googlemail.com>, 2020.
 # HugeGameArt <hugegameartgd@gmail.com>, 2020.
+# Günther Bohn <ciscouser@gmx.de>, 2020.
+# Rémi Verschelde <akien@godotengine.org>, 2020.
+# Julian Pritzi <julian.pritzi@gmail.com>, 2020.
+# Markus Lechner <marcus.lechner@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-06-08 11:41+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2020-08-04 06:42+0000\n"
+"Last-Translator: Markus Lechner <marcus.lechner@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -20,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
@@ -110,12 +114,12 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
-"Gibt eine Farbe gemäß dem standardisierten [code]Namen[/code] zurück, wobei "
+"Gibt eine Farbe gemäß dem standardisierten [code]name[/code] zurück, wobei "
 "[code]alpha[/code] im Bereich von 0 bis 1 liegt.\n"
 "[codeblock]\n"
-"rot = FarbeN(\"rot\", 1)\n"
+"rot = ColorN(\"red\", 1)\n"
 "[/codeblock]\n"
-"Die unterstützten Farbnamen sind die gleichen wie die in [Farbe] definierten "
+"Die unterstützten Farbnamen sind die gleichen wie die in [Color] definierten "
 "Konstanten."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
@@ -256,9 +260,9 @@ msgid ""
 "avoid potential security threats (remote code execution)."
 msgstr ""
 "Dekodiert ein Byte-Array zurück zu einem Wert. Wenn [code]allow_objects[/"
-"code] gleich [code]true[/code] ist, ist die Dekodierung von Objekten "
+"code] gleich [code]wahr[/code] ist, ist die Dekodierung von Objekten "
 "erlaubt.\n"
-"120]WARNUNG:[/b] Deserialisierte Objekte können Code enthalten, der "
+"[b]WARNUNG:[/b] Deserialisierte Objekte können Code enthalten, der "
 "ausgeführt wird. Verwenden Sie diese Option nicht, wenn das serialisierte "
 "Objekt aus nicht vertrauenswürdigen Quellen stammt, um potenzielle "
 "Sicherheitsbedrohungen zu vermeiden (entfernte Codeausführung)."
@@ -493,6 +497,12 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
+"Gibt den Divisionsrest von [code]a/b[/code] mit nachkommastellen zurück\n"
+"[codeblock]\n"
+"# Rest ist 1.5\n"
+"var rest = fmod(7, 5.5)\n"
+"[/codeblock]\n"
+"Für den Integer-Divisionsrest, den % Operator benutzen."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:367
 msgid ""
@@ -519,6 +529,28 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
+"Gibt den Fließkomma-Betrag von [code]a/b[/code] zurück, der sowohl positiv "
+"als auch negativ sein kann.\n"
+"[codeblock]\n"
+"var i = -6\n"
+"while i < 5:\n"
+"    prints(i, fposmod(i, 3))\n"
+"    i += 1\n"
+"[/codeblock]\n"
+"Ergibt:\n"
+"[codeblock]\n"
+"-6 0\n"
+"-5 1\n"
+"-4 2\n"
+"-3 0\n"
+"-2 1\n"
+"-1 2\n"
+"0 0\n"
+"1 1\n"
+"2 2\n"
+"3 0\n"
+"4 1\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:398
 msgid ""
@@ -534,6 +566,17 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"Liefert eine Reference an die genannte Funktion [code]funcname[/code] in the "
+"[code]instance[/code] node. As functions aren't first-class objects in "
+"GDscript, use [code]funcref[/code] to store a [FuncRef] in a variable and "
+"call it later.\n"
+"[codeblock]\n"
+"func foo():\n"
+"    return(\"bar\")\n"
+"\n"
+"a = funcref(self, \"foo\")\n"
+"print(a.call_func()) # Prints bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:412
 msgid ""
@@ -554,6 +597,23 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
+"Gibt ein Array von Wörterbüchern zurück, das den aktuellen Aufrufstapel "
+"darstellt.\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    foo()\n"
+"\n"
+"func foo():\n"
+"    bar()\n"
+"\n"
+"func bar():\n"
+"    print(get_stack())\n"
+"[/codeblock]\n"
+"würde ausgeben:\n"
+"[codeblock]\n"
+"[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
+"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:435
 msgid ""
@@ -593,6 +653,15 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"Liefert das zugehörige Object zu [code]instance_id[/code]. Alle Objekte "
+"haben eine eindeutige Instanz ID.\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var id = get_instance_id()\n"
+"    var inst = instance_from_id(id)\n"
+"    print(inst.foo) # Prints bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:488
 msgid ""
@@ -613,26 +682,36 @@ msgid ""
 "Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are "
 "approximately equal to each other."
 msgstr ""
+"Liefert [code]wahr[/code] als Ergebnis wenn [code]a[/code] und [code]b[/"
+"code] ungefähr gleich sind."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:515
 msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
+"Liefert als Ergebnis ob [code]s[/code] ein unendlicher Wert ist (entweder "
+"positiv unendlich oder negativ unendlich)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:524
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
+"Liefert als Ergebnis ob [code]instance[/code] ein gültiges Objekt ist (z.B. "
+"wurde es noch nicht aus dem Speicher gelöscht)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:533
 msgid "Returns whether [code]s[/code] is a NaN (Not-A-Number) value."
 msgstr ""
+"Liefert als Ergebnis ob [code]s[/code] ein NaN (Not-A-Number = keine Nummer) "
+"ist."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:542
 msgid "Returns [code]true[/code] if [code]s[/code] is zero or almost zero."
 msgstr ""
+"Liefert als Ergebnis [code]wahr[/code] wenn [code]s[/code] Null oder fast "
+"Null ist."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:551
 msgid ""
@@ -716,6 +795,13 @@ msgid ""
 "log(10) # Returns 2.302585\n"
 "[/codeblock]"
 msgstr ""
+"Natürlicher Logarithmus. Der benötigte Zeitwert um eine gewisse Stufe eines "
+"fortlaufenden Wachstums zu erreichen.\n"
+"[b]Hinweis:[/b] Dies ist nicht dasselbe wie die \"log\" Funktion eines "
+"Taschenrechners, welche einen Basis 10 Logarithmus nutzt.\n"
+"[codeblock]\n"
+"log(10) # liefert 2.302585\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:652
 msgid ""
@@ -725,6 +811,11 @@ msgid ""
 "max(-3.99, -4) # Returns -3.99\n"
 "[/codeblock]"
 msgstr ""
+"Liefert das Maximum zweier Werte.\n"
+"[codeblock]\n"
+"max(1, 2) # gibt 2 zurück\n"
+"max(-3.99, -4) # gibt -3.99 zurück\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:667
 msgid ""
@@ -734,6 +825,11 @@ msgid ""
 "min(-3.99, -4) # Returns -4\n"
 "[/codeblock]"
 msgstr ""
+"Liefert das Minimum zweier Werte.\n"
+"[codeblock]\n"
+"min(1, 2) # gibt 1 zurück\n"
+"min(-3.99, -4) # gibt -4 zurück\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:684
 msgid ""
@@ -744,6 +840,12 @@ msgid ""
 "move_toward(10, 5, 4) # Returns 6\n"
 "[/codeblock]"
 msgstr ""
+"Verschiebt [code]von[/code] nach [code]zu[/code] mittels [code]delta[/code] "
+"Wert.\n"
+"Nutze einen negativen [code]delta[/code] Wert um wegzubewegen.\n"
+"[codeblock]\n"
+"move_toward(10, 5, 4) # liefert 6\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:697
 msgid ""
@@ -828,6 +930,10 @@ msgid ""
 "pow(2, 5) # Returns 32\n"
 "[/codeblock]"
 msgstr ""
+"Liefert das Ergebnis von [code]x[/code] hoch [code]y[/code].\n"
+"[codeblock]\n"
+"pow(2, 5) # liefert 32\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:800
 msgid ""
@@ -1511,19 +1617,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:119
 msgid "Top-left corner."
-msgstr ""
+msgstr "obere linke Ecke."
 
 #: doc/classes/@GlobalScope.xml:122
 msgid "Top-right corner."
-msgstr ""
+msgstr "obere rechte Ecke."
 
 #: doc/classes/@GlobalScope.xml:125
 msgid "Bottom-right corner."
-msgstr ""
+msgstr "untere rechte Ecke."
 
 #: doc/classes/@GlobalScope.xml:128
 msgid "Bottom-left corner."
-msgstr ""
+msgstr "untere linke Ecke."
 
 #: doc/classes/@GlobalScope.xml:131
 msgid ""
@@ -1567,11 +1673,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:158
 msgid "Escape key."
-msgstr ""
+msgstr "Escape Taste."
 
 #: doc/classes/@GlobalScope.xml:161
 msgid "Tab key."
-msgstr ""
+msgstr "Tabulator Taste."
 
 #: doc/classes/@GlobalScope.xml:164
 msgid "Shift + Tab key."
@@ -1579,7 +1685,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:167
 msgid "Backspace key."
-msgstr ""
+msgstr "Backspace Taste."
 
 #: doc/classes/@GlobalScope.xml:170
 msgid "Return key (on the main keyboard)."
@@ -1591,15 +1697,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:176
 msgid "Insert key."
-msgstr ""
+msgstr "Einfügen Taste."
 
 #: doc/classes/@GlobalScope.xml:179
 msgid "Delete key."
-msgstr ""
+msgstr "Löschen Taste."
 
 #: doc/classes/@GlobalScope.xml:182
 msgid "Pause key."
-msgstr ""
+msgstr "Pausen Taste."
 
 #: doc/classes/@GlobalScope.xml:185
 msgid "Print Screen key."
@@ -1615,43 +1721,43 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:194
 msgid "Home key."
-msgstr ""
+msgstr "Home Taste."
 
 #: doc/classes/@GlobalScope.xml:197
 msgid "End key."
-msgstr ""
+msgstr "Ende Taste."
 
 #: doc/classes/@GlobalScope.xml:200
 msgid "Left arrow key."
-msgstr ""
+msgstr "linke Pfeiltaste."
 
 #: doc/classes/@GlobalScope.xml:203
 msgid "Up arrow key."
-msgstr ""
+msgstr "obere Pfeiltaste."
 
 #: doc/classes/@GlobalScope.xml:206
 msgid "Right arrow key."
-msgstr ""
+msgstr "rechte Pfeiltaste."
 
 #: doc/classes/@GlobalScope.xml:209
 msgid "Down arrow key."
-msgstr ""
+msgstr "untere Pfeiltaste."
 
 #: doc/classes/@GlobalScope.xml:212
 msgid "Page Up key."
-msgstr ""
+msgstr "Bild hoch Taste."
 
 #: doc/classes/@GlobalScope.xml:215
 msgid "Page Down key."
-msgstr ""
+msgstr "Bild runter Taste."
 
 #: doc/classes/@GlobalScope.xml:218
 msgid "Shift key."
-msgstr ""
+msgstr "Shift Taste."
 
 #: doc/classes/@GlobalScope.xml:221
 msgid "Control key."
-msgstr ""
+msgstr "Control Taste."
 
 #: doc/classes/@GlobalScope.xml:224
 msgid "Meta key."
@@ -1659,15 +1765,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:227
 msgid "Alt key."
-msgstr ""
+msgstr "Alt Taste."
 
 #: doc/classes/@GlobalScope.xml:230
 msgid "Caps Lock key."
-msgstr ""
+msgstr "Feststelltaste."
 
 #: doc/classes/@GlobalScope.xml:233
 msgid "Num Lock key."
-msgstr ""
+msgstr "Num Lock Taste."
 
 #: doc/classes/@GlobalScope.xml:236
 msgid "Scroll Lock key."
@@ -1675,67 +1781,67 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:239
 msgid "F1 key."
-msgstr ""
+msgstr "F1 Taste."
 
 #: doc/classes/@GlobalScope.xml:242
 msgid "F2 key."
-msgstr ""
+msgstr "F2 Taste."
 
 #: doc/classes/@GlobalScope.xml:245
 msgid "F3 key."
-msgstr ""
+msgstr "F3 Taste."
 
 #: doc/classes/@GlobalScope.xml:248
 msgid "F4 key."
-msgstr ""
+msgstr "F4 Taste."
 
 #: doc/classes/@GlobalScope.xml:251
 msgid "F5 key."
-msgstr ""
+msgstr "F5 Taste."
 
 #: doc/classes/@GlobalScope.xml:254
 msgid "F6 key."
-msgstr ""
+msgstr "F6 Taste."
 
 #: doc/classes/@GlobalScope.xml:257
 msgid "F7 key."
-msgstr ""
+msgstr "F7 Taste."
 
 #: doc/classes/@GlobalScope.xml:260
 msgid "F8 key."
-msgstr ""
+msgstr "F8 Taste."
 
 #: doc/classes/@GlobalScope.xml:263
 msgid "F9 key."
-msgstr ""
+msgstr "F9 Taste."
 
 #: doc/classes/@GlobalScope.xml:266
 msgid "F10 key."
-msgstr ""
+msgstr "F10 Taste."
 
 #: doc/classes/@GlobalScope.xml:269
 msgid "F11 key."
-msgstr ""
+msgstr "F11 Taste."
 
 #: doc/classes/@GlobalScope.xml:272
 msgid "F12 key."
-msgstr ""
+msgstr "F12 Taste."
 
 #: doc/classes/@GlobalScope.xml:275
 msgid "F13 key."
-msgstr ""
+msgstr "F13 Taste."
 
 #: doc/classes/@GlobalScope.xml:278
 msgid "F14 key."
-msgstr ""
+msgstr "F14 Taste."
 
 #: doc/classes/@GlobalScope.xml:281
 msgid "F15 key."
-msgstr ""
+msgstr "F15 Taste."
 
 #: doc/classes/@GlobalScope.xml:284
 msgid "F16 key."
-msgstr ""
+msgstr "F16 Taste."
 
 #: doc/classes/@GlobalScope.xml:287
 msgid "Multiply (*) key on the numeric keypad."
@@ -1819,7 +1925,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:347
 msgid "Help key."
-msgstr ""
+msgstr "Hilfe Taste."
 
 #: doc/classes/@GlobalScope.xml:350
 msgid "Left Direction key."
@@ -1831,19 +1937,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:356
 msgid "Back key."
-msgstr ""
+msgstr "Zurück Taste."
 
 #: doc/classes/@GlobalScope.xml:359
 msgid "Forward key."
-msgstr ""
+msgstr "Forwärts Taste."
 
 #: doc/classes/@GlobalScope.xml:362
 msgid "Stop key."
-msgstr ""
+msgstr "Stop Taste."
 
 #: doc/classes/@GlobalScope.xml:365
 msgid "Refresh key."
-msgstr ""
+msgstr "Refresh Taste."
 
 #: doc/classes/@GlobalScope.xml:368
 msgid "Volume down key."
@@ -1903,15 +2009,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:410
 msgid "Favorites key."
-msgstr ""
+msgstr "Favoriten Taste."
 
 #: doc/classes/@GlobalScope.xml:413
 msgid "Search key."
-msgstr ""
+msgstr "Suchen Taste."
 
 #: doc/classes/@GlobalScope.xml:416
 msgid "Standby key."
-msgstr ""
+msgstr "Standby TAste."
 
 #: doc/classes/@GlobalScope.xml:419
 msgid "Open URL / Launch Browser key."
@@ -1995,259 +2101,259 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:479
 msgid "Space key."
-msgstr ""
+msgstr "Leertaste."
 
 #: doc/classes/@GlobalScope.xml:482
 msgid "! key."
-msgstr ""
+msgstr "! Taste."
 
 #: doc/classes/@GlobalScope.xml:485
 msgid "\" key."
-msgstr ""
+msgstr "\" Taste."
 
 #: doc/classes/@GlobalScope.xml:488
 msgid "# key."
-msgstr ""
+msgstr "# Taste."
 
 #: doc/classes/@GlobalScope.xml:491
 msgid "$ key."
-msgstr ""
+msgstr "$ Taste."
 
 #: doc/classes/@GlobalScope.xml:494
 msgid "% key."
-msgstr ""
+msgstr "% Taste."
 
 #: doc/classes/@GlobalScope.xml:497
 msgid "& key."
-msgstr ""
+msgstr "& Taste."
 
 #: doc/classes/@GlobalScope.xml:500
 msgid "' key."
-msgstr ""
+msgstr "' Taste."
 
 #: doc/classes/@GlobalScope.xml:503
 msgid "( key."
-msgstr ""
+msgstr "( Taste."
 
 #: doc/classes/@GlobalScope.xml:506
 msgid ") key."
-msgstr ""
+msgstr ") Taste."
 
 #: doc/classes/@GlobalScope.xml:509
 msgid "* key."
-msgstr ""
+msgstr "* Taste."
 
 #: doc/classes/@GlobalScope.xml:512
 msgid "+ key."
-msgstr ""
+msgstr "+ Taste."
 
 #: doc/classes/@GlobalScope.xml:515
 msgid ", key."
-msgstr ""
+msgstr ", Taste."
 
 #: doc/classes/@GlobalScope.xml:518
 msgid "- key."
-msgstr ""
+msgstr "- Taste."
 
 #: doc/classes/@GlobalScope.xml:521
 msgid ". key."
-msgstr ""
+msgstr ". Taste."
 
 #: doc/classes/@GlobalScope.xml:524
 msgid "/ key."
-msgstr ""
+msgstr "/ Taste."
 
 #: doc/classes/@GlobalScope.xml:527
 msgid "Number 0."
-msgstr ""
+msgstr "Nummer 0."
 
 #: doc/classes/@GlobalScope.xml:530
 msgid "Number 1."
-msgstr ""
+msgstr "Nummer 1."
 
 #: doc/classes/@GlobalScope.xml:533
 msgid "Number 2."
-msgstr ""
+msgstr "Nummer 2."
 
 #: doc/classes/@GlobalScope.xml:536
 msgid "Number 3."
-msgstr ""
+msgstr "Nummer 3."
 
 #: doc/classes/@GlobalScope.xml:539
 msgid "Number 4."
-msgstr ""
+msgstr "Nummer 4."
 
 #: doc/classes/@GlobalScope.xml:542
 msgid "Number 5."
-msgstr ""
+msgstr "Nummer 5."
 
 #: doc/classes/@GlobalScope.xml:545
 msgid "Number 6."
-msgstr ""
+msgstr "Nummer 6."
 
 #: doc/classes/@GlobalScope.xml:548
 msgid "Number 7."
-msgstr ""
+msgstr "Nummer 7."
 
 #: doc/classes/@GlobalScope.xml:551
 msgid "Number 8."
-msgstr ""
+msgstr "Nummer 8."
 
 #: doc/classes/@GlobalScope.xml:554
 msgid "Number 9."
-msgstr ""
+msgstr "Nummer 9."
 
 #: doc/classes/@GlobalScope.xml:557
 msgid ": key."
-msgstr ""
+msgstr ": Taste."
 
 #: doc/classes/@GlobalScope.xml:560
 msgid "; key."
-msgstr ""
+msgstr "; Taste."
 
 #: doc/classes/@GlobalScope.xml:563
 msgid "< key."
-msgstr ""
+msgstr "< Taste."
 
 #: doc/classes/@GlobalScope.xml:566
 msgid "= key."
-msgstr ""
+msgstr "= Taste."
 
 #: doc/classes/@GlobalScope.xml:569
 msgid "> key."
-msgstr ""
+msgstr "> Taste."
 
 #: doc/classes/@GlobalScope.xml:572
 msgid "? key."
-msgstr ""
+msgstr "? Taste."
 
 #: doc/classes/@GlobalScope.xml:575
 msgid "@ key."
-msgstr ""
+msgstr "@ Taste."
 
 #: doc/classes/@GlobalScope.xml:578
 msgid "A key."
-msgstr ""
+msgstr "A Taste."
 
 #: doc/classes/@GlobalScope.xml:581
 msgid "B key."
-msgstr ""
+msgstr "B Taste."
 
 #: doc/classes/@GlobalScope.xml:584
 msgid "C key."
-msgstr ""
+msgstr "C Taste."
 
 #: doc/classes/@GlobalScope.xml:587
 msgid "D key."
-msgstr ""
+msgstr "D Taste."
 
 #: doc/classes/@GlobalScope.xml:590
 msgid "E key."
-msgstr ""
+msgstr "E Taste."
 
 #: doc/classes/@GlobalScope.xml:593
 msgid "F key."
-msgstr ""
+msgstr "F Taste."
 
 #: doc/classes/@GlobalScope.xml:596
 msgid "G key."
-msgstr ""
+msgstr "G Taste."
 
 #: doc/classes/@GlobalScope.xml:599
 msgid "H key."
-msgstr ""
+msgstr "H Taste."
 
 #: doc/classes/@GlobalScope.xml:602
 msgid "I key."
-msgstr ""
+msgstr "I Taste."
 
 #: doc/classes/@GlobalScope.xml:605
 msgid "J key."
-msgstr ""
+msgstr "J Taste."
 
 #: doc/classes/@GlobalScope.xml:608
 msgid "K key."
-msgstr ""
+msgstr "K Taste."
 
 #: doc/classes/@GlobalScope.xml:611
 msgid "L key."
-msgstr ""
+msgstr "L Taste."
 
 #: doc/classes/@GlobalScope.xml:614
 msgid "M key."
-msgstr ""
+msgstr "M Taste."
 
 #: doc/classes/@GlobalScope.xml:617
 msgid "N key."
-msgstr ""
+msgstr "N Taste."
 
 #: doc/classes/@GlobalScope.xml:620
 msgid "O key."
-msgstr ""
+msgstr "O Taste."
 
 #: doc/classes/@GlobalScope.xml:623
 msgid "P key."
-msgstr ""
+msgstr "P Taste."
 
 #: doc/classes/@GlobalScope.xml:626
 msgid "Q key."
-msgstr ""
+msgstr "Q Taste."
 
 #: doc/classes/@GlobalScope.xml:629
 msgid "R key."
-msgstr ""
+msgstr "R Taste."
 
 #: doc/classes/@GlobalScope.xml:632
 msgid "S key."
-msgstr ""
+msgstr "S Taste."
 
 #: doc/classes/@GlobalScope.xml:635
 msgid "T key."
-msgstr ""
+msgstr "T Taste."
 
 #: doc/classes/@GlobalScope.xml:638
 msgid "U key."
-msgstr ""
+msgstr "U Taste."
 
 #: doc/classes/@GlobalScope.xml:641
 msgid "V key."
-msgstr ""
+msgstr "V Taste."
 
 #: doc/classes/@GlobalScope.xml:644
 msgid "W key."
-msgstr ""
+msgstr "W Taste."
 
 #: doc/classes/@GlobalScope.xml:647
 msgid "X key."
-msgstr ""
+msgstr "X Taste."
 
 #: doc/classes/@GlobalScope.xml:650
 msgid "Y key."
-msgstr ""
+msgstr "Y Taste."
 
 #: doc/classes/@GlobalScope.xml:653
 msgid "Z key."
-msgstr ""
+msgstr "Z Taste."
 
 #: doc/classes/@GlobalScope.xml:656
 msgid "[ key."
-msgstr ""
+msgstr "[ Taste."
 
 #: doc/classes/@GlobalScope.xml:659
 msgid "\\ key."
-msgstr ""
+msgstr "\\ Taste."
 
 #: doc/classes/@GlobalScope.xml:662
 msgid "] key."
-msgstr ""
+msgstr "] Taste."
 
 #: doc/classes/@GlobalScope.xml:665
 msgid "^ key."
-msgstr ""
+msgstr "^ Taste."
 
 #: doc/classes/@GlobalScope.xml:668
 msgid "_ key."
-msgstr ""
+msgstr "_ Taste."
 
 #: doc/classes/@GlobalScope.xml:671
 msgid "` key."
@@ -2255,19 +2361,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:674
 msgid "{ key."
-msgstr ""
+msgstr "{ Taste."
 
 #: doc/classes/@GlobalScope.xml:677
 msgid "| key."
-msgstr ""
+msgstr "| Taste."
 
 #: doc/classes/@GlobalScope.xml:680
 msgid "} key."
-msgstr ""
+msgstr "} Taste."
 
 #: doc/classes/@GlobalScope.xml:683
 msgid "~ key."
-msgstr ""
+msgstr "~ Taste."
 
 #: doc/classes/@GlobalScope.xml:686
 msgid "Non-breakable space key."
@@ -2523,7 +2629,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:875
 msgid "ß key."
-msgstr ""
+msgstr "ß Taste."
 
 #: doc/classes/@GlobalScope.xml:878
 msgid "÷ key."
@@ -2922,15 +3028,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1169
 msgid "Unavailable error."
-msgstr ""
+msgstr "nicht vorhanden Fehler."
 
 #: doc/classes/@GlobalScope.xml:1172
 msgid "Unconfigured error."
-msgstr ""
+msgstr "nicht konfiguriert Fehler."
 
 #: doc/classes/@GlobalScope.xml:1175
 msgid "Unauthorized error."
-msgstr ""
+msgstr "nicht autorisiert Fehler."
 
 #: doc/classes/@GlobalScope.xml:1178
 msgid "Parameter range error."
@@ -3006,11 +3112,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1232
 msgid "Locked error."
-msgstr ""
+msgstr "geblockt Fehler."
 
 #: doc/classes/@GlobalScope.xml:1235
 msgid "Timeout error."
-msgstr ""
+msgstr "Timeout Fehler."
 
 #: doc/classes/@GlobalScope.xml:1238
 msgid "Can't connect error."
@@ -3022,7 +3128,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1244
 msgid "Connection error."
-msgstr ""
+msgstr "Verbindungs-Fehler."
 
 #: doc/classes/@GlobalScope.xml:1247
 msgid "Can't acquire resource error."
@@ -3086,11 +3192,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1292
 msgid "Parse error."
-msgstr ""
+msgstr "Übersetzungs-Fehler."
 
 #: doc/classes/@GlobalScope.xml:1295
 msgid "Busy error."
-msgstr ""
+msgstr "besetzt (busy) Fehler."
 
 #: doc/classes/@GlobalScope.xml:1298
 msgid "Skip error."
@@ -3098,11 +3204,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml:1301
 msgid "Help error."
-msgstr ""
+msgstr "Hilfe Fehler."
 
 #: doc/classes/@GlobalScope.xml:1304
 msgid "Bug error."
-msgstr ""
+msgstr "Fehler! Fehler."
 
 #: doc/classes/@GlobalScope.xml:1307
 msgid ""
@@ -3716,7 +3822,7 @@ msgstr ""
 
 #: doc/classes/AABB.xml:203
 msgid "Beginning corner."
-msgstr ""
+msgstr "Anfangsecke."
 
 #: doc/classes/AABB.xml:206 doc/classes/Rect2.xml:180
 #: doc/classes/Rect2i.xml:169
@@ -4106,7 +4212,7 @@ msgstr ""
 
 #: doc/classes/Animation.xml:20 doc/classes/AnimationPlayer.xml:13
 msgid "https://docs.godotengine.org/en/latest/tutorials/animation/index.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/animation/index.html"
 
 #: doc/classes/Animation.xml:31
 msgid "Adds a track to the Animation."
@@ -4494,7 +4600,7 @@ msgstr ""
 
 #: doc/classes/Animation.xml:727
 msgid "Linear interpolation."
-msgstr ""
+msgstr "lineare Interpolation."
 
 #: doc/classes/Animation.xml:730
 msgid "Cubic interpolation."
@@ -4550,6 +4656,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
 "html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/animation/animation_tree."
+"html"
 
 #: doc/classes/AnimationNode.xml:20
 msgid ""
@@ -5368,6 +5476,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "animations.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/step_by_step/"
+"animations.html"
 
 #: doc/classes/AnimationPlayer.xml:24
 msgid ""
@@ -5633,7 +5743,7 @@ msgstr ""
 
 #: doc/classes/AnimationTree.xml:11
 msgid "https://github.com/godotengine/tps-demo"
-msgstr ""
+msgstr "https://github.com/godotengine/tps-demo"
 
 #: doc/classes/AnimationTree.xml:20
 msgid "Manually advance the animations by the specified time (in seconds)."
@@ -5709,6 +5819,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html"
 
 #: doc/classes/Area2D.xml:19
 msgid ""
@@ -6405,6 +6516,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/"
 "arraymesh.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/"
+"arraymesh.html"
 
 #: doc/classes/ArrayMesh.xml:38
 msgid ""
@@ -7606,6 +7719,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/audio/"
 "recording_with_microphone.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/audio/"
+"recording_with_microphone.html"
 
 #: doc/classes/AudioEffectRecord.xml:17
 msgid "Returns the recorded sample."
@@ -7709,6 +7824,7 @@ msgstr ""
 #: doc/classes/AudioServer.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html"
 
 #: doc/classes/AudioServer.xml:19
 msgid "Adds a bus at [code]at_position[/code]."
@@ -7907,19 +8023,19 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml:413
 msgid "Two or fewer speakers were detected."
-msgstr ""
+msgstr "Zwei oder weniger Lautsprecher wurden erkannt."
 
 #: doc/classes/AudioServer.xml:416
 msgid "A 3.1 channel surround setup was detected."
-msgstr ""
+msgstr "Ein 3.1 Kanal Surround Setup wurde erkannt."
 
 #: doc/classes/AudioServer.xml:419
 msgid "A 5.1 channel surround setup was detected."
-msgstr ""
+msgstr "Ein 5.1 Kanal Surround Setup wurde erkannt."
 
 #: doc/classes/AudioServer.xml:422
 msgid "A 7.1 channel surround setup was detected."
-msgstr ""
+msgstr "Ein 7.1 Kanal Surround Setup wurde erkannt."
 
 #: doc/classes/AudioStream.xml:4
 msgid "Base class for audio streams."
@@ -7938,10 +8054,11 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html"
 
 #: doc/classes/AudioStream.xml:17
 msgid "Returns the length of the audio stream in seconds."
-msgstr ""
+msgstr "Liefert die Länge des Audio Streams in Sekunden zurück."
 
 #: doc/classes/AudioStreamGenerator.xml:8
 #: doc/classes/AudioStreamGeneratorPlayback.xml:8
@@ -7949,21 +8066,25 @@ msgid ""
 "https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
 "generator"
 msgstr ""
+"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
+"generator"
 
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml:4
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml:7
 msgid "OGG Vorbis audio stream driver."
-msgstr ""
+msgstr "OGG Vorbis Audio Stream Treiber."
 
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml:15
 msgid "Contains the audio data in bytes."
-msgstr ""
+msgstr "Enthält die Audio Daten in Bytes."
 
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml:18
 msgid ""
 "If [code]true[/code], the stream will automatically loop when it reaches the "
 "end."
 msgstr ""
+"Wenn [code]wahr[/code] wird der Stream automatisch neu gestartet wenn er das "
+"Ende erreicht."
 
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml:21
 msgid "Time in seconds at which the stream starts after being looped."
@@ -8004,12 +8125,12 @@ msgstr ""
 #: doc/classes/AudioStreamPlayer.xml:42 doc/classes/AudioStreamPlayer2D.xml:42
 #: doc/classes/AudioStreamPlayer3D.xml:42
 msgid "Sets the position from which audio will be played, in seconds."
-msgstr ""
+msgstr "Legt die Position in Sekunden fest, ab der die Tonausgabe startet."
 
 #: doc/classes/AudioStreamPlayer.xml:49 doc/classes/AudioStreamPlayer2D.xml:49
 #: doc/classes/AudioStreamPlayer3D.xml:49
 msgid "Stops the audio."
-msgstr ""
+msgstr "Beendet die Tonausgabe."
 
 #: doc/classes/AudioStreamPlayer.xml:55 doc/classes/AudioStreamPlayer2D.xml:61
 #: doc/classes/AudioStreamPlayer3D.xml:67
@@ -8053,7 +8174,7 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml:76
 msgid "Volume of sound, in dB."
-msgstr ""
+msgstr "Lautstärke der Tonausgabe in dB."
 
 #: doc/classes/AudioStreamPlayer.xml:82 doc/classes/AudioStreamPlayer2D.xml:88
 #: doc/classes/AudioStreamPlayer3D.xml:115
@@ -8075,7 +8196,7 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer2D.xml:4
 msgid "Plays audio in 2D."
-msgstr ""
+msgstr "Spielt Audio in 2D."
 
 #: doc/classes/AudioStreamPlayer2D.xml:7
 msgid "Plays audio that dampens with distance from screen center."
@@ -8545,6 +8666,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html"
 
 #: doc/classes/BaseMaterial3D.xml:19
 msgid "Returns [code]true[/code], if the specified [enum Feature] is enabled."
@@ -9584,7 +9706,7 @@ msgstr ""
 
 #: doc/classes/BaseMaterial3D.xml:689
 msgid "Currently unused."
-msgstr ""
+msgstr "zu Zeit ungenutzt."
 
 #: doc/classes/BaseMaterial3D.xml:692
 msgid "Adds the emission color to the color from the emission texture."
@@ -9639,6 +9761,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html"
 
 #: doc/classes/Basis.xml:20
 msgid "Create a rotation matrix from the given quaternion."
@@ -10988,13 +11111,14 @@ msgstr ""
 #: doc/classes/CanvasItem.xml:15 doc/classes/CanvasLayer.xml:10
 #: doc/classes/InputEvent.xml:11 doc/classes/Viewport.xml:15
 msgid "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
 
 #: doc/classes/CanvasItem.xml:16 doc/classes/Control.xml:19
 #: doc/classes/Node2D.xml:10
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html"
 msgstr ""
+"https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html"
 
 #: doc/classes/CanvasItem.xml:23
 msgid ""
@@ -11260,6 +11384,8 @@ msgid ""
 "The color applied to textures on this [CanvasItem]. This is not inherited by "
 "children [CanvasItem]s."
 msgstr ""
+"Die Farbe die auf die Textur dieses [CanvasItem] angewendet wird. Dies wird "
+"nicht auf weitere [CanvasItem] vererbt."
 
 #: doc/classes/CanvasItem.xml:605
 msgid "If [code]true[/code], the object draws behind its parent."
@@ -11298,15 +11424,15 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml:631
 msgid "Emitted when becoming hidden."
-msgstr ""
+msgstr "Gesendet wenn es versteckt wird."
 
 #: doc/classes/CanvasItem.xml:636
 msgid "Emitted when the item rect has changed."
-msgstr ""
+msgstr "Gesendet wenn das Rechteck Element geändert wurde."
 
 #: doc/classes/CanvasItem.xml:641
 msgid "Emitted when the visibility (hidden/visible) changes."
-msgstr ""
+msgstr "Gesendet wenn die Sichtbarkeit (versteckt/sichtbar) sich verändert."
 
 #: doc/classes/CanvasItem.xml:647
 msgid ""
@@ -11317,11 +11443,11 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml:650
 msgid "The [CanvasItem] is requested to draw."
-msgstr ""
+msgstr "[CanvasItem] wird aufgefordert zu zeichnen."
 
 #: doc/classes/CanvasItem.xml:653
 msgid "The [CanvasItem]'s visibility has changed."
-msgstr ""
+msgstr "[CanvasItem] Sichtbar/Unsichtbar Modus geändert."
 
 #: doc/classes/CanvasItem.xml:656
 msgid "The [CanvasItem] has entered the canvas."
@@ -11383,25 +11509,27 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml:691
 msgid "Texture will not repeat."
-msgstr ""
+msgstr "Textur wird nicht wiederholt."
 
 #: doc/classes/CanvasItem.xml:694
 msgid "Texture will repeat normally."
-msgstr ""
+msgstr "Textur wird normal wiederholt."
 
 #: doc/classes/CanvasItem.xml:697
 msgid ""
 "Texture will repeat in a 2x2 tiled mode, where elements at even positions "
 "are mirrored."
 msgstr ""
+"Textur wird in einem 2x2 Kachel Modus wiederholt, wobei Elemente an geraden "
+"Positionen gespiegelt werden."
 
 #: doc/classes/CanvasItem.xml:700
 msgid "Represents the size of the [enum TextureRepeat] enum."
-msgstr ""
+msgstr "Steht für die Größe von [enum TextureRepeat] enum."
 
 #: doc/classes/CanvasItemMaterial.xml:4
 msgid "A material for [CanvasItem]s."
-msgstr ""
+msgstr "Ein Material für [CanvasItem]."
 
 #: doc/classes/CanvasItemMaterial.xml:7
 msgid ""
@@ -11418,7 +11546,7 @@ msgstr ""
 
 #: doc/classes/CanvasItemMaterial.xml:18
 msgid "The manner in which material reacts to lighting."
-msgstr ""
+msgstr "Die Art wie ein Material auf Licht reagiert."
 
 #: doc/classes/CanvasItemMaterial.xml:21
 msgid ""
@@ -11427,6 +11555,10 @@ msgid ""
 "[b]Note:[/b] This property is only used and visible in the editor if [member "
 "particles_animation] is [code]true[/code]."
 msgstr ""
+"Die Anzahl der Spalten in dem Spritesheet sind wie folgt zugewiesen: "
+"[Texture2D] für ein [GPUParticles2D] oder [CPUParticles2D].\n"
+"[b]Note:[/b] Dieses Merkmal wird nur im Editor genutzt und ist nur dort "
+"sichtbar wenn [member particles_animation] [code]true[/code] ist."
 
 #: doc/classes/CanvasItemMaterial.xml:25
 msgid ""
@@ -11507,7 +11639,7 @@ msgstr ""
 
 #: doc/classes/CanvasLayer.xml:11
 msgid "https://docs.godotengine.org/en/latest/tutorials/2d/canvas_layers.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/2d/canvas_layers.html"
 
 #: doc/classes/CanvasLayer.xml:18
 msgid "Returns the RID of the canvas used by this layer."
@@ -11638,11 +11770,14 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel."
 "html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/gui/bbcode_in_richtextlabel."
+"html"
 
 #: doc/classes/CharFXTransform.xml:11 doc/classes/RichTextEffect.xml:17
 msgid ""
 "https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 msgstr ""
+"https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 
 #: doc/classes/CharFXTransform.xml:17 doc/classes/CharFXTransform.xml:45
 msgid ""
@@ -12419,6 +12554,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/physics/"
 "physics_introduction.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/physics/"
+"physics_introduction.html"
 
 #: doc/classes/CollisionShape2D.xml:16 doc/classes/CollisionShape3D.xml:32
 msgid "A disabled collision shape has no effect in the world."
@@ -13871,7 +14008,7 @@ msgstr ""
 
 #: doc/classes/Control.xml:18
 msgid "https://docs.godotengine.org/en/latest/tutorials/gui/index.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/gui/index.html"
 
 #: doc/classes/Control.xml:26
 msgid ""
@@ -15172,6 +15309,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/CPUParticles2D.xml:20
 msgid ""
@@ -16317,11 +16455,12 @@ msgid ""
 msgstr ""
 
 #: modules/mono/doc_classes/CSharpScript.xml:11
-#, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/"
 "index.html"
-msgstr "https://docs.godotengine.org/de/latest/tutorials/math/index.html"
+msgstr ""
+"https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/"
+"index.html"
 
 #: modules/mono/doc_classes/CSharpScript.xml:18
 #: modules/gdnative/doc_classes/PluginScript.xml:14
@@ -17131,6 +17270,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
 "gdscript_basics.html#dictionary"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/scripting/gdscript/"
+"gdscript_basics.html#dictionary"
 
 #: doc/classes/Dictionary.xml:83
 msgid "Clear the dictionary, removing all key/value pairs."
@@ -17228,6 +17369,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/lights_and_shadows.html"
 
 #: doc/classes/DirectionalLight3D.xml:16
 msgid ""
@@ -17357,6 +17499,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "filesystem.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/step_by_step/"
+"filesystem.html"
 
 #: doc/classes/Directory.xml:36
 msgid ""
@@ -18244,6 +18388,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
 "import_plugins.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/plugins/editor/"
+"import_plugins.html"
 
 #: doc/classes/EditorImportPlugin.xml:61
 msgid ""
@@ -18586,6 +18732,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
 "spatial_gizmos.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/plugins/editor/"
+"spatial_gizmos.html"
 
 #: doc/classes/EditorNode3DGizmoPlugin.xml:21
 msgid ""
@@ -18709,6 +18857,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/plugins/editor/index.html"
 
 #: doc/classes/EditorPlugin.xml:21
 msgid ""
@@ -19317,6 +19466,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
 "importing_scenes.html#custom-script"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/workflow/assets/"
+"importing_scenes.html#custom-script"
 
 #: doc/classes/EditorScenePostImport.xml:36
 msgid ""
@@ -19828,11 +19979,14 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/"
 "environment_and_post_processing.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/"
+"environment_and_post_processing.html"
 
 #: doc/classes/Environment.xml:15
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/high_dynamic_range.html"
 
 #: doc/classes/Environment.xml:24
 msgid ""
@@ -21091,12 +21245,16 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-c-"
 "example.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/plugins/gdnative/gdnative-c-"
+"example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml:11
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-"
 "cpp-example.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/plugins/gdnative/gdnative-"
+"cpp-example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml:18
 msgid ""
@@ -21172,6 +21330,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
 "index.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/scripting/gdscript/"
+"index.html"
 
 #: modules/gdscript/doc_classes/GDScript.xml:18
 msgid "Returns byte code for the script source code."
@@ -22124,7 +22284,7 @@ msgstr ""
 
 #: doc/classes/GIProbe.xml:11
 msgid "https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/3d/gi_probes.html"
 
 #: doc/classes/GIProbe.xml:22
 msgid ""
@@ -22300,6 +22460,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
 "controlling_thousands_of_fish.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/vertex_animation/"
+"controlling_thousands_of_fish.html"
 
 #: doc/classes/GPUParticles3D.xml:18
 msgid ""
@@ -23016,6 +23178,7 @@ msgstr ""
 #: modules/gridmap/doc_classes/GridMap.xml:13
 msgid "https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/using_gridmaps.html"
 
 #: modules/gridmap/doc_classes/GridMap.xml:20
 msgid "Clear all cells."
@@ -23508,6 +23671,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/networking/"
 "http_client_class.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/networking/"
+"http_client_class.html"
 
 #: doc/classes/HTTPClient.xml:14 doc/classes/HTTPRequest.xml:62
 #: doc/classes/StreamPeerSSL.xml:10
@@ -23515,6 +23680,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates."
 "html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/networking/ssl_certificates."
+"html"
 
 #: doc/classes/HTTPClient.xml:21
 msgid "Closes the current connection, allowing reuse of this [HTTPClient]."
@@ -24273,6 +24440,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/networking/"
 "http_request_class.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/networking/"
+"http_request_class.html"
 
 #: doc/classes/HTTPRequest.xml:69
 msgid "Cancels the current request."
@@ -25160,7 +25329,7 @@ msgstr ""
 
 #: doc/classes/Input.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/inputs/index.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/inputs/index.html"
 
 #: doc/classes/Input.xml:21
 msgid ""
@@ -25581,6 +25750,7 @@ msgstr ""
 #: doc/classes/InputEventWithModifiers.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/inputs/inputevent.html"
 
 #: doc/classes/InputEvent.xml:20
 msgid ""
@@ -25680,6 +25850,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
 "html#actions"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/inputs/inputevent."
+"html#actions"
 
 #: doc/classes/InputEventAction.xml:16
 msgid "The action's name. Actions are accessed via this [String]."
@@ -25869,6 +26041,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/inputs/"
 "mouse_and_input_coordinates.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/inputs/"
+"mouse_and_input_coordinates.html"
 
 #: doc/classes/InputEventMouseButton.xml:16
 msgid ""
@@ -26030,6 +26204,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
 "html#inputmap"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/inputs/inputevent."
+"html#inputmap"
 
 #: doc/classes/InputMap.xml:21
 msgid ""
@@ -26726,6 +26902,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/workflow/export/"
 "exporting_for_web.html#calling-javascript-from-script"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/workflow/export/"
+"exporting_for_web.html#calling-javascript-from-script"
 
 #: doc/classes/JavaScript.xml:21
 msgid ""
@@ -26904,12 +27082,16 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/physics/"
 "kinematic_character_2d.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/physics/"
+"kinematic_character_2d.html"
 
 #: doc/classes/KinematicBody2D.xml:13
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/physics/"
 "using_kinematic_body_2d.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/physics/"
+"using_kinematic_body_2d.html"
 
 #: doc/classes/KinematicBody2D.xml:20 doc/classes/KinematicBody3D.xml:28
 msgid ""
@@ -27480,6 +27662,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows."
 "html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/2d/2d_lights_and_shadows."
+"html"
 
 #: doc/classes/Light2D.xml:17
 msgid "The Light2D's [Color]."
@@ -29234,7 +29418,7 @@ msgstr ""
 
 #: doc/classes/MeshInstance2D.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/2d/2d_meshes.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/2d/2d_meshes.html"
 
 #: doc/classes/MeshInstance2D.xml:16
 msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
@@ -29536,12 +29720,16 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
 "animating_thousands_of_fish.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/vertex_animation/"
+"animating_thousands_of_fish.html"
 
 #: doc/classes/MultiMesh.xml:14 doc/classes/MultiMeshInstance3D.xml:13
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/optimization/"
 "using_multimesh.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/optimization/"
+"using_multimesh.html"
 
 #: doc/classes/MultiMesh.xml:21
 msgid "Returns the visibility axis-aligned bounding box."
@@ -29660,6 +29848,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/"
 "using_multi_mesh_instance.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/"
+"using_multi_mesh_instance.html"
 
 #: doc/classes/MultiMeshInstance3D.xml:19
 msgid ""
@@ -29879,6 +30069,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/threads/"
 "using_multiple_threads.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/threads/"
+"using_multiple_threads.html"
 
 #: doc/classes/Mutex.xml:17
 msgid "Locks this [Mutex], blocks until it is unlocked by the current owner."
@@ -30627,10 +30819,12 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/networking/"
 "high_level_multiplayer.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/networking/"
+"high_level_multiplayer.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:11
 msgid "http://enet.bespin.org/usergroup0.html"
-msgstr ""
+msgstr "http://enet.bespin.org/usergroup0.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml:20
 msgid ""
@@ -31076,6 +31270,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "scenes_and_nodes.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/step_by_step/"
+"scenes_and_nodes.html"
 
 #: doc/classes/Node.xml:27
 msgid ""
@@ -32104,7 +32300,7 @@ msgstr ""
 
 #: doc/classes/Node2D.xml:119
 msgid "Global position."
-msgstr ""
+msgstr "Gobale Position."
 
 #: doc/classes/Node2D.xml:122
 msgid "Global rotation in radians."
@@ -32116,7 +32312,7 @@ msgstr ""
 
 #: doc/classes/Node2D.xml:128
 msgid "Global scale."
-msgstr ""
+msgstr "Globaler Maßstab."
 
 #: doc/classes/Node2D.xml:131
 msgid "Global [Transform2D]."
@@ -32179,6 +32375,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Node3D.xml:26
 msgid ""
@@ -33872,79 +34069,79 @@ msgstr ""
 
 #: doc/classes/OS.xml:519
 msgid "Sunday."
-msgstr ""
+msgstr "Sonntag."
 
 #: doc/classes/OS.xml:522
 msgid "Monday."
-msgstr ""
+msgstr "Montag."
 
 #: doc/classes/OS.xml:525
 msgid "Tuesday."
-msgstr ""
+msgstr "Dienstag."
 
 #: doc/classes/OS.xml:528
 msgid "Wednesday."
-msgstr ""
+msgstr "Wittwoch."
 
 #: doc/classes/OS.xml:531
 msgid "Thursday."
-msgstr ""
+msgstr "Donnerstag."
 
 #: doc/classes/OS.xml:534
 msgid "Friday."
-msgstr ""
+msgstr "Freitag."
 
 #: doc/classes/OS.xml:537
 msgid "Saturday."
-msgstr ""
+msgstr "Samstag."
 
 #: doc/classes/OS.xml:540
 msgid "January."
-msgstr ""
+msgstr "Januar."
 
 #: doc/classes/OS.xml:543
 msgid "February."
-msgstr ""
+msgstr "Februar."
 
 #: doc/classes/OS.xml:546
 msgid "March."
-msgstr ""
+msgstr "März."
 
 #: doc/classes/OS.xml:549
 msgid "April."
-msgstr ""
+msgstr "April."
 
 #: doc/classes/OS.xml:552
 msgid "May."
-msgstr ""
+msgstr "Mai."
 
 #: doc/classes/OS.xml:555
 msgid "June."
-msgstr ""
+msgstr "Juni."
 
 #: doc/classes/OS.xml:558
 msgid "July."
-msgstr ""
+msgstr "Juli."
 
 #: doc/classes/OS.xml:561
 msgid "August."
-msgstr ""
+msgstr "August."
 
 #: doc/classes/OS.xml:564
 msgid "September."
-msgstr ""
+msgstr "September."
 
 #: doc/classes/OS.xml:567
 msgid "October."
-msgstr ""
+msgstr "Oktober."
 
 #: doc/classes/OS.xml:570
 msgid "November."
-msgstr ""
+msgstr "November."
 
 #: doc/classes/OS.xml:573
 msgid "December."
-msgstr ""
+msgstr "Dezember."
 
 #: doc/classes/OS.xml:576
 msgid "Desktop directory path."
@@ -35733,6 +35930,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/physics/ray-casting.html"
 
 #: doc/classes/PhysicsDirectBodyState2D.xml:19 doc/classes/RigidBody2D.xml:31
 msgid "Adds a constant directional force without affecting rotation."
@@ -40546,7 +40744,7 @@ msgstr ""
 
 #: doc/classes/Quat.xml:4
 msgid "Quaternion."
-msgstr ""
+msgstr "Quaternion."
 
 #: doc/classes/Quat.xml:7
 msgid ""
@@ -40564,6 +40762,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms."
 "html#interpolating-with-quaternions"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/using_transforms."
+"html#interpolating-with-quaternions"
 
 #: doc/classes/Quat.xml:21
 msgid "Returns the rotation matrix corresponding to the given quaternion."
@@ -41145,7 +41345,7 @@ msgstr ""
 
 #: doc/classes/Rect2.xml:174 doc/classes/Rect2i.xml:163
 msgid "Ending corner."
-msgstr ""
+msgstr "Zielecke."
 
 #: doc/classes/Rect2.xml:177 doc/classes/Rect2i.xml:166
 msgid "Position (starting corner)."
@@ -41343,6 +41543,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/3d/reflection_probes.html"
 
 #: doc/classes/ReflectionProbe.xml:17
 msgid ""
@@ -41728,6 +41929,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers."
 "html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/optimization/using_servers."
+"html"
 
 #: doc/classes/RenderingServer.xml:33
 msgid "Sets images to be rendered in the window margin."
@@ -44067,6 +44270,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "resources.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/step_by_step/"
+"resources.html"
 
 #: doc/classes/Resource.xml:17
 msgid ""
@@ -45541,12 +45746,16 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "scene_tree.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/step_by_step/"
+"scene_tree.html"
 
 #: doc/classes/SceneTree.xml:13
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/viewports/"
 "multiple_resolutions.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/viewports/"
+"multiple_resolutions.html"
 
 #: doc/classes/SceneTree.xml:24
 msgid "Calls [code]method[/code] on each member of the given group."
@@ -45888,6 +46097,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
 "scripting.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/step_by_step/"
+"scripting.html"
 
 #: doc/classes/Script.xml:18
 msgid "Returns [code]true[/code] if the script can be instanced."
@@ -46168,13 +46379,15 @@ msgstr ""
 
 #: doc/classes/Shader.xml:10 doc/classes/ShaderMaterial.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/shading/index.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/shading/index.html"
 
 #: doc/classes/Shader.xml:11
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/shading/your_first_shader/"
 "what_are_shaders.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/shading/your_first_shader/"
+"what_are_shaders.html"
 
 #: doc/classes/Shader.xml:20
 msgid ""
@@ -46436,6 +46649,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/animation/2d_skeletons.html"
 
 #: doc/classes/Skeleton2D.xml:19
 msgid ""
@@ -46814,6 +47028,7 @@ msgstr ""
 #: doc/classes/SoftBody3D.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/physics/soft_body.html"
 
 #: doc/classes/SoftBody3D.xml:83
 msgid ""
@@ -47765,6 +47980,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
 "gdscript_format_string.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/scripting/gdscript/"
+"gdscript_format_string.html"
 
 #: doc/classes/String.xml:19
 msgid "Constructs a new String from the given [bool]."
@@ -50456,7 +50673,7 @@ msgstr ""
 
 #: doc/classes/Theme.xml:11
 msgid "https://docs.godotengine.org/en/latest/tutorials/gui/gui_skinning.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/gui/gui_skinning.html"
 
 #: doc/classes/Theme.xml:18
 msgid "Clears all values on the theme."
@@ -50708,6 +50925,7 @@ msgstr ""
 #: doc/classes/TileMap.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/2d/using_tilemaps.html"
 
 #: doc/classes/TileMap.xml:17
 msgid "Clears all cells."
@@ -51708,7 +51926,7 @@ msgstr ""
 
 #: doc/classes/Translation.xml:4
 msgid "Language Translation."
-msgstr ""
+msgstr "Sprachübersetzung."
 
 #: doc/classes/Translation.xml:7
 msgid ""
@@ -51721,10 +51939,12 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/i18n/"
 "internationalizing_games.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/i18n/"
+"internationalizing_games.html"
 
 #: doc/classes/Translation.xml:11 doc/classes/TranslationServer.xml:11
 msgid "https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/i18n/locales.html"
 
 #: doc/classes/Translation.xml:22
 msgid "Adds a message if nonexistent, followed by its translation."
@@ -53356,40 +53576,40 @@ msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml:197
 msgid "Invalid gateway."
-msgstr ""
+msgstr "ungültiges Gateway."
 
 #: modules/upnp/doc_classes/UPNP.xml:200
 msgid "Invalid port."
-msgstr ""
+msgstr "ungültiger Port."
 
 #: modules/upnp/doc_classes/UPNP.xml:203
 msgid "Invalid protocol."
-msgstr ""
+msgstr "ungültiges Protokoll."
 
 #: modules/upnp/doc_classes/UPNP.xml:206
 msgid "Invalid duration."
-msgstr ""
+msgstr "ungültige Zeitdauer."
 
 #: modules/upnp/doc_classes/UPNP.xml:209
 msgid "Invalid arguments."
-msgstr ""
+msgstr "ungültiges Argument."
 
 #: modules/upnp/doc_classes/UPNP.xml:212
 msgid "Invalid response."
-msgstr ""
+msgstr "ungültige Antwort."
 
 #: modules/upnp/doc_classes/UPNP.xml:215
 msgid "Invalid parameter."
-msgstr ""
+msgstr "ungültiger Parameter."
 
 #: modules/upnp/doc_classes/UPNP.xml:218
 #: modules/upnp/doc_classes/UPNPDevice.xml:80
 msgid "HTTP error."
-msgstr ""
+msgstr "HTTP Fehler."
 
 #: modules/upnp/doc_classes/UPNP.xml:221
 msgid "Socket error."
-msgstr ""
+msgstr "Socket Fehler."
 
 #: modules/upnp/doc_classes/UPNP.xml:224
 msgid "Error allocating memory."
@@ -53410,11 +53630,11 @@ msgstr ""
 #: modules/upnp/doc_classes/UPNP.xml:233
 #: modules/upnp/doc_classes/UPNPDevice.xml:104
 msgid "Unknown error."
-msgstr ""
+msgstr "unbekannter Fehler."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:4
 msgid "UPNP device."
-msgstr ""
+msgstr "UPNP Gerät."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:7
 msgid ""
@@ -53473,11 +53693,11 @@ msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:72
 msgid "Service type."
-msgstr ""
+msgstr "Service Typ."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:77
 msgid "OK."
-msgstr ""
+msgstr "OK."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:83
 msgid "Empty HTTP response."
@@ -53493,11 +53713,11 @@ msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:92
 msgid "Disconnected."
-msgstr ""
+msgstr "getrennt."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:95
 msgid "Unknown device."
-msgstr ""
+msgstr "unbekanntes Gerät."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml:98
 msgid "Invalid control."
@@ -53601,6 +53821,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/development/cpp/variant_class.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/development/cpp/variant_class.html"
 
 #: doc/classes/VBoxContainer.xml:4
 msgid "Vertical box container."
@@ -54509,7 +54730,7 @@ msgstr ""
 
 #: doc/classes/Viewport.xml:16
 msgid "https://docs.godotengine.org/en/latest/tutorials/viewports/index.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/viewports/index.html"
 
 #: doc/classes/Viewport.xml:23
 msgid "Returns the 2D world of the viewport."
@@ -55164,6 +55385,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/getting_started/scripting/"
 "visual_script/index.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/getting_started/scripting/"
+"visual_script/index.html"
 
 #: modules/visual_script/doc_classes/VisualScript.xml:21
 msgid "Add a custom signal with the specified name to the VisualScript."
@@ -56040,11 +56263,11 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml:24
 msgid "Unity: [code]1[/code]."
-msgstr ""
+msgstr "Unity: [code]1[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml:27
 msgid "Pi: [code]3.141593[/code]."
-msgstr ""
+msgstr "Pi: [code]3.141593[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml:30
 msgid "Pi divided by two: [code]1.570796[/code]."
@@ -56052,7 +56275,7 @@ msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml:33
 msgid "Tau: [code]6.283185[/code]."
-msgstr ""
+msgstr "Tau: [code]6.283185[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml:36
 msgid ""
@@ -56391,6 +56614,7 @@ msgstr ""
 msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/shading/visual_shaders.html"
 
 #: doc/classes/VisualShaderNode.xml:16
 msgid ""
@@ -56847,6 +57071,8 @@ msgid ""
 "https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
 "visual_shader_plugins.html"
 msgstr ""
+"https://docs.godotengine.org/de/latest/tutorials/plugins/editor/"
+"visual_shader_plugins.html"
 
 #: doc/classes/VisualShaderNodeCustom.xml:23
 msgid ""
@@ -58159,9 +58385,8 @@ msgstr ""
 "code]."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:26
-#, fuzzy
 msgid "Returns the opposite value of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den inversen Wert des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:29
 #, fuzzy
@@ -58170,106 +58395,96 @@ msgstr "Gibt den Abstand zu Vektor [code]b[/code] zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:32
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "Wandelt RGB-Vektor in HSV-Gegenwert um."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:35
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "Wandelt HSV-Vektor in RGB-Gegenwert um."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:38
-#, fuzzy
 msgid "Returns the absolute value of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den absoluten Betrag des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:41
-#, fuzzy
 msgid "Returns the arc-cosine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Arkuskosinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:44
-#, fuzzy
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den inversen hyperbolischen Kosinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:47
-#, fuzzy
 msgid "Returns the arc-sine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Arkussinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:50
-#, fuzzy
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den inversen hyperbolischen Sinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:53
-#, fuzzy
 msgid "Returns the arc-tangent of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Arkustangens des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:56
-#, fuzzy
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den inversen hyperbolischen Tangens des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:59
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr ""
+msgstr "Gibt die nächste Ganzzahl größer gleich dem Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:62
-#, fuzzy
 msgid "Returns the cosine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Kosinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:65
-#, fuzzy
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den hyperbolischen Kosinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:68
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Wandelt einen Wert von Bogenmaß zu Grad um."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:71
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "Basis-e exponentiell."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:74
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "Basis-2 exponentiell."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:77
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "Gibt die nächste Ganzzahl kleiner gleich dem Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:80
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Berechnet den Bruchteil des Parameters."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:83
-#, fuzzy
 msgid "Returns the inverse of the square root of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt die inverse Quadratwurzel des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:86
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Natürlicher Logarithmus."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:89
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "Basis-2 Logarithmus."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:92
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Wandelt einen Wert von Grad zu Bogenmaß um."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:95
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "Gibt die nächste Ganzzahl vom Parameter zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:98
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "Gibt die nächste gerade Ganzzahl vom Parameter zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:101
 msgid ""
@@ -58279,29 +58494,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:104
-#, fuzzy
 msgid "Returns the sine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Sinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:107
-#, fuzzy
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den hyperbolischen Sinus des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:110
-#, fuzzy
 msgid "Returns the square root of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt die Quadratwurzel des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:113
-#, fuzzy
 msgid "Returns the tangent of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Tangens des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:116
-#, fuzzy
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den hyperbolischen Tangens des Parameters zurück."
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:119
 msgid ""
@@ -58363,12 +58573,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:29
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "Teilt Vektor durch Vektor."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:32
-#, fuzzy
 msgid "Returns the remainder of the two vectors."
-msgstr "Gibt den Winkel zwischen zwei Vektoren im Bogenmaß zurück."
+msgstr "Gibt den Rest einer Division zweier Vektoren zurück."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:35
 msgid ""
@@ -58386,12 +58595,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:44
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "Berechnet das Kreuzprodukt zweier Vektoren."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:47
-#, fuzzy
 msgid "Returns the arc-tangent of the parameters."
-msgstr "Gibt die Größe des Arrays zurück."
+msgstr "Gibt den Arkuskosinus2 der Parameter zurück."
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:50
 msgid ""
@@ -59511,7 +59719,7 @@ msgstr ""
 
 #: doc/classes/XMLParser.xml:168
 msgid "Unknown node."
-msgstr ""
+msgstr "unbekanntes Node."
 
 #: doc/classes/XRAnchor3D.xml:4
 msgid "An anchor point in AR space."
@@ -59605,7 +59813,7 @@ msgstr ""
 #: doc/classes/XRInterface.xml:11 doc/classes/XROrigin3D.xml:13
 #: doc/classes/XRPositionalTracker.xml:12 doc/classes/XRServer.xml:10
 msgid "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
-msgstr ""
+msgstr "https://docs.godotengine.org/de/latest/tutorials/vr/index.html"
 
 #: doc/classes/XRController3D.xml:4
 msgid "A spatial node representing a spatially-tracked controller."
