@@ -78,6 +78,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver;
 import android.view.Window;
@@ -596,27 +597,27 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		for (int i = 0; i < command_line.length; i++) {
 
-				boolean has_extra = i < command_line.length - 1;
-				if (command_line[i].equals(XRMode.REGULAR.cmdLineArg)) {
-					xrMode = XRMode.REGULAR;
-				} else if (command_line[i].equals(XRMode.OVR.cmdLineArg)) {
-					xrMode = XRMode.OVR;
-				} else if (command_line[i].equals(XRMode.ARCORE.cmdLineArg)) {
-					xrMode = XRMode.ARCORE;
-				} else if (command_line[i].equals("--use_depth_32")) {
-					use_32_bits = true;
-				} else if (command_line[i].equals("--debug_opengl")) {
-					use_debug_opengl = true;
-				} else if (command_line[i].equals("--use_immersive")) {
-					use_immersive = true;
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
-						window.getDecorView().setSystemUiVisibility(
-								View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-								View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-								View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-								View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | // hide nav bar
-								View.SYSTEM_UI_FLAG_FULLSCREEN | // hide status bar
-								View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+			boolean has_extra = i < command_line.length - 1;
+			if (command_line[i].equals(XRMode.REGULAR.cmdLineArg)) {
+				xrMode = XRMode.REGULAR;
+			} else if (command_line[i].equals(XRMode.OVR.cmdLineArg)) {
+				xrMode = XRMode.OVR;
+			} else if (command_line[i].equals(XRMode.ARCORE.cmdLineArg)) {
+				xrMode = XRMode.ARCORE;
+			} else if (command_line[i].equals("--use_depth_32")) {
+				use_32_bits = true;
+			} else if (command_line[i].equals("--debug_opengl")) {
+				use_debug_opengl = true;
+			} else if (command_line[i].equals("--use_immersive")) {
+				use_immersive = true;
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
+					window.getDecorView().setSystemUiVisibility(
+							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | // hide nav bar
+							View.SYSTEM_UI_FLAG_FULLSCREEN | // hide status bar
+							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
 					UiChangeListener();
 				}

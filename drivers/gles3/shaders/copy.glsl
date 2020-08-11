@@ -137,7 +137,7 @@ vec4 texturePanorama(vec3 normal, sampler2D pano) {
 
 	st /= vec2(M_PI * 2.0, M_PI);
 
-	return textureLod(pano, st, 0.0);
+	return texture(pano, st);
 }
 
 #endif
@@ -192,19 +192,19 @@ void main() {
 	vec4 color = texture(source_cube, normalize(cube_interp));
 
 #elif defined(USE_TEXTURE3D)
-	vec4 color = textureLod(source_3d, vec3(uv_interp, layer), 0.0);
+	vec4 color = texture(source_3d, vec3(uv_interp, layer));
 #elif defined(USE_TEXTURE2DARRAY)
-	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), 0.0);
+	vec4 color = texture(source_2d_array, vec3(uv_interp, layer));
 #elif defined(SEP_CBCR_TEXTURE)
 	vec4 color;
-	color.r = textureLod(source, uv_interp, 0.0).r;
-	color.gb = textureLod(CbCr, uv_interp, 0.0).rg - vec2(0.5, 0.5);
+	color.r = texture(source, uv_interp).r;
+	color.gb = texture(CbCr, uv_interp).rg - vec2(0.5, 0.5);
 	color.a = 1.0;
 #else
 #ifdef USE_LOD
 	vec4 color = textureLod(source, uv_interp, mip_level);
 #else
-	vec4 color = textureLod(source, uv_interp, 0.0);
+	vec4 color = texture(source, uv_interp);
 #endif
 #endif
 

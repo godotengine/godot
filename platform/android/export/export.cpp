@@ -988,7 +988,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
-						// TODO(fhuya): Update new export mode as well - Parameters specific to XR modes
+						// Parameters specific to XR modes
 						if (xr_mode_index != XR_MODE_REGULAR) {
 							if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
 								// Update the meta-data 'android:name' attribute based on the selected XR mode.
@@ -2483,11 +2483,10 @@ public:
 			command_line_strings.push_back(apk_expansion_public_key.strip_edges());
 		}
 
-		// TODO(fhuya): Update with new XR_MODE constants
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
-		if (xr_mode_index == 1) {
+		if (xr_mode_index == XR_MODE_OVR) {
 			command_line_strings.push_back("--xr_mode_ovr");
-		} else if (xr_mode_index == 2 /* XRMode.ARCode */) {
+		} else if (xr_mode_index == XR_MODE_ARCORE) {
 			command_line_strings.push_back("--xr_mode_arcore");
 		} else { // XRMode.REGULAR is the default.
 			command_line_strings.push_back("--xr_mode_regular");
