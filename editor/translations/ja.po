@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-28 09:51+0000\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -533,8 +533,7 @@ msgstr "警告:インポートしたアニメーションを編集していま�
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
-"アニメーションを作って編集するために AnimationPlayer ノードへのパスを選択して"
-"下さい。"
+"アニメーションを作って編集するには、 AnimationPlayer ノードを選択して下さい。"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -899,7 +898,7 @@ msgstr "'%s' を '%s' から切断"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr "シグナル '%s' から全てを切断"
+msgstr "シグナル '%s' からすべてを切断"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -920,7 +919,7 @@ msgstr "接続を編集:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "シグナル %s から全ての接続を除去してもよろしいですか？"
+msgstr "シグナル %s からすべての接続を除去してもよろしいですか？"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -928,7 +927,7 @@ msgstr "シグナル"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr "このシグナルから全ての接続を除去してもよろしいですか？"
+msgstr "このシグナルからすべての接続を除去してもよろしいですか？"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
@@ -1762,7 +1761,7 @@ msgstr "Godot機能プロファイル"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr "プロファイルのインポート"
+msgstr "プロファイルをインポート"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
@@ -5363,7 +5362,7 @@ msgstr "IKチェーンをクリア"
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
-msgstr "警告:コンテナの子の位置とサイズは、親によってのみ決定されます。"
+msgstr "注意:コンテナの子の位置とサイズは、親によってのみ決定されます。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -7016,15 +7015,15 @@ msgstr "コメントの切り替え"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "行を折りたたむ/展開する"
+msgstr "行を折りたたむ / 展開する"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
-msgstr "全ての行を折りたたむ"
+msgstr "すべての行を折りたたむ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr "全ての行を展開する"
+msgstr "すべての行を展開する"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
@@ -7321,11 +7320,11 @@ msgstr "シェーディングなしで表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Environment"
-msgstr "環境表示"
+msgstr "環境を表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "ギズモ(Gizmo)を表示"
+msgstr "ギズモを表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -7530,7 +7529,7 @@ msgstr "ギズモ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
-msgstr "原点の表示"
+msgstr "ビューの原点"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Grid"
@@ -8340,7 +8339,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Region"
-msgstr "タイル領域の設定"
+msgstr "タイル領域を設定"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Tile"
@@ -8549,7 +8548,7 @@ msgstr "Sampler"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add input port"
-msgstr "入力ポートの追加"
+msgstr "入力ポートを追加"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
@@ -8581,7 +8580,7 @@ msgstr "出力ポートの削除"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set expression"
-msgstr "式の設定"
+msgstr "式を設定"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Resize VisualShader node"
@@ -9838,7 +9837,7 @@ msgid ""
 "Remove %d projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"%d プロジェクトを一覧から削除しますか?\n"
+"%d プロジェクトを一覧から削除しますか？\n"
 "プロジェクトフォルダの内容は変更されません。"
 
 #: editor/project_manager.cpp
@@ -9846,7 +9845,7 @@ msgid ""
 "Remove this project from the list?\n"
 "The project folder's contents won't be modified."
 msgstr ""
-"このプロジェクトを一覧から削除しますか?\n"
+"このプロジェクトを一覧から削除しますか？\n"
 "プロジェクトフォルダの内容は変更されません。"
 
 #: editor/project_manager.cpp
@@ -9967,11 +9966,11 @@ msgstr "入力アクションイベントの名前を変更する"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Action deadzone"
-msgstr "アクションデッドゾーンの変更"
+msgstr "アクション デッドゾーンを変更"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
-msgstr "入力アクションイベントを追加"
+msgstr "入力アクション イベントを追加"
 
 #: editor/project_settings_editor.cpp
 msgid "All Devices"
@@ -10075,7 +10074,7 @@ msgstr "マウスホイールを下に。"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Global Property"
-msgstr "グローバルプロパティの追加"
+msgstr "グローバルプロパティを追加"
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
@@ -10535,9 +10534,8 @@ msgid "Make node as Root"
 msgstr "ノードをルートにする"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "\"%s\" ノードとその子ノードを削除しますか？"
+msgstr "%d ノードとその子ノードすべてを削除しますか？"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12235,6 +12233,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"ポリゴンベースのシェイプは、CollisionShape2Dノードで使用したり直接編集したり"
+"するには適しません。代わりにCollisionPolygon2Dノードを使用してください。"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

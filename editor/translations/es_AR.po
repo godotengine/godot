@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -10578,9 +10578,8 @@ msgid "Make node as Root"
 msgstr "Convertir nodo en Raíz"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "¿Eliminar el nodo \"%s\" y sus hijos?"
+msgstr "¿Eliminar %d nodos y sus hijos?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -10588,7 +10587,7 @@ msgstr "¿Eliminar %d nodos?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
-msgstr "¿Eliminar el nodo raiz \"%s\"?"
+msgstr "¿Eliminar el nodo raíz \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
@@ -12298,6 +12297,9 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Las formas basadas en polígonos no están pensadas para ser usadas ni "
+"editadas directamente a través del nodo CollisionShape2D. Por favor, usá el "
+"nodo CollisionPolygon2D en su lugar."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

@@ -5,17 +5,18 @@
 # Árpád Horváth <horvatha4@googlemail.com>, 2018.
 # Nagy Lajos <neutron9707@gmail.com>, 2017.
 # Sandor Domokos <sandor.domokos@gmail.com>, 2017-2018.
-# Varga Dániel <danikah.danikah@gmail.com>, 2016-2018.
-# Gabor Csordas <gaborcsordas@yahoo.com>, 2018, 2019.
+# Varga Dániel <danikah.danikah@gmail.com>, 2016-2018, 2020.
+# Gabor Csordas <gaborcsordas@yahoo.com>, 2018, 2019, 2020.
 # Tusa Gamer <tusagamer@mailinator.com>, 2018.
 # Máté Lugosi <mate.lugosi@gmail.com>, 2019.
 # sztrovacsek <magadeve@gmail.com>, 2019.
+# Ács Zoltán <acszoltan111@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-30 03:56+0000\n"
-"Last-Translator: Deleted User <noreply+18797@weblate.org>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Ács Zoltán <acszoltan111@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -44,7 +45,7 @@ msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Érvénytelen bemenet %i (nem átadott) a kifejezésben."
+msgstr "Érvénytelen bemenet %i (nem átadott) a kifejezésben"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -52,7 +53,7 @@ msgstr "self nem használható, mert a példány null (nincs átadva)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Érvénytelen operandus a %s, %s és %s operátorokhoz."
+msgstr "Érvénytelen operandusok az %s, %s és %s operátorhoz."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -102,7 +103,7 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Ingyenes"
+msgstr "Szabad"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -134,11 +135,11 @@ msgstr "Kiválasztott kulcsok törlése"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Bezier pont hozzáadása"
+msgstr "Bézier pont hozzáadása"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Bezier pont Mozgatása"
+msgstr "Bézier pont mozgatása"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -214,7 +215,7 @@ msgstr "UV Térkép Transzformálása"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Hívás módszer követése"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -222,7 +223,7 @@ msgstr "Bezier Görbe Nyomvonal"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Hang lejátszás követése"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -265,9 +266,8 @@ msgid "Change Track Path"
 msgstr "Tömb Értékének Megváltoztatása"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Zavarmentes mód váltása."
+msgstr "A sáv ki/be kapcsolása."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -287,9 +287,8 @@ msgid "Remove this track."
 msgstr "Kiválasztott nyomvonal eltávolítása."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "Áttűnési Idő (mp):"
+msgstr "Idő (mp):"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -618,7 +617,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Bézier görbék használata"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -710,11 +709,11 @@ msgstr "Tömb Értékének Megváltoztatása"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr "Sorra Ugrás"
+msgstr "Ugrás Sorra"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Sor Száma:"
+msgstr "Sorszám:"
 
 #: editor/code_editor.cpp
 #, fuzzy
@@ -736,7 +735,7 @@ msgstr "Pontos Egyezés"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr "Teljes Szavak"
+msgstr "Egész Szavak"
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
@@ -826,7 +825,7 @@ msgstr "A Node nem tartalmaz geometriát."
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr "Hozzáad"
+msgstr "Hozzáadás"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/editor_feature_profile.cpp editor/groups_editor.cpp
@@ -837,7 +836,7 @@ msgstr "Hozzáad"
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr "Eltávolít"
+msgstr "Eltávolítás"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
@@ -922,7 +921,7 @@ msgstr "Kapcsolás..."
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Szétkapcsol"
+msgstr "Leválasztás"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -980,7 +979,7 @@ msgstr "Kedvencek:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr "Legutóbbi:"
+msgstr "Legutolsó:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
@@ -1066,7 +1065,7 @@ msgstr "Csere Forrás Keresése:"
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr "Megnyit"
+msgstr "Megnyitás"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
@@ -2266,7 +2265,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
@@ -4315,16 +4314,14 @@ msgid "Create points."
 msgstr "Pontok Törlése"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
 "RMB: Erase Point"
 msgstr ""
-"Meglévő sokszög módosítása:\n"
-"Bal Egérgomb: Pont Mozgatása.\n"
-"Ctrl + Bal Egérgomb: Szakasz Felosztása.\n"
-"Jobb Egérgomb: Pont Eltörlése."
+"Pontok szerkesztése\n"
+"Bal Egérgomb: Pont mozgatása\n"
+"Jobb Egérgomb: Pont törlése"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -5841,7 +5838,7 @@ msgstr "Nézet Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Csoport Megjelenítése és ikonok zárolása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -8362,7 +8359,7 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Icon"
-msgstr ""
+msgstr "Ikon"
 
 #: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Style"
@@ -8370,7 +8367,7 @@ msgstr "Stílus"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Font"
-msgstr ""
+msgstr "Betűtípus"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
@@ -8392,9 +8389,8 @@ msgstr "Érvénytelen név."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cut Selection"
-msgstr "Kijelölés Középre"
+msgstr "Kijelölés kivágása"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -8402,7 +8398,7 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Line Draw"
-msgstr ""
+msgstr "Vonal rajzolás"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rectangle Paint"
@@ -8491,7 +8487,7 @@ msgstr "Jelenlegi tétel eltávolítása"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
-msgstr ""
+msgstr "Létrehozás jelenetből"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from Scene"
@@ -10048,7 +10044,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Rename Project"
-msgstr ""
+msgstr "Projekt átnevezése"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
@@ -10076,7 +10072,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
-msgstr ""
+msgstr "Projekt neve:"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
@@ -10120,7 +10116,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
-msgstr ""
+msgstr "Névtelen projekt"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -10224,7 +10220,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr ""
+msgstr "Projektkezelő"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -10237,7 +10233,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Keresés"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"

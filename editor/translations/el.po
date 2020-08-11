@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-11 01:21+0000\n"
-"Last-Translator: KostasMSC <kargyris@athtech.gr>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -503,8 +503,8 @@ msgstr ""
 "εισαγωγής της σκηνής και θέστε\n"
 "το «Animation > Storage» σε «Files», ενεργοποιήστε το «Animation > Keep "
 "Custom Tracks», και κάντε επαν-εισαγωγή.\n"
-"Εναλλακτικά,  χρησιμοποιήστε μία διαμόρφωση εισαγωγής που εισάγει κινήσεις "
-"σε ξεχωριστά αρχεία."
+"Εναλλακτικά, χρησιμοποιήστε μία διαμόρφωση εισαγωγής που εισάγει κινήσεις σε "
+"ξεχωριστά αρχεία."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -1597,7 +1597,7 @@ msgstr "Δεν βρέθηκε προσαρμοσμένο πακέτο αποσφ
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "Δεν βρέθηκε προσαρμοσμένο πακέτο παραγωγής."
+msgstr "Δεν βρέθηκε προσαρμοσμένο πακέτο διανομής."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -2456,13 +2456,13 @@ msgstr "Αποθήκευση & Έξοδος"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Αποθήκευση αλλαγών στις ακόλουθες σκηνές σκηνές πριν την έξοδο;"
+msgstr "Αποθήκευση αλλαγών στις ακόλουθες σκηνές πριν την έξοδο;"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Αποθήκευση αλλαγών στις ακόλουθες σκηνές σκηνές πριν το άνοιγμα του "
-"διαχειριστή έργων;"
+"Αποθήκευση αλλαγών στις ακόλουθες σκηνές πριν το άνοιγμα του Διαχειριστή "
+"Έργων;"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3128,7 +3128,7 @@ msgstr "Άνοιγμα βιβλιοθήκης"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr "Άνοιγμα του  επόμενου επεξεργαστή"
+msgstr "Άνοιγμα του επόμενου Επεξεργαστή"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
@@ -3478,7 +3478,7 @@ msgid ""
 "for official releases."
 msgstr ""
 "Δεν βρέθηκαν συνδέσμοι λήψης για την τρέχουσα έκδοση. Η απευθείας λήψη είναι "
-"διαθέσιμη μόνο για τις επίσημες εκδόσεις."
+"διαθέσιμη μόνο για τις επίσημες διανομές."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3987,6 +3987,7 @@ msgstr "Σφάλμα κατά την εκτέλεση της δέσμης ενε
 #: editor/import/resource_importer_scene.cpp
 msgid "Did you return a Node-derived object in the `post_import()` method?"
 msgstr ""
+"Μήπως επιστρέψατε ένα αντικείμενο τύπου κόμβου στην μέθοδο `post_import()`;"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -6213,7 +6214,7 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
-msgstr "Χρόνος  παραγωγής (sec):"
+msgstr "Χρόνος Παραγωγής (sec):"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "The geometry's faces don't contain any area."
@@ -6856,7 +6857,7 @@ msgstr "Κλείσιμο όλων"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
-msgstr "Κλείσιμο  τεκμηρίωσης"
+msgstr "Κλείσιμο Τεκμηρίωσης"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
@@ -6957,9 +6958,8 @@ msgstr ""
 "κόμβο «%s»."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "[Ignore]"
-msgstr "(Παράβλεψη)"
+msgstr "[Παράβλεψη]"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -7449,6 +7449,11 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Πατήστε για εναλλαγή λειτουργίας ορατότητας.\n"
+"\n"
+"Ανοιχτό μάτι: Ορατό μαραφέτι.\n"
+"Κλειστό μάτι: Κρυμμένο μαραφέτι.\n"
+"Ημι-ανοιχτό μάτι: Μαραφέτι ορατό και μέσα από στερεές επιφάνειες (\"x-ray\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -8361,7 +8366,9 @@ msgstr ""
 msgid ""
 "Select sub-tile to change its priority.\n"
 "Click on another Tile to edit it."
-msgstr "Επιλέξτε υποπλακίδιο για να αλλάξετε την προτεραιότητα του."
+msgstr ""
+"Επιλέξτε υποπλακίδιο για να αλλάξετε την προτεραιότητα του.\n"
+"Πατήστε σε άλλο Πλακίδιο για να το επεξεργαστείτε."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -9069,7 +9076,7 @@ msgstr "Επιστρέφει την υπερβολική εφαπτομένη τ
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the truncated value of the parameter."
-msgstr "Βρίσκει την περικομμένη  τιμή της παραμέτρου."
+msgstr "Βρίσκει την περικομμένη τιμή της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds scalar to scalar."
@@ -9468,7 +9475,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Release"
-msgstr "Κυκλοφορία"
+msgstr "Διανομή"
 
 #: editor/project_export.cpp
 msgid "Exporting All"
@@ -9971,6 +9978,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"Το κουτί αναζήτησης φιλτράρει έργα βάσει ονόματος και τελικού μέρους της "
+"διαδρομής τους.\n"
+"Για φιλτράρισμα βάσει ονόματος και πλήρης διαδρομής, το ερώτημα πρέπει να "
+"περιέχει τουλάχιστον έναν χαρακτήρα `/`."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10142,7 +10153,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
-msgstr "Προσθήκη συμβάντος  ενέργειας εισόδου"
+msgstr "Προσθήκη Ενέργειας Εισόδου"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -10537,9 +10548,8 @@ msgid "Instance Child Scene"
 msgstr "Αρχικοποίηση σκηνής ως παιδί"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Σύνδεση Δέσμης Ενεργειών"
+msgstr "Αποσύνδεση Δέσμης Ενεργειών"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10577,9 +10587,8 @@ msgid "Make node as Root"
 msgstr "Κάνε κόμβο ρίζα"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Διαγραφή κόμβου \"%s\" και των παιδιών του;"
+msgstr "Διαγραφή %d κόμβων και τυχών παιδιών τους;"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -10720,6 +10729,9 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Αδυναμία σύνδεσης δέσμης ενεργειών: Καμία γλώσσα στο μητρώο.\n"
+"Αυτό μπορεί να προκληθεί αν ο επεξεργαστής χτιστεί χωρίς καμία λειτουργική "
+"μονάδα γλώσσας."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10770,14 +10782,12 @@ msgstr ""
 "υπάρχει πηγαίος κόμβος."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "Σύνδεση νέας ή υπαρκτής δέσμης ενεργειών για τον επιλεγμένο κόμβο."
+msgstr "Σύνδεση νέας ή υπαρκτής δέσμης ενεργειών στον επιλεγμένο κόμβο."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Εκκαθάριση δέσμης ενεργειών για τον επιλεγμένο κόμβο."
+msgstr "Αποσύνδεση της δέσμης ενεργειών από τον επιλεγμένο κόμβο."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -11118,9 +11128,8 @@ msgid "Total:"
 msgstr "Συνολικά:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Εξαγωγή Προφίλ"
+msgstr "Εξαγωγή λίστας σε αρχείο CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12016,11 +12025,9 @@ msgstr ""
 "διαμόρφωση."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Το «debug keystore» δεν έχει καθοριστεί στις Ρυθμίσεις Επεξεργαστή ή την "
-"διαμόρφωση."
+"Εσφαλμένη ρύθμιση αποθετηρίου κλειδιών διανομής στην διαμόρφωση εξαγωγής."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12055,26 +12062,35 @@ msgid ""
 "Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
 "project setting (changed in Godot 3.2.2).\n"
 msgstr ""
+"Εσφαλμένη λειτουργική μονάδα «GodotPaymentV3» στην ρύθμιση εργου «Android/"
+"Modules» (άλλαξε στην Godot 3.2.2).\n"
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr ""
+"Η επιλογή «Use Custom Build» πρέπει να ενεργοποιηθεί για χρήση προσθέτων."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
 "\"."
 msgstr ""
+"Το «Degrees Of Freedom» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus "
+"Mobile VR»."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"Το «Hand Tracking» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus Mobile "
+"VR»."
 
 #: platform/android/export/export.cpp
 msgid ""
 "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
+"Το «Focus Awareness» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus "
+"Mobile VR»."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12291,6 +12307,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Τα σχήματα βασισμένα σε πολύγωνα δεν σχεδιάστικαν ώστε να είναι επεξεργάσιμα "
+"από τον κόμβο CollisionShape2D. Χρησιμοποιήστε τον κόμβο CollisionPolygon2D."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

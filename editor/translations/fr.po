@@ -79,8 +79,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-26 15:41+0000\n"
-"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
+"PO-Revision-Date: 2020-08-01 11:14+0000\n"
+"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1787,7 +1787,7 @@ msgstr "Nouveau"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importer"
+msgstr "Importation"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"

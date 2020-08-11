@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-26 06:11+0000\n"
+"PO-Revision-Date: 2020-08-05 16:58+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -1710,7 +1710,7 @@ msgstr "Uusi"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Tuo"
+msgstr "Tuonti"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -8147,7 +8147,7 @@ msgstr "Peitto"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation"
-msgstr "Siirtyminen"
+msgstr "Navigointi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Bitmask"
@@ -10525,9 +10525,8 @@ msgid "Make node as Root"
 msgstr "Tee solmusta juurisolmu"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Poista solmu \"%s\" ja sen alisolmut?"
+msgstr "Poista %d solmua ja kaikki alisolmut?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12228,6 +12227,9 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Polygonipohjaisia muotoja ei ole tarkoitus käyttää tai muokata suoraan "
+"CollisionShape2D solmun kautta. Ole hyvä ja käytä sen sijaan "
+"CollisionPolygon2D solmua."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

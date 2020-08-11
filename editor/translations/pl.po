@@ -45,8 +45,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-21 13:41+0000\n"
-"Last-Translator: Filip Glura <mcmr.slendy@gmail.com>\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -10560,9 +10560,8 @@ msgid "Make node as Root"
 msgstr "Zmień węzeł na Korzeń"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Usunąć węzeł \"%s\" oraz jego węzły potomne?"
+msgstr "Usunąć %d węzłów i ich węzły potomne?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12266,6 +12265,9 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Kształty oparte na wielokątach nie są przystosowane, by ich używać lub "
+"edytować bezpośrednio przez węzeł CollisionShape2D. Zamiast tego użyj węzła "
+"CollisionPolygon2D."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

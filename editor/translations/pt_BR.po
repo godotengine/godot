@@ -97,13 +97,14 @@
 # Necco <necco@outlook.com>, 2020.
 # Marcelo Silveira Hayden <mshayden.1998@gmail.com>, 2020.
 # GUILHERME SOUZA REIS DE MELO LOPES <guilhermesrml@unipam.edu.br>, 2020.
+# Gabriela Araújo <Gabirin@outlook.com.br>, 2020.
+# Jairo Tuboi <tuboi.jairo@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-07-26 15:41+0000\n"
-"Last-Translator: GUILHERME SOUZA REIS DE MELO LOPES <guilhermesrml@unipam."
-"edu.br>\n"
+"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"Last-Translator: Jairo Tuboi <tuboi.jairo@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -242,7 +243,7 @@ msgstr "Alterar Transição da Animação"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Alterar Transformação da Anim"
+msgstr "Alterar Transformação da Animação"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
@@ -250,7 +251,7 @@ msgstr "Alterar Valor de Quadro-Chave da Anim"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "Alterar Chamada da Anim"
+msgstr "Alterar Chamada da Animação"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1795,7 +1796,7 @@ msgstr "Novo"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importar"
+msgstr "Import"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -3869,7 +3870,7 @@ msgstr "Criar Script"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
-msgstr "Localizar nos Arquivos"
+msgstr "Localizar nos arquivos"
 
 #: editor/find_in_files.cpp
 msgid "Find:"
@@ -4177,7 +4178,7 @@ msgstr "Alterações podem ser perdidas!"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr "Múltiplos Nodes definidos"
+msgstr "Conjunto de Multi-Nós"
 
 #: editor/node_dock.cpp
 msgid "Select a single node to edit its signals and groups."
@@ -6817,7 +6818,7 @@ msgstr "Localizar próximo"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
-msgstr "Encontrar Anterior"
+msgstr "Localizar anterior"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter scripts"
@@ -7080,7 +7081,7 @@ msgstr "Recortar"
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr "Selecionar Tudo"
+msgstr "Selecionar tudo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -10627,9 +10628,8 @@ msgid "Make node as Root"
 msgstr "Tornar Raiz o Nó"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Deletar nó \"%s\" e seus filhos?"
+msgstr "Deletar nó \"%d\" e seus filhos?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12332,6 +12332,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Formas baseadas em polígonos não foram feitas para serem diretamente "
+"editadas no nó CollisionShape2D. Em vez disso use o nó CollisionPolygon2D."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
