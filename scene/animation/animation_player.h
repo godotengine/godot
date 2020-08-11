@@ -111,7 +111,7 @@ private:
 
 		bool animation_playing = false;
 
-		int animation_idx;
+		int animation_idx = -1;
 		float animation_start = 0.0;
 		float animation_len = 0.0;
 
