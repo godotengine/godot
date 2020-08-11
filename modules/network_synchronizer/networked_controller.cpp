@@ -82,7 +82,6 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &NetworkedController::_rpc_server_send_inputs);
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
-	ClassDB::bind_method(D_METHOD("_rpc_doll_send_inputs"), &NetworkedController::_rpc_doll_send_inputs);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &NetworkedController::_rpc_doll_notify_connection_status);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch"), &NetworkedController::_rpc_doll_send_epoch);
 
@@ -116,7 +115,6 @@ void NetworkedController::_bind_methods() {
 NetworkedController::NetworkedController() {
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_doll_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_epoch", MultiplayerAPI::RPC_MODE_REMOTE);
 }
@@ -195,7 +193,7 @@ void NetworkedController::mark_epoch_as_important() {
 }
 
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "You can set doll activation only on server");
+	ERR_FAIL_COND_MSG(is_server_controller() == false, "You can set doll activation only on server");
 	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equal to the Master `peer_id`, which is not allowed.");
 
 	const int index = disabled_doll_peers.find(p_peer_id);
@@ -235,26 +233,29 @@ void NetworkedController::update_active_doll_peers() {
 	}
 }
 
-int NetworkedController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
-	// Put this to false, so even with sub_ticks = 0 everything will be ok.
-	player_set_has_new_input(false);
-	return controller->calculates_sub_ticks(p_delta, p_iteration_per_seconds);
-}
-
-int NetworkedController::notify_input_checked(uint64_t p_input_id) {
-	return controller->notify_input_checked(p_input_id);
-}
-
-uint64_t NetworkedController::last_known_input() const {
-	return controller->last_known_input();
-}
-
-uint64_t NetworkedController::get_stored_input_id(int p_i) const {
-	return controller->get_stored_input_id(p_i);
-}
-
 bool NetworkedController::process_instant(int p_i, real_t p_delta) {
-	return controller->process_instant(p_i, p_delta);
+	ERR_FAIL_COND_V_MSG(is_player_controller() == false, false, "Can be executed only on player controllers.");
+	return static_cast<PlayerController *>(controller)->process_instant(p_i, p_delta);
+}
+
+ServerController *NetworkedController::get_server_controller() const {
+	ERR_FAIL_COND_V_MSG(is_server_controller() == false, nullptr, "This controller is not a server controller.");
+	return static_cast<ServerController *>(controller);
+}
+
+PlayerController *NetworkedController::get_player_controller() const {
+	ERR_FAIL_COND_V_MSG(is_player_controller() == false, nullptr, "This controller is not a player controller.");
+	return static_cast<PlayerController *>(controller);
+}
+
+DollController *NetworkedController::get_doll_controller() const {
+	ERR_FAIL_COND_V_MSG(is_doll_controller() == false, nullptr, "This controller is not a doll controller.");
+	return static_cast<DollController *>(controller);
+}
+
+NoNetController *NetworkedController::get_nonet_controller() const {
+	ERR_FAIL_COND_V_MSG(is_nonet_controller() == false, nullptr, "This controller is not a no net controller.");
+	return static_cast<NoNetController *>(controller);
 }
 
 bool NetworkedController::is_server_controller() const {
@@ -302,16 +303,8 @@ bool NetworkedController::has_scene_synchronizer() const {
 }
 
 void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
-	ERR_FAIL_COND(get_tree()->is_network_server() == false);
-
-	const LocalVector<int> &peers = get_active_doll_peers();
-	for (uint32_t i = 0; i < peers.size(); i += 1) {
-		// This is an active doll, Let's send the data.
-		const int peer_id = peers[i];
-		rpc_unreliable_id(peer_id, "_rpc_doll_send_inputs", p_data);
-	}
-
-	controller->receive_inputs(p_data);
+	ERR_FAIL_COND(is_server_controller() == false);
+	static_cast<ServerController *>(controller)->receive_inputs(p_data);
 }
 
 void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data) {
@@ -325,34 +318,16 @@ void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data
 	player_controller->tick_additional_speed = CLAMP(additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 }
 
-void NetworkedController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
-	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
-
-	controller->receive_inputs(p_data);
-}
-
 void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 
-	if (p_open) {
-		static_cast<DollController *>(controller)->open_flow();
-	} else {
-		static_cast<DollController *>(controller)->close_flow();
-	}
+#warning TODO emit a signal.
 }
 
 void NetworkedController::_rpc_doll_send_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 
 	static_cast<DollController *>(controller)->receive_epoch(p_epoch, p_data);
-}
-
-void NetworkedController::process(real_t p_delta) {
-	if (controller) {
-		// This is called by the `SceneSynchronizer` that is not aware of the
-		// controller state; so check that the controller is not null.
-		controller->process(p_delta);
-	}
 }
 
 void NetworkedController::player_set_has_new_input(bool p_has) {
@@ -365,6 +340,15 @@ bool NetworkedController::player_has_new_input() const {
 
 void NetworkedController::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: { // TODO consider use the process instead.
+			if (Engine::get_singleton()->is_editor_hint())
+				return;
+
+			// This can't happen, since only the doll are processed here.
+			CRASH_COND(is_doll_controller() == false);
+			static_cast<DollController *>(controller)->process(get_physics_process_delta_time());
+
+		} break;
 		case NOTIFICATION_READY: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
@@ -445,6 +429,18 @@ bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSna
 	return p_snap_a.id < p_snap_b.id;
 }
 
+uint64_t ServerController::last_known_input() const {
+	if (snapshots.size() > 0) {
+		return snapshots.back().id;
+	} else {
+		return UINT64_MAX;
+	}
+}
+
+uint64_t ServerController::get_current_input_id() const {
+	return current_input_buffer_id;
+}
+
 void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	// The packet is composed as follow:
 	// - The following four bytes for the first input ID.
@@ -522,38 +518,6 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	}
 
 	ERR_FAIL_COND_MSG(ofs != data_len, "At the end was detected that the arrived packet has an unexpected size.");
-}
-
-int ServerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
-	// The server always advance 1 tick per process.
-	return 1;
-}
-
-int ServerController::notify_input_checked(uint64_t p_input_id) {
-	ERR_PRINT("The method `notify_input_checked` must not be called on the server.");
-	return 0;
-}
-
-uint64_t ServerController::last_known_input() const {
-	if (snapshots.size() > 0) {
-		return snapshots.back().id;
-	} else {
-		return UINT64_MAX;
-	}
-}
-
-uint64_t ServerController::get_stored_input_id(int p_i) const {
-	ERR_PRINT("The method `get_input_id` must not be called on the server.");
-	return UINT64_MAX;
-}
-
-bool ServerController::process_instant(int p_i, real_t p_delta) {
-	ERR_PRINT("The method `process_instant` must not be called on the server.");
-	return false;
-}
-
-uint64_t ServerController::get_current_input_id() const {
-	return current_input_buffer_id;
 }
 
 int ServerController::get_inputs_count() const {
@@ -826,10 +790,6 @@ void PlayerController::process(real_t p_delta) {
 	node->player_set_has_new_input(accept_new_inputs);
 }
 
-void PlayerController::receive_inputs(Vector<uint8_t> p_data) {
-	ERR_PRINT("The player is not supposed to receive snapshots.");
-}
-
 int PlayerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
 	const real_t pretended_delta = get_pretended_delta(p_iteration_per_seconds);
 
@@ -924,7 +884,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	int previous_buffer_size = 0;
 	uint8_t duplication_count = 0;
 
-	DataBuffer pir_A(node->get_inputs_buffer());
+	DataBuffer pir_A(node->get_inputs_buffer().get_buffer());
 
 	// Compose the packets
 	for (size_t i = frames_snapshot.size() - inputs_count; i < frames_snapshot.size(); i += 1) {
@@ -1028,20 +988,18 @@ bool PlayerController::can_accept_new_inputs() const {
 }
 
 DollController::DollController(NetworkedController *p_node) :
-		Controller(p_node),
-		server_controller(p_node, p_node->get_network_traced_frames()),
-		player_controller(p_node),
-		is_server_communication_detected(false),
-		is_server_state_update_received(false),
-		last_checked_input_id(0),
-		is_flow_open(true),
-		time_bank(0) {
+		Controller(p_node) {
+}
+
+DollController::~DollController() {
+	node->set_physics_process_internal(false);
 }
 
 void DollController::ready() {
 	interpolator.reset();
 	node->call("setup_interpolator", &interpolator);
 	interpolator.terminate_init();
+	node->set_physics_process_internal(true);
 }
 
 void DollController::process(real_t p_delta) {
@@ -1053,84 +1011,11 @@ void DollController::process(real_t p_delta) {
 	const uint64_t frame_epoch = epoch;
 	epoch += 1;
 
-	node->call("process_epoch", interpolator.pop_epoch(frame_epoch));
-
-	// TODO remove all below.
-	return;
-	server_controller.calculates_player_tick_rate(p_delta);
-
-	// Lock mechanism when the server don't update anymore this doll!
-	if (is_flow_open) {
-		if (is_server_state_update_received &&
-				is_server_communication_detected == false) {
-			is_server_communication_detected = true;
-			hard_reset_to_server_state();
-			node->emit_signal("doll_server_comunication_opened");
-		}
-	} else {
-		// Locked
-		node->player_set_has_new_input(false);
-		return;
-	}
-
-	const bool is_new_input = server_controller.fetch_next_input();
-	if (server_controller.current_input_buffer_id != UINT64_MAX) {
-		node->get_inputs_buffer_mut().begin_read();
-		node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
-		if (is_new_input) {
-			player_controller.store_input_buffer(server_controller.current_input_buffer_id);
-		}
-
-		node->player_set_has_new_input(is_new_input);
-	}
-
-	// Keeps the doll in sync with the server.
-	soft_reset_to_server_state();
-}
-
-void DollController::receive_inputs(Vector<uint8_t> p_data) {
-	if (is_flow_open == false)
-		return;
-	server_controller.receive_inputs(p_data);
-}
-
-int DollController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
-	// When some packets are missing, the server speedup the client.
-	// For the doll we have to use the inverse algorithm because it's necessary
-	// to slow down the doll to consume the inputs slowly, to accumulates a bit
-	// of buffer (vice versa, when we have too much inputs).
-	const real_t speed_up = server_controller.client_tick_additional_speed * -1;
-
-	const real_t pretended_delta = 1.0 / (p_iteration_per_seconds + speed_up);
-	time_bank += p_delta;
-	const int sub_ticks = static_cast<uint32_t>(time_bank / pretended_delta);
-	time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
-
-	return sub_ticks;
-}
-
-int DollController::notify_input_checked(uint64_t p_input_id) {
-	if (is_flow_open) {
-		last_checked_input_id = p_input_id;
-		is_server_state_update_received = true;
-	}
-	return player_controller.notify_input_checked(p_input_id);
-}
-
-uint64_t DollController::last_known_input() const {
-	return server_controller.last_known_input();
-}
-
-uint64_t DollController::get_stored_input_id(int p_i) const {
-	return player_controller.get_stored_input_id(p_i);
-}
-
-bool DollController::process_instant(int p_i, real_t p_delta) {
-	return player_controller.process_instant(p_i, p_delta);
+	node->call("epoch_process", p_delta, interpolator.pop_epoch(frame_epoch));
 }
 
 uint64_t DollController::get_current_input_id() const {
-	return server_controller.current_input_buffer_id;
+	return epoch;
 }
 
 void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
@@ -1140,61 +1025,6 @@ void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
 	interpolator.begin_write(p_epoch);
 	node->call("parse_epoch_data", &interpolator, &buffer);
 	interpolator.end_write();
-}
-
-void DollController::open_flow() {
-	if (is_flow_open == true)
-		return;
-	is_flow_open = true;
-	is_server_communication_detected = false;
-	is_server_state_update_received = false;
-}
-
-void DollController::close_flow() {
-	if (is_flow_open == false)
-		return;
-	is_flow_open = false;
-	node->emit_signal("doll_server_comunication_closed");
-}
-
-void DollController::soft_reset_to_server_state() {
-	bool reset = false;
-
-	for (std::deque<FrameSnapshotSkinny>::const_reverse_iterator it = server_controller.snapshots.rbegin();
-			it != server_controller.snapshots.rend();
-			it += 1) {
-		if (it->id == last_checked_input_id) {
-			reset = true;
-			break;
-		}
-	}
-
-	if (reset) {
-		hard_reset_to_server_state();
-	}
-}
-
-void DollController::hard_reset_to_server_state() {
-	// Reset the doll to server state.
-
-	// Drop the current frame_snapshot since are now useless.
-	player_controller.frames_snapshot.clear();
-
-	// Set the server `current_packet_id` to the previous `last_recovered_input_id`
-	// so the next frame the input to recover is inserted naturally into
-	// the player controller `snapshots` array.
-	server_controller.current_input_buffer_id = last_checked_input_id - 1;
-
-	// Drop all the snapshots that are older that the latest state update
-	// so to sync server and client back again.
-	while (server_controller.snapshots.size() > 0 && server_controller.snapshots.front().id < server_controller.current_input_buffer_id) {
-		server_controller.snapshots.pop_front();
-	}
-
-	// The next frame the recover mechanism will naturally reset the player
-	// state back in sync.
-
-	time_bank = 0.0;
 }
 
 NoNetController::NoNetController(NetworkedController *p_node) :
@@ -1209,35 +1039,6 @@ void NoNetController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
 	frame_id += 1;
-}
-
-void NoNetController::receive_inputs(Vector<uint8_t> p_data) {
-	// Nothing to do.
-}
-
-int NoNetController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
-	// Always advance by 1.
-	return 1;
-}
-
-int NoNetController::notify_input_checked(uint64_t p_input_id) {
-	// Nothing to do.
-	return 0;
-}
-
-uint64_t NoNetController::last_known_input() const {
-	// Nothing to do.
-	return UINT64_MAX;
-}
-
-uint64_t NoNetController::get_stored_input_id(int p_i) const {
-	// Nothing to do.
-	return UINT64_MAX;
-}
-
-bool NoNetController::process_instant(int p_i, real_t p_delta) {
-	// Nothing to do.
-	return false;
 }
 
 uint64_t NoNetController::get_current_input_id() const {

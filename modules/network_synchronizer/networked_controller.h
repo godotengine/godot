@@ -193,11 +193,16 @@ public:
 	void _on_peer_connection_change(int p_peer_id);
 	void update_active_doll_peers();
 
-	int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
-	int notify_input_checked(uint64_t p_input_id);
-	uint64_t last_known_input() const;
-	uint64_t get_stored_input_id(int p_i) const;
 	bool process_instant(int p_i, real_t p_delta);
+
+	/// Returns the server controller or nullptr if this is not a server.
+	class ServerController *get_server_controller() const;
+	/// Returns the player controller or nullptr if this is not a player.
+	class PlayerController *get_player_controller() const;
+	/// Returns the doll controller or nullptr if this is not a doll.
+	class DollController *get_doll_controller() const;
+	/// Returns the no net controller or nullptr if this is not a no net.
+	class NoNetController *get_nonet_controller() const;
 
 	bool is_server_controller() const;
 	bool is_player_controller() const;
@@ -218,7 +223,6 @@ public:
 	void _rpc_send_tick_additional_speed(Vector<uint8_t> p_data);
 
 	/* On puppet rpc functions. */
-	void _rpc_doll_send_inputs(Vector<uint8_t> p_data);
 	void _rpc_doll_notify_connection_status(bool p_open);
 	void _rpc_doll_send_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
 
@@ -250,14 +254,7 @@ struct Controller {
 
 	virtual ~Controller() {}
 
-	virtual void ready(){};
-	virtual void process(real_t p_delta) = 0;
-	virtual void receive_inputs(Vector<uint8_t> p_data) = 0;
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) = 0;
-	virtual int notify_input_checked(uint64_t p_input_id) = 0;
-	virtual uint64_t last_known_input() const = 0;
-	virtual uint64_t get_stored_input_id(int p_i) const = 0;
-	virtual bool process_instant(int p_i, real_t p_delta) = 0;
+	virtual void ready() {}
 	virtual uint64_t get_current_input_id() const = 0;
 };
 
@@ -279,15 +276,11 @@ struct ServerController : public Controller {
 			NetworkedController *p_node,
 			int p_traced_frames);
 
-	virtual void process(real_t p_delta) override;
-	virtual void receive_inputs(Vector<uint8_t> p_data) override;
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
-	virtual int notify_input_checked(uint64_t p_input_id) override;
-	virtual uint64_t last_known_input() const override;
-	virtual uint64_t get_stored_input_id(int p_i) const override;
-	virtual bool process_instant(int p_i, real_t p_delta) override;
+	void process(real_t p_delta);
+	uint64_t last_known_input() const;
 	virtual uint64_t get_current_input_id() const override;
 
+	void receive_inputs(Vector<uint8_t> p_data);
 	int get_inputs_count() const;
 
 	/// Fetch the next inputs, returns true if the input is new.
@@ -321,15 +314,14 @@ struct PlayerController : public Controller {
 
 	PlayerController(NetworkedController *p_node);
 
-	virtual void process(real_t p_delta) override;
-	virtual void receive_inputs(Vector<uint8_t> p_data) override;
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
-	virtual int notify_input_checked(uint64_t p_input_id) override;
-	virtual uint64_t last_known_input() const override;
-	virtual uint64_t get_stored_input_id(int p_i) const override;
-	virtual bool process_instant(int p_i, real_t p_delta) override;
+	void process(real_t p_delta);
+	int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
+	int notify_input_checked(uint64_t p_input_id);
+	uint64_t last_known_input() const;
+	uint64_t get_stored_input_id(int p_i) const;
 	virtual uint64_t get_current_input_id() const override;
 
+	bool process_instant(int p_i, real_t p_delta);
 	real_t get_pretended_delta(real_t p_iteration_per_second) const;
 
 	void store_input_buffer(uint64_t p_id);
@@ -352,40 +344,18 @@ struct PlayerController : public Controller {
 /// with the server execution (see `soft_reset_to_server_state`) and the possibility
 /// for the server to stop the data streaming.
 struct DollController : public Controller {
-	/// Used to perform server like operations
-	ServerController server_controller;
-	/// Used to perform master like operations
-	PlayerController player_controller;
-	bool is_server_communication_detected;
-	bool is_server_state_update_received;
-	uint64_t last_checked_input_id;
-	bool is_flow_open;
-	real_t time_bank;
-
 	Interpolator interpolator;
 	uint64_t epoch = 0;
 
 	DollController(NetworkedController *p_node);
+	~DollController();
 
 	virtual void ready() override;
-	virtual void process(real_t p_delta) override;
-	virtual void receive_inputs(Vector<uint8_t> p_data) override;
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
-	virtual int notify_input_checked(uint64_t p_input_id) override;
-	virtual uint64_t last_known_input() const override;
-	virtual uint64_t get_stored_input_id(int p_i) const override;
-	virtual bool process_instant(int p_i, real_t p_delta) override;
+	void process(real_t p_delta);
+	// TODO consider make this non virtual
 	virtual uint64_t get_current_input_id() const override;
 
 	void receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
-
-	void open_flow();
-	void close_flow();
-
-	/// Make sure the server and the client are is sync by dropping all the
-	/// snapshots when a new state update invalidate these.
-	void soft_reset_to_server_state();
-	void hard_reset_to_server_state();
 };
 
 /// This controller is used when the game instance is not a peer of any kind.
@@ -396,13 +366,7 @@ struct NoNetController : public Controller {
 
 	NoNetController(NetworkedController *p_node);
 
-	virtual void process(real_t p_delta) override;
-	virtual void receive_inputs(Vector<uint8_t> p_data) override;
-	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) override;
-	virtual int notify_input_checked(uint64_t p_input_id) override;
-	virtual uint64_t last_known_input() const override;
-	virtual uint64_t get_stored_input_id(int p_i) const override;
-	virtual bool process_instant(int p_i, real_t p_delta) override;
+	void process(real_t p_delta);
 	virtual uint64_t get_current_input_id() const override;
 };
 

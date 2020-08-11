@@ -927,8 +927,10 @@ void NoNetSynchronizer::process() {
 			it.valid;
 			it = scene_synchronizer->isle_data.next_iter(it)) {
 		NetworkedController *controller = it.value->controller;
+		// This is executed on no net, so there is no way this is triggered.
+		CRASH_COND(controller->is_nonet_controller() == false);
 
-		controller->process(delta);
+		controller->get_nonet_controller()->process(delta);
 	}
 
 	// Pull the changes.
@@ -974,8 +976,10 @@ void ServerSynchronizer::process() {
 			it.valid;
 			it = scene_synchronizer->isle_data.next_iter(it)) {
 		NetworkedController *controller = it.value->controller;
+		// This is executed on server, so this can't be triggered.
+		CRASH_COND(controller->is_server_controller() == false);
 
-		controller->process(delta);
+		controller->get_server_controller()->process(delta);
 	}
 
 	// Pull the changes.
@@ -1216,6 +1220,16 @@ void ClientSynchronizer::process() {
 			it.valid;
 			it = scene_synchronizer->isle_data.next_iter(it)) {
 		NetworkedController *controller = it.value->controller;
+		if (controller->is_player_controller() == false) {
+			// TODO consider remove isle processing.
+			continue;
+		}
+		PlayerController *player_controller = controller->get_player_controller();
+
+		// Reset this here, so even when `sub_ticks` is zero (and it's not
+		// updated due to process is not called), we can still have the corect
+		// data.
+		controller->player_set_has_new_input(false);
 
 		// Due to some lag we may want to speed up the input_packet
 		// generation, for this reason here I'm performing a sub tick.
@@ -1226,7 +1240,7 @@ void ClientSynchronizer::process() {
 		//
 		// The dolls may want to speed up too, so to consume the inputs faster
 		// and get back in time with the server.
-		int sub_ticks = controller->calculates_sub_ticks(
+		int sub_ticks = player_controller->calculates_sub_ticks(
 				delta,
 				iteration_per_second);
 
@@ -1243,7 +1257,7 @@ void ClientSynchronizer::process() {
 			}
 
 			// Process the controller
-			controller->process(delta);
+			player_controller->process(delta);
 
 			// TODO find a way to not iterate this again or avoid the below `look_up`.
 			// Iterate all the nodes and compare the isle??
@@ -1433,6 +1447,11 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 			isle_it.valid;
 			isle_it = scene_synchronizer->isle_data.next_iter(isle_it)) {
 		NetworkedController *controller = isle_it.value->controller;
+		if (controller->is_player_controller() == false) {
+			// TODO conside to remove the isle concept.
+			continue;
+		}
+		PlayerController *player_controller = controller->get_player_controller();
 		bool is_main_controller = controller == scene_synchronizer->main_controller;
 
 		// --- Phase one, find snapshot to check. ---
@@ -1447,8 +1466,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 		// Find the best recoverable input_id.
 		uint64_t checkable_input_id = UINT64_MAX;
-		if (controller->last_known_input() != UINT64_MAX && controller->get_stored_input_id(-1) != UINT64_MAX) {
-			int diff = controller->last_known_input() - controller->get_stored_input_id(-1);
+		if (player_controller->last_known_input() != UINT64_MAX && player_controller->get_stored_input_id(-1) != UINT64_MAX) {
+			int diff = player_controller->last_known_input() - player_controller->get_stored_input_id(-1);
 			if (diff >= scene_synchronizer->get_doll_desync_tolerance()) {
 				// This happens to the dolls that may be too behind. Just reset
 				// to the newer state possible with a small padding.
@@ -1456,7 +1475,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 						auto s_snap = server_snaps->rbegin();
 						checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
 						++s_snap) {
-					if (s_snap->input_id < controller->last_known_input()) {
+					if (s_snap->input_id < player_controller->last_known_input()) {
 						checkable_input_id = s_snap->input_id;
 					}
 				}
@@ -1602,7 +1621,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		// --- Phase three, recover and reply. ---
 
 		if (need_recover) {
-			NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(controller->get_stored_input_id(-1)));
+			NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(player_controller->get_stored_input_id(-1)));
 
 			if (recover_controller) {
 				// Put the controlled and the controllers into the nodes to
@@ -1676,8 +1695,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 			// Rewind phase.
 
 			scene_synchronizer->rewinding_in_progress = true;
-			const int remaining_inputs =
-					controller->notify_input_checked(checkable_input_id);
+			const int remaining_inputs = player_controller->notify_input_checked(checkable_input_id);
 			if (client_snaps) {
 				CRASH_COND(client_snaps->size() != size_t(remaining_inputs));
 			} else {
@@ -1762,7 +1780,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 			}
 			scene_synchronizer->reset_in_progress = false;
 
-			controller->notify_input_checked(checkable_input_id);
+			player_controller->notify_input_checked(checkable_input_id);
 		}
 
 		// Popout the server snapshot.

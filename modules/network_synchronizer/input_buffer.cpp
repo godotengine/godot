@@ -104,10 +104,12 @@ void DataBuffer::_bind_methods() {
 }
 
 DataBuffer::DataBuffer() :
+		Object(),
 		bit_offset(0),
 		is_reading(true) {}
 
 DataBuffer::DataBuffer(const BitArray &p_buffer) :
+		Object(),
 		bit_offset(0),
 		is_reading(true),
 		buffer(p_buffer) {}
