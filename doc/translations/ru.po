@@ -5,12 +5,15 @@
 #
 # Alex <Alex.Gorichev@protonmail.com>, 2020.
 # Nikita <Kulacnikita@ya.ru>, 2020.
+# Алексей Смирнов <tir74@mail.ru>, 2020.
+# Chaosus89 <chaosus89@gmail.com>, 2020.
+# John Smith <19georginos97@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-05-24 20:13+0000\n"
-"Last-Translator: Nikita <Kulacnikita@ya.ru>\n"
+"PO-Revision-Date: 2020-07-02 09:17+0000\n"
+"Last-Translator: John Smith <19georginos97@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ru/>\n"
 "Language: ru\n"
@@ -19,7 +22,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
@@ -71,6 +74,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
+"Список основных встроенных функций GDScript. Математические функции и другие "
+"утилиты. Все остальное обеспечивается объектами. (Ключевые слова: "
+"встроенные, глобальные функции.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""
@@ -85,6 +91,16 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает цвет построенный из целочисленных красного, зеленого, синего и "
+"альфа каналов. Каждый канал должен хранить 8 битов информации в диапазоне от "
+"0 до 255. \n"
+"[code]r8[/code] красный канал\n"
+"[code]g8[/code] зеленый канал\n"
+"[code]b8[/code] синий канал\n"
+"[code]a8[/code] альфа канал\n"
+"[codeblock]\n"
+"red = Color8(255, 0, 0)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:42
 msgid ""
@@ -95,6 +111,12 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
+"Возвращает цвет в соответствии со стандартным [code]name[/code] с "
+"[code]alpha[/code] в диапазоне от 0 до 1.\n"
+"[codeblock]\n"
+"red = ColorN(\"red\", 1)\n"
+"[/codeblock]\n"
+"Поддерживаемые имена цветов совпадают с константами, определенными в [Color]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
 msgid ""
@@ -105,6 +127,12 @@ msgid ""
 "a = abs(-1)\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает абсолютное значение параметра [code]s[/code] (то есть значение "
+"без знака, работает для целых и с плавающей точкой).\n"
+"[codeblock]\n"
+"# a равно 1\n"
+"a = abs(-1)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:68
 msgid ""
@@ -115,6 +143,12 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает арккосинус [code]s[/code] в радианах. Используется для получения "
+"угла косинуса [code]s[/code].\n"
+"[codeblock]\n"
+"# c равно 0.523599 или 30 градусов если конвертировать с помощью rad2deg(s)\n"
+"c = acos(0.866025)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:81
 msgid ""
@@ -125,6 +159,12 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает арксинус [code]s[/code] в радианах. Используется для получения "
+"угла синуса [code]s[/code].\n"
+"[codeblock]\n"
+"# s равно 0.523599 или 30 градусов если конвертировать с помощью rad2deg(s)\n"
+"s = asin(0.5)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:96
 msgid ""
@@ -147,6 +187,25 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
+"Проверяет что [code]condition[/code] равно [code]true[/code]. Если "
+"[code]condition[/code] равно [code]false[/code], будет сгенерирована ошибка "
+"и программа приостановится пока вы не продолжите её. Эта функция выполняется "
+"только в отладочных билдах, или когда игра запускается в редакторе. "
+"Используйте её для целей отладки, чтобы убедиться что выражение [code]true[/"
+"code] в течение разработки.\n"
+"Если задан не обязательный аргумент [code]message[/code], то он будет "
+"показан в дополнении к сообщению \"Assertion failed\". В нём вы можете "
+"предоставить дополнительные сведения о том почему проверка была неудачной.\n"
+"[codeblock]\n"
+"# Предположим что вы хотите чтобы скорость (speed) была между 0 и 20\n"
+"speed = -10\n"
+"assert(speed < 20) # Истинно, программа продолжит выполнение\n"
+"assert(speed >= 0) # Ложь, программа будет остановлена\n"
+"assert(speed >= 0 && speed < 20) # Вы можете комбинировать два условных "
+"выражения в одной проверке\n"
+"assert(speed < 20, \"speed = %f, но скоростной лимит равен 20\" % speed) # "
+"Показывает сообщение с уточняющими деталями\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:114
 msgid ""
@@ -159,6 +218,14 @@ msgid ""
 "a = atan(0.5) # a is 0.463648\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает арктангенс [code]s[/code] в радианах. Используется для получения "
+"угла от тангенса угла в тригонометрии: [code]atan(tan(angle)) == angle[/"
+"code].\n"
+"Метод не может знать, в какой квадрант должен попадать угол. Смотрите "
+"[method atan2] если вы хотите всегда получать точный угол.\n"
+"[codeblock]\n"
+"a = atan(0.5) # a равно 0.463648\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:129
 msgid ""
@@ -169,6 +236,12 @@ msgid ""
 "a = atan2(0, -1) # a is 3.141593\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает арктангенс [code]y/x[/code] в радианах. Используется для "
+"получения тангенса угла [code]y/x[/code]. Для вычисления значения, метод "
+"принимает во внимание знак обоих аргументов для определения квадранта.\n"
+"[codeblock]\n"
+"a = atan2(0, -1) # a равно 3.141593\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:143
 msgid ""
@@ -178,6 +251,12 @@ msgid ""
 "not use this option if the serialized object comes from untrusted sources to "
 "avoid potential security threats (remote code execution)."
 msgstr ""
+"Декодирует массив байтов обратно в переменную. Если [code]allow_objects[/"
+"code] равно [code]true[/code] декодирование объектов разрешено.\n"
+"[b]ПРЕДУПРЕЖДЕНИЕ:[/b] Десериализованный объект может содержать исполняемый "
+"код. Не используйте это опцию если сериализованный объект получен из "
+"непроверенных источников, чтобы избежать потенциальный нарушений "
+"безопасности (удаленного выполнения кода)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:155
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:145
@@ -186,6 +265,8 @@ msgid ""
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
+"Преобразует 2D-точку, выраженную в декартовой системе координат (оси X и Y), "
+"в полярную систему координат (расстояние от начала координат и угол)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:164
 msgid ""
@@ -196,6 +277,12 @@ msgid ""
 "i = ceil(1.001) # i is 2\n"
 "[/codeblock]"
 msgstr ""
+"Округляет [code]s[/code] вверх, возвращая наименьшее целое значение, которое "
+"не меньше, чем [code]s[/code].\n"
+"[codeblock]\n"
+"i = ceil(1.45)  # i равно 2\n"
+"i = ceil(1.001) # i равно 2\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:177
 msgid ""
@@ -208,6 +295,14 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
+"Возвращает символ как Строку в выбранной кодировке Юникода (который "
+"совместим с кодировкой ASCII).\n"
+"[codeblock]\n"
+"a = char(65)      # a будет\"A\"\n"
+"a = char(65 + 32) # a будет \"a\"\n"
+"a = char(8364)    # a будет \"€\"\n"
+"[/codeblock]\n"
+"Это обратная операция [method ord]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:196
 msgid ""
@@ -223,6 +318,17 @@ msgid ""
 "a = clamp(speed, 1, 20)\n"
 "[/codeblock]"
 msgstr ""
+"Ограничивает [code]value[/code] и возвращает значение не меньше [code]min[/"
+"code] и не больше [code]max[/code].\n"
+"[codeblock]\n"
+"speed = 1000\n"
+"# a будет 20\n"
+"a = clamp(speed, 1, 20)\n"
+"\n"
+"speed = -10\n"
+"# a будет 1\n"
+"a = clamp(speed, 1, 20)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:216
 msgid ""
@@ -237,6 +343,16 @@ msgid ""
 "print(a.length())\n"
 "[/codeblock]"
 msgstr ""
+"Преобразование из одного типа в другой самым лучшим способом. Параметр "
+"[code]type[/code] использует значения из [enum Variant.Type].\n"
+"[codeblock]\n"
+"a = Vector2(1, 0)\n"
+"# Печатает 1\n"
+"print(a.length())\n"
+"a = convert(a, TYPE_STRING)\n"
+"# Печатает 6 как \"(1, 0)\" из 6 символов\n"
+"print(a.length())\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:233
 msgid ""
@@ -247,6 +363,12 @@ msgid ""
 "print(cos(PI))\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает косинус угла [code]s[/code] в радианах.\n"
+"[codeblock]\n"
+"# Печатает 1, а затем -1\n"
+"print(cos(PI * 2))\n"
+"print(cos(PI))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:247
 msgid ""
@@ -256,10 +378,15 @@ msgid ""
 "print(cosh(1))\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает гиперболический косинус [code]s[/code] в радианах.\n"
+"[codeblock]\n"
+"# Печатает 1.543081\n"
+"print(cosh(1))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:260
 msgid "Converts from decibels to linear energy (audio)."
-msgstr ""
+msgstr "Преобразует децибелы в линейную энергию (аудио)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:273
 msgid ""
@@ -270,6 +397,12 @@ msgid ""
 "a = dectime(60, 10, 0.1))\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает [code]value[/code] уменьшенное на [code]step[/code] * "
+"[code]amount[/code].\n"
+"[codeblock]\n"
+"# a = 59\n"
+"a = dectime(60, 10, 0.1))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:286
 msgid ""
@@ -279,12 +412,19 @@ msgid ""
 "r = deg2rad(180)\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает градусы преобразованные в радианы.\n"
+"[codeblock]\n"
+"# r будет 3.141593\n"
+"r = deg2rad(180)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:299
 msgid ""
 "Converts a previously converted instance to a dictionary, back into an "
 "instance. Useful for deserializing."
 msgstr ""
+"Преобразует ранее преобразованный экземпляр в словарь, обратно в экземпляр. "
+"Полезно для десериализации."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:310
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:90
@@ -316,6 +456,17 @@ msgid ""
 "[b]Note:[/b] This method returns a float. If you need an integer, you can "
 "use [code]int(s)[/code] directly."
 msgstr ""
+"Округляет [code]s[/code] до ближайшего меньшего целого числа и возвращает "
+"[code]s[/code].\n"
+"[codeblock]\n"
+"# a равно 2.0\n"
+"a = floor(2.99)\n"
+"# a равно -3.0\n"
+"a = floor(-2.99)\n"
+"[/codeblock]\n"
+"[b]Обратите внимание:[/b] Этот метод возвращает число с плавающей точкой. "
+"Если вам нужно целое число, вы можете использовать [code]int(s)[/code] "
+"напрямую."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:351
 msgid ""
@@ -327,6 +478,13 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
+"Возвращает остаток с плавающей точкой от деления [code]a/b[/code], сохраняя "
+"знак [code]a[/code].\n"
+"[codeblock]\n"
+"# Остаток - 1.5\n"
+"var remainder = fmod(7, 5.5)\n"
+"[/codeblock]\n"
+"Для операции целочисленного остатка, используйте оператор %."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:367
 msgid ""
@@ -368,6 +526,17 @@ msgid ""
 "print(a.call_func()) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает ссылку на определенную функцию [code]funcname[/code] в узле "
+"[code]instance[/code]. Так как функции не объекты первого класса в "
+"GDScript,  используйте [code]funcref[/code] для хранения [FuncRef] в "
+"переменной и вызывайте её позже.\n"
+"[codeblock]\n"
+"func foo():\n"
+"    return(\"bar\")\n"
+"\n"
+"a = funcref(self, \"foo\")\n"
+"print(a.call_func()) # Печатает bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:412
 msgid ""
@@ -388,6 +557,22 @@ msgid ""
 "source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает массив словарей представляющих текущий стэк вызовов.\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    foo()\n"
+"\n"
+"func foo():\n"
+"    bar()\n"
+"\n"
+"func bar():\n"
+"    print(get_stack())\n"
+"[/codeblock]\n"
+"напечатает\n"
+"[codeblock]\n"
+"[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
+"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:435
 msgid ""
@@ -396,6 +581,10 @@ msgid ""
 "print(hash(\"a\")) # Prints 177670\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает целочисленный хэш переданной переменной.\n"
+"[codeblock]\n"
+"print(hash(\"a\")) # Печатает 177670\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:447
 msgid ""
@@ -414,6 +603,20 @@ msgid ""
 "[, res://test.gd, bar]\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает переданный экземпляр преобразованный в словарь (полезно для "
+"сериализации).\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var d = inst2dict(self)\n"
+"    print(d.keys())\n"
+"    print(d.values())\n"
+"[/codeblock]\n"
+"Печатает:\n"
+"[codeblock]\n"
+"[@subpath, @path, foo]\n"
+"[, res://test.gd, bar]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:468
 msgid ""
@@ -427,6 +630,15 @@ msgid ""
 "    print(inst.foo) # Prints bar\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает Объект, который соответствует [code]instance_id[/code]. Все "
+"объекты имеют уникальный идентификатор экземпляра.\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var id = get_instance_id()\n"
+"    var inst = instance_from_id(id)\n"
+"    print(inst.foo) # Напечатает bar\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:488
 msgid ""
@@ -441,32 +653,50 @@ msgid ""
 "# `ratio` is now 0.75.\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает нормализованное значение с учетом заданного диапазона. Это "
+"противоположно [method lerp].\n"
+"[codeblock]\n"
+"var middle = lerp(20, 30, 0.75)\n"
+"# `middle` сейчас равно 27.5.\n"
+"# Теперь мы притворяемся, что забыли исходное соотношение и хотим вернуть "
+"его обратно.\n"
+"var ratio = inverse_lerp(20, 30, 27.5)\n"
+"# `ratio`сейчас равно 0.75.\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:506
 msgid ""
 "Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are "
 "approximately equal to each other."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:515
 msgid ""
 "Returns whether [code]s[/code] is an infinity value (either positive "
 "infinity or negative infinity)."
 msgstr ""
+"Возвращает, является ли [code]s[/code] значением бесконечности "
+"(положительной или отрицательной)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:524
 msgid ""
 "Returns whether [code]instance[/code] is a valid object (e.g. has not been "
 "deleted from memory)."
 msgstr ""
+"Возвращает, является ли [code]instance[/code] действительным объектом "
+"(например, если он не был удалён из памяти)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:533
 msgid "Returns whether [code]s[/code] is a NaN (Not-A-Number) value."
-msgstr ""
+msgstr "Возвращает, является ли [code]s[/code] значением NaN (не число)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:542
 msgid "Returns [code]true[/code] if [code]s[/code] is zero or almost zero."
 msgstr ""
+"Возвращает [code]true[/code] если [code]s[/code] равно нулю или почти равно "
+"нулю."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:551
 msgid ""
@@ -478,6 +708,14 @@ msgid ""
 "len(a) # Returns 4\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает длину переменной [code]var[/code]. Длина - это количество "
+"символов в строке, количество элементов в массиве, размер словаря и т.д.\n"
+"[b]Примечание:[/b] Генерирует фатальную ошибку, если переменная не может "
+"предоставить длину.\n"
+"[codeblock]\n"
+"a = [1, 2, 3, 4]\n"
+"len(a) # Возвращает 4\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:569
 msgid ""
@@ -493,6 +731,18 @@ msgid ""
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)\n"
 "[/codeblock]"
 msgstr ""
+"Линейная интерполяция между двумя значениями по нормализованному значению. "
+"Это противоположно [method inverse_lerp].\n"
+"Если аргументы [code]от[/code] и [code]до[/code] имеют тип [int] или "
+"[float], возвращаемое значение будет [float].\n"
+"Если оба значения имеют одинаковый векторный тип ([Vector2], [Vector3] или "
+"[Color]), возвращаемое значение будет одного типа ([code]lerp[/code], затем "
+"вызывается векторный тип [code]lerp[/code]).\n"
+"[codeblock]\n"
+"lerp(0, 4, 0.75) # Возвращает 3.0, формула: (0-75%) + (4-75%)\n"
+"lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Возвращает Vector2(2, 3.5), "
+"формула: ((1-50%)+(3-50%)), ((5-50%)+(2-50%))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:588
 msgid ""
@@ -510,6 +760,19 @@ msgid ""
 "    elapsed += delta\n"
 "[/codeblock]"
 msgstr ""
+"Линейная интерполяция между двумя углами (в радианах) по нормализованному "
+"значению.\n"
+"Аналогично [method lerp], но корректно интерполируется, когда углы "
+"охватывают [constant @GDScript.TAU].\n"
+"[codeblock]\n"
+"extends Sprite\n"
+"var elapsed = 0.0\n"
+"func _process(delta):\n"
+"    var min_angle = deg2rad(0.0)\n"
+"    var max_angle = deg2rad(90.0)\n"
+"    rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
+"    elapsed += delta\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:607
 msgid ""
@@ -526,6 +789,18 @@ msgid ""
 "linear2db($Slider.value))\n"
 "[/codeblock]"
 msgstr ""
+"Преобразует из линейной энергии в децибелы (аудио). Это может быть "
+"использовано для реализации ползунков громкости, которые ведут себя "
+"предсказуемо (поскольку громкость не линейная). Пример:\n"
+"[codeblock]\n"
+"# \"Slider\" относится к узлу, который наследует Range, такой как HSlider "
+"или VSlider.\n"
+"# Его диапазон должен быть от 0 до 1.\n"
+"# Измените имя шины, если вы хотите изменить громкость только определенной "
+"шины.\n"
+"AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"Master\"), "
+"linear2db($Slider.value))\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:622
 msgid ""
@@ -539,6 +814,16 @@ msgid ""
 "[b]Important:[/b] The path must be absolute, a local path will just return "
 "[code]null[/code]."
 msgstr ""
+"Загружает ресурс из файловой системы, расположенной по адресу [code]path[/"
+"code].\n"
+"[b]Примечание:[/b] Пути к ресурсам можно получить, щелкнув правой кнопкой "
+"мыши в панели FileSystem и выбрав [b]Копировать путь[/b].\n"
+"[codeblock]\n"
+"# Загружаем сцену с именем main, расположенную в корне каталога проекта.\n"
+"var main = load(\"res://main.tscn\")\n"
+"[/codeblock]\n"
+"[b]Важно:[/b] Путь должен быть абсолютным, локальный путь просто вернет "
+"[code]null[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:637
 msgid ""
@@ -550,6 +835,13 @@ msgid ""
 "log(10) # Returns 2.302585\n"
 "[/codeblock]"
 msgstr ""
+"Натуральный логарифм. Количество времени, необходимое для достижения "
+"определенного уровня непрерывного роста.\n"
+"[b]Примечание:[/b] Это не то же самое, что функция \"log\" в большинстве "
+"калькуляторов, которая использует логарифм с основанием 10.\n"
+"[codeblock]\n"
+"log(10) # Возвращает 2.302585\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:652
 msgid ""
@@ -559,6 +851,11 @@ msgid ""
 "max(-3.99, -4) # Returns -3.99\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает максимальное из двух значений.\n"
+"[codeblock]\n"
+"max(1, 2) # Возвращает 2\n"
+"max(-3.99, -4) # Возвращает -3.99\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:667
 msgid ""
@@ -568,6 +865,11 @@ msgid ""
 "min(-3.99, -4) # Returns -4\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает минимальное из двух значений.\n"
+"[codeblock]\n"
+"min(1, 2) # Возвращает 1\n"
+"min(-3.99, -4) # Возвращает -4\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:684
 msgid ""
@@ -578,6 +880,13 @@ msgid ""
 "move_toward(10, 5, 4) # Returns 6\n"
 "[/codeblock]"
 msgstr ""
+"Перемещает [code]от[/code] в направлении [code]до[/code] на значение "
+"[code]delta[/code].\n"
+"Используйте отрицательное значение [code]delta[/code] для перемещения "
+"вдаль.\n"
+"[codeblock]\n"
+"move_toward(10, 5, 4) # Возвращает 6\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:697
 msgid ""
@@ -588,6 +897,12 @@ msgid ""
 "nearest_po2(5) # Returns 8\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает ближайшую большую степень 2 для целого числа [code]value[/code].\n"
+"[codeblock]\n"
+"nearest_po2(3) # Возвращает 4\n"
+"nearest_po2(4) # Возвращает 4\n"
+"nearest_po2(5) # Возвращает 8\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:711
 msgid ""
@@ -620,6 +935,22 @@ msgid ""
 "    print(\"unexpected results\")\n"
 "[/codeblock]"
 msgstr ""
+"Разбор текста JSON в переменную (используйте [method typeof] для проверки "
+"типа).\n"
+"Имейте в виду, что спецификация JSON не определяет целочисленные или "
+"плавающие типы, а только числовой тип. Следовательно, анализ текста JSON "
+"преобразует все числовые значения в типы [float].\n"
+"Обратите внимание, что объекты JSON не сохраняют порядок ключей, как словари "
+"Godot, поэтому вам не следует полагаться на ключи в определенном порядке, "
+"если словарь построен из JSON. Напротив, массивы JSON сохраняют порядок "
+"своих элементов:\n"
+"[codeblock]\n"
+"p = parse_json('[\"a\", \"b\", \"c\"]')\n"
+"if typeof(p) == TYPE_ARRAY:\n"
+"    print(p[0]) # Напечатает a\n"
+"else:\n"
+"    print(\"unexpected results\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:746
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml:142
@@ -654,6 +985,28 @@ msgid ""
 "4 1\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает целочисленный модуль [code]a/b[/code], который одинаково "
+"переносится как в положительный, так и в отрицательный.\n"
+"[codeblock]\n"
+"var i = -6\n"
+"while i < 5:\n"
+"    prints(i, posmod(i, 3))\n"
+"    i += 1\n"
+"[/codeblock]\n"
+"Produces:\n"
+"[codeblock]\n"
+"-6 0\n"
+"-5 1\n"
+"-4 2\n"
+"-3 0\n"
+"-2 1\n"
+"-1 2\n"
+"0 0\n"
+"1 1\n"
+"2 2\n"
+"3 0\n"
+"4 1\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:788
 msgid ""
@@ -662,6 +1015,11 @@ msgid ""
 "pow(2, 5) # Returns 32\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает результат возведения числа [code]x[/code] в степени [code]y[/"
+"code].\n"
+"[codeblock]\n"
+"pow(2, 5) # Возвращает 32\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:800
 msgid ""
@@ -674,6 +1032,14 @@ msgid ""
 "var main = preload(\"res://main.tscn\")\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает ресурс из файловой системы, который загружается во время "
+"синтаксического анализа.\n"
+"[b]Примечание:[/b] Пути к ресурсам можно получить, щелкнув правой кнопкой "
+"мыши ресурс на панели активов (Asset) и выбрав \"Копировать путь\".\n"
+"[codeblock]\n"
+"# Загружает сцену с именем main, расположенную в корне каталога проекта.\n"
+"var main = preload(\"res://main.tscn\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:812
 msgid ""
@@ -684,6 +1050,12 @@ msgid ""
 "print(\"a\", \"b\", a) # Prints ab[1, 2, 3]\n"
 "[/codeblock]"
 msgstr ""
+"Преобразует один или более аргумент в строки наилучшим возможным способом и "
+"печатает их в консоль.\n"
+"[codeblock]\n"
+"a = [1, 2, 3]\n"
+"print(\"a\", \"b\", a) # Печатает ab[1, 2, 3]\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:823
 msgid "Like [method print], but prints only when used in debug mode."
@@ -5897,7 +6269,7 @@ msgstr ""
 
 #: doc/classes/Array.xml:4
 msgid "Generic array datatype."
-msgstr ""
+msgstr "Универсальный тип массива."
 
 #: doc/classes/Array.xml:7
 msgid ""
@@ -5924,42 +6296,63 @@ msgid ""
 "array which can be modified independently of the original array, use [method "
 "duplicate]."
 msgstr ""
+"Универсальный массив, который может содержать множество элементов любого "
+"типа, с доступом по числовому индексу начинающегося с 0. Отрицательные "
+"индексы могут быть использованы для отсчёта с конца, как и Python (-1 "
+"последний элемент, -2 на предпоследний, итд.).\n"
+"[b]Пример:[/b]\n"
+"[codeblock]\n"
+"var array = [\"Одни\", 2, 3, \"Четыре\"]\n"
+"print(array[0]) # Один.\n"
+"print(array[2]) # 3.\n"
+"print(array[-1]) # Четыре.\n"
+"array[2] = \"Three\"\n"
+"print(array[-2]) # Три.\n"
+"[/codeblock]\n"
+"Массивы могут быть объединены через оператор [code]+[/code]:\n"
+"[codeblock]\n"
+"var array1 = [\"Один\", 2]\n"
+"var array2 = [3, \"Четыре\"]\n"
+"print(array1 + array2) # [\"Один\", 2, 3, \"Четыре\"]\n"
+"[/codeblock]\n"
+"[b]Заметка:[/b] Массивы всегда передаются по ссылке. Для получения копии "
+"независимой от начального массива используйте [method duplicate]."
 
 #: doc/classes/Array.xml:34
 msgid "Constructs an array from a [PackedColorArray]."
-msgstr ""
+msgstr "Создаёт массив из [PackedColorArray]."
 
 #: doc/classes/Array.xml:43
 msgid "Constructs an array from a [PackedVector3Array]."
-msgstr ""
+msgstr "Создаёт массив из [PackedVector3Array]."
 
 #: doc/classes/Array.xml:52
 msgid "Constructs an array from a [PackedVector2Array]."
-msgstr ""
+msgstr "Создаёт массив из [PackedVector2Array]."
 
 #: doc/classes/Array.xml:61
 msgid "Constructs an array from a [PackedStringArray]."
-msgstr ""
+msgstr "Создаёт массив из [PackedStringArray]."
 
 #: doc/classes/Array.xml:70
 msgid "Constructs an array from a [PackedFloat64Array]."
-msgstr ""
+msgstr "Создаёт массив из [PackedFloat64Array]."
 
 #: doc/classes/Array.xml:79
 msgid "Constructs an array from a [PackedFloat32Array]."
-msgstr ""
+msgstr "Создаёт массив из [PackedFloat32Array]."
 
 #: doc/classes/Array.xml:88
 msgid "Constructs an array from a [PackedInt64Array]."
-msgstr ""
+msgstr "Создаёт массив из [PackedInt64Array]."
 
 #: doc/classes/Array.xml:97
 msgid "Constructs an array from a [PackedInt32Array]."
-msgstr ""
+msgstr "Создаёт массив из [PackedInt32Array]."
 
 #: doc/classes/Array.xml:106
 msgid "Constructs an array from a [PackedByteArray]."
-msgstr ""
+msgstr "Создаёт массив из [PackedByteArray]."
 
 #: doc/classes/Array.xml:115 doc/classes/PackedByteArray.xml:28
 #: doc/classes/PackedColorArray.xml:28 doc/classes/PackedFloat32Array.xml:29
@@ -5968,13 +6361,15 @@ msgstr ""
 #: doc/classes/PackedVector2Array.xml:28 doc/classes/PackedVector3Array.xml:28
 msgid ""
 "Appends an element at the end of the array (alias of [method push_back])."
-msgstr ""
+msgstr "Добавляет элемент в конец массива (псевдоним [method push_back])."
 
 #: doc/classes/Array.xml:122
 msgid ""
 "Returns the last element of the array, or [code]null[/code] if the array is "
 "empty."
 msgstr ""
+"Возвращает последний элемент массива, или[code]null[/code] если массив "
+"пустой."
 
 #: doc/classes/Array.xml:133
 msgid ""
@@ -5986,6 +6381,14 @@ msgid ""
 "[b]Note:[/b] Calling [method bsearch] on an unsorted array results in "
 "unexpected behavior."
 msgstr ""
+"Находит индекс существующего значения (или индекс вставки который "
+"поддерживает порядок сортировки, если значение ещё не установлено в массиве) "
+"используя бинарный поиск. Дополнительно, может быть передан спецификатор "
+"[code]before[/code]. Если он будет установлен в [code]false[/code], "
+"возвращаемый индекс придёт после всех существующих вхождений значения в "
+"массиве.\n"
+"[b]Заметка:[/b] Вызов [method bsearch] на неотсортированном массиве приведёт "
+"к неопределённому поведению."
 
 #: doc/classes/Array.xml:149
 msgid ""
@@ -6000,16 +6403,29 @@ msgid ""
 "[b]Note:[/b] Calling [method bsearch] on an unsorted array results in "
 "unexpected behavior."
 msgstr ""
+"Находит индекс существующего значения (или индекс вставки который "
+"поддерживает порядок сортировки, если значение ещё не установлено в массиве) "
+"используя бинарный поиск и пользовательский метод сравнения. Дополнительно, "
+"может быть передан спецификатор [code]before[/code]. Если он будет "
+"установлен в [code]false[/code], возвращаемый индекс придёт после всех "
+"существующих вхождений значения в массиве. Пользовательский метод принимает "
+"два аргумента (элемент из массива и значение для поиска) и должен возвращать "
+"[code]true[/code] если первый аргумент меньше чем второй, иначе возвращает "
+"[code]false[/code].\n"
+"[b]Заметка:[/b] Вызов [method bsearch] на неотсортированном массиве приведёт "
+"к неопределённому поведению."
 
 #: doc/classes/Array.xml:157
 msgid ""
 "Clears the array. This is equivalent to using [method resize] with a size of "
 "[code]0[/code]."
 msgstr ""
+"Очищает массив. Это эквивалентно использованию [method resize] с размером "
+"[code]0[/code]."
 
 #: doc/classes/Array.xml:166
 msgid "Returns the number of times an element is in the array."
-msgstr ""
+msgstr "Возвращает количество раз когда элемент встречается в массиве."
 
 #: doc/classes/Array.xml:175
 msgid ""
@@ -6021,6 +6437,13 @@ msgid ""
 "modifying a sub-array or dictionary in the copy will also impact those "
 "referenced in the source array."
 msgstr ""
+"Возвращает копию массива.\n"
+"Если [code]deep[/code] установлен в [code]true[/code], будет выполнено "
+"глубокое копирование: все вложенные массивы и словари будет сдублицированны "
+"и не будут ссылаться на изначальный массив. Если [code]false[/code], будет "
+"создана поверхностная копия и ссылки на изначальные вложенные массивы и "
+"словари будут сохранены, так что модификация под-массива или словаря будет "
+"также влиять на их ссылки в массиве источнике."
 
 #: doc/classes/Array.xml:183 doc/classes/PackedByteArray.xml:64
 #: doc/classes/PackedColorArray.xml:44 doc/classes/PackedFloat32Array.xml:45
@@ -6028,29 +6451,36 @@ msgstr ""
 #: doc/classes/PackedInt64Array.xml:45 doc/classes/PackedStringArray.xml:44
 #: doc/classes/PackedVector2Array.xml:44 doc/classes/PackedVector3Array.xml:44
 msgid "Returns [code]true[/code] if the array is empty."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если массив пустой."
 
 #: doc/classes/Array.xml:192
 msgid "Removes the first occurrence of a value from the array."
-msgstr ""
+msgstr "Удаляет первое вхождение значения в массиве."
 
 #: doc/classes/Array.xml:203
 msgid ""
 "Searches the array for a value and returns its index or [code]-1[/code] if "
 "not found. Optionally, the initial search index can be passed."
 msgstr ""
+"Осуществляет поиск значения в массиве и возвращает индекс элемента или "
+"[code]-1[/code] если он не был найден. Дополнительно, может быть передан "
+"индекс с которого будет начат поиск."
 
 #: doc/classes/Array.xml:212
 msgid ""
 "Searches the array in reverse order for a value and returns its index or "
 "[code]-1[/code] if not found."
 msgstr ""
+"Осуществляет поиск значения по массиву в обратном порядке и возвращает "
+"индекс злемента или [code]-1[/code] если он не был найден."
 
 #: doc/classes/Array.xml:219
 msgid ""
 "Returns the first element of the array, or [code]null[/code] if the array is "
 "empty."
 msgstr ""
+"Возвращает первый элемент в массиве, или [code]null[/code] если массив "
+"пустой."
 
 #: doc/classes/Array.xml:228
 msgid ""
@@ -6069,16 +6499,31 @@ msgid ""
 "    pass\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает [code]true[/code] если массив содержит искомое значение.\n"
+"[codeblock]\n"
+"[\"inside\", 7].has(\"inside\") == true\n"
+"[\"inside\", 7].has(\"outside\") == false\n"
+"[\"inside\", 7].has(7) == true\n"
+"[\"inside\", 7].has(\"7\") == false\n"
+"[/codeblock]\n"
+"[b]Заметка:[/b] Это эквивалентно использованию оперетора [code]in[/code]:\n"
+"[codeblock]\n"
+"# Будет вычислено `true`.\n"
+"if 2 in [2, 4, 6, 8]:\n"
+"    pass\n"
+"[/codeblock]"
 
 #: doc/classes/Array.xml:247
 msgid "Returns a hashed integer value representing the array contents."
-msgstr ""
+msgstr "Возвращает целочисленный хэш представляющий содержимое массива."
 
 #: doc/classes/Array.xml:258
 msgid ""
 "Inserts a new element at a given position in the array. The position must be "
 "valid, or at the end of the array ([code]pos == size()[/code])."
 msgstr ""
+"Вставляет новый элемент в указанную позицию массива. Позиция должна быть "
+"корректна, или указывать на конец массива ([code]pos == size()[/code])."
 
 #: doc/classes/Array.xml:265 doc/classes/PackedByteArray.xml:107
 #: doc/classes/PackedColorArray.xml:62 doc/classes/PackedFloat32Array.xml:63
@@ -6086,7 +6531,7 @@ msgstr ""
 #: doc/classes/PackedInt64Array.xml:63 doc/classes/PackedStringArray.xml:62
 #: doc/classes/PackedVector2Array.xml:62 doc/classes/PackedVector3Array.xml:62
 msgid "Reverses the order of the elements in the array."
-msgstr ""
+msgstr "Инвертирует порядок элементов в массиве."
 
 #: doc/classes/Array.xml:272
 msgid ""
@@ -6094,6 +6539,9 @@ msgid ""
 "comparable types. If the elements can't be compared, [code]null[/code] is "
 "returned."
 msgstr ""
+"Возвращает максимальное значение содержащееся в массиве, если все элементы "
+"могут быть сравнены друг с другом. Если элементы не могут быть сравнены, "
+"возвращает [code]null[/code]."
 
 #: doc/classes/Array.xml:279
 msgid ""
@@ -6101,27 +6549,34 @@ msgid ""
 "comparable types. If the elements can't be compared, [code]null[/code] is "
 "returned."
 msgstr ""
+"Возвращает минимальное значение содержащееся в массиве, если все элементы "
+"могут быть сравнены друг с другом. Если элементы не могут быть сравнены, "
+"возвращает [code]null[/code]."
 
 #: doc/classes/Array.xml:286
 msgid ""
 "Removes and returns the last element of the array. Returns [code]null[/code] "
 "if the array is empty."
 msgstr ""
+"Удаляет и возвращает последний элемент массива. Возвращает [code]null[/code] "
+"если массив пустой."
 
 #: doc/classes/Array.xml:293
 msgid ""
 "Removes and returns the first element of the array. Returns [code]null[/"
 "code] if the array is empty."
 msgstr ""
+"Удаляет и возвращает первый элемент массива. Возвращает [code]null[/code] "
+"если массив пустой."
 
 #: doc/classes/Array.xml:302 doc/classes/PackedByteArray.xml:116
 #: doc/classes/PackedFloat32Array.xml:72 doc/classes/PackedFloat64Array.xml:72
 msgid "Appends an element at the end of the array."
-msgstr ""
+msgstr "Добавляет элемент в конец массива."
 
 #: doc/classes/Array.xml:311
 msgid "Adds an element at the beginning of the array."
-msgstr ""
+msgstr "Добавляет элемент в начало массива."
 
 #: doc/classes/Array.xml:320 doc/classes/PackedByteArray.xml:125
 #: doc/classes/PackedColorArray.xml:80 doc/classes/PackedFloat32Array.xml:81
@@ -6129,7 +6584,7 @@ msgstr ""
 #: doc/classes/PackedInt64Array.xml:81 doc/classes/PackedStringArray.xml:80
 #: doc/classes/PackedVector2Array.xml:80 doc/classes/PackedVector3Array.xml:80
 msgid "Removes an element from the array by index."
-msgstr ""
+msgstr "Удаляет элемент из массива по индексу."
 
 #: doc/classes/Array.xml:329
 msgid ""
@@ -6137,6 +6592,9 @@ msgid ""
 "size is smaller, elements are cleared, if bigger, new elements are "
 "[code]null[/code]."
 msgstr ""
+"Изменяет размер массива чтобы он мог содержать другое число элементов. Если "
+"размер массива уменьшен, элементы будут очищены, если больший, новые "
+"элементы установятся в [code]null[/code]."
 
 #: doc/classes/Array.xml:340
 msgid ""
@@ -6144,6 +6602,9 @@ msgid ""
 "passed. If negative, the start index is considered relative to the end of "
 "the array."
 msgstr ""
+"Осуществляет поиск значения по массиву в обратном порядке. Дополнительно, "
+"может быть передан начальный индекс поиска. Если он будет отрицательный "
+"поиск будет осуществляться относительно конца массива."
 
 #: doc/classes/Array.xml:347
 msgid ""
@@ -6152,10 +6613,15 @@ msgid ""
 "@GDScript.randi]. Call [method @GDScript.randomize] to ensure that a new "
 "seed will be used each time if you want non-reproducible shuffling."
 msgstr ""
+"Сдвигает элементы массива в случайном порядке. Этот метод использует "
+"глобальный генератор случайных чисел общим для таких методов как [method "
+"@GDScript.randi]. Вызовите [method @GDScript.randomize] чтобы новое зерно "
+"генератора было использовано каждый раз если вы хотите не-повторяющихся "
+"сдвигов."
 
 #: doc/classes/Array.xml:354
 msgid "Returns the number of elements in the array."
-msgstr ""
+msgstr "Возвращает число элементов в массиве."
 
 #: doc/classes/Array.xml:369
 msgid ""
@@ -6164,6 +6630,10 @@ msgid ""
 "and upper index are inclusive, with the [code]step[/code] describing the "
 "change between indices while slicing."
 msgstr ""
+"Создаёт дубликат под-множества описанного в функции и возвращает его в "
+"массиве, делает глубокую копию массива если [code]deep[/code] установлен в "
+"[code]true[/code]. Включает нижние и верхние индексы, а [code]step[/code] "
+"описывает шаг между индексами среза."
 
 #: doc/classes/Array.xml:376
 msgid ""
@@ -6177,6 +6647,16 @@ msgid ""
 "print(strings) # Prints [string1, string10, string11, string2]\n"
 "[/codeblock]"
 msgstr ""
+"Сортирует массив.\n"
+"[b]Заметка:[/b] Строки сортируются в алфавитном порядке (в отличие от "
+"естественного порядка). Это может привести к нежелательному поведению когда "
+"строки в массиве оканчивается последовательностью чисел. Рассмотрим "
+"следующий пример:\n"
+"[codeblock]\n"
+"var strings = [\"string1\", \"string2\", \"string10\", \"string11\"]\n"
+"strings.sort()\n"
+"print(strings) # Prints [string1, string10, string11, string2]\n"
+"[/codeblock]"
 
 #: doc/classes/Array.xml:393
 msgid ""
@@ -6199,6 +6679,24 @@ msgid ""
 "print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].\n"
 "[/codeblock]"
 msgstr ""
+"Сортирует массив используя пользовательский метод. Аргументы - это объект "
+"который содержит метод и имя подобного метода. Пользовательский метод "
+"принимает два аргумента (пара элементов из массива) и должен возвращать "
+"[code]true[/code] или [code]false[/code].\n"
+" [b]Заметка:[/b] вы не можете возвращать случайное значение так как алгоритм "
+"сортировки кучи предполагает детереминированный результат. Если вы сделаете "
+"это приведет к неопределённому поведению.\n"
+"[codeblock]\n"
+"class MyCustomSorter:\n"
+"    static func sort_ascending(a, b):\n"
+"        if a[0] < b[0]:\n"
+"            return true\n"
+"        return false\n"
+"\n"
+"var my_items = [[5, \"Картофель\"], [9, \"Рис\"], [4, \"Помидор\"]]\n"
+"my_items.sort_custom(MyCustomSorter, \"sort_ascending\")\n"
+"print(my_items) # Prints [[4, Помидор], [5, Картофель], [9, Рис]].\n"
+"[/codeblock]"
 
 #: doc/classes/ArrayMesh.xml:4
 msgid ""
@@ -40492,7 +40990,7 @@ msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml:4
 msgid "A class for generating pseudo-random numbers."
-msgstr ""
+msgstr "Класс для генерации псевдо-случайных чисел."
 
 #: doc/classes/RandomNumberGenerator.xml:7
 msgid ""
@@ -40510,18 +41008,35 @@ msgid ""
 "    var my_random_number = rng.randf_range(-10.0, 10.0)\n"
 "[/codeblock]"
 msgstr ""
+"RandomNumberGenerator это класс для генерации псевдо-случайных чисел. В "
+"настоящее время он использует алгоритм [url=http://www.pcg-random."
+"org/]PCG32[/url].\n"
+"[b]Заметка:[/b] Лежащий в основе алгоритм это деталь реализации. Как "
+"результат, он не должен меняться на других версиях Godot.\n"
+"Для генерации случайного числа с плавающей точкой (в определённом диапазоне) "
+"в зависимости от зерна основанного на времени:\n"
+"[codeblock]\n"
+"var rng = RandomNumberGenerator.new()\n"
+"func _ready():\n"
+"    rng.randomize()\n"
+"    var my_random_number = rng.randf_range(-10.0, 10.0)\n"
+"[/codeblock]"
 
 #: doc/classes/RandomNumberGenerator.xml:24
 msgid ""
 "Generates a pseudo-random float between [code]0.0[/code] and [code]1.0[/"
 "code] (inclusive)."
 msgstr ""
+"Генерирует псевдо-случайное число с плавающей точкой между [code]0.0[/code] "
+"и [code]1.0[/code] (включительно)."
 
 #: doc/classes/RandomNumberGenerator.xml:35
 msgid ""
 "Generates a pseudo-random float between [code]from[/code] and [code]to[/"
 "code] (inclusive)."
 msgstr ""
+"Генерирует псевдо-случайное число с плавающей точкой между [code]from[/code] "
+"и [code]to[/code] (включительно)."
 
 #: doc/classes/RandomNumberGenerator.xml:46
 msgid ""
@@ -40530,22 +41045,31 @@ msgid ""
 "specified [code]mean[/code] and a standard [code]deviation[/code]. This is "
 "also called Gaussian distribution."
 msgstr ""
+"Генерирует псевдо-случайное число с плавающей точкой методом [url=https://en."
+"wikipedia.org/wiki/Normal_distribution]нормального[/url] распределения, "
+"используя преобразование Бокса-Мюллера с указанным [code]mean[/code] и "
+"стандартным [code]deviation[/code]. Это также называется Гауссовым "
+"распределением."
 
 #: doc/classes/RandomNumberGenerator.xml:53
 msgid ""
 "Generates a pseudo-random 32-bit unsigned integer between [code]0[/code] and "
 "[code]4294967295[/code] (inclusive)."
 msgstr ""
+"Генерирует псевдо-случайное 32-битное без-знаковое целочисленное число между "
+"[code]0[/code] и [code]4294967295[/code] (включительно)."
 
 #: doc/classes/RandomNumberGenerator.xml:64
 msgid ""
 "Generates a pseudo-random 32-bit signed integer between [code]from[/code] "
 "and [code]to[/code] (inclusive)."
 msgstr ""
+"Генерирует псевдо-случайное 32-битное знаковое целочисленное число между "
+"[code]from[/code] и [code]to[/code] (включительно)."
 
 #: doc/classes/RandomNumberGenerator.xml:71
 msgid "Setups a time-based seed to generator."
-msgstr ""
+msgstr "Устанавливает основанное на времени зерно генератора."
 
 #: doc/classes/RandomNumberGenerator.xml:77
 msgid ""
@@ -40555,6 +41079,12 @@ msgid ""
 "similar random streams given similar seeds. Consider using a hash function "
 "to improve your seed quality if they're sourced externally."
 msgstr ""
+"Зерно используемое генератором случайных чисел. Данное зерно будет "
+"предоставлять воспроизводимую последовательность псевдо-случайных чисел.\n"
+"[b]Заметка:[/b] Генератор не имеет эффекта лавины, и может производить "
+"одинаковые потоки случайных чисел используя одинаковые зёрна. Используйте "
+"функцию хэширования для улучшения качества зерен если они получены из "
+"внешних источников."
 
 #: doc/classes/Range.xml:4
 msgid "Abstract base class for range-based controls."
@@ -53411,6 +53941,8 @@ msgstr ""
 #: doc/classes/Vector2.xml:4
 msgid "Vector used for 2D math using floating point coordinates."
 msgstr ""
+"Вектор используемый для 2D математики с использованием чисел с плавающей "
+"точкой."
 
 #: doc/classes/Vector2.xml:7
 msgid ""
@@ -53422,21 +53954,31 @@ msgid ""
 "code] if it's equal to [code]Vector2(0, 0)[/code]. Otherwise, a Vector2 will "
 "always evaluate to [code]true[/code]."
 msgstr ""
+"2-компонентная структура которая используется для представления позиции в 2D "
+"пространстве или любой другой пары числовых значений.\n"
+"Она использует числа с плавающей точкой. Используйте [Vector2i] если вам "
+"нужны целочисленные координаты.\n"
+"[b]Заметка:[/b] В контексте булевых значений, Vector2 будет преобразован в "
+"[code]false[/code] если он равен [code]Vector2(0, 0)[/code]. Иначе, Vector2 "
+"всегда будет преобразован в [code]true[/code]."
 
 #: doc/classes/Vector2.xml:21
 msgid "Constructs a new [Vector2] from [Vector2i]."
-msgstr ""
+msgstr "Создаёт новый [Vector2] из [Vector2i]."
 
 #: doc/classes/Vector2.xml:32
 msgid ""
 "Constructs a new [Vector2] from the given [code]x[/code] and [code]y[/code]."
 msgstr ""
+"Создаёт новый [Vector2] используя заданные [code]x[/code] и [code]y[/code]."
 
 #: doc/classes/Vector2.xml:39 doc/classes/Vector2i.xml:39
 #: doc/classes/Vector3.xml:41
 msgid ""
 "Returns a new vector with all components in absolute values (i.e. positive)."
 msgstr ""
+"Возвращает новый вектор в котором все компоненты будут абсолютными "
+"значениями (т.е положительными)."
 
 #: doc/classes/Vector2.xml:46
 msgid ""
@@ -53445,38 +53987,45 @@ msgid ""
 "Equivalent to the result of [method @GDScript.atan2] when called with the "
 "vector's [member x] and [member y] as parameters: [code]atan2(x, y)[/code]."
 msgstr ""
+"Возвращает угол вектор в радианах с учётом оси X, или вектора [code](1, 0)[/"
+"code].\n"
+"Аналогично результату [method @GDScript.atan2] который вызван с компонентами "
+"вектора [member x] и [member y] как параметры: [code]atan2(x, y)[/code]."
 
 #: doc/classes/Vector2.xml:56
 msgid "Returns the angle in radians between the two vectors."
-msgstr ""
+msgstr "Возвращает угол в радианах между двумя векторами."
 
 #: doc/classes/Vector2.xml:65
 msgid ""
 "Returns the angle in radians between the line connecting the two points and "
 "the X coordinate."
 msgstr ""
+"Возвращает угол в радианах между линией соединяющей две точки и X координату."
 
 #: doc/classes/Vector2.xml:72 doc/classes/Vector2i.xml:46
 msgid "Returns the ratio of [member x] to [member y]."
-msgstr ""
+msgstr "Возвращает соотношение [member x] к [member y]."
 
 #: doc/classes/Vector2.xml:81 doc/classes/Vector3.xml:59
 msgid ""
 "Returns the vector \"bounced off\" from a plane defined by the given normal."
 msgstr ""
+"Возвращает вектор \"отскока\" от плоскости определённой заданной нормалью."
 
 #: doc/classes/Vector2.xml:88
 msgid "Returns the vector with all components rounded up."
-msgstr ""
+msgstr "Возвращает вектор в котором все компоненты округлены вверх."
 
 #: doc/classes/Vector2.xml:97
 msgid "Returns the vector with a maximum length."
-msgstr ""
+msgstr "Возвращает вектор с максимальной длиной."
 
 #: doc/classes/Vector2.xml:106
 msgid ""
 "Returns the 2-dimensional analog of the cross product with the given vector."
 msgstr ""
+"Возвращает 2-мерный аналог векторного произведения с указанным вектором."
 
 #: doc/classes/Vector2.xml:121
 msgid ""
@@ -53485,11 +54034,17 @@ msgid ""
 "result at position [code]t[/code]. [code]t[/code] is in the range of "
 "[code]0.0 - 1.0[/code], representing the amount of interpolation."
 msgstr ""
+"Кубическое сглаживание между этим вектором и [code]b[/code] используя "
+"[code]pre_a[/code] и [code]post_b[/code] для управления. Возвращает "
+"результат на позиции [code]t[/code]. [code]t[/code] лежит в диапазоне "
+"[code]0.0 - 1.0[/code] и представляет силу интерполяции."
 
 #: doc/classes/Vector2.xml:130 doc/classes/Vector3.xml:99
 msgid ""
 "Returns the normalized vector pointing from this vector to [code]b[/code]."
 msgstr ""
+"Возвращает нормализованный вектор указывающий из этого вектора в вектор "
+"[code]b[/code]."
 
 #: doc/classes/Vector2.xml:139
 msgid ""
@@ -53497,18 +54052,21 @@ msgid ""
 "over [method distance_to] if you need to sort vectors or need the squared "
 "distance for some formula."
 msgstr ""
+"Возвращает расстояние в квадрате до [code]b[/code]. Эта функция "
+"предпочтительнее чем [method distance_to] если вам нужно сортировать векторы "
+"или нужно расстояние в квадрате для какой-то формулы."
 
 #: doc/classes/Vector2.xml:148
 msgid "Returns the distance to vector [code]b[/code]."
-msgstr ""
+msgstr "Возвращает расстояние до вектора [code]b[/code]."
 
 #: doc/classes/Vector2.xml:157
 msgid "Returns the dot product with vector [code]b[/code]."
-msgstr ""
+msgstr "Возвращает скалярное произведение с вектором [code]b[/code]."
 
 #: doc/classes/Vector2.xml:164
 msgid "Returns the vector with all components rounded down."
-msgstr ""
+msgstr "Возвращает вектор в котором все компоненты округлены вниз."
 
 #: doc/classes/Vector2.xml:173 doc/classes/Vector3.xml:149
 msgid ""
@@ -53516,20 +54074,26 @@ msgid ""
 "approximately equal, by running [method @GDScript.is_equal_approx] on each "
 "component."
 msgstr ""
+"Возвращает [code]true[/code] если этот вектор и [code]v[/code] "
+"приблизительно равны, запуская [method @GDScript.is_equal_approx] для "
+"каждого компонента."
 
 #: doc/classes/Vector2.xml:180 doc/classes/Vector3.xml:156
 msgid "Returns [code]true[/code] if the vector is normalized."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если вектор нормализован."
 
 #: doc/classes/Vector2.xml:187 doc/classes/Vector3.xml:163
 msgid "Returns the vector's length."
-msgstr ""
+msgstr "Возвращает длину вектора."
 
 #: doc/classes/Vector2.xml:194
 msgid ""
 "Returns the vector's length squared. Prefer this method over [method length] "
 "if you need to sort vectors or need the squared length for some formula."
 msgstr ""
+"Возвращает длину вектора в квадрате. Эта функция предпочтительнее чем "
+"[method length] если вам нужно сортировать вектора или нужна длина в "
+"квадрате для какой-то формулы."
 
 #: doc/classes/Vector2.xml:205
 msgid ""
@@ -53537,50 +54101,66 @@ msgid ""
 "[code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of "
 "[code]0.0 - 1.0[/code], representing the amount of interpolation."
 msgstr ""
+"Возвращает результат линейного сглаживания между этим вектором и [code]b[/"
+"code] на значение [code]t[/code]. [code]t[/code] это диапазон [code]0.0 - "
+"1.0[/code], представляющий силу сглаживания."
 
 #: doc/classes/Vector2.xml:216 doc/classes/Vector3.xml:206
 msgid ""
 "Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] "
 "amount."
 msgstr ""
+"Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
+"code]."
 
 #: doc/classes/Vector2.xml:223 doc/classes/Vector3.xml:213
 msgid ""
 "Returns the vector scaled to unit length. Equivalent to [code]v / v.length()"
 "[/code]."
 msgstr ""
+"Возвращает вектор уменьшенный до единичной длины. Эквивалентно [code]v / v."
+"length()[/code]."
 
 #: doc/classes/Vector2.xml:232 doc/classes/Vector3.xml:231
 msgid ""
 "Returns a vector composed of the [code]fposmod[/code] of this vector's "
 "components and [code]mod[/code]."
 msgstr ""
+"Возвращает вектор построенный через [code]fposmod[/code] на исходных "
+"компонентах вектора и [code]mod[/code]."
 
 #: doc/classes/Vector2.xml:241 doc/classes/Vector3.xml:240
 msgid ""
 "Returns a vector composed of the [code]fposmod[/code] of this vector's "
 "components and [code]modv[/code]'s components."
 msgstr ""
+"Возвращает вектор построенный через [code]fposmod[/code] на исходных "
+"компонентах вектора и компонентах [code]modv[/code]."
 
 #: doc/classes/Vector2.xml:250 doc/classes/Vector3.xml:249
 msgid "Returns the vector projected onto the vector [code]b[/code]."
-msgstr ""
+msgstr "Возвращает вектор спроецированный на вектор [code]b[/code]."
 
 #: doc/classes/Vector2.xml:259 doc/classes/Vector3.xml:258
 msgid "Returns the vector reflected from a plane defined by the given normal."
 msgstr ""
+"Возвращает вектор отраженный от плоскости определенной заданной нормалью."
 
 #: doc/classes/Vector2.xml:268
 msgid ""
 "Returns the vector rotated by [code]phi[/code] radians. See also [method "
 "@GDScript.deg2rad]."
 msgstr ""
+"Возвращает вектор вращения на [code]phi[/code] радиан. См. также [method "
+"@GDScript.deg2rad]."
 
 #: doc/classes/Vector2.xml:275 doc/classes/Vector3.xml:276
 msgid ""
 "Returns the vector with all components rounded to the nearest integer, with "
 "halfway cases rounded away from zero."
 msgstr ""
+"Возвращает вектор в котором все компоненты округлены до ближайшего "
+"целочисленного значения."
 
 #: doc/classes/Vector2.xml:282 doc/classes/Vector2i.xml:53
 #: doc/classes/Vector3.xml:283 doc/classes/Vector3i.xml:55
@@ -53588,6 +54168,8 @@ msgid ""
 "Returns the vector with each component set to one or negative one, depending "
 "on the signs of the components."
 msgstr ""
+"Возвращает вектор в котором все компоненты установлены в 1 или -1, в "
+"зависимости от знаков перед компонентами исходного вектора."
 
 #: doc/classes/Vector2.xml:293 doc/classes/Vector3.xml:294
 msgid ""
@@ -53596,20 +54178,25 @@ msgid ""
 "[code]0.0 - 1.0[/code], representing the amount of interpolation.\n"
 "[b]Note:[/b] Both vectors must be normalized."
 msgstr ""
+"Возвращает результат сферического линейного сглаживания между этим вектором "
+"и [code]b[/code], на значение [code]t[/code]. [code]t[/code] лежит в "
+"диапазоне [code]0.0 - 1.0[/code], и представляет силу сглаживания.\n"
+"[b]Заметка:[/b] Оба вектора должны быть нормализованы."
 
 #: doc/classes/Vector2.xml:303 doc/classes/Vector3.xml:304
 msgid ""
 "Returns the component of the vector along a plane defined by the given "
 "normal."
 msgstr ""
+"Возвращает компоненты вектора вдоль плоскости определённой заданной нормалью."
 
 #: doc/classes/Vector2.xml:312 doc/classes/Vector3.xml:313
 msgid "Returns the vector snapped to a grid with the given size."
-msgstr ""
+msgstr "Возвращает вектор привязанный к сетке с заданным размером."
 
 #: doc/classes/Vector2.xml:319
 msgid "Returns a perpendicular vector."
-msgstr ""
+msgstr "Возвращает перпендикулярный вектор."
 
 #: doc/classes/Vector2.xml:325 doc/classes/Vector2i.xml:59
 #: doc/classes/Vector3.xml:326 doc/classes/Vector3i.xml:61
@@ -53617,6 +54204,7 @@ msgid ""
 "The vector's X component. Also accessible by using the index position [code]"
 "[0][/code]."
 msgstr ""
+"X компонент вектора. Может быть доступен через индекс [code][0][/code]."
 
 #: doc/classes/Vector2.xml:328 doc/classes/Vector2i.xml:62
 #: doc/classes/Vector3.xml:329 doc/classes/Vector3i.xml:64
@@ -53624,54 +54212,56 @@ msgid ""
 "The vector's Y component. Also accessible by using the index position [code]"
 "[1][/code]."
 msgstr ""
+"Y компонент вектора. Может быть доступен через индекс [code][1][/code]."
 
 #: doc/classes/Vector2.xml:333 doc/classes/Vector2i.xml:67
 #: doc/classes/Vector3i.xml:72
 msgid "Enumerated value for the X axis."
-msgstr ""
+msgstr "Значение оси X."
 
 #: doc/classes/Vector2.xml:336 doc/classes/Vector2i.xml:70
 #: doc/classes/Vector3i.xml:75
 msgid "Enumerated value for the Y axis."
-msgstr ""
+msgstr "Значение оси Y."
 
 #: doc/classes/Vector2.xml:339 doc/classes/Vector2i.xml:73
 #: doc/classes/Vector3.xml:346 doc/classes/Vector3i.xml:81
 msgid "Zero vector."
-msgstr ""
+msgstr "Нулевой вектор."
 
 #: doc/classes/Vector2.xml:342 doc/classes/Vector2i.xml:76
 #: doc/classes/Vector3.xml:349 doc/classes/Vector3i.xml:84
 msgid "One vector."
-msgstr ""
+msgstr "Единичный вектор."
 
 #: doc/classes/Vector2.xml:345 doc/classes/Vector3.xml:352
 msgid "Infinity vector."
-msgstr ""
+msgstr "Бесконечный вектор."
 
 #: doc/classes/Vector2.xml:348 doc/classes/Vector2i.xml:79
 #: doc/classes/Vector3.xml:355 doc/classes/Vector3i.xml:87
 msgid "Left unit vector."
-msgstr ""
+msgstr "Левый единичный вектор."
 
 #: doc/classes/Vector2.xml:351 doc/classes/Vector2i.xml:82
 #: doc/classes/Vector3.xml:358 doc/classes/Vector3i.xml:90
 msgid "Right unit vector."
-msgstr ""
+msgstr "Правый единичный вектор."
 
 #: doc/classes/Vector2.xml:354 doc/classes/Vector2i.xml:85
 #: doc/classes/Vector3.xml:361 doc/classes/Vector3i.xml:93
 msgid "Up unit vector."
-msgstr ""
+msgstr "Верхний единичный вектор."
 
 #: doc/classes/Vector2.xml:357 doc/classes/Vector2i.xml:88
 #: doc/classes/Vector3.xml:364 doc/classes/Vector3i.xml:96
 msgid "Down unit vector."
-msgstr ""
+msgstr "Нижний единичный вектор."
 
 #: doc/classes/Vector2i.xml:4
 msgid "Vector used for 2D math using integer coordinates."
 msgstr ""
+"Вектор используемый для 2D математики используя целочисленные координаты."
 
 #: doc/classes/Vector2i.xml:7
 msgid ""
@@ -53683,21 +54273,33 @@ msgid ""
 "code] if it's equal to [code]Vector2i(0, 0)[/code]. Otherwise, a Vector2i "
 "will always evaluate to [code]true[/code]."
 msgstr ""
+"2-компонентная структура которая используется для представления позиции в 2D "
+"пространстве или любой другой пары числовых значений.\n"
+"Она использует целочисленные значения и поэтому предпочтительнее чем "
+"[Vector2] когда требуется точность.\n"
+"[b]Заметка:[/b] В контексте булевых значений, Vector2i будет преобразован в "
+"[code]false[/code] если он равен [code]Vector2i(0, 0)[/code]. Иначе, "
+"Vector2i всегда будет преобразован в [code]true[/code]."
 
 #: doc/classes/Vector2i.xml:23
 msgid ""
 "Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code]."
 msgstr ""
+"Создаёт новый [Vector2i] используя заданные [code]x[/code] и [code]y[/code]."
 
 #: doc/classes/Vector2i.xml:32
 msgid ""
 "Constructs a new [Vector2i] from [Vector2]. The floating point coordinates "
 "will be truncated."
 msgstr ""
+"Создаёт новый [Vector2i] из [Vector2]. Значения с плавающей точкой будут "
+"округлены."
 
 #: doc/classes/Vector3.xml:4
 msgid "Vector used for 3D math using floating point coordinates."
 msgstr ""
+"Вектор используемый для 3D математики с использованием координат с плавающей "
+"точкой."
 
 #: doc/classes/Vector3.xml:7
 msgid ""
@@ -53709,26 +54311,33 @@ msgid ""
 "code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 "
 "will always evaluate to [code]true[/code]."
 msgstr ""
+"3-компонентная структура которая используется для представления позиции в 3D "
+"пространстве или любой другой пары числовых значений.\n"
+"Она использует числа с плавающей точкой. Используйте [Vector3i] если вам "
+"нужны целочисленные координаты.\n"
+"[b]Заметка:[/b] В контексте булевых значений, Vector3 будет преобразован в "
+"[code]false[/code] если он равен [code]Vector3(0, 0, 0)[/code]. Иначе, "
+"Vector3 всегда будет преобразован в [code]true[/code]."
 
 #: doc/classes/Vector3.xml:21
 msgid "Constructs a new [Vector3] from [Vector3i]."
-msgstr ""
+msgstr "Формирует новый [Vector3] из [Vector3i]."
 
 #: doc/classes/Vector3.xml:34
 msgid "Returns a [Vector3] with the given components."
-msgstr ""
+msgstr "Возвращает [Vector3] с указанными компонентами."
 
 #: doc/classes/Vector3.xml:50
 msgid "Returns the minimum angle to the given vector."
-msgstr ""
+msgstr "Возвращает минимальный угол указанного вектора."
 
 #: doc/classes/Vector3.xml:66
 msgid "Returns a new vector with all components rounded up."
-msgstr ""
+msgstr "Возвращает новый вектор у которого все компоненты округлены вверх."
 
 #: doc/classes/Vector3.xml:75
 msgid "Returns the cross product with [code]b[/code]."
-msgstr ""
+msgstr "Возвращает векторное произведение с [code]b[/code]."
 
 #: doc/classes/Vector3.xml:90
 msgid ""
@@ -53737,6 +54346,10 @@ msgid ""
 "the given amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 "
 "- 1.0[/code], representing the amount of interpolation."
 msgstr ""
+"Выполняет кубическое сглаживание между векторами [code]pre_a[/code], "
+"[code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] это "
+"текущий вектор),на заданное значение [code]t[/code]. [code]t[/code] это "
+"диапазон [code]0.0 - 1.0[/code], представляющий силу сглаживания."
 
 #: doc/classes/Vector3.xml:108
 msgid ""
@@ -53744,24 +54357,29 @@ msgid ""
 "[method distance_to] if you need to sort vectors or need the squared "
 "distance for some formula."
 msgstr ""
+"Возвращает расстояние в квадрате до [code]b[/code]. Эта функция "
+"предпочтительнее чем [method distance_to] если вам нужно сортировать векторы "
+"или нужно расстояние в квадрате для какой-то формулы."
 
 #: doc/classes/Vector3.xml:117
 msgid "Returns the distance to [code]b[/code]."
-msgstr ""
+msgstr "Возвращает расстояние до [code]b[/code]."
 
 #: doc/classes/Vector3.xml:126
 msgid "Returns the dot product with [code]b[/code]."
-msgstr ""
+msgstr "Возвращает скалярное произведение с [code]b[/code]."
 
 #: doc/classes/Vector3.xml:133
 msgid "Returns a new vector with all components rounded down."
-msgstr ""
+msgstr "Возвращает новый вектор у которого все компоненты округлены вниз."
 
 #: doc/classes/Vector3.xml:140
 msgid ""
 "Returns the inverse of the vector. This is the same as [code]Vector3( 1.0 / "
 "v.x, 1.0 / v.y, 1.0 / v.z )[/code]."
 msgstr ""
+"Возвращает инвертированный вектор. Это тоже самое что и [code]Vector3( 1.0 / "
+"v.x, 1.0 / v.y, 1.0 / v.z )[/code]."
 
 #: doc/classes/Vector3.xml:170
 msgid ""
@@ -53769,6 +54387,9 @@ msgid ""
 "length] if you need to sort vectors or need the squared length for some "
 "formula."
 msgstr ""
+"Возвращает длину вектора в квадрате. Эта функция предпочтительнее чем "
+"[method length] если вам нужно сортировать вектора или нужна длина в "
+"квадрате для какой-то формулы."
 
 #: doc/classes/Vector3.xml:181
 msgid ""
@@ -53776,68 +54397,80 @@ msgid ""
 "[code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of "
 "[code]0.0 - 1.0[/code], representing the amount of interpolation.."
 msgstr ""
+"Возвращает результат линейного сглаживания между этим вектором и [code]b[/"
+"code] на значение [code]t[/code]. [code]t[/code] это диапазон [code]0.0 - "
+"1.0[/code], представляющий силу сглаживания.."
 
 #: doc/classes/Vector3.xml:188 doc/classes/Vector3i.xml:41
 msgid ""
 "Returns the axis of the vector's largest value. See [code]AXIS_*[/code] "
 "constants."
 msgstr ""
+"Возвращает ось с наибольшими значениями вектора. Смотрите константы "
+"[code]AXIS_*[/code]."
 
 #: doc/classes/Vector3.xml:195 doc/classes/Vector3i.xml:48
 msgid ""
 "Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] "
 "constants."
 msgstr ""
+"Возвращает ось с наименьшими значениями вектора. Смотрите константы "
+"[code]AXIS_*[/code]."
 
 #: doc/classes/Vector3.xml:222
 msgid "Returns the outer product with [code]b[/code]."
-msgstr ""
+msgstr "Возвращает внешнее произведение с [code]b[/code]."
 
 #: doc/classes/Vector3.xml:269
 msgid ""
 "Rotates the vector around a given axis by [code]phi[/code] radians. The axis "
 "must be a normalized vector."
 msgstr ""
+"Вращает вектор вокруг заданной оси на [code]phi[/code] радиан. Ось должна "
+"быть нормализованным вектором."
 
 #: doc/classes/Vector3.xml:320
 msgid "Returns a diagonal matrix with the vector as main diagonal."
-msgstr ""
+msgstr "Возвращает диагональную матрицу с вектором на главной диагонали."
 
 #: doc/classes/Vector3.xml:332 doc/classes/Vector3i.xml:67
 msgid ""
 "The vector's Z component. Also accessible by using the index position [code]"
 "[2][/code]."
 msgstr ""
+"Z компонент вектора. Также может быть доступен по индексу [code][2][/code]."
 
 #: doc/classes/Vector3.xml:337
 msgid ""
 "Enumerated value for the X axis. Returned by [method max_axis] and [method "
 "min_axis]."
-msgstr ""
+msgstr "Значение оси X. Возвращается [method max_axis] и [method min_axis]."
 
 #: doc/classes/Vector3.xml:340
 msgid ""
 "Enumerated value for the Y axis. Returned by [method max_axis] and [method "
 "min_axis]."
-msgstr ""
+msgstr "Значение оси Y. Возвращается [method max_axis] и [method min_axis]."
 
 #: doc/classes/Vector3.xml:343
 msgid ""
 "Enumerated value for the Z axis. Returned by [method max_axis] and [method "
 "min_axis]."
-msgstr ""
+msgstr "Значение оси Z. Возвращается [method max_axis] и [method min_axis]."
 
 #: doc/classes/Vector3.xml:367 doc/classes/Vector3i.xml:99
 msgid "Forward unit vector."
-msgstr ""
+msgstr "Передний единичный вектор."
 
 #: doc/classes/Vector3.xml:370 doc/classes/Vector3i.xml:102
 msgid "Back unit vector."
-msgstr ""
+msgstr "Задний единичный вектор."
 
 #: doc/classes/Vector3i.xml:4
 msgid "Vector used for 3D math using integer coordinates."
 msgstr ""
+"Вектор используемый для 3D математики с использованием целочисленных "
+"координат."
 
 #: doc/classes/Vector3i.xml:7
 msgid ""

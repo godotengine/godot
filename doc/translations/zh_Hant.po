@@ -5,20 +5,21 @@
 #
 # binotaliu <binota@protonmail.ch>, 2020.
 # BinotaLIU <me@binota.org>, 2020.
+# Eric K <eric900601@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-06-03 20:09+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2020-08-04 06:42+0000\n"
+"Last-Translator: Eric K <eric900601@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hant/>\n"
 "Language: zh_Hant\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
@@ -62,7 +63,7 @@ msgstr "方法說明"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr ""
+msgstr "內建 GDScript 函式。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -70,6 +71,8 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
+"GDScript 核心內建函式列表，包含數學函式與其他公用程式。其餘功能則以物件提"
+"供。 (關鍵字：內建、全域函式、buildin、build in、global functions)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:24
 msgid ""
@@ -84,6 +87,15 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
+"回傳以整數紅色、綠色、藍色與 Alpha 通道構成的色彩。每個通道都應包含 0 至 255 "
+"的 8 位元資訊。\n"
+"[code]r8[/code] 紅色通道\n"
+"[code]g8[/code] 綠色通道\n"
+"[code]b8[/code] 藍色通道\n"
+"[code]a8[/code] Alpha 通道\n"
+"[codeblock]\n"
+"red = Color8(255, 0, 0)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:42
 msgid ""
@@ -94,6 +106,12 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
+"回傳以標準化的名稱 [code]name[/code] 與介於 0 至 1 間的 Alpha [code]alpha[/"
+"code] 組成的色彩。\n"
+"[codeblock]\n"
+"red = ColorN(\"red\", 1)\n"
+"[/codeblock]\n"
+"支援的色彩名稱與 [Color] 中定義的常數相同。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:55
 msgid ""
@@ -104,6 +122,11 @@ msgid ""
 "a = abs(-1)\n"
 "[/codeblock]"
 msgstr ""
+"回傳參數 [code]s[/code] 的絕對值 (即無號值，可用於整數與浮點數)。\n"
+"[codeblock]\n"
+"# a 為 1\n"
+"a = abs(-1)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:68
 msgid ""
@@ -114,6 +137,12 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
+"回傳以弧度表示的[code]s[/code]的反餘弦(cos)值。用於求餘弦(sin)值[code]s[/"
+"code]的夾角。\n"
+"[codeblock]\n"
+"# c 為0.523599，若以rad2deg(s)換算，則為30度\n"
+"c = acos(0.866025)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:81
 msgid ""
@@ -57865,7 +57894,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:26
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "回傳參數的相反值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:29
 msgid "Returns [code]1/vector[/code]."
@@ -57873,96 +57902,96 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:32
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "將 RGB 向量轉為同等之 HSV。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:35
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "將 HSV 向量轉為同等之 RGB。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:38
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "回傳參數的絕對值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:41
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "回傳參數的反餘弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:44
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "回傳參數的反雙曲餘弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:47
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "回傳參數的反正弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:50
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "回傳參數的反雙曲正弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:53
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "回傳參數的反正切值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:56
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "回傳參數的反雙曲正切值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:59
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr ""
+msgstr "尋找大於或等於該參數最近的整數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:62
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "回傳參數的餘弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:65
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "回傳參數的雙曲餘弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:68
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "將弧度轉換為角度。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:71
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "e 為底數的指數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:74
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "2 為底數的指數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:77
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "尋找小於或等於參數最近的整數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:80
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "計算引數的小數部分。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:83
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "回傳參數的平方根之倒數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:86
 msgid "Natural logarithm."
-msgstr ""
+msgstr "自然對數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:89
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "2 為底數的對數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:92
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "將角度轉換為弧度。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:95
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "尋找參數最近的整數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:98
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "尋找參數最近的偶數。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:101
 msgid ""
@@ -57973,23 +58002,23 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:104
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "回傳參數的正弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:107
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "回傳參數的雙曲正弦值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:110
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "回傳參數的平方根。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:113
 msgid "Returns the tangent of the parameter."
-msgstr ""
+msgstr "回傳參數的正切值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:116
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "回傳參數的雙曲正切值。"
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml:119
 msgid ""
@@ -58070,11 +58099,11 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:44
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "計算兩個向量的外積。"
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:47
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "回傳參數的反正切值。"
 
 #: doc/classes/VisualShaderNodeVectorOp.xml:50
 msgid ""
