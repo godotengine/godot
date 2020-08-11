@@ -14,11 +14,12 @@
 # Богдан Матвіїв <bomtvv@gmail.com>, 2019.
 # Tymofij Lytvynenko <till.svit@gmail.com>, 2020.
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
+# Микола Тимошенко <9081@ukr.net>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-25 08:40+0000\n"
+"PO-Revision-Date: 2020-08-04 06:43+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -10564,9 +10565,8 @@ msgid "Make node as Root"
 msgstr "Зробити вузол кореневим"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Вилучити вузол «%s» і його дочірні записи?"
+msgstr "Вилучити %d вузлів та усі їхні дочірні записи?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -12015,7 +12015,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr "Неокректний відкритий ключ для розгортання APK."
+msgstr "Некоректний відкритий ключ для розгортання APK."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
@@ -12280,6 +12280,9 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Засновані на багатокутниках форми не призначено для використання або "
+"редагування з вузла CollisionShape2D. Будь ласка, скористайтеся замість "
+"нього вузлом CollisionPolygon2D."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
