@@ -1923,7 +1923,9 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				codegen.alloc_stack(slevel);
 
 				codegen.push_stack_identifiers();
-				codegen.add_stack_identifier(for_n->variable->name, iter_stack_pos);
+				if (for_n->variable) {
+					codegen.add_stack_identifier(for_n->variable->name, iter_stack_pos);
+				}
 
 				int ret2 = _parse_expression(codegen, for_n->list, slevel, false);
 				if (ret2 < 0) {

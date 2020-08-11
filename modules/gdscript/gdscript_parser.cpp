@@ -1465,8 +1465,12 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	ForNode *n_for = alloc_node<ForNode>();
 
-	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name after "for".)")) {
+	if (match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		n_for->variable = parse_identifier();
+	} else if (match(GDScriptTokenizer::Token::UNDERSCORE)) {
+		n_for->variable = nullptr;
+	} else {
+		push_error(R"(Expected loop variable name after "for".)");
 	}
 
 	consume(GDScriptTokenizer::Token::IN, R"(Expected "in" after "for" variable name.)");
