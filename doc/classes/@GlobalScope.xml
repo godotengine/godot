@@ -1236,6 +1236,9 @@
 		<member name="ResourceSaver" type="ResourceSaver" setter="" getter="">
 			The [ResourceSaver] singleton.
 		</member>
+		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
+			The [TextServerManager] singleton.
+		</member>
 		<member name="TranslationServer" type="TranslationServer" setter="" getter="">
 			The [TranslationServer] singleton.
 		</member>
@@ -1285,6 +1288,9 @@
 		</constant>
 		<constant name="HALIGN_RIGHT" value="2" enum="HAlign">
 			Horizontal right alignment, usually for text-derived classes.
+		</constant>
+		<constant name="HALIGN_FILL" value="3" enum="HAlign">
+			Expand row to fit width, usually for text-derived classes.
 		</constant>
 		<constant name="VALIGN_TOP" value="0" enum="VAlign">
 			Vertical top alignment, usually for text-derived classes.

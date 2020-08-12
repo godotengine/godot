@@ -33,6 +33,13 @@
 				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
 			</description>
 		</method>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
+			</description>
+		</method>
 		<method name="clear_undo_history">
 			<return type="void">
 			</return>
@@ -211,6 +218,15 @@
 			</return>
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_selection_column" qualifiers="const">
@@ -573,6 +589,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
 		<method name="set_selection_mode">
 			<return type="void">
 			</return>
@@ -629,12 +656,19 @@
 			If [code]true[/code], the caret displays as a rectangle.
 			If [code]false[/code], the caret displays as a bar.
 		</member>
+		<member name="caret_mid_grapheme" type="bool" setter="set_mid_grapheme_caret_enabled" getter="get_mid_grapheme_caret_enabled" default="false">
+			Allow moving caret, selecting and removing the individual composite character components.
+			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
+		</member>
 		<member name="caret_moving_by_right_click" type="bool" setter="set_right_click_moves_caret" getter="is_right_click_moving_caret" default="true">
 			If [code]true[/code], a right-click moves the cursor at the mouse position before displaying the context menu.
 			If [code]false[/code], the context menu disregards mouse location.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
+		</member>
+		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
+			If [code]true[/code], control characters are displayed.
 		</member>
 		<member name="draw_spaces" type="bool" setter="set_draw_spaces" getter="is_drawing_spaces" default="false">
 			If [code]true[/code], the "space" character will have a visible representation.
@@ -651,6 +685,9 @@
 		</member>
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
+		</member>
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
 			If [code]true[/code], a minimap is shown, providing an outline of your source code.
@@ -681,10 +718,19 @@
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
 			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
 		</member>
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+			Set BiDi algorithm override for the structured text.
+		</member>
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+			Set additional options for BiDi override.
+		</member>
 		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Vertical scroll sensitivity.
@@ -799,7 +845,70 @@
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
 			Redoes the previous action.
 		</constant>
-		<constant name="MENU_MAX" value="7" enum="MenuItems">
+		<constant name="MENU_DIR_INHERITED" value="7" enum="MenuItems">
+			Sets text direction to inherited.
+		</constant>
+		<constant name="MENU_DIR_AUTO" value="8" enum="MenuItems">
+			Sets text direction to automatic.
+		</constant>
+		<constant name="MENU_DIR_LTR" value="9" enum="MenuItems">
+			Sets text direction to left-to-right.
+		</constant>
+		<constant name="MENU_DIR_RTL" value="10" enum="MenuItems">
+			Sets text direction to right-to-left.
+		</constant>
+		<constant name="MENU_DISPLAY_UCC" value="11" enum="MenuItems">
+			Toggles control character display.
+		</constant>
+		<constant name="MENU_INSERT_LRM" value="12" enum="MenuItems">
+			Inserts left-to-right mark (LRM) character.
+		</constant>
+		<constant name="MENU_INSERT_RLM" value="13" enum="MenuItems">
+			Inserts right-to-left mark (RLM) character.
+		</constant>
+		<constant name="MENU_INSERT_LRE" value="14" enum="MenuItems">
+			Inserts start of left-to-right embedding (LRE) character.
+		</constant>
+		<constant name="MENU_INSERT_RLE" value="15" enum="MenuItems">
+			Inserts start of right-to-left embedding (RLE) character.
+		</constant>
+		<constant name="MENU_INSERT_LRO" value="16" enum="MenuItems">
+			Inserts start of left-to-right override (LRO) character.
+		</constant>
+		<constant name="MENU_INSERT_RLO" value="17" enum="MenuItems">
+			Inserts start of right-to-left override (RLO) character.
+		</constant>
+		<constant name="MENU_INSERT_PDF" value="18" enum="MenuItems">
+			Inserts pop direction formatting (PDF) character.
+		</constant>
+		<constant name="MENU_INSERT_ALM" value="19" enum="MenuItems">
+			Inserts Arabic letter mark (ALM) character.
+		</constant>
+		<constant name="MENU_INSERT_LRI" value="20" enum="MenuItems">
+			Inserts left-to-right isolate (LRI) character.
+		</constant>
+		<constant name="MENU_INSERT_RLI" value="21" enum="MenuItems">
+			Inserts right-to-left isolate (RLI) character.
+		</constant>
+		<constant name="MENU_INSERT_FSI" value="22" enum="MenuItems">
+			Inserts first strong isolate (FSI) character.
+		</constant>
+		<constant name="MENU_INSERT_PDI" value="23" enum="MenuItems">
+			Inserts pop direction isolate (PDI) character.
+		</constant>
+		<constant name="MENU_INSERT_ZWJ" value="24" enum="MenuItems">
+			Inserts zero width joiner (ZWJ) character.
+		</constant>
+		<constant name="MENU_INSERT_ZWNJ" value="25" enum="MenuItems">
+			Inserts zero width non-joiner (ZWNJ) character.
+		</constant>
+		<constant name="MENU_INSERT_WJ" value="26" enum="MenuItems">
+			Inserts word joiner (WJ) character.
+		</constant>
+		<constant name="MENU_INSERT_SHY" value="27" enum="MenuItems">
+			Inserts soft hyphen (SHY) character.
+		</constant>
+		<constant name="MENU_MAX" value="28" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 	</constants>
@@ -849,6 +958,9 @@
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
+		<theme_item name="font_size" type="int">
+			Sets default font size.
+		</theme_item>
 		<theme_item name="line_spacing" type="int" default="4">
 			Sets the spacing between the lines.
 		</theme_item>
@@ -865,6 +977,7 @@
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture2D">
+			Sets a custom [Texture2D] for space text characters.
 		</theme_item>
 		<theme_item name="tab" type="Texture2D">
 			Sets a custom [Texture2D] for tab text characters.
