@@ -40,8 +40,19 @@ class BoneAttachment3D : public Node3D {
 	String bone_name;
 	int bone_idx = -1;
 
+	bool override_pose = false;
+	int override_mode = 0;
+
+	enum OVERRIDE_MODES {
+		MODE_GLOBAL_POSE,
+		MODE_LOCAL_POSE,
+		MODE_CUSTOM_POSE
+	};
+
 	void _check_bind();
 	void _check_unbind();
+
+	void _transform_changed();
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -56,7 +67,12 @@ public:
 	void set_bone_idx(const int &p_idx);
 	int get_bone_idx() const;
 
-	virtual void on_bone_pose_override(int bone_index);
+	void set_override_pose(bool p_override);
+	bool get_override_pose() const;
+	void set_override_mode(int p_mode);
+	int get_override_mode() const;
+
+	virtual void on_bone_pose_update(int p_bone_index);
 
 	BoneAttachment3D();
 };
