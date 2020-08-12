@@ -92,12 +92,10 @@ private:
 
 	VBoxContainer *version_control_dock;
 	ToolButton *version_control_dock_button;
-	// VBoxContainer *diff_vbc;
-	// HBoxContainer *diff_hbc;
 	Label *diff_title;
 	RichTextLabel *diff;
 	OptionButton *diff_view_type_select;
-	Array diff_content;
+	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _initialize_vcs();
 	void _selected_a_vcs(int p_id);
@@ -119,8 +117,8 @@ private:
 	void _item_activated(Object *p_tree);
 	void _branch_item_selected(int index);
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
-	void _display_diff_split_view(Array p_diff_content);
-	void _display_diff_unified_view(Array p_diff_content);
+	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
+	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType change);
 	void _cell_button_pressed(Object *p_item, int column, int id);
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType change);

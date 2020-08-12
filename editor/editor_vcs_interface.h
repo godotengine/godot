@@ -56,6 +56,43 @@ public:
 		TREE_AREA_UNSTAGED = 2
 	};
 
+	struct DiffLine {
+		int new_line_no;
+		int old_line_no;
+		String content;
+		String status;
+
+		String old_text;
+		String new_text;
+	};
+
+	struct DiffHunk {
+		int new_start;
+		int old_start;
+		int new_lines;
+		int old_lines;
+		List<DiffLine> diff_lines;
+	};
+
+	struct DiffFile {
+		String new_file;
+		String old_file;
+		List<DiffHunk> diff_hunks;
+	};
+
+	struct Commit {
+		String author;
+		String msg;
+		String hex_id;
+		int64_t time;
+	};
+
+	struct StatusFile {
+		TreeArea area;
+		ChangeType change_type;
+		String file_path;
+	};
+
 protected:
 	static EditorVCSInterface *singleton;
 
@@ -65,12 +102,12 @@ protected:
 	// Implemented by addons as end points for the proxy functions
 	virtual bool _initialize(String p_project_root_path);
 	virtual bool _is_vcs_initialized();
-	virtual Dictionary _get_modified_files_data();
+	virtual Array _get_modified_files_data();
 	virtual void _stage_file(String p_file_path);
 	virtual void _discard_file(String p_file_path);
 	virtual void _unstage_file(String p_file_path);
 	virtual void _commit(String p_msg);
-	virtual Array _get_file_diff(String p_file_path, TreeArea area);
+	virtual Array _get_file_diff(String p_identifier, TreeArea area);
 	virtual bool _shut_down();
 	virtual String _get_project_name();
 	virtual String _get_vcs_name();
@@ -82,6 +119,21 @@ protected:
 	virtual bool _checkout_branch(String p_branch);
 	virtual void _set_up_credentials(String p_username, String p_password);
 
+	// Helper functions to create and convert Dictionary into data structures
+	Dictionary _create_diff_line(int new_line_no, int old_line_no, String p_content, String p_status);
+	Dictionary _create_diff_hunk(int old_start, int new_start, int old_lines, int new_lines);
+	Dictionary _create_diff_file(String p_new_file, String p_old_file);
+	Dictionary _create_commit(String p_msg, String p_author, String p_hex_id, int16_t p_time);
+	Dictionary _create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
+	Dictionary _add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs);
+	Dictionary _add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks);
+
+	DiffLine _convert_diff_line(Dictionary p_diff_line);
+	DiffHunk _convert_diff_hunk(Dictionary p_diff_hunk);
+	DiffFile _convert_diff_file(Dictionary p_diff_file);
+	Commit _convert_commit(Dictionary p_commit);
+	StatusFile _convert_status_file(Dictionary p_status_file);
+
 public:
 	static EditorVCSInterface *get_singleton();
 	static void set_singleton(EditorVCSInterface *p_singleton);
@@ -91,22 +143,23 @@ public:
 	// Proxy functions to the editor for use
 	bool initialize(String p_project_root_path);
 	bool is_vcs_initialized();
-	Dictionary get_modified_files_data();
+	List<StatusFile> get_modified_files_data();
 	void stage_file(String p_file_path);
 	void unstage_file(String p_file_path);
 	void discard_file(String p_file_path);
 	void commit(String p_msg);
-	Array get_file_diff(String p_identifier, TreeArea area); // area = 0 unstage, 1 = stage, 2 = commit
+	List<DiffFile> get_file_diff(String p_identifier, TreeArea p_area);
 	bool shut_down();
 	String get_project_name();
 	String get_vcs_name();
-	Array get_previous_commits();
-	Array get_branch_list();
+	List<Commit> get_previous_commits();
+	List<String> get_branch_list();
 	bool checkout_branch(String p_branch);
 	void pull();
 	void push();
 	void fetch();
 	void set_up_credentials(String p_username, String p_password);
+	List<DiffHunk> get_line_diff(String p_file_path, String p_text);
 
 	EditorVCSInterface();
 	virtual ~EditorVCSInterface();

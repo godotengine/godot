@@ -136,7 +136,7 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 void VersionControlEditorPlugin::_refresh_branch_list() {
 	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Addon from Project menu");
 
-	Array branch_list = EditorVCSInterface::get_singleton()->get_branch_list();
+	List<String> branch_list = EditorVCSInterface::get_singleton()->get_branch_list();
 	branch_select->clear();
 	for (int i = 0; i < branch_list.size(); i++) {
 		branch_select->add_item(branch_list[i], i);
@@ -153,13 +153,14 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 
 	commit_list->get_root()->clear_children();
 
-	Array commits_info_list = EditorVCSInterface::get_singleton()->get_previous_commits();
-	for (int i = 0; i < commits_info_list.size(); i++) {
-		Dictionary commit_info = commits_info_list[i];
+	List<EditorVCSInterface::Commit> commit_info_list = EditorVCSInterface::get_singleton()->get_previous_commits();
+
+	for (List<EditorVCSInterface::Commit>::Element *E = commit_info_list.front(); E; E = E->next()) {
+		EditorVCSInterface::Commit commit = E->get();
 		TreeItem *item = commit_list->create_item(commit_list->get_root());
-		item->set_text(0, String(commit_info["message"]).strip_edges());
-		item->set_text(1, String(commit_info["author"]).strip_edges());
-		item->set_metadata(0, String(commit_info["id"]));
+		item->set_text(0, commit.msg.strip_edges());
+		item->set_text(1, commit.author.strip_edges());
+		item->set_metadata(0, commit.hex_id);
 	}
 }
 
@@ -218,28 +219,20 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 	staged_files->get_root()->clear_children();
 	unstaged_files->get_root()->clear_children();
 
-	Dictionary changes = EditorVCSInterface::get_singleton()->get_modified_files_data();
-	String file_path;
-
-	Dictionary index_changes = changes[EditorVCSInterface::TREE_AREA_STAGED];
-	Dictionary wt_changes = changes[EditorVCSInterface::TREE_AREA_UNSTAGED];
-
-	for (int i = 0; i < index_changes.size(); i++) {
-		file_path = index_changes.get_key_at_index(i);
-		EditorVCSInterface::ChangeType change_type = (EditorVCSInterface::ChangeType)(int)index_changes.get_value_at_index(i);
-		_add_new_item(staged_files, file_path, change_type);
-	}
-
-	for (int i = 0; i < wt_changes.size(); i++) {
-		file_path = wt_changes.get_key_at_index(i);
-		EditorVCSInterface::ChangeType change_type = (EditorVCSInterface::ChangeType)(int)wt_changes.get_value_at_index(i);
-		_add_new_item(unstaged_files, file_path, change_type);
+	List<EditorVCSInterface::StatusFile> status_files = EditorVCSInterface::get_singleton()->get_modified_files_data();
+	for (List<EditorVCSInterface::StatusFile>::Element *E = status_files.front(); E; E = E->next()) {
+		EditorVCSInterface::StatusFile sf = E->get();
+		if (sf.area == EditorVCSInterface::TREE_AREA_STAGED) {
+			_add_new_item(staged_files, sf.file_path, sf.change_type);
+		} else if (sf.area == EditorVCSInterface::TREE_AREA_UNSTAGED) {
+			_add_new_item(unstaged_files, sf.file_path, sf.change_type);
+		}
 	}
 
 	staged_files->update();
 	unstaged_files->update();
 
-	int total_changes = index_changes.size() + wt_changes.size();
+	int total_changes = status_files.size();
 	String commit_tab_title = TTR("Commit") + (total_changes > 0 ? " (" + itos(total_changes) + ")" : "");
 	dock_vbc->set_tab_title(version_commit_dock->get_index(), commit_tab_title);
 }
@@ -347,7 +340,7 @@ void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
 
 void VersionControlEditorPlugin::_clear_diff() {
 	diff->clear();
-	diff_content = Array();
+	diff_content = List<EditorVCSInterface::DiffFile>();
 	diff_title->set_text("");
 }
 
@@ -402,36 +395,36 @@ void VersionControlEditorPlugin::_display_diff(int idx) {
 
 	diff->clear();
 	for (int i = 0; i < diff_content.size(); i++) {
-		Dictionary file_diff = diff_content[i];
+
+		EditorVCSInterface::DiffFile diff_file = diff_content[i];
 
 		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_font("doc_bold", "EditorFonts"));
 		diff->push_color(EditorNode::get_singleton()->get_gui_base()->get_color("accent_color", "Editor"));
-		diff->add_text("File: " + String(file_diff["new_file"]));
+		diff->add_text("File: " + diff_file.new_file);
 		diff->pop();
 		diff->pop();
 
-		Array hunks = file_diff["hunks"];
-		for (int j = 0; j < hunks.size(); j++) {
-			Dictionary hunk = hunks[j];
+		for (int j = 0; j < diff_file.diff_hunks.size(); j++) {
 
-			String old_start = String::num_int64(hunk["old_start"]);
-			String new_start = String::num_int64(hunk["new_start"]);
-			String old_lines = String::num_int64(hunk["old_lines"]);
-			String new_lines = String::num_int64(hunk["new_lines"]);
+			EditorVCSInterface::DiffHunk hunk = diff_file.diff_hunks[j];
+
+			String old_start = String::num_int64(hunk.old_start);
+			String new_start = String::num_int64(hunk.new_start);
+			String old_lines = String::num_int64(hunk.old_lines);
+			String new_lines = String::num_int64(hunk.new_lines);
 
 			diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
 
 			diff->push_align(RichTextLabel::ALIGN_CENTER);
 			diff->add_text("@@ " + old_start + "," + old_lines + " " + new_start + "," + new_lines + " @@");
 			diff->pop();
-			Array diff_lines = hunk["diff_lines"];
 
 			switch (diff_view) {
 				case DIFF_VIEW_TYPE_SPLIT:
-					_display_diff_split_view(diff_lines);
+					_display_diff_split_view(hunk.diff_lines);
 					break;
 				case DIFF_VIEW_TYPE_UNIFIED:
-					_display_diff_unified_view(diff_lines);
+					_display_diff_unified_view(hunk.diff_lines);
 					break;
 			}
 			diff->add_newline();
@@ -441,43 +434,39 @@ void VersionControlEditorPlugin::_display_diff(int idx) {
 	}
 }
 
-void VersionControlEditorPlugin::_display_diff_split_view(Array p_diff_content) {
-	Array parsed_diff = p_diff_content.duplicate(true);
+void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content) {
 
-	for (int i = 0; i < parsed_diff.size(); i++) {
-		Dictionary line_result = parsed_diff[i];
-		String line = line_result["content"];
-		line = line.strip_edges(false, true);
-		int new_line_number = line_result["new_line_no"];
-		int old_line_number = line_result["old_line_no"];
+	List<EditorVCSInterface::DiffLine> parsed_diff = List<EditorVCSInterface::DiffLine>();
 
-		if (new_line_number >= 0 && old_line_number >= 0) {
-			line_result["new_line"] = line;
-			line_result["old_line"] = line;
-			parsed_diff.set(i, line_result);
-		} else if (new_line_number == -1) {
-			line_result["new_line"] = "";
-			line_result["old_line"] = line;
-			parsed_diff.set(i, line_result);
-		} else if (old_line_number == -1) {
-			int j = i - 1;
-			while (j >= 0 && int(Dictionary(parsed_diff[j])["new_line_no"]) == -1) {
+	for (int i = 0; i < p_diff_content.size(); i++) {
+		EditorVCSInterface::DiffLine diff_line = p_diff_content[i];
+		String line = diff_line.content.strip_edges(false, true);
+
+		if (diff_line.new_line_no >= 0 && diff_line.old_line_no >= 0) {
+			diff_line.new_text = line;
+			diff_line.old_text = line;
+			parsed_diff.push_back(diff_line);
+		} else if (diff_line.new_line_no == -1) {
+			diff_line.new_text = "";
+			diff_line.old_text = line;
+			parsed_diff.push_back(diff_line);
+		} else if (diff_line.old_line_no == -1) {
+			int j = parsed_diff.size() - 1;
+			while (j >= 0 && parsed_diff[j].new_line_no == -1) {
 				j--;
 			}
 
-			if (j == i - 1) {
+			if (j == parsed_diff.size() - 1) {
 				// no lines are modified
-				line_result["new_line"] = line;
-				line_result["old_line"] = "";
-				parsed_diff.set(i, line_result);
+				diff_line.new_text = line;
+				diff_line.old_text = "";
+				parsed_diff.push_back(diff_line);
 			} else {
 				// lines are modified
-				Dictionary modified_line = parsed_diff[j + 1];
-				modified_line["new_line"] = line;
-				modified_line["new_line_no"] = new_line_number;
-				parsed_diff.set(j + 1, modified_line);
-				parsed_diff.remove(i);
-				i--;
+				EditorVCSInterface::DiffLine modified_line = parsed_diff[j + 1];
+				modified_line.new_text = line;
+				modified_line.new_line_no = diff_line.new_line_no;
+				parsed_diff[j + 1] = modified_line;
 			}
 		}
 	}
@@ -497,22 +486,20 @@ void VersionControlEditorPlugin::_display_diff_split_view(Array p_diff_content) 
 	diff->set_table_column_expand(5, true);
 
 	for (int i = 0; i < parsed_diff.size(); i++) {
-		Dictionary line_result = parsed_diff[i];
-		String new_line = line_result["new_line"];
-		String old_line = line_result["old_line"];
-		int new_line_number = line_result["new_line_no"];
-		int old_line_number = line_result["old_line_no"];
 
-		bool has_change = line_result["status"] != " ";
+		EditorVCSInterface::DiffLine diff_line = parsed_diff[i];
+
+		bool has_change = diff_line.status != " ";
 		static const Color red = EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor");
 		static const Color green = EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor");
 		static const Color white = EditorNode::get_singleton()->get_gui_base()->get_color("font_color", "Label") * Color(1, 1, 1, 0.6);
 
-		if (old_line_number >= 0) {
+		if (diff_line.old_line_no >= 0) {
+
 			diff->push_cell();
 			diff->push_indent(1);
 			diff->push_color(has_change ? red : white);
-			diff->add_text(String::num_int64(old_line_number));
+			diff->add_text(String::num_int64(diff_line.old_line_no));
 			diff->pop();
 			diff->pop();
 			diff->pop();
@@ -525,7 +512,7 @@ void VersionControlEditorPlugin::_display_diff_split_view(Array p_diff_content) 
 
 			diff->push_cell();
 			diff->push_color(has_change ? red : white);
-			diff->add_text(old_line);
+			diff->add_text(diff_line.old_text);
 			diff->pop();
 			diff->pop();
 
@@ -540,11 +527,11 @@ void VersionControlEditorPlugin::_display_diff_split_view(Array p_diff_content) 
 			diff->pop();
 		}
 
-		if (new_line_number >= 0) {
+		if (diff_line.new_line_no >= 0) {
 			diff->push_cell();
 			diff->push_indent(1);
 			diff->push_color(has_change ? green : white);
-			diff->add_text(String::num_int64(new_line_number));
+			diff->add_text(String::num_int64(diff_line.new_line_no));
 			diff->pop();
 			diff->pop();
 			diff->pop();
@@ -557,7 +544,7 @@ void VersionControlEditorPlugin::_display_diff_split_view(Array p_diff_content) 
 
 			diff->push_cell();
 			diff->push_color(has_change ? green : white);
-			diff->add_text(new_line);
+			diff->add_text(diff_line.new_text);
 			diff->pop();
 			diff->pop();
 		} else {
@@ -574,7 +561,8 @@ void VersionControlEditorPlugin::_display_diff_split_view(Array p_diff_content) 
 	diff->pop();
 }
 
-void VersionControlEditorPlugin::_display_diff_unified_view(Array p_diff_content) {
+void VersionControlEditorPlugin::_display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content) {
+
 	diff->push_table(4);
 	diff->set_table_column_expand(3, true);
 
@@ -585,17 +573,13 @@ void VersionControlEditorPlugin::_display_diff_unified_view(Array p_diff_content
 		[cell]code[/cell]
 	*/
 	for (int i = 0; i < p_diff_content.size(); i++) {
-		Dictionary line_result = p_diff_content[i];
-		int new_line_number = line_result["new_line_no"];
-		int old_line_number = line_result["old_line_no"];
-		String line = line_result["content"];
-		line = line.strip_edges(false, true);
-		String status = line_result["status"];
+		EditorVCSInterface::DiffLine diff_line = p_diff_content[i];
+		String line = diff_line.content.strip_edges(false, true);
 
 		Color color;
-		if (status == "+") {
+		if (diff_line.status == "+") {
 			color = EditorNode::get_singleton()->get_gui_base()->get_color("success_color", "Editor");
-		} else if (status == "-") {
+		} else if (diff_line.status == "-") {
 			color = EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor");
 		} else {
 			color = EditorNode::get_singleton()->get_gui_base()->get_color("font_color", "Label");
@@ -605,7 +589,7 @@ void VersionControlEditorPlugin::_display_diff_unified_view(Array p_diff_content
 		diff->push_cell();
 		diff->push_color(color);
 		diff->push_indent(1);
-		diff->add_text(old_line_number >= 0 ? String::num_int64(old_line_number) : "");
+		diff->add_text(diff_line.old_line_no >= 0 ? String::num_int64(diff_line.old_line_no) : "");
 		diff->pop();
 		diff->pop();
 		diff->pop();
@@ -613,14 +597,14 @@ void VersionControlEditorPlugin::_display_diff_unified_view(Array p_diff_content
 		diff->push_cell();
 		diff->push_color(color);
 		diff->push_indent(1);
-		diff->add_text(new_line_number >= 0 ? String::num_int64(new_line_number) : "");
+		diff->add_text(diff_line.new_line_no >= 0 ? String::num_int64(diff_line.new_line_no) : "");
 		diff->pop();
 		diff->pop();
 		diff->pop();
 
 		diff->push_cell();
 		diff->push_color(color);
-		diff->add_text(status != "" ? status + "|" : " |");
+		diff->add_text(diff_line.status != "" ? diff_line.status + "|" : " |");
 		diff->pop();
 		diff->pop();
 
