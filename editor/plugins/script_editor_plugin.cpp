@@ -427,6 +427,10 @@ void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 	}
 }
 
+void ScriptEditor::_docs_generated() {
+	// Nothing for now.
+}
+
 void ScriptEditor::_script_created(Ref<Script> p_script) {
 	editor->push_item(p_script.operator->());
 }
@@ -1208,6 +1212,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			}
 
 			save_all_scripts();
+		} break;
+		case GENERATE_DOCUMENTATIONS: {
+			doc_gen_dialog->config("", "");
+			doc_gen_dialog->popup_centered();
 		} break;
 		case SEARCH_IN_FILES: {
 			_on_find_in_files_requested("");
@@ -3351,6 +3359,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/generate_docs", TTR("Generate Docs")), GENERATE_DOCUMENTATIONS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
@@ -3454,6 +3463,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
+
+	doc_gen_dialog = memnew(DocumentationGenerationDialog);
+	doc_gen_dialog->set_title(TTR("Generate Script Documentations"));
+	add_child(doc_gen_dialog);
+	doc_gen_dialog->connect("documentations_generated", callable_mp(this, &ScriptEditor::_docs_generated));
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_title(TTR("Create Script"));

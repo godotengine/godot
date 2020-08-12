@@ -31,6 +31,7 @@
 #ifndef DOC_DATA_H
 #define DOC_DATA_H
 
+#include "core/io/json.h"
 #include "core/io/xml_parser.h"
 #include "core/map.h"
 #include "core/variant.h"
@@ -139,6 +140,7 @@ public:
 	Error load_classes(const String &p_dir);
 	static Error erase_classes(const String &p_dir);
 	static void write_class(ClassDoc &p_class, XmlWriteStream &p_ws);
+	static String json_from_class_doc(const ClassDoc &p_class);
 	Error save_classes(const String &p_default_path, const Map<String, String> &p_class_path);
 
 	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);

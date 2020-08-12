@@ -33,6 +33,7 @@
 
 #include "core/script_language.h"
 #include "editor/code_editor.h"
+#include "editor/documentation_generation_dialog.h"
 #include "editor/editor_help.h"
 #include "editor/editor_help_search.h"
 #include "editor/editor_plugin.h"
@@ -187,6 +188,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
+		GENERATE_DOCUMENTATIONS,
 		FILE_THEME,
 		FILE_RUN,
 		FILE_CLOSE,
@@ -266,6 +268,7 @@ class ScriptEditor : public PanelContainer {
 	EditorFileDialog *file_dialog;
 	AcceptDialog *error_dialog;
 	ConfirmationDialog *erase_tab_confirm;
+	DocumentationGenerationDialog *doc_gen_dialog;
 	ScriptCreateDialog *script_create_dialog;
 	Button *scripts_visible;
 
@@ -364,6 +367,7 @@ class ScriptEditor : public PanelContainer {
 	void _clear_execution(REF p_script);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _update_window_menu();
+	void _docs_generated();
 	void _script_created(Ref<Script> p_script);
 
 	ScriptEditorBase *_get_current_editor() const;

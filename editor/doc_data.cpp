@@ -1220,6 +1220,107 @@ void DocData::write_class(ClassDoc &p_class, XmlWriteStream &p_ws) {
 	_write_string(p_ws, 0, "</class>");
 }
 
+String DocData::json_from_class_doc(const ClassDoc &p_class) {
+	Dictionary json;
+	json["name"] = p_class.name;
+	json["inherits"] = p_class.inherits;
+	json["brief_description"] = p_class.brief_description.strip_edges();
+	json["description"] = p_class.description.strip_edges();
+
+	Array tutorials;
+	for (int i = 0; i < p_class.tutorials.size(); i++) {
+		Dictionary tutorial;
+		tutorial["title"] = p_class.tutorials[i].title;
+		tutorial["link"] = p_class.tutorials[i].link;
+		tutorials.append(tutorial);
+	}
+	json["tutorials"] = tutorials;
+
+	Array constants;
+	for (int i = 0; i < p_class.constants.size(); i++) {
+		Dictionary constant;
+		constant["name"] = p_class.constants[i].name;
+		constant["value"] = p_class.constants[i].value;
+		if (p_class.constants[i].enumeration != "") {
+			constant["enumeration"] = p_class.constants[i].enumeration;
+		}
+		constant["description"] = p_class.constants[i].description.strip_edges();
+		constants.append(constant);
+	}
+	json["constants"] = constants;
+
+	Array signals;
+	for (int i = 0; i < p_class.signals.size(); i++) {
+		Dictionary signal;
+		signal["name"] = p_class.signals[i].name;
+		signal["return_type"] = p_class.signals[i].return_type;
+		if (p_class.signals[i].qualifiers != "") {
+			signal["qualifiers"] = p_class.signals[i].qualifiers;
+		}
+		signal["description"] = p_class.signals[i].description.strip_edges();
+
+		Array arguments;
+		for (int j = 0; j < p_class.signals[i].arguments.size(); j++) {
+			Dictionary argument;
+			argument["name"] = p_class.signals[i].arguments[j].name;
+			if (p_class.signals[i].arguments[j].type != "") {
+				argument["type"] = p_class.signals[i].arguments[j].type;
+			} else {
+				argument["type"] = "Variant";
+			}
+			if (p_class.signals[i].arguments[j].default_value != "") {
+				argument["default_value"] = p_class.signals[i].arguments[j].default_value;
+			}
+			arguments.push_back(argument);
+		}
+		signal["arguments"] = arguments;
+		signals.append(signal);
+	}
+	json["signals"] = signals;
+
+	Array variables;
+	for (int i = 0; i < p_class.properties.size(); i++) {
+		Dictionary var;
+		var["name"] = p_class.properties[i].name;
+		var["type"] = p_class.properties[i].type;
+		// TODO: var["enumeration"] = p_class.properties[i].enumeration;
+		// TODO: setter, getter.
+		var["description"] = p_class.properties[i].description.strip_edges();
+		if (p_class.properties[i].default_value != "") {
+			var["default_value"] = p_class.properties[i].default_value;
+		}
+		variables.append(var);
+	}
+	json["variables"] = variables;
+
+	Array methods;
+	for (int i = 0; i < p_class.methods.size(); i++) {
+		Dictionary method;
+		method["name"] = p_class.methods[i].name;
+		method["return_type"] = p_class.methods[i].return_type;
+		if (p_class.methods[i].qualifiers != "") {
+			method["qualifiers"] = p_class.methods[i].qualifiers;
+		}
+		method["description"] = p_class.methods[i].description.strip_edges();
+
+		Array arguments;
+		for (int j = 0; j < p_class.methods[i].arguments.size(); j++) {
+			Dictionary argument;
+			argument["name"] = p_class.methods[i].arguments[j].name;
+			argument["type"] = p_class.methods[i].arguments[j].type;
+			if (p_class.methods[i].arguments[j].default_value != "") {
+				argument["default_value"] = p_class.methods[i].arguments[j].default_value;
+			}
+			arguments.push_back(argument);
+		}
+		method["arguments"] = arguments;
+		methods.append(method);
+	}
+	json["methods"] = methods;
+
+	return JSON::print(json, "\t", false);
+}
+
 Error DocData::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
 	for (Map<String, ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
 		ClassDoc &c = E->get();
