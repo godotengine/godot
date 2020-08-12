@@ -34,6 +34,7 @@
 
 #include "scene/main/node.h"
 
+#include "core/local_vector.h"
 #include "core/oa_hash_map.h"
 #include <deque>
 
@@ -144,30 +145,22 @@ public:
 		// ID used to reference this Node in the networked calls.
 		uint32_t id = 0;
 		ObjectID instance_id = ObjectID();
+		NodeData *controlled_by = nullptr;
+
 		bool is_controller = false;
-		ControllerID controlled_by = ControllerID();
-		ControllerID isle_id = ControllerID();
-		Vector<ObjectID> controlled_nodes;
-		Vector<VarData> vars;
-		Vector<StringName> functions;
+		LocalVector<NodeData *> controlled_nodes;
+
+		LocalVector<VarData> vars;
+		LocalVector<StringName> functions;
 
 		// This is valid to use only inside the process function.
 		Node *node = nullptr;
 
 		NodeData();
-		NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller);
 
 		// Returns the index to access the variable.
 		int find_var_by_id(uint32_t p_id) const;
-		bool can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const;
 		void process(const real_t p_delta) const;
-	};
-
-	struct IsleData {
-		ControllerID controller_instance_id = ControllerID();
-		Vector<ObjectID> nodes;
-
-		NetworkedController *controller = nullptr;
 	};
 
 	struct PeerData {
@@ -184,6 +177,7 @@ public:
 		operator String() const;
 	};
 
+	// TODO rename, no more isle concept
 	struct IsleSnapshot {
 		uint64_t input_id;
 		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
@@ -214,12 +208,14 @@ private:
 
 	uint32_t node_counter = 1;
 	bool generate_id = false;
-	OAHashMap<ControllerID, IsleData> isle_data;
-	OAHashMap<ObjectID, NodeData> nodes_data;
-	ObjectID main_controller_object_id = ObjectID();
-	NetworkedController *main_controller = nullptr;
+	// All possible registered nodes.
+	LocalVector<NodeData *> node_data;
+	// Controller nodes.
+	LocalVector<NodeData *> controllers;
+	// Global nodes.
+	LocalVector<NodeData *> global_nodes;
 
-	// Just used to detect when the peer change. TODO Rimve this and use a singnal instead.
+	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
 
 public:
@@ -250,11 +246,6 @@ public:
 
 	void set_node_as_controlled_by(Node *p_node, Node *p_controller);
 
-	void unregister_controller(Node *p_controller);
-
-	void _register_controller(NetworkedController *p_controller);
-	void _unregister_controller(NetworkedController *p_controller);
-
 	void register_process(Node *p_node, StringName p_function);
 	void unregister_process(Node *p_node, StringName p_function);
 
@@ -277,8 +268,9 @@ public:
 	void _rpc_notify_need_full_snapshot();
 
 private:
-	void put_into_isle(ObjectID p_node_id, ControllerID p_isle_id);
-	void remove_from_isle(ObjectID p_node_id, ControllerID p_isle_id);
+	NodeData *get_node_data(ObjectID p_object_id) const;
+	uint32_t find_global_node(ObjectID p_object_id) const;
+	uint32_t find_controller_node(ControllerID p_controller_id) const;
 
 	void process();
 
@@ -314,9 +306,10 @@ public:
 
 	virtual void process() = 0;
 	virtual void receive_snapshot(Variant p_snapshot) = 0;
-	virtual void on_node_added(ObjectID p_node_id) {}
-	virtual void on_variable_added(ObjectID p_node_id, StringName p_var_name) {}
-	virtual void on_variable_changed(ObjectID p_node_id, StringName p_var_name) {}
+	virtual void on_node_added(SceneSynchronizer::NodeData *p_node_data) {}
+	virtual void on_node_removed(SceneSynchronizer::NodeData *p_node_data) {}
+	virtual void on_variable_added(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) {}
+	virtual void on_variable_changed(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) {}
 };
 
 class NoNetSynchronizer : public Synchronizer {
@@ -325,10 +318,10 @@ class NoNetSynchronizer : public Synchronizer {
 public:
 	NoNetSynchronizer(SceneSynchronizer *p_node);
 
-	virtual void clear();
+	virtual void clear() override;
 
-	virtual void process();
-	virtual void receive_snapshot(Variant p_snapshot);
+	virtual void process() override;
+	virtual void receive_snapshot(Variant p_snapshot) override;
 };
 
 class ServerSynchronizer : public Synchronizer {
@@ -346,40 +339,45 @@ class ServerSynchronizer : public Synchronizer {
 public:
 	ServerSynchronizer(SceneSynchronizer *p_node);
 
-	virtual void clear();
-	virtual void process();
-	virtual void receive_snapshot(Variant p_snapshot);
-	virtual void on_node_added(ObjectID p_node_id);
-	virtual void on_variable_added(ObjectID p_node_id, StringName p_var_name);
-	virtual void on_variable_changed(ObjectID p_node_id, StringName p_var_name);
+	virtual void clear() override;
+	virtual void process() override;
+	virtual void receive_snapshot(Variant p_snapshot) override;
+	virtual void on_node_added(SceneSynchronizer::NodeData *p_node_data) override;
+	virtual void on_variable_added(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) override;
+	virtual void on_variable_changed(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) override;
 
 	void process_snapshot_notificator(real_t p_delta);
-	Variant generate_snapshot(bool p_full_snapshot) const;
+	Vector<Variant> global_nodes_generate_snapshot(bool p_full_snapshot) const;
+	void controller_generate_snapshot(const SceneSynchronizer::NodeData *p_node_data, bool p_full_snapshot, Vector<Variant> &r_snapshot_result) const;
+	void generate_snapshot_node_data(const SceneSynchronizer::NodeData *p_node_data, bool p_full_snapshot, Vector<Variant> &r_result) const;
 };
 
 class ClientSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
 
+	SceneSynchronizer::NodeData *player_controller_node_data = nullptr;
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
 	SceneSynchronizer::Snapshot server_snapshot;
-	OAHashMap<SceneSynchronizer::ControllerID, std::deque<SceneSynchronizer::IsleSnapshot>> client_controllers_snapshots;
-	OAHashMap<SceneSynchronizer::ControllerID, std::deque<SceneSynchronizer::IsleSnapshot>> server_controllers_snapshots;
+	std::deque<SceneSynchronizer::IsleSnapshot> client_snapshots;
+	std::deque<SceneSynchronizer::IsleSnapshot> server_snapshots;
 
 	bool need_full_snapshot_notified = false;
 
 public:
 	ClientSynchronizer(SceneSynchronizer *p_node);
 
-	virtual void clear();
+	virtual void clear() override;
 
-	virtual void process();
-	virtual void receive_snapshot(Variant p_snapshot);
+	virtual void process() override;
+	virtual void receive_snapshot(Variant p_snapshot) override;
+	virtual void on_node_added(SceneSynchronizer::NodeData *p_node_data) override;
+	virtual void on_node_removed(SceneSynchronizer::NodeData *p_node_data) override;
 
 private:
 	/// Store node data organized per controller.
-	void store_snapshot(const NetworkedController *p_controller);
+	void store_snapshot();
 
 	void store_controllers_snapshot(
 			const SceneSynchronizer::Snapshot &p_snapshot,
