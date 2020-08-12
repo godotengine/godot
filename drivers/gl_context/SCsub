@@ -2,7 +2,12 @@
 
 Import("env")
 
-if env["platform"] in ["haiku", "osx", "windows", "x11"]:
+if env["platform"] in ["windows"] and env["use_angle"]:
+    # ANGLE on windows desktop
+    thirdparty_dir = "#thirdparty/angle/include"
+    env.Prepend(CPPPATH=[thirdparty_dir])
+    env.Append(LIBPATH=["#thirdparty/angle/out/Release"])
+elif env["platform"] in ["windows", "haiku", "osx", "x11"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [

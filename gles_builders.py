@@ -158,8 +158,9 @@ def include_file_in_legacygl_header(filename, header_data, depth):
                     bind = bind.replace("attrib:", "").strip()
                     header_data.attributes += [(name, bind)]
 
-        if line.strip().find("out ") == 0 and line.find("tfb:") != -1:
+        if (line.strip().find("out ") == 0 or line.strip().find("flat out ") == 0) and line.find("tfb:") != -1:
             uline = line.replace("out ", "")
+            uline = uline.replace("flat ", "")
             uline = uline.replace("highp ", "")
             uline = uline.replace(";", "")
             uline = uline[uline.find(" ") :].strip()
