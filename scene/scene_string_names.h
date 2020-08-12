@@ -96,6 +96,7 @@ public:
 	StringName animation_started;
 
 	StringName pose_updated;
+	StringName bone_pose_changed;
 
 	StringName body_shape_entered;
 	StringName body_entered;
