@@ -121,6 +121,18 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="_structured_text_parser" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="args" type="Array">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				User defined BiDi algorithm override function.
+				Return [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
 		<method name="accept_event">
 			<return type="void">
 			</return>
@@ -177,6 +189,17 @@
 			</argument>
 			<description>
 				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is [code]null[/code] or invalid, the override is cleared and the font from assigned [Theme] is used.
+			</description>
+		</method>
+		<method name="add_theme_font_size_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="font_size" type="int">
+			</argument>
+			<description>
+				Overrides the font size with given [code]name[/code] in the [member theme] resource the control uses. If [code]font_size[/code] is [code]-1[/code], the override is cleared and the font size from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_icon_override">
@@ -443,7 +466,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
@@ -466,7 +489,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
@@ -477,10 +500,21 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_theme_font_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns a font size from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -488,7 +522,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
@@ -499,7 +533,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
@@ -563,7 +597,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
@@ -583,7 +617,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
@@ -603,7 +637,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
@@ -618,12 +652,32 @@
 				Returns [code]true[/code] if font with given [code]name[/code] has a valid override in this [Control] node.
 			</description>
 		</method>
+		<method name="has_theme_font_size" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns [code]true[/code] if font size with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+			</description>
+		</method>
+		<method name="has_theme_font_size_override" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+				Returns [code]true[/code] if font size with given [code]name[/code] has a valid override in this [Control] node.
+			</description>
+		</method>
 		<method name="has_theme_icon" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
@@ -652,7 +706,7 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			<argument index="1" name="node_type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
@@ -665,6 +719,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] has a valid override in this [Control] node.
+			</description>
+		</method>
+		<method name="is_layout_rtl" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if layout is right-to-left.
 			</description>
 		</method>
 		<method name="minimum_size_changed">
@@ -1015,6 +1076,9 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
+			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
+		</member>
 		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
 			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
@@ -1158,6 +1222,9 @@
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
 			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled.
+		</constant>
+		<constant name="NOTIFICATION_LAYOUT_DIRECTION_CHANGED" value="49">
+			Sent when control layout direction is changed.
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [member mouse_default_cursor_shape].
@@ -1308,6 +1375,52 @@
 		</constant>
 		<constant name="ANCHOR_END" value="1" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
+		</constant>
+		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
+			Automatic layout direction, determined from the parent control layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
+			Automatic layout direction, determined from the current locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
+			Left-to-right layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
+			Right-to-left layout direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_INHERITED" value="3" enum="TextDirection">
+			Text writing direction is the same as layout direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_AUTO" value="0" enum="TextDirection">
+			Automatic text writing direction, determined from the current locale and text content.
+		</constant>
+		<constant name="TEXT_DIRECTION_LTR" value="1" enum="TextDirection">
+			Left-to-right text writing direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_RTL" value="2" enum="TextDirection">
+			Right-to-left text writing direction.
+		</constant>
+		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
+			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
+		</constant>
+		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
+			BiDi override for URI.
+		</constant>
+		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
+			BiDi override for file path.
+		</constant>
+		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
+			BiDi override for email.
+		</constant>
+		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
+			BiDi override for lists.
+			Structured text options: list separator [code]String[/code].
+		</constant>
+		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
+			Use default Unicode BiDi algorithm.
+		</constant>
+		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
+			User defined structured text BiDi override function.
 		</constant>
 	</constants>
 </class>

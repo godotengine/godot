@@ -204,6 +204,9 @@
 		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Font color of the currently selected tab.
 		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the tab names.
+		</theme_item>
 		<theme_item name="icon_separation" type="int" default="4">
 			Space between tab's name and its icon.
 		</theme_item>

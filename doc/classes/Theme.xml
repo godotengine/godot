@@ -51,6 +51,17 @@
 				Clears the [Font] at [code]name[/code] if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="clear_font_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName">
+			</argument>
+			<description>
+				Clears the font size [code]name[/code] if the theme has [code]node_type[/code].
+			</description>
+		</method>
 		<method name="clear_icon">
 			<return type="void">
 			</return>
@@ -149,6 +160,26 @@
 				Returns all the [Font]s as a [PackedStringArray] filled with each [Font]'s name, for use in [method get_font], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_font_size" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName">
+			</argument>
+			<description>
+				Returns the font size at [code]name[/code] if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_font_size_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="node_type" type="String">
+			</argument>
+			<description>
+				Returns all the font sizes as a [PackedStringArray] filled with each font size name, for use in [method get_font_size], if the theme has [code]node_type[/code].
+			</description>
+		</method>
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture2D">
 			</return>
@@ -241,6 +272,18 @@
 				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
+		<method name="has_font_size" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName">
+			</argument>
+			<description>
+				Returns [code]true[/code] if font size with [code]name[/code] is in [code]node_type[/code].
+				Returns [code]false[/code] if the theme does not have [code]node_type[/code].
+			</description>
+		</method>
 		<method name="has_icon" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -307,6 +350,20 @@
 				Does nothing if the theme does not have [code]node_type[/code].
 			</description>
 		</method>
+		<method name="set_font_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node_type" type="StringName">
+			</argument>
+			<argument index="2" name="font_size" type="int">
+			</argument>
+			<description>
+				Sets the theme's font size to [code]font_size[/code] at [code]name[/code] in [code]node_type[/code].
+				Does nothing if the theme does not have [code]node_type[/code].
+			</description>
+		</method>
 		<method name="set_icon">
 			<return type="void">
 			</return>
@@ -339,6 +396,9 @@
 	<members>
 		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
 			The theme's default font.
+		</member>
+		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
+			The theme's default font size. Set to [code]-1[/code] to ignore and use global default.
 		</member>
 	</members>
 	<constants>

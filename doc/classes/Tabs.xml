@@ -20,6 +20,15 @@
 				Adds a new tab.
 			</description>
 		</method>
+		<method name="clear_tab_opentype_features">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Removes all OpenType features from the tab title.
+			</description>
+		</method>
 		<method name="ensure_tab_visible">
 			<return type="void">
 			</return>
@@ -75,11 +84,31 @@
 				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
+		<method name="get_tab_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Returns tab title language code.
+			</description>
+		</method>
 		<method name="get_tab_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Returns the number of hidden tabs offsetted to the left.
+			</description>
+		</method>
+		<method name="get_tab_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code] of the tab title.
 			</description>
 		</method>
 		<method name="get_tab_rect" qualifiers="const">
@@ -89,6 +118,15 @@
 			</argument>
 			<description>
 				Returns tab [Rect2] with local position and size.
+			</description>
+		</method>
+		<method name="get_tab_text_direction" qualifiers="const">
+			<return type="int" enum="Control.TextDirection">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Returns tab title text base writing direction.
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
@@ -157,6 +195,41 @@
 			</argument>
 			<description>
 				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
+			</description>
+		</method>
+		<method name="set_tab_language">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="language" type="String">
+			</argument>
+			<description>
+				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
+		<method name="set_tab_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="tag" type="String">
+			</argument>
+			<argument index="2" name="values" type="int">
+			</argument>
+			<description>
+				Sets OpenType feature [code]tag[/code] for the tab title. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
+		<method name="set_tab_text_direction">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="direction" type="int" enum="Control.TextDirection">
+			</argument>
+			<description>
+				Sets tab title base writing direction.
 			</description>
 		</method>
 		<method name="set_tab_title">
@@ -294,6 +367,9 @@
 		</theme_item>
 		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 			Font color of the currently selected tab.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the tab names.
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
 			The horizontal separation between the tabs.

@@ -10,6 +10,7 @@
 		- [kbd]Ctrl + X[/kbd]: Cut
 		- [kbd]Ctrl + V[/kbd] or [kbd]Ctrl + Y[/kbd]: Paste/"yank"
 		- [kbd]Ctrl + Z[/kbd]: Undo
+		- [kbd]Ctrl + ~[/kbd]: Swap input direction.
 		- [kbd]Ctrl + Shift + Z[/kbd]: Redo
 		- [kbd]Ctrl + U[/kbd]: Delete text from the cursor position to the beginning of the line
 		- [kbd]Ctrl + K[/kbd]: Delete text from the cursor position to the end of the line
@@ -46,6 +47,13 @@
 				Erases the [LineEdit]'s [member text].
 			</description>
 		</method>
+		<method name="clear_opentype_features">
+			<return type="void">
+			</return>
+			<description>
+				Removes all OpenType features.
+			</description>
+		</method>
 		<method name="delete_char_at_cursor">
 			<return type="void">
 			</return>
@@ -76,6 +84,15 @@
 			</return>
 			<description>
 				Returns the [PopupMenu] of this [LineEdit]. By default, this menu is displayed when right-clicking on the [LineEdit].
+			</description>
+		</method>
+		<method name="get_opentype_feature" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
@@ -126,6 +143,17 @@
 				Selects the whole [String].
 			</description>
 		</method>
+		<method name="set_opentype_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
+				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
@@ -139,6 +167,10 @@
 		</member>
 		<member name="caret_force_displayed" type="bool" setter="cursor_set_force_displayed" getter="cursor_get_force_displayed" default="false">
 		</member>
+		<member name="caret_mid_grapheme" type="bool" setter="set_mid_grapheme_caret_enabled" getter="get_mid_grapheme_caret_enabled" default="false">
+			Allow moving caret, selecting and removing the individual composite character components.
+			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
+		</member>
 		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position" default="0">
 			The cursor's position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
@@ -148,6 +180,9 @@
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], the context menu will appear when right-clicked.
 		</member>
+		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
+			If [code]true[/code], control characters are displayed.
+		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
@@ -155,6 +190,9 @@
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
+			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
 			Maximum amount of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
 		</member>
@@ -180,9 +218,18 @@
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]false[/code], using shortcuts will be disabled.
 		</member>
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+			Set BiDi algorithm override for the structured text.
+		</member>
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+			Set additional options for BiDi override.
+		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [LineEdit].
 			[b]Note:[/b] Changing text using this property won't emit the [signal text_changed] signal.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
+			Base text writing direction.
 		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
 			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
@@ -220,7 +267,7 @@
 			Aligns the text on the right-hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Stretches whitespaces to fit the [LineEdit]'s width.
+			Expand row to fit the [LineEdit]'s width.
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
@@ -244,7 +291,70 @@
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
 			Reverse the last undo action.
 		</constant>
-		<constant name="MENU_MAX" value="7" enum="MenuItems">
+		<constant name="MENU_DIR_INHERITED" value="7" enum="MenuItems">
+			Sets text direction to inherited.
+		</constant>
+		<constant name="MENU_DIR_AUTO" value="8" enum="MenuItems">
+			Sets text direction to automatic.
+		</constant>
+		<constant name="MENU_DIR_LTR" value="9" enum="MenuItems">
+			Sets text direction to left-to-right.
+		</constant>
+		<constant name="MENU_DIR_RTL" value="10" enum="MenuItems">
+			Sets text direction to right-to-left.
+		</constant>
+		<constant name="MENU_DISPLAY_UCC" value="11" enum="MenuItems">
+			Toggles control character display.
+		</constant>
+		<constant name="MENU_INSERT_LRM" value="12" enum="MenuItems">
+			Inserts left-to-right mark (LRM) character.
+		</constant>
+		<constant name="MENU_INSERT_RLM" value="13" enum="MenuItems">
+			Inserts right-to-left mark (RLM) character.
+		</constant>
+		<constant name="MENU_INSERT_LRE" value="14" enum="MenuItems">
+			Inserts start of left-to-right embedding (LRE) character.
+		</constant>
+		<constant name="MENU_INSERT_RLE" value="15" enum="MenuItems">
+			Inserts start of right-to-left embedding (RLE) character.
+		</constant>
+		<constant name="MENU_INSERT_LRO" value="16" enum="MenuItems">
+			Inserts start of left-to-right override (LRO) character.
+		</constant>
+		<constant name="MENU_INSERT_RLO" value="17" enum="MenuItems">
+			Inserts start of right-to-left override (RLO) character.
+		</constant>
+		<constant name="MENU_INSERT_PDF" value="18" enum="MenuItems">
+			Inserts pop direction formatting (PDF) character.
+		</constant>
+		<constant name="MENU_INSERT_ALM" value="19" enum="MenuItems">
+			Inserts Arabic letter mark (ALM) character.
+		</constant>
+		<constant name="MENU_INSERT_LRI" value="20" enum="MenuItems">
+			Inserts left-to-right isolate (LRI) character.
+		</constant>
+		<constant name="MENU_INSERT_RLI" value="21" enum="MenuItems">
+			Inserts right-to-left isolate (RLI) character.
+		</constant>
+		<constant name="MENU_INSERT_FSI" value="22" enum="MenuItems">
+			Inserts first strong isolate (FSI) character.
+		</constant>
+		<constant name="MENU_INSERT_PDI" value="23" enum="MenuItems">
+			Inserts pop direction isolate (PDI) character.
+		</constant>
+		<constant name="MENU_INSERT_ZWJ" value="24" enum="MenuItems">
+			Inserts zero width joiner (ZWJ) character.
+		</constant>
+		<constant name="MENU_INSERT_ZWNJ" value="25" enum="MenuItems">
+			Inserts zero width non-joiner (ZWNJ) character.
+		</constant>
+		<constant name="MENU_INSERT_WJ" value="26" enum="MenuItems">
+			Inserts word joiner (WJ) character.
+		</constant>
+		<constant name="MENU_INSERT_SHY" value="27" enum="MenuItems">
+			Inserts soft hyphen (SHY) character.
+		</constant>
+		<constant name="MENU_MAX" value="28" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 	</constants>
@@ -275,6 +385,9 @@
 		</theme_item>
 		<theme_item name="font_color_uneditable" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 			Font color when editing is disabled.
+		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [LineEdit]'s text.
 		</theme_item>
 		<theme_item name="minimum_spaces" type="int" default="12">
 			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of space characters (i.e. this amount of space characters can be displayed without scrolling).

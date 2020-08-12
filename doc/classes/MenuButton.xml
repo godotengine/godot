@@ -67,6 +67,9 @@
 		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
+		<theme_item name="font_size" type="int">
+			Font size of the [MenuButton]'s text.
+		</theme_item>
 		<theme_item name="hover" type="StyleBox">
 			[StyleBox] used when the [MenuButton] is being hovered.
 		</theme_item>
