@@ -53,6 +53,8 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -73,6 +75,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -245,8 +248,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	public GodotView mView;
 	private boolean godot_initialized = false;
 
-	private GodotEditText mEditText;
-
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mGravity;
@@ -315,11 +316,29 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		setContentView(layout);
 
+		// GodotEditText layout
+		GodotEditText edittext = new GodotEditText(this);
+		edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		// ...add to FrameLayout
+		layout.addView(edittext);
+
 		mView = new GodotView(this, xrMode, use_gl3, use_32_bits, use_debug_opengl);
 		layout.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		edittext.setView(mView);
+		io.setEdit(edittext);
 
-		mEditText = new GodotEditText(this, mView);
-		io.setEdit(mEditText);
+		mView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				Point fullSize = new Point();
+				getWindowManager().getDefaultDisplay().getSize(fullSize);
+				Rect gameSize = new Rect();
+				mView.getWindowVisibleDisplayFrame(gameSize);
+
+				final int keyboardHeight = fullSize.y - gameSize.bottom;
+				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+			}
+		});
 
 		final String[] current_command_line = command_line;
 		mView.queueEvent(new Runnable() {
@@ -552,7 +571,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		super.onCreate(icicle);
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 		pluginRegistry = GodotPluginRegistry.initializePluginRegistry(this);
 
@@ -692,20 +710,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-
-		mView.post(new Runnable() {
-			@Override
-			public void run() {
-				mEditText.onInitView();
-			}
-		});
-	}
-
-	@Override
 	protected void onDestroy() {
-		mEditText.onDestroyView();
 
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainDestroy();
