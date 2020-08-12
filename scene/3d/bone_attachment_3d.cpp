@@ -59,7 +59,7 @@ void BoneAttachment3D::_check_bind() {
 			bone_idx = sk->find_bone(bone_name);
 		}
 		if (bone_idx != -1) {
-			sk->connect("bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_override));
+			sk->connect("bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
 			set_transform(sk->get_bone_global_pose(bone_idx));
 			bound = true;
 		}
@@ -70,9 +70,25 @@ void BoneAttachment3D::_check_unbind() {
 	if (bound) {
 		Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
 		if (sk) {
-			sk->disconnect("bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_override));
+			sk->disconnect("bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
 		}
 		bound = false;
+	}
+}
+
+void BoneAttachment3D::_transform_changed() {
+	if (override_pose) {
+		Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
+		ERR_FAIL_COND_MSG(!sk, "Cannot override pose: Skeleton not found!");
+		ERR_FAIL_INDEX_MSG(bone_idx, sk->get_bone_count(), "Cannot override pose: Bone index is out of range!");
+
+		if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
+			sk->set_bone_global_pose_override(bone_idx, get_transform(), 1.0, true);
+		} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
+			sk->set_bone_local_pose_override(bone_idx, sk->global_pose_to_local_pose(bone_idx, get_transform()), 1.0, true);
+		} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
+			sk->set_bone_custom_pose(bone_idx, sk->global_pose_to_local_pose(bone_idx, get_transform()));
+		}
 	}
 }
 
@@ -116,6 +132,52 @@ int BoneAttachment3D::get_bone_idx() const {
 	return bone_idx;
 }
 
+void BoneAttachment3D::set_override_pose(bool p_override) {
+	override_pose = p_override;
+	set_notify_local_transform(override_pose);
+
+	if (!override_pose) {
+		Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
+		if (sk) {
+			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
+				sk->set_bone_global_pose_override(bone_idx, get_transform(), 0.0, false);
+			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
+				sk->set_bone_local_pose_override(bone_idx, get_transform(), 0.0, false);
+			} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
+				sk->set_bone_custom_pose(bone_idx, Transform());
+			}
+		}
+		_transform_changed();
+	}
+}
+
+bool BoneAttachment3D::get_override_pose() const {
+	return override_pose;
+}
+
+void BoneAttachment3D::set_override_mode(int p_mode) {
+	if (override_pose) {
+		Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
+		if (sk) {
+			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
+				sk->set_bone_global_pose_override(bone_idx, get_transform(), 0.0, false);
+			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
+				sk->set_bone_local_pose_override(bone_idx, get_transform(), 0.0, false);
+			} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
+				sk->set_bone_custom_pose(bone_idx, Transform());
+			}
+		}
+		override_mode = p_mode;
+		_transform_changed();
+		return;
+	}
+	override_mode = p_mode;
+}
+
+int BoneAttachment3D::get_override_mode() const {
+	return override_mode;
+}
+
 void BoneAttachment3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -124,14 +186,27 @@ void BoneAttachment3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			_check_unbind();
 		} break;
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			_transform_changed();
+		} break;
 	}
 }
 
-void BoneAttachment3D::on_bone_pose_override(int p_bone_index) {
+void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 	if (bone_idx == p_bone_index) {
 		Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
 		if (sk) {
-			set_transform(sk->get_bone_global_pose(p_bone_index));
+			if (!override_pose) {
+				set_transform(sk->get_bone_global_pose(p_bone_index));
+			} else {
+				set_notify_local_transform(false);
+				if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
+					set_transform(sk->local_pose_to_global_pose(bone_idx, sk->get_bone_local_pose_override(bone_idx)));
+				} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
+					set_transform(sk->local_pose_to_global_pose(bone_idx, sk->get_bone_custom_pose(bone_idx)));
+				}
+				set_notify_local_transform(true);
+			}
 		}
 	}
 }
@@ -146,8 +221,15 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_idx", "bone_idx"), &BoneAttachment3D::set_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_bone_idx"), &BoneAttachment3D::get_bone_idx);
 
-	ClassDB::bind_method(D_METHOD("on_bone_pose_override"), &BoneAttachment3D::on_bone_pose_override);
+	ClassDB::bind_method(D_METHOD("on_bone_pose_update"), &BoneAttachment3D::on_bone_pose_update);
+
+	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
+	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);
+	ClassDB::bind_method(D_METHOD("set_override_mode", "override_mode"), &BoneAttachment3D::set_override_mode);
+	ClassDB::bind_method(D_METHOD("get_override_mode"), &BoneAttachment3D::get_override_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "override_mode", PROPERTY_HINT_ENUM, "Global Pose Override, Local Pose Override, Custom Pose"), "set_override_mode", "get_override_mode");
 }
