@@ -89,6 +89,8 @@ protected:
 
 	Dictionary initialize(const Dictionary &p_params);
 	void initialized(const Variant &p_params);
+	void cancelRequest(const Dictionary &p_params);
+	void progress(const Dictionary &p_params);
 
 public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }

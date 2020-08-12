@@ -189,15 +189,16 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 		Dictionary params;
 		params["path"] = workspace->root;
-		Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
-
-		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
-				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
-		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer != NULL) {
-			String msg = JSON::print(request);
-			msg = format_output(msg);
-			(*peer)->res_queue.push_back(msg.utf8());
+		if ((bool)_EDITOR_GET("network/language_server/use_custom_methods")) {
+			Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
+			ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
+					vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
+			Ref<LSPeer> peer = clients.get(latest_client_id);
+			if (peer != NULL) {
+				String msg = JSON::print(request);
+				msg = format_output(msg);
+				(*peer)->res_queue.push_back(msg.utf8());
+			}
 		}
 	}
 
@@ -226,7 +227,9 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 		capabilities.native_classes.push_back(gdclass);
 	}
 
-	notify_client("gdscript/capabilities", capabilities.to_json());
+	if ((bool)_EDITOR_GET("network/language_server/use_custom_methods")) {
+		notify_client("gdscript/capabilities", capabilities.to_json());
+	}
 }
 
 void GDScriptLanguageProtocol::poll() {
@@ -303,6 +306,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	text_document.instance();
 	set_scope("textDocument", text_document.ptr());
 	set_scope("completionItem", text_document.ptr());
+	set_scope("$", text_document.ptr());
 	set_scope("workspace", workspace.ptr());
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }

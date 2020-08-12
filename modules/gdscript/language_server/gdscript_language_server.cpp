@@ -46,6 +46,7 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);
 	_EDITOR_DEF("network/language_server/show_native_symbols_in_editor", false);
 	_EDITOR_DEF("network/language_server/use_thread", use_thread);
+	_EDITOR_DEF("network/language_server/use_custom_methods", true);
 }
 
 void GDScriptLanguageServer::_notification(int p_what) {
