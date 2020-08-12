@@ -260,6 +260,14 @@
         ]
       },
       {
+        "name": "godot_array_new_packed_vector2i_array",
+        "return_type": "void",
+        "arguments": [
+          ["godot_array *", "r_dest"],
+          ["const godot_packed_vector2i_array *", "p_pv2a"]
+        ]
+      },
+      {
         "name": "godot_array_new_packed_string_array",
         "return_type": "void",
         "arguments": [
@@ -2635,6 +2643,152 @@
         "return_type": "void",
         "arguments": [
           ["godot_packed_vector2_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_new",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "r_dest"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_new_copy",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "r_dest"],
+          ["const godot_packed_vector2i_array *", "p_src"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_new_with_array",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "r_dest"],
+          ["const godot_array *", "p_a"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_empty",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["const godot_packed_vector2i_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_append",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_vector2i *", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_append_array",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_packed_vector2i_array *", "p_array"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_insert",
+        "return_type": "godot_error",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_int", "p_idx"],
+          ["const godot_vector2i *", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_has",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_vector2i *", "p_value"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_sort",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_invert",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_push_back",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_vector2i *", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_remove",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_int", "p_idx"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_resize",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_int", "p_size"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_ptr",
+        "return_type": "const godot_vector2i *",
+        "arguments": [
+          ["const godot_packed_vector2i_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_ptrw",
+        "return_type": "godot_vector2i *",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_set",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"],
+          ["const godot_int", "p_idx"],
+          ["const godot_vector2i *", "p_data"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_get",
+        "return_type": "godot_vector2i",
+        "arguments": [
+          ["const godot_packed_vector2i_array *", "p_self"],
+          ["const godot_int", "p_idx"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_size",
+        "return_type": "godot_int",
+        "arguments": [
+          ["const godot_packed_vector2i_array *", "p_self"]
+        ]
+      },
+      {
+        "name": "godot_packed_vector2i_array_destroy",
+        "return_type": "void",
+        "arguments": [
+          ["godot_packed_vector2i_array *", "p_self"]
         ]
       },
       {
@@ -7612,6 +7766,306 @@
           "arguments": [
             ["godot_object *", "p_obj"],
             ["const godot_net_webrtc_data_channel *", "p_interface"]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "text",
+      "type": "TEXT",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "next": null,
+      "api": [
+        {
+          "name": "godot_text_register_interface",
+          "return_type": "void",
+          "arguments": [
+            ["const godot_text_interface_gdnative *", "p_interface"],
+            ["const godot_string *", "p_name"],
+            ["uint32_t", "p_features"]
+          ]
+        },
+        {
+          "name": "godot_glyph_new",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "r_dest"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_range",
+          "return_type": "godot_vector2i",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_range",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["const godot_vector2i *", "p_range"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_count",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_count",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_int", "p_count"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_repeat",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_repeat",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_int", "p_repeat"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_flags",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_flags",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_int", "p_flags"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_offset",
+          "return_type": "godot_vector2",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_offset",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["const godot_vector2 *", "p_offset"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_advance",
+          "return_type": "godot_real",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_advance",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_real", "p_advance"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_font",
+          "return_type": "godot_rid",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_font",
+          "return_type": "void ",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_rid *", "p_font"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_font_size",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_font_size",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_int", "p_size"]
+          ]
+        },
+        {
+          "name": "godot_glyph_get_index",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_glyph *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_glyph_set_index",
+          "return_type": "void",
+          "arguments": [
+            ["godot_glyph *", "p_self"],
+            ["godot_int", "p_index"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_new",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "r_dest"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_new_copy",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "r_dest"],
+            ["const godot_packed_glyph_array *", "p_src"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_empty",
+          "return_type": "godot_bool",
+          "arguments": [
+            ["const godot_packed_glyph_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_append",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_glyph *", "p_data"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_append_array",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_packed_glyph_array *", "p_array"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_insert",
+          "return_type": "godot_error",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_int", "p_idx"],
+            ["const godot_glyph *", "p_data"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_has",
+          "return_type": "godot_bool",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_glyph *", "p_value"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_sort",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_invert",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_push_back",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_glyph *", "p_data"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_remove",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_int", "p_idx"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_resize",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_int", "p_size"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_ptr",
+          "return_type": "const godot_glyph *",
+          "arguments": [
+            ["const godot_packed_glyph_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_ptrw",
+          "return_type": "godot_glyph *",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_set",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"],
+            ["const godot_int", "p_idx"],
+            ["const godot_glyph *", "p_data"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_get",
+          "return_type": "godot_glyph",
+          "arguments": [
+            ["const godot_packed_glyph_array *", "p_self"],
+            ["const godot_int", "p_idx"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_size",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_packed_glyph_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_packed_glyph_array_destroy",
+          "return_type": "void",
+          "arguments": [
+            ["godot_packed_glyph_array *", "p_self"]
           ]
         }
       ]

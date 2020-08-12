@@ -457,9 +457,6 @@ if env["builtin_icu"]:
         ]
     )
 
-    if env_icu.msvc:
-        env_icu.AppendUnique(CCFLAGS=["/utf-8"])
-
     env_icu.disable_warnings()
     env_thirdparty = env_icu.Clone()
     env_thirdparty.disable_warnings()
