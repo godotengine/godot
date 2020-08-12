@@ -53,6 +53,9 @@ void Camera2D::_update_scroll() {
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
 		Transform2D xform = get_camera_transform();
+		
+		// Round origin to nearest whole pixel to prevent sprite jittering
+		xform.set_origin(xform.get_origin().round());
 
 		viewport->set_canvas_transform(xform);
 
