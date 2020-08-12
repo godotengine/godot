@@ -207,6 +207,8 @@ void Skeleton3D::_notification(int p_what) {
 			Bone *bonesptr = bones.ptrw();
 
 			int len = bones.size();
+			dirty = false;
+
 			// Update bone transforms
 			force_update_all_bone_transforms();
 
@@ -265,8 +267,6 @@ void Skeleton3D::_notification(int p_what) {
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
 				}
 			}
-
-			dirty = false;
 
 #ifdef TOOLS_ENABLED
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);
@@ -609,39 +609,6 @@ void Skeleton3D::set_bone_enabled(int p_bone, bool p_enabled) {
 bool Skeleton3D::is_bone_enabled(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), false);
 	return bones[p_bone].enabled;
-}
-
-void Skeleton3D::bind_child_node_to_bone(int p_bone, Node *p_node) {
-	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_INDEX(p_bone, bones.size());
-
-	ObjectID id = p_node->get_instance_id();
-
-	for (const ObjectID &E : bones[p_bone].nodes_bound) {
-		if (E == id) {
-			return; // already here
-		}
-	}
-
-	bones.write[p_bone].nodes_bound.push_back(id);
-}
-
-void Skeleton3D::unbind_child_node_from_bone(int p_bone, Node *p_node) {
-	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_INDEX(p_bone, bones.size());
-
-	ObjectID id = p_node->get_instance_id();
-	bones.write[p_bone].nodes_bound.erase(id);
-}
-
-void Skeleton3D::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {
-	ERR_FAIL_INDEX(p_bone, bones.size());
-
-	for (const ObjectID &E : bones[p_bone].nodes_bound) {
-		Object *obj = ObjectDB::get_instance(E);
-		ERR_CONTINUE(!obj);
-		p_bound->push_back(Object::cast_to<Node>(obj));
-	}
 }
 
 void Skeleton3D::clear_bones() {
@@ -1027,19 +994,14 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 			b.global_pose_override_amount = 0.0;
 		}
 
-		for (List<ObjectID>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
-			Object *obj = ObjectDB::get_instance(E->get());
-			ERR_CONTINUE(!obj);
-			Node3D *node_3d = Object::cast_to<Node3D>(obj);
-			ERR_CONTINUE(!node_3d);
-			node_3d->set_transform(b.pose_global);
-		}
-
 		// Add the bone's children to the list of bones to be processed
 		int child_bone_size = b.child_bones.size();
 		for (int i = 0; i < child_bone_size; i++) {
 			bones_to_process.push_back(b.child_bones[i]);
 		}
+
+		//emit_signal(SceneStringNames::get_singleton()->bone_pose_changed, &current_bone_idx); // Kinda works, but always gives an ID of 1
+		emit_signal(SceneStringNames::get_singleton()->bone_pose_changed, current_bone_idx);
 	}
 }
 
@@ -1217,6 +1179,8 @@ void Skeleton3D::_bind_methods() {
 #ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("pose_updated"));
 #endif // TOOLS_ENABLED
+
+	ADD_SIGNAL(MethodInfo("bone_pose_changed", PropertyInfo(Variant::INT, "bone_idx")));
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }

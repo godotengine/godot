@@ -38,6 +38,7 @@ class BoneAttachment3D : public Node3D {
 
 	bool bound = false;
 	String bone_name;
+	int bone_idx = -1;
 
 	void _check_bind();
 	void _check_unbind();
@@ -51,6 +52,11 @@ protected:
 public:
 	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
+
+	void set_bone_idx(const int &p_idx);
+	int get_bone_idx() const;
+
+	virtual void on_bone_pose_override(int bone_index);
 
 	BoneAttachment3D();
 };
