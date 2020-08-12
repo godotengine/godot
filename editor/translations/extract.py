@@ -167,8 +167,6 @@ def process_file(f, fname):
 print("Updating the editor.pot template...")
 
 for fname in matches:
-    # NOTE FOR MENTORS: When I tested on windows I need to add encoding="utf8" at the end to be able to open the file.
-    # maybe on Linux there's no need.
     with open(fname, "r", encoding="utf8") as f:
         process_file(f, fname)
 

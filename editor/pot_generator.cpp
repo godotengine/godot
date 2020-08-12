@@ -79,12 +79,12 @@ void POTGenerator::generate_pot(const String &p_file) {
 			return;
 		}
 
-		for (int j = 0; j < msgids.size(); j++) {
-			_add_new_msgid(msgids[j], "", "", file_path);
-		}
 		for (int j = 0; j < msgids_context_plural.size(); j++) {
 			Vector<String> entry = msgids_context_plural[j];
 			_add_new_msgid(entry[0], entry[1], entry[2], file_path);
+		}
+		for (int j = 0; j < msgids.size(); j++) {
+			_add_new_msgid(msgids[j], "", "", file_path);
 		}
 	}
 
