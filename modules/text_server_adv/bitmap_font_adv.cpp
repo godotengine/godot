@@ -539,13 +539,13 @@ Vector2 BitmapFontDataAdvanced::draw_glyph(RID p_canvas, int p_size, const Vecto
 		cpos += c->align * (float(p_size) / float(base_size));
 		cpos.y -= ascent * (float(p_size) / float(base_size));
 		if (RenderingServer::get_singleton() != nullptr) {
-			if (distance_field_hint) {
-				RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, true);
-			}
-			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, c->rect.size * (float(p_size) / float(base_size))), textures[c->texture_idx]->get_rid(), c->rect, p_color, false, RID(), RID(), Color(1, 1, 1, 1), false);
-			if (distance_field_hint) {
-				RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, false);
-			}
+			//if (distance_field_hint) { // Not implemented.
+			//	RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, true);
+			//}
+			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, c->rect.size * (float(p_size) / float(base_size))), textures[c->texture_idx]->get_rid(), c->rect, p_color, false, false);
+			//if (distance_field_hint) {
+			//	RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(p_canvas, false);
+			//}
 		}
 	}
 

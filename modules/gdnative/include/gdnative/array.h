@@ -65,6 +65,7 @@ void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src);
 void GDAPI godot_array_new_packed_color_array(godot_array *r_dest, const godot_packed_color_array *p_pca);
 void GDAPI godot_array_new_packed_vector3_array(godot_array *r_dest, const godot_packed_vector3_array *p_pv3a);
 void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot_packed_vector2_array *p_pv2a);
+void GDAPI godot_array_new_packed_vector2i_array(godot_array *r_dest, const godot_packed_vector2i_array *p_pv2a);
 void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa);
 void GDAPI godot_array_new_packed_float32_array(godot_array *r_dest, const godot_packed_float32_array *p_pra);
 void GDAPI godot_array_new_packed_float64_array(godot_array *r_dest, const godot_packed_float64_array *p_pra);

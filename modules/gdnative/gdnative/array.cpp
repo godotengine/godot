@@ -90,6 +90,18 @@ void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot
 	}
 }
 
+void GDAPI godot_array_new_packed_vector2i_array(godot_array *r_dest, const godot_packed_vector2i_array *p_pv2a) {
+	Array *dest = (Array *)r_dest;
+	Vector<Vector2i> *pca = (Vector<Vector2i> *)p_pv2a;
+	memnew_placement(dest, Array);
+	dest->resize(pca->size());
+
+	for (int i = 0; i < dest->size(); i++) {
+		Variant v = pca->operator[](i);
+		dest->operator[](i) = v;
+	}
+}
+
 void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa) {
 	Array *dest = (Array *)r_dest;
 	Vector<String> *pca = (Vector<String> *)p_psa;

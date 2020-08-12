@@ -924,7 +924,7 @@ Vector2 DynamicFontDataAdvanced::draw_glyph(RID p_canvas, int p_size, const Vect
 			}
 			if (RenderingServer::get_singleton() != nullptr) {
 				RID texture = fds->textures[ch.texture_idx].texture->get_rid();
-				RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, ch.rect.size), texture, ch.rect_uv, modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
+				RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, ch.rect.size), texture, ch.rect_uv, modulate, false, false);
 			}
 		}
 
@@ -955,7 +955,7 @@ Vector2 DynamicFontDataAdvanced::draw_glyph_outline(RID p_canvas, int p_size, in
 			}
 			if (RenderingServer::get_singleton() != nullptr) {
 				RID texture = fds->textures[ch.texture_idx].texture->get_rid();
-				RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, ch.rect.size), texture, ch.rect_uv, modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
+				RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, ch.rect.size), texture, ch.rect_uv, modulate, false, false);
 			}
 		}
 
