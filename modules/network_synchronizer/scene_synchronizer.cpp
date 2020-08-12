@@ -58,7 +58,7 @@ bool SceneSynchronizer::VarData::operator==(const VarData &p_other) const {
 
 SceneSynchronizer::NodeData::NodeData() {}
 
-int SceneSynchronizer::NodeData::find_var_by_id(uint32_t p_id) const {
+int64_t SceneSynchronizer::NodeData::find_var_by_id(uint32_t p_id) const {
 	if (p_id == 0) {
 		return -1;
 	}
@@ -549,6 +549,20 @@ void SceneSynchronizer::_rpc_notify_need_full_snapshot() {
 	pd->need_full_snapshot = true;
 }
 
+void SceneSynchronizer::update_peers() {
+	if (peer_dirty == false) {
+		return;
+	}
+	peer_dirty = false;
+
+	for (uint32_t i = 0; i < controllers.size(); i += 1) {
+		PeerData *pd = peer_data.lookup_ptr(controllers[i]->node->get_network_master());
+		if (pd) {
+			pd->controller_id = controllers[i]->instance_id;
+		}
+	}
+}
+
 SceneSynchronizer::NodeData *SceneSynchronizer::register_node(Node *p_node) {
 	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
 
@@ -572,6 +586,7 @@ SceneSynchronizer::NodeData *SceneSynchronizer::register_node(Node *p_node) {
 			controllers.push_back(nd);
 
 			controller->set_scene_synchronizer(this);
+			peer_dirty = true;
 
 		} else {
 			nd->is_controller = false;
@@ -744,6 +759,10 @@ void SceneSynchronizer::validate_nodes() {
 		if (null_objects[i]->controlled_by) {
 			null_objects[i]->controlled_by->controlled_nodes.erase(null_objects[i]);
 			null_objects[i]->controlled_by = nullptr;
+		}
+
+		if (null_objects[i]->is_controller) {
+			peer_dirty = true;
 		}
 
 		synchronizer->on_node_removed(null_objects[i]);
@@ -945,8 +964,10 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		state_notifier_timer = 0.0;
 	}
 
-	Variant full_snapshot;
-	Variant delta_snapshot;
+	scene_synchronizer->update_peers();
+
+	Vector<Variant> full_global_nodes_snapshot;
+	Vector<Variant> delta_global_nodes_snapshot;
 	for (
 			OAHashMap<int, SceneSynchronizer::PeerData>::Iterator peer_it = scene_synchronizer->peer_data.iter();
 			peer_it.valid;
@@ -954,20 +975,33 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		if (peer_it.value->force_notify_snapshot == false && notify_state == false) {
 			continue;
 		}
+
 		peer_it.value->force_notify_snapshot = false;
 
+		// TODO improve the controller lookup.
+		const uint32_t cindex = scene_synchronizer->find_controller_node(peer_it.value->controller_id);
+		// TODO well that's not really true.. I may have peers that doesn't have controllers in a
+		// certain moment. Please improve this mechanism trying to just use the
+		// node->get_network_master() to get the peer.
+		ERR_CONTINUE_MSG(cindex == UINT32_MAX, "This should never happen. Likely there is a bug.");
+
+		Vector<Variant> snap;
 		if (peer_it.value->need_full_snapshot) {
 			peer_it.value->need_full_snapshot = false;
-			if (full_snapshot.get_type() == Variant::NIL) {
-				full_snapshot = generate_snapshot(true);
+			if (full_global_nodes_snapshot.size() == 0) {
+				full_global_nodes_snapshot = global_nodes_generate_snapshot(true);
 			}
-			scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", full_snapshot);
+			snap = full_global_nodes_snapshot;
+			generate_snapshot_node_data(scene_synchronizer->controllers[cindex], true, snap);
 		} else {
-			if (delta_snapshot.get_type() == Variant::NIL) {
-				delta_snapshot = generate_snapshot(false);
+			if (delta_global_nodes_snapshot.size() == 0) {
+				delta_global_nodes_snapshot = global_nodes_generate_snapshot(false);
 			}
-			scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", delta_snapshot);
+			snap = delta_global_nodes_snapshot;
+			generate_snapshot_node_data(scene_synchronizer->controllers[cindex], false, snap);
 		}
+
+		scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", snap);
 	}
 
 	if (notify_state) {
@@ -977,12 +1011,12 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 	}
 }
 
-Vector<Variant> ServerSynchronizer::global_nodes_generate_snapshot(bool p_full_snapshot) const {
+Vector<Variant> ServerSynchronizer::global_nodes_generate_snapshot(bool p_force_full_snapshot) const {
 	Vector<Variant> snapshot_data;
 
 	for (uint32_t i = 0; i < scene_synchronizer->global_nodes.size(); i += 1) {
 		const SceneSynchronizer::NodeData *node_data = scene_synchronizer->global_nodes[i];
-		generate_snapshot_node_data(node_data, p_full_snapshot, snapshot_data);
+		generate_snapshot_node_data(node_data, p_force_full_snapshot, snapshot_data);
 	}
 
 	return snapshot_data;
@@ -990,26 +1024,26 @@ Vector<Variant> ServerSynchronizer::global_nodes_generate_snapshot(bool p_full_s
 
 void ServerSynchronizer::controller_generate_snapshot(
 		const SceneSynchronizer::NodeData *p_node_data,
-		bool p_full_snapshot,
+		bool p_force_full_snapshot,
 		Vector<Variant> &r_snapshot_result) const {
 	CRASH_COND(p_node_data->is_controller == false);
 
 	generate_snapshot_node_data(
 			p_node_data,
-			p_full_snapshot,
+			p_force_full_snapshot,
 			r_snapshot_result);
 
 	for (uint32_t i = 0; i < p_node_data->controlled_nodes.size(); i += 1) {
 		generate_snapshot_node_data(
 				p_node_data->controlled_nodes[i],
-				p_full_snapshot,
+				p_force_full_snapshot,
 				r_snapshot_result);
 	}
 }
 
 void ServerSynchronizer::generate_snapshot_node_data(
 		const SceneSynchronizer::NodeData *p_node_data,
-		bool p_full_snapshot,
+		bool p_force_full_snapshot,
 		Vector<Variant> &r_snapshot_data) const {
 	// The packet data is an array that contains the informations to update the
 	// client snapshot.
@@ -1035,7 +1069,7 @@ void ServerSynchronizer::generate_snapshot_node_data(
 
 	// Insert NODE DATA.
 	Variant snap_node_data;
-	if (p_full_snapshot || (change != nullptr && change->not_known_before)) {
+	if (p_force_full_snapshot || (change != nullptr && change->not_known_before)) {
 		Vector<Variant> _snap_node_data;
 		_snap_node_data.resize(2);
 		_snap_node_data.write[0] = p_node_data->id;
@@ -1046,7 +1080,7 @@ void ServerSynchronizer::generate_snapshot_node_data(
 		snap_node_data = p_node_data->id;
 	}
 
-	const bool node_has_changes = p_full_snapshot || (change != nullptr && change->vars.empty() == false);
+	const bool node_has_changes = p_force_full_snapshot || (change != nullptr && change->vars.empty() == false);
 
 	if (p_node_data->is_controller) {
 		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node_data->node);
@@ -1079,14 +1113,14 @@ void ServerSynchronizer::generate_snapshot_node_data(
 				continue;
 			}
 
-			if (p_full_snapshot == false && change->vars.has(vars[i].var.name) == false) {
+			if (p_force_full_snapshot == false && change->vars.has(vars[i].var.name) == false) {
 				// This is a delta snapshot and this variable is the same as
 				// before. Skip it.
 				continue;
 			}
 
 			Variant var_info;
-			if (p_full_snapshot || change->uknown_vars.has(vars[i].var.name)) {
+			if (p_force_full_snapshot || change->uknown_vars.has(vars[i].var.name)) {
 				Vector<Variant> _var_info;
 				_var_info.resize(2);
 				_var_info.write[0] = vars[i].id;
@@ -1701,7 +1735,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 	need_full_snapshot_notified = false;
 
 	ERR_FAIL_COND_V_MSG(
-			scene_synchronizer->main_controller == nullptr,
+			player_controller_node_data == nullptr,
 			false,
 			"Is not possible to receive server snapshots if you are not tracking any NetController.");
 	ERR_FAIL_COND_V(!p_snapshot.is_array(), false);
@@ -1772,35 +1806,21 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				ERR_FAIL_V_MSG(false, "Snapshot is corrupted.");
 			}
 
-			if (node == nullptr) {
+			synchronizer_node_data = node ? scene_synchronizer->get_node_data(node->get_instance_id()) : nullptr;
+			if (synchronizer_node_data == nullptr) {
 				// This node does't exist; skip it entirely.
 				for (snap_data_index += 1; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
 					if (raw_snapshot_ptr[snap_data_index].get_type() == Variant::NIL) {
 						break;
 					}
 				}
-				continue;
-
+				ERR_CONTINUE_MSG(true, "This node doesn't exist on this client: " + itos(node_id));
 			} else {
 				// The node is found, make sure to update the instance ID in
 				// case it changed or it doesn't exist.
 				node_id_map.set(node_id, node->get_instance_id());
 			}
 
-			// Make sure this node is being tracked locally.
-			synchronizer_node_data = scene_synchronizer->nodes_data.lookup_ptr(node->get_instance_id());
-			if (synchronizer_node_data == nullptr) {
-				// This node is not know on this client. Add it.
-				const bool is_controller =
-						Object::cast_to<NetworkedController>(node) != nullptr;
-
-				scene_synchronizer->nodes_data.set(
-						node->get_instance_id(),
-						SceneSynchronizer::NodeData(node_id,
-								node->get_instance_id(),
-								is_controller));
-				synchronizer_node_data = scene_synchronizer->nodes_data.lookup_ptr(node->get_instance_id());
-			}
 			// Update the node ID created on the server.
 			synchronizer_node_data->id = node_id;
 
@@ -1820,9 +1840,10 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				const uint64_t input_id = raw_snapshot_ptr[snap_data_index];
 				ERR_FAIL_COND_V_MSG(input_id == UINT64_MAX, false, "The server is always able to send input_id, so this snapshot seems corrupted.");
 
+				// TODO this must go away.
 				server_snapshot.controllers_input_id.set(node->get_instance_id(), input_id);
 
-				if (node == scene_synchronizer->main_controller) {
+				if (synchronizer_node_data == player_controller_node_data) {
 					// This is the main controller, store the ID also in the
 					// utility variable.
 					player_controller_input_id = input_id;
@@ -1853,7 +1874,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				var_id = var_data[0];
 				variable_name = var_data[1];
 
-				const int index = synchronizer_node_data->vars.find(variable_name);
+				const int64_t index = synchronizer_node_data->vars.find(variable_name);
 
 				if (index == -1) {
 					// The variable is not known locally, so just add it so
@@ -1871,14 +1892,14 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				} else {
 					// The variable is known, just make sure that it has the
 					// same server ID.
-					synchronizer_node_data->vars.write[index].id = var_id;
+					synchronizer_node_data->vars[index].id = var_id;
 				}
 			} else if (v.get_type() == Variant::INT) {
 				// The variable is stored in the compact form.
 
 				var_id = v;
 
-				const int index = synchronizer_node_data->find_var_by_id(var_id);
+				const int64_t index = synchronizer_node_data->find_var_by_id(var_id);
 				if (index == -1) {
 					NET_DEBUG_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
 
@@ -1890,7 +1911,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 					continue;
 				} else {
 					variable_name = synchronizer_node_data->vars[index].var.name;
-					synchronizer_node_data->vars.write[index].id = var_id;
+					synchronizer_node_data->vars[index].id = var_id;
 				}
 
 			} else {
@@ -1934,7 +1955,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
 	if (player_controller_input_id == UINT64_MAX) {
-		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + scene_synchronizer->main_controller->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
+		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + player_controller_node_data->node->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
 		NET_DEBUG_PRINT(p_snapshot);
 		return false;
 	} else {

@@ -164,6 +164,7 @@ public:
 	};
 
 	struct PeerData {
+		ControllerID controller_id = ControllerID();
 		// For new peers notify the state as soon as possible.
 		bool force_notify_snapshot = true;
 		// For new peers a full snapshot is needed.
@@ -204,6 +205,7 @@ private:
 	bool reset_in_progress = false;
 	bool rewinding_in_progress = false;
 
+	bool peer_dirty = false;
 	OAHashMap<int, PeerData> peer_data;
 
 	uint32_t node_counter = 1;
@@ -266,6 +268,8 @@ public:
 
 	void _rpc_send_state(Variant p_snapshot);
 	void _rpc_notify_need_full_snapshot();
+
+	void update_peers();
 
 private:
 	NodeData *get_node_data(ObjectID p_object_id) const;
@@ -347,9 +351,9 @@ public:
 	virtual void on_variable_changed(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) override;
 
 	void process_snapshot_notificator(real_t p_delta);
-	Vector<Variant> global_nodes_generate_snapshot(bool p_full_snapshot) const;
-	void controller_generate_snapshot(const SceneSynchronizer::NodeData *p_node_data, bool p_full_snapshot, Vector<Variant> &r_snapshot_result) const;
-	void generate_snapshot_node_data(const SceneSynchronizer::NodeData *p_node_data, bool p_full_snapshot, Vector<Variant> &r_result) const;
+	Vector<Variant> global_nodes_generate_snapshot(bool p_force_full_snapshot) const;
+	void controller_generate_snapshot(const SceneSynchronizer::NodeData *p_node_data, bool p_force_full_snapshot, Vector<Variant> &r_snapshot_result) const;
+	void generate_snapshot_node_data(const SceneSynchronizer::NodeData *p_node_data, bool p_force_full_snapshot, Vector<Variant> &r_result) const;
 };
 
 class ClientSynchronizer : public Synchronizer {
