@@ -1,5 +1,7 @@
 // Names from https://en.wikipedia.org/wiki/X11_color_names
 // and https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.colors?view=netcore-3.1
+#include <vector>
+
 #include "core/map.h"
 
 static Map<String, Color> _named_colors;
@@ -7,150 +9,239 @@ static void _populate_named_colors() {
 	if (!_named_colors.empty()) {
 		return;
 	}
-	_named_colors.insert("ALICE_BLUE", Color(0.94, 0.97, 1.00));
-	_named_colors.insert("ANTIQUE_WHITE", Color(0.98, 0.92, 0.84));
-	_named_colors.insert("AQUA", Color(0.00, 1.00, 1.00));
-	_named_colors.insert("AQUAMARINE", Color(0.50, 1.00, 0.83));
-	_named_colors.insert("AZURE", Color(0.94, 1.00, 1.00));
-	_named_colors.insert("BEIGE", Color(0.96, 0.96, 0.86));
-	_named_colors.insert("BISQUE", Color(1.00, 0.89, 0.77));
-	_named_colors.insert("BLACK", Color(0.00, 0.00, 0.00));
-	_named_colors.insert("BLANCHED_ALMOND", Color(1.00, 0.92, 0.80));
-	_named_colors.insert("BLUE", Color(0.00, 0.00, 1.00));
-	_named_colors.insert("BLUE_VIOLET", Color(0.54, 0.17, 0.89));
-	_named_colors.insert("BROWN", Color(0.65, 0.16, 0.16));
-	_named_colors.insert("BURLY_WOOD", Color(0.87, 0.72, 0.53));
-	_named_colors.insert("CADET_BLUE", Color(0.37, 0.62, 0.63));
-	_named_colors.insert("CHARTREUSE", Color(0.50, 1.00, 0.00));
-	_named_colors.insert("CHOCOLATE", Color(0.82, 0.41, 0.12));
-	_named_colors.insert("CORAL", Color(1.00, 0.50, 0.31));
-	_named_colors.insert("CORNFLOWER_BLUE", Color(0.39, 0.58, 0.93));
-	_named_colors.insert("CORNSILK", Color(1.00, 0.97, 0.86));
-	_named_colors.insert("CRIMSON", Color(0.86, 0.08, 0.24));
-	_named_colors.insert("CYAN", Color(0.00, 1.00, 1.00));
-	_named_colors.insert("DARK_BLUE", Color(0.00, 0.00, 0.55));
-	_named_colors.insert("DARK_CYAN", Color(0.00, 0.55, 0.55));
-	_named_colors.insert("DARK_GOLDENROD", Color(0.72, 0.53, 0.04));
-	_named_colors.insert("DARK_GRAY", Color(0.66, 0.66, 0.66));
-	_named_colors.insert("DARK_GREEN", Color(0.00, 0.39, 0.00));
-	_named_colors.insert("DARK_KHAKI", Color(0.74, 0.72, 0.42));
-	_named_colors.insert("DARK_MAGENTA", Color(0.55, 0.00, 0.55));
-	_named_colors.insert("DARK_OLIVE_GREEN", Color(0.33, 0.42, 0.18));
-	_named_colors.insert("DARK_ORANGE", Color(1.00, 0.55, 0.00));
-	_named_colors.insert("DARK_ORCHID", Color(0.60, 0.20, 0.80));
-	_named_colors.insert("DARK_RED", Color(0.55, 0.00, 0.00));
-	_named_colors.insert("DARK_SALMON", Color(0.91, 0.59, 0.48));
-	_named_colors.insert("DARK_SEA_GREEN", Color(0.56, 0.74, 0.56));
-	_named_colors.insert("DARK_SLATE_BLUE", Color(0.28, 0.24, 0.55));
-	_named_colors.insert("DARK_SLATE_GRAY", Color(0.18, 0.31, 0.31));
-	_named_colors.insert("DARK_TURQUOISE", Color(0.00, 0.81, 0.82));
-	_named_colors.insert("DARK_VIOLET", Color(0.58, 0.00, 0.83));
-	_named_colors.insert("DEEP_PINK", Color(1.00, 0.08, 0.58));
-	_named_colors.insert("DEEP_SKY_BLUE", Color(0.00, 0.75, 1.00));
-	_named_colors.insert("DIM_GRAY", Color(0.41, 0.41, 0.41));
-	_named_colors.insert("DODGER_BLUE", Color(0.12, 0.56, 1.00));
-	_named_colors.insert("FIREBRICK", Color(0.70, 0.13, 0.13));
-	_named_colors.insert("FLORAL_WHITE", Color(1.00, 0.98, 0.94));
-	_named_colors.insert("FOREST_GREEN", Color(0.13, 0.55, 0.13));
-	_named_colors.insert("FUCHSIA", Color(1.00, 0.00, 1.00));
-	_named_colors.insert("GAINSBORO", Color(0.86, 0.86, 0.86));
-	_named_colors.insert("GHOST_WHITE", Color(0.97, 0.97, 1.00));
-	_named_colors.insert("GOLD", Color(1.00, 0.84, 0.00));
-	_named_colors.insert("GOLDENROD", Color(0.85, 0.65, 0.13));
-	_named_colors.insert("GRAY", Color(0.75, 0.75, 0.75));
-	_named_colors.insert("GREEN", Color(0.00, 1.00, 0.00));
-	_named_colors.insert("GREEN_YELLOW", Color(0.68, 1.00, 0.18));
-	_named_colors.insert("HONEYDEW", Color(0.94, 1.00, 0.94));
-	_named_colors.insert("HOT_PINK", Color(1.00, 0.41, 0.71));
-	_named_colors.insert("INDIAN_RED", Color(0.80, 0.36, 0.36));
-	_named_colors.insert("INDIGO", Color(0.29, 0.00, 0.51));
-	_named_colors.insert("IVORY", Color(1.00, 1.00, 0.94));
-	_named_colors.insert("KHAKI", Color(0.94, 0.90, 0.55));
-	_named_colors.insert("LAVENDER", Color(0.90, 0.90, 0.98));
-	_named_colors.insert("LAVENDER_BLUSH", Color(1.00, 0.94, 0.96));
-	_named_colors.insert("LAWN_GREEN", Color(0.49, 0.99, 0.00));
-	_named_colors.insert("LEMON_CHIFFON", Color(1.00, 0.98, 0.80));
-	_named_colors.insert("LIGHT_BLUE", Color(0.68, 0.85, 0.90));
-	_named_colors.insert("LIGHT_CORAL", Color(0.94, 0.50, 0.50));
-	_named_colors.insert("LIGHT_CYAN", Color(0.88, 1.00, 1.00));
-	_named_colors.insert("LIGHT_GOLDENROD", Color(0.98, 0.98, 0.82));
-	_named_colors.insert("LIGHT_GRAY", Color(0.83, 0.83, 0.83));
-	_named_colors.insert("LIGHT_GREEN", Color(0.56, 0.93, 0.56));
-	_named_colors.insert("LIGHT_PINK", Color(1.00, 0.71, 0.76));
-	_named_colors.insert("LIGHT_SALMON", Color(1.00, 0.63, 0.48));
-	_named_colors.insert("LIGHT_SEA_GREEN", Color(0.13, 0.70, 0.67));
-	_named_colors.insert("LIGHT_SKY_BLUE", Color(0.53, 0.81, 0.98));
-	_named_colors.insert("LIGHT_SLATE_GRAY", Color(0.47, 0.53, 0.60));
-	_named_colors.insert("LIGHT_STEEL_BLUE", Color(0.69, 0.77, 0.87));
-	_named_colors.insert("LIGHT_YELLOW", Color(1.00, 1.00, 0.88));
-	_named_colors.insert("LIME", Color(0.00, 1.00, 0.00));
-	_named_colors.insert("LIME_GREEN", Color(0.20, 0.80, 0.20));
-	_named_colors.insert("LINEN", Color(0.98, 0.94, 0.90));
-	_named_colors.insert("MAGENTA", Color(1.00, 0.00, 1.00));
-	_named_colors.insert("MAROON", Color(0.69, 0.19, 0.38));
-	_named_colors.insert("MEDIUM_AQUAMARINE", Color(0.40, 0.80, 0.67));
-	_named_colors.insert("MEDIUM_BLUE", Color(0.00, 0.00, 0.80));
-	_named_colors.insert("MEDIUM_ORCHID", Color(0.73, 0.33, 0.83));
-	_named_colors.insert("MEDIUM_PURPLE", Color(0.58, 0.44, 0.86));
-	_named_colors.insert("MEDIUM_SEA_GREEN", Color(0.24, 0.70, 0.44));
-	_named_colors.insert("MEDIUM_SLATE_BLUE", Color(0.48, 0.41, 0.93));
-	_named_colors.insert("MEDIUM_SPRING_GREEN", Color(0.00, 0.98, 0.60));
-	_named_colors.insert("MEDIUM_TURQUOISE", Color(0.28, 0.82, 0.80));
-	_named_colors.insert("MEDIUM_VIOLET_RED", Color(0.78, 0.08, 0.52));
-	_named_colors.insert("MIDNIGHT_BLUE", Color(0.10, 0.10, 0.44));
-	_named_colors.insert("MINT_CREAM", Color(0.96, 1.00, 0.98));
-	_named_colors.insert("MISTY_ROSE", Color(1.00, 0.89, 0.88));
-	_named_colors.insert("MOCCASIN", Color(1.00, 0.89, 0.71));
-	_named_colors.insert("NAVAJO_WHITE", Color(1.00, 0.87, 0.68));
-	_named_colors.insert("NAVY_BLUE", Color(0.00, 0.00, 0.50));
-	_named_colors.insert("OLD_LACE", Color(0.99, 0.96, 0.90));
-	_named_colors.insert("OLIVE", Color(0.50, 0.50, 0.00));
-	_named_colors.insert("OLIVE_DRAB", Color(0.42, 0.56, 0.14));
-	_named_colors.insert("ORANGE", Color(1.00, 0.65, 0.00));
-	_named_colors.insert("ORANGE_RED", Color(1.00, 0.27, 0.00));
-	_named_colors.insert("ORCHID", Color(0.85, 0.44, 0.84));
-	_named_colors.insert("PALE_GOLDENROD", Color(0.93, 0.91, 0.67));
-	_named_colors.insert("PALE_GREEN", Color(0.60, 0.98, 0.60));
-	_named_colors.insert("PALE_TURQUOISE", Color(0.69, 0.93, 0.93));
-	_named_colors.insert("PALE_VIOLET_RED", Color(0.86, 0.44, 0.58));
-	_named_colors.insert("PAPAYA_WHIP", Color(1.00, 0.94, 0.84));
-	_named_colors.insert("PEACH_PUFF", Color(1.00, 0.85, 0.73));
-	_named_colors.insert("PERU", Color(0.80, 0.52, 0.25));
-	_named_colors.insert("PINK", Color(1.00, 0.75, 0.80));
-	_named_colors.insert("PLUM", Color(0.87, 0.63, 0.87));
-	_named_colors.insert("POWDER_BLUE", Color(0.69, 0.88, 0.90));
-	_named_colors.insert("PURPLE", Color(0.63, 0.13, 0.94));
-	_named_colors.insert("REBECCA_PURPLE", Color(0.40, 0.20, 0.60));
-	_named_colors.insert("RED", Color(1.00, 0.00, 0.00));
-	_named_colors.insert("ROSY_BROWN", Color(0.74, 0.56, 0.56));
-	_named_colors.insert("ROYAL_BLUE", Color(0.25, 0.41, 0.88));
-	_named_colors.insert("SADDLE_BROWN", Color(0.55, 0.27, 0.07));
-	_named_colors.insert("SALMON", Color(0.98, 0.50, 0.45));
-	_named_colors.insert("SANDY_BROWN", Color(0.96, 0.64, 0.38));
-	_named_colors.insert("SEA_GREEN", Color(0.18, 0.55, 0.34));
-	_named_colors.insert("SEA_SHELL", Color(1.00, 0.96, 0.93));
-	_named_colors.insert("SIENNA", Color(0.63, 0.32, 0.18));
-	_named_colors.insert("SILVER", Color(0.75, 0.75, 0.75));
-	_named_colors.insert("SKY_BLUE", Color(0.53, 0.81, 0.92));
-	_named_colors.insert("SLATE_BLUE", Color(0.42, 0.35, 0.80));
-	_named_colors.insert("SLATE_GRAY", Color(0.44, 0.50, 0.56));
-	_named_colors.insert("SNOW", Color(1.00, 0.98, 0.98));
-	_named_colors.insert("SPRING_GREEN", Color(0.00, 1.00, 0.50));
-	_named_colors.insert("STEEL_BLUE", Color(0.27, 0.51, 0.71));
-	_named_colors.insert("TAN", Color(0.82, 0.71, 0.55));
-	_named_colors.insert("TEAL", Color(0.00, 0.50, 0.50));
-	_named_colors.insert("THISTLE", Color(0.85, 0.75, 0.85));
-	_named_colors.insert("TOMATO", Color(1.00, 0.39, 0.28));
-	_named_colors.insert("TRANSPARENT", Color(1.00, 1.00, 1.00, 0.00));
-	_named_colors.insert("TURQUOISE", Color(0.25, 0.88, 0.82));
-	_named_colors.insert("VIOLET", Color(0.93, 0.51, 0.93));
-	_named_colors.insert("WEB_GRAY", Color(0.50, 0.50, 0.50));
-	_named_colors.insert("WEB_GREEN", Color(0.00, 0.50, 0.00));
-	_named_colors.insert("WEB_MAROON", Color(0.50, 0.00, 0.00));
-	_named_colors.insert("WEB_PURPLE", Color(0.50, 0.00, 0.50));
-	_named_colors.insert("WHEAT", Color(0.96, 0.87, 0.70));
-	_named_colors.insert("WHITE", Color(1.00, 1.00, 1.00));
-	_named_colors.insert("WHITE_SMOKE", Color(0.96, 0.96, 0.96));
-	_named_colors.insert("YELLOW", Color(1.00, 1.00, 0.00));
-	_named_colors.insert("YELLOW_GREEN", Color(0.60, 0.80, 0.20));
+	_named_colors.insert("aliceblue", Color(0.94f, 0.97f, 1.00f));
+	_named_colors.insert("antiquewhite", Color(0.98f, 0.92f, 0.84f));
+	_named_colors.insert("aqua", Color(0.00f, 1.00f, 1.00f));
+	_named_colors.insert("aquamarine", Color(0.50f, 1.00f, 0.83f));
+	_named_colors.insert("azure", Color(0.94f, 1.00f, 1.00f));
+	_named_colors.insert("beige", Color(0.96f, 0.96f, 0.86f));
+	_named_colors.insert("bisque", Color(1.00f, 0.89f, 0.77f));
+	_named_colors.insert("black", Color(0.00f, 0.00f, 0.00f));
+	_named_colors.insert("blanchedalmond", Color(1.00f, 0.92f, 0.80f));
+	_named_colors.insert("blue", Color(0.00f, 0.00f, 1.00f));
+	_named_colors.insert("blueviolet", Color(0.54f, 0.17f, 0.89f));
+	_named_colors.insert("brown", Color(0.65f, 0.16f, 0.16f));
+	_named_colors.insert("burlywood", Color(0.87f, 0.72f, 0.53f));
+	_named_colors.insert("cadetblue", Color(0.37f, 0.62f, 0.63f));
+	_named_colors.insert("chartreuse", Color(0.50f, 1.00f, 0.00f));
+	_named_colors.insert("chocolate", Color(0.82f, 0.41f, 0.12f));
+	_named_colors.insert("coral", Color(1.00f, 0.50f, 0.31f));
+	_named_colors.insert("cornflowerblue", Color(0.39f, 0.58f, 0.93f));
+	_named_colors.insert("cornsilk", Color(1.00f, 0.97f, 0.86f));
+	_named_colors.insert("crimson", Color(0.86f, 0.08f, 0.24f));
+	_named_colors.insert("cyan", Color(0.00f, 1.00f, 1.00f));
+	_named_colors.insert("darkblue", Color(0.00f, 0.00f, 0.55f));
+	_named_colors.insert("darkcyan", Color(0.00f, 0.55f, 0.55f));
+	_named_colors.insert("darkgoldenrod", Color(0.72f, 0.53f, 0.04f));
+	_named_colors.insert("darkgray", Color(0.66f, 0.66f, 0.66f));
+	_named_colors.insert("darkgreen", Color(0.00f, 0.39f, 0.00f));
+	_named_colors.insert("darkkhaki", Color(0.74f, 0.72f, 0.42f));
+	_named_colors.insert("darkmagenta", Color(0.55f, 0.00f, 0.55f));
+	_named_colors.insert("darkolivegreen", Color(0.33f, 0.42f, 0.18f));
+	_named_colors.insert("darkorange", Color(1.00f, 0.55f, 0.00f));
+	_named_colors.insert("darkorchid", Color(0.60f, 0.20f, 0.80f));
+	_named_colors.insert("darkred", Color(0.55f, 0.00f, 0.00f));
+	_named_colors.insert("darksalmon", Color(0.91f, 0.59f, 0.48f));
+	_named_colors.insert("darkseagreen", Color(0.56f, 0.74f, 0.56f));
+	_named_colors.insert("darkslateblue", Color(0.28f, 0.24f, 0.55f));
+	_named_colors.insert("darkslategray", Color(0.18f, 0.31f, 0.31f));
+	_named_colors.insert("darkturquoise", Color(0.00f, 0.81f, 0.82f));
+	_named_colors.insert("darkviolet", Color(0.58f, 0.00f, 0.83f));
+	_named_colors.insert("deeppink", Color(1.00f, 0.08f, 0.58f));
+	_named_colors.insert("deepskyblue", Color(0.00f, 0.75f, 1.00f));
+	_named_colors.insert("dimgray", Color(0.41f, 0.41f, 0.41f));
+	_named_colors.insert("dodgerblue", Color(0.12f, 0.56f, 1.00f));
+	_named_colors.insert("firebrick", Color(0.70f, 0.13f, 0.13f));
+	_named_colors.insert("floralwhite", Color(1.00f, 0.98f, 0.94f));
+	_named_colors.insert("forestgreen", Color(0.13f, 0.55f, 0.13f));
+	_named_colors.insert("fuchsia", Color(1.00f, 0.00f, 1.00f));
+	_named_colors.insert("gainsboro", Color(0.86f, 0.86f, 0.86f));
+	_named_colors.insert("ghostwhite", Color(0.97f, 0.97f, 1.00f));
+	_named_colors.insert("gold", Color(1.00f, 0.84f, 0.00f));
+	_named_colors.insert("goldenrod", Color(0.85f, 0.65f, 0.13f));
+	_named_colors.insert("gray", Color(0.75f, 0.75f, 0.75f));
+	_named_colors.insert("green", Color(0.00f, 1.00f, 0.00f));
+	_named_colors.insert("greenyellow", Color(0.68f, 1.00f, 0.18f));
+	_named_colors.insert("honeydew", Color(0.94f, 1.00f, 0.94f));
+	_named_colors.insert("hotpink", Color(1.00f, 0.41f, 0.71f));
+	_named_colors.insert("indianred", Color(0.80f, 0.36f, 0.36f));
+	_named_colors.insert("indigo", Color(0.29f, 0.00f, 0.51f));
+	_named_colors.insert("ivory", Color(1.00f, 1.00f, 0.94f));
+	_named_colors.insert("khaki", Color(0.94f, 0.90f, 0.55f));
+	_named_colors.insert("lavender", Color(0.90f, 0.90f, 0.98f));
+	_named_colors.insert("lavenderblush", Color(1.00f, 0.94f, 0.96f));
+	_named_colors.insert("lawngreen", Color(0.49f, 0.99f, 0.00f));
+	_named_colors.insert("lemonchiffon", Color(1.00f, 0.98f, 0.80f));
+	_named_colors.insert("lightblue", Color(0.68f, 0.85f, 0.90f));
+	_named_colors.insert("lightcoral", Color(0.94f, 0.50f, 0.50f));
+	_named_colors.insert("lightcyan", Color(0.88f, 1.00f, 1.00f));
+	_named_colors.insert("lightgoldenrod", Color(0.98f, 0.98f, 0.82f));
+	_named_colors.insert("lightgray", Color(0.83f, 0.83f, 0.83f));
+	_named_colors.insert("lightgreen", Color(0.56f, 0.93f, 0.56f));
+	_named_colors.insert("lightpink", Color(1.00f, 0.71f, 0.76f));
+	_named_colors.insert("lightsalmon", Color(1.00f, 0.63f, 0.48f));
+	_named_colors.insert("lightseagreen", Color(0.13f, 0.70f, 0.67f));
+	_named_colors.insert("lightskyblue", Color(0.53f, 0.81f, 0.98f));
+	_named_colors.insert("lightslategray", Color(0.47f, 0.53f, 0.60f));
+	_named_colors.insert("lightsteelblue", Color(0.69f, 0.77f, 0.87f));
+	_named_colors.insert("lightyellow", Color(1.00f, 1.00f, 0.88f));
+	_named_colors.insert("lime", Color(0.00f, 1.00f, 0.00f));
+	_named_colors.insert("limegreen", Color(0.20f, 0.80f, 0.20f));
+	_named_colors.insert("linen", Color(0.98f, 0.94f, 0.90f));
+	_named_colors.insert("magenta", Color(1.00f, 0.00f, 1.00f));
+	_named_colors.insert("maroon", Color(0.69f, 0.19f, 0.38f));
+	_named_colors.insert("mediumaquamarine", Color(0.40f, 0.80f, 0.67f));
+	_named_colors.insert("mediumblue", Color(0.00f, 0.00f, 0.80f));
+	_named_colors.insert("mediumorchid", Color(0.73f, 0.33f, 0.83f));
+	_named_colors.insert("mediumpurple", Color(0.58f, 0.44f, 0.86f));
+	_named_colors.insert("mediumseagreen", Color(0.24f, 0.70f, 0.44f));
+	_named_colors.insert("mediumslateblue", Color(0.48f, 0.41f, 0.93f));
+	_named_colors.insert("mediumspringgreen", Color(0.00f, 0.98f, 0.60f));
+	_named_colors.insert("mediumturquoise", Color(0.28f, 0.82f, 0.80f));
+	_named_colors.insert("mediumvioletred", Color(0.78f, 0.08f, 0.52f));
+	_named_colors.insert("midnightblue", Color(0.10f, 0.10f, 0.44f));
+	_named_colors.insert("mintcream", Color(0.96f, 1.00f, 0.98f));
+	_named_colors.insert("mistyrose", Color(1.00f, 0.89f, 0.88f));
+	_named_colors.insert("moccasin", Color(1.00f, 0.89f, 0.71f));
+	_named_colors.insert("navajowhite", Color(1.00f, 0.87f, 0.68f));
+	_named_colors.insert("navyblue", Color(0.00f, 0.00f, 0.50f));
+	_named_colors.insert("oldlace", Color(0.99f, 0.96f, 0.90f));
+	_named_colors.insert("olive", Color(0.50f, 0.50f, 0.00f));
+	_named_colors.insert("olivedrab", Color(0.42f, 0.56f, 0.14f));
+	_named_colors.insert("orange", Color(1.00f, 0.65f, 0.00f));
+	_named_colors.insert("orangered", Color(1.00f, 0.27f, 0.00f));
+	_named_colors.insert("orchid", Color(0.85f, 0.44f, 0.84f));
+	_named_colors.insert("palegoldenrod", Color(0.93f, 0.91f, 0.67f));
+	_named_colors.insert("palegreen", Color(0.60f, 0.98f, 0.60f));
+	_named_colors.insert("paleturquoise", Color(0.69f, 0.93f, 0.93f));
+	_named_colors.insert("palevioletred", Color(0.86f, 0.44f, 0.58f));
+	_named_colors.insert("papayawhip", Color(1.00f, 0.94f, 0.84f));
+	_named_colors.insert("peachpuff", Color(1.00f, 0.85f, 0.73f));
+	_named_colors.insert("peru", Color(0.80f, 0.52f, 0.25f));
+	_named_colors.insert("pink", Color(1.00f, 0.75f, 0.80f));
+	_named_colors.insert("plum", Color(0.87f, 0.63f, 0.87f));
+	_named_colors.insert("powderblue", Color(0.69f, 0.88f, 0.90f));
+	_named_colors.insert("purple", Color(0.63f, 0.13f, 0.94f));
+	_named_colors.insert("rebeccapurple", Color(0.40f, 0.20f, 0.60f));
+	_named_colors.insert("red", Color(1.00f, 0.00f, 0.00f));
+	_named_colors.insert("rosybrown", Color(0.74f, 0.56f, 0.56f));
+	_named_colors.insert("royalblue", Color(0.25f, 0.41f, 0.88f));
+	_named_colors.insert("saddlebrown", Color(0.55f, 0.27f, 0.07f));
+	_named_colors.insert("salmon", Color(0.98f, 0.50f, 0.45f));
+	_named_colors.insert("sandybrown", Color(0.96f, 0.64f, 0.38f));
+	_named_colors.insert("seagreen", Color(0.18f, 0.55f, 0.34f));
+	_named_colors.insert("seashell", Color(1.00f, 0.96f, 0.93f));
+	_named_colors.insert("sienna", Color(0.63f, 0.32f, 0.18f));
+	_named_colors.insert("silver", Color(0.75f, 0.75f, 0.75f));
+	_named_colors.insert("skyblue", Color(0.53f, 0.81f, 0.92f));
+	_named_colors.insert("slateblue", Color(0.42f, 0.35f, 0.80f));
+	_named_colors.insert("slategray", Color(0.44f, 0.50f, 0.56f));
+	_named_colors.insert("snow", Color(1.00f, 0.98f, 0.98f));
+	_named_colors.insert("springgreen", Color(0.00f, 1.00f, 0.50f));
+	_named_colors.insert("steelblue", Color(0.27f, 0.51f, 0.71f));
+	_named_colors.insert("tan", Color(0.82f, 0.71f, 0.55f));
+	_named_colors.insert("teal", Color(0.00f, 0.50f, 0.50f));
+	_named_colors.insert("thistle", Color(0.85f, 0.75f, 0.85f));
+	_named_colors.insert("tomato", Color(1.00f, 0.39f, 0.28f));
+	_named_colors.insert("turquoise", Color(0.25f, 0.88f, 0.82f));
+	_named_colors.insert("transparent", Color(1.00f, 1.00f, 1.00f, 0.00));
+	_named_colors.insert("violet", Color(0.93f, 0.51f, 0.93f));
+	_named_colors.insert("webgray", Color(0.50f, 0.50f, 0.50f));
+	_named_colors.insert("webgreen", Color(0.00f, 0.50f, 0.00f));
+	_named_colors.insert("webmaroon", Color(0.50f, 0.00f, 0.00f));
+	_named_colors.insert("webpurple", Color(0.50f, 0.00f, 0.50f));
+	_named_colors.insert("wheat", Color(0.96f, 0.87f, 0.70f));
+	_named_colors.insert("white", Color(1.00f, 1.00f, 1.00f));
+	_named_colors.insert("whitesmoke", Color(0.96f, 0.96f, 0.96f));
+	_named_colors.insert("yellow", Color(1.00f, 1.00f, 0.00f));
+	_named_colors.insert("yellowgreen", Color(0.60f, 0.80f, 0.20f));
+}
+
+static std::vector<String> _modifiable_colors = {
+	"AQUAMARINE",
+	"BLACK",
+	"BLUE",
+	"BROWN",
+	"CORAL",
+	"CYAN",
+	"GRAY",
+	"GREEN",
+	"GOLDENROD",
+	"KHAKI",
+	"MAROON",
+	"ORANGE",
+	"ORCHID",
+	"PINK",
+	"PURPLE",
+	"RED",
+	"TURQUOISE",
+	"WHITE",
+	"YELLOW",
+};
+
+static std::vector<String> _color_descriptors = {
+	"BLUSH",
+	"DARK",
+	"DRAB",
+	"MEDIUM",
+	"LIGHT",
+	"OLIVE",
+	"PALE",
+	"SEA",
+	"SKY",
+	"SLATE",
+	"SPRING",
+	"STEEL",
+	"WEB",
+};
+
+static void _append_underscores(String &out_name, const std::vector<String> &strings) {
+	for (int i = 0; i < strings.size(); ++i) {
+		const String &word = strings[i];
+		int word_size = word.size();
+		int word_begins_at = out_name.find(word);
+
+		if (word_begins_at > 0) {
+			if (out_name[i - 1] != '_') {
+				out_name.insert(i - 1, "_");
+			}
+		}
+
+		if (word_begins_at + word_size < out_name.size()) {
+			if (out_name[word_begins_at + word_size + 1] != '_') {
+				out_name.insert(word_begins_at + word_size + 1, "_");
+			}
+		}
+	}
+}
+
+static String _to_uppercase_name(const String &name) {
+	// Edge cases
+	if (name == "blanchedalmond") {
+		return "BLANCHED_ALMOND";
+	} else if (name == "burlywood") {
+		return "BURLY_WOOD";
+	} else if (name == "lemonchiffon") {
+		return "LEMON_CHIFFON";
+	} else if (name == "mintcream") {
+		return "MINT_CREAM";
+	} else if (name == "mistyrose") {
+		return "MISTY_ROSE";
+	} else if (name == "oldlace") {
+		return "OLD_LACE";
+	} else if (name == "olivedrab") {
+		return "OLIVE_DRAB";
+	} else if (name == "papayawhip") {
+		return "PAPAYA_WHIP";
+	} else if (name == "peachpuff") {
+		return "PEACH_PUFF";
+	} else if (name == "seashell") {
+		return "SEA_SHELL";
+	}
+
+	// Cases with standard color names
+	String uppercase_name = name.to_upper();
+	_append_underscores(uppercase_name, _modifiable_colors);
+	_append_underscores(uppercase_name, _color_descriptors);
+	return uppercase_name;
 }

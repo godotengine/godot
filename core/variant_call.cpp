@@ -2333,7 +2333,7 @@ void register_variant_methods() {
 
 	_populate_named_colors();
 	for (Map<String, Color>::Element *color = _named_colors.front(); color; color = color->next()) {
-		_VariantCall::add_variant_constant(Variant::COLOR, color->key(), color->value());
+		_VariantCall::add_variant_constant(Variant::COLOR, _to_uppercase_name(color->key()), color->value());
 	}
 
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_X", Vector3::AXIS_X);
