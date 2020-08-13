@@ -528,13 +528,13 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 				p_nav_mesh->set_vertices(Vector<Vector3>());
 
 				const float *verts = vertices.ptr();
-				const int nverts = vertices.size() / 3;
+				const unsigned int nverts = vertices.size() / 3;
 				const int *tris = indices.ptr();
-				const int ntris = indices.size() / 3;
+				const unsigned int ntris = indices.size() / 3;
 
 				Vector<Vector3> nav_vertices;
 
-				for (int i = 0; i < nverts; i++) {
+				for (unsigned int i = 0; i < nverts; i++) {
 					const float *v = &verts[i * 3];
 					nav_vertices.append(Vector3(v[0], v[1], v[2]));
 				}
@@ -544,9 +544,9 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 					Vector<int> nav_indices;
 					nav_indices.resize(3);
 
-					nav_indices.write[2] = tris[j*3 + 0];
-					nav_indices.write[1] = tris[j*3 + 1];
-					nav_indices.write[0] = tris[j*3 + 2];
+					nav_indices.write[2] = tris[j * 3 + 0];
+					nav_indices.write[1] = tris[j * 3 + 1];
+					nav_indices.write[0] = tris[j * 3 + 2];
 					p_nav_mesh->add_polygon(nav_indices);
 				}
 			}
@@ -560,9 +560,9 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 			_build_recast_navigation_mesh(
 					p_nav_mesh,
-	#ifdef TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 					ep,
-	#endif
+#endif
 					hf,
 					chf,
 					cset,
