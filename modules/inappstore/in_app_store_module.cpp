@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  icloud.h                                                             */
+/*  in_app_store_module.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,38 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef ICLOUD_ENABLED
+#include "in_app_store_module.h"
 
-#ifndef ICLOUD_H
-#define ICLOUD_H
+#include "core/engine.h"
 
-#include "core/object.h"
+#include "in_app_store.h"
 
-class ICloud : public Object {
+InAppStore *store_kit;
 
-	GDCLASS(ICloud, Object);
+void register_inappstore_types() {
+	store_kit = memnew(InAppStore);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
+}
 
-	static ICloud *instance;
-	static void _bind_methods();
-
-	List<Variant> pending_events;
-
-public:
-	Error remove_key(Variant p_param);
-	Variant set_key_values(Variant p_param);
-	Variant get_key_value(Variant p_param);
-	Error synchronize_key_values();
-	Variant get_all_key_values();
-
-	int get_pending_event_count();
-	Variant pop_pending_event();
-
-	static ICloud *get_singleton();
-
-	ICloud();
-	~ICloud();
-};
-
-#endif
-
-#endif
+void unregister_inappstore_types() {
+	if (store_kit) {
+		memdelete(store_kit);
+	}
+}

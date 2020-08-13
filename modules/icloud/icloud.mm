@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef ICLOUD_ENABLED
-
 #include "icloud.h"
 
-#import "app_delegate.h"
+#import "platform/iphone/app_delegate.h"
 
 #import <Foundation/Foundation.h>
 
@@ -346,6 +344,4 @@ ICloud::ICloud() {
 					}];
 }
 
-ICloud::~ICloud(){};
-
-#endif
+ICloud::~ICloud() {}

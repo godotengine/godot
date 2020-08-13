@@ -181,21 +181,6 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	input = memnew(InputDefault);
 
-#ifdef GAME_CENTER_ENABLED
-	game_center = memnew(GameCenter);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
-#endif
-
-#ifdef STOREKIT_ENABLED
-	store_kit = memnew(InAppStore);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
-#endif
-
-#ifdef ICLOUD_ENABLED
-	icloud = memnew(ICloud);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-	//icloud->connect();
-#endif
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
@@ -333,24 +318,6 @@ void OSIPhone::finalize() {
 	if (ios) {
 		memdelete(ios);
 	}
-
-#ifdef GAME_CENTER_ENABLED
-	if (game_center) {
-		memdelete(game_center);
-	}
-#endif
-
-#ifdef STOREKIT_ENABLED
-	if (store_kit) {
-		memdelete(store_kit);
-	}
-#endif
-
-#ifdef ICLOUD_ENABLED
-	if (icloud) {
-		memdelete(icloud);
-	}
-#endif
 
 	visual_server->finish();
 	memdelete(visual_server);

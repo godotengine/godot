@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameKit/GameKit.h>
 #import <UIKit/UIKit.h>
 
 @class GodotView;
 @class GodotNativeVideoView;
 @class GodotKeyboardInputView;
 
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
+@interface ViewController : UIViewController
 
 @property(nonatomic, readonly, strong) GodotView *godotView;
 @property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;

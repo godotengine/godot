@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  icloud_module.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#include "icloud_module.h"
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(OSX_ENABLED)
-#include "camera_osx.h"
-#endif
+#include "core/engine.h"
 
-void register_camera_types() {
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(OSX_ENABLED)
-	CameraServer::make_default<CameraOSX>();
-#endif
+#include "icloud.h"
+
+ICloud *icloud;
+
+void register_icloud_types() {
+	icloud = memnew(ICloud);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
 }
 
-void unregister_camera_types() {
+void unregister_icloud_types() {
+	if (icloud) {
+		memdelete(icloud);
+	}
 }
