@@ -2411,6 +2411,17 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
 	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+
+	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/volume_depth", 128);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_depth", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/use_filter", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/use_filter", PropertyInfo(Variant::INT, "rendering/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"));
+	GLOBAL_DEF("rendering/volumetric_fog/directional_shadow_shrink", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/directional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/directional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/positional_shadow_shrink", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/positional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/positional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
 }
 
 RenderingServer::~RenderingServer() {

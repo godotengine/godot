@@ -278,7 +278,7 @@ Vector2 CameraMatrix::get_viewport_half_extents() const {
 	return Vector2(res.x, res.y);
 }
 
-void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
+Vector2 CameraMatrix::get_far_plane_half_extents() const {
 	const real_t *matrix = (const real_t *)this->matrix;
 	///////--- Far Plane ---///////
 	Plane far_plane = Plane(matrix[3] - matrix[2],
@@ -303,8 +303,7 @@ void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
 	Vector3 res;
 	far_plane.intersect_3(right_plane, top_plane, &res);
 
-	r_width = res.x;
-	r_height = res.y;
+	return Vector2(res.x, res.y);
 }
 
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {

@@ -270,6 +270,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_normal_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_fog_fade", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_param", "get_param", PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_blur", PROPERTY_HINT_RANGE, "0.1,8,0.01"), "set_param", "get_param", PARAM_SHADOW_BLUR);
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
@@ -292,6 +293,7 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_PANCAKE_SIZE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
@@ -345,6 +347,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_BIAS, 0.02);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
+	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 1.0);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }

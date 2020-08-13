@@ -14,6 +14,7 @@ class RDHeaderStruct:
 
         self.vertex_included_files = []
         self.fragment_included_files = []
+        self.compute_included_files = []
 
         self.reading = ""
         self.line_offset = 0
