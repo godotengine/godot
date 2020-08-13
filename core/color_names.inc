@@ -144,7 +144,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("thistle", Color(0.85f, 0.75f, 0.85f));
 	_named_colors.insert("tomato", Color(1.00f, 0.39f, 0.28f));
 	_named_colors.insert("turquoise", Color(0.25f, 0.88f, 0.82f));
-	_named_colors.insert("transparent", Color(1.00f, 1.00f, 1.00f, 0.00));
+	_named_colors.insert("transparent", Color(1.00f, 1.00f, 1.00f, 0.00f));
 	_named_colors.insert("violet", Color(0.93f, 0.51f, 0.93f));
 	_named_colors.insert("webgray", Color(0.50f, 0.50f, 0.50f));
 	_named_colors.insert("webgreen", Color(0.00f, 0.50f, 0.00f));
