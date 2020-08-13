@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,18 +27,18 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 package org.godotengine.godot;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.PixelFormat;
+import android.hardware.input.InputManager;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.content.ContextWrapper;
-import android.view.InputDevice;
-import android.hardware.input.InputManager;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +49,6 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
-
 import org.godotengine.godot.input.InputManagerCompat;
 import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 /**
@@ -446,25 +445,23 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		 * perform actual matching in chooseConfig() below.
 		 */
 		private static int EGL_OPENGL_ES2_BIT = 4;
-		private static int[] s_configAttribs2 =
-				{
-					EGL10.EGL_RED_SIZE, 4,
-					EGL10.EGL_GREEN_SIZE, 4,
-					EGL10.EGL_BLUE_SIZE, 4,
-					//  EGL10.EGL_DEPTH_SIZE,     16,
-					// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-					EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-					EGL10.EGL_NONE
-				};
-		private static int[] s_configAttribs =
-				{
-					EGL10.EGL_RED_SIZE, 4,
-					EGL10.EGL_GREEN_SIZE, 4,
-					EGL10.EGL_BLUE_SIZE, 4,
-					// EGL10.EGL_DEPTH_SIZE,     16,
-					//  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-					EGL10.EGL_NONE
-				};
+		private static int[] s_configAttribs2 = {
+			EGL10.EGL_RED_SIZE, 4,
+			EGL10.EGL_GREEN_SIZE, 4,
+			EGL10.EGL_BLUE_SIZE, 4,
+			//  EGL10.EGL_DEPTH_SIZE,     16,
+			// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+			EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+			EGL10.EGL_NONE
+		};
+		private static int[] s_configAttribs = {
+			EGL10.EGL_RED_SIZE, 4,
+			EGL10.EGL_GREEN_SIZE, 4,
+			EGL10.EGL_BLUE_SIZE, 4,
+			// EGL10.EGL_DEPTH_SIZE,     16,
+			//  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+			EGL10.EGL_NONE
+		};
 
 		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "core_string_names.h"
 #include "object.h"
 #include "script_language.h"
@@ -72,7 +73,8 @@ bool Variant::booleanize(bool &r_valid) const {
 		case COLOR_ARRAY:
 			r_valid = false;
 			return false;
-		default: {}
+		default: {
+		}
 	}
 
 	return false;
@@ -90,7 +92,8 @@ bool Variant::booleanize(bool &r_valid) const {
 			case BOOL: _RETURN(p_a._data.m_type m_op p_b._data._bool); \
 			case INT: _RETURN(p_a._data.m_type m_op p_b._data._int);   \
 			case REAL: _RETURN(p_a._data.m_type m_op p_b._data._real); \
-			default: {}                                                \
+			default: {                                                 \
+			}                                                          \
 		}                                                              \
 		r_valid = false;                                               \
 		return;                                                        \
@@ -110,7 +113,8 @@ bool Variant::booleanize(bool &r_valid) const {
 			case REAL: _RETURN(p_a._data.m_type m_op p_b._data._real);                                       \
 			case VECTOR2: _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem)); \
 			case VECTOR3: _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
-			default: {}                                                                                      \
+			default: {                                                                                       \
+			}                                                                                                \
 		}                                                                                                    \
 		r_valid = false;                                                                                     \
 		return;                                                                                              \
@@ -121,7 +125,8 @@ bool Variant::booleanize(bool &r_valid) const {
 		switch (p_b.type) {                                                                                                                      \
 			case STRING: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));      \
 			case NODE_PATH: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
-			default: {}                                                                                                                          \
+			default: {                                                                                                                           \
+			}                                                                                                                                    \
 		}                                                                                                                                        \
 		r_valid = false;                                                                                                                         \
 		return;                                                                                                                                  \
@@ -131,7 +136,8 @@ bool Variant::booleanize(bool &r_valid) const {
 	case m_name: {                                                                                                                          \
 		switch (p_b.type) {                                                                                                                 \
 			case m_name: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-			default: {}                                                                                                                     \
+			default: {                                                                                                                      \
+			}                                                                                                                               \
 		}                                                                                                                                   \
 		r_valid = false;                                                                                                                    \
 		return;                                                                                                                             \
@@ -149,7 +155,8 @@ bool Variant::booleanize(bool &r_valid) const {
 			case BOOL: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._bool);                                     \
 			case INT: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._int);                                       \
 			case REAL: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._real);                                     \
-			default: {}                                                                                                                     \
+			default: {                                                                                                                      \
+			}                                                                                                                               \
 		}                                                                                                                                   \
 		r_valid = false;                                                                                                                    \
 		return;                                                                                                                             \
@@ -159,7 +166,8 @@ bool Variant::booleanize(bool &r_valid) const {
 	case m_name: {                                                      \
 		switch (p_b.type) {                                             \
 			case m_name: _RETURN(p_a._data.m_sub m_op p_b._data.m_sub); \
-			default: {}                                                 \
+			default: {                                                  \
+			}                                                           \
 		}                                                               \
 		r_valid = false;                                                \
 		return;                                                         \
@@ -169,7 +177,8 @@ bool Variant::booleanize(bool &r_valid) const {
 	case m_name: {                                                        \
 		switch (p_b.type) {                                               \
 			case m_name: _RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub); \
-			default: {}                                                   \
+			default: {                                                    \
+			}                                                             \
 		}                                                                 \
 		r_valid = false;                                                  \
 		return;                                                           \
@@ -602,7 +611,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 						case REAL: {
 							_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._real);
 						} break;
-						default: {}
+						default: {
+						}
 					};
 					r_valid = false;
 					return;
@@ -619,7 +629,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 
 							_RETURN(*p_a._data._matrix3 * *p_b._data._matrix3);
 						};
-						default: {}
+						default: {
+						}
 					};
 					r_valid = false;
 					return;
@@ -635,7 +646,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 
 							_RETURN(*p_a._data._transform * *p_b._data._transform);
 						};
-						default: {}
+						default: {
+						}
 					};
 					r_valid = false;
 					return;
@@ -690,7 +702,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 
 						} break;
 						case REAL: _RETURN(p_a._data._int / p_b._data._real);
-						default: {}
+						default: {
+						}
 					}
 					r_valid = false;
 					return;
@@ -2667,7 +2680,8 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				return false;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (r_valid)
@@ -2889,7 +2903,8 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			//nothing
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -3010,7 +3025,8 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return true;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	valid = false;
@@ -3152,7 +3168,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	valid = false;
@@ -3293,7 +3310,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	r_valid = false;
@@ -3370,7 +3388,9 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			r_dst = Color(r, g, b, a);
 		}
 			return;
-		default: { r_dst = c < 0.5 ? a : b; }
+		default: {
+			r_dst = c < 0.5 ? a : b;
+		}
 			return;
 	}
 }

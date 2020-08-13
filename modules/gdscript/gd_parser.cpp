@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "gd_parser.h"
 #include "gd_script.h"
 #include "io/resource_loader.h"
@@ -537,7 +538,8 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 				case GDTokenizer::TK_OP_SUB: e.op = OperatorNode::OP_NEG; break;
 				case GDTokenizer::TK_OP_NOT: e.op = OperatorNode::OP_NOT; break;
 				case GDTokenizer::TK_OP_BIT_INVERT: e.op = OperatorNode::OP_BIT_INVERT; break;
-				default: {}
+				default: {
+				}
 			}
 
 			tokenizer->advance();
@@ -1460,7 +1462,9 @@ GDParser::Node *GDParser::_reduce_expression(Node *p_node, bool p_to_const) {
 					}
 
 				} break;
-				default: { break; }
+				default: {
+					break;
+				}
 			}
 			//now se if all are constants
 			if (!all_constants)
@@ -1561,7 +1565,9 @@ GDParser::Node *GDParser::_reduce_expression(Node *p_node, bool p_to_const) {
 				case OperatorNode::OP_BIT_XOR: {
 					_REDUCE_BINARY(Variant::OP_BIT_XOR);
 				} break;
-				default: { ERR_FAIL_V(op); }
+				default: {
+					ERR_FAIL_V(op);
+				}
 			}
 
 			ERR_FAIL_V(op);

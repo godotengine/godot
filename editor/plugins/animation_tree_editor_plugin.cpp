@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "animation_tree_editor_plugin.h"
 
 #include "core/globals.h"
@@ -199,7 +200,8 @@ void AnimationTreeEditor::_edit_dialog_changed() {
 			if (anim_tree->transition_node_get_current(edited_node) != edit_option->get_selected())
 				anim_tree->transition_node_set_current(edited_node, edit_option->get_selected());
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -456,7 +458,8 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				edit_dialog->set_size(Size2(150, 100));
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 
@@ -554,7 +557,8 @@ void AnimationTreeEditor::_draw_node(const StringName &p_node) {
 						text += "->";
 
 					break;
-				default: {}
+				default: {
+				}
 			}
 			font->draw(ci, ofs + ascofs + Point2(3, 0), text, font_color);
 
@@ -774,7 +778,8 @@ void AnimationTreeEditor::_input_event(InputEvent p_event) {
 							//open editor
 							//		_node_edit_property(click_node);
 						} break;
-						default: {}
+						default: {
+						}
 					}
 				}
 				if (p_event.mouse_button.button_index == 2) {
@@ -849,7 +854,8 @@ void AnimationTreeEditor::_input_event(InputEvent p_event) {
 							anim_tree->node_set_pos(click_node, new_pos);
 
 						} break;
-						default: {}
+						default: {
+						}
 					}
 
 					click_type = CLICK_NONE;

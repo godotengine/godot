@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "doc_dump.h"
 #include "os/file_access.h"
 #include "scene/main/node.h"
@@ -202,7 +203,8 @@ void DocDump::dump(const String &p_file) {
 
 								default_arg_text = Variant::get_type_name(default_arg.get_type()) + "()";
 								break;
-							default: {}
+							default: {
+							}
 						}
 
 						_write_string(f, 3, "<argument index=\"" + itos(i) + "\" name=\"" + _escape_string(arginfo.name) + "\" type=\"" + type_name + "\" default=\"" + _escape_string(default_arg_text) + "\">");
@@ -230,7 +232,8 @@ void DocDump::dump(const String &p_file) {
 						}
 						break;
 					case PROPERTY_HINT_FILE: hint = "A file:"; break;
-					default: {}
+					default: {
+					}
 						//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;
 				};
 				if (hint != "")

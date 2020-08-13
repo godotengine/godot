@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "image.h"
 
 #include "core/io/image_loader.h"
@@ -110,7 +111,8 @@ void Image::_put_pixelw(int p_x, int p_y, int p_width, const BColor &p_color, un
 
 			ERR_FAIL();
 		} break;
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -262,7 +264,8 @@ Image::BColor Image::_get_pixelw(int p_x, int p_y, int p_width, const unsigned c
 			int32_t b = 1.164 * (y - 16) + 2.018 * (u - 128);
 			result = BColor(CLAMP(r, 0, 255), CLAMP(g, 0, 255), CLAMP(b, 0, 255));
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return result;
@@ -778,7 +781,8 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 			pixsize = 1;
 			size = 256 * 4;
 			break;
-		default: {}
+		default: {
+		}
 	};
 
 	while (true) {
@@ -941,7 +945,8 @@ void Image::shrink_x2() {
 				case FORMAT_GRAYSCALE_ALPHA: _generate_po2_mipmap<2>(r.ptr(), w.ptr(), width, height); break;
 				case FORMAT_RGB: _generate_po2_mipmap<3>(r.ptr(), w.ptr(), width, height); break;
 				case FORMAT_RGBA: _generate_po2_mipmap<4>(r.ptr(), w.ptr(), width, height); break;
-				default: {}
+				default: {
+				}
 			}
 		}
 
@@ -988,7 +993,8 @@ Error Image::generate_mipmaps(int p_mipmaps, bool p_keep_existing) {
 					case FORMAT_GRAYSCALE_ALPHA: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
 					case FORMAT_RGB: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
 					case FORMAT_RGBA: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
-					default: {}
+					default: {
+					}
 				}
 			}
 
@@ -1019,7 +1025,8 @@ Error Image::generate_mipmaps(int p_mipmaps, bool p_keep_existing) {
 					case FORMAT_GRAYSCALE_ALPHA: _scale_bilinear<2>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
 					case FORMAT_RGB: _scale_bilinear<3>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
 					case FORMAT_RGBA: _scale_bilinear<4>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h, w, h); break;
-					default: {}
+					default: {
+					}
 				}
 			}
 
@@ -1281,7 +1288,8 @@ void Image::create(const char **p_xpm) {
 				if (y == (size_height - 1))
 					status = DONE;
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		line++;
@@ -1370,7 +1378,8 @@ bool Image::is_invisible() const {
 		case FORMAT_BC3: {
 			detected = true;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return !detected;
@@ -1435,7 +1444,8 @@ Image::AlphaMode Image::detect_alpha() const {
 		case FORMAT_BC3: {
 			detected = true;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (detected)
@@ -1970,7 +1980,8 @@ int Image::get_format_pallete_size(Format p_format) {
 
 			return 4 * 256;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 	return 0;
 }

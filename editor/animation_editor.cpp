@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "animation_editor.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor_node.h"
@@ -1499,7 +1500,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 				te->draw_texture(type_selected, ofs + Point2(x + key_hofs, y + key_vofs).floor());
 			}
 		} break;
-		default: {};
+		default: {
+		};
 	}
 
 	te_drawing = false;
@@ -2504,7 +2506,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent &p_input) {
 							_edit_if_single_selection();
 
 						} break;
-						default: {}
+						default: {
+						}
 					}
 
 					//button released
@@ -2602,7 +2605,8 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent &p_input) {
 
 						click.to = Point2(mb.x, mb.y);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				return;
@@ -3298,7 +3302,8 @@ int AnimationKeyEditor::_confirm_insert(InsertData p_id, int p_last_track) {
 			d["rot"] = Quat(tr.basis); //.orthonormalized();
 			value = d;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);

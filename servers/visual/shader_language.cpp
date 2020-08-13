@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "shader_language.h"
 #include "os/os.h"
 #include "print_string.h"
@@ -1441,7 +1442,8 @@ ShaderLanguage::Node *ShaderLanguage::validate_operator(Parser &parser, Operator
 			_RCO2(OP_CMP_GREATER, Variant::OP_GREATER);
 			_RCO2(OP_CMP_OR, Variant::OP_OR);
 			_RCO2(OP_CMP_AND, Variant::OP_AND);
-			default: {}
+			default: {
+			}
 		}
 	}
 
@@ -1864,7 +1866,8 @@ Error ShaderLanguage::parse_expression(Parser &parser, Node *p_parent, Node **r_
 					ok = (ident == "x" || ident == "y" || ident == "z" || ident == "w");
 					member_type = TYPE_VEC4;
 					break;
-				default: {}
+				default: {
+				}
 			}
 
 			if (!ok) {
@@ -2250,7 +2253,8 @@ Error ShaderLanguage::parse_variable_declaration(Parser &parser, BlockNode *p_bl
 				case TYPE_MAT4: con->value = Transform(); break;
 				case TYPE_TEXTURE:
 				case TYPE_CUBEMAP: con->value = RID(); break;
-				default: {}
+				default: {
+				}
 			}
 
 			if (uniform) {

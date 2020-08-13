@@ -9,7 +9,7 @@
 	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleGetInfoString</key>
-	<string>(c) 2007-2019 Juan Linietsky, Ariel Manzur.</string>
+	<string>(c) 2007-2020 Juan Linietsky, Ariel Manzur.</string>
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -19,13 +19,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.1.6</string>
+	<string>2.1.7</string>
 	<key>CFBundleSignature</key>
 	<string>godot</string>
 	<key>CFBundleVersion</key>
-	<string>2.1.6</string>
+	<string>2.1.7</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-2019 Juan Linietsky, Ariel Manzur.</string>
+	<string>© 2007-2020 Juan Linietsky, Ariel Manzur.</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.9.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>

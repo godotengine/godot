@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,59 +27,41 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 package org.godotengine.godot;
 
 import android.R;
+import android.app.*;
 import android.app.Activity;
+import android.content.*;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.*;
+import android.hardware.*;
+import android.media.*;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.*;
 import android.os.Bundle;
+import android.os.Messenger;
+import android.os.SystemClock;
+import android.provider.Settings.Secure;
+import android.text.*;
+import android.text.method.*;
+import android.util.Log;
+import android.view.*;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.view.ViewGroup.LayoutParams;
-import android.app.*;
-import android.content.*;
-import android.content.SharedPreferences.Editor;
-import android.view.*;
-import android.view.inputmethod.InputMethodManager;
-import android.os.*;
-import android.util.Log;
-import android.graphics.*;
-import android.text.method.*;
-import android.text.*;
-import android.media.*;
-import android.hardware.*;
-import android.content.*;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
-import android.media.MediaPlayer;
-
-import android.content.ClipboardManager;
-import android.content.ClipData;
-
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.godotengine.godot.payments.PaymentsManager;
-
-import java.io.IOException;
-
-import android.provider.Settings.Secure;
-import android.widget.FrameLayout;
-
-import org.godotengine.godot.input.*;
-
-import java.io.InputStream;
-import javax.microedition.khronos.opengles.GL10;
-import java.security.MessageDigest;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.LinkedList;
-
 import com.google.android.vending.expansion.downloader.Constants;
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
@@ -88,10 +70,18 @@ import com.google.android.vending.expansion.downloader.Helpers;
 import com.google.android.vending.expansion.downloader.IDownloaderClient;
 import com.google.android.vending.expansion.downloader.IDownloaderService;
 import com.google.android.vending.expansion.downloader.IStub;
-
-import android.os.Bundle;
-import android.os.Messenger;
-import android.os.SystemClock;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import javax.microedition.khronos.opengles.GL10;
+import org.godotengine.godot.input.*;
+import org.godotengine.godot.payments.PaymentsManager;
 
 public class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 	private static final String TAG = "Godot";

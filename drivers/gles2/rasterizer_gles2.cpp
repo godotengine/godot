@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef GLES2_ENABLED
 
 #include "rasterizer_gles2.h"
@@ -2375,7 +2376,9 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem, u
 
 			} break;
 
-			default: { ERR_FAIL_V(ERR_INVALID_PARAMETER); }
+			default: {
+				ERR_FAIL_V(ERR_INVALID_PARAMETER);
+			}
 		}
 
 		p_surface->configured_format |= (1 << ai);
@@ -3591,7 +3594,8 @@ AABB RasterizerGLES2::light_get_aabb(RID p_light) const {
 
 			return AABB();
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	ERR_FAIL_V(AABB());

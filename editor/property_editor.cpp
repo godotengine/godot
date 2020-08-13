@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "property_editor.h"
 #include "array_property_edit.h"
 #include "dictionary_property_edit.h"
@@ -231,7 +232,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -791,7 +793,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -851,7 +854,8 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			emit_signal("variant_changed");
 			hide();
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1163,7 +1167,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 			}
 
 		} break;
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -1511,7 +1516,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1552,7 +1558,8 @@ void CustomPropertyEditor::_focus_enter() {
 				}
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1573,7 +1580,8 @@ void CustomPropertyEditor::_focus_exit() {
 				value_editor[i]->select(0, 0);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -2129,7 +2137,8 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 			}
 
 		} break;
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -3287,7 +3296,8 @@ void PropertyEditor::update_tree() {
 				//				item->double_click_signal.connect( Method1<int>( Method2<int,String>( this, &Editoritem_obj_edited ), p.name ) );
 
 			} break;
-			default: {};
+			default: {
+			};
 		}
 
 		if (keying) {

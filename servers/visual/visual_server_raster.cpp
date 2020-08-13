@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "visual_server_raster.h"
 #include "globals.h"
 #include "io/marshalls.h"
@@ -3016,7 +3017,8 @@ void VisualServerRaster::_update_instance_aabb(Instance *p_instance) {
 
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 
 	if (p_instance->extra_margin)
@@ -4435,7 +4437,8 @@ void VisualServerRaster::_instance_draw(Instance *p_instance) {
 		case INSTANCE_PARTICLES: {
 			rasterizer->add_particles(p_instance->particles_info->instance, &p_instance->data);
 		} break;
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -5221,7 +5224,8 @@ void VisualServerRaster::_light_instance_update_shadow(Instance *p_light, Scenar
 			_light_instance_update_lispsm_shadow(p_light, p_scenario, p_camera, p_cull_range);
 			// todo
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

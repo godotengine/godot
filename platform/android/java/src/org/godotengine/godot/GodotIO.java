@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,28 +27,28 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 package org.godotengine.godot;
-import java.util.HashMap;
-import java.util.Locale;
-import android.net.Uri;
-import android.content.Intent;
-import android.content.res.AssetManager;
-import java.io.InputStream;
-import java.io.IOException;
 import android.app.*;
 import android.content.*;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
+import android.graphics.*;
+import android.hardware.*;
+import android.media.*;
+import android.net.Uri;
+import android.os.*;
+import android.text.*;
+import android.text.method.*;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
-import android.os.*;
-import android.util.Log;
-import android.util.DisplayMetrics;
-import android.graphics.*;
-import android.text.method.*;
-import android.text.*;
-import android.media.*;
-import android.hardware.*;
-import android.content.*;
-import android.content.pm.ActivityInfo;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
 import org.godotengine.godot.input.*;
 //android.os.Build
 
