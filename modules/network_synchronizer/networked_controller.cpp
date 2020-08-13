@@ -1003,13 +1003,12 @@ void DollController::ready() {
 }
 
 void DollController::process(real_t p_delta) {
-	if (interpolator.epochs_count() < 2) {
-		// At least we need 2 epochs to process this.
+	const uint64_t frame_epoch = next_epoch(p_delta);
+
+	if (unlikely(frame_epoch == UINT64_MAX)) {
+		// Nothing to do.
 		return;
 	}
-
-	const uint64_t frame_epoch = epoch;
-	epoch += 1;
 
 	node->call("epoch_process", p_delta, interpolator.pop_epoch(frame_epoch));
 }
@@ -1025,6 +1024,17 @@ void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
 	interpolator.begin_write(p_epoch);
 	node->call("parse_epoch_data", &interpolator, &buffer);
 	interpolator.end_write();
+}
+
+uint64_t DollController::next_epoch(real_t p_delta) {
+	if (interpolator.epochs_count() < 2) {
+		// At least we need 2 epochs to process this.
+		return UINT64_MAX;
+	}
+
+	epoch += 1;
+
+	return epoch;
 }
 
 NoNetController::NoNetController(NetworkedController *p_node) :

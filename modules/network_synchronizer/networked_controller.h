@@ -356,6 +356,8 @@ struct DollController : public Controller {
 	virtual uint64_t get_current_input_id() const override;
 
 	void receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
+
+	uint64_t next_epoch(real_t p_delta);
 };
 
 /// This controller is used when the game instance is not a peer of any kind.
