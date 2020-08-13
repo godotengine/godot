@@ -139,9 +139,13 @@ void OSIPhone::deinitialize_modules() {
 	if (ios) {
 		memdelete(ios);
 	}
+
+	godot_ios_plugins_deinitialize();
 }
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
+	godot_ios_plugins_initialize();
+
 	main_loop = p_main_loop;
 
 	if (main_loop) {
