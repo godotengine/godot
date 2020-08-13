@@ -1,6 +1,7 @@
 // Names from https://en.wikipedia.org/wiki/X11_color_names
 // and https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.colors?view=netcore-3.1
 #include "core/map.h"
+#include "core/ustring.h"
 #include "core/vector.h"
 
 static Map<String, Color> _named_colors;
@@ -182,7 +183,6 @@ static void _populate_uppercase_helper_lists() {
 	}
 
 	if (_color_descriptors.empty()) {
-		_color_descriptors.append("BLUSH");
 		_color_descriptors.append("DARK");
 		_color_descriptors.append("DRAB");
 		_color_descriptors.append("MEDIUM");
@@ -198,27 +198,47 @@ static void _populate_uppercase_helper_lists() {
 	}
 }
 
-static void _insert_underscores(String &out_name, const Vector<String> &helper_list) {
+static String _insert_underscores(const String &name, const Vector<String> &helper_list) {
+	String name_with_underscores = name;
+
 	for (int i = 0; i < helper_list.size(); ++i) {
 		const String &word = helper_list[i];
-		int word_begins_at = out_name.find(word, 0);
-		int word_ends_at = word_begins_at + word.size() - 2;
-		if (word_begins_at >= 0) {
-			ERR_PRINT("Found " + word + " in " + out_name + " between [" + itos(word_begins_at) + "] and [" + itos(word_ends_at) + "].");
+
+		if (word == name) {
+			break;
 		}
 
+		int word_begins_at = name_with_underscores.find(word, 0);
+
+		if (word_begins_at < 0) {
+			break;
+		}
+
+		int word_ends_at = word_begins_at + word.length() - 1;
+		WARN_PRINT("Found " + word + " in " + name_with_underscores + " between [" + itos(word_begins_at) + "] and [" + itos(word_ends_at) + "].");
+
 		if (word_begins_at > 0) {
-			if (out_name[word_begins_at - 1] != '_') {
-				out_name.insert(word_begins_at - 1, "_");
+			WARN_PRINT(word + " isn't the first word.");
+			if (name_with_underscores[word_begins_at - 1] != '_') {
+				WARN_PRINT(word + " isn't preceded by a _.");
+				String old = name_with_underscores;
+				name_with_underscores = name_with_underscores.insert(word_begins_at - 1, "_");
+				WARN_PRINT(old + " has been changed to " + name_with_underscores);
 			}
 		}
 
-		if (word_ends_at < out_name.size()) {
-			if (out_name[word_ends_at + 1] != '_') {
-				out_name.insert(word_ends_at + 1, "_");
+		if (word_ends_at < name_with_underscores.length() - 2) {
+			WARN_PRINT(word + " isn't the last word.");
+			if (name_with_underscores[word_ends_at + 1] != '_') {
+				WARN_PRINT(word + " isn't followed by a _.");
+				String old = name_with_underscores;
+				name_with_underscores = name_with_underscores.insert(word_ends_at + 1, "_");
+				WARN_PRINT(old + " has been changed to " + name_with_underscores);
 			}
 		}
 	}
+
+	return name_with_underscores;
 }
 
 static String _to_uppercase_name(const String &name) {
@@ -227,6 +247,8 @@ static String _to_uppercase_name(const String &name) {
 		return "BLANCHED_ALMOND";
 	} else if (name == "burlywood") {
 		return "BURLY_WOOD";
+	} else if (name == "lavenderblush") {
+		return "LAVENDER_BLUSH";
 	} else if (name == "lemonchiffon") {
 		return "LEMON_CHIFFON";
 	} else if (name == "mintcream") {
@@ -245,10 +267,10 @@ static String _to_uppercase_name(const String &name) {
 		return "SEA_SHELL";
 	}
 
-	_populate_uppercase_helper_lists();
 	// Cases with standard color names
+	_populate_uppercase_helper_lists();
 	String uppercase_name = name.to_upper();
-	_insert_underscores(uppercase_name, _modifiable_colors);
-	_insert_underscores(uppercase_name, _color_descriptors);
+	uppercase_name = _insert_underscores(uppercase_name, _modifiable_colors);
+	uppercase_name = _insert_underscores(uppercase_name, _color_descriptors);
 	return uppercase_name;
 }
