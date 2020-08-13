@@ -201,7 +201,7 @@ private:
 	OAHashMap<int, PeerData> peer_data;
 
 	uint32_t node_counter = 1;
-	bool generate_id = false;
+	bool generate_id = false; // TODO The id generator in this way is bad. Please make sure to regenerate all the ids only on server. Most important, each time a new reset is executed the id must be regenerated so also clients can become servers.
 	// All possible registered nodes.
 	LocalVector<NodeData *> node_data;
 	// Controller nodes.
