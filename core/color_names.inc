@@ -159,7 +159,7 @@ static void _populate_named_colors() {
 
 static Vector<String> _modifiable_colors;
 static Vector<String> _color_descriptors;
-static void _populate_uppercase_helper_lists() {
+static void _populate_uppercase_token_lists() {
 	if (_modifiable_colors.empty()) {
 		_modifiable_colors.append("AQUAMARINE");
 		_modifiable_colors.append("BLACK");
@@ -184,7 +184,6 @@ static void _populate_uppercase_helper_lists() {
 
 	if (_color_descriptors.empty()) {
 		_color_descriptors.append("DARK");
-		_color_descriptors.append("DRAB");
 		_color_descriptors.append("MEDIUM");
 		_color_descriptors.append("LIGHT");
 		_color_descriptors.append("OLIVE");
@@ -198,42 +197,39 @@ static void _populate_uppercase_helper_lists() {
 	}
 }
 
-static String _insert_underscores(const String &name, const Vector<String> &helper_list) {
-	String name_with_underscores = name;
+static String _insert_underscores(const String &name, const Vector<String> &tokens) {
+	String name_with_underscores(name);
 
-	for (int i = 0; i < helper_list.size(); ++i) {
-		const String &word = helper_list[i];
+	for (int i = 0; i < tokens.size(); ++i) {
+		const String &token = tokens[i];
 
-		if (word == name) {
-			break;
+		// Skip the following steps if the word is the same as the whole name
+		if (token == name_with_underscores) {
+			continue;
 		}
 
-		int word_begins_at = name_with_underscores.find(word, 0);
+		int begin = name_with_underscores.find(token, 0);
 
-		if (word_begins_at < 0) {
-			break;
+		// Skip the following steps if the word isn't found in the name
+		if (begin < 0) {
+			continue;
 		}
 
-		int word_ends_at = word_begins_at + word.length() - 1;
-		WARN_PRINT("Found " + word + " in " + name_with_underscores + " between [" + itos(word_begins_at) + "] and [" + itos(word_ends_at) + "].");
+		int end = begin + token.length() - 1;
 
-		if (word_begins_at > 0) {
-			WARN_PRINT(word + " isn't the first word.");
-			if (name_with_underscores[word_begins_at - 1] != '_') {
-				WARN_PRINT(word + " isn't preceded by a _.");
-				String old = name_with_underscores;
-				name_with_underscores = name_with_underscores.insert(word_begins_at - 1, "_");
-				WARN_PRINT(old + " has been changed to " + name_with_underscores);
+		// If the word isn't at the beginning
+		if (begin > 0) {
+			// If the letter before it isn't already an underscore
+			if (name_with_underscores[begin - 1] != '_') {
+				name_with_underscores = name_with_underscores.insert(begin, "_");
 			}
 		}
 
-		if (word_ends_at < name_with_underscores.length() - 2) {
-			WARN_PRINT(word + " isn't the last word.");
-			if (name_with_underscores[word_ends_at + 1] != '_') {
-				WARN_PRINT(word + " isn't followed by a _.");
-				String old = name_with_underscores;
-				name_with_underscores = name_with_underscores.insert(word_ends_at + 1, "_");
-				WARN_PRINT(old + " has been changed to " + name_with_underscores);
+		// If the word isn't at the end
+		if (end < name_with_underscores.length() - 2) {
+			// If the letter after it isn't already an underscore
+			if (name_with_underscores[end + 1] != '_') {
+				name_with_underscores = name_with_underscores.insert(end + 1, "_");
 			}
 		}
 	}
@@ -267,8 +263,8 @@ static String _to_uppercase_name(const String &name) {
 		return "SEA_SHELL";
 	}
 
-	// Cases with standard color names
-	_populate_uppercase_helper_lists();
+	// All other cases
+	_populate_uppercase_token_lists();
 	String uppercase_name = name.to_upper();
 	uppercase_name = _insert_underscores(uppercase_name, _modifiable_colors);
 	uppercase_name = _insert_underscores(uppercase_name, _color_descriptors);
