@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CLANG_FORMAT=clang-format-6.0
+CLANG_FORMAT=clang-format-8
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Travis only clones the PR branch and uses its HEAD commit as detached HEAD,
