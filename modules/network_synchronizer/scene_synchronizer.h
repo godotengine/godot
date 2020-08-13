@@ -201,9 +201,9 @@ private:
 	// All possible registered nodes.
 	LocalVector<NodeData *> node_data;
 	// Controller nodes.
-	LocalVector<NodeData *> controllers;
+	LocalVector<NodeData *> controllers_node_data;
 	// Global nodes.
-	LocalVector<NodeData *> global_nodes;
+	LocalVector<NodeData *> global_nodes_node_data;
 
 	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
@@ -351,7 +351,7 @@ class ClientSynchronizer : public Synchronizer {
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
-	SceneSynchronizer::Snapshot server_snapshot;
+	SceneSynchronizer::Snapshot last_received_snapshot;
 	std::deque<SceneSynchronizer::Snapshot> client_snapshots;
 	std::deque<SceneSynchronizer::Snapshot> server_snapshots;
 

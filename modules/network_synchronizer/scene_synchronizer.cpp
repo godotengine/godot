@@ -326,10 +326,10 @@ void SceneSynchronizer::set_node_as_controlled_by(Node *p_node, Node *p_controll
 
 	if (nd->controlled_by) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND_MSG(global_nodes.find(nd) != -1, "There is a bug the same node is added twice into the global_nodes.");
+		CRASH_COND_MSG(global_nodes_node_data.find(nd) != -1, "There is a bug the same node is added twice into the global_nodes_node_data.");
 #endif
 		// Put the node back into global.
-		global_nodes.push_back(nd);
+		global_nodes_node_data.push_back(nd);
 		nd->controlled_by->controlled_nodes.erase(nd);
 		nd->controlled_by = nullptr;
 	}
@@ -346,7 +346,7 @@ void SceneSynchronizer::set_node_as_controlled_by(Node *p_node, Node *p_controll
 		CRASH_COND_MSG(controller_node_data->controlled_nodes.find(nd) != -1, "There is a bug the same node is added twice into the controlled_nodes.");
 #endif
 		controller_node_data->controlled_nodes.push_back(nd);
-		global_nodes.erase(nd);
+		global_nodes_node_data.erase(nd);
 		nd->controlled_by = controller_node_data;
 	}
 
@@ -354,14 +354,14 @@ void SceneSynchronizer::set_node_as_controlled_by(Node *p_node, Node *p_controll
 	// The controller is always registered before a node is marked to be
 	// controlled by.
 	// So assert that no controlled nodes are into globals.
-	for (uint32_t i = 0; i < global_nodes.size(); i += 1) {
-		CRASH_COND(global_nodes[i]->controlled_by != nullptr);
+	for (uint32_t i = 0; i < global_nodes_node_data.size(); i += 1) {
+		CRASH_COND(global_nodes_node_data[i]->controlled_by != nullptr);
 	}
 
 	// And now make sure that all controlled nodes are into the proper controller.
-	for (uint32_t i = 0; i < controllers.size(); i += 1) {
-		for (uint32_t y = 0; y < controllers[i]->controlled_nodes.size(); y += 1) {
-			CRASH_COND(controllers[i]->controlled_nodes[y]->controlled_by != controllers[i]);
+	for (uint32_t i = 0; i < controllers_node_data.size(); i += 1) {
+		for (uint32_t y = 0; y < controllers_node_data[i]->controlled_nodes.size(); y += 1) {
+			CRASH_COND(controllers_node_data[i]->controlled_nodes[y]->controlled_by != controllers_node_data[i]);
 		}
 	}
 #endif
@@ -479,8 +479,8 @@ void SceneSynchronizer::__clear() {
 	}
 
 	node_data.clear();
-	controllers.clear();
-	global_nodes.clear();
+	controllers_node_data.clear();
+	global_nodes_node_data.clear();
 	node_counter = 1;
 
 	if (synchronizer) {
@@ -508,10 +508,10 @@ void SceneSynchronizer::update_peers() {
 	}
 	peer_dirty = false;
 
-	for (uint32_t i = 0; i < controllers.size(); i += 1) {
-		PeerData *pd = peer_data.lookup_ptr(controllers[i]->node->get_network_master());
+	for (uint32_t i = 0; i < controllers_node_data.size(); i += 1) {
+		PeerData *pd = peer_data.lookup_ptr(controllers_node_data[i]->node->get_network_master());
 		if (pd) {
-			pd->controller_id = controllers[i]->instance_id;
+			pd->controller_id = controllers_node_data[i]->instance_id;
 		}
 	}
 }
@@ -537,14 +537,14 @@ SceneSynchronizer::NodeData *SceneSynchronizer::register_node(Node *p_node) {
 			}
 
 			nd->is_controller = true;
-			controllers.push_back(nd);
+			controllers_node_data.push_back(nd);
 
 			controller->set_scene_synchronizer(this);
 			peer_dirty = true;
 
 		} else {
 			nd->is_controller = false;
-			global_nodes.push_back(nd);
+			global_nodes_node_data.push_back(nd);
 		}
 
 		synchronizer->on_node_added(nd);
@@ -724,8 +724,8 @@ void SceneSynchronizer::validate_nodes() {
 		synchronizer->on_node_removed(null_objects[i]);
 
 		node_data.erase(null_objects[i]);
-		controllers.erase(null_objects[i]);
-		global_nodes.erase(null_objects[i]);
+		controllers_node_data.erase(null_objects[i]);
+		global_nodes_node_data.erase(null_objects[i]);
 
 		memdelete(null_objects[i]);
 	}
@@ -741,8 +741,8 @@ SceneSynchronizer::NodeData *SceneSynchronizer::get_node_data(ObjectID p_object_
 }
 
 uint32_t SceneSynchronizer::find_global_node(ObjectID p_object_id) const {
-	for (uint32_t i = 0; i < global_nodes.size(); i += 1) {
-		if (global_nodes[i]->instance_id == p_object_id) {
+	for (uint32_t i = 0; i < global_nodes_node_data.size(); i += 1) {
+		if (global_nodes_node_data[i]->instance_id == p_object_id) {
 			return i;
 		}
 	}
@@ -750,9 +750,9 @@ uint32_t SceneSynchronizer::find_global_node(ObjectID p_object_id) const {
 }
 
 SceneSynchronizer::NodeData *SceneSynchronizer::get_controller_node_data(ControllerID p_controller_id) const {
-	for (uint32_t i = 0; i < controllers.size(); i += 1) {
-		if (controllers[i]->instance_id == p_controller_id) {
-			return controllers[i];
+	for (uint32_t i = 0; i < controllers_node_data.size(); i += 1) {
+		if (controllers_node_data[i]->instance_id == p_controller_id) {
+			return controllers_node_data[i];
 		}
 	}
 	return nullptr;
@@ -806,9 +806,9 @@ void NoNetSynchronizer::process() {
 		nd->process(delta);
 	}
 
-	// Process the controllers
-	for (uint32_t i = 0; i < scene_synchronizer->controllers.size(); i += 1) {
-		SceneSynchronizer::NodeData *nd = scene_synchronizer->controllers[i];
+	// Process the controllers_node_data
+	for (uint32_t i = 0; i < scene_synchronizer->controllers_node_data.size(); i += 1) {
+		SceneSynchronizer::NodeData *nd = scene_synchronizer->controllers_node_data[i];
 		static_cast<NetworkedController *>(nd->node)->get_nonet_controller()->process(delta);
 	}
 
@@ -839,9 +839,9 @@ void ServerSynchronizer::process() {
 		nd->process(delta);
 	}
 
-	// Process the controllers
-	for (uint32_t i = 0; i < scene_synchronizer->controllers.size(); i += 1) {
-		SceneSynchronizer::NodeData *nd = scene_synchronizer->controllers[i];
+	// Process the controllers_node_data
+	for (uint32_t i = 0; i < scene_synchronizer->controllers_node_data.size(); i += 1) {
+		SceneSynchronizer::NodeData *nd = scene_synchronizer->controllers_node_data[i];
 		static_cast<NetworkedController *>(nd->node)->get_server_controller()->process(delta);
 	}
 
@@ -936,7 +936,7 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 
 		// TODO improve the controller lookup.
 		SceneSynchronizer::NodeData *nd = scene_synchronizer->get_controller_node_data(peer_it.value->controller_id);
-		// TODO well that's not really true.. I may have peers that doesn't have controllers in a
+		// TODO well that's not really true.. I may have peers that doesn't have controllers_node_data in a
 		// certain moment. Please improve this mechanism trying to just use the
 		// node->get_network_master() to get the peer.
 		ERR_CONTINUE_MSG(nd == nullptr, "This should never happen. Likely there is a bug.");
@@ -970,8 +970,8 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 Vector<Variant> ServerSynchronizer::global_nodes_generate_snapshot(bool p_force_full_snapshot) const {
 	Vector<Variant> snapshot_data;
 
-	for (uint32_t i = 0; i < scene_synchronizer->global_nodes.size(); i += 1) {
-		const SceneSynchronizer::NodeData *node_data = scene_synchronizer->global_nodes[i];
+	for (uint32_t i = 0; i < scene_synchronizer->global_nodes_node_data.size(); i += 1) {
+		const SceneSynchronizer::NodeData *node_data = scene_synchronizer->global_nodes_node_data[i];
 		generate_snapshot_node_data(node_data, p_force_full_snapshot, snapshot_data);
 	}
 
@@ -1042,7 +1042,7 @@ void ServerSynchronizer::generate_snapshot_node_data(
 		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node_data->node);
 		CRASH_COND(controller == nullptr); // Unreachable
 
-		// TODO make sure to skip un-active controllers.
+		// TODO make sure to skip un-active controllers_node_data.
 		if (likely(controller->get_current_input_id() != UINT64_MAX)) {
 			// This is a controller, always sync it.
 			r_snapshot_data.push_back(snap_node_data);
@@ -1103,8 +1103,8 @@ ClientSynchronizer::ClientSynchronizer(SceneSynchronizer *p_node) :
 void ClientSynchronizer::clear() {
 	node_id_map.clear();
 	node_paths.clear();
-	server_snapshot.input_id = UINT64_MAX;
-	server_snapshot.node_vars.clear();
+	last_received_snapshot.input_id = UINT64_MAX;
+	last_received_snapshot.node_vars.clear();
 	client_snapshots.clear();
 	server_snapshots.clear();
 }
@@ -1131,7 +1131,7 @@ void ClientSynchronizer::process() {
 	//
 	// keep in mind that we are just pretending that the time
 	// is advancing faster, for this reason we are still using
-	// `delta` to step the controllers.
+	// `delta` to step the controllers_node_data.
 	//
 	// The dolls may want to speed up too, so to consume the inputs faster
 	// and get back in time with the server.
@@ -1144,7 +1144,7 @@ void ClientSynchronizer::process() {
 			nd->process(delta);
 		}
 
-		// Process the player controllers.
+		// Process the player controllers_node_data.
 		player_controller->process(delta);
 
 		// Pull the changes.
@@ -1166,7 +1166,7 @@ void ClientSynchronizer::process() {
 }
 
 void ClientSynchronizer::receive_snapshot(Variant p_snapshot) {
-	// The received snapshot is parsed and stored into the `server_snapshot`
+	// The received snapshot is parsed and stored into the `last_received_snapshot`
 	// that contains always the last received snapshot.
 	// Later, the snapshot is stored into the server queue.
 	// In this way, we are free to pop snapshot from the queue without wondering
@@ -1184,7 +1184,7 @@ void ClientSynchronizer::receive_snapshot(Variant p_snapshot) {
 	// Finalize data.
 
 	store_controllers_snapshot(
-			server_snapshot,
+			last_received_snapshot,
 			server_snapshots);
 }
 
@@ -1219,8 +1219,8 @@ void ClientSynchronizer::store_snapshot() {
 	snap.input_id = controller->get_current_input_id();
 
 	// Store the state of all the global nodes.
-	for (uint32_t i = 0; i < scene_synchronizer->global_nodes.size(); i += 1) {
-		const SceneSynchronizer::NodeData *node_data = scene_synchronizer->global_nodes[i];
+	for (uint32_t i = 0; i < scene_synchronizer->global_nodes_node_data.size(); i += 1) {
+		const SceneSynchronizer::NodeData *node_data = scene_synchronizer->global_nodes_node_data[i];
 		snap.node_vars.set(node_data->instance_id, node_data->vars);
 	}
 
@@ -1255,7 +1255,7 @@ void ClientSynchronizer::store_controllers_snapshot(
 
 void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 	// The client is responsible to recover only its local controller, while all
-	// the other controllers (dolls) have their state interpolated. There is
+	// the other controllers_node_data (dolls) have their state interpolated. There is
 	// no need to check the correctness of the doll state nor the needs to
 	// rewind those.
 	//
@@ -1386,7 +1386,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(player_controller->get_stored_input_id(-1)));
 
 		if (recover_controller) {
-			// Put the controlled and the controllers into the nodes to
+			// Put the controlled and the controllers_node_data into the nodes to
 			// rewind.
 			// Note, the controller stuffs are added here to ensure that if the
 			// controller need a recover, all its nodes are added; no matter
@@ -1571,7 +1571,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 	StringName variable_name;
 	int server_snap_variable_index = -1;
 
-	server_snapshot.input_id = UINT64_MAX;
+	last_received_snapshot.input_id = UINT64_MAX;
 
 	for (int snap_data_index = 0; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
 		const Variant v = raw_snapshot_ptr[snap_data_index];
@@ -1647,12 +1647,12 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 			synchronizer_node_data->id = node_id;
 
 			// Make sure this node is part of the server node too.
-			server_snapshot_node_data = server_snapshot.node_vars.lookup_ptr(node->get_instance_id());
+			server_snapshot_node_data = last_received_snapshot.node_vars.lookup_ptr(node->get_instance_id());
 			if (server_snapshot_node_data == nullptr) {
-				server_snapshot.node_vars.set(
+				last_received_snapshot.node_vars.set(
 						node->get_instance_id(),
 						Vector<SceneSynchronizer::VarData>());
-				server_snapshot_node_data = server_snapshot.node_vars.lookup_ptr(node->get_instance_id());
+				server_snapshot_node_data = last_received_snapshot.node_vars.lookup_ptr(node->get_instance_id());
 			}
 
 			if (synchronizer_node_data->is_controller) {
@@ -1664,7 +1664,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 				if (synchronizer_node_data == player_controller_node_data) {
 					// This is the main controller, store the input ID.
-					server_snapshot.input_id = input_id;
+					last_received_snapshot.input_id = input_id;
 				}
 			}
 
@@ -1772,7 +1772,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
-	if (server_snapshot.input_id == UINT64_MAX) {
+	if (last_received_snapshot.input_id == UINT64_MAX) {
 		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + player_controller_node_data->node->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
 		NET_DEBUG_PRINT(p_snapshot);
 		return false;
