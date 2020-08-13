@@ -1229,6 +1229,50 @@ void RasterizerEffectsRD::resolve_gi(RID p_source_depth, RID p_source_normal_rou
 	RD::get_singleton()->compute_list_end();
 }
 
+void RasterizerEffectsRD::reduce_shadow(RID p_source_shadow, RID p_dest_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, int p_shrink_limit, RD::ComputeListID compute_list) {
+	uint32_t push_constant[8] = { (uint32_t)p_source_size.x, (uint32_t)p_source_size.y, (uint32_t)p_source_rect.position.x, (uint32_t)p_source_rect.position.y, (uint32_t)p_shrink_limit, 0, 0, 0 };
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shadow_reduce.pipelines[SHADOW_REDUCE_REDUCE]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_source_shadow, p_dest_shadow), 0);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(uint32_t) * 8);
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, p_source_rect.size.height, 1, 8, 8, 1);
+}
+void RasterizerEffectsRD::filter_shadow(RID p_shadow, RID p_backing_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, RenderingServer::EnvVolumetricFogShadowFilter p_filter, RD::ComputeListID compute_list, bool p_vertical, bool p_horizontal) {
+	uint32_t push_constant[8] = { (uint32_t)p_source_size.x, (uint32_t)p_source_size.y, (uint32_t)p_source_rect.position.x, (uint32_t)p_source_rect.position.y, 0, 0, 0, 0 };
+
+	switch (p_filter) {
+		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED:
+		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_LOW: {
+			push_constant[5] = 0;
+		} break;
+		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM: {
+			push_constant[5] = 9;
+		} break;
+		case RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_HIGH: {
+			push_constant[5] = 18;
+		} break;
+	}
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, shadow_reduce.pipelines[SHADOW_REDUCE_FILTER]);
+	if (p_vertical) {
+		push_constant[6] = 1;
+		push_constant[7] = 0;
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_shadow, p_backing_shadow), 0);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(uint32_t) * 8);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, p_source_rect.size.height, 1, 8, 8, 1);
+	}
+	if (p_vertical && p_horizontal) {
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+	if (p_horizontal) {
+		push_constant[6] = 0;
+		push_constant[7] = 1;
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_image_pair(p_backing_shadow, p_shadow), 0);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(uint32_t) * 8);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, p_source_rect.size.height, 1, 8, 8, 1);
+	}
+}
 RasterizerEffectsRD::RasterizerEffectsRD() {
 	{ // Initialize copy
 		Vector<String> copy_modes;
@@ -1560,6 +1604,20 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		}
 	}
 
+	{
+		Vector<String> shadow_reduce_modes;
+		shadow_reduce_modes.push_back("\n#define MODE_REDUCE\n");
+		shadow_reduce_modes.push_back("\n#define MODE_FILTER\n");
+
+		shadow_reduce.shader.initialize(shadow_reduce_modes);
+
+		shadow_reduce.shader_version = shadow_reduce.shader.version_create();
+
+		for (int i = 0; i < SHADOW_REDUCE_MAX; i++) {
+			shadow_reduce.pipelines[i] = RD::get_singleton()->compute_pipeline_create(shadow_reduce.shader.version_get_shader(shadow_reduce.shader_version, i));
+		}
+	}
+
 	RD::SamplerState sampler;
 	sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 	sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
@@ -1624,4 +1682,5 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	ssr_scale.shader.version_free(ssr_scale.shader_version);
 	sss.shader.version_free(sss.shader_version);
 	tonemap.shader.version_free(tonemap.shader_version);
+	shadow_reduce.shader.version_free(shadow_reduce.shader_version);
 }

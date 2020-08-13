@@ -97,6 +97,13 @@ public:
 		GLOW_BLEND_MODE_MIX,
 	};
 
+	enum VolumetricFogShadowFilter {
+		VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED,
+		VOLUMETRIC_FOG_SHADOW_FILTER_LOW,
+		VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM,
+		VOLUMETRIC_FOG_SHADOW_FILTER_HIGH,
+	};
+
 private:
 	RID environment;
 
@@ -195,6 +202,17 @@ private:
 	float fog_height_max = 0.0;
 	float fog_height_curve = 1.0;
 	void _update_fog_height();
+
+	// Volumetric Fog
+	bool volumetric_fog_enabled = false;
+	float volumetric_fog_density = 0.01;
+	Color volumetric_fog_light = Color(0.0, 0.0, 0.0);
+	float volumetric_fog_light_energy = 1.0;
+	float volumetric_fog_length = 64.0;
+	float volumetric_fog_detail_spread = 2.0;
+	VolumetricFogShadowFilter volumetric_fog_shadow_filter = VOLUMETRIC_FOG_SHADOW_FILTER_LOW;
+	float volumetric_fog_gi_inject = 0.0;
+	void _update_volumetric_fog();
 
 	// Adjustment
 	bool adjustment_enabled = false;
@@ -375,6 +393,24 @@ public:
 	void set_fog_height_curve(float p_distance);
 	float get_fog_height_curve() const;
 
+	// Volumetric Fog
+	void set_volumetric_fog_enabled(bool p_enable);
+	bool is_volumetric_fog_enabled() const;
+	void set_volumetric_fog_density(float p_density);
+	float get_volumetric_fog_density() const;
+	void set_volumetric_fog_light(Color p_color);
+	Color get_volumetric_fog_light() const;
+	void set_volumetric_fog_light_energy(float p_begin);
+	float get_volumetric_fog_light_energy() const;
+	void set_volumetric_fog_length(float p_length);
+	float get_volumetric_fog_length() const;
+	void set_volumetric_fog_detail_spread(float p_detail_spread);
+	float get_volumetric_fog_detail_spread() const;
+	void set_volumetric_fog_shadow_filter(VolumetricFogShadowFilter p_filter);
+	VolumetricFogShadowFilter get_volumetric_fog_shadow_filter() const;
+	void set_volumetric_fog_gi_inject(float p_gi_inject);
+	float get_volumetric_fog_gi_inject() const;
+
 	// Adjustment
 	void set_adjustment_enabled(bool p_enabled);
 	bool is_adjustment_enabled() const;
@@ -399,5 +435,6 @@ VARIANT_ENUM_CAST(Environment::SSAOBlur)
 VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
+VARIANT_ENUM_CAST(Environment::VolumetricFogShadowFilter)
 
 #endif // ENVIRONMENT_H

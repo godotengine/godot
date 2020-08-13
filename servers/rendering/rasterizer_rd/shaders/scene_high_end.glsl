@@ -1237,7 +1237,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 			float shadow_z = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), splane.xy, 0.0).r;
 			//reconstruct depth
-			shadow_z / lights.data[idx].inv_radius;
+			shadow_z /= lights.data[idx].inv_radius;
 			//distance to light plane
 			float z = dot(spot_dir, -light_rel_vec);
 			transmittance_z = z - shadow_z;
@@ -1600,6 +1600,21 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 }
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
+#ifndef MODE_RENDER_DEPTH
+
+vec4 volumetric_fog_process(vec2 screen_uv, float z) {
+	vec3 fog_pos = vec3(screen_uv, z * scene_data.volumetric_fog_inv_length);
+	if (fog_pos.z < 0.0) {
+		return vec4(0.0);
+	} else if (fog_pos.z < 1.0) {
+		fog_pos.z = pow(fog_pos.z, scene_data.volumetric_fog_detail_spread);
+	}
+
+	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
+}
+
+#endif
 
 void main() {
 #ifdef MODE_DUAL_PARABOLOID
@@ -2187,8 +2202,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.x;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.x;
+						shadow_z *= directional_lights.data[i].shadow_z_range.x;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.x;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2219,8 +2234,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.y;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.y;
+						shadow_z *= directional_lights.data[i].shadow_z_range.y;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.y;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2251,8 +2266,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.z;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.z;
+						shadow_z *= directional_lights.data[i].shadow_z_range.z;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.z;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2285,8 +2300,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.w;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.w;
+						shadow_z *= directional_lights.data[i].shadow_z_range.w;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.w;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2662,8 +2677,6 @@ FRAGMENT_SHADER_CODE
 	diffuse_light *= 1.0 - metallic; // TODO: avoid all diffuse and ambient light calculations when metallic == 1 up to this point
 	ambient_light *= 1.0 - metallic;
 
-	//fog
-
 #ifdef MODE_MULTIPLE_RENDER_TARGETS
 
 #ifdef MODE_UNSHADED
@@ -2679,15 +2692,26 @@ FRAGMENT_SHADER_CODE
 	specular_buffer = vec4(specular_light, metallic);
 #endif
 
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
+		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+		;
+	}
+
 #else //MODE_MULTIPLE_RENDER_TARGETS
 
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
-	//frag_color = vec4(1.0);;;
-
+	//frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
+
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

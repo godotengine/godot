@@ -3290,6 +3290,7 @@ RID RasterizerStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 1.0;
 
 	return light_owner.make_rid(light);
 }
