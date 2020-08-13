@@ -20,7 +20,7 @@
 				Adds the specified color to the end of the ramp, with the specified offset.
 			</description>
 		</method>
-		<method name="get_color" qualifiers="const">
+		<method name="get_color">
 			<return type="Color">
 			</return>
 			<argument index="0" name="point" type="int">
@@ -29,7 +29,7 @@
 				Returns the color of the ramp color at index [code]point[/code].
 			</description>
 		</method>
-		<method name="get_offset" qualifiers="const">
+		<method name="get_offset">
 			<return type="float">
 			</return>
 			<argument index="0" name="point" type="int">

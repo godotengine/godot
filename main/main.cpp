@@ -1079,13 +1079,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/quality/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan,GLES2"));
+					PROPERTY_HINT_ENUM, "Vulkan"));
 	if (display_driver == "") {
 		display_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
-
-	// Assigning here even though it's GLES2-specific, to be sure that it appears in docs
-	GLOBAL_DEF("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround", false);
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",

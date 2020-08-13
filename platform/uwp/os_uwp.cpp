@@ -35,7 +35,6 @@
 
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
-#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
