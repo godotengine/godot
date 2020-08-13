@@ -32,7 +32,6 @@ name is available.
     Alexey Khoroshavin (allkhor)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
-    Andreas Haas (Hinsbart)
     Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
     Anish Bhobe (KidRigger)
@@ -97,6 +96,7 @@ name is available.
     Jakub Grzesik (kubecz3k)
     James Buck (jbuck3)
     Jérôme Gully (Nutriz)
+    Jia Jun Chai (SkyLucilfer)
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
@@ -107,7 +107,8 @@ name is available.
     Kostadin Damyanov (Max-Might)
     K. S. Ernest (iFire) Lee (fire)
     lawnjelly
-    Leon Krause (eska014)
+    Leon Krause (leonkrause)
+    Liz Haas (27thLiz)
     Lucien Menassol (Kanabenki)
     m4nu3lf
     Maganty Rushyendra (mrushyendra)
@@ -134,6 +135,7 @@ name is available.
     muiroc
     Nathan Warden (NathanWarden)
     Nils André-Chang (NilsIrl)
+    Noah Beard (TwistedTwigleg)
     Nuno Donato (nunodonato)
     Ovnuniarchos
     Pascal Richter (ShyRed)
@@ -157,12 +159,15 @@ name is available.
     Robin Hübner (profan)
     romulox-x
     Ruslan Mustakov (endragor)
+    Ryan Roden-Corrent (rrcore)
     Saniko (sanikoyes)
     santouits
     SaracenOne
+    Sergey Minakov (naithar)
     sersoong
     Shiqing (kawa-yoiko)
     Simon Wenner (swenner)
+    Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     Thakee Nathees (ThakeeNathees)
     Theo Hallenius (TheoXD)
