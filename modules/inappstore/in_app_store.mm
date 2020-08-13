@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef STOREKIT_ENABLED
-
 #include "in_app_store.h"
 
 #import <Foundation/Foundation.h>
@@ -411,5 +409,3 @@ InAppStore::~InAppStore() {
 	[[SKPaymentQueue defaultQueue] removeTransactionObserver:transactions_observer];
 	transactions_observer = nil;
 }
-
-#endif

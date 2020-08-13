@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.h                                                     */
+/*  in_app_store_module.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_REGISTER_TYPES_H
-#define ARKIT_REGISTER_TYPES_H
-
-void register_arkit_types();
-void unregister_arkit_types();
-
-#endif // ARKIT_REGISTER_TYPES_H
+void register_inappstore_types();
+void unregister_inappstore_types();
