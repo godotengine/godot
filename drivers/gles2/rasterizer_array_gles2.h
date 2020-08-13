@@ -81,8 +81,8 @@ public:
 	}
 	~RasterizerArrayGLES2() { free(); }
 
-	_FORCE_INLINE_ T &operator[](unsigned int ui) { return _list[ui]; }
-	_FORCE_INLINE_ const T &operator[](unsigned int ui) const { return _list[ui]; }
+	T &operator[](unsigned int ui) { return _list[ui]; }
+	const T &operator[](unsigned int ui) const { return _list[ui]; }
 
 	void free() {
 		if (_list) {
@@ -102,9 +102,9 @@ public:
 		_max_size = p_size;
 	}
 
-	_FORCE_INLINE_ void reset() { _size = 0; }
+	void reset() { _size = 0; }
 
-	_FORCE_INLINE_ T *request_with_grow() {
+	T *request_with_grow() {
 		T *p = request();
 		if (!p) {
 			grow();
@@ -114,7 +114,7 @@ public:
 	}
 
 	// none of that inefficient pass by value stuff here, thanks
-	_FORCE_INLINE_ T *request() {
+	T *request() {
 		if (_size < _max_size) {
 			return &_list[_size++];
 		}
@@ -122,7 +122,7 @@ public:
 	}
 
 	// several items at a time
-	_FORCE_INLINE_ T *request(int p_num_items) {
+	T *request(int p_num_items) {
 		int old_size = _size;
 		_size += p_num_items;
 
@@ -135,9 +135,9 @@ public:
 		return 0;
 	}
 
-	_FORCE_INLINE_ int size() const { return _size; }
-	_FORCE_INLINE_ int max_size() const { return _max_size; }
-	_FORCE_INLINE_ const T *get_data() const { return _list; }
+	int size() const { return _size; }
+	int max_size() const { return _max_size; }
+	const T *get_data() const { return _list; }
 
 	bool copy_from(const RasterizerArrayGLES2<T> &o) {
 		// no resizing done here, it should be done manually
