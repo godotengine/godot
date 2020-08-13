@@ -198,18 +198,18 @@ static std::vector<String> _color_descriptors = {
 static void _append_underscores(String &out_name, const std::vector<String> &strings) {
 	for (int i = 0; i < strings.size(); ++i) {
 		const String &word = strings[i];
-		int word_size = word.size();
 		int word_begins_at = out_name.find(word);
+		int word_ends_at = word_begins_at + word.size();
 
 		if (word_begins_at > 0) {
-			if (out_name[i - 1] != '_') {
-				out_name.insert(i - 1, "_");
+			if (out_name[word_begins_at - 1] != '_') {
+				out_name.insert(word_begins_at - 1, "_");
 			}
 		}
 
-		if (word_begins_at + word_size < out_name.size()) {
-			if (out_name[word_begins_at + word_size + 1] != '_') {
-				out_name.insert(word_begins_at + word_size + 1, "_");
+		if (word_ends_at < out_name.size()) {
+			if (out_name[word_ends_at + 1] != '_') {
+				out_name.insert(word_ends_at + 1, "_");
 			}
 		}
 	}
