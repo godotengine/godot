@@ -184,10 +184,6 @@ public:
 	};
 
 private:
-	/// How much frames the doll is allowed to be processed out of sync.
-	/// This is useful to avoid time jumps each rewinding.
-	int doll_desync_tolerance = 120;
-
 	real_t server_notify_state_interval = 1.0;
 	real_t comparison_float_tolerance = 0.001;
 

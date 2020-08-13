@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_synchronizer.cpp                                                   */
+/*  scene_synchronizer.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -108,9 +108,6 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset_synchronizer_mode"), &SceneSynchronizer::reset_synchronizer_mode);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneSynchronizer::clear);
 
-	ClassDB::bind_method(D_METHOD("set_doll_desync_tolerance", "tolerance"), &SceneSynchronizer::set_doll_desync_tolerance);
-	ClassDB::bind_method(D_METHOD("get_doll_desync_tolerance"), &SceneSynchronizer::get_doll_desync_tolerance);
-
 	ClassDB::bind_method(D_METHOD("set_server_notify_state_interval", "interval"), &SceneSynchronizer::set_server_notify_state_interval);
 	ClassDB::bind_method(D_METHOD("get_server_notify_state_interval"), &SceneSynchronizer::get_server_notify_state_interval);
 
@@ -142,8 +139,6 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneSynchronizer::__clear);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneSynchronizer::_rpc_send_state);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneSynchronizer::_rpc_notify_need_full_snapshot);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_desync_tolerance", PROPERTY_HINT_RANGE, "1,10000,1"), "set_doll_desync_tolerance", "get_doll_desync_tolerance");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "comparison_float_tolerance", PROPERTY_HINT_RANGE, "0.000001,0.01,0.000001"), "set_comparison_float_tolerance", "get_comparison_float_tolerance");
@@ -209,14 +204,6 @@ SceneSynchronizer::~SceneSynchronizer() {
 		synchronizer = nullptr;
 		synchronizer_type = SYNCHRONIZER_TYPE_NULL;
 	}
-}
-
-void SceneSynchronizer::set_doll_desync_tolerance(int p_tolerance) {
-	doll_desync_tolerance = p_tolerance;
-}
-
-int SceneSynchronizer::get_doll_desync_tolerance() const {
-	return doll_desync_tolerance;
 }
 
 void SceneSynchronizer::set_server_notify_state_interval(real_t p_interval) {
