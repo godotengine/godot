@@ -36,6 +36,7 @@
 #include "os_iphone.h"
 #import "view_controller.h"
 
+#import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioServices.h>
 
 #define kRenderingFrequency 60
