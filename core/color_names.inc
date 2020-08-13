@@ -202,8 +202,10 @@ static void _insert_underscores(String &out_name, const Vector<String> &helper_l
 	for (int i = 0; i < helper_list.size(); ++i) {
 		const String &word = helper_list[i];
 		int word_begins_at = out_name.find(word, 0);
-		ERR_PRINT_ONCE(itos(word_begins_at));
-		int word_ends_at = word_begins_at + word.size();
+		int word_ends_at = word_begins_at + word.size() - 2;
+		if (word_begins_at >= 0) {
+			ERR_PRINT("Found " + word + " in " + out_name + " between [" + itos(word_begins_at) + "] and [" + itos(word_ends_at) + "].");
+		}
 
 		if (word_begins_at > 0) {
 			if (out_name[word_begins_at - 1] != '_') {
