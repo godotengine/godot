@@ -163,8 +163,10 @@ Array Engine::get_copyright_info() const {
 
 Dictionary Engine::get_donor_info() const {
 	Dictionary donors;
-	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLAT);
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLATINUM);
 	donors["gold_sponsors"] = array_from_info(DONORS_SPONSOR_GOLD);
+	donors["silver_sponsors"] = array_from_info(DONORS_SPONSOR_SILVER);
+	donors["bronze_sponsors"] = array_from_info(DONORS_SPONSOR_BRONZE);
 	donors["mini_sponsors"] = array_from_info(DONORS_SPONSOR_MINI);
 	donors["gold_donors"] = array_from_info(DONORS_GOLD);
 	donors["silver_donors"] = array_from_info(DONORS_SILVER);

@@ -153,8 +153,8 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	if (have_device(instance->guidInstance) || num == -1)
 		return false;
 
-	d_joypads[joypad_count] = dinput_gamepad();
-	dinput_gamepad *joy = &d_joypads[joypad_count];
+	d_joypads[num] = dinput_gamepad();
+	dinput_gamepad *joy = &d_joypads[num];
 
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
@@ -178,7 +178,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	WORD version = 0;
 	sprintf_s(uid, "%04x%04x%04x%04x%04x%04x%04x%04x", type, 0, vendor, 0, product, 0, version, 0);
 
-	id_to_change = joypad_count;
+	id_to_change = num;
 	slider_count = 0;
 
 	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);

@@ -162,12 +162,15 @@ EditorAbout::EditorAbout() {
 	List<String> donor_sections;
 	donor_sections.push_back(TTR("Platinum Sponsors"));
 	donor_sections.push_back(TTR("Gold Sponsors"));
+	donor_sections.push_back(TTR("Silver Sponsors"));
+	donor_sections.push_back(TTR("Bronze Sponsors"));
 	donor_sections.push_back(TTR("Mini Sponsors"));
 	donor_sections.push_back(TTR("Gold Donors"));
 	donor_sections.push_back(TTR("Silver Donors"));
 	donor_sections.push_back(TTR("Bronze Donors"));
-	const char *const *donor_src[] = { DONORS_SPONSOR_PLAT, DONORS_SPONSOR_GOLD,
-		DONORS_SPONSOR_MINI, DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
+	const char *const *donor_src[] = { DONORS_SPONSOR_PLATINUM, DONORS_SPONSOR_GOLD,
+		DONORS_SPONSOR_SILVER, DONORS_SPONSOR_BRONZE, DONORS_SPONSOR_MINI,
+		DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
 	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
 
 	// License
