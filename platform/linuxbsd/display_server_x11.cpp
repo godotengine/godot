@@ -39,10 +39,6 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
-#if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
-#endif
-
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
 #endif

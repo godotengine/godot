@@ -45,7 +45,6 @@
 #include <IOKit/hid/IOHIDLib.h>
 
 #if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
 //TODO - reimplement OpenGLES
 
 #import <AppKit/NSOpenGLView.h>
