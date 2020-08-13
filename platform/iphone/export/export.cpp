@@ -43,6 +43,7 @@
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
 #include "platform/iphone/logo.gen.h"
+#include "platform/iphone/plugin/godot_plugin_config.h"
 #include "string.h"
 
 #include <sys/stat.h>
@@ -53,6 +54,13 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	int version_code;
 
 	Ref<ImageTexture> logo;
+
+	// Plugins
+	volatile bool plugins_changed;
+	Thread *check_for_changes_thread;
+	volatile bool quit_request;
+	Mutex plugins_lock;
+	Vector<PluginConfig> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata);
@@ -70,6 +78,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_fileref;
 		String modules_buildphase;
 		String modules_buildgrp;
+		Vector<String> capabilities;
 	};
 	struct ExportArchitecture {
 		String name;
@@ -103,6 +112,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	void _add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
+	Error _export_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
 		String pname = p_package;
@@ -127,6 +137,40 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		return true;
 	}
 
+	static void _check_for_changes_poll_thread(void *ud) {
+		EditorExportPlatformIOS *ea = (EditorExportPlatformIOS *)ud;
+
+		while (!ea->quit_request) {
+			// Nothing to do if we already know the plugins have changed.
+			if (!ea->plugins_changed) {
+				MutexLock lock(ea->plugins_lock);
+
+				Vector<PluginConfig> loaded_plugins = get_plugins();
+
+				if (ea->plugins.size() != loaded_plugins.size()) {
+					ea->plugins_changed = true;
+				} else {
+					for (int i = 0; i < ea->plugins.size(); i++) {
+						if (ea->plugins[i].name != loaded_plugins[i].name || ea->plugins[i].last_updated != loaded_plugins[i].last_updated) {
+							ea->plugins_changed = true;
+							break;
+						}
+					}
+				}
+			}
+
+			uint64_t wait = 3000000;
+			uint64_t time = OS::get_singleton()->get_ticks_usec();
+			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
+				OS::get_singleton()->delay_usec(300000);
+
+				if (ea->quit_request) {
+					break;
+				}
+			}
+		}
+	}
+
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
@@ -136,13 +180,21 @@ public:
 	virtual String get_os_name() const override { return "iOS"; }
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
 
+	virtual bool should_update_export_options() override {
+		bool export_options_changed = plugins_changed;
+		if (export_options_changed) {
+			// don't clear unless we're reporting true, to avoid race
+			plugins_changed = false;
+		}
+		return export_options_changed;
+	}
+
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
 		list.push_back("ipa");
 		return list;
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
-	virtual void add_module_code(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 
@@ -156,6 +208,85 @@ public:
 
 	EditorExportPlatformIOS();
 	~EditorExportPlatformIOS();
+
+	/// List the gdip files in the directory specified by the p_path parameter.
+	static Vector<String> list_plugin_config_files(const String &p_path, bool p_check_directories) {
+		Vector<String> dir_files;
+		DirAccessRef da = DirAccess::open(p_path);
+		if (da) {
+			da->list_dir_begin();
+			while (true) {
+				String file = da->get_next();
+				if (file.empty()) {
+					break;
+				}
+
+				if (file == "." || file == "..") {
+					continue;
+				}
+
+				if (da->current_is_hidden()) {
+					continue;
+				}
+
+				if (da->current_is_dir()) {
+					if (p_check_directories) {
+						Vector<String> directory_files = list_plugin_config_files(p_path.plus_file(file), false);
+						for (int i = 0; i < directory_files.size(); ++i) {
+							dir_files.push_back(file.plus_file(directory_files[i]));
+						}
+					}
+
+					continue;
+				}
+
+				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+					dir_files.push_back(file);
+				}
+			}
+			da->list_dir_end();
+		}
+
+		return dir_files;
+	}
+
+	static Vector<PluginConfig> get_plugins() {
+		Vector<PluginConfig> loaded_plugins;
+
+		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("ios/plugins");
+
+		if (DirAccess::exists(plugins_dir)) {
+			Vector<String> plugins_filenames = list_plugin_config_files(plugins_dir, true);
+
+			if (!plugins_filenames.empty()) {
+				Ref<ConfigFile> config_file = memnew(ConfigFile);
+				for (int i = 0; i < plugins_filenames.size(); i++) {
+					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					if (config.valid_config) {
+						loaded_plugins.push_back(config);
+					} else {
+						print_error("Invalid plugin config file " + plugins_filenames[i]);
+					}
+				}
+			}
+		}
+
+		return loaded_plugins;
+	}
+
+	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfig> enabled_plugins;
+		Vector<PluginConfig> all_plugins = get_plugins();
+		for (int i = 0; i < all_plugins.size(); i++) {
+			PluginConfig plugin = all_plugins[i];
+			bool enabled = p_presets->get("plugins/" + plugin.name);
+			if (enabled) {
+				enabled_plugins.push_back(plugin);
+			}
+		}
+
+		return enabled_plugins;
+	}
 };
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
@@ -224,12 +355,16 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/arkit"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/camera"), false));
+	Vector<PluginConfig> found_plugins = get_plugins();
+
+	for (int i = 0; i < found_plugins.size(); i++) {
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
+	}
+
+	plugins_changed = false;
+	plugins = found_plugins;
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/game_center"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/in_app_purchases"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/push_notifications"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_files_app"), false));
@@ -345,18 +480,6 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
 		} else if (lines[i].find("$docs_sharing") != -1) {
 			strnew += lines[i].replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].find("$access_wifi") != -1) {
-			bool is_on = p_preset->get("capabilities/access_wifi");
-			strnew += lines[i].replace("$access_wifi", is_on ? "1" : "0") + "\n";
-		} else if (lines[i].find("$game_center") != -1) {
-			bool is_on = p_preset->get("capabilities/game_center");
-			strnew += lines[i].replace("$game_center", is_on ? "1" : "0") + "\n";
-		} else if (lines[i].find("$in_app_purchases") != -1) {
-			bool is_on = p_preset->get("capabilities/in_app_purchases");
-			strnew += lines[i].replace("$in_app_purchases", is_on ? "1" : "0") + "\n";
-		} else if (lines[i].find("$push_notifications") != -1) {
-			bool is_on = p_preset->get("capabilities/push_notifications");
-			strnew += lines[i].replace("$push_notifications", is_on ? "1" : "0") + "\n";
 		} else if (lines[i].find("$entitlements_push_notifications") != -1) {
 			bool is_on = p_preset->get("capabilities/push_notifications");
 			strnew += lines[i].replace("$entitlements_push_notifications", is_on ? "<key>aps-environment</key><string>development</string>" : "") + "\n";
@@ -366,15 +489,14 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			// I've removed armv7 as we can run on 64bit only devices
 			// Note that capabilities listed here are requirements for the app to be installed.
 			// They don't enable anything.
+			Vector<String> capabilities_list = p_config.capabilities;
 
-			if ((bool)p_preset->get("capabilities/arkit")) {
-				capabilities += "<string>arkit</string>\n";
+			if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
+				capabilities_list.push_back("wifi");
 			}
-			if ((bool)p_preset->get("capabilities/game_center")) {
-				capabilities += "<string>gamekit</string>\n";
-			}
-			if ((bool)p_preset->get("capabilities/access_wifi")) {
-				capabilities += "<string>wifi</string>\n";
+
+			for (int idx = 0; idx < capabilities_list.size(); idx++) {
+				capabilities += "<string>" + capabilities_list[idx] + "</string>\n";
 			}
 
 			strnew += lines[i].replace("$required_device_capabilities", capabilities);
@@ -984,28 +1106,6 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	// Note, frameworks like gamekit are always included in our project.pbxprof file
 	// even if turned off in capabilities.
 
-	// We do need our ARKit framework
-	if ((bool)p_preset->get("capabilities/arkit")) {
-		String build_id = (++current_id).str();
-		String ref_id = (++current_id).str();
-
-		if (pbx_frameworks_build.length() > 0) {
-			pbx_frameworks_build += ",\n";
-			pbx_frameworks_refs += ",\n";
-		}
-
-		pbx_frameworks_build += build_id;
-		pbx_frameworks_refs += ref_id;
-
-		Dictionary format_dict;
-		format_dict["build_id"] = build_id;
-		format_dict["ref_id"] = ref_id;
-		format_dict["name"] = "ARKit.framework";
-		format_dict["file_path"] = "System/Library/Frameworks/ARKit.framework";
-		format_dict["file_type"] = "wrapper.framework";
-		pbx_files += file_info_format.format(format_dict, "$_");
-	}
-
 	String str = String::utf8((const char *)p_project_data.ptr(), p_project_data.size());
 	str = str.replace("$additional_pbx_files", pbx_files);
 	str = str.replace("$additional_pbx_frameworks_build", pbx_frameworks_build);
@@ -1202,20 +1302,165 @@ Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<Edit
 	return enabled_archs;
 }
 
-void EditorExportPlatformIOS::add_module_code(const Ref<EditorExportPreset> &p_preset, EditorExportPlatformIOS::IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid) {
-	if ((bool)p_preset->get("capabilities/" + p_name)) {
-		//add module static library
-		print_line("ADDING MODULE: " + p_name);
+Error EditorExportPlatformIOS::_export_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets) {
+	String plugin_definition_cpp_code;
+	String plugin_initialization_cpp_code;
+	String plugin_deinitialization_cpp_code;
 
-		p_config_data.modules_buildfile += p_gid + " /* libgodot_" + p_name + "_module.a in Frameworks */ = {isa = PBXBuildFile; fileRef = " + p_fid + " /* libgodot_" + p_name + "_module.a */; };\n\t\t";
-		p_config_data.modules_fileref += p_fid + " /* libgodot_" + p_name + "_module.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = godot_" + p_name + "_module ; path = \"libgodot_" + p_name + "_module.a\"; sourceTree = \"<group>\"; };\n\t\t";
-		p_config_data.modules_buildphase += p_gid + " /* libgodot_" + p_name + "_module.a */,\n\t\t\t\t";
-		p_config_data.modules_buildgrp += p_fid + " /* libgodot_" + p_name + "_module.a */,\n\t\t\t\t";
-	} else {
-		//add stub function for disabled module
-		p_config_data.cpp_code += "void register_" + p_name + "_types() { /*stub*/ };\n";
-		p_config_data.cpp_code += "void unregister_" + p_name + "_types() { /*stub*/ };\n";
+	Vector<String> plugin_libraries;
+	Vector<String> plugin_linked_dependencies;
+	Vector<String> plugin_embedded_dependencies;
+	Vector<String> plugin_files;
+
+	Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+
+	Vector<String> added_linked_dependenciy_names;
+	Vector<String> added_embedded_dependenciy_names;
+	HashMap<String, String> plist_values;
+
+	for (int i = 0; i < enabled_plugins.size(); i++) {
+		PluginConfig plugin = enabled_plugins[i];
+
+		// Adding plugin binary.
+		plugin_libraries.push_back(plugin.binary);
+
+		// Adding dependencies.
+		// Use separate container for names to check for duplicates.
+		for (int j = 0; j < plugin.linked_dependencies.size(); j++) {
+			String dependency = plugin.linked_dependencies[j];
+			String name = dependency.get_file();
+
+			if (added_linked_dependenciy_names.has(name)) {
+				continue;
+			}
+
+			added_linked_dependenciy_names.push_back(name);
+			plugin_linked_dependencies.push_back(dependency);
+		}
+
+		for (int j = 0; j < plugin.system_dependencies.size(); j++) {
+			String dependency = plugin.system_dependencies[j];
+			String name = dependency.get_file();
+
+			if (added_linked_dependenciy_names.has(name)) {
+				continue;
+			}
+
+			added_linked_dependenciy_names.push_back(name);
+			plugin_linked_dependencies.push_back(dependency);
+		}
+
+		for (int j = 0; j < plugin.embedded_dependencies.size(); j++) {
+			String dependency = plugin.embedded_dependencies[j];
+			String name = dependency.get_file();
+
+			if (added_embedded_dependenciy_names.has(name)) {
+				continue;
+			}
+
+			added_embedded_dependenciy_names.push_back(name);
+			plugin_embedded_dependencies.push_back(dependency);
+		}
+
+		plugin_files.append_array(plugin.files_to_copy);
+
+		// Capabilities
+		// Also checking for duplicates.
+		for (int j = 0; j < plugin.capabilities.size(); j++) {
+			String capability = plugin.capabilities[j];
+
+			if (p_config_data.capabilities.has(capability)) {
+				continue;
+			}
+
+			p_config_data.capabilities.push_back(capability);
+		}
+
+		// Plist
+		// Using hash map container to remove duplicates
+		const String *K = nullptr;
+
+		while ((K = plugin.plist.next(K))) {
+			String key = *K;
+			String value = plugin.plist[key];
+
+			if (key.empty() || value.empty()) {
+				continue;
+			}
+
+			plist_values[key] = value;
+		}
+
+		// CPP Code
+		String definition_comment = "// Plugin: " + plugin.name + "\n";
+		String initialization_method = plugin.initialization_method + "();\n";
+		String deinitialization_method = plugin.deinitialization_method + "();\n";
+
+		plugin_definition_cpp_code += definition_comment +
+									  "extern void " + initialization_method +
+									  "extern void " + deinitialization_method + "\n";
+
+		plugin_initialization_cpp_code += "\t" + initialization_method;
+		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
 	}
+
+	// Updating `Info.plist`
+	{
+		const String *K = nullptr;
+		while ((K = plist_values.next(K))) {
+			String key = *K;
+			String value = plist_values[key];
+
+			if (key.empty() || value.empty()) {
+				continue;
+			}
+
+			p_config_data.plist_content += "<key>" + key + "</key><string>" + value + "</string>\n";
+		}
+	}
+
+	// Export files
+	{
+		// Export plugin libraries
+		Error err = _export_additional_assets(dest_dir, plugin_libraries, true, true, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+
+		// Export linked plugin dependency
+		err = _export_additional_assets(dest_dir, plugin_linked_dependencies, true, false, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+
+		// Export embedded plugin dependency
+		err = _export_additional_assets(dest_dir, plugin_embedded_dependencies, true, true, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+
+		// Export plugin files
+		err = _export_additional_assets(dest_dir, plugin_files, false, false, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+	}
+
+	// Update CPP
+	{
+		Dictionary plugin_format;
+		plugin_format["definition"] = plugin_definition_cpp_code;
+		plugin_format["initialization"] = plugin_initialization_cpp_code;
+		plugin_format["deinitialization"] = plugin_deinitialization_cpp_code;
+
+		String plugin_cpp_code = "\n// Godot Plugins\n"
+								 "void godot_ios_plugins_initialize();\n"
+								 "void godot_ios_plugins_deinitialize();\n"
+								 "// Exported Plugins\n\n"
+								 "$definition"
+								 "// Use Plugins\n"
+								 "void godot_ios_plugins_initialize() {\n"
+								 "$initialization"
+								 "}\n\n"
+								 "void godot_ios_plugins_deinitialize() {\n"
+								 "$deinitialization"
+								 "}\n";
+
+		p_config_data.cpp_code += plugin_cpp_code.format(plugin_format, "$_");
+	}
+	return OK;
 }
 
 Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
@@ -1324,8 +1569,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		"",
 		"",
 		"",
-		""
+		"",
+		Vector<String>()
 	};
+
+	Vector<IOSExportAsset> assets;
 
 	DirAccess *tmp_app_path = DirAccess::create_for_path(dest_dir);
 	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE);
@@ -1339,8 +1587,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_CANT_OPEN;
 	}
 
-	add_module_code(p_preset, config_data, "arkit", "F9B95E6E2391205500AF0000", "F9C95E812391205C00BF0000");
-	add_module_code(p_preset, config_data, "camera", "F9B95E6E2391205500AF0001", "F9C95E812391205C00BF0001");
+	err = _export_plugins(p_preset, config_data, dest_dir + binary_name, assets);
+	ERR_FAIL_COND_V(err, err);
 
 	//export rest of the files
 	int ret = unzGoToFirstFile(src_pkg_zip);
@@ -1382,21 +1630,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			is_execute = true;
 #endif
 			file = "godot_ios.a";
-		} else if (file.begins_with("libgodot_arkit")) {
-			if ((bool)p_preset->get("capabilities/arkit") && file.ends_with(String(p_debug ? "debug" : "release") + ".fat.a")) {
-				file = "libgodot_arkit_module.a";
-			} else {
-				ret = unzGoToNextFile(src_pkg_zip);
-				continue; //ignore!
-			}
-		} else if (file.begins_with("libgodot_camera")) {
-			if ((bool)p_preset->get("capabilities/camera") && file.ends_with(String(p_debug ? "debug" : "release") + ".fat.a")) {
-				file = "libgodot_camera_module.a";
-			} else {
-				ret = unzGoToNextFile(src_pkg_zip);
-				continue; //ignore!
-			}
 		}
+
 		if (file == project_file) {
 			project_file_data = data;
 		}
@@ -1530,7 +1765,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	print_line("Exporting additional assets");
-	Vector<IOSExportAsset> assets;
 	_export_additional_assets(dest_dir + binary_name, libraries, assets);
 	_add_assets_to_project(p_preset, project_file_data, assets);
 	String project_file_name = dest_dir + binary_name + ".xcodeproj/project.pbxproj";
@@ -1665,9 +1899,17 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);
+
+	plugins_changed = true;
+	quit_request = false;
+
+	check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+	quit_request = true;
+	Thread::wait_to_finish(check_for_changes_thread);
+	memdelete(check_for_changes_thread);
 }
 
 void register_iphone_exporter() {
