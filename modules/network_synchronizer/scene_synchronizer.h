@@ -150,7 +150,7 @@ public:
 		bool is_controller = false;
 		LocalVector<NodeData *> controlled_nodes;
 
-		LocalVector<VarData> vars;
+		Vector<VarData> vars;
 		LocalVector<StringName> functions;
 
 		// This is valid to use only inside the process function.
@@ -159,7 +159,7 @@ public:
 		NodeData();
 
 		// Returns the index to access the variable.
-		int find_var_by_id(uint32_t p_id) const;
+		int64_t find_var_by_id(uint32_t p_id) const;
 		void process(const real_t p_delta) const;
 	};
 
@@ -172,14 +172,6 @@ public:
 	};
 
 	struct Snapshot {
-		OAHashMap<ObjectID, uint64_t> controllers_input_id;
-		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
-
-		operator String() const;
-	};
-
-	// TODO rename, no more isle concept
-	struct IsleSnapshot {
 		uint64_t input_id;
 		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
 
@@ -274,7 +266,7 @@ public:
 private:
 	NodeData *get_node_data(ObjectID p_object_id) const;
 	uint32_t find_global_node(ObjectID p_object_id) const;
-	uint32_t find_controller_node(ControllerID p_controller_id) const;
+	NodeData *get_controller_node_data(ControllerID p_controller_id) const;
 
 	void process();
 
@@ -364,8 +356,8 @@ class ClientSynchronizer : public Synchronizer {
 	OAHashMap<uint32_t, NodePath> node_paths;
 
 	SceneSynchronizer::Snapshot server_snapshot;
-	std::deque<SceneSynchronizer::IsleSnapshot> client_snapshots;
-	std::deque<SceneSynchronizer::IsleSnapshot> server_snapshots;
+	std::deque<SceneSynchronizer::Snapshot> client_snapshots;
+	std::deque<SceneSynchronizer::Snapshot> server_snapshots;
 
 	bool need_full_snapshot_notified = false;
 
@@ -385,7 +377,7 @@ private:
 
 	void store_controllers_snapshot(
 			const SceneSynchronizer::Snapshot &p_snapshot,
-			OAHashMap<SceneSynchronizer::ControllerID, std::deque<SceneSynchronizer::IsleSnapshot>> &r_snapshot_storage);
+			std::deque<SceneSynchronizer::Snapshot> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);

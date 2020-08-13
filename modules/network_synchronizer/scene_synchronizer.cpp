@@ -62,8 +62,9 @@ int64_t SceneSynchronizer::NodeData::find_var_by_id(uint32_t p_id) const {
 	if (p_id == 0) {
 		return -1;
 	}
-	for (uint32_t i = 0; i < vars.size(); i += 1) {
-		if (vars[i].id == p_id) {
+	const VarData *ptr = vars.ptr();
+	for (int i = 0; i < vars.size(); i += 1) {
+		if (ptr[i].id == p_id) {
 			return i;
 		}
 	}
@@ -82,20 +83,7 @@ void SceneSynchronizer::NodeData::process(const real_t p_delta) const {
 
 SceneSynchronizer::Snapshot::operator String() const {
 	String s;
-	s += "Snapshot:\n";
-	for (
-			OAHashMap<ObjectID, uint64_t>::Iterator it = controllers_input_id.iter();
-			it.valid;
-			it = controllers_input_id.next_iter(it)) {
-		s += "\nController: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
-		s += " - ";
-		s += "input ID: ";
-		s += itos(*it.value);
-	}
+	s += "Snapshot input ID: " + itos(input_id);
 
 	for (
 			OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator it = node_vars.iter();
@@ -106,29 +94,6 @@ SceneSynchronizer::Snapshot::operator String() const {
 			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
 		else
 			s += " (Object ID): " + itos(*it.key);
-		for (int i = 0; i < it.value->size(); i += 1) {
-			s += "\n|- Variable: ";
-			s += (*it.value)[i].var.name;
-			s += " = ";
-			s += String((*it.value)[i].var.value);
-		}
-	}
-	return s;
-}
-
-SceneSynchronizer::IsleSnapshot::operator String() const {
-	String s;
-	s += "Input ID: " + itos(input_id) + "; ";
-	for (
-			OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator it = node_vars.iter();
-			it.valid;
-			it = node_vars.next_iter(it)) {
-		s += "\nNode: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
-
 		for (int i = 0; i < it.value->size(); i += 1) {
 			s += "\n|- Variable: ";
 			s += (*it.value)[i].var.name;
@@ -289,8 +254,9 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 						p_skip_rewinding,
 						true));
 	} else {
-		node_data->vars[id].skip_rewinding = p_skip_rewinding;
-		node_data->vars[id].enabled = true;
+		VarData *ptr = node_data->vars.ptrw();
+		ptr[id].skip_rewinding = p_skip_rewinding;
+		ptr[id].enabled = true;
 	}
 
 	if (p_node->has_signal(get_changed_event_name(p_variable)) == false) {
@@ -323,7 +289,7 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 		p_node->disconnect(get_changed_event_name(p_variable), e->get().callable);
 	}
 
-	nd->vars[index].enabled = false;
+	nd->vars.write[index].enabled = false;
 }
 
 String SceneSynchronizer::get_changed_event_name(StringName p_variable) {
@@ -496,7 +462,7 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 		// Notify the presence all available nodes and its variables to the synchronizer.
 		for (uint32_t i = 0; i < node_data.size(); i += 1) {
 			synchronizer->on_node_added(node_data[i]);
-			for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
+			for (int y = 0; y < node_data[i]->vars.size(); y += 1) {
 				synchronizer->on_variable_added(node_data[i], node_data[i]->vars[y].var.name);
 			}
 		}
@@ -517,7 +483,7 @@ void SceneSynchronizer::__clear() {
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		Node *node = static_cast<Node *>(ObjectDB::get_instance(node_data[i]->instance_id));
 		if (node != nullptr) {
-			for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
+			for (int y = 0; y < node_data[i]->vars.size(); y += 1) {
 				// Unregister the variable so the connected variables are
 				// correctly removed
 				unregister_variable(node, node_data[i]->vars[y].var.name);
@@ -793,13 +759,13 @@ uint32_t SceneSynchronizer::find_global_node(ObjectID p_object_id) const {
 	return UINT32_MAX;
 }
 
-uint32_t SceneSynchronizer::find_controller_node(ControllerID p_controller_id) const {
+SceneSynchronizer::NodeData *SceneSynchronizer::get_controller_node_data(ControllerID p_controller_id) const {
 	for (uint32_t i = 0; i < controllers.size(); i += 1) {
 		if (controllers[i]->instance_id == p_controller_id) {
-			return i;
+			return controllers[i];
 		}
 	}
-	return UINT32_MAX;
+	return nullptr;
 }
 
 void SceneSynchronizer::process() {
@@ -810,7 +776,7 @@ void SceneSynchronizer::process() {
 void SceneSynchronizer::pull_node_changes(NodeData *p_node_data) {
 	Node *node = p_node_data->node;
 	const int var_count = p_node_data->vars.size();
-	VarData *object_vars = &p_node_data->vars[0];
+	VarData *object_vars = p_node_data->vars.ptrw();
 
 	for (int i = 0; i < var_count; i += 1) {
 		if (object_vars[i].enabled == false) {
@@ -979,11 +945,11 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		peer_it.value->force_notify_snapshot = false;
 
 		// TODO improve the controller lookup.
-		const uint32_t cindex = scene_synchronizer->find_controller_node(peer_it.value->controller_id);
+		SceneSynchronizer::NodeData *nd = scene_synchronizer->get_controller_node_data(peer_it.value->controller_id);
 		// TODO well that's not really true.. I may have peers that doesn't have controllers in a
 		// certain moment. Please improve this mechanism trying to just use the
 		// node->get_network_master() to get the peer.
-		ERR_CONTINUE_MSG(cindex == UINT32_MAX, "This should never happen. Likely there is a bug.");
+		ERR_CONTINUE_MSG(nd == nullptr, "This should never happen. Likely there is a bug.");
 
 		Vector<Variant> snap;
 		if (peer_it.value->need_full_snapshot) {
@@ -992,13 +958,13 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 				full_global_nodes_snapshot = global_nodes_generate_snapshot(true);
 			}
 			snap = full_global_nodes_snapshot;
-			generate_snapshot_node_data(scene_synchronizer->controllers[cindex], true, snap);
+			generate_snapshot_node_data(nd, true, snap);
 		} else {
 			if (delta_global_nodes_snapshot.size() == 0) {
 				delta_global_nodes_snapshot = global_nodes_generate_snapshot(false);
 			}
 			snap = delta_global_nodes_snapshot;
-			generate_snapshot_node_data(scene_synchronizer->controllers[cindex], false, snap);
+			generate_snapshot_node_data(nd, false, snap);
 		}
 
 		scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", snap);
@@ -1147,8 +1113,10 @@ ClientSynchronizer::ClientSynchronizer(SceneSynchronizer *p_node) :
 void ClientSynchronizer::clear() {
 	node_id_map.clear();
 	node_paths.clear();
-	server_snapshot.controllers_input_id.clear();
+	server_snapshot.input_id = UINT64_MAX;
 	server_snapshot.node_vars.clear();
+	client_snapshots.clear();
+	server_snapshots.clear();
 }
 
 void ClientSynchronizer::process() {
@@ -1208,11 +1176,13 @@ void ClientSynchronizer::process() {
 }
 
 void ClientSynchronizer::receive_snapshot(Variant p_snapshot) {
-	// The received snapshot nodes are stored all separated into the
-	// `server_snapshot`. Since the snapshots sends data incrementatlly, storing
-	// it in this way simplify the parsing phase.
-	// Later, the snapshot nodes are organized into isle. In this way the
-	// isle organization can change without too much problems.
+	// The received snapshot is parsed and stored into the `server_snapshot`
+	// that contains always the last received snapshot.
+	// Later, the snapshot is stored into the server queue.
+	// In this way, we are free to pop snapshot from the queue without wondering
+	// about losing the data. Indeed the received snapshot is just and
+	// incremental update so the last received data is always needed to fully
+	// reconstruct it.
 
 	// Parse server snapshot.
 	const bool success = parse_snapshot(p_snapshot);
@@ -1225,7 +1195,7 @@ void ClientSynchronizer::receive_snapshot(Variant p_snapshot) {
 
 	store_controllers_snapshot(
 			server_snapshot,
-			server_controllers_snapshots);
+			server_snapshots);
 }
 
 void ClientSynchronizer::on_node_added(SceneSynchronizer::NodeData *p_node_data) {
@@ -1245,18 +1215,17 @@ void ClientSynchronizer::on_node_removed(SceneSynchronizer::NodeData *p_node_dat
 
 void ClientSynchronizer::store_snapshot() {
 	NetworkedController *controller = static_cast<NetworkedController *>(player_controller_node_data->node);
-	PlayerController *player_controller = controller->get_player_controller();
 
 	if (client_snapshots.size() > 0) {
 		if (controller->get_current_input_id() <= client_snapshots.back().input_id) {
-			NET_DEBUG_WARN("During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snaps->back().input_id) + ". This snapshot is not stored.");
+			NET_DEBUG_WARN("During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snapshots.back().input_id) + ". This snapshot is not stored.");
 			return;
 		}
 	}
 
-	client_snapshots.push_back(SceneSynchronizer::IsleSnapshot());
+	client_snapshots.push_back(SceneSynchronizer::Snapshot());
 
-	SceneSynchronizer::IsleSnapshot &snap = client_snapshots.back();
+	SceneSynchronizer::Snapshot &snap = client_snapshots.back();
 	snap.input_id = controller->get_current_input_id();
 
 	// Store the state of all the global nodes.
@@ -1277,62 +1246,25 @@ void ClientSynchronizer::store_snapshot() {
 
 void ClientSynchronizer::store_controllers_snapshot(
 		const SceneSynchronizer::Snapshot &p_snapshot,
-		OAHashMap<ObjectID, std::deque<SceneSynchronizer::IsleSnapshot>> &r_snapshot_storage) {
-	// Extract the controllers data from the snapshot and store it in the isle
-	// snapshot.
-	// The main controller takes with him all world nodes.
+		std::deque<SceneSynchronizer::Snapshot> &r_snapshot_storage) {
+	// Put the parsed snapshot into the queue.
 
-	for (
-			OAHashMap<SceneSynchronizer::ControllerID, SceneSynchronizer::IsleData>::Iterator isle_it = scene_synchronizer->isle_data.iter();
-			isle_it.valid;
-			isle_it = scene_synchronizer->isle_data.next_iter(isle_it)) {
-		const NetworkedController *controller = isle_it.value->controller;
-
-		const uint64_t *input_id = p_snapshot.controllers_input_id.lookup_ptr(controller->get_instance_id());
-		if (input_id == nullptr || *input_id == UINT64_MAX) {
-			// The snapshot doesn't have any info for this controller; Skip it.
-			continue;
-		}
-
-		std::deque<SceneSynchronizer::IsleSnapshot> *controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
-		if (controller_snaps == nullptr) {
-			r_snapshot_storage.set(controller->get_instance_id(), std::deque<SceneSynchronizer::IsleSnapshot>());
-			controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
-		}
-
-#ifdef DEBUG_ENABLED
-		// Simply unreachable.
-		CRASH_COND(controller_snaps == nullptr);
-#endif
-
-		if (controller_snaps->empty() == false) {
-			// Make sure the snapshots are stored in order.
-			const uint64_t last_stored_input_id = controller_snaps->back().input_id;
-			ERR_FAIL_COND_MSG((*input_id) <= last_stored_input_id, "This doll snapshot (with ID: " + itos(*input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
-		}
-
-		SceneSynchronizer::IsleSnapshot snap;
-		snap.input_id = *input_id;
-
-		for (
-				OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator it = p_snapshot.node_vars.iter();
-				it.valid;
-				it = p_snapshot.node_vars.next_iter(it)) {
-			const SceneSynchronizer::NodeData *node_data = scene_synchronizer->nodes_data.lookup_ptr(*it.key);
-
-			if (
-					node_data != nullptr &&
-					node_data->isle_id == controller->get_instance_id()) {
-				// This node is part of this isle.
-				snap.node_vars.set(*it.key, *it.value);
-			}
-		}
-
-		controller_snaps->push_back(snap);
+	if (p_snapshot.input_id == UINT64_MAX) {
+		// The snapshot doesn't have any info for this controller; Skip it.
+		return;
 	}
+
+	if (r_snapshot_storage.empty() == false) {
+		// Make sure the snapshots are stored in order.
+		const uint64_t last_stored_input_id = r_snapshot_storage.back().input_id;
+		ERR_FAIL_COND_MSG(p_snapshot.input_id <= last_stored_input_id, "This doll snapshot (with ID: " + itos(p_snapshot.input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
+	}
+
+	r_snapshot_storage.push_back(p_snapshot);
 }
 
 void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
+	// TODO this description is no more valid.
 	// Each controller is responsible for it self and its controlled nodes. This
 	// give much more freedom during the recovering & rewinding; and the
 	// misalignments are recovered atomically (for better performance and avoid
@@ -1369,322 +1301,290 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 	// This mechanism, establish the nodes that need a recovered, and perform
 	// the recovering only on such nodes. Saving so performance.
 
-	for (
-			OAHashMap<SceneSynchronizer::ControllerID, SceneSynchronizer::IsleData>::Iterator isle_it = scene_synchronizer->isle_data.iter();
-			isle_it.valid;
-			isle_it = scene_synchronizer->isle_data.next_iter(isle_it)) {
-		NetworkedController *controller = isle_it.value->controller;
-		if (controller->is_player_controller() == false) {
-			// TODO conside to remove the isle concept.
-			continue;
-		}
-		PlayerController *player_controller = controller->get_player_controller();
-		bool is_main_controller = controller == scene_synchronizer->main_controller;
+	NetworkedController *controller = static_cast<NetworkedController *>(player_controller_node_data->node);
+	PlayerController *player_controller = controller->get_player_controller();
 
-		// --- Phase one, find snapshot to check. ---
+	// --- Phase one, find snapshot to check. ---
+	if (server_snapshots.empty()) {
+		// No snapshots to recover for this controller. Nothing to do.
+		return;
+	}
 
-		std::deque<SceneSynchronizer::IsleSnapshot> *server_snaps = server_controllers_snapshots.lookup_ptr(controller->get_instance_id());
-		if (server_snaps == nullptr || server_snaps->empty()) {
-			// No snapshots to recover for this controller. Skip it.
-			continue;
-		}
-
-		std::deque<SceneSynchronizer::IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(controller->get_instance_id());
-
-		// Find the best recoverable input_id.
-		uint64_t checkable_input_id = UINT64_MAX;
-		if (player_controller->last_known_input() != UINT64_MAX && player_controller->get_stored_input_id(-1) != UINT64_MAX) {
-			int diff = player_controller->last_known_input() - player_controller->get_stored_input_id(-1);
-			if (diff >= scene_synchronizer->get_doll_desync_tolerance()) {
-				// This happens to the dolls that may be too behind. Just reset
-				// to the newer state possible with a small padding.
-				for (
-						auto s_snap = server_snaps->rbegin();
-						checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
-						++s_snap) {
-					if (s_snap->input_id < player_controller->last_known_input()) {
-						checkable_input_id = s_snap->input_id;
-					}
-				}
-			} else {
-				// Find the best snapshot to recover from the one already
-				// processed.
-				if (client_snaps != nullptr && client_snaps->empty() == false) {
-					for (
-							auto s_snap = server_snaps->rbegin();
-							checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
-							++s_snap) {
-						for (auto c_snap = client_snaps->begin(); c_snap != client_snaps->end(); ++c_snap) {
-							if (c_snap->input_id == s_snap->input_id) {
-								// This snapshot is present on client, can be checked.
-								checkable_input_id = c_snap->input_id;
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if (checkable_input_id == UINT64_MAX) {
-			continue;
-		}
-
-#ifdef DEBUG_ENABLED
-		// Unreachable cause the above check
-		CRASH_COND(server_snaps->empty());
-#endif
-
-		while (server_snaps->front().input_id < checkable_input_id) {
-			// Drop any older snapshot.
-			server_snaps->pop_front();
-		}
-
-		// Drop all the client snapshots until the one that we need.
-		while (client_snaps != nullptr && client_snaps->empty() == false && client_snaps->front().input_id < checkable_input_id) {
-			// Drop any olded snapshot.
-			client_snaps->pop_front();
-		}
-
-#ifdef DEBUG_ENABLED
-		// These are unreachable at this point.
-		CRASH_COND(server_snaps->empty());
-		CRASH_COND(server_snaps->front().input_id != checkable_input_id);
-#endif
-		// --- Phase two, check snapshot. ---
-
-		bool need_recover = false;
-		bool recover_controller = false;
-		std::vector<SceneSynchronizer::NodeData *> nodes_to_recover;
-		std::vector<SceneSynchronizer::PostponedRecover> postponed_recover;
-
-		if (client_snaps == nullptr || client_snaps->empty() || client_snaps->front().input_id != checkable_input_id) {
-			// We don't have any snapshot on client for this controller.
-			// Just reset all the nodes to the server state.
-			NET_DEBUG_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
-			need_recover = true;
-			recover_controller = true;
-
-			nodes_to_recover.reserve(server_snaps->size());
+	// Find the best recoverable input_id.
+	uint64_t checkable_input_id = UINT64_MAX;
+	if (player_controller->last_known_input() != UINT64_MAX && player_controller->get_stored_input_id(-1) != UINT64_MAX) {
+		int diff = player_controller->last_known_input() - player_controller->get_stored_input_id(-1);
+		if (diff >= scene_synchronizer->get_doll_desync_tolerance()) {
+			// This happens when the client is too behind. Just reset to the
+			// newer state possible with a small padding.
 			for (
-					OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator s_snap_it = server_snaps->front().node_vars.iter();
-					s_snap_it.valid;
-					s_snap_it = server_snaps->front().node_vars.next_iter(s_snap_it)) {
-				SceneSynchronizer::NodeData *nd = scene_synchronizer->nodes_data.lookup_ptr(*s_snap_it.key);
-				if (nd == nullptr ||
-						nd->controlled_by.is_null() == false ||
-						nd->is_controller) {
-					// This is a controller or a piece of controller; Skip now, it'll be added later.
-					continue;
+					auto s_snap = server_snapshots.rbegin();
+					checkable_input_id == UINT64_MAX && s_snap != server_snapshots.rend();
+					++s_snap) {
+				if (s_snap->input_id < player_controller->last_known_input()) {
+					checkable_input_id = s_snap->input_id;
 				}
-				nodes_to_recover.push_back(nd);
 			}
-
 		} else {
-#ifdef DEBUG_ENABLED
-			// This is unreachable, because we store all the client shapshots
-			// each time a new input is processed. Since the `checkable_input_id`
-			// is taken by reading the processed doll inputs, it's guaranteed
-			// that here the snapshot exists.
-			CRASH_COND(client_snaps->empty());
-			CRASH_COND(client_snaps->front().input_id != checkable_input_id);
-#endif
-
-			for (
-					OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator s_snap_it = server_snaps->front().node_vars.iter();
-					s_snap_it.valid;
-					s_snap_it = server_snaps->front().node_vars.next_iter(s_snap_it)) {
-				SceneSynchronizer::NodeData *rew_node_data = scene_synchronizer->nodes_data.lookup_ptr(*s_snap_it.key);
-				if (rew_node_data == nullptr) {
-					continue;
-				}
-
-				bool recover_this_node = false;
-				if (is_main_controller == false && need_recover) {
-					// Shortcut for dolls, that just have controlled nodes; So
-					// check all nodes is not needed when a difference is already
-					// found.
-					recover_this_node = true;
-				} else {
-					const Vector<SceneSynchronizer::VarData> *c_vars = client_snaps->front().node_vars.lookup_ptr(*s_snap_it.key);
-					if (c_vars == nullptr) {
-						NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
-						recover_this_node = true;
-					} else {
-						SceneSynchronizer::PostponedRecover rec;
-
-						const bool different = compare_vars(
-								rew_node_data,
-								*s_snap_it.value,
-								*c_vars,
-								rec.vars);
-
-						if (different) {
-							NET_DEBUG_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->node->get_path());
-							recover_this_node = true;
-						} else if (rec.vars.size() > 0) {
-							rec.node_data = rew_node_data;
-							postponed_recover.push_back(rec);
+			// Find the best snapshot to recover from the one already
+			// processed.
+			if (client_snapshots.empty() == false) {
+				for (
+						auto s_snap = server_snapshots.rbegin();
+						checkable_input_id == UINT64_MAX && s_snap != client_snapshots.rend();
+						++s_snap) {
+					for (auto c_snap = client_snapshots.begin(); c_snap != client_snapshots.end(); ++c_snap) {
+						if (c_snap->input_id == s_snap->input_id) {
+							// This snapshot is present on client, can be checked.
+							checkable_input_id = c_snap->input_id;
+							break;
 						}
 					}
 				}
+			}
+		}
+	}
 
-				if (recover_this_node) {
-					need_recover = true;
-					if (rew_node_data->controlled_by.is_null() == false ||
-							rew_node_data->is_controller) {
-						// Controller node.
-						recover_controller = true;
-					} else {
-						nodes_to_recover.push_back(rew_node_data);
-					}
+	if (checkable_input_id == UINT64_MAX) {
+		return;
+	}
+
+#ifdef DEBUG_ENABLED
+	// Unreachable cause the above check
+	CRASH_COND(server_snapshots.empty());
+#endif
+
+	while (server_snapshots.front().input_id < checkable_input_id) {
+		// Drop any older snapshot.
+		server_snapshots.pop_front();
+	}
+
+	// Drop all the client snapshots until the one that we need.
+	while (client_snapshots.empty() == false && client_snapshots.front().input_id < checkable_input_id) {
+		// Drop any olded snapshot.
+		client_snapshots.pop_front();
+	}
+
+#ifdef DEBUG_ENABLED
+	// These are unreachable at this point.
+	CRASH_COND(server_snapshots.empty());
+	CRASH_COND(server_snapshots.front().input_id != checkable_input_id);
+#endif
+	// --- Phase two, check snapshot. ---
+
+	bool need_recover = false;
+	bool recover_controller = false;
+	LocalVector<SceneSynchronizer::NodeData *> nodes_to_recover;
+	LocalVector<SceneSynchronizer::PostponedRecover> postponed_recover;
+
+	if (client_snapshots.empty() || client_snapshots.front().input_id != checkable_input_id) {
+		// We don't have any snapshot on client for this controller.
+		// Just reset all the nodes to the server state.
+		NET_DEBUG_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
+		need_recover = true;
+		recover_controller = true;
+
+		nodes_to_recover.reserve(server_snapshots.front().node_vars.get_num_elements());
+		for (
+				OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator s_snap_it = server_snapshots.front().node_vars.iter();
+				s_snap_it.valid;
+				s_snap_it = server_snapshots.front().node_vars.next_iter(s_snap_it)) {
+			SceneSynchronizer::NodeData *nd = scene_synchronizer->get_node_data(*s_snap_it.key);
+			if (nd == nullptr ||
+					nd->controlled_by != nullptr ||
+					nd->is_controller) {
+				// This is a controller or a piece of controller; Skip now, it'll be added later.
+				continue;
+			}
+			nodes_to_recover.push_back(nd);
+		}
+
+	} else {
+#ifdef DEBUG_ENABLED
+		// This is unreachable, because we store all the client shapshots
+		// each time a new input is processed. Since the `checkable_input_id`
+		// is taken by reading the processed doll inputs, it's guaranteed
+		// that here the snapshot exists.
+		CRASH_COND(client_snapshots.empty());
+		CRASH_COND(client_snapshots.front().input_id != checkable_input_id);
+#endif
+
+		nodes_to_recover.reserve(server_snapshots.front().node_vars.get_num_elements());
+		for (
+				OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>>::Iterator s_snap_it = server_snapshots.front().node_vars.iter();
+				s_snap_it.valid;
+				s_snap_it = server_snapshots.front().node_vars.next_iter(s_snap_it)) {
+			SceneSynchronizer::NodeData *rew_node_data = scene_synchronizer->get_node_data(*s_snap_it.key);
+			if (rew_node_data == nullptr) {
+				continue;
+			}
+
+			bool recover_this_node = false;
+			const Vector<SceneSynchronizer::VarData> *c_vars = client_snapshots.front().node_vars.lookup_ptr(*s_snap_it.key);
+			if (c_vars == nullptr) {
+				NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
+				recover_this_node = true;
+			} else {
+				SceneSynchronizer::PostponedRecover rec;
+
+				const bool different = compare_vars(
+						rew_node_data,
+						*s_snap_it.value,
+						*c_vars,
+						rec.vars);
+
+				if (different) {
+					NET_DEBUG_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->node->get_path());
+					recover_this_node = true;
+				} else if (rec.vars.size() > 0) {
+					rec.node_data = rew_node_data;
+					postponed_recover.push_back(rec);
 				}
 			}
 
-			// Popout the client snapshot.
-			client_snaps->pop_front();
+			if (recover_this_node) {
+				need_recover = true;
+				if (rew_node_data->controlled_by != nullptr ||
+						rew_node_data->is_controller) {
+					// Controller node.
+					recover_controller = true;
+				} else {
+					nodes_to_recover.push_back(rew_node_data);
+				}
+			}
 		}
 
-		// --- Phase three, recover and reply. ---
+		// Popout the client snapshot.
+		client_snapshots.pop_front();
+	}
 
-		if (need_recover) {
-			NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(player_controller->get_stored_input_id(-1)));
+	// --- Phase three, recover and reply. ---
+
+	if (need_recover) {
+		NET_DEBUG_PRINT("Recover input: " + itos(checkable_input_id) + " - Last input: " + itos(player_controller->get_stored_input_id(-1)));
+
+		if (recover_controller) {
+			// Put the controlled and the controllers into the nodes to
+			// rewind.
+			// Note, the controller stuffs are added here to ensure that if the
+			// controller need a recover, all its nodes are added; no matter
+			// at which point the difference is found.
+			nodes_to_recover.reserve(
+					nodes_to_recover.size() +
+					player_controller_node_data->controlled_nodes.size() +
+					1);
+
+			nodes_to_recover.push_back(player_controller_node_data);
+
+			for (
+					uint32_t y = 0;
+					y < player_controller_node_data->controlled_nodes.size();
+					y += 1) {
+				nodes_to_recover.push_back(player_controller_node_data->controlled_nodes[y]);
+			}
+		}
+
+		// Apply the server snapshot so to go back in time till that moment,
+		// so to be able to correctly reply the movements.
+		scene_synchronizer->reset_in_progress = true;
+		for (
+				uint32_t i = 0;
+				i < nodes_to_recover.size();
+				i += 1) {
+			Node *node = nodes_to_recover[i]->node;
+
+			const Vector<SceneSynchronizer::VarData> *s_vars = server_snapshots.front().node_vars.lookup_ptr(nodes_to_recover[i]->instance_id);
+			if (s_vars == nullptr) {
+				NET_DEBUG_WARN("The node: " + nodes_to_recover[i]->node->get_path() + " was not found on the server snapshot, this is not supposed to happen a lot.");
+				continue;
+			}
+			const SceneSynchronizer::VarData *s_vars_ptr = s_vars->ptr();
+
+			NET_DEBUG_PRINT("Full reset node: " + node->get_path());
+			SceneSynchronizer::VarData *nodes_to_recover_vars_ptr = nodes_to_recover[i]->vars.ptrw();
+			for (int v = 0; v < s_vars->size(); v += 1) {
+				node->set(s_vars_ptr[v].var.name, s_vars_ptr[v].var.value);
+
+				// Set the value on the synchronizer too.
+				const int rew_var_index = nodes_to_recover[i]->vars.find(s_vars_ptr[v].var.name);
+				// Unreachable, because when the snapshot is received the
+				// algorithm make sure the `scene_synchronizer` is traking the
+				// variable.
+				CRASH_COND(rew_var_index <= -1);
+
+				NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[v].var.name + " New value: " + s_vars_ptr[v].var.value);
+
+				nodes_to_recover_vars_ptr[rew_var_index].var.value = s_vars_ptr[v].var.value.duplicate(true);
+
+				node->emit_signal(
+						scene_synchronizer->get_changed_event_name(
+								s_vars_ptr[v].var.name));
+			}
+		}
+		scene_synchronizer->reset_in_progress = false;
+
+		// Rewind phase.
+
+		scene_synchronizer->rewinding_in_progress = true;
+		const int remaining_inputs = player_controller->notify_input_checked(checkable_input_id);
+		CRASH_COND(client_snapshots.size() != size_t(remaining_inputs));
+
+		bool has_next = false;
+		for (int i = 0; i < remaining_inputs; i += 1) {
+			// Step 1 -- Process the nodes into the scene that need to be
+			// processed.
+			for (
+					uint32_t r = 0;
+					r < nodes_to_recover.size();
+					r += 1) {
+				nodes_to_recover[r]->process(p_delta);
+#ifdef DEBUG_ENABLED
+				if (nodes_to_recover[r]->functions.size()) {
+					NET_DEBUG_PRINT("Rewind, processed node: " + nodes_to_recover[r]->node->get_path());
+				}
+#endif
+			}
 
 			if (recover_controller) {
-				// Put the controlled and the controllers into the nodes to
-				// rewind.
-				// Note, the controller stuffs are added here to ensure that if the
-				// controller need a recover, all its nodes are added; no matter
-				// at which point the difference is found.
-				SceneSynchronizer::NodeData *nd = scene_synchronizer->nodes_data.lookup_ptr(controller->get_instance_id());
-				if (nd) {
-					nodes_to_recover.reserve(
-							nodes_to_recover.size() +
-							nd->controlled_nodes.size() +
-							1);
-
-					nodes_to_recover.push_back(nd);
-
-					const ObjectID *controlled_nodes = nd->controlled_nodes.ptr();
-					for (
-							int i = 0;
-							i < nd->controlled_nodes.size();
-							i += 1) {
-						SceneSynchronizer::NodeData *node_data = scene_synchronizer->nodes_data.lookup_ptr(controlled_nodes[i]);
-						if (node_data) {
-							nodes_to_recover.push_back(node_data);
-						}
-					}
-				}
+				// Step 2 -- Process the controller.
+				has_next = controller->process_instant(i, p_delta);
+				NET_DEBUG_PRINT("Rewind, processed controller: " + controller->get_path());
 			}
 
-			// Apply the server snapshot so to go back in time till that moment,
-			// so to be able to correctly reply the movements.
-			scene_synchronizer->reset_in_progress = true;
+			// Step 3 -- Pull node changes and Update snapshots.
 			for (
-					std::vector<SceneSynchronizer::NodeData *>::const_iterator it = nodes_to_recover.begin();
-					it != nodes_to_recover.end();
-					it += 1) {
-				SceneSynchronizer::NodeData *rew_node_data = *it;
+					uint32_t r = 0;
+					r < nodes_to_recover.size();
+					r += 1) {
+				scene_synchronizer->pull_node_changes(nodes_to_recover[r]);
 
-				SceneSynchronizer::VarData *rew_vars = rew_node_data->vars.ptrw();
-				Node *node = rew_node_data->node;
-
-				const Vector<SceneSynchronizer::VarData> *s_vars = server_snaps->front().node_vars.lookup_ptr(rew_node_data->instance_id);
-				if (s_vars == nullptr) {
-					NET_DEBUG_WARN("The node: " + rew_node_data->node->get_path() + " was not found on the server snapshot, this is not supposed to happen a lot.");
-					continue;
-				}
-				const SceneSynchronizer::VarData *s_vars_ptr = s_vars->ptr();
-
-				NET_DEBUG_PRINT("Full reset node: " + node->get_path());
-				for (int i = 0; i < s_vars->size(); i += 1) {
-					node->set(s_vars_ptr[i].var.name, s_vars_ptr[i].var.value);
-
-					// Set the value on the synchronizer too.
-					const int rew_var_index = rew_node_data->vars.find(s_vars_ptr[i].var.name);
-					// Unreachable, because when the snapshot is received the
-					// algorithm make sure the `scene_synchronizer` is traking the
-					// variable.
-					CRASH_COND(rew_var_index <= -1);
-
-					NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[i].var.name + " New value: " + s_vars_ptr[i].var.value);
-
-					rew_vars[rew_var_index].var.value = s_vars_ptr[i].var.value.duplicate(true);
-
-					node->emit_signal(
-							scene_synchronizer->get_changed_event_name(
-									s_vars_ptr[i].var.name));
-				}
+				// Update client snapshot.
+				client_snapshots[i].node_vars.set(nodes_to_recover[r]->instance_id, nodes_to_recover[r]->vars);
 			}
-			scene_synchronizer->reset_in_progress = false;
-
-			// Rewind phase.
-
-			scene_synchronizer->rewinding_in_progress = true;
-			const int remaining_inputs = player_controller->notify_input_checked(checkable_input_id);
-			if (client_snaps) {
-				CRASH_COND(client_snaps->size() != size_t(remaining_inputs));
-			} else {
-				CRASH_COND(remaining_inputs != 0);
-			}
-
-			bool has_next = false;
-			for (int i = 0; i < remaining_inputs; i += 1) {
-				// Step 1 -- Process the nodes into the scene that need to be
-				// processed.
-				for (
-						std::vector<SceneSynchronizer::NodeData *>::iterator it = nodes_to_recover.begin();
-						it != nodes_to_recover.end();
-						it += 1) {
-					(*it)->process(p_delta);
-#ifdef DEBUG_ENABLED
-					if ((*it)->functions.size()) {
-						NET_DEBUG_PRINT("Rewind, processed node: " + (*it)->node->get_path());
-					}
-#endif
-				}
-
-				if (recover_controller) {
-					// Step 2 -- Process the controller.
-					has_next = controller->process_instant(i, p_delta);
-					NET_DEBUG_PRINT("Rewind, processed controller: " + controller->get_path());
-				}
-
-				// Step 3 -- Pull node changes and Update snapshots.
-				for (
-						std::vector<SceneSynchronizer::NodeData *>::iterator it = nodes_to_recover.begin();
-						it != nodes_to_recover.end();
-						it += 1) {
-					SceneSynchronizer::NodeData *rew_node_data = *it;
-
-					scene_synchronizer->pull_node_changes(rew_node_data);
-
-					// Update client snapshot.
-					(*client_snaps)[i].node_vars.set(rew_node_data->instance_id, rew_node_data->vars);
-				}
-			}
+		}
 
 #ifdef DEBUG_ENABLED
-			// Unreachable because the above loop consume all instants.
-			CRASH_COND(has_next);
+		// Unreachable because the above loop consume all instants.
+		CRASH_COND(has_next);
 #endif
 
-			scene_synchronizer->rewinding_in_progress = false;
-		} else {
-			// Apply found differences without rewind.
-			scene_synchronizer->reset_in_progress = true;
-			for (
-					std::vector<SceneSynchronizer::PostponedRecover>::const_iterator it = postponed_recover.begin();
-					it != postponed_recover.end();
-					it += 1) {
-				SceneSynchronizer::NodeData *rew_node_data = it->node_data;
-				Node *node = rew_node_data->node;
-				const SceneSynchronizer::Var *vars = it->vars.ptr();
+		scene_synchronizer->rewinding_in_progress = false;
+	} else {
+		// Apply found differences without rewind.
+		scene_synchronizer->reset_in_progress = true;
+		for (
+				uint32_t i = 0;
+				i < postponed_recover.size();
+				i += 1) {
+			SceneSynchronizer::NodeData *rew_node_data = postponed_recover[i].node_data;
+			Node *node = rew_node_data->node;
+			const SceneSynchronizer::Var *vars = postponed_recover[i].vars.ptr();
 
-				NET_DEBUG_PRINT("[Snapshot partial reset] Node: " + node->get_path());
+			NET_DEBUG_PRINT("[Snapshot partial reset] Node: " + node->get_path());
 
-				for (int v = 0; v < it->vars.size(); v += 1) {
+			{
+				SceneSynchronizer::VarData *rew_node_data_vars_ptr = rew_node_data->vars.ptrw();
+				for (int v = 0; v < postponed_recover[i].vars.size(); v += 1) {
 					node->set(vars[v].name, vars[v].value);
 
 					// Set the value on the synchronizer too.
@@ -1694,25 +1594,25 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 					// variable.
 					CRASH_COND(rew_var_index <= -1);
 
-					rew_node_data->vars.write[rew_var_index].var.value = vars[v].value.duplicate(true);
+					rew_node_data_vars_ptr[rew_var_index].var.value = vars[v].value.duplicate(true);
 
 					NET_DEBUG_PRINT(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
 					node->emit_signal(scene_synchronizer->get_changed_event_name(vars[v].name));
 				}
-
-				// Update the last client snapshot.
-				if (client_snaps && client_snaps->empty() == false) {
-					client_snaps->back().node_vars.set(rew_node_data->instance_id, rew_node_data->vars);
-				}
 			}
-			scene_synchronizer->reset_in_progress = false;
 
-			player_controller->notify_input_checked(checkable_input_id);
+			// Update the last client snapshot.
+			if (client_snapshots.empty() == false) {
+				client_snapshots.back().node_vars.set(rew_node_data->instance_id, rew_node_data->vars);
+			}
 		}
+		scene_synchronizer->reset_in_progress = false;
 
-		// Popout the server snapshot.
-		server_snaps->pop_front();
+		player_controller->notify_input_checked(checkable_input_id);
 	}
+
+	// Popout the server snapshot.
+	server_snapshots.pop_front();
 }
 
 bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
@@ -1749,7 +1649,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 	StringName variable_name;
 	int server_snap_variable_index = -1;
 
-	uint64_t player_controller_input_id = UINT64_MAX;
+	server_snapshot.input_id = UINT64_MAX;
 
 	for (int snap_data_index = 0; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
 		const Variant v = raw_snapshot_ptr[snap_data_index];
@@ -1840,13 +1740,9 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				const uint64_t input_id = raw_snapshot_ptr[snap_data_index];
 				ERR_FAIL_COND_V_MSG(input_id == UINT64_MAX, false, "The server is always able to send input_id, so this snapshot seems corrupted.");
 
-				// TODO this must go away.
-				server_snapshot.controllers_input_id.set(node->get_instance_id(), input_id);
-
 				if (synchronizer_node_data == player_controller_node_data) {
-					// This is the main controller, store the ID also in the
-					// utility variable.
-					player_controller_input_id = input_id;
+					// This is the main controller, store the input ID.
+					server_snapshot.input_id = input_id;
 				}
 			}
 
@@ -1892,7 +1788,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				} else {
 					// The variable is known, just make sure that it has the
 					// same server ID.
-					synchronizer_node_data->vars[index].id = var_id;
+					synchronizer_node_data->vars.write[index].id = var_id;
 				}
 			} else if (v.get_type() == Variant::INT) {
 				// The variable is stored in the compact form.
@@ -1911,7 +1807,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 					continue;
 				} else {
 					variable_name = synchronizer_node_data->vars[index].var.name;
-					synchronizer_node_data->vars[index].id = var_id;
+					synchronizer_node_data->vars.write[index].id = var_id;
 				}
 
 			} else {
@@ -1954,7 +1850,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
-	if (player_controller_input_id == UINT64_MAX) {
+	if (server_snapshot.input_id == UINT64_MAX) {
 		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + player_controller_node_data->node->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
 		NET_DEBUG_PRINT(p_snapshot);
 		return false;
