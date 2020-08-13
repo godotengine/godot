@@ -195,6 +195,7 @@ MainLoop *OSIPhone::get_main_loop() const {
 };
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
+	godot_ios_plugins_initialize();
 
 	main_loop = p_main_loop;
 
@@ -318,6 +319,8 @@ void OSIPhone::finalize() {
 	if (ios) {
 		memdelete(ios);
 	}
+
+	godot_ios_plugins_deinitialize();
 
 	visual_server->finish();
 	memdelete(visual_server);
