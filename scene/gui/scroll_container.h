@@ -60,6 +60,9 @@ class ScrollContainer : public Container {
 	bool scroll_h;
 	bool scroll_v;
 
+	bool scroll_h_always_visible;
+	bool scroll_v_always_visible;
+
 	int deadzone;
 	bool follow_focus;
 
@@ -87,8 +90,14 @@ public:
 	void set_enable_h_scroll(bool p_enable);
 	bool is_h_scroll_enabled() const;
 
+	void set_h_scroll_always_visible(bool p_visible);
+	bool is_h_scroll_always_visible() const;
+
 	void set_enable_v_scroll(bool p_enable);
 	bool is_v_scroll_enabled() const;
+
+	void set_v_scroll_always_visible(bool p_visible);
+	bool is_v_scroll_always_visible() const;
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
