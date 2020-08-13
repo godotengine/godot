@@ -533,6 +533,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 								break;
 							case GDScriptParser::DataType::NATIVE:
 								if (ClassDB::is_parent_class(get_real_class_name(datatype.native_type), "Resource")) {
+									member.variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 									member.variable->export_info.hint_string = get_real_class_name(datatype.native_type);
 								} else {
 									push_error(R"(Export type can only be built-in or a resource.)", member.variable);
