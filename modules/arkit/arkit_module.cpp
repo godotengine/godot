@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  arkit_module.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#include "arkit_module.h"
 
-@class GodotView;
-@class GodotNativeVideoView;
+#include "arkit_interface.h"
 
-@interface ViewController : UIViewController
+void register_arkit_types() {
+	// does it make sense to register the class?
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+	Ref<ARKitInterface> arkit_interface;
+	arkit_interface.instance();
+	XRServer::get_singleton()->add_interface(arkit_interface);
+}
 
-// MARK: Native Video Player
-
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
-
-@end
+void unregister_arkit_types() {
+	// should clean itself up nicely :)
+}

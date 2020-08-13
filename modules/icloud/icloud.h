@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  icloud.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef ICLOUD_H
+#define ICLOUD_H
 
-#include "arkit_interface.h"
+#include "core/object/class_db.h"
 
-void register_arkit_types() {
-	// does it make sense to register the class?
+class ICloud : public Object {
+	GDCLASS(ICloud, Object);
 
-	Ref<ARKitInterface> arkit_interface;
-	arkit_interface.instance();
-	XRServer::get_singleton()->add_interface(arkit_interface);
-}
+	static ICloud *instance;
+	static void _bind_methods();
 
-void unregister_arkit_types() {
-	// should clean itself up nicely :)
-}
+	List<Variant> pending_events;
+
+public:
+	Error remove_key(String p_param);
+	Array set_key_values(Dictionary p_params);
+	Variant get_key_value(String p_param);
+	Error synchronize_key_values();
+	Variant get_all_key_values();
+
+	int get_pending_event_count();
+	Variant pop_pending_event();
+
+	static ICloud *get_singleton();
+
+	ICloud();
+	~ICloud();
+};
+
+#endif

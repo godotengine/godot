@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  game_center_module.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#include "game_center_module.h"
 
-@class GodotView;
-@class GodotNativeVideoView;
+#include "core/config/engine.h"
 
-@interface ViewController : UIViewController
+#include "game_center.h"
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+GameCenter *game_center;
 
-// MARK: Native Video Player
+void register_gamecenter_types() {
+	game_center = memnew(GameCenter);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
+}
 
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
-
-@end
+void unregister_gamecenter_types() {
+	if (game_center) {
+		memdelete(game_center);
+	}
+}
