@@ -45,6 +45,7 @@
 #include "servers/rendering/rasterizer_rd/shaders/sdfgi_integrate.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/sky.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/rendering_device.h"
 
 class RasterizerSceneRD : public RasterizerScene {
@@ -78,9 +79,10 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count);
+	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count);
 	void _setup_decals(const RID *p_decal_instances, int p_decal_count, const Transform &p_camera_inverse_xform);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
+	void _setup_giprobes(RID p_render_buffers, const Transform &p_transform, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, uint32_t &r_gi_probes_used);
 
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, int p_directional_light_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip, bool p_use_pancake) = 0;
@@ -490,6 +492,12 @@ private:
 
 	/* SHADOW ATLAS */
 
+	struct ShadowShrinkStage {
+		RID texture;
+		RID filter_texture;
+		uint32_t size;
+	};
+
 	struct ShadowAtlas {
 		enum {
 			QUADRANT_SHIFT = 27,
@@ -503,10 +511,12 @@ private:
 			struct Shadow {
 				RID owner;
 				uint64_t version;
+				uint64_t fog_version; // used for fog
 				uint64_t alloc_tick;
 
 				Shadow() {
 					version = 0;
+					fog_version = 0;
 					alloc_tick = 0;
 				}
 			};
@@ -528,6 +538,8 @@ private:
 		RID fb; //for copying
 
 		Map<RID, uint32_t> shadow_owners;
+
+		Vector<ShadowShrinkStage> shrink_stages;
 	};
 
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
@@ -556,7 +568,13 @@ private:
 		int light_count = 0;
 		int size = 0;
 		int current_light = 0;
+
+		Vector<ShadowShrinkStage> shrink_stages;
+
 	} directional_shadow;
+
+	void _allocate_shadow_shrink_stages(RID p_base, int p_base_size, Vector<ShadowShrinkStage> &shrink_stages, uint32_t p_target_size);
+	void _clear_shadow_shrink_stages(Vector<ShadowShrinkStage> &shrink_stages);
 
 	/* SHADOW CUBEMAPS */
 
@@ -656,6 +674,17 @@ private:
 		float auto_exp_scale = 0.5;
 		uint64_t auto_exposure_version = 0;
 
+		/// Volumetric Fog
+		///
+		bool volumetric_fog_enabled = false;
+		float volumetric_fog_density = 0.01;
+		Color volumetric_fog_light = Color(0, 0, 0);
+		float volumetric_fog_light_energy = 0.0;
+		float volumetric_fog_length = 64.0;
+		float volumetric_fog_detail_spread = 2.0;
+		RS::EnvVolumetricFogShadowFilter volumetric_fog_shadow_filter = RS::ENV_VOLUMETRIC_FOG_SHADOW_FILTER_LOW;
+		float volumetric_fog_gi_inject = 0.0;
+
 		/// Glow
 
 		bool glow_enabled = false;
@@ -739,6 +768,7 @@ private:
 	/* RENDER BUFFERS */
 
 	struct SDFGI;
+	struct VolumetricFog;
 
 	struct RenderBuffers {
 		enum {
@@ -759,6 +789,7 @@ private:
 
 		RID gi_uniform_set;
 		SDFGI *sdfgi = nullptr;
+		VolumetricFog *volumetric_fog = nullptr;
 
 		//built-in textures used for ping pong image processing and blurring
 		struct Blur {
@@ -885,6 +916,7 @@ private:
 		RID lightprobe_data;
 		RID occlusion_texture;
 		RID occlusion_data;
+		RID ambient_texture; //integrates with volumetric fog
 
 		RID lightprobe_history_scroll; //used for scrolling lightprobes
 		RID lightprobe_average_scroll; //used for scrolling lightprobes
@@ -1077,6 +1109,9 @@ private:
 
 			float sky_color[3];
 			float y_mult;
+
+			uint32_t store_ambient_texture;
+			uint32_t pad[3];
 		};
 
 		SdfgiIntegrateShaderRD integrate;
@@ -1141,7 +1176,7 @@ private:
 			float anisotropy_strength;
 			float ao;
 			float ao_size;
-			uint32_t pad[1];
+			uint32_t mipmaps;
 		};
 
 		struct PushConstant {
@@ -1219,7 +1254,8 @@ private:
 			float soft_shadow_size;
 			float soft_shadow_scale;
 			uint32_t mask;
-			uint32_t pad[2];
+			float shadow_volumetric_fog_fade;
+			uint32_t pad;
 			float projector_rect[4];
 		};
 
@@ -1236,10 +1272,12 @@ private:
 			uint32_t shadow_enabled;
 			float fade_from;
 			float fade_to;
+			uint32_t pad[3];
+			float shadow_volumetric_fog_fade;
 			float shadow_bias[4];
 			float shadow_normal_bias[4];
 			float shadow_transmittance_bias[4];
-			float shadow_transmittance_z_scale[4];
+			float shadow_z_range[4];
 			float shadow_range_begin[4];
 			float shadow_split_offsets[4];
 			float shadow_matrices[4][16];
@@ -1283,6 +1321,9 @@ private:
 		LightData *lights;
 		uint32_t max_lights;
 		RID light_buffer;
+		RID *lights_instances;
+		Rect2i *lights_shadow_rect_cache;
+		uint32_t lights_shadow_rect_cache_count = 0;
 
 		DirectionalLightData *directional_lights;
 		uint32_t max_directional_lights;
@@ -1291,6 +1332,73 @@ private:
 		LightClusterBuilder builder;
 
 	} cluster;
+
+	struct VolumetricFog {
+		uint32_t width = 0;
+		uint32_t height = 0;
+		uint32_t depth = 0;
+
+		float length;
+		float spread;
+
+		RID light_density_map;
+		RID fog_map;
+		RID uniform_set;
+		RID uniform_set2;
+		RID sdfgi_uniform_set;
+
+		int last_shadow_filter = -1;
+	};
+
+	enum {
+		VOLUMETRIC_FOG_SHADER_DENSITY,
+		VOLUMETRIC_FOG_SHADER_DENSITY_WITH_SDFGI,
+		VOLUMETRIC_FOG_SHADER_FILTER,
+		VOLUMETRIC_FOG_SHADER_FOG,
+		VOLUMETRIC_FOG_SHADER_MAX,
+	};
+
+	struct VolumetricFogShader {
+		struct PushConstant {
+			float fog_frustum_size_begin[2];
+			float fog_frustum_size_end[2];
+
+			float fog_frustum_end;
+			float z_near;
+			float z_far;
+			uint32_t filter_axis;
+
+			int32_t fog_volume_size[3];
+			uint32_t directional_light_count;
+
+			float light_energy[3];
+			float base_density;
+
+			float detail_spread;
+			float gi_inject;
+			uint32_t max_gi_probes;
+			uint32_t pad;
+
+			float cam_rotation[12];
+		};
+
+		VolumetricFogShaderRD shader;
+
+		RID shader_version;
+		RID pipelines[VOLUMETRIC_FOG_SHADER_MAX];
+
+	} volumetric_fog;
+
+	uint32_t volumetric_fog_depth = 128;
+	uint32_t volumetric_fog_size = 128;
+	bool volumetric_fog_filter_active = false;
+	uint32_t volumetric_fog_directional_shadow_shrink = 512;
+	uint32_t volumetric_fog_positional_shadow_shrink = 512;
+
+	void _volumetric_fog_erase(RenderBuffers *rb);
+	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count);
+
+	RID shadow_sampler;
 
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
@@ -1391,6 +1499,12 @@ public:
 	void environment_glow_set_use_bicubic_upscale(bool p_enable);
 
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter);
+
+	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth);
+	virtual void environment_set_volumetric_fog_filter_active(bool p_enable);
+	virtual void environment_set_volumetric_fog_directional_shadow_shrink_size(int p_shrink_size);
+	virtual void environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size);
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance);
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
@@ -1707,6 +1821,11 @@ public:
 	bool render_buffers_is_sdfgi_using_occlusion(RID p_render_buffers) const;
 	float render_buffers_get_sdfgi_energy(RID p_render_buffers) const;
 	RID render_buffers_get_sdfgi_occlusion_texture(RID p_render_buffers) const;
+
+	bool render_buffers_has_volumetric_fog(RID p_render_buffers) const;
+	RID render_buffers_get_volumetric_fog_texture(RID p_render_buffers);
+	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
+	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
 
 	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_shadow_atlas, RID p_camera_effects, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 

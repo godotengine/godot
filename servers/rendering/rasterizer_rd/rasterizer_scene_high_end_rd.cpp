@@ -1145,11 +1145,18 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, RID p_rende
 	scene_state.ubo.time = time;
 
 	scene_state.ubo.gi_upscale_for_msaa = false;
+	scene_state.ubo.volumetric_fog_enabled = false;
 
 	if (p_render_buffers.is_valid()) {
 		RenderBufferDataHighEnd *render_buffers = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffers);
 		if (render_buffers->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 			scene_state.ubo.gi_upscale_for_msaa = true;
+		}
+
+		if (render_buffers_has_volumetric_fog(p_render_buffers)) {
+			scene_state.ubo.volumetric_fog_enabled = true;
+			scene_state.ubo.volumetric_fog_inv_length = 1.0 / render_buffers_get_volumetric_fog_end(p_render_buffers);
+			scene_state.ubo.volumetric_fog_detail_spread = 1.0 / render_buffers_get_volumetric_fog_detail_spread(p_render_buffers); //reverse lookup
 		}
 	}
 #if 0
@@ -1754,6 +1761,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		RD::get_singleton()->draw_list_end();
 
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			RENDER_TIMESTAMP("Resolve Depth Pre-Pass");
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_GIPROBE) {
 				static int texture_samples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8, 16 };
 				storage->get_effects()->resolve_gi(render_buffer->depth_msaa, render_buffer->normal_roughness_buffer_msaa, using_giprobe ? render_buffer->giprobe_buffer_msaa : RID(), render_buffer->depth, render_buffer->normal_roughness_buffer, using_giprobe ? render_buffer->giprobe_buffer : RID(), Vector2i(render_buffer->width, render_buffer->height), texture_samples[render_buffer->msaa]);
@@ -2502,7 +2510,17 @@ void RasterizerSceneHighEndRD::_update_render_buffers_uniform_set(RID p_render_b
 			u.ids.push_back(render_buffers_get_gi_probe_buffer(p_render_buffers));
 			uniforms.push_back(u);
 		}
-
+		{
+			RD::Uniform u;
+			u.binding = 10;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			RID vfog = render_buffers_get_volumetric_fog_texture(p_render_buffers);
+			if (vfog.is_null()) {
+				vfog = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+			}
+			u.ids.push_back(vfog);
+			uniforms.push_back(u);
+		}
 		rb->uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RENDER_BUFFERS_UNIFORM_SET);
 	}
 }
@@ -2813,6 +2831,13 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 			u.binding = 9;
 			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(render_buffers_get_default_gi_probe_buffer());
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 10;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
 			uniforms.push_back(u);
 		}
 
