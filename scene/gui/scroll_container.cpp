@@ -411,8 +411,8 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 min = child_max_size;
 
-	bool hide_scroll_v = !scroll_v || min.height <= size.height && !scroll_v_always_visible;
-	bool hide_scroll_h = !scroll_h || min.width <= size.width && !scroll_h_always_visible;
+	bool hide_scroll_v = !scroll_v || (min.height <= size.height && !scroll_v_always_visible);
+	bool hide_scroll_h = !scroll_h || (min.width <= size.width && !scroll_h_always_visible);
 
 	if (hide_scroll_v) {
 		v_scroll->hide();
@@ -421,9 +421,9 @@ void ScrollContainer::update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(min.height);
 		if (hide_scroll_h) {
-			v_scroll->set_page(min.height <= size.height && scroll_v_always_visible ? min.height : size.height);
+			v_scroll->set_page((min.height <= size.height && scroll_v_always_visible) ? min.height : size.height);
 		} else {
-			v_scroll->set_page(min.height <= size.height && scroll_v_always_visible ? min.height : size.height - hmin.height);
+			v_scroll->set_page((min.height <= size.height && scroll_v_always_visible) ? min.height : size.height - hmin.height);
 		}
 
 		scroll.y = v_scroll->get_value();
@@ -436,9 +436,9 @@ void ScrollContainer::update_scrollbars() {
 		h_scroll->show();
 		h_scroll->set_max(min.width);
 		if (hide_scroll_v) {
-			h_scroll->set_page(min.width <= size.width && scroll_h_always_visible ? min.width : size.width);
+			h_scroll->set_page((min.width <= size.width && scroll_h_always_visible) ? min.width : size.width);
 		} else {
-			h_scroll->set_page(min.width <= size.width && scroll_h_always_visible ? min.width : size.width - vmin.width);
+			h_scroll->set_page((min.width <= size.width && scroll_h_always_visible) ? min.width : size.width - vmin.width);
 		}
 
 		scroll.x = h_scroll->get_value();
