@@ -397,13 +397,6 @@ Color Color::named(const String &p_name) {
 		_populate_named_colors(); // from color_names.inc
 	}
 	String name = p_name;
-	// Normalize name
-	// name = name.replace(" ", "");
-	// name = name.replace("-", "");
-	// name = name.replace("_", "");
-	// name = name.replace("'", "");
-	// name = name.replace(".", "");
-	// name = name.to_lower();
 	name = name.replace(" ", "_");
 	name = name.replace("-", "_");
 	name = name.replace("'", "");
