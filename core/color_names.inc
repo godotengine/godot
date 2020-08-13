@@ -1,8 +1,7 @@
 // Names from https://en.wikipedia.org/wiki/X11_color_names
 // and https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.colors?view=netcore-3.1
-#include <vector>
-
 #include "core/map.h"
+#include "core/vector.h"
 
 static Map<String, Color> _named_colors;
 static void _populate_named_colors() {
@@ -157,48 +156,53 @@ static void _populate_named_colors() {
 	_named_colors.insert("yellowgreen", Color(0.60f, 0.80f, 0.20f));
 }
 
-static std::vector<String> _modifiable_colors = {
-	"AQUAMARINE",
-	"BLACK",
-	"BLUE",
-	"BROWN",
-	"CORAL",
-	"CYAN",
-	"GRAY",
-	"GREEN",
-	"GOLDENROD",
-	"KHAKI",
-	"MAROON",
-	"ORANGE",
-	"ORCHID",
-	"PINK",
-	"PURPLE",
-	"RED",
-	"TURQUOISE",
-	"WHITE",
-	"YELLOW",
-};
+static Vector<String> _modifiable_colors;
+static Vector<String> _color_descriptors;
+static void _populate_uppercase_helper_lists() {
+	if (_modifiable_colors.empty()) {
+		_modifiable_colors.append("AQUAMARINE");
+		_modifiable_colors.append("BLACK");
+		_modifiable_colors.append("BLUE");
+		_modifiable_colors.append("BROWN");
+		_modifiable_colors.append("CORAL");
+		_modifiable_colors.append("CYAN");
+		_modifiable_colors.append("GRAY");
+		_modifiable_colors.append("GREEN");
+		_modifiable_colors.append("GOLDENROD");
+		_modifiable_colors.append("KHAKI");
+		_modifiable_colors.append("MAROON");
+		_modifiable_colors.append("ORANGE");
+		_modifiable_colors.append("ORCHID");
+		_modifiable_colors.append("PINK");
+		_modifiable_colors.append("PURPLE");
+		_modifiable_colors.append("RED");
+		_modifiable_colors.append("TURQUOISE");
+		_modifiable_colors.append("WHITE");
+		_modifiable_colors.append("YELLOW");
+	}
 
-static std::vector<String> _color_descriptors = {
-	"BLUSH",
-	"DARK",
-	"DRAB",
-	"MEDIUM",
-	"LIGHT",
-	"OLIVE",
-	"PALE",
-	"SEA",
-	"SKY",
-	"SLATE",
-	"SPRING",
-	"STEEL",
-	"WEB",
-};
+	if (_color_descriptors.empty()) {
+		_color_descriptors.append("BLUSH");
+		_color_descriptors.append("DARK");
+		_color_descriptors.append("DRAB");
+		_color_descriptors.append("MEDIUM");
+		_color_descriptors.append("LIGHT");
+		_color_descriptors.append("OLIVE");
+		_color_descriptors.append("PALE");
+		_color_descriptors.append("SEA");
+		_color_descriptors.append("SKY");
+		_color_descriptors.append("SLATE");
+		_color_descriptors.append("SPRING");
+		_color_descriptors.append("STEEL");
+		_color_descriptors.append("WEB");
+	}
+}
 
-static void _insert_underscores(String &out_name, const std::vector<String> &strings) {
-	for (int i = 0; i < strings.size(); ++i) {
-		const String &word = strings[i];
-		int word_begins_at = out_name.find(word);
+static void _insert_underscores(String &out_name, const Vector<String> &helper_list) {
+	for (int i = 0; i < helper_list.size(); ++i) {
+		const String &word = helper_list[i];
+		int word_begins_at = out_name.find(word, 0);
+		ERR_PRINT_ONCE(itos(word_begins_at));
 		int word_ends_at = word_begins_at + word.size();
 
 		if (word_begins_at > 0) {
@@ -239,6 +243,7 @@ static String _to_uppercase_name(const String &name) {
 		return "SEA_SHELL";
 	}
 
+	_populate_uppercase_helper_lists();
 	// Cases with standard color names
 	String uppercase_name = name.to_upper();
 	_insert_underscores(uppercase_name, _modifiable_colors);
