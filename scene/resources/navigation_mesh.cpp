@@ -461,6 +461,7 @@ void NavigationMesh::_bind_methods() {
 	BIND_CONSTANT(SAMPLE_PARTITION_WATERSHED);
 	BIND_CONSTANT(SAMPLE_PARTITION_MONOTONE);
 	BIND_CONSTANT(SAMPLE_PARTITION_LAYERS);
+	BIND_CONSTANT(SAMPLE_PARTITION_SIMPLE);
 
 	BIND_CONSTANT(PARSED_GEOMETRY_MESH_INSTANCES);
 	BIND_CONSTANT(PARSED_GEOMETRY_STATIC_COLLIDERS);
@@ -469,7 +470,7 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type/sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type/sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers,Simple"), "set_sample_partition_type", "get_sample_partition_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry/source_geometry_mode", PROPERTY_HINT_ENUM, "Navmesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
