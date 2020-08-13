@@ -24,9 +24,7 @@ SConscript("winmidi/SCsub")
 
 # Graphics drivers
 if env["platform"] != "server" and env["platform"] != "javascript":
-    #    SConscript('gles2/SCsub')
     SConscript("vulkan/SCsub")
-    SConscript("gl_context/SCsub")
 else:
     SConscript("dummy/SCsub")
 
