@@ -195,7 +195,7 @@ static std::vector<String> _color_descriptors = {
 	"WEB",
 };
 
-static void _append_underscores(String &out_name, const std::vector<String> &strings) {
+static void _insert_underscores(String &out_name, const std::vector<String> &strings) {
 	for (int i = 0; i < strings.size(); ++i) {
 		const String &word = strings[i];
 		int word_begins_at = out_name.find(word);
@@ -241,7 +241,7 @@ static String _to_uppercase_name(const String &name) {
 
 	// Cases with standard color names
 	String uppercase_name = name.to_upper();
-	_append_underscores(uppercase_name, _modifiable_colors);
-	_append_underscores(uppercase_name, _color_descriptors);
+	_insert_underscores(uppercase_name, _modifiable_colors);
+	_insert_underscores(uppercase_name, _color_descriptors);
 	return uppercase_name;
 }
