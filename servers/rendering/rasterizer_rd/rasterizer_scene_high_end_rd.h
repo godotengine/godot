@@ -364,6 +364,16 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float volumetric_fog_inv_length;
 			float volumetric_fog_detail_spread;
 			uint32_t volumetric_fog_pad;
+
+			// Fog
+
+			uint32_t fog_enabled;
+			float fog_density;
+			float fog_height;
+			float fog_height_density;
+
+			float fog_light_color[3];
+			float fog_sun_scatter;
 		};
 
 		UBO ubo;

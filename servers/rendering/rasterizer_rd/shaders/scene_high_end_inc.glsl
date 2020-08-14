@@ -100,40 +100,14 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	float volumetric_fog_inv_length;
 	float volumetric_fog_detail_spread;
 	uint volumetric_fog_pad;
-#if 0
-	vec4 ambient_light_color;
-	vec4 bg_color;
 
-	vec4 fog_color_enabled;
-	vec4 fog_sun_color_amount;
-
-	float ambient_energy;
-	float bg_energy;
-#endif
-
-#if 0
-	vec2 shadow_atlas_pixel_size;
-	vec2 directional_shadow_pixel_size;
-
-	float z_far;
-
-	float subsurface_scatter_width;
-	float ambient_occlusion_affect_light;
-	float ambient_occlusion_affect_ao_channel;
-	float opaque_prepass_threshold;
-
-	bool fog_depth_enabled;
-	float fog_depth_begin;
-	float fog_depth_end;
+	bool fog_enabled;
 	float fog_density;
-	float fog_depth_curve;
-	bool fog_transmit_enabled;
-	float fog_transmit_curve;
-	bool fog_height_enabled;
-	float fog_height_min;
-	float fog_height_max;
-	float fog_height_curve;
-#endif
+	float fog_height;
+	float fog_height_density;
+
+	vec3 fog_light_color;
+	float fog_sun_scatter;
 }
 
 scene_data;

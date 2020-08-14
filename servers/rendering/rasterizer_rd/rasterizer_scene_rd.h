@@ -674,6 +674,15 @@ private:
 		float auto_exp_scale = 0.5;
 		uint64_t auto_exposure_version = 0;
 
+		// Fog
+		bool fog_enabled = false;
+		Color fog_light_color = Color(0.5, 0.6, 0.7);
+		float fog_light_energy = 1.0;
+		float fog_sun_scatter = 0.0;
+		float fog_density = 0.001;
+		float fog_height = 0.0;
+		float fog_height_density = 0.0; //can be negative to invert effect
+
 		/// Volumetric Fog
 		///
 		bool volumetric_fog_enabled = false;
@@ -1498,7 +1507,15 @@ public:
 	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap);
 	void environment_glow_set_use_bicubic_upscale(bool p_enable);
 
-	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density);
+	bool environment_is_fog_enabled(RID p_env) const;
+	Color environment_get_fog_light_color(RID p_env) const;
+	float environment_get_fog_light_energy(RID p_env) const;
+	float environment_get_fog_sun_scatter(RID p_env) const;
+	float environment_get_fog_density(RID p_env) const;
+	float environment_get_fog_height(RID p_env) const;
+	float environment_get_fog_height_density(RID p_env) const;
+
 	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter);
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth);
@@ -1524,10 +1541,6 @@ public:
 
 	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
-
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
-	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
-	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size);
 

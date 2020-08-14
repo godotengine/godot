@@ -2914,6 +2914,57 @@ void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::Envi
 	env->sdfgi_y_scale = p_y_scale;
 }
 
+void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->fog_enabled = p_enable;
+	env->fog_light_color = p_light_color;
+	env->fog_light_energy = p_light_energy;
+	env->fog_sun_scatter = p_sun_scatter;
+	env->fog_density = p_density;
+	env->fog_height = p_height;
+	env->fog_height_density = p_height_density;
+}
+
+bool RasterizerSceneRD::environment_is_fog_enabled(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+
+	return env->fog_enabled;
+}
+Color RasterizerSceneRD::environment_get_fog_light_color(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, Color());
+	return env->fog_light_color;
+}
+float RasterizerSceneRD::environment_get_fog_light_energy(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_light_energy;
+}
+float RasterizerSceneRD::environment_get_fog_sun_scatter(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_sun_scatter;
+}
+float RasterizerSceneRD::environment_get_fog_density(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_density;
+}
+float RasterizerSceneRD::environment_get_fog_height(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+
+	return env->fog_height;
+}
+float RasterizerSceneRD::environment_get_fog_height_density(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_height_density;
+}
+
 void RasterizerSceneRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
