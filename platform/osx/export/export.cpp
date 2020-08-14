@@ -49,12 +49,6 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String custom_release_package;
 	String custom_debug_package;
 
-	enum BitsMode {
-		BITS_FAT,
-		BITS_64,
-		BITS_32
-	};
-
 	int version_code;
 
 	String app_name;
@@ -67,7 +61,6 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String copyright;
 	String identity;
 	String entitlements;
-	BitsMode bits_mode;
 	bool high_resolution;
 
 	Ref<ImageTexture> logo;
@@ -136,8 +129,6 @@ bool EditorExportPlatformOSX::_set(const StringName &p_name, const Variant &p_va
 		version = p_value;
 	else if (n == "application/copyright")
 		copyright = p_value;
-	else if (n == "application/bits_mode")
-		bits_mode = BitsMode(int(p_value));
 	else if (n == "display/high_res")
 		high_resolution = p_value;
 	else if (n == "codesign/identity")
@@ -174,8 +165,6 @@ bool EditorExportPlatformOSX::_get(const StringName &p_name, Variant &r_ret) con
 		r_ret = version;
 	else if (n == "application/copyright")
 		r_ret = copyright;
-	else if (n == "application/bits_mode")
-		r_ret = bits_mode;
 	else if (n == "display/high_res")
 		r_ret = high_resolution;
 	else if (n == "codesign/identity")
@@ -200,7 +189,6 @@ void EditorExportPlatformOSX::_get_property_list(List<PropertyInfo> *p_list) con
 	p_list->push_back(PropertyInfo(Variant::STRING, "application/short_version"));
 	p_list->push_back(PropertyInfo(Variant::STRING, "application/version"));
 	p_list->push_back(PropertyInfo(Variant::STRING, "application/copyright"));
-	p_list->push_back(PropertyInfo(Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "display/high_res"));
 
 	p_list->push_back(PropertyInfo(Variant::STRING, "codesign/identity"));
@@ -400,9 +388,7 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 	}
 
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
-	binary_to_use += String(bits_mode == BITS_FAT ? "fat" : bits_mode == BITS_64 ? "64" : "32");
 
-	print_line("binary: " + binary_to_use);
 	String pkg_name;
 	if (app_name != "")
 		pkg_name = app_name;
@@ -661,7 +647,6 @@ EditorExportPlatformOSX::EditorExportPlatformOSX() {
 	signature = "godotmacgame";
 	short_version = "1.0";
 	version = "1.0";
-	bits_mode = BITS_FAT;
 	high_resolution = false;
 	identity = "";
 	entitlements = "";

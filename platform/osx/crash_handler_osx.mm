@@ -34,7 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#if defined(DEBUG_ENABLED) && defined(__x86_64__)
+#if defined(DEBUG_ENABLED)
 #define CRASH_HANDLER_ENABLED 1
 #endif
 
@@ -48,13 +48,8 @@
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
 
-#ifdef __x86_64__
 static uint64_t load_address() {
 	const struct segment_command_64 *cmd = getsegbyname("__TEXT");
-#else
-static uint32_t load_address() {
-	const struct segment_command *cmd = getsegbyname("__TEXT");
-#endif
 	char full_path[1024];
 	uint32_t size = sizeof(full_path);
 
@@ -120,11 +115,7 @@ static void handle_crash(int sig) {
 				args.push_back("-o");
 				args.push_back(_execpath);
 				args.push_back("-arch");
-#ifdef __x86_64__
 				args.push_back("x86_64");
-#else
-				args.push_back("i386");
-#endif
 				args.push_back("-l");
 				snprintf(str, 1024, "%p", load_addr);
 				args.push_back(str);
