@@ -279,10 +279,45 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		uncollapsed_paths.push_back("res://");
 	}
 
-	// Create the remaining of the tree.
+	// Create the rest of the tree.
 	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites, p_unfold_path);
 	tree->ensure_cursor_is_visible();
+
+	if (paths_selected.size() > 0) {
+		tree->deselect_all();
+		bool parent_should_expand = false;
+		_restore_selection(root, 0, parent_should_expand);
+	}
+
 	updating_tree = false;
+}
+
+bool FileSystemDock::_restore_selection(TreeItem *p_parent, int p_restored_count, bool &p_parent_should_expand) {
+	// Breadth-first, set selection on children
+	for (TreeItem *child = p_parent->get_children(); child; child = child->get_next()) {
+		if (paths_selected.find(String(child->get_metadata(0))) >= 0) {
+			child->select(0);
+			p_restored_count++;
+			p_parent_should_expand = true;
+			if (p_restored_count == paths_selected.size()) {
+				return true;
+			}
+		}
+	}
+
+	// Process the children as parents
+	for (TreeItem *parent = p_parent->get_children(); parent; parent = parent->get_next()) {
+		bool parent_should_expand = false;
+		bool restored = _restore_selection(parent, p_restored_count, parent_should_expand);
+		if (parent_should_expand) {
+			parent->set_collapsed(false);
+			p_parent_should_expand = true;
+		}
+		if (restored) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void FileSystemDock::set_display_mode(DisplayMode p_display_mode) {
@@ -448,10 +483,41 @@ void FileSystemDock::_notification(int p_what) {
 	}
 }
 
+bool FileSystemDock::_is_valid_path(TreeItem *p_parent, const String &p_path) const {
+	for (TreeItem *child = p_parent->get_children(); child; child = child->get_next()) {
+		if (child->get_metadata(0) == p_path) {
+			return true;
+		}
+	}
+
+	for (TreeItem *parent = p_parent->get_children(); parent; parent = parent->get_next()) {
+		if (_is_valid_path(parent, p_path)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_selected) {
 	// Update the import dock.
 	import_dock_needs_update = true;
 	call_deferred("_update_import_dock");
+
+	// Used to restore the selection if the tree updates.
+	String item_path = ((TreeItem *)p_item)->get_metadata(0);
+	paths_selected.erase(item_path);
+	if (p_selected) {
+		paths_selected.push_back(item_path);
+	}
+
+	// Clear any paths that aren't in the tree.
+	Vector<String> validated_paths;
+	for (int i = 0; i < paths_selected.size(); ++i) {
+		if (_is_valid_path(tree->get_root(), paths_selected[i])) {
+			validated_paths.push_back(paths_selected[i]);
+		}
+	}
+	paths_selected = validated_paths;
 
 	// Return if we don't select something new.
 	if (!p_selected) {
@@ -897,7 +963,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			item_index = files->get_item_count() - 1;
 			files->set_item_metadata(item_index, fpath);
 			files->set_item_tag_icon(item_index, type_icon);
-
 		} else {
 			files->add_item(fname, type_icon, true);
 			item_index = files->get_item_count() - 1;
@@ -1467,6 +1532,10 @@ void FileSystemDock::_folder_removed(String p_folder) {
 	current_path->set_text(path);
 }
 
+void FileSystemDock::_files_removed(const Vector<String> &p_files) {
+	EditorNode::get_singleton()->get_import_dock()->files_removed(p_files);
+}
+
 void FileSystemDock::_rename_operation_confirm() {
 	String new_name = rename_dialog_text->get_text().strip_edges();
 	if (new_name.length() == 0) {
@@ -2006,6 +2075,10 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>(), false, false, unfold_path);
 		} break;
 	}
+
+	// Update the import dock.
+	import_dock_needs_update = true;
+	call_deferred("_update_import_dock");
 }
 
 void FileSystemDock::_rescan() {
@@ -2422,7 +2495,6 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_item(TTR("View Owners..."), FILE_OWNERS);
 			p_popup->add_separator();
 		}
-
 	} else if (all_folders && foldernames.size() > 0) {
 		p_popup->add_icon_item(get_theme_icon("Load", "EditorIcons"), TTR("Open"), FILE_OPEN);
 		p_popup->add_separator();
@@ -2494,6 +2566,12 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 
 void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
+	path = "res://";
+	paths_selected.clear();
+
+	// Update the import dock.
+	import_dock_needs_update = true;
+	call_deferred("_update_import_dock");
 }
 
 void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
@@ -2602,6 +2680,9 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &files) const {
 	if (!p_path.ends_with("/")) {
 		if (FileAccess::exists(p_path + ".import")) {
+			if (searched_string.length() > 0 && p_path.get_file().to_lower().find(searched_string) < 0) {
+				return;
+			}
 			files.push_back(p_path);
 		}
 		return;
@@ -2629,7 +2710,6 @@ void FileSystemDock::_update_import_dock() {
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		// Use the tree
 		selected = _tree_get_selected();
-
 	} else {
 		// Use the file list.
 		for (int i = 0; i < files->get_item_count(); i++) {
@@ -2641,36 +2721,9 @@ void FileSystemDock::_update_import_dock() {
 	}
 
 	// Expand directory selection
-	Vector<String> efiles;
-	for (int i = 0; i < selected.size(); i++) {
-		_get_imported_files(selected[i], efiles);
-	}
-
-	// Check import.
 	Vector<String> imports;
-	String import_type;
-	for (int i = 0; i < efiles.size(); i++) {
-		String fpath = efiles[i];
-		Ref<ConfigFile> cf;
-		cf.instance();
-		Error err = cf->load(fpath + ".import");
-		if (err != OK) {
-			imports.clear();
-			break;
-		}
-
-		String type;
-		if (cf->has_section_key("remap", "type")) {
-			type = cf->get_value("remap", "type");
-		}
-		if (import_type == "") {
-			import_type = type;
-		} else if (import_type != type) {
-			// All should be the same type.
-			imports.clear();
-			break;
-		}
-		imports.push_back(fpath);
+	for (int i = 0; i < selected.size(); i++) {
+		_get_imported_files(selected[i], imports);
 	}
 
 	if (imports.size() == 0) {
@@ -2909,6 +2962,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	remove_dialog = memnew(DependencyRemoveDialog);
 	remove_dialog->connect("file_removed", callable_mp(this, &FileSystemDock::_file_removed));
 	remove_dialog->connect("folder_removed", callable_mp(this, &FileSystemDock::_folder_removed));
+	remove_dialog->connect("files_removed", callable_mp(this, &FileSystemDock::_files_removed));
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);

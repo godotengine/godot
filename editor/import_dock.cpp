@@ -89,11 +89,34 @@ public:
 	}
 };
 
-void ImportDock::set_edit_path(const String &p_path) {
+Ref<ConfigFile> ImportDock::_get_config(const String &p_path) {
+	const String config_path = p_path + ".import";
 	Ref<ConfigFile> config;
-	config.instance();
-	Error err = config->load(p_path + ".import");
-	if (err != OK) {
+	if (config_cache.has(config_path)) {
+		config = config_cache[config_path];
+	} else {
+		config.instance();
+		Error err = config->load(config_path);
+		if (err == OK) {
+			config_cache[config_path] = config;
+		} else {
+			config.unref();
+		}
+	}
+	return config;
+}
+
+void ImportDock::set_edit_path(const String &p_path) {
+	clear();
+
+	files_to_import.clear();
+	files_to_import.push_back(p_path);
+	if (!is_visible()) {
+		return;
+	}
+
+	Ref<ConfigFile> config = _get_config(p_path);
+	if (config.is_null()) {
 		clear();
 		return;
 	}
@@ -177,14 +200,37 @@ void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
 void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	clear();
 
-	// Use the value that is repeated the most.
-	Map<String, Dictionary> value_frequency;
+	files_to_import.clear();
+	files_to_import.append_array(p_paths);
+	if (!is_visible()) {
+		return;
+	}
 
-	for (int i = 0; i < p_paths.size(); i++) {
-		Ref<ConfigFile> config;
-		config.instance();
-		Error err = config->load(p_paths[i] + ".import");
-		ERR_CONTINUE(err != OK);
+	importing_canceled = false;
+	threadvar_importing_complete = false;
+	thread.start(_thread_func, this);
+}
+
+void ImportDock::_thread_func(void *user_data) {
+	ImportDock *id = (ImportDock *)user_data;
+	id->_parse_config_files();
+}
+
+void ImportDock::_parse_config_files() {
+	value_frequency.clear();
+
+	for (int i = 0; i < files_to_import.size(); i++) {
+		importing_mutex.lock();
+		threadvar_importing_text = vformat(TTR("Processing %d / %d"), i, files_to_import.size());
+		bool should_stop = importing_canceled;
+		importing_mutex.unlock();
+
+		if (should_stop) {
+			return;
+		}
+
+		Ref<ConfigFile> config = _get_config(files_to_import[i]);
+		ERR_CONTINUE(config.is_null());
 
 		if (i == 0) {
 			params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(config->get_value("remap", "importer"));
@@ -214,6 +260,29 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 				value_frequency[E->get()][value] = 1;
 			}
 		}
+
+		call_deferred("_finish_set_edit_multiple_paths");
+	}
+
+	importing_mutex.lock();
+	threadvar_importing_complete = true;
+	importing_mutex.unlock();
+
+	call_deferred("_finish_set_edit_multiple_paths");
+}
+
+void ImportDock::_finish_set_edit_multiple_paths() {
+	importing_mutex.lock();
+	String label_text = threadvar_importing_text;
+	bool complete = threadvar_importing_complete;
+	importing_mutex.unlock();
+
+	if (!importing_canceled) {
+		imported->set_text(label_text);
+	}
+
+	if (!complete) {
+		return;
 	}
 
 	ERR_FAIL_COND(params->importer.is_null());
@@ -251,7 +320,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->update();
 
 	List<Ref<ResourceImporter>> importers;
-	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_paths[0].get_extension(), &importers);
+	ResourceFormatImporter::get_singleton()->get_importers_for_extension(files_to_import[0].get_extension(), &importers);
 	List<Pair<String, String>> importer_names;
 
 	for (List<Ref<ResourceImporter>>::Element *E = importers.front(); E; E = E->next()) {
@@ -272,12 +341,12 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	_update_preset_menu();
 
-	params->paths = p_paths;
+	params->paths = files_to_import;
 	import->set_disabled(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
 
-	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
+	imported->set_text(vformat(TTR("%d Files"), files_to_import.size()));
 
 	if (params->paths.size() == 1 && params->importer->has_advanced_options()) {
 		advanced->show();
@@ -328,11 +397,7 @@ void ImportDock::_importer_selected(int i_idx) {
 
 		Ref<ConfigFile> config;
 		if (params->paths.size()) {
-			config.instance();
-			Error err = config->load(params->paths[0] + ".import");
-			if (err != OK) {
-				config.unref();
-			}
+			config = _get_config(params->paths[0]);
 		}
 		_update_options(config);
 	}
@@ -395,7 +460,20 @@ void ImportDock::_preset_selected(int p_idx) {
 	}
 }
 
+void ImportDock::files_removed(const Vector<String> &p_paths) {
+	for (int i = 0; i < p_paths.size(); i++) {
+		config_cache.erase(p_paths[i] + ".import");
+	}
+}
+
 void ImportDock::clear() {
+	if (thread.is_started()) {
+		importing_mutex.lock();
+		importing_canceled = true;
+		importing_mutex.unlock();
+		thread.wait_to_finish();
+	}
+
 	imported->set_text("");
 	import->set_disabled(true);
 	import_as->clear();
@@ -439,10 +517,8 @@ void ImportDock::_reimport_attempt() {
 		importer_name = "keep";
 	}
 	for (int i = 0; i < params->paths.size(); i++) {
-		Ref<ConfigFile> config;
-		config.instance();
-		Error err = config->load(params->paths[i] + ".import");
-		ERR_CONTINUE(err != OK);
+		Ref<ConfigFile> config = _get_config(params->paths[i]);
+		ERR_CONTINUE(config.is_null());
 
 		String imported_with = config->get_value("remap", "importer");
 		if (imported_with != importer_name) {
@@ -515,7 +591,6 @@ void ImportDock::_reimport() {
 			} else {
 				config->set_value("remap", "group_file", Variant()); //clear group file if unused
 			}
-
 		} else {
 			//set to no import
 			config->clear();
@@ -539,6 +614,30 @@ void ImportDock::_notification(int p_what) {
 			import_opts->edit(params);
 			label_warning->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				if (files_to_import.size() == 1) {
+					// ??? A crash can occur in set_edit_path when accessing p_path,
+					// if files_to_import[0] is passed directly.
+					String file = files_to_import[0];
+					set_edit_path(file);
+				} else if (files_to_import.size() > 1) {
+					// Copy the vector because set_edit_multiple_paths resets files_to_import.
+					Vector<String> files = files_to_import;
+					set_edit_multiple_paths(files);
+				}
+			} else {
+				clear();
+				config_cache.clear();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			// If the ImportDock or the windows closes while processing
+			// stop the thread so the editor doesn't crash.
+			clear();
+		} break;
 	}
 }
 
@@ -552,6 +651,7 @@ void ImportDock::_property_toggled(const StringName &p_prop, bool p_checked) {
 
 void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
+	ClassDB::bind_method(D_METHOD("_finish_set_edit_multiple_paths"), &ImportDock::_finish_set_edit_multiple_paths);
 }
 
 void ImportDock::initialize_import_options() const {

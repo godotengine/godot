@@ -50,8 +50,17 @@ class ImportDock : public VBoxContainer {
 	MenuButton *preset;
 	EditorInspector *import_opts;
 
+	Vector<String> files_to_import;
+	Thread thread;
+	Mutex importing_mutex;
+	String threadvar_importing_text;
+	bool threadvar_importing_complete;
+	bool importing_canceled;
+	Map<String, Dictionary> value_frequency;
+
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> property_values;
+	Map<String, Ref<ConfigFile>> config_cache;
 
 	ConfirmationDialog *reimport_confirm;
 	Label *label_warning;
@@ -61,6 +70,8 @@ class ImportDock : public VBoxContainer {
 	Button *advanced;
 
 	ImportDockParameters *params;
+
+	Ref<ConfigFile> _get_config(const String &p_path);
 
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
@@ -73,6 +84,11 @@ class ImportDock : public VBoxContainer {
 	void _reimport();
 
 	void _advanced_options();
+
+	static void _thread_func(void *user_data);
+	void _parse_config_files();
+	void _finish_set_edit_multiple_paths();
+
 	enum {
 		ITEM_SET_AS_DEFAULT = 100,
 		ITEM_LOAD_DEFAULT,
@@ -87,6 +103,7 @@ public:
 	void set_edit_path(const String &p_path);
 	void set_edit_multiple_paths(const Vector<String> &p_paths);
 	void initialize_import_options() const;
+	void files_removed(const Vector<String> &p_paths);
 	void clear();
 
 	ImportDock();
