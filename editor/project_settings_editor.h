@@ -77,6 +77,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	OptionButton *feature_override;
 	Label *error_label;
 
+	ConfirmationDialog *del_confirmation;
+
 	Label *restart_label;
 	TextureRect *restart_icon;
 	PanelContainer *restart_container;
@@ -94,7 +96,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _setting_edited(const String &p_name);
 	void _setting_selected(const String &p_path);
 	void _add_setting();
-	void _delete_setting();
+	void _delete_setting(bool p_confirmed);
 
 	void _editor_restart_request();
 	void _editor_restart();
