@@ -464,11 +464,6 @@ ConnectDialog::ConnectDialog() {
 	advanced->set_text(TTR("Advanced"));
 	advanced->connect("pressed", this, "_advanced_pressed");
 
-	// Add spacing so the tree and inspector are the same size.
-	Control *spacing = memnew(Control);
-	spacing->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
-	vbc_right->add_child(spacing);
-
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
 	deferred->set_text(TTR("Deferred"));
