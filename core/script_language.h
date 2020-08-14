@@ -84,6 +84,7 @@ public:
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
 	static StringName get_global_class_native_base(const String &p_class);
+	static StringName get_global_class_name(const String &p_path, String *r_base = NULL, String *r_icon_path = NULL);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void save_global_classes();
 

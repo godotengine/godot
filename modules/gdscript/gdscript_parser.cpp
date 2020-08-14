@@ -849,6 +849,9 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 							constant->value = scr;
 							expr = constant;
 							bfn = true;
+						} else {
+							_set_error("Cannot load " + identifier + " (" + ScriptServer::get_global_class_path(identifier) + "). Possible error or cyclic reference.");
+							return NULL;
 						}
 					}
 
@@ -4638,8 +4641,40 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								current_export.class_name = native_class->get_name();
 
 							} else {
-								current_export = PropertyInfo();
-								_set_error("The export hint isn't a resource type.");
+								Ref<Script> script = Object::cast_to<Script>(constant);
+								if (script.is_valid()) {
+									bool is_script_class = false;
+									for (int i = 0; i < ScriptServer::get_language_count() && !is_script_class; i++) {
+										ScriptLanguage *lang = ScriptServer::get_language(i);
+										String base;
+										String class_name = lang->get_global_class_name(script->get_path(), &base);
+										if (class_name.length()) {
+											is_script_class = true;
+											String to_test = base;
+											if (ScriptServer::is_global_class(base)) {
+												to_test = ScriptServer::get_global_class_native_base(base);
+											}
+											if (ClassDB::is_parent_class(to_test, "Resource")) {
+												current_export.type = Variant::OBJECT;
+												current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+												current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+
+												current_export.hint_string = class_name;
+												current_export.class_name = class_name;
+											} else {
+												current_export = PropertyInfo();
+												_set_error("The exported script class isn't a resource type.");
+											}
+										}
+									}
+									if (!is_script_class) {
+										current_export = PropertyInfo();
+										_set_error("The exported script isn't a script class.");
+									}
+								} else {
+									current_export = PropertyInfo();
+									_set_error("The export hint isn't a resource type.");
+								}
 							}
 						} else if (constant.get_type() == Variant::DICTIONARY) {
 							// Enumeration
@@ -4929,10 +4964,42 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							member._export.hint_string = member.data_type.native_type;
 							member._export.class_name = member.data_type.native_type;
 						} else {
-							_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+							_set_error("Invalid native export type. \"" + member.data_type.native_type + "\" is not a Resource type.", member.line);
+							return;
+						}
+					} else if (member.data_type.kind == DataType::SCRIPT || member.data_type.kind == DataType::GDSCRIPT) {
+						if (member.data_type.script_type.is_null()) {
+							_set_error("The member's data type is a script that did not load successfully.", member.line);
+							return;
+						}
+						StringName class_name = ScriptServer::get_global_class_name(member.data_type.script_type->get_path());
+						if (class_name == StringName()) {
+							_set_error("Invalid script export type. \"" + class_name + "\" is not a script class.", member.line);
+							return;
+						}
+						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
+							member._export.type = Variant::OBJECT;
+							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							member._export.hint_string = class_name;
+							member._export.class_name = class_name;
+						} else {
+							_set_error("Invalid script class export type. \"" + class_name + "\" is not a Resource type.", member.line);
 							return;
 						}
 
+					} else if (member.data_type.kind == DataType::UNRESOLVED && ScriptServer::is_global_class(member.data_type.native_type)) {
+						String class_name = member.data_type.native_type;
+						if (ScriptServer::get_global_class_native_base(class_name) == "Resource") {
+							member._export.type = Variant::OBJECT;
+							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							member._export.hint_string = class_name;
+							member._export.class_name = class_name;
+						} else {
+							_set_error("Invalid script class export type. \"" + class_name + "\" is not a Resource type.", member.line);
+							return;
+						}
 					} else {
 						_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
 						return;
@@ -6255,7 +6322,9 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 	switch (p_expression.kind) {
 		case DataType::NATIVE: {
 			if (p_container.kind != DataType::NATIVE) {
-				// Non-native type can't be a superclass of a native type
+				if (p_container.kind == DataType::GDSCRIPT || p_container.kind == DataType::SCRIPT) {
+					return ScriptServer::get_global_class_name(p_container.script_type->get_path()) == p_expression.native_type;
+				}
 				return false;
 			}
 			if (p_expression.is_meta_type) {
