@@ -32,7 +32,15 @@
 
 void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bone_name") {
-		Skeleton3D *parent = _get_skeleton3d();
+		// Because it is a constant function, we cannot use the _get_skeleton_3d function.
+		Skeleton3D *parent = nullptr;
+		if (use_external_skeleton) {
+			if (external_skeleton_node_cache.is_valid()) {
+				parent = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(external_skeleton_node_cache));
+			}
+		} else {
+			parent = Object::cast_to<Skeleton3D>(get_parent());
+		}
 
 		if (parent) {
 			String names;
@@ -115,21 +123,21 @@ void BoneAttachment3D::_check_bind() {
 		}
 		if (bone_idx != -1) {
 			sk->call_deferred("connect", "bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
-			if (use_external_skeleton) {
-				call_deferred("set_global_transform", sk->global_pose_to_world_transform(sk->get_bone_global_pose(bone_idx)));
-			} else {
-				call_deferred("set_transform", sk->get_bone_global_pose(bone_idx));
-			}
-
 			bound = true;
+			call_deferred("on_bone_pose_update", bone_idx);
 		}
 	}
 }
 
-Skeleton3D *BoneAttachment3D::_get_skeleton3d() const {
+Skeleton3D *BoneAttachment3D::_get_skeleton3d() {
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_valid()) {
 			return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(external_skeleton_node_cache));
+		} else {
+			_update_external_skeleton_cache();
+			if (external_skeleton_node_cache.is_valid()) {
+				return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(external_skeleton_node_cache));
+			}
 		}
 	} else {
 		return Object::cast_to<Skeleton3D>(get_parent());
@@ -149,6 +157,10 @@ void BoneAttachment3D::_check_unbind() {
 }
 
 void BoneAttachment3D::_transform_changed() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	if (override_pose) {
 		Skeleton3D *sk = _get_skeleton3d();
 
@@ -213,6 +225,7 @@ int BoneAttachment3D::get_bone_idx() const {
 void BoneAttachment3D::set_override_pose(bool p_override) {
 	override_pose = p_override;
 	set_notify_local_transform(override_pose);
+	set_process_internal(override_pose);
 
 	if (!override_pose) {
 		Skeleton3D *sk = _get_skeleton3d();
@@ -289,6 +302,11 @@ void BoneAttachment3D::_notification(int p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			_transform_changed();
 		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (_override_dirty) {
+				_override_dirty = false;
+			}
+		}
 	}
 }
 
@@ -303,22 +321,10 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 					set_transform(sk->get_bone_global_pose(bone_idx));
 				}
 			} else {
-				set_notify_local_transform(false);
-				if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-					if (use_external_skeleton) {
-						set_global_transform(sk->global_pose_to_world_transform(sk->local_pose_to_global_pose(bone_idx, sk->get_bone_local_pose_override(bone_idx))));
-					} else {
-						set_transform(sk->local_pose_to_global_pose(bone_idx, sk->get_bone_local_pose_override(bone_idx)));
-					}
-				} else if (override_mode == OVERRIDE_MODES::MODE_CUSTOM_POSE) {
-					if (use_external_skeleton) {
-						set_global_transform(sk->global_pose_to_world_transform(sk->local_pose_to_global_pose(bone_idx, sk->get_bone_custom_pose(bone_idx))));
-					} else {
-						set_transform(sk->local_pose_to_global_pose(bone_idx, sk->get_bone_custom_pose(bone_idx)));
-					}
+				if (!_override_dirty) {
+					_transform_changed();
+					_override_dirty = true;
 				}
-
-				set_notify_local_transform(true);
 			}
 		}
 	}
