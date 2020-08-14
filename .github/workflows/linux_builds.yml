@@ -115,3 +115,83 @@ jobs:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=x11 target=release tools=no module_mono_enabled=yes mono_glue=no
+
+  linux-sanitizer:
+    runs-on: "ubuntu-20.04"
+    name: Editor and exported project  with sanitizers(target=debug/release, tools=yes/no, debug_symbols=yes/full, use_ubsan=yes, use_asan=yes)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install all packages (except scons)
+      - name: Configure dependencies
+        run: |
+          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
+            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm \
+            xvfb wget2 unzip
+
+      # Upload cache on completion and check it out now
+      - name: Load .scons_cache directory
+        id: linux-editor-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          restore-keys: |
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+
+      # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '3.x'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
+      # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
+      - name: Configuring Python packages
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons
+          python --version
+          scons --version
+
+      # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
+      - name: Compilation
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+        run: |
+          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=yes target=debug use_ubsan=yes use_asan=yes
+          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=no target=release debug_symbols=full use_ubsan=yes use_asan=yes
+
+      # Download and test project to check leaks and invalid memory usage
+      - name: Importing and running project project
+        run: |
+          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.2.zip
+          unzip 3.2.zip
+          mv "RegressionTestProject-3.2" "test_project"
+          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s -e --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 20 --video-driver GLES3 --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+      # Export project and run it to check for possible leaks and invalid memory usage
+      - name: Exporting and running project
+        run: |
+          mkdir exported_project
+          sed -i 's:PATH_TO_CHANGE:'`pwd`/bin/godot.x11.debug.64s':' test_project/export_presets.cfg
+          cd test_project
+          DRI_PRIME=0 xvfb-run ../bin/godot.x11.tools.64s --export-debug "Linux/X11" ../exported_project/test_project 2>&1 | tee sanitizers_log.txt || true
+          cd ..
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+          DRI_PRIME=0 xvfb-run exported_project/test_project 20 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
