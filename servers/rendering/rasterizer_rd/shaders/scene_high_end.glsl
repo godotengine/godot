@@ -1614,6 +1614,36 @@ vec4 volumetric_fog_process(vec2 screen_uv, float z) {
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
 }
 
+vec4 fog_process(vec3 vertex) {
+	vec3 fog_color = scene_data.fog_light_color;
+
+	if (scene_data.fog_sun_scatter > 0.001) {
+		vec4 sun_scatter = vec4(0.0);
+		float sun_total = 0.0;
+		vec3 view = normalize(vertex);
+
+		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+			vec3 light_color = directional_lights.data[i].color * directional_lights.data[i].energy;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction), 0.0), 8.0);
+			fog_color += light_color * light_amount * scene_data.fog_sun_scatter;
+		}
+	}
+
+	float fog_amount = 1.0 - exp(vertex.z * scene_data.fog_density);
+
+	if (abs(scene_data.fog_height_density) > 0.001) {
+		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
+
+		float y_dist = scene_data.fog_height - y;
+
+		float vfog_amount = clamp(exp(y_dist * scene_data.fog_height_density), 0.0, 1.0);
+
+		fog_amount = max(vfog_amount, fog_amount);
+	}
+
+	return vec4(fog_color, fog_amount);
+}
+
 #endif
 
 void main() {
@@ -2696,7 +2726,12 @@ FRAGMENT_SHADER_CODE
 		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
 		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
-		;
+	}
+
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(vertex);
+		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
+		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 	}
 
 #else //MODE_MULTIPLE_RENDER_TARGETS
@@ -2710,6 +2745,11 @@ FRAGMENT_SHADER_CODE
 
 	if (scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
+
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(vertex);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
 

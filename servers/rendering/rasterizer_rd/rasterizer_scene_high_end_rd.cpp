@@ -1146,6 +1146,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, RID p_rende
 
 	scene_state.ubo.gi_upscale_for_msaa = false;
 	scene_state.ubo.volumetric_fog_enabled = false;
+	scene_state.ubo.fog_enabled = false;
 
 	if (p_render_buffers.is_valid()) {
 		RenderBufferDataHighEnd *render_buffers = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffers);
@@ -1272,11 +1273,28 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, RID p_rende
 		scene_state.ubo.ssao_ao_affect = environment_get_ssao_ao_affect(p_environment);
 		scene_state.ubo.ssao_light_affect = environment_get_ssao_light_affect(p_environment);
 
-		Color ao_color = environment_get_ao_color(p_environment);
+		Color ao_color = environment_get_ao_color(p_environment).to_linear();
 		scene_state.ubo.ao_color[0] = ao_color.r;
 		scene_state.ubo.ao_color[1] = ao_color.g;
 		scene_state.ubo.ao_color[2] = ao_color.b;
 		scene_state.ubo.ao_color[3] = ao_color.a;
+
+		scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_environment);
+		scene_state.ubo.fog_density = environment_get_fog_density(p_environment);
+		scene_state.ubo.fog_height = environment_get_fog_height(p_environment);
+		scene_state.ubo.fog_height_density = environment_get_fog_height_density(p_environment);
+		if (scene_state.ubo.fog_height_density >= 0.0001) {
+			scene_state.ubo.fog_height_density = 1.0 / scene_state.ubo.fog_height_density;
+		}
+
+		Color fog_color = environment_get_fog_light_color(p_environment).to_linear();
+		float fog_energy = environment_get_fog_light_energy(p_environment);
+
+		scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
+		scene_state.ubo.fog_light_color[1] = fog_color.g * fog_energy;
+		scene_state.ubo.fog_light_color[2] = fog_color.b * fog_energy;
+
+		scene_state.ubo.fog_sun_scatter = environment_get_fog_sun_scatter(p_environment);
 
 	} else {
 		if (p_reflection_probe.is_valid() && storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
