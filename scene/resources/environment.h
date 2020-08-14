@@ -184,24 +184,14 @@ private:
 
 	// Fog
 	bool fog_enabled = false;
-	Color fog_color = Color(0.5, 0.6, 0.7);
-	Color fog_sun_color = Color(1.0, 0.9, 0.7);
-	float fog_sun_amount = 0.0;
+	Color fog_light_color = Color(0.5, 0.6, 0.7);
+	float fog_light_energy = 1.0;
+	float fog_sun_scatter = 0.0;
+	float fog_density = 0.001;
+	float fog_height = 0.0;
+	float fog_height_density = 0.0; //can be negative to invert effect
+
 	void _update_fog();
-
-	bool fog_depth_enabled = true;
-	float fog_depth_begin = 10.0;
-	float fog_depth_end = 100.0;
-	float fog_depth_curve = 1.0;
-	bool fog_transmit_enabled = false;
-	float fog_transmit_curve = 1.0;
-	void _update_fog_depth();
-
-	bool fog_height_enabled = false;
-	float fog_height_min = 10.0;
-	float fog_height_max = 0.0;
-	float fog_height_curve = 1.0;
-	void _update_fog_height();
 
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
@@ -362,36 +352,22 @@ public:
 	float get_glow_hdr_luminance_cap() const;
 
 	// Fog
+
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
-	void set_fog_color(const Color &p_color);
-	Color get_fog_color() const;
-	void set_fog_sun_color(const Color &p_color);
-	Color get_fog_sun_color() const;
-	void set_fog_sun_amount(float p_amount);
-	float get_fog_sun_amount() const;
+	void set_fog_light_color(const Color &p_light_color);
+	Color get_fog_light_color() const;
+	void set_fog_light_energy(float p_amount);
+	float get_fog_light_energy() const;
+	void set_fog_sun_scatter(float p_amount);
+	float get_fog_sun_scatter() const;
 
-	void set_fog_depth_enabled(bool p_enabled);
-	bool is_fog_depth_enabled() const;
-	void set_fog_depth_begin(float p_distance);
-	float get_fog_depth_begin() const;
-	void set_fog_depth_end(float p_distance);
-	float get_fog_depth_end() const;
-	void set_fog_depth_curve(float p_curve);
-	float get_fog_depth_curve() const;
-	void set_fog_transmit_enabled(bool p_enabled);
-	bool is_fog_transmit_enabled() const;
-	void set_fog_transmit_curve(float p_curve);
-	float get_fog_transmit_curve() const;
-
-	void set_fog_height_enabled(bool p_enabled);
-	bool is_fog_height_enabled() const;
-	void set_fog_height_min(float p_distance);
-	float get_fog_height_min() const;
-	void set_fog_height_max(float p_distance);
-	float get_fog_height_max() const;
-	void set_fog_height_curve(float p_distance);
-	float get_fog_height_curve() const;
+	void set_fog_density(float p_amount);
+	float get_fog_density() const;
+	void set_fog_height(float p_amount);
+	float get_fog_height() const;
+	void set_fog_height_density(float p_amount);
+	float get_fog_height_density() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);
