@@ -216,6 +216,8 @@ void SkeletonModificationStack3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &SkeletonModificationStack3D::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &SkeletonModificationStack3D::get_strength);
 
+	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkeletonModificationStack3D::get_skeleton);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
@@ -236,6 +238,10 @@ SkeletonModificationStack3D::SkeletonModificationStack3D() {
 ///////////////////////////////////////
 
 void SkeletonModification3D::execute(float delta) {
+	if (get_script_instance()) {
+		get_script_instance()->call("execute", delta);
+	}
+
 	if (!enabled)
 		return;
 }
@@ -246,6 +252,10 @@ void SkeletonModification3D::setup_modification(SkeletonModificationStack3D *p_s
 		is_setup = true;
 	} else {
 		WARN_PRINT("Could not setup modification with name " + this->get_name());
+	}
+
+	if (get_script_instance()) {
+		get_script_instance()->call("setup_modification", p_stack);
 	}
 }
 
@@ -306,13 +316,27 @@ float SkeletonModification3D::clamp_angle(float angle, float min_bound, float ma
 	return angle;
 }
 
+SkeletonModificationStack3D *SkeletonModification3D::get_modification_stack() {
+	return stack;
+}
+
+void SkeletonModification3D::set_is_setup(bool p_is_setup) {
+	is_setup = p_is_setup;
+}
+
+bool SkeletonModification3D::get_is_setup() const {
+	return is_setup;
+}
+
 void SkeletonModification3D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("execute"));
-	BIND_VMETHOD(MethodInfo("setup_modification"));
+	BIND_VMETHOD(MethodInfo("execute", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo("setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack3D")));
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification3D::get_enabled);
-
+	ClassDB::bind_method(D_METHOD("get_modification_stack"), &SkeletonModification3D::get_modification_stack);
+	ClassDB::bind_method(D_METHOD("set_is_setup", "is_setup"), &SkeletonModification3D::set_is_setup);
+	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModification3D::get_is_setup);
 	ClassDB::bind_method(D_METHOD("clamp_angle", "angle", "min", "max", "invert"), &SkeletonModification3D::clamp_angle);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");

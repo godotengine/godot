@@ -120,6 +120,11 @@ public:
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
 
+	SkeletonModificationStack3D *get_modification_stack();
+
+	void set_is_setup(bool p_setup);
+	bool get_is_setup() const;
+
 	SkeletonModification3D();
 };
 
