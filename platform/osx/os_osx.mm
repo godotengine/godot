@@ -138,9 +138,43 @@ static bool mouse_down_control = false;
 @end
 
 @interface GodotApplicationDelegate : NSObject
+- (void)forceUnbundledWindowActivationHackStep1;
+- (void)forceUnbundledWindowActivationHackStep2;
+- (void)forceUnbundledWindowActivationHackStep3;
 @end
 
 @implementation GodotApplicationDelegate
+
+- (void)forceUnbundledWindowActivationHackStep1 {
+	// Step1: Switch focus to macOS Dock.
+	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
+	for (NSRunningApplication *app in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
+		[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+		break;
+	}
+	[self performSelector:@selector(forceUnbundledWindowActivationHackStep2) withObject:nil afterDelay:0.02];
+}
+
+- (void)forceUnbundledWindowActivationHackStep2 {
+	// Step 2: Register app as foreground process.
+	ProcessSerialNumber psn = { 0, kCurrentProcess };
+	(void)TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+
+	[self performSelector:@selector(forceUnbundledWindowActivationHackStep3) withObject:nil afterDelay:0.02];
+}
+
+- (void)forceUnbundledWindowActivationHackStep3 {
+	// Step 3: Switch focus back to app window.
+	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notice {
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+	if (nsappname == nil) {
+		// If executable is not a bundled, macOS WindowServer won't register and activate app window correctly (menu and title bar are grayed out and input ignored).
+		[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
+	}
+}
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
 	if (OS_OSX::singleton->get_main_loop())
@@ -221,12 +255,8 @@ static bool mouse_down_control = false;
 
 		//Update context
 		if (OS_OSX::singleton->main_loop) {
-			[OS_OSX::singleton->context update];
-
-			//Force window resize ???
-			NSRect frame = [OS_OSX::singleton->window_object frame];
-			[OS_OSX::singleton->window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
-			[OS_OSX::singleton->window_object setFrame:frame display:YES];
+			//Force window resize event
+			[self windowDidResize:notification];
 		}
 	}
 }
@@ -1423,13 +1453,18 @@ void OS_OSX::make_rendering_thread() {
 }
 
 Error OS_OSX::shell_open(String p_uri) {
-
-	[[NSWorkspace sharedWorkspace] openURL:[[NSURL alloc] initWithString:[NSString stringWithUTF8String:p_uri.utf8().get_data()]]];
+	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
+	NSURL *uri = [[NSURL alloc] initWithString:string];
+	// Escape special characters in filenames
+	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+	}
+	[[NSWorkspace sharedWorkspace] openURL:uri];
 	return OK;
 }
 
 String OS_OSX::get_locale() const {
-	NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
+	NSString *locale_code = [[NSLocale preferredLanguages] objectAtIndex:0];
 	return [locale_code UTF8String];
 }
 
@@ -1738,7 +1773,8 @@ bool OS_OSX::is_window_maximized() const {
 
 void OS_OSX::move_window_to_foreground() {
 
-	[window_object orderFrontRegardless];
+	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+	[window_object makeKeyAndOrderFront:nil];
 }
 
 void OS_OSX::set_window_always_on_top(bool p_enabled) {
@@ -2041,7 +2077,7 @@ OS_OSX::OS_OSX() {
 	NSMenuItem *menu_item;
 	NSString *title;
 
-	NSString *nsappname = [[[NSBundle mainBundle] performSelector:@selector(localizedInfoDictionary)] objectForKey:@"CFBundleName"];
+	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname == nil)
 		nsappname = [[NSProcessInfo processInfo] processName];
 
