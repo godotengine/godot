@@ -2430,10 +2430,30 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 	}
 }
 
-void FileSystemDock::_update_import_dock() {
-	if (!import_dock_needs_update) {
+void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &files) const {
+	if (!p_path.ends_with("/")) {
+		if (FileAccess::exists(p_path + ".import")) {
+			files.push_back(p_path);
+		}
 		return;
 	}
+
+	DirAccess *da = DirAccess::open(p_path);
+	da->list_dir_begin();
+	String n = da->get_next();
+	while (n != String()) {
+		if (n != "." && n != ".." && !n.ends_with(".import")) {
+			String npath = p_path + n + (da->current_is_dir() ? "/" : "");
+			_get_imported_files(npath, files);
+		}
+		n = da->get_next();
+	}
+	da->list_dir_end();
+}
+
+void FileSystemDock::_update_import_dock() {
+	if (!import_dock_needs_update)
+		return;
 
 	// List selected.
 	Vector<String> selected;
@@ -2444,29 +2464,24 @@ void FileSystemDock::_update_import_dock() {
 	} else {
 		// Use the file list.
 		for (int i = 0; i < files->get_item_count(); i++) {
-			if (!files->is_selected(i)) {
+			if (!files->is_selected(i))
 				continue;
-			}
 
 			selected.push_back(files->get_item_metadata(i));
 		}
 	}
 
+	// Expand directory selection
+	Vector<String> efiles;
+	for (int i = 0; i < selected.size(); i++) {
+		_get_imported_files(selected[i], efiles);
+	}
+
 	// Check import.
 	Vector<String> imports;
 	String import_type;
-	for (int i = 0; i < selected.size(); i++) {
-		String fpath = selected[i];
-
-		if (fpath.ends_with("/")) {
-			imports.clear();
-			break;
-		}
-
-		if (!FileAccess::exists(fpath + ".import")) {
-			imports.clear();
-			break;
-		}
+	for (int i = 0; i < efiles.size(); i++) {
+		String fpath = efiles[i];
 		Ref<ConfigFile> cf;
 		cf.instance();
 		Error err = cf->load(fpath + ".import");
