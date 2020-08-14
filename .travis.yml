@@ -30,11 +30,11 @@ matrix:
       compiler: gcc
     - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
       os: osx
-      osx_image: xcode9.3
+      osx_image: xcode11.6
       compiler: clang
     - env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: osx
-      osx_image: xcode9.3
+      osx_image: xcode11.6
       compiler: clang
     - env: GODOT_TARGET=server TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
       os: linux
