@@ -113,10 +113,16 @@ void ProjectSettingsEditor::_add_setting() {
 	inspector->set_current_section(setting.get_slice("/", 1));
 }
 
-void ProjectSettingsEditor::_delete_setting() {
+void ProjectSettingsEditor::_delete_setting(bool p_confirmed) {
 	String setting = _get_setting_name();
 	Variant value = ps->get(setting);
 	int order = ps->get_order(setting);
+
+	if (!p_confirmed) {
+		del_confirmation->set_text(vformat(TTR("Are you sure you want to delete '%s'?"), setting));
+		del_confirmation->popup_centered();
+		return;
+	}
 
 	undo_redo->create_action(TTR("Delete Item"));
 
@@ -394,7 +400,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 		del_button = memnew(Button);
 		del_button->set_flat(true);
-		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
+		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(false));
 		hbc->add_child(del_button);
 
 		error_label = memnew(Label);
@@ -465,6 +471,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	timer->connect("timeout", callable_mp(ps, &ProjectSettings::save));
 	timer->set_one_shot(true);
 	add_child(timer);
+
+	del_confirmation = memnew(ConfirmationDialog);
+	del_confirmation->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(true));
+	add_child(del_confirmation);
 
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);

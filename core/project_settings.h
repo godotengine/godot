@@ -76,8 +76,8 @@ protected:
 	};
 
 	bool registering_order = true;
-	int last_order = 0;
-	int last_builtin_order = NO_BUILTIN_ORDER_BASE;
+	int last_order = NO_BUILTIN_ORDER_BASE;
+	int last_builtin_order = 0;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
