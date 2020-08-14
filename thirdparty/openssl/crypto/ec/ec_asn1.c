@@ -973,6 +973,20 @@ static EC_GROUP *ec_asn1_parameters2group(const ECPARAMETERS *params)
          * 0x0 = OPENSSL_EC_EXPLICIT_CURVE
          */
         EC_GROUP_set_asn1_flag(ret, 0x0);
+
+        /*
+         * If the input params do not contain the optional seed field we make
+         * sure it is not added to the returned group.
+         *
+         * The seed field is not really used inside libcrypto anyway, and
+         * adding it to parsed explicit parameter keys would alter their DER
+         * encoding output (because of the extra field) which could impact
+         * applications fingerprinting keys by their DER encoding.
+         */
+        if (params->curve->seed == NULL) {
+            if (EC_GROUP_set_seed(ret, NULL, 0) != 1)
+                goto err;
+        }
     }
 
     ok = 1;
