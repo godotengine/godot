@@ -1979,6 +1979,9 @@ void TextEdit::indent_right() {
 
 	for (int i = start_line; i <= end_line; i++) {
 		String line_text = get_line(i);
+		if (line_text.size() == 0 && is_selection_active()) {
+			continue;
+		}
 		if (indent_using_spaces) {
 			// We don't really care where selection is - we just need to know indentation level at the beginning of the line.
 			int left = _find_first_non_whitespace_column_of_line(line_text);
