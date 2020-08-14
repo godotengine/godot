@@ -4,7 +4,7 @@
  * 2000.
  */
 /* ====================================================================
- * Copyright (c) 2000 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 2000-2019 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -102,7 +102,7 @@ ASN1_ITEM_end(CBIGNUM)
 static int bn_new(ASN1_VALUE **pval, const ASN1_ITEM *it)
 {
     *pval = (ASN1_VALUE *)BN_new();
-    if (*pval)
+    if (*pval != NULL)
         return 1;
     else
         return 0;
@@ -110,7 +110,7 @@ static int bn_new(ASN1_VALUE **pval, const ASN1_ITEM *it)
 
 static void bn_free(ASN1_VALUE **pval, const ASN1_ITEM *it)
 {
-    if (!*pval)
+    if (*pval == NULL)
         return;
     if (it->size & BN_SENSITIVE)
         BN_clear_free((BIGNUM *)*pval);
@@ -124,7 +124,7 @@ static int bn_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype,
 {
     BIGNUM *bn;
     int pad;
-    if (!*pval)
+    if (*pval == NULL)
         return -1;
     bn = (BIGNUM *)*pval;
     /* If MSB set in an octet we need a padding byte */

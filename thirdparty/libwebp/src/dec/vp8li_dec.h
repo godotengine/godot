@@ -37,7 +37,7 @@ struct VP8LTransform {
   int                    bits_;   // subsampling bits defining transform window.
   int                    xsize_;  // transform window X index.
   int                    ysize_;  // transform window Y index.
-  uint32_t              *data_;   // transform data.
+  uint32_t*              data_;   // transform data.
 };
 
 typedef struct {
@@ -48,23 +48,23 @@ typedef struct {
   int             huffman_mask_;
   int             huffman_subsample_bits_;
   int             huffman_xsize_;
-  uint32_t       *huffman_image_;
+  uint32_t*       huffman_image_;
   int             num_htree_groups_;
-  HTreeGroup     *htree_groups_;
-  HuffmanCode    *huffman_tables_;
+  HTreeGroup*     htree_groups_;
+  HuffmanCode*    huffman_tables_;
 } VP8LMetadata;
 
 typedef struct VP8LDecoder VP8LDecoder;
 struct VP8LDecoder {
   VP8StatusCode    status_;
   VP8LDecodeState  state_;
-  VP8Io           *io_;
+  VP8Io*           io_;
 
-  const WebPDecBuffer *output_;    // shortcut to io->opaque->output
+  const WebPDecBuffer* output_;    // shortcut to io->opaque->output
 
-  uint32_t        *pixels_;        // Internal data: either uint8_t* for alpha
+  uint32_t*        pixels_;        // Internal data: either uint8_t* for alpha
                                    // or uint32_t* for BGRA.
-  uint32_t        *argb_cache_;    // Scratch buffer for temporary BGRA storage.
+  uint32_t*        argb_cache_;    // Scratch buffer for temporary BGRA storage.
 
   VP8LBitReader    br_;
   int              incremental_;   // if true, incremental decoding is expected
@@ -86,8 +86,8 @@ struct VP8LDecoder {
   // or'd bitset storing the transforms types.
   uint32_t         transforms_seen_;
 
-  uint8_t         *rescaler_memory;  // Working memory for rescaling work.
-  WebPRescaler    *rescaler;         // Common rescaler for all channels.
+  uint8_t*         rescaler_memory;  // Working memory for rescaling work.
+  WebPRescaler*    rescaler;         // Common rescaler for all channels.
 };
 
 //------------------------------------------------------------------------------

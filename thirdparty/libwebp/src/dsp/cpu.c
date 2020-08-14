@@ -173,8 +173,8 @@ static int AndroidCPUInfo(CPUFeature feature) {
   const AndroidCpuFamily cpu_family = android_getCpuFamily();
   const uint64_t cpu_features = android_getCpuFeatures();
   if (feature == kNEON) {
-    return (cpu_family == ANDROID_CPU_FAMILY_ARM &&
-            0 != (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON));
+    return cpu_family == ANDROID_CPU_FAMILY_ARM &&
+           (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
   }
   return 0;
 }

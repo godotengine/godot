@@ -163,7 +163,8 @@ static void GradientPredictDirect_SSE2(const uint8_t* const row,
     _mm_storel_epi64((__m128i*)(out + i), H);
   }
   for (; i < length; ++i) {
-    out[i] = row[i] - GradientPredictor_SSE2(row[i - 1], top[i], top[i - 1]);
+    const int delta = GradientPredictor_SSE2(row[i - 1], top[i], top[i - 1]);
+    out[i] = (uint8_t)(row[i] - delta);
   }
 }
 
@@ -188,7 +189,7 @@ static WEBP_INLINE void DoGradientFilter_SSE2(const uint8_t* in,
 
   // Filter line-by-line.
   while (row < last_row) {
-    out[0] = in[0] - in[-stride];
+    out[0] = (uint8_t)(in[0] - in[-stride]);
     GradientPredictDirect_SSE2(in + 1, in + 1 - stride, out + 1, width - 1);
     ++row;
     in += stride;
@@ -223,7 +224,7 @@ static void HorizontalUnfilter_SSE2(const uint8_t* prev, const uint8_t* in,
                                     uint8_t* out, int width) {
   int i;
   __m128i last;
-  out[0] = in[0] + (prev == NULL ? 0 : prev[0]);
+  out[0] = (uint8_t)(in[0] + (prev == NULL ? 0 : prev[0]));
   if (width <= 1) return;
   last = _mm_set_epi32(0, 0, 0, out[0]);
   for (i = 1; i + 8 <= width; i += 8) {
@@ -238,7 +239,7 @@ static void HorizontalUnfilter_SSE2(const uint8_t* prev, const uint8_t* in,
     _mm_storel_epi64((__m128i*)(out + i), A7);
     last = _mm_srli_epi64(A7, 56);
   }
-  for (; i < width; ++i) out[i] = in[i] + out[i - 1];
+  for (; i < width; ++i) out[i] = (uint8_t)(in[i] + out[i - 1]);
 }
 
 static void VerticalUnfilter_SSE2(const uint8_t* prev, const uint8_t* in,
@@ -259,7 +260,7 @@ static void VerticalUnfilter_SSE2(const uint8_t* prev, const uint8_t* in,
       _mm_storeu_si128((__m128i*)&out[i +  0], C0);
       _mm_storeu_si128((__m128i*)&out[i + 16], C1);
     }
-    for (; i < width; ++i) out[i] = in[i] + prev[i];
+    for (; i < width; ++i) out[i] = (uint8_t)(in[i] + prev[i]);
   }
 }
 
@@ -296,7 +297,8 @@ static void GradientPredictInverse_SSE2(const uint8_t* const in,
       _mm_storel_epi64((__m128i*)&row[i], out);
     }
     for (; i < length; ++i) {
-      row[i] = in[i] + GradientPredictor_SSE2(row[i - 1], top[i], top[i - 1]);
+      const int delta = GradientPredictor_SSE2(row[i - 1], top[i], top[i - 1]);
+      row[i] = (uint8_t)(in[i] + delta);
     }
   }
 }
@@ -306,7 +308,7 @@ static void GradientUnfilter_SSE2(const uint8_t* prev, const uint8_t* in,
   if (prev == NULL) {
     HorizontalUnfilter_SSE2(NULL, in, out, width);
   } else {
-    out[0] = in[0] + prev[0];  // predict from above
+    out[0] = (uint8_t)(in[0] + prev[0]);  // predict from above
     GradientPredictInverse_SSE2(in + 1, prev + 1, out + 1, width - 1);
   }
 }

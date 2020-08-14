@@ -33,9 +33,9 @@ static WEBP_INLINE void PredictLine_C(const uint8_t* src, const uint8_t* pred,
                                       uint8_t* dst, int length, int inverse) {
   int i;
   if (inverse) {
-    for (i = 0; i < length; ++i) dst[i] = src[i] + pred[i];
+    for (i = 0; i < length; ++i) dst[i] = (uint8_t)(src[i] + pred[i]);
   } else {
-    for (i = 0; i < length; ++i) dst[i] = src[i] - pred[i];
+    for (i = 0; i < length; ++i) dst[i] = (uint8_t)(src[i] - pred[i]);
   }
 }
 
@@ -155,7 +155,7 @@ static WEBP_INLINE void DoGradientFilter_C(const uint8_t* in,
       const int pred = GradientPredictor_C(preds[w - 1],
                                            preds[w - stride],
                                            preds[w - stride - 1]);
-      out[w] = in[w] + (inverse ? pred : -pred);
+      out[w] = (uint8_t)(in[w] + (inverse ? pred : -pred));
     }
     ++row;
     preds += stride;
@@ -194,7 +194,7 @@ static void HorizontalUnfilter_C(const uint8_t* prev, const uint8_t* in,
   uint8_t pred = (prev == NULL) ? 0 : prev[0];
   int i;
   for (i = 0; i < width; ++i) {
-    out[i] = pred + in[i];
+    out[i] = (uint8_t)(pred + in[i]);
     pred = out[i];
   }
 }
@@ -206,7 +206,7 @@ static void VerticalUnfilter_C(const uint8_t* prev, const uint8_t* in,
     HorizontalUnfilter_C(NULL, in, out, width);
   } else {
     int i;
-    for (i = 0; i < width; ++i) out[i] = prev[i] + in[i];
+    for (i = 0; i < width; ++i) out[i] = (uint8_t)(prev[i] + in[i]);
   }
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
@@ -220,7 +220,7 @@ static void GradientUnfilter_C(const uint8_t* prev, const uint8_t* in,
     int i;
     for (i = 0; i < width; ++i) {
       top = prev[i];  // need to read this first, in case prev==out
-      left = in[i] + GradientPredictor_C(left, top, top_left);
+      left = (uint8_t)(in[i] + GradientPredictor_C(left, top, top_left));
       top_left = top;
       out[i] = left;
     }

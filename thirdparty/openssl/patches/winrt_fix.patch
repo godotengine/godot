@@ -1,5 +1,5 @@
 diff --git a/thirdparty/openssl/crypto/rand/rand_win.c b/thirdparty/openssl/crypto/rand/rand_win.c
-index 06670ae01..cb4093128 100644
+index b4be3097e9..63a9e9975a 100644
 --- a/thirdparty/openssl/crypto/rand/rand_win.c
 +++ b/thirdparty/openssl/crypto/rand/rand_win.c
 @@ -118,8 +118,10 @@
@@ -22,15 +22,15 @@ index 06670ae01..cb4093128 100644
  typedef BOOL(WINAPI *CRYPTACQUIRECONTEXTW) (HCRYPTPROV *, LPCWSTR, LPCWSTR,
                                              DWORD, DWORD);
  typedef BOOL(WINAPI *CRYPTGENRANDOM) (HCRYPTPROV, DWORD, BYTE *);
-@@ -196,6 +198,7 @@ typedef NET_API_STATUS(NET_API_FUNCTION *NETFREE) (LPBYTE);
- #  endif                        /* 1 */
- # endif                         /* !OPENSSL_SYS_WINCE */
+@@ -198,6 +200,7 @@ typedef NET_API_STATUS(NET_API_FUNCTION *NETFREE) (LPBYTE);
+ 
+ #define NOTTOOLONG(start) ((GetTickCount() - (start)) < MAXDELAY)
  
 +#if !defined(WINRT_ENABLED) // -- GODOT --
  int RAND_poll(void)
  {
      MEMORYSTATUS m;
-@@ -580,6 +583,8 @@ int RAND_poll(void)
+@@ -576,6 +579,8 @@ int RAND_poll(void)
      return (1);
  }
  
@@ -39,7 +39,7 @@ index 06670ae01..cb4093128 100644
  int RAND_event(UINT iMsg, WPARAM wParam, LPARAM lParam)
  {
      double add_entropy = 0;
-@@ -682,7 +687,7 @@ static void readtimer(void)
+@@ -678,7 +683,7 @@ static void readtimer(void)
  
  static void readscreen(void)
  {
@@ -49,7 +49,7 @@ index 06670ae01..cb4093128 100644
      HBITMAP hBitmap;            /* handle for our bitmap */
      BITMAP bm;                  /* bitmap properties */
 diff --git a/thirdparty/openssl/openssl/dtls1.h b/thirdparty/openssl/openssl/dtls1.h
-index 30bbcf278..81d28c29c 100644
+index 30bbcf278a..31cb6d7eb9 100644
 --- a/thirdparty/openssl/openssl/dtls1.h
 +++ b/thirdparty/openssl/openssl/dtls1.h
 @@ -78,6 +78,9 @@

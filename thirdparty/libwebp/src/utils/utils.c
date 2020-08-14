@@ -216,9 +216,14 @@ void WebPSafeFree(void* const ptr) {
   free(ptr);
 }
 
-// Public API function.
+// Public API functions.
+
+void* WebPMalloc(size_t size) {
+  return WebPSafeMalloc(1, size);
+}
+
 void WebPFree(void* ptr) {
-  free(ptr);
+  WebPSafeFree(ptr);
 }
 
 //------------------------------------------------------------------------------

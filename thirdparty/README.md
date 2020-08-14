@@ -154,7 +154,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.2
+- Version: 1.1.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -197,8 +197,8 @@ Collection of single-file libraries used in Godot components.
   * Version: latest, as of April 2017
   * License: Public Domain
 - `fastlz.{c,h}`
-  * Upstream: https://code.google.com/archive/p/fastlz
-  * Version: svn (r12)
+  * Upstream: https://github.com/ariya/FastLZ
+  * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
   * License: MIT
 - `hq2x.{cpp,h}`
   * Upstream: https://github.com/brunexgeek/hqx
@@ -248,7 +248,7 @@ Collection of single-file libraries used in Godot components.
 ## openssl
 
 - Upstream: https://www.openssl.org
-- Version: 1.0.2t
+- Version: 1.0.2u
 - License: OpenSSL license / BSD-like
 
 Files extracted from the upstream source:
