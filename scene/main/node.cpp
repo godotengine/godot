@@ -66,7 +66,6 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_PARENTED: {
-
 			set_time_scale_inherit(is_time_scale_inheriting());
 			set_time_scale_value(get_time_scale_value());
 		} break;
@@ -841,19 +840,16 @@ bool Node::can_process() const {
 }
 
 float Node::get_physics_process_delta_time() const {
-
 	if (data.tree) {
 		if (data.time_scale_inherit && data.parent)
 			return data.tree->get_physics_process_time() * data.time_scale_value * data.time_scale_inherit_value;
 		else
 			return data.tree->get_physics_process_time() * data.time_scale_value;
-	}
-	else
+	} else
 		return 0;
 }
 
 float Node::get_process_delta_time() const {
-
 	if (data.tree)
 		if (data.time_scale_inherit && data.parent)
 			return data.tree->get_idle_process_time() * data.time_scale_value * data.time_scale_inherit_value;
@@ -864,7 +860,6 @@ float Node::get_process_delta_time() const {
 }
 
 void Node::set_time_scale_value(float p_time_scale) {
-
 	data.time_scale_value = p_time_scale;
 
 	Node **children = data.children.ptrw();
@@ -878,7 +873,6 @@ void Node::set_time_scale_value(float p_time_scale) {
 }
 
 float Node::get_time_scale_calculated_value() const {
-
 	if (!data.time_scale_inherit) {
 		return data.time_scale_value;
 	}
@@ -887,26 +881,20 @@ float Node::get_time_scale_calculated_value() const {
 }
 
 float Node::get_time_scale_value() const {
-
 	return data.time_scale_value;
 }
 
 void Node::set_time_scale_inherit(bool p_time_scale_inherit) {
-
 	data.time_scale_inherit = p_time_scale_inherit;
 
 	if (p_time_scale_inherit && data.parent) {
-
 		data.time_scale_inherit_value = data.parent->get_time_scale_calculated_value();
 	} else {
-
 		data.time_scale_inherit_value = 1.0f;
 	}
 }
 
-
 bool Node::is_time_scale_inheriting() const {
-
 	return data.time_scale_inherit;
 }
 
