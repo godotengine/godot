@@ -127,6 +127,7 @@ public:
 	bool zoomed;
 	bool resizable;
 	bool window_focused;
+	bool on_top;
 
 	Size2 window_size;
 	Rect2 restore_rect;
