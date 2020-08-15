@@ -94,6 +94,7 @@ void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data,
 	for (uint32_t i = 0; i < p_pixelsize; i++) {
 		p_data[ofs + i] = p_pixel[i];
 	}
+	// something new 
 }
 
 void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel) {
@@ -102,6 +103,7 @@ void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p
 	for (uint32_t i = 0; i < p_pixelsize; i++) {
 		p_pixel[i] = p_data[ofs + i];
 	}
+	// something else
 }
 
 int Image::get_format_pixel_size(Format p_format) {
