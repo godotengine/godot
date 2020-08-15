@@ -209,7 +209,8 @@ void RayCast3D::_update_raycast_state() {
 
 	PhysicsDirectSpaceState3D::RayResult rr;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
+	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas) &&
+			rr.normal != Vector3()) {
 		collided = true;
 		against = rr.collider_id;
 		collision_point = rr.position;
