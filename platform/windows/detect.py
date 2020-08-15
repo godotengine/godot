@@ -180,30 +180,30 @@ def configure_msvc(env, manual_msvc_config):
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2", "/MP"])
+            env.Append(CCFLAGS=["/O2"])
         else:  # optimize for size
-            env.Append(CCFLAGS=["/O1", "/MP"])
+            env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2", "/MP"])
+            env.Append(CCFLAGS=["/O2"])
         else:  # optimize for size
-            env.Append(CCFLAGS=["/O1", "/MP"])
+            env.Append(CCFLAGS=["/O1"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "debug":
-        env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc", "/MP"])
+        env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(LINKFLAGS=["/DEBUG"])
+        env.Append(LINKFLAGS=["/DEBUG:fastlink"])
 
-    env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+    env.Append(LINKFLAGS=["/MT16", "/SUBSYSTEM:WINDOWS"])
 
     if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
         env.AppendUnique(CCFLAGS=["/Z7"])
-        env.AppendUnique(LINKFLAGS=["/DEBUG"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:fastlink"])
 
     ## Compile/link flags
 
