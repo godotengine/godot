@@ -50,7 +50,6 @@ def configure(env):
     env['CC'] = em_path + '/emcc'
     env['CXX'] = em_path + '/emcc'
     env['AR'] = em_path + "/emar"
-    env['ARFLAGS'] = "-o"
     env['RANLIB'] = em_path + "/emranlib"
 
     env['OBJSUFFIX'] = '.bc'
