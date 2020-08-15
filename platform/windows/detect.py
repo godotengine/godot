@@ -180,22 +180,22 @@ def configure_msvc(env, manual_msvc_config):
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
+            env.Append(CCFLAGS=["/O2", "/MP"])
         else:  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
+            env.Append(CCFLAGS=["/O1", "/MP"])
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
+            env.Append(CCFLAGS=["/O2", "/MP"])
         else:  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
+            env.Append(CCFLAGS=["/O1", "/MP"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "debug":
-        env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc"])
+        env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc", "/MP"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
