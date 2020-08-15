@@ -153,6 +153,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual RID get_default_texture_param(const StringName &p_name) const;
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
 

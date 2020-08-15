@@ -1083,9 +1083,9 @@ void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const S
 	ERR_FAIL_COND(!shader);
 
 	if (p_texture.is_valid() && texture_owner.owns(p_texture)) {
-		shader->default_texture_parameter[p_name] = p_texture;
+		shader->data->set_default_texture_param(p_name, p_texture);
 	} else {
-		shader->default_texture_parameter.erase(p_name);
+		shader->data->set_default_texture_param(p_name, RID{});
 	}
 
 	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
@@ -1097,10 +1097,9 @@ void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const S
 RID RasterizerStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
-	if (shader->default_texture_parameter.has(p_name)) {
-		return shader->default_texture_parameter[p_name];
+	if (shader->data) {
+		return shader->data->get_default_texture_param(p_name);
 	}
-
 	return RID();
 }
 

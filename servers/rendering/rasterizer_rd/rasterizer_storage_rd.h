@@ -114,6 +114,7 @@ public:
 	struct ShaderData {
 		virtual void set_code(const String &p_Code) = 0;
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
+		virtual RID get_default_texture_param(const StringName &p_name) const = 0;
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
 
 		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
@@ -300,7 +301,6 @@ private:
 		ShaderData *data;
 		String code;
 		ShaderType type;
-		Map<StringName, RID> default_texture_parameter;
 		Set<Material *> owners;
 	};
 

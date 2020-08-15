@@ -2548,6 +2548,13 @@ void RasterizerSceneRD::SkyShaderData::set_default_texture_param(const StringNam
 	}
 }
 
+RID RasterizerSceneRD::SkyShaderData::get_default_texture_param(const StringName &p_name) const {
+	if (default_texture_params.has(p_name)) {
+		return default_texture_params[p_name];
+	}
+	return RID();
+}
+
 void RasterizerSceneRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
