@@ -88,7 +88,9 @@ void OS_LinuxBSD::finalize() {
 #endif
 
 #ifdef JOYDEV_ENABLED
-	memdelete(joypad);
+	if (joypad) {
+		memdelete(joypad);
+	}
 #endif
 }
 
