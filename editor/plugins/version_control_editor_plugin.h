@@ -43,13 +43,17 @@
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
-public:
+private:
+	enum DiffViewType {
+		DIFF_VIEW_TYPE_SPLIT = 0,
+		DIFF_VIEW_TYPE_UNIFIED = 1,
+	};
+
 	enum ButtonType {
 		BUTTON_TYPE_OPEN = 0,
 		BUTTON_TYPE_DISCARD = 1,
 	};
 
-private:
 	static VersionControlEditorPlugin *singleton;
 
 	List<StringName> available_addons;
@@ -85,14 +89,12 @@ private:
 	TextEdit *commit_message;
 	Button *commit_button;
 
-	PanelContainer *version_control_dock;
+	VBoxContainer *version_control_dock;
 	Button *version_control_dock_button;
-	VBoxContainer *diff_vbc;
-	HBoxContainer *diff_hbc;
-	Button *diff_refresh_button;
-	Label *diff_file_name;
-	Label *diff_heading;
+	Label *diff_title;
 	RichTextLabel *diff;
+	OptionButton *diff_view_type_select;
+	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _initialize_vcs();
 	void _selected_a_vcs(int p_id);
@@ -116,9 +118,11 @@ private:
 	void _cell_button_pressed(Object *p_item, int column, int id);
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType change);
 
-	void _clear_file_diff();
-	void _refresh_file_diff();
-	void _display_file_diff(String p_file_path);
+	void _display_diff(int idx);
+	void _load_diff(Object *p_tree);
+	void _clear_diff();
+	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
+	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 
 	friend class EditorVCSInterface;
 
@@ -133,7 +137,7 @@ public:
 
 	PopupMenu *get_version_control_actions_panel() const { return version_control_actions; }
 	VBoxContainer *get_version_commit_dock() const { return version_commit_dock; }
-	PanelContainer *get_version_control_dock() const { return version_control_dock; }
+	VBoxContainer *get_version_control_dock() const { return version_control_dock; }
 
 	List<StringName> get_available_vcs_names() const { return available_addons; }
 	bool is_vcs_initialized() const;

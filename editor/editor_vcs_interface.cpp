@@ -63,7 +63,7 @@ void EditorVCSInterface::_discard_file(String p_file_path) {
 	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
 }
 
-Array EditorVCSInterface::_get_file_diff(String p_file_path) {
+Array EditorVCSInterface::_get_file_diff(String p_file_path, TreeArea p_area) {
 	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
 	return Array();
 }
@@ -164,12 +164,15 @@ void EditorVCSInterface::commit(String p_msg) {
 	}
 }
 
-List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_file_path) {
+List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_file_path, TreeArea p_area) {
 	List<DiffFile> diff_files;
 
-	// if (is_addon_ready()) {
-	// 	return call("_get_file_diff", p_file_path);
-	// }
+	if (is_addon_ready()) {
+		Array result = call("_get_file_diff", p_file_path, p_area);
+		for (int i = 0; i < result.size(); i++) {
+			diff_files.push_back(_convert_diff_file(result[i]));
+		}
+	}
 	return diff_files;
 }
 
@@ -355,7 +358,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_project_name"), &EditorVCSInterface::_get_project_name);
 	ClassDB::bind_method(D_METHOD("_get_modified_files_data"), &EditorVCSInterface::_get_modified_files_data);
 	ClassDB::bind_method(D_METHOD("_commit", "msg"), &EditorVCSInterface::_commit);
-	ClassDB::bind_method(D_METHOD("_get_file_diff", "file_path"), &EditorVCSInterface::_get_file_diff);
+	ClassDB::bind_method(D_METHOD("_get_file_diff", "file_path", "area"), &EditorVCSInterface::_get_file_diff);
 	ClassDB::bind_method(D_METHOD("_stage_file", "file_path"), &EditorVCSInterface::_stage_file);
 	ClassDB::bind_method(D_METHOD("_unstage_file", "file_path"), &EditorVCSInterface::_unstage_file);
 	ClassDB::bind_method(D_METHOD("_discard_file", "file_path"), &EditorVCSInterface::_discard_file);

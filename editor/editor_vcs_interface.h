@@ -106,7 +106,7 @@ protected:
 	void _discard_file(String p_file_path);
 	void _unstage_file(String p_file_path);
 	void _commit(String p_msg);
-	Array _get_file_diff(String p_file_path);
+	Array _get_file_diff(String p_identifier, TreeArea area);
 	bool _shut_down();
 	String _get_project_name();
 	String _get_vcs_name();
@@ -147,7 +147,8 @@ public:
 	void unstage_file(String p_file_path);
 	void discard_file(String p_file_path);
 	void commit(String p_msg);
-	List<DiffFile> get_file_diff(String p_file_path);
+	List<DiffFile> get_file_diff(String p_identifier, TreeArea area);
+	;
 	bool shut_down();
 	String get_project_name();
 	String get_vcs_name();
