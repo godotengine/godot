@@ -32,20 +32,18 @@
 #define IOS_SINGLETON_H
 
 #include "core/object.h"
+#ifdef IPHONE_ENABLED
 #include "objc_utils.h"
+#endif
 #include <core/engine.h>
 #include <core/variant.h>
-
-#ifdef IPHONE_ENABLED
-#include <objc/runtime.h>
-#endif
 
 class iOSSingleton : public Object {
 
 	GDCLASS(iOSSingleton, Object);
-
+#ifdef IPHONE_ENABLED
 	id instance;
-
+#endif
 	struct MethodData {
 
 		String method_name;
