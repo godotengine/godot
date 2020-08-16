@@ -44,7 +44,7 @@ id _create_objc_object(Variant::Type p_type);
 
 Variant::Type get_objc_type(const String &p_type);
 
-Variant get_objc_class_type(const String &name, id obj);
+Variant get_objc_class_type(const String &p_name, id obj);
 
 Variant::Type get_objc_to_variant(const String &p_type);
 

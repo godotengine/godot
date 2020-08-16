@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_plugin.h                                                                */
+/*  godot_ios_plugin_helper.mm                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_H
-#define GODOT_PLUGIN_H
+#include "godot_ios_plugin_helper.h"
 
-#import <Foundation/Foundation.h>
-
-@interface GodotPlugin : NSObject
-- (NSString *)getPluginName;
-- (NSArray<NSString *> *)getMethodName;
-- (NSSet *)getPluginSignals;
-- (void)setPluginHelper:(id)helper;
-- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)args;
+@interface GodotiOSPluginHelper ()
+@property(nonatomic, strong) NSString *_pluginName;
 @end
 
-#endif
+@implementation GodotiOSPluginHelper
+- (void)setPluginName:(NSString *)pluginName {
+	self._pluginName = pluginName;
+}
+
+- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)signalArgs {
+	Object *obj = Engine::get_singleton()->get_singleton_object(String([self._pluginName UTF8String]));
+	iOSSingleton *singleton = (iOSSingleton *)obj;
+
+	String signal_name = String([signalName UTF8String]);
+
+	int count = [signalArgs count];
+	ERR_FAIL_COND_MSG(count > VARIANT_ARG_MAX, "Maximum argument count exceeded!");
+
+	// dispatch_async(dispatch_get_main_queue(), ^(void) {
+	Variant variant_params[VARIANT_ARG_MAX];
+	const Variant *args[VARIANT_ARG_MAX];
+
+	for (int i = 0; i < count; i++) {
+		variant_params[i] = get_objc_class_type(String(class_getName([signalArgs[i] class])), signalArgs[i]);
+		args[i] = &variant_params[i];
+	};
+
+	singleton->emit_signal(signal_name, args, count);
+}
+@end

@@ -31,7 +31,7 @@
 #include "godot_plugin_registery.h"
 
 extern "C" {
-#include "plugin_wrapper.h"
+#include "godot_ios_plugin_helper.h"
 #import <Foundation/Foundation.h>
 };
 
@@ -57,12 +57,14 @@ void GodotPluginRegistery::register_plugin_classes() {
 
 		id plugin_class_instance = [[classes[i] alloc] init];
 
-		SEL caller_sel = NSSelectorFromString(@"setCaller:");
-		[plugin_class_instance performSelector:caller_sel withObject:[[PluginWrapper alloc] init]];
-
 		SEL plugin_name_selector = NSSelectorFromString(@"getPluginName");
 		NSString *plugin_name = (NSString *)[plugin_class_instance performSelector:plugin_name_selector];
 		String plugin_name_str = String([plugin_name UTF8String]);
+
+		GodotiOSPluginHelper *plugin_helper = [[GodotiOSPluginHelper alloc] init];
+		[plugin_helper setPluginName:plugin_name];
+		SEL caller_sel = NSSelectorFromString(@"setPluginHelper:");
+		[plugin_class_instance performSelector:caller_sel withObject:plugin_helper];
 
 		//-------Custom method parse------------
 		method_map.clear();

@@ -17,14 +17,15 @@ iphone_lib = [
     "gl_view_gesture_recognizer.m",
     "api/ios_singleton.mm",
     "plugin/godot_plugin_registery.mm",
-    "plugin/signal_info.m",
-    "plugin/plugin_wrapper.mm",
+    "plugin/godot_ios_plugin_helper.mm",
+    "plugin/godot_vars.m",
     "objc_utils.mm"
 ]
 
 plugin_lib = [
     "plugin/godot_plugin.m",
-    "plugin/signal_info.m"
+    "plugin/signal_info.m",
+    "plugin/godot_vars.m"
 ]
 
 env_ios = env.Clone()

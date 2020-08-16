@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  plugin_wrapper.h                                                     */
+/*  godot_vars.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLUGIN_WRAPPER_H
-#define PLUGIN_WRAPPER_H
+#ifndef GODOT_VARS_H
+#define GODOT_VARS_H
 
 #import <Foundation/Foundation.h>
 
-#include "api/ios_singleton.h"
-#include "core/object.h"
-#include "core/project_settings.h"
-#include "objc_utils.h"
-#include <core/engine.h>
-#include <core/variant.h>
-#include <objc/runtime.h>
+NS_ASSUME_NONNULL_BEGIN
 
-@interface PluginWrapper : NSObject
-- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)args;
+@interface GDBool : NSObject
+- (id)initWithBool:(BOOL)boolValue;
+- (BOOL)getValue;
 @end
+
+@interface GDInteger : NSObject
+- (id)initWithInt:(NSNumber *)intValue;
+- (int)getValue;
+@end
+
+NS_ASSUME_NONNULL_END
 
 #endif

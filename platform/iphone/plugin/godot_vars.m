@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  plugin_wrapper.mm                                                    */
+/*  godot_vars.mm                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "plugin_wrapper.h"
+#include "godot_vars.h"
 
-#import <Foundation/Foundation.h>
+@interface GDBool ()
+@property(nonatomic, assign) BOOL value;
+@end
+@implementation GDBool
+- (id)initWithBool:(BOOL)boolValue {
+	self = [super init];
+	if (self) {
+		self.value = boolValue;
+	}
+	return self;
+}
 
-@implementation PluginWrapper
-- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)signalArgs {
-	Object *obj = Engine::get_singleton()->get_singleton_object(String([@"GodotiOSPlugin" UTF8String]));
-	iOSSingleton *singleton = (iOSSingleton *)obj;
+- (BOOL)getValue {
+	return self.value;
+}
+@end
 
-	String signal_name = String([signalName UTF8String]);
+@interface GDInteger ()
+@property(nonatomic, strong) NSNumber *value;
+@end
 
-	int count = [signalArgs count];
-	ERR_FAIL_COND_MSG(count > VARIANT_ARG_MAX, "Maximum argument count exceeded!");
+@implementation GDInteger
+- (id)initWithInt:(NSNumber *)intValue {
+	self = [super init];
+	if (self) {
+		self.value = intValue;
+	}
+	return self;
+}
 
-	// dispatch_async(dispatch_get_main_queue(), ^(void) {
-	Variant variant_params[VARIANT_ARG_MAX];
-	const Variant *args[VARIANT_ARG_MAX];
-
-	for (int i = 0; i < count; i++) {
-		variant_params[i] = get_objc_class_type(String(class_getName([signalArgs[i] class])), signalArgs[i]);
-		args[i] = &variant_params[i];
-	};
-
-	singleton->emit_signal(signal_name, args, count);
+- (int)getValue {
+	return [self.value intValue];
 }
 @end

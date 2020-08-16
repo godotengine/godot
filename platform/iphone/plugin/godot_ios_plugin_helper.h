@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_plugin.h                                                                */
+/*  godot_ios_plugin_helper.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_H
-#define GODOT_PLUGIN_H
+#ifndef GODOT_IOS_PLUGIN_HELPER_H
+#define GODOT_IOS_PLUGIN_HELPER_H
 
 #import <Foundation/Foundation.h>
 
-@interface GodotPlugin : NSObject
-- (NSString *)getPluginName;
-- (NSArray<NSString *> *)getMethodName;
-- (NSSet *)getPluginSignals;
-- (void)setPluginHelper:(id)helper;
+#include "api/ios_singleton.h"
+#include "core/object.h"
+#include "core/project_settings.h"
+#include "objc_utils.h"
+#include <core/engine.h>
+#include <core/variant.h>
+#include <objc/runtime.h>
+
+@interface GodotiOSPluginHelper : NSObject
+- (void)setPluginName:(NSString *)pluginName;
 - (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)args;
 @end
 

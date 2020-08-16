@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "objc_utils.h"
+#include "plugin/godot_vars.h"
 
 #import <Foundation/Foundation.h>
 
@@ -273,14 +274,24 @@ Variant::Type get_objc_type(const String &p_type) {
 	return Variant::NIL;
 }
 
-Variant get_objc_class_type(const String &name, id p_objc_type) {
+Variant get_objc_class_type(const String &p_name, id p_objc_type) {
 	if (p_objc_type == nil) {
 		return Variant();
 	}
 
-	if (name == "NSString" || name == "__NSCFConstantString") {
+	if (p_name == "NSString" || p_name == "__NSCFConstantString") {
 		return String([((NSString *)p_objc_type) UTF8String]);
 	};
+
+	if (p_name == "GDBool") {
+		GDBool *gbObj = (GDBool *)p_objc_type;
+		return [gbObj getValue] ? true : else;
+	};
+
+	if (p_name == "GDInteger") {
+		GDInteger *gbObj = (GDInteger *)p_objc_type;
+		return [gbObj getValue];
+	}
 
 	return Variant();
 }
