@@ -199,7 +199,7 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/DEBUG:fastlink"])
 
-    env.Append(LINKFLAGS=["/MT16", "/SUBSYSTEM:WINDOWS"])
+    env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
 
     if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
         env.AppendUnique(CCFLAGS=["/Z7"])
