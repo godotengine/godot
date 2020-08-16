@@ -44,16 +44,6 @@ class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
 public:
-	enum ChangeType {
-
-		CHANGE_TYPE_NEW = 0,
-		CHANGE_TYPE_MODIFIED = 1,
-		CHANGE_TYPE_RENAMED = 2,
-		CHANGE_TYPE_DELETED = 3,
-		CHANGE_TYPE_TYPECHANGE = 4,
-		CHANGE_TYPE_UNMERGED = 5
-	};
-
 	enum ButtonType {
 		BUTTON_TYPE_OPEN = 0,
 		BUTTON_TYPE_DISCARD = 1,
@@ -72,9 +62,9 @@ private:
 	LineEdit *set_up_username;
 	LineEdit *set_up_password;
 
-	HashMap<ChangeType, String> change_type_to_strings;
-	HashMap<ChangeType, Color> change_type_to_color;
-	HashMap<ChangeType, Ref<Texture>> change_type_to_icon;
+	HashMap<EditorVCSInterface::ChangeType, String> change_type_to_strings;
+	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
+	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
 
 	TabContainer *dock_vbc;
 	VBoxContainer *version_commit_dock;
@@ -122,9 +112,9 @@ private:
 	void _item_activated(Object *p_tree);
 	void _branch_item_selected(int index);
 	void _move_item(Tree *p_tree, TreeItem *p_itme);
-	void _discard_file(String p_file_path, ChangeType change);
+	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType change);
 	void _cell_button_pressed(Object *p_item, int column, int id);
-	void _add_new_item(Tree *p_tree, String p_file_path, ChangeType change);
+	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType change);
 
 	void _clear_file_diff();
 	void _refresh_file_diff();
@@ -156,7 +146,5 @@ public:
 	VersionControlEditorPlugin();
 	~VersionControlEditorPlugin();
 };
-
-VARIANT_ENUM_CAST(VersionControlEditorPlugin::ChangeType);
 
 #endif // !VERSION_CONTROL_EDITOR_PLUGIN_H
