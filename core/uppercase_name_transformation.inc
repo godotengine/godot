@@ -83,7 +83,7 @@ static String _insert_underscores(const String &name, const Vector<String> &toke
 	return name_with_underscores;
 }
 
-String _to_uppercase_name(const String &name) {
+static String _to_uppercase_name(const String &name) {
 	// Edge cases
 	if (name == "blanchedalmond") {
 		return "BLANCHED_ALMOND";
