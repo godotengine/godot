@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  jni_utils.h                                                          */
+/*  signal_info.mm                                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OBJC_UTILS_H
-#define OBJC_UTILS_H
+#include "signal_info.h"
 
-#include <core/engine.h>
-#include <core/variant.h>
-#include <objc/runtime.h>
+@interface SignalInfo ()
+@property(nonatomic, strong) NSString *signalName;
+@property(nonatomic, strong) NSArray<Class> *paramTypes;
+@property(nonatomic, strong) NSMutableArray<NSString *> *paramTypesNames;
+@end
 
-id _variant_to_id(Variant::Type p_type, const Variant *p_arg, bool empty_obj = false);
+@implementation SignalInfo
 
-Variant _id_to_variant(id p_objc_type, Variant::Type p_type);
+- (id)initWithNameAndParamTypes:(NSString *)signalName paramTypes:(NSArray<Class> *)paramTypes {
+	self = [super init];
+	if (self) {
+		self.signalName = signalName;
+		self.paramTypes = paramTypes;
+		if (paramTypes != nil) {
+			self.paramTypesNames = [NSMutableArray arrayWithCapacity:[paramTypes count]];
+			for (Class cls in paramTypes) {
+				[self.paramTypesNames addObject:[NSString stringWithCString:class_getName(cls) encoding:NSASCIIStringEncoding]];
+			}
+		}
+	}
+	return self;
+}
 
-id _create_objc_object(Variant::Type p_type);
+- (NSString *)getName {
+	return self.signalName;
+}
 
-Variant::Type get_objc_type(const String &p_type);
+- (NSArray<Class> *)getParamTypes {
+	return self.paramTypes;
+}
 
-Variant get_objc_class_type(const String &name, id obj);
-
-Variant::Type get_objc_to_variant(const String &p_type);
-
-#endif // OBJC_UTILS_H
+- (NSArray<NSString *> *)getParamTypesNames {
+	return _paramTypesNames;
+}
+@end

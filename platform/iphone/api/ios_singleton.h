@@ -35,7 +35,10 @@
 #include "objc_utils.h"
 #include <core/engine.h>
 #include <core/variant.h>
+
+#ifdef IPHONE_ENABLED
 #include <objc/runtime.h>
+#endif
 
 class iOSSingleton : public Object {
 
@@ -56,10 +59,11 @@ class iOSSingleton : public Object {
 public:
 	void add_method(const StringName &p_name, const StringName &p_sel_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-
+	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args);
+#ifdef IPHONE_ENABLED
 	void set_instance(id p_instance);
 	id get_instance() const;
-
+#endif
 	iOSSingleton();
 };
 

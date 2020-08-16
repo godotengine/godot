@@ -30,7 +30,10 @@
 
 #include "godot_plugin_registery.h"
 
+extern "C" {
+#include "plugin_wrapper.h"
 #import <Foundation/Foundation.h>
+};
 
 void GodotPluginRegistery::register_plugin_classes() {
 	Class godot_plugin_class = NSClassFromString(@"GodotPlugin");
@@ -53,6 +56,9 @@ void GodotPluginRegistery::register_plugin_classes() {
 		NSLog(@"Plugin Class Name: %@", NSStringFromClass(classes[i]));
 
 		id plugin_class_instance = [[classes[i] alloc] init];
+
+		SEL caller_sel = NSSelectorFromString(@"setCaller:");
+		[plugin_class_instance performSelector:caller_sel withObject:[[PluginWrapper alloc] init]];
 
 		SEL plugin_name_selector = NSSelectorFromString(@"getPluginName");
 		NSString *plugin_name = (NSString *)[plugin_class_instance performSelector:plugin_name_selector];
@@ -137,6 +143,35 @@ void GodotPluginRegistery::register_plugin_classes() {
 			}
 		}
 
+		SEL plugin_signal_selector = NSSelectorFromString(@"getPluginSignals");
+		NSSet *signals = (NSSet *)[plugin_class_instance performSelector:plugin_signal_selector];
+
+		if (signals != nil && [signals count] > 0)
+			for (id sig in signals) {
+				SEL signal_name_sel = NSSelectorFromString(@"getName");
+				NSString *signalName = (NSString *)[sig performSelector:signal_name_sel];
+
+				String signal_name = String([signalName UTF8String]);
+
+				NSLog(@"REGISTERED SIGNAL: %@", [[[NSString alloc] initWithUTF8String:signal_name.utf8().get_data()] autorelease]);
+
+				SEL param_types_names_sel = NSSelectorFromString(@"getParamTypesNames");
+				NSArray<NSString *> *signal_param_types_names = (NSArray<NSString *> *)[sig performSelector:param_types_names_sel];
+
+				unsigned int count = [signal_param_types_names count];
+
+				Vector<Variant::Type> types;
+
+				for (int i = 0; i < count; i++) {
+					NSString *arg_type = signal_param_types_names[i];
+					NSLog(@"SINGAL ARG TYPE: %@", arg_type);
+
+					types.push_back(get_objc_to_variant(String([arg_type UTF8String])));
+				}
+
+				ios_singleton->add_signal(signal_name, types);
+			}
+
 		Engine::get_singleton()->add_singleton(Engine::Singleton(plugin_name_str, ios_singleton));
 		ProjectSettings::get_singleton()->set(plugin_name_str, ios_singleton);
 		free(methods);
@@ -145,4 +180,7 @@ void GodotPluginRegistery::register_plugin_classes() {
 	free(classes);
 }
 
+void GodotPluginRegistery::cagdas() {
+	NSLog(@"CAGDAS method called!!!!!!!!!!!");
+}
 GodotPluginRegistery::GodotPluginRegistery(){};

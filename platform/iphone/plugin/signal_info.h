@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  jni_utils.h                                                          */
+/*  signal_info.h                                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OBJC_UTILS_H
-#define OBJC_UTILS_H
+#ifndef SIGNAL_INFO_H
+#define SIGNAL_INFO_H
 
-#include <core/engine.h>
-#include <core/variant.h>
-#include <objc/runtime.h>
+#import <Foundation/Foundation.h>
+#import <objc/runtime.h>
 
-id _variant_to_id(Variant::Type p_type, const Variant *p_arg, bool empty_obj = false);
+NS_ASSUME_NONNULL_BEGIN
 
-Variant _id_to_variant(id p_objc_type, Variant::Type p_type);
+@interface SignalInfo : NSObject
+- (id)initWithNameAndParamTypes:(NSString *)signalName paramTypes:(NSArray<Class> *)paramTypes;
+- (NSString *)getName;
+- (NSArray<Class> *)getParamTypes;
+- (NSArray<NSString *> *)getParamTypesNames;
+@end
 
-id _create_objc_object(Variant::Type p_type);
+NS_ASSUME_NONNULL_END
 
-Variant::Type get_objc_type(const String &p_type);
-
-Variant get_objc_class_type(const String &name, id obj);
-
-Variant::Type get_objc_to_variant(const String &p_type);
-
-#endif // OBJC_UTILS_H
+#endif

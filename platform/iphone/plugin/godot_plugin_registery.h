@@ -52,8 +52,8 @@ class GodotPluginRegistery : public Object {
 	Map<StringName, MethodMetaData> method_map;
 
 public:
-	void
-	register_plugin_classes();
+	void register_plugin_classes();
+	void cagdas();
 	GodotPluginRegistery();
 };
 

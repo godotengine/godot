@@ -101,7 +101,7 @@ id _variant_to_id(Variant::Type p_type, const Variant *p_arg, bool empty_obj) {
 			NSMutableData *byte_data = [NSMutableData dataWithLength:array.size()];
 			const uint8_t *src_data_ptr = r.ptr();
 			[byte_data appendBytes:src_data_ptr length:array.size()];
-			
+
 			v = byte_data;
 		} break;
 		default: {
@@ -256,6 +256,51 @@ Variant::Type get_objc_type(const String &p_type) {
 		{ "[float]", Variant::POOL_REAL_ARRAY },
 		{ "[double]", Variant::POOL_REAL_ARRAY },
 		{ "[NSString]", Variant::POOL_STRING_ARRAY },
+		{ "NSDictionary", Variant::DICTIONARY },
+		{ NULL, Variant::NIL }
+	};
+
+	int idx = 0;
+
+	while (_type_to_vtype[idx].name) {
+
+		if (p_type == _type_to_vtype[idx].name)
+			return _type_to_vtype[idx].type;
+
+		idx++;
+	}
+
+	return Variant::NIL;
+}
+
+Variant get_objc_class_type(const String &name, id p_objc_type) {
+	if (p_objc_type == nil) {
+		return Variant();
+	}
+
+	if (name == "NSString" || name == "__NSCFConstantString") {
+		return String([((NSString *)p_objc_type) UTF8String]);
+	};
+
+	return Variant();
+}
+
+Variant::Type get_objc_to_variant(const String &p_type) {
+
+	static struct {
+		const char *name;
+		Variant::Type type;
+	} _type_to_vtype[] = {
+		{ "void", Variant::NIL },
+		{ "GDBOOL", Variant::BOOL },
+		{ "GDInt", Variant::INT },
+		{ "GDFloat", Variant::REAL },
+		{ "GDDouble", Variant::REAL },
+		{ "NSString", Variant::STRING },
+		{ "GDIntArray", Variant::POOL_INT_ARRAY },
+		{ "GBByteArray", Variant::POOL_BYTE_ARRAY },
+		{ "GDFloatArray", Variant::POOL_REAL_ARRAY },
+		{ "GDStringArray", Variant::POOL_STRING_ARRAY },
 		{ "NSDictionary", Variant::DICTIONARY },
 		{ NULL, Variant::NIL }
 	};

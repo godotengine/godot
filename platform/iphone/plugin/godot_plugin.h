@@ -36,6 +36,9 @@
 @interface GodotPlugin : NSObject
 - (NSString *)getPluginName;
 - (NSArray<NSString *> *)getMethodName;
+- (NSSet *)getPluginSignals;
+- (void)setCaller:(id)obj;
+- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)args;
 @end
 
 #endif

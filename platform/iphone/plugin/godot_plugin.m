@@ -30,6 +30,10 @@
 
 #include "godot_plugin.h"
 
+@interface GodotPlugin ()
+@property(nonatomic, strong) id callerObj;
+@end
+
 @implementation GodotPlugin
 
 - (NSString *)getPluginName {
@@ -39,4 +43,18 @@
 - (NSArray<NSString *> *)getMethodName {
 	return @[];
 }
+
+- (NSSet *)getPluginSignals {
+	return [NSSet set];
+}
+
+- (void)setCaller:(id)obj {
+	self.callerObj = obj;
+}
+
+- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)args {
+	SEL emitSignals = NSSelectorFromString(@"emitSignals:withArgs:");
+	[self.callerObj performSelector:emitSignals withObject:signalName withObject:args];
+}
+
 @end

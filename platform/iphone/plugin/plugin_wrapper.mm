@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  jni_utils.h                                                          */
+/*  plugin_wrapper.mm                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OBJC_UTILS_H
-#define OBJC_UTILS_H
+#include "plugin_wrapper.h"
 
-#include <core/engine.h>
-#include <core/variant.h>
-#include <objc/runtime.h>
+#import <Foundation/Foundation.h>
 
-id _variant_to_id(Variant::Type p_type, const Variant *p_arg, bool empty_obj = false);
+@implementation PluginWrapper
+- (void)emitSignals:(NSString *)signalName withArgs:(NSArray<NSObject *> *)signalArgs {
+	Object *obj = Engine::get_singleton()->get_singleton_object(String([@"GodotiOSPlugin" UTF8String]));
+	iOSSingleton *singleton = (iOSSingleton *)obj;
 
-Variant _id_to_variant(id p_objc_type, Variant::Type p_type);
+	String signal_name = String([signalName UTF8String]);
 
-id _create_objc_object(Variant::Type p_type);
+	int count = [signalArgs count];
+	ERR_FAIL_COND_MSG(count > VARIANT_ARG_MAX, "Maximum argument count exceeded!");
 
-Variant::Type get_objc_type(const String &p_type);
+	// dispatch_async(dispatch_get_main_queue(), ^(void) {
+	Variant variant_params[VARIANT_ARG_MAX];
+	const Variant *args[VARIANT_ARG_MAX];
 
-Variant get_objc_class_type(const String &name, id obj);
+	for (int i = 0; i < count; i++) {
+		variant_params[i] = get_objc_class_type(String(class_getName([signalArgs[i] class])), signalArgs[i]);
+		args[i] = &variant_params[i];
+	};
 
-Variant::Type get_objc_to_variant(const String &p_type);
-
-#endif // OBJC_UTILS_H
+	singleton->emit_signal(signal_name, args, count);
+}
+@end
