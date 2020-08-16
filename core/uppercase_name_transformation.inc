@@ -89,6 +89,8 @@ String _to_uppercase_name(const String &name) {
 		return "BLANCHED_ALMOND";
 	} else if (name == "burlywood") {
 		return "BURLY_WOOD";
+	} else if (name == "deepskyblue") {
+		return "DEEP_SKY_BLUE";
 	} else if (name == "lavenderblush") {
 		return "LAVENDER_BLUSH";
 	} else if (name == "lemonchiffon") {
