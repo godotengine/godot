@@ -34,9 +34,10 @@
 #include "ios_singleton.h"
 
 void register_iphone_api() {
+#ifdef IPHONE_ENABLED
 	ClassDB::register_class<iOSSingleton>();
+#endif
 }
 
 void unregister_iphone_api() {
-
 }
