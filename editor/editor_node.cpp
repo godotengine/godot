@@ -2341,6 +2341,30 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case FILE_EXPORT_PROJECT: {
+			int unsaved_scene = _next_unsaved_scene(true); // Ignore new scenes.
+
+			if (p_confirmed && unsaved_scene != -1) {
+				Node *scene = editor_data.get_edited_scene_root(unsaved_scene);
+				if (scene) {
+					if (unsaved_scene != editor_data.get_edited_scene()) {
+						_save_scene(scene->get_filename(), unsaved_scene);
+					} else {
+						_save_scene_with_preview(scene->get_filename());
+					}
+				}
+
+				unsaved_scene = _next_unsaved_scene(true);
+			}
+
+			if (unsaved_scene != -1) {
+				String scene_filename = editor_data.get_edited_scene_root(unsaved_scene)->get_filename();
+
+				save_confirmation->get_ok()->set_text(TTR("Save & Export"));
+				save_confirmation->set_text(vformat(TTR("Save changes to '%s' before exporting?"), scene_filename != "" ? scene_filename : "unsaved scene"));
+				save_confirmation->popup_centered();
+				break;
+			}
+
 			project_export->popup_export();
 		} break;
 
@@ -2792,6 +2816,31 @@ void EditorNode::_discard_changes(const String &p_str) {
 				current_option = -1;
 				save_confirmation->hide();
 			}
+		} break;
+		case FILE_EXPORT_PROJECT: {
+			int unsaved_scene = _next_unsaved_scene(true);
+			Node *scene = editor_data.get_edited_scene_root(unsaved_scene);
+			if (!scene) {
+				break;
+			}
+			scene_tabs->set_current_tab(unsaved_scene);
+			String filename = scene->get_filename();
+
+			if (filename == String()) {
+				show_warning(TTR("Can't reload a scene that was never saved."));
+				break;
+			}
+			int cur_idx = editor_data.get_edited_scene();
+			_remove_edited_scene();
+			Error err = load_scene(filename);
+			if (err != OK) {
+				ERR_PRINT("Failed to load scene");
+			}
+			editor_data.move_edited_scene_to_index(cur_idx);
+			get_undo_redo()->clear_history(false);
+
+			save_confirmation->hide();
+			_menu_option_confirm(FILE_EXPORT_PROJECT, false);
 		} break;
 		case FILE_QUIT: {
 			_menu_option_confirm(RUN_STOP, true);
