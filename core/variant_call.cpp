@@ -37,6 +37,7 @@
 #include "core/io/compression.h"
 #include "core/object.h"
 #include "core/os/os.h"
+#include "core/uppercase_name_transformation.inc"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
