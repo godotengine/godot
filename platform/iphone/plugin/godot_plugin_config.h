@@ -71,6 +71,7 @@ The `plist` section are optional.
 struct PluginConfig {
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;
+	bool supports_targets = false;
 	// Unix timestamp of last change to this plugin.
 	uint64_t last_updated = 0;
 
@@ -158,18 +159,46 @@ static inline Vector<String> resolve_system_dependencies(Vector<String> p_paths)
 	return paths;
 }
 
-static inline bool is_plugin_config_valid(PluginConfig plugin_config) {
+static inline bool validate_plugin(PluginConfig &plugin_config) {
 	bool valid_name = !plugin_config.name.empty();
-	bool valid_binary = !plugin_config.binary.empty() && FileAccess::exists(plugin_config.binary);
+	bool valid_binary_name = !plugin_config.binary.empty();
 	bool valid_initialize = !plugin_config.initialization_method.empty();
 	bool valid_deinitialize = !plugin_config.deinitialization_method.empty();
 
-	return valid_name && valid_binary && valid_initialize && valid_deinitialize;
+	bool fields_value = valid_name && valid_binary_name && valid_initialize && valid_deinitialize;
+
+	if (fields_value && FileAccess::exists(plugin_config.binary)) {
+		plugin_config.valid_config = true;
+		plugin_config.supports_targets = false;
+	} else if (fields_value) {
+		String file_path = plugin_config.binary.get_base_dir();
+		String file_name = plugin_config.binary.get_basename().get_file();
+		String release_file_name = file_path.plus_file(file_name + ".release.a");
+		String debug_file_name = file_path.plus_file(file_name + ".debug.a");
+
+		if (FileAccess::exists(release_file_name) && FileAccess::exists(debug_file_name)) {
+			plugin_config.valid_config = true;
+			plugin_config.supports_targets = true;
+		}
+	}
+
+	return plugin_config.valid_config;
 }
 
 static inline uint64_t get_plugin_modification_time(const PluginConfig &plugin_config, const String &config_path) {
 	uint64_t last_updated = FileAccess::get_modified_time(config_path);
-	last_updated = MAX(last_updated, FileAccess::get_modified_time(plugin_config.binary));
+
+	if (!plugin_config.supports_targets) {
+		last_updated = MAX(last_updated, FileAccess::get_modified_time(plugin_config.binary));
+	} else {
+		String file_path = plugin_config.binary.get_base_dir();
+		String file_name = plugin_config.binary.get_basename().get_file();
+		String release_file_name = file_path.plus_file(file_name + ".release.a");
+		String debug_file_name = file_path.plus_file(file_name + ".debug.a");
+
+		last_updated = MAX(last_updated, FileAccess::get_modified_time(release_file_name));
+		last_updated = MAX(last_updated, FileAccess::get_modified_time(debug_file_name));
+	}
 
 	return last_updated;
 }
@@ -226,9 +255,7 @@ static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const
 		}
 	}
 
-	plugin_config.valid_config = is_plugin_config_valid(plugin_config);
-
-	if (plugin_config.valid_config) {
+	if (validate_plugin(plugin_config)) {
 		plugin_config.last_updated = get_plugin_modification_time(plugin_config, path);
 	}
 
