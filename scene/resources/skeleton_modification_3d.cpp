@@ -2042,14 +2042,18 @@ bool SkeletonModification3DTwoBoneIK::_set(const StringName &p_path, const Varia
 		set_joint_one_length(p_value);
 	} else if (path == "joint_two_length") {
 		set_joint_two_length(p_value);
-	} else if (path == "joint_one_bone_name") {
+	} else if (path == "joint_one/bone_name") {
 		set_joint_one_bone_name(p_value);
-	} else if (path == "joint_one_bone_idx") {
+	} else if (path == "joint_one/bone_idx") {
 		set_joint_one_bone_idx(p_value);
-	} else if (path == "joint_two_bone_name") {
+	} else if (path == "joint_one/roll") {
+		set_joint_one_roll(Math::deg2rad(float(p_value)));
+	} else if (path == "joint_two/bone_name") {
 		set_joint_two_bone_name(p_value);
-	} else if (path == "joint_two_bone_idx") {
+	} else if (path == "joint_two/bone_idx") {
 		set_joint_two_bone_idx(p_value);
+	} else if (path == "joint_two/roll") {
+		set_joint_two_roll(Math::deg2rad(float(p_value)));
 	}
 
 	return true;
@@ -2072,14 +2076,18 @@ bool SkeletonModification3DTwoBoneIK::_get(const StringName &p_path, Variant &r_
 		r_ret = get_joint_one_length();
 	} else if (path == "joint_two_length") {
 		r_ret = get_joint_two_length();
-	} else if (path == "joint_one_bone_name") {
+	} else if (path == "joint_one/bone_name") {
 		r_ret = get_joint_one_bone_name();
-	} else if (path == "joint_one_bone_idx") {
+	} else if (path == "joint_one/bone_idx") {
 		r_ret = get_joint_one_bone_idx();
-	} else if (path == "joint_two_bone_name") {
+	} else if (path == "joint_one/roll") {
+		r_ret = Math::rad2deg(get_joint_one_roll());
+	} else if (path == "joint_two/bone_name") {
 		r_ret = get_joint_two_bone_name();
-	} else if (path == "joint_two_bone_idx") {
+	} else if (path == "joint_two/bone_idx") {
 		r_ret = get_joint_two_bone_idx();
+	} else if (path == "joint_two/roll") {
+		r_ret = Math::rad2deg(get_joint_two_roll());
 	}
 
 	return true;
@@ -2102,10 +2110,13 @@ void SkeletonModification3DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_l
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "pole_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D", PROPERTY_USAGE_DEFAULT));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::STRING, "joint_one_bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::INT, "joint_one_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::STRING, "joint_two_bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::INT, "joint_two_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::STRING, "joint_one/bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::INT, "joint_one/bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_one/roll", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
+
+	p_list->push_back(PropertyInfo(Variant::STRING, "joint_two/bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::INT, "joint_two/bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two/roll", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
 }
 
 void SkeletonModification3DTwoBoneIK::execute(float delta) {
@@ -2157,12 +2168,16 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		bone_one_trans = stack->skeleton->local_pose_to_global_pose(joint_one_bone_idx, stack->skeleton->get_bone_local_pose_override(joint_one_bone_idx));
 		bone_one_trans = bone_one_trans.looking_at(pole_trans.origin, Vector3(0, 1, 0));
 		bone_one_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(joint_one_bone_idx, bone_one_trans.basis);
+		stack->skeleton->update_bone_rest_forward_vector(joint_one_bone_idx);
+		bone_one_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_one_bone_idx), joint_one_roll);
 		stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, stack->skeleton->global_pose_to_local_pose(joint_one_bone_idx, bone_one_trans), stack->strength, true);
 		stack->skeleton->force_update_bone_children_transforms(joint_one_bone_idx);
 
 		bone_two_trans = stack->skeleton->local_pose_to_global_pose(joint_two_bone_idx, stack->skeleton->get_bone_local_pose_override(joint_two_bone_idx));
 		bone_two_trans = bone_two_trans.looking_at(target_trans.origin, Vector3(0, 1, 0));
 		bone_two_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(joint_two_bone_idx, bone_two_trans.basis);
+		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
+		bone_two_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx), joint_two_roll);
 		stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, stack->skeleton->global_pose_to_local_pose(joint_two_bone_idx, bone_two_trans), stack->strength, true);
 		stack->skeleton->force_update_bone_children_transforms(joint_two_bone_idx);
 	} else {
@@ -2216,6 +2231,9 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 	Quat rot_2 = Quat(bone_one_quat.inverse().xform(axis_1).normalized(), ac_at_0);
 	bone_one_trans.basis.set_quat(bone_one_quat * (rot_0 * rot_2));
 
+	stack->skeleton->update_bone_rest_forward_vector(joint_one_bone_idx);
+	bone_one_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_one_bone_idx), joint_one_roll);
+
 	// Apply the rotation to the first joint
 	bone_one_trans = stack->skeleton->global_pose_to_local_pose(joint_one_bone_idx, bone_one_trans);
 	bone_one_trans.origin = Vector3(0, 0, 0);
@@ -2229,6 +2247,9 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx);
 		bone_two_trans.basis.rotate_to_align(forward_vector, bone_two_trans.origin.direction_to(target_trans.origin));
 
+		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
+		bone_two_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx), joint_two_roll);
+
 		bone_two_trans = stack->skeleton->global_pose_to_local_pose(joint_two_bone_idx, bone_two_trans);
 		stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, bone_two_trans, stack->strength, true);
 		stack->skeleton->force_update_bone_children_transforms(joint_two_bone_idx);
@@ -2240,6 +2261,9 @@ void SkeletonModification3DTwoBoneIK::execute(float delta) {
 		Quat bone_two_quat = bone_two_trans.basis.get_rotation_quat();
 		Quat rot_1 = Quat(bone_two_quat.inverse().xform(axis_0).normalized(), (ba_bc_1 - ba_bc_0));
 		bone_two_trans.basis.set_quat(bone_two_quat * rot_1);
+
+		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
+		bone_two_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx), joint_two_roll);
 
 		bone_two_trans = stack->skeleton->global_pose_to_local_pose(joint_two_bone_idx, bone_two_trans);
 		bone_two_trans.origin = Vector3(0, 0, 0);
@@ -2478,6 +2502,22 @@ float SkeletonModification3DTwoBoneIK::get_joint_two_length() const {
 	return joint_two_length;
 }
 
+void SkeletonModification3DTwoBoneIK::set_joint_one_roll(float p_roll) {
+	joint_one_roll = p_roll;
+}
+
+float SkeletonModification3DTwoBoneIK::get_joint_one_roll() const {
+	return joint_one_roll;
+}
+
+void SkeletonModification3DTwoBoneIK::set_joint_two_roll(float p_roll) {
+	joint_two_roll = p_roll;
+}
+
+float SkeletonModification3DTwoBoneIK::get_joint_two_roll() const {
+	return joint_two_roll;
+}
+
 void SkeletonModification3DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification3DTwoBoneIK::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification3DTwoBoneIK::get_target_node);
@@ -2508,6 +2548,11 @@ void SkeletonModification3DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_two_bone_idx"), &SkeletonModification3DTwoBoneIK::get_joint_two_bone_idx);
 	ClassDB::bind_method(D_METHOD("set_joint_two_length", "bone_length"), &SkeletonModification3DTwoBoneIK::set_joint_two_length);
 	ClassDB::bind_method(D_METHOD("get_joint_two_length"), &SkeletonModification3DTwoBoneIK::get_joint_two_length);
+
+	ClassDB::bind_method(D_METHOD("set_joint_one_roll", "roll"), &SkeletonModification3DTwoBoneIK::set_joint_one_roll);
+	ClassDB::bind_method(D_METHOD("get_joint_one_roll"), &SkeletonModification3DTwoBoneIK::get_joint_one_roll);
+	ClassDB::bind_method(D_METHOD("set_joint_two_roll", "roll"), &SkeletonModification3DTwoBoneIK::set_joint_two_roll);
+	ClassDB::bind_method(D_METHOD("get_joint_two_roll"), &SkeletonModification3DTwoBoneIK::get_joint_two_roll);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_target_node", "get_target_node");
 	ADD_GROUP("", "");

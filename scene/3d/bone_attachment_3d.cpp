@@ -108,9 +108,27 @@ void BoneAttachment3D::_update_external_skeleton_cache() {
 
 		// Make sure it's a skeleton3D
 		Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
-		ERR_FAIL_COND_MSG(!sk, "Cannot update external skeleton cache: Nodepath does not point to a Skeleton3D node!");
+		ERR_FAIL_COND_MSG(!sk, "Cannot update external skeleton cache: Skeleton3D Nodepath does not point to a Skeleton3D node!");
 
 		external_skeleton_node_cache = node->get_instance_id();
+	} else {
+		if (external_skeleton_node.is_empty()) {
+			BoneAttachment3D *parent_attachment = Object::cast_to<BoneAttachment3D>(get_parent());
+			if (parent_attachment) {
+				parent_attachment->_update_external_skeleton_cache();
+				if (parent_attachment->has_node(parent_attachment->external_skeleton_node)) {
+					Node *node = parent_attachment->get_node(parent_attachment->external_skeleton_node);
+					ERR_FAIL_COND_MSG(!node, "Cannot update external skeleton cache: Parent's Skeleton3D node cannot be found!");
+
+					// Make sure it's a skeleton3D
+					Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
+					ERR_FAIL_COND_MSG(!sk, "Cannot update external skeleton cache: Parent Skeleton3D Nodepath does not point to a Skeleton3D node!");
+
+					external_skeleton_node_cache = node->get_instance_id();
+					external_skeleton_node = get_path_to(node);
+				}
+			}
+		}
 	}
 }
 
@@ -272,6 +290,14 @@ int BoneAttachment3D::get_override_mode() const {
 
 void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
 	use_external_skeleton = p_use_external;
+
+	if (use_external_skeleton) {
+		_check_unbind();
+		_update_external_skeleton_cache();
+		_check_bind();
+		_transform_changed();
+	}
+
 	_change_notify();
 }
 
