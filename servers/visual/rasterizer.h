@@ -971,6 +971,7 @@ public:
 						}
 
 						if (skeleton != RID()) {
+
 							// calculate bone AABBs
 							int bone_count = RasterizerStorage::base_singleton->skeleton_get_bone_count(skeleton);
 
@@ -981,39 +982,41 @@ public:
 							for (int j = 0; j < bone_count; j++) {
 								bptr[j].size = Vector2(-1, -1); //negative means unused
 							}
+							if (l && polygon->bones.size() == l * 4 && polygon->weights.size() == polygon->bones.size()) {
 
-							for (int j = 0; j < l; j++) {
-								Point2 p = pp[j];
-								for (int k = 0; k < 4; k++) {
-									int idx = polygon->bones[j * 4 + k];
-									float w = polygon->weights[j * 4 + k];
-									if (w == 0)
-										continue;
+								for (int j = 0; j < l; j++) {
+									Point2 p = pp[j];
+									for (int k = 0; k < 4; k++) {
+										int idx = polygon->bones[j * 4 + k];
+										float w = polygon->weights[j * 4 + k];
+										if (w == 0)
+											continue;
 
-									if (bptr[idx].size.x < 0) {
-										//first
-										bptr[idx] = Rect2(p, Vector2(0.00001, 0.00001));
-									} else {
-										bptr[idx].expand_to(p);
+										if (bptr[idx].size.x < 0) {
+											//first
+											bptr[idx] = Rect2(p, Vector2(0.00001, 0.00001));
+										} else {
+											bptr[idx].expand_to(p);
+										}
 									}
 								}
-							}
 
-							Rect2 aabb;
-							bool first_bone = true;
-							for (int j = 0; j < bone_count; j++) {
-								Transform2D mtx = RasterizerStorage::base_singleton->skeleton_bone_get_transform_2d(skeleton, j);
-								Rect2 baabb = mtx.xform(bone_aabbs[j]);
+								Rect2 aabb;
+								bool first_bone = true;
+								for (int j = 0; j < bone_count; j++) {
+									Transform2D mtx = RasterizerStorage::base_singleton->skeleton_bone_get_transform_2d(skeleton, j);
+									Rect2 baabb = mtx.xform(bone_aabbs[j]);
 
-								if (first_bone) {
-									aabb = baabb;
-									first_bone = false;
-								} else {
-									aabb = aabb.merge(baabb);
+									if (first_bone) {
+										aabb = baabb;
+										first_bone = false;
+									} else {
+										aabb = aabb.merge(baabb);
+									}
 								}
-							}
 
-							r = r.merge(aabb);
+								r = r.merge(aabb);
+							}
 						}
 
 					} break;
