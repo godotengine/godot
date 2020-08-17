@@ -156,6 +156,18 @@ const char *GDScriptTokenizer::Token::get_name() const {
 	return token_names[type];
 }
 
+bool GDScriptTokenizer::Token::is_identifier() const {
+	// Note: Most keywords should not be recognized as identifiers.
+	// These are only exceptions for stuff that already is on the engine's API.
+	switch (type) {
+		case IDENTIFIER:
+		case MATCH: // Used in String.match().
+			return true;
+		default:
+			return false;
+	}
+}
+
 String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 	ERR_FAIL_INDEX_V_MSG(p_token_type, Token::TK_MAX, "<error>", "Using token type out of the enum.");
 	return token_names[p_token_type];
