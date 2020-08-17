@@ -164,7 +164,15 @@ bool PhysicsDirectSpaceState2DSW::intersect_ray(const Vector2 &p_from, const Vec
 
 		Vector2 shape_point, shape_normal;
 
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
+		if (shape->contains_point(local_from)) {
+			min_d = 0;
+			res_point = local_from;
+			res_normal = Vector2();
+			res_shape = shape_idx;
+			res_obj = col_obj;
+			collided = true;
+			break;
+		} else if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
 			Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 

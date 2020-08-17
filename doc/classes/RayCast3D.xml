@@ -4,7 +4,7 @@
 		Query the closest object intersecting a ray.
 	</brief_description>
 	<description>
-		A RayCast represents a line from its origin to its destination position, [member target_position]. It is used to query the 3D space in order to find the closest object along the path of the ray.
+		A RayCast represents a line from its origin to its destination position, [member target_position]. It is used to query the 3D space in order to find the closest object along the path of the ray. In Godot physics, if the ray originates inside one or more objects, the first detected object will be selected. In Bullet physics, these objects are ignored.
 		RayCast3D can ignore some objects by adding them to the exception list via [method add_exception] or by setting proper filtering with collision layers and masks.
 		RayCast3D can be configured to report collisions with [Area3D]s ([member collide_with_areas]) and/or [PhysicsBody3D]s ([member collide_with_bodies]).
 		Only enabled raycasts will be able to query the space and report collisions.
@@ -54,6 +54,7 @@
 			</return>
 			<description>
 				Returns the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
+				In Godot physics, if the ray originates inside one or more objects, the first detected object will be returned. In Bullet physics, these objects are ignored.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
@@ -78,6 +79,7 @@
 			</return>
 			<description>
 				Returns the normal of the intersecting object's shape at the collision point.
+				In Godot physics, if the ray originates inside one or more objects, a zero length [Vector3] will be returned. In Bullet physics, these objects are ignored.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">
@@ -85,6 +87,7 @@
 			</return>
 			<description>
 				Returns the collision point at which the ray intersects the closest object.
+				In Godot physics, if the ray originates inside one or more objects, the ray origin will be returned. In Bullet physics, these objects are ignored.
 				[b]Note:[/b] This point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
@@ -93,6 +96,7 @@
 			</return>
 			<description>
 				Returns whether any object is intersecting with the ray's vector (considering the vector length).
+				[b]Note:[/b] In Godot physics, if the ray originates inside one or more objects, [method is_colliding] will return [code]true[/code]. In Bullet physics, these objects are ignored.
 			</description>
 		</method>
 		<method name="remove_exception">

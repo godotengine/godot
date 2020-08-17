@@ -4,7 +4,7 @@
 		Query the closest object intersecting a ray.
 	</brief_description>
 	<description>
-		A RayCast represents a line from its origin to its destination position, [member target_position]. It is used to query the 2D space in order to find the closest object along the path of the ray.
+		A RayCast represents a line from its origin to its destination position, [member target_position]. It is used to query the 2D space in order to find the closest object along the path of the ray. If the ray originates inside one or more objects, the first detected object will be selected.
 		RayCast2D can ignore some objects by adding them to the exception list via [method add_exception], by setting proper filtering with collision layers, or by filtering object types with type masks.
 		RayCast2D can be configured to report collisions with [Area2D]s ([member collide_with_areas]) and/or [PhysicsBody2D]s ([member collide_with_bodies]).
 		Only enabled raycasts will be able to query the space and report collisions.
@@ -74,7 +74,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the normal of the intersecting object's shape at the collision point.
+				Returns the normal of the intersecting object's shape at the collision point. If the ray originates inside the object, a zero length [Vector2] will be returned.
 			</description>
 		</method>
 		<method name="get_collision_point" qualifiers="const">

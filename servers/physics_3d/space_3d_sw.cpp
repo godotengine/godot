@@ -141,7 +141,15 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 
 		Vector3 shape_point, shape_normal;
 
-		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
+		if (shape->get_closest_point_to(local_from) == local_from) {
+			min_d = 0;
+			res_point = local_from;
+			res_normal = Vector3();
+			res_shape = shape_idx;
+			res_obj = col_obj;
+			collided = true;
+			break;
+		} else if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
 			Transform xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
