@@ -99,6 +99,7 @@ protected:
 	uint32_t mesh_surface_offsets[VS::ARRAY_MAX];
 	PoolByteArray mesh_buffer;
 	uint32_t mesh_stride;
+	uint32_t mesh_surface_format;
 
 	void _queue_update();
 
