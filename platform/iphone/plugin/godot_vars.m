@@ -64,3 +64,168 @@
 	return [self.value intValue];
 }
 @end
+
+@interface GDFloat ()
+@property(nonatomic, strong) NSNumber *value;
+@end
+
+@implementation GDFloat
+- (id)initWithFloat:(NSNumber *)floatValue {
+	self = [super init];
+	if (self) {
+		self.value = floatValue;
+	}
+	return self;
+}
+
+- (float)getValue {
+	return [self.value floatValue];
+}
+@end
+
+@interface GDDouble ()
+@property(nonatomic, strong) NSNumber *value;
+@end
+
+@implementation GDDouble
+- (id)initWithDouble:(NSNumber *)doubleValue {
+	self = [super init];
+	if (self) {
+		self.value = doubleValue;
+	}
+	return self;
+}
+
+- (double)getValue {
+	return [self.value doubleValue];
+}
+@end
+
+@interface GDString ()
+@property(nonatomic, strong) NSString *value;
+@end
+
+@implementation GDString
+- (id)initWithString:(NSString *)stringValue {
+	self = [super init];
+	if (self) {
+		self.value = stringValue;
+	}
+	return self;
+}
+
+- (NSString *)getValue {
+	return self.value;
+}
+@end
+
+@interface GDIntegerArray ()
+@property(nonatomic, strong) NSArray<NSNumber *> *value;
+@end
+
+@implementation GDIntegerArray
+- (id)initWithIntegerArray:(NSArray<NSNumber *> *)intArrayValue {
+	self = [super init];
+	if (self) {
+		self.value = intArrayValue;
+	}
+	return self;
+}
+
+- (NSArray<NSNumber *> *)getValue {
+	return self.value;
+}
+@end
+
+@interface GDFloatArray ()
+@property(nonatomic, strong) NSArray<NSNumber *> *value;
+@end
+
+@implementation GDFloatArray
+- (id)initWithFloatArray:(NSArray<NSNumber *> *)floatArrayValue {
+	self = [super init];
+	if (self) {
+		self.value = floatArrayValue;
+	}
+	return self;
+}
+
+- (NSArray<NSNumber *> *)getValue {
+	return self.value;
+}
+@end
+
+@interface GDDoubleArray ()
+@property(nonatomic, strong) NSArray<NSNumber *> *value;
+@end
+
+@implementation GDDoubleArray
+- (id)initWithDoubleArray:(NSArray<NSNumber *> *)doubleArrayValue {
+	self = [super init];
+	if (self) {
+		self.value = doubleArrayValue;
+	}
+	return self;
+}
+
+- (NSArray<NSNumber *> *)getValue {
+	return self.value;
+}
+
+@end
+
+@interface GDByteArray ()
+@property(nonatomic, strong) NSData *value;
+@end
+
+@implementation GDByteArray
+
+- (id)initWithByteArray:(NSData *)byteArrayValue {
+	self = [super init];
+	if (self) {
+		self.value = byteArrayValue;
+	}
+	return self;
+}
+
+- (NSData *)getValue {
+	return self.value;
+}
+@end
+
+@interface GDStringArray ()
+@property(nonatomic, strong) NSArray<NSString *> *value;
+@end
+
+@implementation GDStringArray
+- (id)initWithStringArray:(NSArray<NSString *> *)stringArrayValue {
+	self = [super init];
+	if (self) {
+		self.value = stringArrayValue;
+	}
+	return self;
+}
+
+- (NSArray<NSString *> *)getValue {
+	return self.value;
+}
+@end
+
+@interface GDDictionary ()
+@property(nonatomic, strong) NSDictionary *value;
+@end
+
+@implementation GDDictionary
+
+- (id)initWithDictionary:(NSDictionary *)dictionaryValue {
+	self = [super init];
+	if (self) {
+		self.value = dictionaryValue;
+	}
+	return self;
+}
+
+- (NSDictionary *)getValue {
+	return self.value;
+}
+@end

@@ -45,6 +45,50 @@ NS_ASSUME_NONNULL_BEGIN
 - (int)getValue;
 @end
 
+@interface GDFloat : NSObject
+- (id)initWithFloat:(NSNumber *)floatValue;
+- (float)getValue;
+@end
+
+@interface GDDouble : NSObject
+- (id)initWithDouble:(NSNumber *)doubleValue;
+- (double)getValue;
+@end
+
+@interface GDString : NSObject
+- (id)initWithString:(NSString *)stringValue;
+- (NSString *)getValue;
+@end
+
+@interface GDIntegerArray : NSObject
+- (id)initWithIntegerArray:(NSArray<NSNumber *> *)intArrayValue;
+- (NSArray<NSNumber *> *)getValue;
+@end
+
+@interface GDFloatArray : NSObject
+- (id)initWithFloatArray:(NSArray<NSNumber *> *)floatArrayValue;
+- (NSArray<NSNumber *> *)getValue;
+@end
+
+@interface GDDoubleArray : NSObject
+- (id)initWithDoubleArray:(NSArray<NSNumber *> *)doubleArrayValue;
+- (NSArray<NSNumber *> *)getValue;
+@end
+
+@interface GDByteArray : NSObject
+- (id)initWithByteArray:(NSData *)byteArrayValue;
+- (NSData *)getValue;
+@end
+
+@interface GDStringArray : NSObject
+- (id)initWithStringArray:(NSArray<NSString *> *)stringArrayValue;
+- (NSArray<NSString *> *)getValue;
+@end
+
+@interface GDDictionary : NSObject
+- (id)initWithDictionary:(NSDictionary *)dictionaryValue;
+- (NSDictionary *)getValue;
+@end
 NS_ASSUME_NONNULL_END
 
 #endif

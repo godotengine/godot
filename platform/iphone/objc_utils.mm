@@ -279,10 +279,6 @@ Variant get_objc_class_type(const String &p_name, id p_objc_type) {
 		return Variant();
 	}
 
-	if (p_name == "NSString" || p_name == "__NSCFConstantString") {
-		return String([((NSString *)p_objc_type) UTF8String]);
-	};
-
 	if (p_name == "GDBool") {
 		GDBool *gbObj = (GDBool *)p_objc_type;
 		return [gbObj getValue] ? true : false;
@@ -291,6 +287,94 @@ Variant get_objc_class_type(const String &p_name, id p_objc_type) {
 	if (p_name == "GDInteger") {
 		GDInteger *gbObj = (GDInteger *)p_objc_type;
 		return [gbObj getValue];
+	}
+
+	if (p_name == "GDFloat") {
+		GDFloat *gbObj = (GDFloat *)p_objc_type;
+		return [gbObj getValue];
+	}
+
+	if (p_name == "GDDouble") {
+		GDDouble *gbObj = (GDDouble *)p_objc_type;
+		return [gbObj getValue];
+	}
+
+	if (p_name == "GDString") {
+		GDString *gbObj = (GDString *)p_objc_type;
+		return String([[gbObj getValue] UTF8String]);
+	}
+
+	if (p_name == "NSString" || p_name == "__NSCFConstantString") {
+		return String([((NSString *)p_objc_type) UTF8String]);
+	};
+
+	if (p_name == "GDIntegerArray") {
+		GDIntegerArray *gbObj = (GDIntegerArray *)p_objc_type;
+		PoolVector<int> int_array;
+		for (NSNumber *element in [gbObj getValue]) {
+			int_array.push_back([element intValue]);
+		}
+		return int_array;
+	}
+
+	if (p_name == "GDFloatArray") {
+		GDFloatArray *gbObj = (GDFloatArray *)p_objc_type;
+		PoolRealArray double_array;
+		double_array.resize([[gbObj getValue] count]);
+
+		PoolRealArray::Write w = double_array.write();
+
+		for (int i = 0; i < [[gbObj getValue] count]; i++) {
+			w.ptr()[i] = [[gbObj getValue][i] floatValue];
+		}
+
+		return double_array;
+	}
+
+	if (p_name == "GDDoubleArray") {
+		GDDoubleArray *gbObj = (GDDoubleArray *)p_objc_type;
+		PoolRealArray double_array;
+		double_array.resize([[gbObj getValue] count]);
+
+		PoolRealArray::Write w = double_array.write();
+
+		for (int i = 0; i < [[gbObj getValue] count]; i++) {
+			w.ptr()[i] = [[gbObj getValue][i] doubleValue];
+		}
+
+		return double_array;
+	}
+
+	if (p_name == "GDByteArray") {
+		GDByteArray *gbObj = (GDByteArray *)p_objc_type;
+		NSData *byte_data = [gbObj getValue];
+		PoolVector<uint8_t> sarr;
+		sarr.resize([[gbObj getValue] length]);
+
+		PoolVector<uint8_t>::Write w = sarr.write();
+		[byte_data getBytes:w.ptr() length:[[gbObj getValue] length]];
+
+		return sarr;
+	}
+
+	if (p_name == "GDStringArray") {
+		GDStringArray *gbObj = (GDStringArray *)p_objc_type;
+		PoolVector<String> sarray;
+		for (NSString *element in ((NSArray *)[gbObj getValue])) {
+			sarray.push_back(String([element UTF8String]));
+		}
+		return sarray;
+	}
+
+	if (p_name == "GDDictionary") {
+		GDDictionary *gbObj = (GDDictionary *)p_objc_type;
+		Dictionary ret;
+		NSArray *keys = [[gbObj getValue] allKeys];
+		for (int i = 0; i < [keys count]; i++) {
+			Variant v = get_objc_class_type(String(class_getName([[[gbObj getValue] objectForKey:keys[i]] class])), [[gbObj getValue] objectForKey:keys[i]]);
+			ret[String([keys[i] UTF8String])] = v;
+		}
+		return ret;
 	}
 
 	return Variant();
