@@ -109,12 +109,12 @@
 			<argument index="5" name="collide_with_areas" type="bool" default="false">
 			</argument>
 			<description>
-				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
+				Intersects a ray in a given space. If the ray originates inside one or more objects, the first detected object will be selected. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
-				[code]normal[/code]: The object's surface normal at the intersection point.
-				[code]position[/code]: The intersection point.
+				[code]normal[/code]: The object's surface normal at the intersection point. If the ray originates inside the object, this will be a zero length [Vector2].
+				[code]position[/code]: The intersection point. If the ray originates inside the object, this will be the ray's origin.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
