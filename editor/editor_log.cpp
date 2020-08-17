@@ -122,12 +122,7 @@ void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
 		LogMessage &previous = messages.write[messages.size() - 1];
 		previous.count++;
 
-		if (collapse) {
-			// Remove last line if collapsing, as it will be replace by the next added line with an updated count.
-			log->remove_line(log->get_line_count() - 1);
-		}
-
-		_add_log_line(previous);
+		_add_log_line(previous, collapse);
 	} else {
 		// Different message to the previous one received.
 		LogMessage message(p_msg, p_type);
