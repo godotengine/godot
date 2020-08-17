@@ -492,6 +492,9 @@ private:
 	float joint_one_length = -1;
 	float joint_two_length = -1;
 
+	float joint_one_roll = 0;
+	float joint_two_roll = 0;
+
 	void update_cache_target();
 	void update_cache_tip();
 	void update_cache_pole();
@@ -536,6 +539,11 @@ public:
 	int get_joint_two_bone_idx() const;
 	void set_joint_two_length(float p_length);
 	float get_joint_two_length() const;
+
+	void set_joint_one_roll(float p_roll);
+	float get_joint_one_roll() const;
+	void set_joint_two_roll(float p_roll);
+	float get_joint_two_roll() const;
 
 	SkeletonModification3DTwoBoneIK();
 	~SkeletonModification3DTwoBoneIK();
