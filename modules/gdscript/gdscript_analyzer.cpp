@@ -2883,7 +2883,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	}
 
 	// Avoid error in formatting operator (%) where it doesn't find a placeholder.
-	if (a_type == Variant::STRING) {
+	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
 		a = String("%s");
 	}
 
