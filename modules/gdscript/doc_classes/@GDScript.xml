@@ -629,7 +629,6 @@
 				# Load a scene called main located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
-				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
 			</description>
 		</method>
 		<method name="log">
