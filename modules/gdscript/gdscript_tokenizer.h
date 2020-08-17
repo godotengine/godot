@@ -168,9 +168,8 @@ public:
 		String source;
 
 		const char *get_name() const;
-		// TODO: Allow some keywords as identifiers?
-		bool is_identifier() const { return type == IDENTIFIER; }
-		StringName get_identifier() const { return literal; }
+		bool is_identifier() const;
+		StringName get_identifier() const { return source; }
 
 		Token(Type p_type) {
 			type = p_type;
