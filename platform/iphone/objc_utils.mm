@@ -285,7 +285,7 @@ Variant get_objc_class_type(const String &p_name, id p_objc_type) {
 
 	if (p_name == "GDBool") {
 		GDBool *gbObj = (GDBool *)p_objc_type;
-		return [gbObj getValue] ? true : else;
+		return [gbObj getValue] ? true : false;
 	};
 
 	if (p_name == "GDInteger") {
