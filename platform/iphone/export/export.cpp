@@ -111,8 +111,9 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 	void _add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets);
+	Error _copy_asset(const String &p_out_dir, const String &p_asset, const String *p_custom_file_name, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
-	Error _export_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets);
+	Error _export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
 		String pname = p_package;
@@ -1121,11 +1122,164 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	}
 }
 
-Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
+Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String &p_asset, const String *p_custom_file_name, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	DirAccess *filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
+
 	String binary_name = p_out_dir.get_file().get_basename();
 
-	ERR_FAIL_COND_V_MSG(!filesystem_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_out_dir + "'.");
+	DirAccess *da = DirAccess::create_for_path(p_asset);
+	if (!da) {
+		memdelete(filesystem_da);
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't create directory: " + p_asset + ".");
+	}
+	bool file_exists = da->file_exists(p_asset);
+	bool dir_exists = da->dir_exists(p_asset);
+	if (!file_exists && !dir_exists) {
+		memdelete(da);
+		memdelete(filesystem_da);
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	String base_dir = p_asset.get_base_dir().replace("res://", "");
+	String destination_dir;
+	String destination;
+	String asset_path;
+
+	bool create_framework = false;
+
+	if (p_is_framework && p_asset.ends_with(".dylib")) {
+		// For iOS we need to turn .dylib into .framework
+		// to be able to send application to AppStore
+		asset_path = String("dylibs").plus_file(base_dir);
+
+		String file_name;
+
+		if (!p_custom_file_name) {
+			file_name = p_asset.get_basename().get_file();
+		} else {
+			file_name = *p_custom_file_name;
+		}
+
+		String framework_name = file_name + ".framework";
+
+		asset_path = asset_path.plus_file(framework_name);
+		destination_dir = p_out_dir.plus_file(asset_path);
+		destination = destination_dir.plus_file(file_name);
+		create_framework = true;
+	} else if (p_is_framework && (p_asset.ends_with(".framework") || p_asset.ends_with(".xcframework"))) {
+		asset_path = String("dylibs").plus_file(base_dir);
+
+		String file_name;
+
+		if (!p_custom_file_name) {
+			file_name = p_asset.get_file();
+		} else {
+			file_name = *p_custom_file_name;
+		}
+
+		asset_path = asset_path.plus_file(file_name);
+		destination_dir = p_out_dir.plus_file(asset_path);
+		destination = destination_dir;
+	} else {
+		asset_path = base_dir;
+
+		String file_name;
+
+		if (!p_custom_file_name) {
+			file_name = p_asset.get_file();
+		} else {
+			file_name = *p_custom_file_name;
+		}
+
+		destination_dir = p_out_dir.plus_file(asset_path);
+		asset_path = asset_path.plus_file(file_name);
+		destination = p_out_dir.plus_file(asset_path);
+	}
+
+	if (!filesystem_da->dir_exists(destination_dir)) {
+		Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
+		if (make_dir_err) {
+			memdelete(da);
+			memdelete(filesystem_da);
+			return make_dir_err;
+		}
+	}
+
+	Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
+	memdelete(da);
+	if (err) {
+		memdelete(filesystem_da);
+		return err;
+	}
+	IOSExportAsset exported_asset = { binary_name.plus_file(asset_path), p_is_framework, p_should_embed };
+	r_exported_assets.push_back(exported_asset);
+
+	if (create_framework) {
+		String file_name;
+
+		if (!p_custom_file_name) {
+			file_name = p_asset.get_basename().get_file();
+		} else {
+			file_name = *p_custom_file_name;
+		}
+
+		String framework_name = file_name + ".framework";
+
+		// Performing `install_name_tool -id @rpath/{name}.framework/{name} ./{name}` on dylib
+		{
+			List<String> install_name_args;
+			install_name_args.push_back("-id");
+			install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
+			install_name_args.push_back(destination);
+
+			OS::get_singleton()->execute("install_name_tool", install_name_args, true);
+		}
+
+		// Creating Info.plist
+		{
+			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+									   "<plist version=\"1.0\">\n"
+									   "<dict>\n"
+									   "<key>CFBundleShortVersionString</key>\n"
+									   "<string>1.0</string>\n"
+									   "<key>CFBundleIdentifier</key>\n"
+									   "<string>com.gdnative.framework.$name</string>\n"
+									   "<key>CFBundleName</key>\n"
+									   "<string>$name</string>\n"
+									   "<key>CFBundleExecutable</key>\n"
+									   "<string>$name</string>\n"
+									   "<key>DTPlatformName</key>\n"
+									   "<string>iphoneos</string>\n"
+									   "<key>CFBundleInfoDictionaryVersion</key>\n"
+									   "<string>6.0</string>\n"
+									   "<key>CFBundleVersion</key>\n"
+									   "<string>1</string>\n"
+									   "<key>CFBundlePackageType</key>\n"
+									   "<string>FMWK</string>\n"
+									   "<key>MinimumOSVersion</key>\n"
+									   "<string>10.0</string>\n"
+									   "</dict>\n"
+									   "</plist>";
+
+			String info_plist = info_plist_format.replace("$name", file_name);
+
+			FileAccess *f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
+			if (f) {
+				f->store_string(info_plist);
+				f->close();
+				memdelete(f);
+			}
+		}
+	}
+
+	memdelete(filesystem_da);
+
+	return OK;
+}
+
+Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets) {
 	for (int f_idx = 0; f_idx < p_assets.size(); ++f_idx) {
 		String asset = p_assets[f_idx];
 		if (!asset.begins_with("res://")) {
@@ -1133,126 +1287,10 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 			IOSExportAsset exported_asset = { asset, p_is_framework, p_should_embed };
 			r_exported_assets.push_back(exported_asset);
 		} else {
-			DirAccess *da = DirAccess::create_for_path(asset);
-			if (!da) {
-				memdelete(filesystem_da);
-				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't create directory: " + asset + ".");
-			}
-			bool file_exists = da->file_exists(asset);
-			bool dir_exists = da->dir_exists(asset);
-			if (!file_exists && !dir_exists) {
-				memdelete(da);
-				memdelete(filesystem_da);
-				return ERR_FILE_NOT_FOUND;
-			}
-
-			String base_dir = asset.get_base_dir().replace("res://", "");
-			String destination_dir;
-			String destination;
-			String asset_path;
-
-			bool create_framework = false;
-
-			if (p_is_framework && asset.ends_with(".dylib")) {
-				// For iOS we need to turn .dylib into .framework
-				// to be able to send application to AppStore
-				asset_path = String("dylibs").plus_file(base_dir);
-
-				String file_name = asset.get_basename().get_file();
-				String framework_name = file_name + ".framework";
-
-				asset_path = asset_path.plus_file(framework_name);
-				destination_dir = p_out_dir.plus_file(asset_path);
-				destination = destination_dir.plus_file(file_name);
-				create_framework = true;
-			} else if (p_is_framework && (asset.ends_with(".framework") || asset.ends_with(".xcframework"))) {
-				asset_path = String("dylibs").plus_file(base_dir);
-
-				String file_name = asset.get_file();
-				asset_path = asset_path.plus_file(file_name);
-				destination_dir = p_out_dir.plus_file(asset_path);
-				destination = destination_dir;
-			} else {
-				asset_path = base_dir;
-
-				String file_name = asset.get_file();
-				destination_dir = p_out_dir.plus_file(asset_path);
-				asset_path = asset_path.plus_file(file_name);
-				destination = p_out_dir.plus_file(asset_path);
-			}
-
-			if (!filesystem_da->dir_exists(destination_dir)) {
-				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-				if (make_dir_err) {
-					memdelete(da);
-					memdelete(filesystem_da);
-					return make_dir_err;
-				}
-			}
-
-			Error err = dir_exists ? da->copy_dir(asset, destination) : da->copy(asset, destination);
-			memdelete(da);
-			if (err) {
-				memdelete(filesystem_da);
-				return err;
-			}
-			IOSExportAsset exported_asset = { binary_name.plus_file(asset_path), p_is_framework, p_should_embed };
-			r_exported_assets.push_back(exported_asset);
-
-			if (create_framework) {
-				String file_name = asset.get_basename().get_file();
-				String framework_name = file_name + ".framework";
-
-				// Performing `install_name_tool -id @rpath/{name}.framework/{name} ./{name}` on dylib
-				{
-					List<String> install_name_args;
-					install_name_args.push_back("-id");
-					install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
-					install_name_args.push_back(destination);
-
-					OS::get_singleton()->execute("install_name_tool", install_name_args, true);
-				}
-
-				// Creating Info.plist
-				{
-					String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-											   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
-											   "<plist version=\"1.0\">\n"
-											   "<dict>\n"
-											   "<key>CFBundleShortVersionString</key>\n"
-											   "<string>1.0</string>\n"
-											   "<key>CFBundleIdentifier</key>\n"
-											   "<string>com.gdnative.framework.$name</string>\n"
-											   "<key>CFBundleName</key>\n"
-											   "<string>$name</string>\n"
-											   "<key>CFBundleExecutable</key>\n"
-											   "<string>$name</string>\n"
-											   "<key>DTPlatformName</key>\n"
-											   "<string>iphoneos</string>\n"
-											   "<key>CFBundleInfoDictionaryVersion</key>\n"
-											   "<string>6.0</string>\n"
-											   "<key>CFBundleVersion</key>\n"
-											   "<string>1</string>\n"
-											   "<key>CFBundlePackageType</key>\n"
-											   "<string>FMWK</string>\n"
-											   "<key>MinimumOSVersion</key>\n"
-											   "<string>10.0</string>\n"
-											   "</dict>\n"
-											   "</plist>";
-
-					String info_plist = info_plist_format.replace("$name", file_name);
-
-					FileAccess *f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
-					if (f) {
-						f->store_string(info_plist);
-						f->close();
-						memdelete(f);
-					}
-				}
-			}
+			Error err = _copy_asset(p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
+			ERR_FAIL_COND_V(err, err);
 		}
 	}
-	memdelete(filesystem_da);
 
 	return OK;
 }
@@ -1302,12 +1340,11 @@ Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<Edit
 	return enabled_archs;
 }
 
-Error EditorExportPlatformIOS::_export_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets) {
+Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug) {
 	String plugin_definition_cpp_code;
 	String plugin_initialization_cpp_code;
 	String plugin_deinitialization_cpp_code;
 
-	Vector<String> plugin_libraries;
 	Vector<String> plugin_linked_dependencies;
 	Vector<String> plugin_embedded_dependencies;
 	Vector<String> plugin_files;
@@ -1318,11 +1355,24 @@ Error EditorExportPlatformIOS::_export_plugins(const Ref<EditorExportPreset> &p_
 	Vector<String> added_embedded_dependenciy_names;
 	HashMap<String, String> plist_values;
 
+	Error err;
+
 	for (int i = 0; i < enabled_plugins.size(); i++) {
 		PluginConfig plugin = enabled_plugins[i];
 
-		// Adding plugin binary.
-		plugin_libraries.push_back(plugin.binary);
+		// Export plugin binary.
+		if (!plugin.supports_targets) {
+			err = _copy_asset(dest_dir, plugin.binary, nullptr, true, true, r_exported_assets);
+		} else {
+			String plugin_binary_dir = plugin.binary.get_base_dir();
+			String plugin_name_prefix = plugin.binary.get_basename().get_file();
+			String plugin_file = plugin_name_prefix + "." + (p_debug ? "debug" : "release") + ".a";
+			String result_file_name = plugin.binary.get_file();
+
+			err = _copy_asset(dest_dir, plugin_binary_dir.plus_file(plugin_file), &result_file_name, true, true, r_exported_assets);
+		}
+
+		ERR_FAIL_COND_V(err, err);
 
 		// Adding dependencies.
 		// Use separate container for names to check for duplicates.
@@ -1421,10 +1471,6 @@ Error EditorExportPlatformIOS::_export_plugins(const Ref<EditorExportPreset> &p_
 
 	// Export files
 	{
-		// Export plugin libraries
-		Error err = _export_additional_assets(dest_dir, plugin_libraries, true, true, r_exported_assets);
-		ERR_FAIL_COND_V(err, err);
-
 		// Export linked plugin dependency
 		err = _export_additional_assets(dest_dir, plugin_linked_dependencies, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
@@ -1587,7 +1633,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_CANT_OPEN;
 	}
 
-	err = _export_plugins(p_preset, config_data, dest_dir + binary_name, assets);
+	err = _export_ios_plugins(p_preset, config_data, dest_dir + binary_name, assets, p_debug);
 	ERR_FAIL_COND_V(err, err);
 
 	//export rest of the files
