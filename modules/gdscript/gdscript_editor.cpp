@@ -519,18 +519,24 @@ struct GDScriptCompletionIdentifier {
 			assigned_expression(NULL) {}
 };
 
-static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String, ScriptCodeCompletionOption> &r_list) {
+static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String, ScriptCodeCompletionOption> &r_list, String p_ends_with = "") {
 
 	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
 		ScriptCodeCompletionOption option(p_dir->get_file_path(i), ScriptCodeCompletionOption::KIND_FILE_PATH);
 		option.insert_text = quote_style + option.display + quote_style;
-		r_list.insert(option.display, option);
+		if (!p_ends_with.empty()) {
+			if (option.display.ends_with(p_ends_with)) {
+				r_list.insert(option.display, option);
+			}
+		} else {
+			r_list.insert(option.display, option);
+		}
 	}
 
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-		_get_directory_contents(p_dir->get_subdir(i), r_list);
+		_get_directory_contents(p_dir->get_subdir(i), r_list, p_ends_with);
 	}
 }
 
@@ -2578,6 +2584,38 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			_find_identifiers(context, is_function, options);
+		} break;
+		case GDScriptParser::COMPLETION_EXTENDS: {
+
+			// Native classes.
+			List<StringName> class_list;
+			ClassDB::get_class_list(&class_list);
+			for (int i = 0; i < class_list.size(); i++) {
+				ScriptCodeCompletionOption option(class_list[i], ScriptCodeCompletionOption::KIND_CLASS);
+				options.insert(option.display, option);
+			}
+
+			// GDScript classes.
+			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths")) {
+				for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+					if (ScriptServer::get_language(i)->get_name() == "GDScript") {
+						List<String> extensions;
+						ScriptServer::get_language(i)->get_recognized_extensions(&extensions);
+						for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
+							_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options, String("." + E->get()));
+						}
+					}
+				}
+				r_forced = true;
+			}
+
+			// Named Scripts.
+			List<StringName> named_scripts;
+			ScriptServer::get_global_class_list(&named_scripts);
+			for (List<StringName>::Element *E = named_scripts.front(); E; E = E->next()) {
+				ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
+				options.insert(option.display, option);
+			}
 		} break;
 		case GDScriptParser::COMPLETION_GET_NODE: {
 			if (p_owner) {
