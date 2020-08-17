@@ -180,6 +180,14 @@ void OS_Windows::initialize() {
 	crash_handler.initialize();
 
 	//RedirectIOToConsole();
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE *_file = nullptr;
+		freopen_s(&_file, "CONOUT$", "w", stdout);
+		freopen_s(&_file, "CONOUT$", "w", stderr);
+		freopen_s(&_file, "CONIN$", "r", stdin);
+
+		printf("\n");
+	}
 
 	ThreadWindows::make_default();
 	RWLockWindows::make_default();

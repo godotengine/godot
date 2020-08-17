@@ -3027,17 +3027,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	control_mem = false;
 	meta_mem = false;
 
-	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-		FILE *_file = nullptr;
-		freopen_s(&_file, "CONOUT$", "w", stdout);
-		freopen_s(&_file, "CONOUT$", "w", stderr);
-		freopen_s(&_file, "CONIN$", "r", stdin);
+	console_visible = (GetConsoleWindow() != nullptr);
 
-		printf("\n");
-		console_visible = true;
-	} else {
-		console_visible = false;
-	}
 	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;
