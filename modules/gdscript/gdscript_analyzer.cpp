@@ -2509,6 +2509,12 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 
 	GDScriptParser::DataType result;
 
+	if (p_unary_op->operand == nullptr) {
+		result.kind = GDScriptParser::DataType::VARIANT;
+		p_unary_op->set_datatype(result);
+		return;
+	}
+
 	if (p_unary_op->operand->is_constant) {
 		p_unary_op->is_constant = true;
 		p_unary_op->reduced_value = Variant::evaluate(p_unary_op->variant_op, p_unary_op->operand->reduced_value, Variant());
