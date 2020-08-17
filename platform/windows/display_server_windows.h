@@ -405,7 +405,6 @@ private:
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 	bool console_visible = false;
-	bool own_console = false;
 
 	WNDCLASSEXW wc;
 

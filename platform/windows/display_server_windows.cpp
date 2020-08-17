@@ -1137,17 +1137,10 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 void DisplayServerWindows::console_set_visible(bool p_enabled) {
 	_THREAD_SAFE_METHOD_
 
-	if (console_visible == p_enabled) {
+	if (console_visible == p_enabled)
 		return;
-	}
-	if (p_enabled && GetConsoleWindow() == nullptr) { // Open new console if not attached.
-		own_console = true;
-		AllocConsole();
-	}
-	if (own_console) { // Note: Do not hide parent console.
-		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-		console_visible = p_enabled;
-	}
+	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
+	console_visible = p_enabled;
 }
 
 bool DisplayServerWindows::is_console_visible() const {
@@ -3028,18 +3021,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	shift_mem = false;
 	control_mem = false;
 	meta_mem = false;
-
-	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-		FILE *_file = nullptr;
-		freopen_s(&_file, "CONOUT$", "w", stdout);
-		freopen_s(&_file, "CONOUT$", "w", stderr);
-		freopen_s(&_file, "CONIN$", "r", stdin);
-
-		printf("\n");
-		console_visible = true;
-	} else {
-		console_visible = false;
-	}
+	console_visible = IsWindowVisible(GetConsoleWindow());
 	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;
