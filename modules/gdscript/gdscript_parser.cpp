@@ -482,12 +482,6 @@ void GDScriptParser::end_statement(const String &p_context) {
 }
 
 void GDScriptParser::parse_program() {
-	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
-		// Empty file.
-		push_error("Source file is empty.");
-		return;
-	}
-
 	head = alloc_node<ClassNode>();
 	current_class = head;
 
