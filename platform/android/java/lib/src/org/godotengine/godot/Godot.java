@@ -151,8 +151,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	private void setButtonPausedState(boolean paused) {
 		mStatePaused = paused;
-		int stringResourceID = paused ? R.string.text_button_resume :
-										R.string.text_button_pause;
+		int stringResourceID = paused ? R.string.text_button_resume : R.string.text_button_pause;
 		mPauseButton.setText(stringResourceID);
 	}
 
@@ -221,7 +220,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		// GodotEditText layout
 		GodotEditText editText = new GodotEditText(activity);
-		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+				(int)getResources().getDimension(R.dimen.text_edit_height)));
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
 
