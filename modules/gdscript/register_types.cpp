@@ -39,6 +39,11 @@
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
 
+#ifdef TESTS_ENABLED
+#include "tests/test_gdscript.h"
+#include "tests/test_macros.h"
+#endif
+
 GDScriptLanguage *script_language_gd = nullptr;
 Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
 Ref<ResourceFormatSaverGDScript> resource_saver_gd;
@@ -153,3 +158,26 @@ void unregister_gdscript_types() {
 	GDScriptParser::cleanup();
 	GDScriptAnalyzer::cleanup();
 }
+
+#ifdef TESTS_ENABLED
+void test_tokenizer() {
+	TestGDScript::test(TestGDScript::TestType::TEST_TOKENIZER);
+}
+
+void test_parser() {
+	TestGDScript::test(TestGDScript::TestType::TEST_PARSER);
+}
+
+void test_compiler() {
+	TestGDScript::test(TestGDScript::TestType::TEST_COMPILER);
+}
+
+void test_bytecode() {
+	TestGDScript::test(TestGDScript::TestType::TEST_BYTECODE);
+}
+
+REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
+REGISTER_TEST_COMMAND("gdscript-parser", &test_parser);
+REGISTER_TEST_COMMAND("gdscript-compiler", &test_compiler);
+REGISTER_TEST_COMMAND("gdscript-bytecode", &test_bytecode);
+#endif
