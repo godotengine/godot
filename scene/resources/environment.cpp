@@ -134,6 +134,7 @@ Color Environment::get_ambient_light_color() const {
 void Environment::set_ambient_source(AmbientSource p_source) {
 	ambient_source = p_source;
 	_update_ambient_light();
+	_change_notify();
 }
 
 Environment::AmbientSource Environment::get_ambient_source() const {
@@ -161,6 +162,7 @@ float Environment::get_ambient_light_sky_contribution() const {
 void Environment::set_reflection_source(ReflectionSource p_source) {
 	reflection_source = p_source;
 	_update_ambient_light();
+	_change_notify();
 }
 
 Environment::ReflectionSource Environment::get_reflection_source() const {
@@ -758,6 +760,7 @@ void Environment::_update_volumetric_fog() {
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
 	volumetric_fog_enabled = p_enable;
 	_update_volumetric_fog();
+	_change_notify();
 }
 
 bool Environment::is_volumetric_fog_enabled() const {

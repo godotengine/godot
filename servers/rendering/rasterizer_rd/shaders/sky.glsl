@@ -58,6 +58,35 @@ layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalVariableData
 }
 global_variables;
 
+layout(set = 0, binding = 2, std140) uniform SceneData {
+	bool volumetric_fog_enabled;
+	float volumetric_fog_inv_length;
+	float volumetric_fog_detail_spread;
+	uint volumetric_fog_pad;
+
+	vec3 fog_light_color;
+	float fog_sun_scatter;
+
+	bool fog_enabled;
+	float fog_density;
+
+	float z_far;
+	uint directional_light_count;
+}
+scene_data;
+
+struct DirectionalLightData {
+	vec4 direction_energy;
+	vec4 color_size;
+	bool enabled;
+};
+
+layout(set = 0, binding = 3, std140) uniform DirectionalLights {
+	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
+}
+
+directional_lights;
+
 #ifdef USE_MATERIAL_UNIFORMS
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
 	/* clang-format off */
@@ -77,6 +106,8 @@ layout(set = 2, binding = 1) uniform texture2D half_res;
 layout(set = 2, binding = 2) uniform texture2D quarter_res;
 #endif
 
+layout(set = 3, binding = 0) uniform texture3D volumetric_fog_texture;
+
 #ifdef USE_CUBEMAP_PASS
 #define AT_CUBEMAP_PASS true
 #else
@@ -95,18 +126,6 @@ layout(set = 2, binding = 2) uniform texture2D quarter_res;
 #define AT_QUARTER_RES_PASS false
 #endif
 
-struct DirectionalLightData {
-	vec4 direction_energy;
-	vec4 color_size;
-	bool enabled;
-};
-
-layout(set = 3, binding = 0, std140) uniform DirectionalLights {
-	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-}
-
-directional_lights;
-
 /* clang-format off */
 
 FRAGMENT_SHADER_GLOBALS
@@ -114,6 +133,30 @@ FRAGMENT_SHADER_GLOBALS
 /* clang-format on */
 
 layout(location = 0) out vec4 frag_color;
+
+vec4 volumetric_fog_process(vec2 screen_uv) {
+	vec3 fog_pos = vec3(screen_uv, 1.0);
+
+	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
+}
+
+vec4 fog_process(vec3 view) {
+	vec3 fog_color = scene_data.fog_light_color;
+
+	if (scene_data.fog_sun_scatter > 0.001) {
+		vec4 sun_scatter = vec4(0.0);
+		float sun_total = 0.0;
+		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			fog_color += light_color * light_amount * scene_data.fog_sun_scatter;
+		}
+	}
+
+	float fog_amount = clamp(1.0 - exp(-scene_data.z_far * scene_data.fog_density), 0.0, 1.0);
+
+	return vec4(fog_color, fog_amount);
+}
 
 void main() {
 	vec3 cube_normal;
@@ -177,6 +220,20 @@ FRAGMENT_SHADER_CODE
 
 	frag_color.rgb = color * params.position_multiplier.w;
 	frag_color.a = alpha;
+
+#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(uv);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
+
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(cube_normal);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
+
+#endif // DISABLE_FOG
 
 	// Blending is disabled for Sky, so alpha doesn't blend
 	// alpha is used for subsurface scattering so make sure it doesn't get applied to Sky

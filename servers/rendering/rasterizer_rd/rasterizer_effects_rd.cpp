@@ -1171,7 +1171,7 @@ void RasterizerEffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_des
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_lights, RenderPipelineVertexFormatCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
+void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_fb, RID p_samplers, RID p_fog, RenderPipelineVertexFormatCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const CameraMatrix &p_camera, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position) {
 	SkyPushConstant sky_push_constant;
 
 	zeromem(&sky_push_constant, sizeof(SkyPushConstant));
@@ -1198,7 +1198,7 @@ void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
 	}
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_lights, 3);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_fog, 3);
 
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 

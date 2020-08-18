@@ -328,6 +328,7 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_SKY].modes.push_back("use_half_res_pass");
 	shader_modes[RS::SHADER_SKY].modes.push_back("use_quarter_res_pass");
+	shader_modes[RS::SHADER_SKY].modes.push_back("disable_fog");
 
 	shader_types.insert("spatial");
 	shader_types.insert("canvas_item");
