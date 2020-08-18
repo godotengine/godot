@@ -160,7 +160,7 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo(Variant::OBJECT, "modification_stack",
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack3D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 #endif //_3D_DISABLED
 }
 
@@ -291,9 +291,7 @@ void Skeleton3D::_notification(int p_what) {
 			}
 
 			if (modification_stack.is_valid()) {
-				if (modification_stack->execution_mode == SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process) {
-					execute_modifications(get_physics_process_delta_time());
-				}
+				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process);
 			}
 
 		} break;
@@ -313,9 +311,7 @@ void Skeleton3D::_notification(int p_what) {
 #ifndef _3D_DISABLED
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (modification_stack.is_valid()) {
-				if (modification_stack->execution_mode == SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process) {
-					execute_modifications(get_process_delta_time());
-				}
+				execute_modifications(get_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process);
 			}
 		} break;
 #endif // _3D_DISABLED
@@ -1085,7 +1081,7 @@ Ref<SkeletonModificationStack3D> Skeleton3D::get_modification_stack() {
 	return modification_stack;
 }
 
-void Skeleton3D::execute_modifications(float delta) {
+void Skeleton3D::execute_modifications(float delta, int execution_mode) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}
@@ -1095,7 +1091,7 @@ void Skeleton3D::execute_modifications(float delta) {
 		modification_stack->set_skeleton(this);
 	}
 
-	modification_stack->execute(delta);
+	modification_stack->execute(delta, execution_mode);
 }
 
 #endif // _3D_DISABLED
@@ -1169,7 +1165,7 @@ void Skeleton3D::_bind_methods() {
 	// Modifications
 	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton3D::set_modification_stack);
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton3D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modifications", "delta"), &Skeleton3D::execute_modifications);
+	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton3D::execute_modifications);
 
 #endif // _3D_DISABLED
 

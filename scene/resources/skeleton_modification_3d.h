@@ -61,16 +61,12 @@ public:
 		execution_mode_process,
 		execution_mode_physics_process,
 	};
-	int execution_mode = execution_mode_process;
-
-	void set_execution_mode(int p_mode);
-	int get_execution_mode();
 
 	Vector<Ref<SkeletonModification3D>> modifications;
 	int modifications_count = 0;
 
 	void setup();
-	void execute(float delta);
+	void execute(float delta, int execution_mode);
 
 	void enable_all_modifications(bool p_enable);
 	Ref<SkeletonModification3D> get_modification(int p_mod_idx) const;
@@ -107,8 +103,9 @@ protected:
 	static void _bind_methods();
 
 	SkeletonModificationStack3D *stack;
+	int execution_mode = SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process;
 
-	bool enabled = false;
+	bool enabled = true;
 	bool is_setup = false;
 
 public:
@@ -119,6 +116,9 @@ public:
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
+
+	void set_execution_mode(int p_mode);
+	int get_execution_mode() const;
 
 	SkeletonModificationStack3D *get_modification_stack();
 
@@ -185,7 +185,7 @@ public:
 };
 
 ///////////////////////////////////////
-// SkeletonModification3D_CCDIK
+// SkeletonModification3DCCDIK
 ///////////////////////////////////////
 
 class SkeletonModification3DCCDIK : public SkeletonModification3D {
@@ -364,7 +364,7 @@ public:
 };
 
 ///////////////////////////////////////
-// SkeletonModification3D_Jiggle
+// SkeletonModification3DJiggle
 ///////////////////////////////////////
 
 class SkeletonModification3DJiggle : public SkeletonModification3D {
@@ -547,6 +547,32 @@ public:
 
 	SkeletonModification3DTwoBoneIK();
 	~SkeletonModification3DTwoBoneIK();
+};
+
+///////////////////////////////////////
+// SkeletonModification3DStackHolder
+///////////////////////////////////////
+
+class SkeletonModification3DStackHolder : public SkeletonModification3D {
+	GDCLASS(SkeletonModification3DStackHolder, SkeletonModification3D);
+
+protected:
+	static void _bind_methods();
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	Ref<SkeletonModificationStack3D> held_modification_stack;
+
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack3D *p_stack) override;
+
+	void set_held_modification_stack(Ref<SkeletonModificationStack3D> p_held_stack);
+	Ref<SkeletonModificationStack3D> get_held_modification_stack() const;
+
+	SkeletonModification3DStackHolder();
+	~SkeletonModification3DStackHolder();
 };
 
 #endif // SKELETONMODIFICATION3D_H
