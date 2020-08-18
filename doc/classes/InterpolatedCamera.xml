@@ -22,6 +22,9 @@
 		<member name="enabled" type="bool" setter="set_interpolation_enabled" getter="is_interpolation_enabled" default="false">
 			If [code]true[/code], and a target is set, the camera will move automatically.
 		</member>
+		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="InterpolatedCamera.InterpolatedCameraProcessMode" default="1">
+			The camera's process callback. See [enum InterpolatedCameraProcessMode].
+		</member>
 		<member name="speed" type="float" setter="set_speed" getter="get_speed" default="1.0">
 			How quickly the camera moves toward its target. Higher values will result in tighter camera motion.
 		</member>
@@ -30,5 +33,11 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="INTERPOLATED_CAMERA_PROCESS_PHYSICS" value="0" enum="InterpolatedCameraProcessMode">
+			The camera updates with the [code]_physics_process[/code] callback.
+		</constant>
+		<constant name="INTERPOLATED_CAMERA_PROCESS_IDLE" value="1" enum="InterpolatedCameraProcessMode">
+			The camera updates with the [code]_process[/code] callback.
+		</constant>
 	</constants>
 </class>
