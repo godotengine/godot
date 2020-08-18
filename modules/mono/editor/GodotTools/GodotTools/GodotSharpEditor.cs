@@ -38,7 +38,7 @@ namespace GodotTools
 
         public BottomPanel BottomPanel { get; private set; }
 
-        public PlaySettings? CurrentPlaySettings { get; set; }
+        public bool SkipBuildBeforePlaying { get; set; } = false;
 
         public static string ProjectAssemblyName
         {
