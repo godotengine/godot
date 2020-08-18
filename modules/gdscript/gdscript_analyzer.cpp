@@ -602,17 +602,67 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				enum_type.is_meta_type = true;
 				enum_type.is_constant = true;
 
+				// Enums can't be nested, so we can safely override this.
+				current_enum = member.m_enum;
+
 				for (int j = 0; j < member.m_enum->values.size(); j++) {
-					enum_type.enum_values[member.m_enum->values[j].identifier->name] = member.m_enum->values[j].value;
+					GDScriptParser::EnumNode::Value &element = member.m_enum->values.write[j];
+
+					if (element.custom_value) {
+						reduce_expression(element.custom_value);
+						if (!element.custom_value->is_constant) {
+							push_error(R"(Enum values must be constant.)", element.custom_value);
+						} else if (element.custom_value->reduced_value.get_type() != Variant::INT) {
+							push_error(R"(Enum values must be integers.)", element.custom_value);
+						} else {
+							element.value = element.custom_value->reduced_value;
+							element.resolved = true;
+						}
+					} else {
+						if (element.index > 0) {
+							element.value = element.parent_enum->values[element.index - 1].value + 1;
+						} else {
+							element.value = 0;
+						}
+						element.resolved = true;
+					}
+
+					enum_type.enum_values[element.identifier->name] = element.value;
 				}
+
+				current_enum = nullptr;
 
 				member.m_enum->set_datatype(enum_type);
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
 				resolve_function_signature(member.function);
 				break;
-			case GDScriptParser::ClassNode::Member::ENUM_VALUE:
-				break; // Nothing to do, type and value set in parser.
+			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
+				if (member.enum_value.custom_value) {
+					current_enum = member.enum_value.parent_enum;
+					reduce_expression(member.enum_value.custom_value);
+					current_enum = nullptr;
+
+					if (!member.enum_value.custom_value->is_constant) {
+						push_error(R"(Enum values must be constant.)", member.enum_value.custom_value);
+					} else if (member.enum_value.custom_value->reduced_value.get_type() != Variant::INT) {
+						push_error(R"(Enum values must be integers.)", member.enum_value.custom_value);
+					} else {
+						member.enum_value.value = member.enum_value.custom_value->reduced_value;
+						member.enum_value.resolved = true;
+					}
+				} else {
+					if (member.enum_value.index > 0) {
+						member.enum_value.value = member.enum_value.parent_enum->values[member.enum_value.index - 1].value + 1;
+					} else {
+						member.enum_value.value = 0;
+					}
+					member.enum_value.resolved = true;
+				}
+				// Also update the original references.
+				member.enum_value.parent_enum->values.write[member.enum_value.index] = member.enum_value;
+				p_class->members.write[i].enum_value = member.enum_value;
+			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
 				break; // Done later.
 			case GDScriptParser::ClassNode::Member::UNDEFINED:
@@ -2125,6 +2175,33 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin) {
 	// TODO: This is opportunity to further infer types.
+
+	// Check if we are inside and enum. This allows enum values to access other elements of the same enum.
+	if (current_enum) {
+		for (int i = 0; i < current_enum->values.size(); i++) {
+			const GDScriptParser::EnumNode::Value &element = current_enum->values[i];
+			if (element.identifier->name == p_identifier->name) {
+				GDScriptParser::DataType type;
+				type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+				type.kind = element.parent_enum->identifier ? GDScriptParser::DataType::ENUM_VALUE : GDScriptParser::DataType::BUILTIN;
+				type.builtin_type = Variant::INT;
+				type.is_constant = true;
+				if (element.parent_enum->identifier) {
+					type.enum_type = element.parent_enum->identifier->name;
+				}
+				p_identifier->set_datatype(type);
+
+				if (element.resolved) {
+					p_identifier->is_constant = true;
+					p_identifier->reduced_value = element.value;
+				} else {
+					push_error(R"(Cannot use another enum element before it was declared.)", p_identifier);
+				}
+				return; // Found anyway.
+			}
+		}
+	}
+
 	// Check if identifier is local.
 	// If that's the case, the declaration already was solved before.
 	switch (p_identifier->source) {

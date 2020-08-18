@@ -1022,8 +1022,6 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 	push_multiline(true);
 	consume(GDScriptTokenizer::Token::BRACE_OPEN, vformat(R"(Expected "{" after %s.)", named ? "enum name" : R"("enum")"));
 
-	int current_value = 0;
-
 	do {
 		if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 			break; // Allow trailing comma.
@@ -1031,6 +1029,9 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifer for enum key.)")) {
 			EnumNode::Value item;
 			item.identifier = parse_identifier();
+			item.parent_enum = enum_node;
+			item.line = previous.start_line;
+			item.leftmost_column = previous.leftmost_column;
 
 			if (!named) {
 				// TODO: Abstract this recursive member check.
@@ -1045,18 +1046,15 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			}
 
 			if (match(GDScriptTokenizer::Token::EQUAL)) {
-				if (consume(GDScriptTokenizer::Token::LITERAL, R"(Expected integer value after "=".)")) {
-					item.custom_value = parse_literal();
-
-					if (item.custom_value->value.get_type() != Variant::INT) {
-						push_error(R"(Expected integer value after "=".)");
-						item.custom_value = nullptr;
-					} else {
-						current_value = item.custom_value->value;
-					}
+				ExpressionNode *value = parse_expression(false);
+				if (value == nullptr) {
+					push_error(R"(Expected expression value after "=".)");
 				}
+				item.custom_value = value;
 			}
-			item.value = current_value++;
+			item.rightmost_column = previous.rightmost_column;
+
+			item.index = enum_node->values.size();
 			enum_node->values.push_back(item);
 			if (!named) {
 				// Add as member of current class.
