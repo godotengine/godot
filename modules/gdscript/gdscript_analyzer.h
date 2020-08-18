@@ -41,6 +41,8 @@ class GDScriptAnalyzer {
 	GDScriptParser *parser = nullptr;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
+	const GDScriptParser::EnumNode *current_enum = nullptr;
+
 	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 
