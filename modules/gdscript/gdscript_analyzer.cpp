@@ -498,7 +498,13 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 					if (member.variable->initializer != nullptr) {
 						if (!is_type_compatible(datatype, member.variable->initializer->get_datatype(), true)) {
-							push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
+							// Try reverse test since it can be a masked subtype.
+							if (!is_type_compatible(member.variable->initializer->get_datatype(), datatype, true)) {
+								push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
+							} else {
+								// TODO: Add warning.
+								mark_node_unsafe(member.variable->initializer);
+							}
 						} else if (datatype.builtin_type == Variant::INT && member.variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
 #ifdef DEBUG_ENABLED
 							parser->push_warning(member.variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
@@ -596,17 +602,67 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 				enum_type.is_meta_type = true;
 				enum_type.is_constant = true;
 
+				// Enums can't be nested, so we can safely override this.
+				current_enum = member.m_enum;
+
 				for (int j = 0; j < member.m_enum->values.size(); j++) {
-					enum_type.enum_values[member.m_enum->values[j].identifier->name] = member.m_enum->values[j].value;
+					GDScriptParser::EnumNode::Value &element = member.m_enum->values.write[j];
+
+					if (element.custom_value) {
+						reduce_expression(element.custom_value);
+						if (!element.custom_value->is_constant) {
+							push_error(R"(Enum values must be constant.)", element.custom_value);
+						} else if (element.custom_value->reduced_value.get_type() != Variant::INT) {
+							push_error(R"(Enum values must be integers.)", element.custom_value);
+						} else {
+							element.value = element.custom_value->reduced_value;
+							element.resolved = true;
+						}
+					} else {
+						if (element.index > 0) {
+							element.value = element.parent_enum->values[element.index - 1].value + 1;
+						} else {
+							element.value = 0;
+						}
+						element.resolved = true;
+					}
+
+					enum_type.enum_values[element.identifier->name] = element.value;
 				}
+
+				current_enum = nullptr;
 
 				member.m_enum->set_datatype(enum_type);
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
 				resolve_function_signature(member.function);
 				break;
-			case GDScriptParser::ClassNode::Member::ENUM_VALUE:
-				break; // Nothing to do, type and value set in parser.
+			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
+				if (member.enum_value.custom_value) {
+					current_enum = member.enum_value.parent_enum;
+					reduce_expression(member.enum_value.custom_value);
+					current_enum = nullptr;
+
+					if (!member.enum_value.custom_value->is_constant) {
+						push_error(R"(Enum values must be constant.)", member.enum_value.custom_value);
+					} else if (member.enum_value.custom_value->reduced_value.get_type() != Variant::INT) {
+						push_error(R"(Enum values must be integers.)", member.enum_value.custom_value);
+					} else {
+						member.enum_value.value = member.enum_value.custom_value->reduced_value;
+						member.enum_value.resolved = true;
+					}
+				} else {
+					if (member.enum_value.index > 0) {
+						member.enum_value.value = member.enum_value.parent_enum->values[member.enum_value.index - 1].value + 1;
+					} else {
+						member.enum_value.value = 0;
+					}
+					member.enum_value.resolved = true;
+				}
+				// Also update the original references.
+				member.enum_value.parent_enum->values.write[member.enum_value.index] = member.enum_value;
+				p_class->members.write[i].enum_value = member.enum_value;
+			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
 				break; // Done later.
 			case GDScriptParser::ClassNode::Member::UNDEFINED:
@@ -994,7 +1050,13 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 
 		if (p_variable->initializer != nullptr) {
 			if (!is_type_compatible(type, p_variable->initializer->get_datatype(), true)) {
-				push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", p_variable->initializer->get_datatype().to_string(), type.to_string()), p_variable->initializer);
+				// Try reverse test since it can be a masked subtype.
+				if (!is_type_compatible(p_variable->initializer->get_datatype(), type, true)) {
+					push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", p_variable->initializer->get_datatype().to_string(), type.to_string()), p_variable->initializer);
+				} else {
+					// TODO: Add warning.
+					mark_node_unsafe(p_variable->initializer);
+				}
 #ifdef DEBUG_ENABLED
 			} else if (type.builtin_type == Variant::INT && p_variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
 				parser->push_warning(p_variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
@@ -1385,9 +1447,16 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 			compatible = is_type_compatible(p_assignment->assignee->get_datatype(), op_type, true);
 			if (!compatible) {
 				if (p_assignment->assignee->get_datatype().is_hard_type()) {
-					push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", p_assignment->assigned_value->get_datatype().to_string(), p_assignment->assignee->get_datatype().to_string()), p_assignment->assigned_value);
+					// Try reverse test since it can be a masked subtype.
+					if (!is_type_compatible(op_type, p_assignment->assignee->get_datatype(), true)) {
+						push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", p_assignment->assigned_value->get_datatype().to_string(), p_assignment->assignee->get_datatype().to_string()), p_assignment->assigned_value);
+					} else {
+						// TODO: Add warning.
+						mark_node_unsafe(p_assignment);
+					}
 				} else {
 					// TODO: Warning in this case.
+					mark_node_unsafe(p_assignment);
 				}
 			}
 		} else {
@@ -1634,6 +1703,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 							}
 							signature += p_call->arguments[i]->get_datatype().to_string();
 						}
+						signature += ")";
 						push_error(vformat(R"(No constructor of "%s" matches the signature "%s".)", Variant::get_type_name(builtin_type), signature), p_call->callee);
 					} break;
 					case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
@@ -1684,7 +1754,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 					for (int i = 0; i < p_call->arguments.size(); i++) {
 						GDScriptParser::DataType par_type = type_from_property(info.arguments[i]);
 
-						if (!is_type_compatible(par_type, p_call->arguments[i]->get_datatype())) {
+						if (!is_type_compatible(par_type, p_call->arguments[i]->get_datatype(), true)) {
 							types_match = false;
 							break;
 #ifdef DEBUG_ENABLED
@@ -1711,6 +1781,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 						}
 						signature += p_call->arguments[i]->get_datatype().to_string();
 					}
+					signature += ")";
 					push_error(vformat(R"(No constructor of "%s" matches the signature "%s".)", Variant::get_type_name(builtin_type), signature), p_call);
 				}
 			}
@@ -2104,6 +2175,33 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin) {
 	// TODO: This is opportunity to further infer types.
+
+	// Check if we are inside and enum. This allows enum values to access other elements of the same enum.
+	if (current_enum) {
+		for (int i = 0; i < current_enum->values.size(); i++) {
+			const GDScriptParser::EnumNode::Value &element = current_enum->values[i];
+			if (element.identifier->name == p_identifier->name) {
+				GDScriptParser::DataType type;
+				type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+				type.kind = element.parent_enum->identifier ? GDScriptParser::DataType::ENUM_VALUE : GDScriptParser::DataType::BUILTIN;
+				type.builtin_type = Variant::INT;
+				type.is_constant = true;
+				if (element.parent_enum->identifier) {
+					type.enum_type = element.parent_enum->identifier->name;
+				}
+				p_identifier->set_datatype(type);
+
+				if (element.resolved) {
+					p_identifier->is_constant = true;
+					p_identifier->reduced_value = element.value;
+				} else {
+					push_error(R"(Cannot use another enum element before it was declared.)", p_identifier);
+				}
+				return; // Found anyway.
+			}
+		}
+	}
+
 	// Check if identifier is local.
 	// If that's the case, the declaration already was solved before.
 	switch (p_identifier->source) {
@@ -2509,6 +2607,12 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 
 	GDScriptParser::DataType result;
 
+	if (p_unary_op->operand == nullptr) {
+		result.kind = GDScriptParser::DataType::VARIANT;
+		p_unary_op->set_datatype(result);
+		return;
+	}
+
 	if (p_unary_op->operand->is_constant) {
 		p_unary_op->is_constant = true;
 		p_unary_op->reduced_value = Variant::evaluate(p_unary_op->variant_op, p_unary_op->operand->reduced_value, Variant());
@@ -2883,7 +2987,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	}
 
 	// Avoid error in formatting operator (%) where it doesn't find a placeholder.
-	if (a_type == Variant::STRING) {
+	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
 		a = String("%s");
 	}
 
