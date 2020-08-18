@@ -494,16 +494,18 @@ void GDScriptParser::parse_program() {
 	if (match(GDScriptTokenizer::Token::ANNOTATION)) {
 		// Check for @tool annotation.
 		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::CLASS_LEVEL);
-		if (annotation->name == "@tool") {
-			// TODO: don't allow @tool anywhere else. (Should all script annotations be the first thing?).
-			_is_tool = true;
-			if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
-				push_error(R"(Expected newline after "@tool" annotation.)");
+		if (annotation != nullptr) {
+			if (annotation->name == "@tool") {
+				// TODO: don't allow @tool anywhere else. (Should all script annotations be the first thing?).
+				_is_tool = true;
+				if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
+					push_error(R"(Expected newline after "@tool" annotation.)");
+				}
+				// @tool annotation has no specific target.
+				annotation->apply(this, nullptr);
+			} else {
+				annotation_stack.push_back(annotation);
 			}
-			// @tool annotation has no specific target.
-			annotation->apply(this, nullptr);
-		} else {
-			annotation_stack.push_back(annotation);
 		}
 	}
 
