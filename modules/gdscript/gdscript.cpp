@@ -596,6 +596,21 @@ Error GDScript::reload(bool p_keep_state) {
 		return OK;
 	}
 
+	{
+		String source_path = path;
+		if (source_path.empty()) {
+			source_path = get_path();
+		}
+		if (!source_path.empty()) {
+			MutexLock lock(GDScriptCache::singleton->lock);
+			Ref<GDScript> self(this);
+			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
+				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = self;
+				self->unreference();
+			}
+		}
+	}
+
 	valid = false;
 	GDScriptParser parser;
 	Error err = parser.parse(source, path, false);
