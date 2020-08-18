@@ -237,7 +237,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 			case ClassNode::Member::ENUM_VALUE: {
 				lsp::DocumentSymbol symbol;
 
-				symbol.name = m.constant->identifier->name;
+				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = lsp::SymbolKind::EnumMember;
 				symbol.deprecated = false;
 				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
