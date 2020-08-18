@@ -36,9 +36,19 @@
 class InterpolatedCamera : public Camera {
 	GDCLASS(InterpolatedCamera, Camera);
 
+public:
+	enum InterpolatedCameraProcessMode {
+		INTERPOLATED_CAMERA_PROCESS_PHYSICS,
+		INTERPOLATED_CAMERA_PROCESS_IDLE
+	};
+
+private:
 	bool enabled;
 	real_t speed;
 	NodePath target;
+	InterpolatedCameraProcessMode process_mode;
+
+	void _update_process_mode();
 
 protected:
 	void _notification(int p_what);
@@ -56,7 +66,12 @@ public:
 	void set_interpolation_enabled(bool p_enable);
 	bool is_interpolation_enabled() const;
 
+	void set_process_mode(InterpolatedCameraProcessMode p_mode);
+	InterpolatedCameraProcessMode get_process_mode() const;
+
 	InterpolatedCamera();
 };
+
+VARIANT_ENUM_CAST(InterpolatedCamera::InterpolatedCameraProcessMode);
 
 #endif // INTERPOLATED_CAMERA_H
