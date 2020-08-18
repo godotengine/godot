@@ -31,6 +31,9 @@
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
 
+#include "core/map.h"
+#include "core/variant.h"
+
 // See documentation for doctest at:
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/readme.md#reference
 #include "thirdparty/doctest/doctest.h"
@@ -103,5 +106,18 @@ DOCTEST_STRINGIFY_VARIANT(PackedStringArray);
 DOCTEST_STRINGIFY_VARIANT(PackedVector2Array);
 DOCTEST_STRINGIFY_VARIANT(PackedVector3Array);
 DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
+
+// Register test commands to be launched from the command-line.
+// For instance: REGISTER_TEST_COMMAND("gdscript-parser" &test_parser_func).
+// Example usage: `godot --test gdscript-parser`.
+
+typedef void (*TestFunc)();
+extern Map<String, TestFunc> *test_commands;
+int register_test_command(String p_command, TestFunc p_function);
+
+#define REGISTER_TEST_COMMAND(m_command, m_function)                    \
+	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(_DOCTEST_ANON_VAR_)) = \
+			register_test_command(m_command, m_function);               \
+	DOCTEST_GLOBAL_NO_WARNINGS_END()
 
 #endif // TEST_MACROS_H

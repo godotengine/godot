@@ -35,10 +35,6 @@
 #include "core/os/os.h"
 #include "core/string_builder.h"
 
-#include "modules/modules_enabled.gen.h"
-
-#ifdef MODULE_GDSCRIPT_ENABLED
-
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/gdscript/gdscript_compiler.h"
 #include "modules/gdscript/gdscript_parser.h"
@@ -183,21 +179,21 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 	}
 }
 
-MainLoop *test(TestType p_type) {
+void test(TestType p_type) {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
-		return nullptr;
+		return;
 	}
 
 	String test = cmdlargs.back()->get();
 	if (!test.ends_with(".gd")) {
 		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
-		return nullptr;
+		return;
 	}
 
 	FileAccessRef fa = FileAccess::open(test, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
+	ERR_FAIL_COND_MSG(!fa, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
@@ -230,21 +226,6 @@ MainLoop *test(TestType p_type) {
 		case TEST_BYTECODE:
 			print_line("Not implemented.");
 	}
-
-	return nullptr;
 }
 
 } // namespace TestGDScript
-
-#else
-
-namespace TestGDScript {
-
-MainLoop *test(TestType p_type) {
-	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
-	return nullptr;
-}
-
-} // namespace TestGDScript
-
-#endif

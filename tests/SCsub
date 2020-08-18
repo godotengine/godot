@@ -6,9 +6,6 @@ env.tests_sources = []
 
 env_tests = env.Clone()
 
-# Enable test framework and inform it of configuration method.
-env_tests.Append(CPPDEFINES=["DOCTEST_CONFIG_IMPLEMENT"])
-
 # We must disable the THREAD_LOCAL entirely in doctest to prevent crashes on debugging
 # Since we link with /MT thread_local is always expired when the header is used
 # So the debugger crashes the engine and it causes weird errors

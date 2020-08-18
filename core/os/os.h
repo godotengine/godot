@@ -86,11 +86,13 @@ public:
 
 protected:
 	friend class Main;
+	// Needed by tests to setup command-line args.
+	friend int test_main(int argc, char *argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
 
-	// functions used by main to initialize/deinitialize the OS
+	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
