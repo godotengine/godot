@@ -205,23 +205,8 @@ namespace GodotTools
             if (File.Exists(editorScriptsMetadataPath))
                 File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
 
-            var currentPlayRequest = GodotSharpEditor.Instance.CurrentPlaySettings;
-
-            if (currentPlayRequest != null)
-            {
-                if (currentPlayRequest.Value.HasDebugger)
-                {
-                    // Set the environment variable that will tell the player to connect to the IDE debugger
-                    // TODO: We should probably add a better way to do this
-                    Environment.SetEnvironmentVariable("GODOT_MONO_DEBUGGER_AGENT",
-                        "--debugger-agent=transport=dt_socket" +
-                        $",address={currentPlayRequest.Value.DebuggerHost}:{currentPlayRequest.Value.DebuggerPort}" +
-                        ",server=n");
-                }
-
-                if (!currentPlayRequest.Value.BuildBeforePlaying)
-                    return true; // Requested play from an external editor/IDE which already built the project
-            }
+            if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
+                return true; // Requested play from an external editor/IDE which already built the project
 
             return BuildProjectBlocking("Debug");
         }
