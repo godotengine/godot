@@ -2066,22 +2066,33 @@ RID RasterizerSceneRD::sky_get_material(RID p_sky) const {
 void RasterizerSceneRD::_draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
 	ERR_FAIL_COND(!is_environment(p_environment));
 
-	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
-	ERR_FAIL_COND(!sky);
-
-	RID sky_material = sky_get_material(environment_get_sky(p_environment));
-
 	SkyMaterialData *material = nullptr;
 
-	if (sky_material.is_valid()) {
-		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
-		if (!material || !material->shader_data->valid) {
-			material = nullptr;
+	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
+
+	RID sky_material;
+
+	RS::EnvironmentBG background = environment_get_background(p_environment);
+
+	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
+		ERR_FAIL_COND(!sky);
+		sky_material = sky_get_material(environment_get_sky(p_environment));
+
+		if (sky_material.is_valid()) {
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+			if (!material || !material->shader_data->valid) {
+				material = nullptr;
+			}
+		}
+
+		if (!material) {
+			sky_material = sky_shader.default_material;
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 		}
 	}
 
-	if (!material) {
-		sky_material = sky_shader.default_material;
+	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+		sky_material = sky_scene_state.fog_material;
 		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 	}
 
@@ -2121,7 +2132,7 @@ void RasterizerSceneRD::_draw_sky(bool p_can_continue_color, bool p_can_continue
 		clear_colors.push_back(Color(0.0, 0.0, 0.0));
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(sky->quarter_res_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
-		storage->get_effects()->render_sky(draw_list, time, sky->quarter_res_framebuffer, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
+		storage->get_effects()->render_sky(draw_list, time, sky->quarter_res_framebuffer, sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -2134,149 +2145,191 @@ void RasterizerSceneRD::_draw_sky(bool p_can_continue_color, bool p_can_continue
 		clear_colors.push_back(Color(0.0, 0.0, 0.0));
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(sky->half_res_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, clear_colors);
-		storage->get_effects()->render_sky(draw_list, time, sky->half_res_framebuffer, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
+		storage->get_effects()->render_sky(draw_list, time, sky->half_res_framebuffer, sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
 		RD::get_singleton()->draw_list_end();
 	}
 
 	RenderPipelineVertexFormatCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_BACKGROUND];
 
-	RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_BACKGROUND);
+	RID texture_uniform_set;
+	if (sky) {
+		texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_BACKGROUND);
+	} else {
+		texture_uniform_set = sky_scene_state.fog_only_texture_uniform_set;
+	}
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb, RD::INITIAL_ACTION_CONTINUE, p_can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, p_can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
-	storage->get_effects()->render_sky(draw_list, time, p_fb, sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
+	storage->get_effects()->render_sky(draw_list, time, p_fb, sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, camera, sky_transform, multiplier, p_transform.origin);
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerSceneRD::_setup_sky(RID p_environment, const Vector3 &p_position, const Size2i p_screen_size) {
+void RasterizerSceneRD::_setup_sky(RID p_environment, RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform, const Size2i p_screen_size) {
 	ERR_FAIL_COND(!is_environment(p_environment));
-
-	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
-	ERR_FAIL_COND(!sky);
-
-	RID sky_material = sky_get_material(environment_get_sky(p_environment));
 
 	SkyMaterialData *material = nullptr;
 
-	if (sky_material.is_valid()) {
-		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
-		if (!material || !material->shader_data->valid) {
-			material = nullptr;
-		}
-	}
+	Sky *sky = sky_owner.getornull(environment_get_sky(p_environment));
 
-	if (!material) {
-		sky_material = sky_shader.default_material;
-		material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
-	}
+	RID sky_material;
 
-	ERR_FAIL_COND(!material);
+	SkyShaderData *shader_data = nullptr;
 
-	SkyShaderData *shader_data = material->shader_data;
+	RS::EnvironmentBG background = environment_get_background(p_environment);
 
-	ERR_FAIL_COND(!shader_data);
+	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
+		ERR_FAIL_COND(!sky);
+		sky_material = sky_get_material(environment_get_sky(p_environment));
 
-	// Invalidate supbass buffers if screen size changes
-	if (sky->screen_size != p_screen_size) {
-		sky->screen_size = p_screen_size;
-		sky->screen_size.x = sky->screen_size.x < 4 ? 4 : sky->screen_size.x;
-		sky->screen_size.y = sky->screen_size.y < 4 ? 4 : sky->screen_size.y;
-		if (shader_data->uses_half_res) {
-			if (sky->half_res_pass.is_valid()) {
-				RD::get_singleton()->free(sky->half_res_pass);
-				sky->half_res_pass = RID();
-			}
-			_sky_invalidate(sky);
-		}
-		if (shader_data->uses_quarter_res) {
-			if (sky->quarter_res_pass.is_valid()) {
-				RD::get_singleton()->free(sky->quarter_res_pass);
-				sky->quarter_res_pass = RID();
-			}
-			_sky_invalidate(sky);
-		}
-	}
-
-	// Create new subpass buffers if necessary
-	if ((shader_data->uses_half_res && sky->half_res_pass.is_null()) ||
-			(shader_data->uses_quarter_res && sky->quarter_res_pass.is_null()) ||
-			sky->radiance.is_null()) {
-		_sky_invalidate(sky);
-		_update_dirty_skys();
-	}
-
-	if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
-		sky->prev_time = time;
-		sky->reflection.dirty = true;
-		RenderingServerRaster::redraw_request();
-	}
-
-	if (material != sky->prev_material) {
-		sky->prev_material = material;
-		sky->reflection.dirty = true;
-	}
-
-	if (material->uniform_set_updated) {
-		material->uniform_set_updated = false;
-		sky->reflection.dirty = true;
-	}
-
-	if (!p_position.is_equal_approx(sky->prev_position) && shader_data->uses_position) {
-		sky->prev_position = p_position;
-		sky->reflection.dirty = true;
-	}
-
-	if (shader_data->uses_light || sky_scene_state.light_uniform_set.is_null()) {
-		// Check whether the directional_light_buffer changes
-		bool light_data_dirty = false;
-
-		if (sky_scene_state.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
-			light_data_dirty = true;
-			for (uint32_t i = sky_scene_state.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
-				sky_scene_state.directional_lights[i].enabled = false;
+		if (sky_material.is_valid()) {
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+			if (!material || !material->shader_data->valid) {
+				material = nullptr;
 			}
 		}
-		if (!light_data_dirty) {
-			for (uint32_t i = 0; i < sky_scene_state.directional_light_count; i++) {
-				if (sky_scene_state.directional_lights[i].direction[0] != sky_scene_state.last_frame_directional_lights[i].direction[0] ||
-						sky_scene_state.directional_lights[i].direction[1] != sky_scene_state.last_frame_directional_lights[i].direction[1] ||
-						sky_scene_state.directional_lights[i].direction[2] != sky_scene_state.last_frame_directional_lights[i].direction[2] ||
-						sky_scene_state.directional_lights[i].energy != sky_scene_state.last_frame_directional_lights[i].energy ||
-						sky_scene_state.directional_lights[i].color[0] != sky_scene_state.last_frame_directional_lights[i].color[0] ||
-						sky_scene_state.directional_lights[i].color[1] != sky_scene_state.last_frame_directional_lights[i].color[1] ||
-						sky_scene_state.directional_lights[i].color[2] != sky_scene_state.last_frame_directional_lights[i].color[2] ||
-						sky_scene_state.directional_lights[i].enabled != sky_scene_state.last_frame_directional_lights[i].enabled ||
-						sky_scene_state.directional_lights[i].size != sky_scene_state.last_frame_directional_lights[i].size) {
-					light_data_dirty = true;
-					break;
+
+		if (!material) {
+			sky_material = sky_shader.default_material;
+			material = (SkyMaterialData *)storage->material_get_data(sky_material, RasterizerStorageRD::SHADER_TYPE_SKY);
+		}
+
+		ERR_FAIL_COND(!material);
+
+		shader_data = material->shader_data;
+
+		ERR_FAIL_COND(!shader_data);
+	}
+
+	if (sky) {
+		// Invalidate supbass buffers if screen size changes
+		if (sky->screen_size != p_screen_size) {
+			sky->screen_size = p_screen_size;
+			sky->screen_size.x = sky->screen_size.x < 4 ? 4 : sky->screen_size.x;
+			sky->screen_size.y = sky->screen_size.y < 4 ? 4 : sky->screen_size.y;
+			if (shader_data->uses_half_res) {
+				if (sky->half_res_pass.is_valid()) {
+					RD::get_singleton()->free(sky->half_res_pass);
+					sky->half_res_pass = RID();
 				}
+				_sky_invalidate(sky);
+			}
+			if (shader_data->uses_quarter_res) {
+				if (sky->quarter_res_pass.is_valid()) {
+					RD::get_singleton()->free(sky->quarter_res_pass);
+					sky->quarter_res_pass = RID();
+				}
+				_sky_invalidate(sky);
 			}
 		}
 
-		if (light_data_dirty || sky_scene_state.light_uniform_set.is_null()) {
-			RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights, true);
+		// Create new subpass buffers if necessary
+		if ((shader_data->uses_half_res && sky->half_res_pass.is_null()) ||
+				(shader_data->uses_quarter_res && sky->quarter_res_pass.is_null()) ||
+				sky->radiance.is_null()) {
+			_sky_invalidate(sky);
+			_update_dirty_skys();
+		}
 
-			if (sky_scene_state.light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.light_uniform_set)) {
-				RD::get_singleton()->free(sky_scene_state.light_uniform_set);
-			}
+		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
+			sky->prev_time = time;
+			sky->reflection.dirty = true;
+			RenderingServerRaster::redraw_request();
+		}
 
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.binding = 0;
-				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-				u.ids.push_back(sky_scene_state.directional_light_buffer);
-				uniforms.push_back(u);
-			}
-
-			sky_scene_state.light_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_LIGHTS);
-
-			RasterizerSceneRD::SkyDirectionalLightData *temp = sky_scene_state.last_frame_directional_lights;
-			sky_scene_state.last_frame_directional_lights = sky_scene_state.directional_lights;
-			sky_scene_state.directional_lights = temp;
-			sky_scene_state.last_frame_directional_light_count = sky_scene_state.directional_light_count;
+		if (material != sky->prev_material) {
+			sky->prev_material = material;
 			sky->reflection.dirty = true;
 		}
+
+		if (material->uniform_set_updated) {
+			material->uniform_set_updated = false;
+			sky->reflection.dirty = true;
+		}
+
+		if (!p_transform.origin.is_equal_approx(sky->prev_position) && shader_data->uses_position) {
+			sky->prev_position = p_transform.origin;
+			sky->reflection.dirty = true;
+		}
+
+		if (shader_data->uses_light) {
+			// Check whether the directional_light_buffer changes
+			bool light_data_dirty = false;
+
+			if (sky_scene_state.ubo.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
+				light_data_dirty = true;
+				for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
+					sky_scene_state.directional_lights[i].enabled = false;
+				}
+			}
+			if (!light_data_dirty) {
+				for (uint32_t i = 0; i < sky_scene_state.ubo.directional_light_count; i++) {
+					if (sky_scene_state.directional_lights[i].direction[0] != sky_scene_state.last_frame_directional_lights[i].direction[0] ||
+							sky_scene_state.directional_lights[i].direction[1] != sky_scene_state.last_frame_directional_lights[i].direction[1] ||
+							sky_scene_state.directional_lights[i].direction[2] != sky_scene_state.last_frame_directional_lights[i].direction[2] ||
+							sky_scene_state.directional_lights[i].energy != sky_scene_state.last_frame_directional_lights[i].energy ||
+							sky_scene_state.directional_lights[i].color[0] != sky_scene_state.last_frame_directional_lights[i].color[0] ||
+							sky_scene_state.directional_lights[i].color[1] != sky_scene_state.last_frame_directional_lights[i].color[1] ||
+							sky_scene_state.directional_lights[i].color[2] != sky_scene_state.last_frame_directional_lights[i].color[2] ||
+							sky_scene_state.directional_lights[i].enabled != sky_scene_state.last_frame_directional_lights[i].enabled ||
+							sky_scene_state.directional_lights[i].size != sky_scene_state.last_frame_directional_lights[i].size) {
+						light_data_dirty = true;
+						break;
+					}
+				}
+			}
+
+			if (light_data_dirty) {
+				RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights, true);
+
+				RasterizerSceneRD::SkyDirectionalLightData *temp = sky_scene_state.last_frame_directional_lights;
+				sky_scene_state.last_frame_directional_lights = sky_scene_state.directional_lights;
+				sky_scene_state.directional_lights = temp;
+				sky_scene_state.last_frame_directional_light_count = sky_scene_state.ubo.directional_light_count;
+				sky->reflection.dirty = true;
+			}
+		}
 	}
+
+	//setup fog variables
+	sky_scene_state.ubo.volumetric_fog_enabled = false;
+	if (p_render_buffers.is_valid()) {
+		if (render_buffers_has_volumetric_fog(p_render_buffers)) {
+			sky_scene_state.ubo.volumetric_fog_enabled = true;
+
+			float fog_end = render_buffers_get_volumetric_fog_end(p_render_buffers);
+			if (fog_end > 0.0) {
+				sky_scene_state.ubo.volumetric_fog_inv_length = 1.0 / fog_end;
+			} else {
+				sky_scene_state.ubo.volumetric_fog_inv_length = 1.0;
+			}
+
+			float fog_detail_spread = render_buffers_get_volumetric_fog_detail_spread(p_render_buffers); //reverse lookup
+			if (fog_detail_spread > 0.0) {
+				sky_scene_state.ubo.volumetric_fog_detail_spread = 1.0 / fog_detail_spread;
+			} else {
+				sky_scene_state.ubo.volumetric_fog_detail_spread = 1.0;
+			}
+		}
+
+		RID fog_uniform_set = render_buffers_get_volumetric_fog_sky_uniform_set(p_render_buffers);
+
+		if (fog_uniform_set != RID()) {
+			sky_scene_state.fog_uniform_set = fog_uniform_set;
+		} else {
+			sky_scene_state.fog_uniform_set = sky_scene_state.default_fog_uniform_set;
+		}
+	}
+
+	sky_scene_state.ubo.z_far = p_projection.get_z_far();
+	sky_scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_environment);
+	sky_scene_state.ubo.fog_density = environment_get_fog_density(p_environment);
+	Color fog_color = environment_get_fog_light_color(p_environment).to_linear();
+	float fog_energy = environment_get_fog_light_energy(p_environment);
+	sky_scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
+	sky_scene_state.ubo.fog_light_color[1] = fog_color.g * fog_energy;
+	sky_scene_state.ubo.fog_light_color[2] = fog_color.b * fog_energy;
+	sky_scene_state.ubo.fog_sun_scatter = environment_get_fog_sun_scatter(p_environment);
+
+	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo, true);
 }
 
 void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform) {
@@ -2371,7 +2424,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 				RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
+				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
 				RD::get_singleton()->draw_list_end();
 			}
 		}
@@ -2389,7 +2442,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 				RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_CUBEMAP_HALF_RES);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
+				storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
 				RD::get_singleton()->draw_list_end();
 			}
 		}
@@ -2403,7 +2456,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 			RID texture_uniform_set = _get_sky_textures(sky, SKY_TEXTURE_SET_CUBEMAP);
 
 			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-			storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], sky_scene_state.sampler_uniform_set, sky_scene_state.light_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
+			storage->get_effects()->render_sky(cubemap_draw_list, time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], sky_scene_state.uniform_set, sky_scene_state.fog_uniform_set, pipeline, material->uniform_set, texture_uniform_set, cm, local_view.basis, multiplier, p_transform.origin);
 			RD::get_singleton()->draw_list_end();
 		}
 
@@ -2965,7 +3018,7 @@ float RasterizerSceneRD::environment_get_fog_height_density(RID p_env) const {
 	return env->fog_height_density;
 }
 
-void RasterizerSceneRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter) {
+void RasterizerSceneRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -2973,7 +3026,7 @@ void RasterizerSceneRD::environment_set_volumetric_fog(RID p_env, bool p_enable,
 	env->volumetric_fog_density = p_density;
 	env->volumetric_fog_light = p_light;
 	env->volumetric_fog_light_energy = p_light_energy;
-	env->volumetric_fog_length = p_lenght;
+	env->volumetric_fog_length = p_length;
 	env->volumetric_fog_detail_spread = p_detail_spread;
 	env->volumetric_fog_shadow_filter = p_shadow_filter;
 	env->volumetric_fog_gi_inject = p_gi_inject;
@@ -5607,6 +5660,17 @@ RID RasterizerSceneRD::render_buffers_get_volumetric_fog_texture(RID p_render_bu
 	return rb->volumetric_fog->fog_map;
 }
 
+RID RasterizerSceneRD::render_buffers_get_volumetric_fog_sky_uniform_set(RID p_render_buffers) {
+	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
+	ERR_FAIL_COND_V(!rb, RID());
+
+	if (!rb->volumetric_fog) {
+		return RID();
+	}
+
+	return rb->volumetric_fog->sky_uniform_set;
+}
+
 float RasterizerSceneRD::render_buffers_get_volumetric_fog_end(RID p_render_buffers) {
 	const RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb || !rb->volumetric_fog, 0);
@@ -5838,7 +5902,7 @@ void RasterizerSceneRD::_setup_lights(RID *p_light_cull_result, int p_light_cull
 	uint32_t light_count = 0;
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
-	sky_scene_state.directional_light_count = 0;
+	sky_scene_state.ubo.directional_light_count = 0;
 
 	for (int i = 0; i < p_light_cull_count; i++) {
 		RID li = p_light_cull_result[i];
@@ -6010,7 +6074,7 @@ void RasterizerSceneRD::_setup_lights(RID *p_light_cull_result, int p_light_cull
 
 					sky_light_data.enabled = true;
 					sky_light_data.size = angular_diameter;
-					sky_scene_state.directional_light_count++;
+					sky_scene_state.ubo.directional_light_count++;
 				}
 
 				r_directional_light_count++;
@@ -6317,7 +6381,22 @@ void RasterizerSceneRD::_volumetric_fog_erase(RenderBuffers *rb) {
 
 	RD::get_singleton()->free(rb->volumetric_fog->light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->fog_map);
+
+	if (rb->volumetric_fog->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
+		RD::get_singleton()->free(rb->volumetric_fog->uniform_set);
+	}
+	if (rb->volumetric_fog->uniform_set2.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set2)) {
+		RD::get_singleton()->free(rb->volumetric_fog->uniform_set2);
+	}
+	if (rb->volumetric_fog->sdfgi_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->sdfgi_uniform_set)) {
+		RD::get_singleton()->free(rb->volumetric_fog->sdfgi_uniform_set);
+	}
+	if (rb->volumetric_fog->sky_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->sky_uniform_set)) {
+		RD::get_singleton()->free(rb->volumetric_fog->sky_uniform_set);
+	}
+
 	memdelete(rb->volumetric_fog);
+
 	rb->volumetric_fog = nullptr;
 }
 
@@ -6407,6 +6486,17 @@ void RasterizerSceneRD::_update_volumetric_fog(RID p_render_buffers, RID p_envir
 
 		rb->volumetric_fog->fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		_render_buffers_uniform_set_changed(p_render_buffers);
+
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids.push_back(rb->volumetric_fog->fog_map);
+			uniforms.push_back(u);
+		}
+
+		rb->volumetric_fog->sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_FOG);
 	}
 
 	//update directional shadow
@@ -7907,6 +7997,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		actions.custom_samplers["RADIANCE"] = "material_samplers[3]";
 		actions.usage_defines["HALF_RES_COLOR"] = "\n#define USES_HALF_RES_COLOR\n";
 		actions.usage_defines["QUARTER_RES_COLOR"] = "\n#define USES_QUARTER_RES_COLOR\n";
+		actions.render_mode_defines["disable_fog"] = "#define DISABLE_FOG\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
@@ -7930,6 +8021,8 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 		SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 		sky_shader.default_shader_rd = sky_shader.shader.version_get_shader(md->shader_data->version, SKY_VERSION_BACKGROUND);
+
+		sky_scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SkySceneState::UBO));
 
 		Vector<RD::Uniform> uniforms;
 
@@ -7962,7 +8055,70 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 			uniforms.push_back(u);
 		}
 
-		sky_scene_state.sampler_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_SAMPLERS);
+		{
+			RD::Uniform u;
+			u.binding = 2;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.ids.push_back(sky_scene_state.uniform_buffer);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.binding = 3;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.ids.push_back(sky_scene_state.directional_light_buffer);
+			uniforms.push_back(u);
+		}
+
+		sky_scene_state.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_UNIFORMS);
+	}
+
+	{
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			RID vfog = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+			u.ids.push_back(vfog);
+			uniforms.push_back(u);
+		}
+
+		sky_scene_state.default_fog_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_FOG);
+	}
+
+	{
+		// Need defaults for using fog with clear color
+		sky_scene_state.fog_shader = storage->shader_create();
+		storage->shader_set_code(sky_scene_state.fog_shader, "shader_type sky; uniform vec4 clear_color; void fragment() { COLOR = clear_color.rgb; } \n");
+		sky_scene_state.fog_material = storage->material_create();
+		storage->material_set_shader(sky_scene_state.fog_material, sky_scene_state.fog_shader);
+
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 0;
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1;
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 2;
+			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+			uniforms.push_back(u);
+		}
+
+		sky_scene_state.fog_only_texture_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_TEXTURES);
 	}
 
 	{
@@ -8179,11 +8335,8 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 		RD::get_singleton()->free(E->get().cubemap);
 	}
 
-	if (sky_scene_state.sampler_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.sampler_uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.sampler_uniform_set);
-	}
-	if (sky_scene_state.light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.light_uniform_set)) {
-		RD::get_singleton()->free(sky_scene_state.light_uniform_set);
+	if (sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.uniform_set)) {
+		RD::get_singleton()->free(sky_scene_state.uniform_set);
 	}
 
 	RD::get_singleton()->free(default_giprobe_buffer);
@@ -8199,14 +8352,19 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 	sdfgi_shader.integrate.version_free(sdfgi_shader.integrate_shader);
 	sdfgi_shader.preprocess.version_free(sdfgi_shader.preprocess_shader);
 
+	volumetric_fog.shader.version_free(volumetric_fog.shader_version);
+
 	memdelete_arr(gi_probe_lights);
 	SkyMaterialData *md = (SkyMaterialData *)storage->material_get_data(sky_shader.default_material, RasterizerStorageRD::SHADER_TYPE_SKY);
 	sky_shader.shader.version_free(md->shader_data->version);
 	RD::get_singleton()->free(sky_scene_state.directional_light_buffer);
+	RD::get_singleton()->free(sky_scene_state.uniform_buffer);
 	memdelete_arr(sky_scene_state.directional_lights);
 	memdelete_arr(sky_scene_state.last_frame_directional_lights);
 	storage->free(sky_shader.default_shader);
 	storage->free(sky_shader.default_material);
+	storage->free(sky_scene_state.fog_shader);
+	storage->free(sky_scene_state.fog_material);
 	memdelete_arr(directional_penumbra_shadow_kernel);
 	memdelete_arr(directional_soft_shadow_kernel);
 	memdelete_arr(penumbra_shadow_kernel);

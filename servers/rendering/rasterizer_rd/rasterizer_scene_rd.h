@@ -63,14 +63,37 @@ protected:
 	};
 
 	struct SkySceneState {
+		struct UBO {
+			uint32_t volumetric_fog_enabled;
+			float volumetric_fog_inv_length;
+			float volumetric_fog_detail_spread;
+			uint32_t volumetric_fog_pad;
+
+			float fog_light_color[3];
+			float fog_sun_scatter;
+
+			uint32_t fog_enabled;
+			float fog_density;
+
+			float z_far;
+			uint32_t directional_light_count;
+		};
+
+		UBO ubo;
+
 		SkyDirectionalLightData *directional_lights;
 		SkyDirectionalLightData *last_frame_directional_lights;
 		uint32_t max_directional_lights;
-		uint32_t directional_light_count;
 		uint32_t last_frame_directional_light_count;
 		RID directional_light_buffer;
-		RID sampler_uniform_set;
-		RID light_uniform_set;
+		RID uniform_set;
+		RID uniform_buffer;
+		RID fog_uniform_set;
+		RID default_fog_uniform_set;
+
+		RID fog_shader;
+		RID fog_material;
+		RID fog_only_texture_uniform_set;
 	} sky_scene_state;
 
 	struct RenderBufferData {
@@ -105,7 +128,7 @@ protected:
 	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
 	void _process_sss(RID p_render_buffers, const CameraMatrix &p_camera);
 
-	void _setup_sky(RID p_environment, const Vector3 &p_position, const Size2i p_screen_size);
+	void _setup_sky(RID p_environment, RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform, const Size2i p_screen_size);
 	void _update_sky(RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
 	void _draw_sky(bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform);
 	void _process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_ambient_buffer, RID p_reflection_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count);
@@ -244,10 +267,10 @@ private:
 	};
 
 	enum SkySet {
-		SKY_SET_SAMPLERS,
+		SKY_SET_UNIFORMS,
 		SKY_SET_MATERIAL,
 		SKY_SET_TEXTURES,
-		SKY_SET_LIGHTS,
+		SKY_SET_FOG,
 		SKY_SET_MAX
 	};
 
@@ -1355,6 +1378,7 @@ private:
 		RID uniform_set;
 		RID uniform_set2;
 		RID sdfgi_uniform_set;
+		RID sky_uniform_set;
 
 		int last_shadow_filter = -1;
 	};
@@ -1837,6 +1861,7 @@ public:
 
 	bool render_buffers_has_volumetric_fog(RID p_render_buffers) const;
 	RID render_buffers_get_volumetric_fog_texture(RID p_render_buffers);
+	RID render_buffers_get_volumetric_fog_sky_uniform_set(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
 
