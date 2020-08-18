@@ -85,6 +85,17 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 				return result;
 			}
 		}
+		if (result != OK) {
+			if (parser != nullptr) {
+				memdelete(parser);
+				parser = nullptr;
+			}
+			if (analyzer != nullptr) {
+				memdelete(analyzer);
+				analyzer = nullptr;
+			}
+			return result;
+		}
 	}
 
 	return result;
@@ -118,6 +129,10 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 	if (singleton->parser_map.has(p_path)) {
 		ref = singleton->parser_map[p_path];
 	} else {
+		if (!FileAccess::exists(p_path)) {
+			r_error = ERR_FILE_NOT_FOUND;
+			return ref;
+		}
 		GDScriptParser *parser = memnew(GDScriptParser);
 		ref.instance();
 		ref->parser = parser;

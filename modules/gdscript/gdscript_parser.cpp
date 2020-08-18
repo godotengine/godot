@@ -466,17 +466,17 @@ void GDScriptParser::pop_multiline() {
 }
 
 bool GDScriptParser::is_statement_end() {
-	return check(GDScriptTokenizer::Token::NEWLINE) || check(GDScriptTokenizer::Token::SEMICOLON);
+	return check(GDScriptTokenizer::Token::NEWLINE) || check(GDScriptTokenizer::Token::SEMICOLON) || check(GDScriptTokenizer::Token::TK_EOF);
 }
 
 void GDScriptParser::end_statement(const String &p_context) {
 	bool found = false;
-	while (is_statement_end()) {
+	while (is_statement_end() && !is_at_end()) {
 		// Remove sequential newlines/semicolons.
 		found = true;
 		advance();
 	}
-	if (!found) {
+	if (!found && !is_at_end()) {
 		push_error(vformat(R"(Expected end of statement after %s, found "%s" instead.)", p_context, current.get_name()));
 	}
 }
