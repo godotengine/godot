@@ -405,7 +405,10 @@ public:
 	struct EnumNode : public Node {
 		struct Value {
 			IdentifierNode *identifier = nullptr;
-			LiteralNode *custom_value = nullptr;
+			ExpressionNode *custom_value = nullptr;
+			EnumNode *parent_enum = nullptr;
+			int index = -1;
+			bool resolved = false;
 			int value = 0;
 			int line = 0;
 			int leftmost_column = 0;
