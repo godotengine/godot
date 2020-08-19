@@ -68,6 +68,8 @@ public:
 		String fragment_global;
 		String fragment;
 		String light;
+		String compute_global;
+		String compute;
 
 		bool uses_global_textures;
 		bool uses_fragment_time;
@@ -104,6 +106,7 @@ private:
 	StringName vertex_name;
 	StringName fragment_name;
 	StringName light_name;
+	StringName compute_name;
 	StringName time_name;
 	Set<StringName> texture_functions;
 

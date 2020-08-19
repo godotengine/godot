@@ -782,8 +782,7 @@ void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements,
 	for (int i = 0; i < p_element_count; i++) {
 		const RenderList::Element *e = p_elements[i];
 		InstanceData &id = scene_state.instances[i];
-		RasterizerStorageRD::store_transform(e->instance->transform, id.transform);
-		RasterizerStorageRD::store_transform(Transform(e->instance->transform.basis.inverse().transposed()), id.normal_transform);
+		bool store_transform = true;
 		id.flags = 0;
 		id.mask = e->instance->layer_mask;
 		id.instance_uniforms_ofs = e->instance->instance_allocated_shader_parameters_offset >= 0 ? e->instance->instance_allocated_shader_parameters_offset : 0;
@@ -807,10 +806,40 @@ void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements,
 			}
 
 			id.flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+		} else if (e->instance->base_type == RS::INSTANCE_PARTICLES) {
+			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+			uint32_t stride;
+			if (false) { // 2D particles
+				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+				stride = 2;
+			} else {
+				stride = 3;
+			}
+
+			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
+			stride += 1;
+
+			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
+			stride += 1;
+
+			id.flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+
+			if (!storage->particles_is_using_local_coords(e->instance->base)) {
+				store_transform = false;
+			}
+
 		} else if (e->instance->base_type == RS::INSTANCE_MESH) {
 			if (e->instance->skeleton.is_valid()) {
 				id.flags |= INSTANCE_DATA_FLAG_SKELETON;
 			}
+		}
+
+		if (store_transform) {
+			RasterizerStorageRD::store_transform(e->instance->transform, id.transform);
+			RasterizerStorageRD::store_transform(Transform(e->instance->transform.basis.inverse().transposed()), id.normal_transform);
+		} else {
+			RasterizerStorageRD::store_transform(Transform(), id.transform);
+			RasterizerStorageRD::store_transform(Transform(), id.normal_transform);
 		}
 
 		if (p_for_depth) {
@@ -967,7 +996,12 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 				ERR_CONTINUE(true); //should be a bug
 			} break;
 			case RS::INSTANCE_PARTICLES: {
-				ERR_CONTINUE(true); //should be a bug
+				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
+				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
+				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index & 0xFFFF);
+
+				xforms_uniform_set = storage->particles_get_instance_buffer_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
+
 			} break;
 			default: {
 				ERR_CONTINUE(true); //should be a bug
@@ -1036,7 +1070,9 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 				ERR_CONTINUE(true); //should be a bug
 			} break;
 			case RS::INSTANCE_PARTICLES: {
-				ERR_CONTINUE(true); //should be a bug
+				RID mesh = storage->particles_get_draw_pass_mesh(e->instance->base, e->surface_index >> 16);
+				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
+				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index & 0xFFFF, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
 			} break;
 			default: {
 				ERR_CONTINUE(true); //should be a bug
@@ -1092,6 +1128,8 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			case RS::INSTANCE_IMMEDIATE: {
 			} break;
 			case RS::INSTANCE_PARTICLES: {
+				uint32_t instances = storage->particles_get_amount(e->instance->base);
+				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instances);
 			} break;
 			default: {
 				ERR_CONTINUE(true); //should be a bug
@@ -1524,31 +1562,31 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 				_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);
 
 			} break;
+#endif
 			case RS::INSTANCE_PARTICLES: {
+				int draw_passes = storage->particles_get_draw_passes(inst->base);
 
-				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getornull(inst->base);
-				ERR_CONTINUE(!particles);
-
-				for (int j = 0; j < particles->draw_passes.size(); j++) {
-
-					RID pmesh = particles->draw_passes[j];
-					if (!pmesh.is_valid())
+				for (int j = 0; j < draw_passes; j++) {
+					RID mesh = storage->particles_get_draw_pass_mesh(inst->base, j);
+					if (!mesh.is_valid())
 						continue;
-					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getornull(pmesh);
-					if (!mesh)
-						continue; //mesh not assigned
 
-					int ssize = mesh->surfaces.size();
+					const RID *materials = nullptr;
+					uint32_t surface_count;
 
-					for (int k = 0; k < ssize; k++) {
+					materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
+					if (!materials) {
+						continue; //nothing to do
+					}
 
-						RasterizerStorageGLES3::Surface *s = mesh->surfaces[k];
-						_add_geometry(s, inst, particles, -1, p_depth_pass, p_shadow_pass);
+					for (uint32_t k = 0; k < surface_count; k++) {
+						uint32_t surface_index = storage->mesh_surface_get_particles_render_pass_index(mesh, j, render_pass, &geometry_index);
+						_add_geometry(inst, (j << 16) | k, materials[j], p_pass_mode, surface_index, p_using_sdfgi);
 					}
 				}
 
 			} break;
-#endif
+
 			default: {
 			}
 		}

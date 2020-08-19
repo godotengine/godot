@@ -678,6 +678,8 @@ public:
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;
 
+	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis) = 0;
+
 	/* GLOBAL VARIABLES */
 
 	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) = 0;
