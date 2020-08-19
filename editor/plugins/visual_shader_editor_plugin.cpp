@@ -3534,7 +3534,8 @@ public:
 			properties[i]->connect("property_changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_property_changed));
 			properties[i]->set_object_and_property(node.ptr(), p_names[i]);
 			properties[i]->update_property();
-			properties[i]->set_name_split_ratio(0);
+			properties[i]->set_label_target_width(0);
+			properties[i]->set_force_label_target_width(true);
 		}
 		node->connect("changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
 	}

@@ -90,7 +90,9 @@ private:
 	bool selected;
 	int selected_focusable;
 
-	float split_ratio;
+	// Sets the "target" width for the label. Width is limited to 50% of inspector width in NOTIFICATION_SORT_CHILDREN.
+	float label_target_width;
+	bool force_target_width = false;
 
 	Vector<Control *> focusables;
 	Control *label_reference;
@@ -156,8 +158,11 @@ public:
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;
 
-	void set_name_split_ratio(float p_ratio);
-	float get_name_split_ratio() const;
+	void set_label_target_width(float p_width);
+	float get_label_target_width() const;
+
+	void set_force_label_target_width(bool p_force);
+	bool is_force_label_target_width() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
