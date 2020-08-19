@@ -1961,6 +1961,8 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
 	bool all_is_constant = true;
 
+	HashMap<Variant, GDScriptParser::ExpressionNode *, VariantHasher, VariantComparator> elements;
+
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
@@ -1968,6 +1970,14 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 		}
 		reduce_expression(element.value);
 		all_is_constant = all_is_constant && element.key->is_constant && element.value->is_constant;
+
+		if (element.key->is_constant) {
+			if (elements.has(element.key->reduced_value)) {
+				push_error(vformat(R"(Key "%s" was already used in this dictionary (at line %d).)", element.key->reduced_value, elements[element.key->reduced_value]->start_line), element.key);
+			} else {
+				elements[element.key->reduced_value] = element.value;
+			}
+		}
 	}
 
 	if (all_is_constant) {

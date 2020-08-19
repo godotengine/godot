@@ -1022,6 +1022,8 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 	push_multiline(true);
 	consume(GDScriptTokenizer::Token::BRACE_OPEN, vformat(R"(Expected "{" after %s.)", named ? "enum name" : R"("enum")"));
 
+	HashMap<StringName, int> elements;
+
 	do {
 		if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 			break; // Allow trailing comma.
@@ -1033,7 +1035,9 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			item.line = previous.start_line;
 			item.leftmost_column = previous.leftmost_column;
 
-			if (!named) {
+			if (elements.has(item.identifier->name)) {
+				push_error(vformat(R"(Name "%s" was already in this enum (at line %d).)", item.identifier->name, elements[item.identifier->name]), item.identifier);
+			} else if (!named) {
 				// TODO: Abstract this recursive member check.
 				ClassNode *parent = current_class;
 				while (parent != nullptr) {
@@ -1044,6 +1048,8 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 					parent = parent->outer;
 				}
 			}
+
+			elements[item.identifier->name] = item.line;
 
 			if (match(GDScriptTokenizer::Token::EQUAL)) {
 				ExpressionNode *value = parse_expression(false);
