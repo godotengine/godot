@@ -2518,7 +2518,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				// Check resulting type if possible.
 				result_type.builtin_type = Variant::NIL;
 				result_type.kind = GDScriptParser::DataType::BUILTIN;
-				result_type.type_source = GDScriptParser::DataType::INFERRED;
+				result_type.type_source = base_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
 				switch (base_type.builtin_type) {
 					// Can't index at all.
