@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_jpegd.h                                                 */
+/*  fbx_node.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_JPG_H
-#define IMAGE_LOADER_JPG_H
+#ifndef MODEL_ABSTRACTION_FBX_NODE_H
+#define MODEL_ABSTRACTION_FBX_NODE_H
 
-#include "core/io/image_loader.h"
+#include "fbx_skeleton.h"
+#include "model_abstraction.h"
+#include "pivot_transform.h"
+#include "thirdparty/assimp_fbx/FBXDocument.h"
 
-class ImageLoaderJPG : public ImageFormatLoader {
+class Spatial;
+struct PivotTransform;
 
-public:
-	static Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len);
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderJPG();
+struct FBXNode : Reference, ModelAbstraction {
+	uint64_t current_node_id = 0;
+	String node_name = String();
+	Spatial *godot_node = nullptr;
+
+	// used to parent the skeleton once the tree is built.
+	Ref<FBXSkeleton> skeleton_node = Ref<FBXSkeleton>();
+
+	void set_parent(Ref<FBXNode> p_parent) {
+		fbx_parent = p_parent;
+	}
+
+	void set_pivot_transform(Ref<PivotTransform> p_pivot_transform) {
+		pivot_transform = p_pivot_transform;
+	}
+
+	Ref<PivotTransform> pivot_transform = Ref<PivotTransform>(); // local and global xform data
+	Ref<FBXNode> fbx_parent = Ref<FBXNode>(); // parent node
 };
 
-#endif
+#endif // MODEL_ABSTRACTION_FBX_NODE_H

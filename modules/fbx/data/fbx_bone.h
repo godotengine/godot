@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_jpegd.h                                                 */
+/*  fbx_bone.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_JPG_H
-#define IMAGE_LOADER_JPG_H
+#ifndef MODEL_ABSTRACTION_FBX_BONE_H
+#define MODEL_ABSTRACTION_FBX_BONE_H
 
-#include "core/io/image_loader.h"
+#include "fbx_node.h"
+#include "import_state.h"
+#include "thirdparty/assimp_fbx/FBXDocument.h"
 
-class ImageLoaderJPG : public ImageFormatLoader {
+struct PivotTransform;
 
-public:
-	static Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len);
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderJPG();
+struct FBXBone : public Reference {
+	uint64_t parent_bone_id = 0;
+	uint64_t bone_id = 0;
+
+	bool valid_parent = false; // if the parent bone id is set up.
+	String bone_name = String(); // bone name
+
+	bool is_root_bone() const {
+		return !valid_parent;
+	}
+
+	uint64_t target_node_id; // the node target id for the skeleton element
+	bool valid_target = false; // only applies to bones with a mesh / in the skin.
+
+	// Godot specific data
+	int godot_bone_id = -2; // godot internal bone id assigned after import
+
+	// if a bone / armature is the root then FBX skeleton will contain the bone not any other skeleton.
+	// this is to support joints by themselves in scenes
+	bool valid_armature_id = false;
+	uint64_t armature_id = 0;
+
+	// Vertex Weight information
+	Transform transform_link; // todo remove
+	Transform transform_matrix; // todo remove
+
+	/* get associate model - the model can be invalid sometimes */
+	Ref<FBXBone> get_associate_model() const {
+		return parent_bone;
+	}
+
+	/* link node is the parent bone */
+	Ref<FBXNode> get_link(const ImportState &state) const;
+	Transform get_vertex_skin_xform(const ImportState &state, Transform mesh_global_position, bool &valid);
+	Transform vertex_transform_matrix;
+	Transform local_cluster_matrix; // set_bone_pose
+
+	mutable const Assimp::FBX::Deformer *skin = nullptr; // let's stop copying data
+	mutable const Assimp::FBX::Cluster *cluster = nullptr;
+	mutable const Assimp::FBX::Geometry *geometry = nullptr;
+
+	void set_pivot_xform(Ref<PivotTransform> p_pivot_xform) {
+		pivot_xform = p_pivot_xform;
+	}
+
+	// pose node / if assigned
+	Transform pose_node = Transform();
+	bool assigned_pose_node = false;
+	Ref<FBXBone> parent_bone = Ref<FBXBone>();
+	Ref<PivotTransform> pivot_xform = Ref<PivotTransform>();
+	Ref<FBXSkeleton> fbx_skeleton = Ref<FBXSkeleton>();
 };
 
-#endif
+#endif // MODEL_ABSTRACTION_FBX_BONE_H

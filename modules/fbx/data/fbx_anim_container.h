@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_jpegd.h                                                 */
+/*  fbx_anim_container.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_JPG_H
-#define IMAGE_LOADER_JPG_H
+#ifndef MODEL_ABSTRACTION_ANIM_CONTAINER_H
+#define MODEL_ABSTRACTION_ANIM_CONTAINER_H
 
-#include "core/io/image_loader.h"
+#include "core/vector.h"
 
-class ImageLoaderJPG : public ImageFormatLoader {
-
-public:
-	static Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len);
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderJPG();
+// Generic keyframes 99.99 percent of files will be vector3, except if quat interp is used, or visibility tracks
+// FBXTrack is used in a map in the implementation in fbx/editor_scene_importer_fbx.cpp
+// to avoid having to rewrite the entire logic I refactored this into the code instead.
+// once it works I can rewrite so we can add the fun misc features / small features
+struct FBXTrack {
+	bool has_default = false;
+	Vector3 default_value;
+	std::map<uint64_t, Vector3> keyframes;
 };
 
-#endif
+#endif //MODEL_ABSTRACTION_ANIM_CONTAINER_H

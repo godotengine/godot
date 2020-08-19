@@ -183,8 +183,9 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		const VariantContainer *v = props.getptr(*k);
 
-		if (v->hide_from_editor)
+		if (v->hide_from_editor) {
 			continue;
+		}
 
 		_EVCSort vc;
 		vc.name = *k;
