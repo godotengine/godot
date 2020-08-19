@@ -111,7 +111,7 @@
 			<string>GDScript.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
-				<string>public.data</string>
+				<string>public.script</string>
 			</array>
 			<key>UTTypeTagSpecification</key>
 			<dict>
