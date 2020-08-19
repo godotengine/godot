@@ -1149,6 +1149,9 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function() {
 	if (match(GDScriptTokenizer::Token::FORWARD_ARROW)) {
 		make_completion_context(COMPLETION_TYPE_NAME_OR_VOID, function);
 		function->return_type = parse_type(true);
+		if (function->return_type == nullptr) {
+			push_error(R"(Expected return type or "void" after "->".)");
+		}
 	}
 
 	// TODO: Improve token consumption so it synchronizes to a statement boundary. This way we can get into the function body with unrecognized tokens.
