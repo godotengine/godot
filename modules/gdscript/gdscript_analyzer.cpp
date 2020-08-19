@@ -33,6 +33,7 @@
 #include "core/class_db.h"
 #include "core/hash_map.h"
 #include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
 #include "gdscript.h"
@@ -1960,6 +1961,8 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
 	bool all_is_constant = true;
 
+	HashMap<Variant, GDScriptParser::ExpressionNode *, VariantHasher, VariantComparator> elements;
+
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 		if (p_dictionary->style == GDScriptParser::DictionaryNode::PYTHON_DICT) {
@@ -1967,6 +1970,14 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 		}
 		reduce_expression(element.value);
 		all_is_constant = all_is_constant && element.key->is_constant && element.value->is_constant;
+
+		if (element.key->is_constant) {
+			if (elements.has(element.key->reduced_value)) {
+				push_error(vformat(R"(Key "%s" was already used in this dictionary (at line %d).)", element.key->reduced_value, elements[element.key->reduced_value]->start_line), element.key);
+			} else {
+				elements[element.key->reduced_value] = element.value;
+			}
+		}
 	}
 
 	if (all_is_constant) {
@@ -2301,6 +2312,37 @@ void GDScriptAnalyzer::reduce_literal(GDScriptParser::LiteralNode *p_literal) {
 }
 
 void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
+	if (!p_preload->path) {
+		return;
+	}
+
+	reduce_expression(p_preload->path);
+
+	if (!p_preload->path->is_constant) {
+		push_error("Preloaded path must be a constant string.", p_preload->path);
+		return;
+	}
+
+	if (p_preload->path->reduced_value.get_type() != Variant::STRING) {
+		push_error("Preloaded path must be a constant string.", p_preload->path);
+	} else {
+		p_preload->resolved_path = p_preload->path->reduced_value;
+		// TODO: Save this as script dependency.
+		if (p_preload->resolved_path.is_rel_path()) {
+			p_preload->resolved_path = parser->script_path.get_base_dir().plus_file(p_preload->resolved_path);
+		}
+		p_preload->resolved_path = p_preload->resolved_path.simplify_path();
+		if (!FileAccess::exists(p_preload->resolved_path)) {
+			push_error(vformat(R"(Preload file "%s" does not exist.)", p_preload->resolved_path), p_preload->path);
+		} else {
+			// TODO: Don't load if validating: use completion cache.
+			p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+			if (p_preload->resource.is_null()) {
+				push_error(vformat(R"(Could not p_preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+			}
+		}
+	}
+
 	p_preload->is_constant = true;
 	p_preload->reduced_value = p_preload->resource;
 	p_preload->set_datatype(type_from_variant(p_preload->reduced_value));
@@ -2476,7 +2518,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				// Check resulting type if possible.
 				result_type.builtin_type = Variant::NIL;
 				result_type.kind = GDScriptParser::DataType::BUILTIN;
-				result_type.type_source = GDScriptParser::DataType::INFERRED;
+				result_type.type_source = base_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
 				switch (base_type.builtin_type) {
 					// Can't index at all.
