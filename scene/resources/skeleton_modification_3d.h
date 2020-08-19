@@ -299,6 +299,7 @@ private:
 		ObjectID tip_node_cache;
 
 		bool use_target_basis = false;
+		float roll = 0;
 	};
 
 	Vector<FABRIK_Joint_Data> fabrik_data_chain;
@@ -357,7 +358,9 @@ public:
 	NodePath fabrik_joint_get_tip_node(int p_joint_idx) const;
 	void fabrik_joint_set_tip_node(int p_joint_idx, NodePath p_tip_node);
 	bool fabrik_joint_get_use_target_basis(int p_joint_idx) const;
-	void fabrik_joint_set_use_target_basis(int p_joint_idx, bool use_basis);
+	void fabrik_joint_set_use_target_basis(int p_joint_idx, bool p_use_basis);
+	float fabrik_joint_get_roll(int p_joint_idx) const;
+	void fabrik_joint_set_roll(int p_joint_idx, float p_roll);
 
 	SkeletonModification3DFABRIK();
 	~SkeletonModification3DFABRIK();
@@ -381,6 +384,7 @@ private:
 		float damping = 0.75;
 		bool use_gravity = false;
 		Vector3 gravity = Vector3(0, -6.0, 0);
+		float roll = 0;
 
 		Vector3 cached_rotation = Vector3(0, 0, 0);
 		Vector3 force = Vector3(0, 0, 0);
@@ -459,6 +463,8 @@ public:
 	bool jiggle_joint_get_use_gravity(int joint_idx) const;
 	void jiggle_joint_set_gravity(int joint_idx, Vector3 p_gravity);
 	Vector3 jiggle_joint_get_gravity(int joint_idx) const;
+	void jiggle_joint_set_roll(int joint_idx, float p_roll);
+	float jiggle_joint_get_roll(int joint_idx) const;
 
 	SkeletonModification3DJiggle();
 	~SkeletonModification3DJiggle();

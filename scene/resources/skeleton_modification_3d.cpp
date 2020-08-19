@@ -559,7 +559,7 @@ void SkeletonModification3DLookAt::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lock_rotation_plane", "plane"), &SkeletonModification3DLookAt::set_lock_rotation_plane);
 	ClassDB::bind_method(D_METHOD("get_lock_rotation_plane"), &SkeletonModification3DLookAt::get_lock_rotation_plane);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name"), "set_bone_name", "get_bone_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_index"), "set_bone_index", "get_bone_index");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_target_node", "get_target_node");
 }
@@ -649,7 +649,7 @@ void SkeletonModification3DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 	for (int i = 0; i < ccdik_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::STRING, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "ccdik_axis",
@@ -1050,6 +1050,8 @@ bool SkeletonModification3DFABRIK::_set(const StringName &p_path, const Variant 
 			fabrik_joint_set_tip_node(which, p_value);
 		} else if (what == "use_target_basis") {
 			fabrik_joint_set_use_target_basis(which, p_value);
+		} else if (what == "roll") {
+			fabrik_joint_set_roll(which, Math::deg2rad(float(p_value)));
 		}
 		return true;
 	}
@@ -1080,6 +1082,8 @@ bool SkeletonModification3DFABRIK::_get(const StringName &p_path, Variant &r_ret
 			r_ret = fabrik_joint_get_tip_node(which);
 		} else if (what == "use_target_basis") {
 			r_ret = fabrik_joint_get_use_target_basis(which);
+		} else if (what == "roll") {
+			r_ret = Math::rad2deg(fabrik_joint_get_roll(which));
 		}
 		return true;
 	}
@@ -1090,8 +1094,9 @@ void SkeletonModification3DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::STRING, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "roll", PROPERTY_HINT_RANGE, "-360,360,0.01", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "auto_calculate_length", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
 		if (!fabrik_data_chain[i].auto_calculate_length) {
@@ -1231,6 +1236,7 @@ void SkeletonModification3DFABRIK::chain_apply() {
 				Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(current_bone_idx);
 				// Rotate the bone towards the target:
 				current_trans.basis.rotate_to_align(forward_vector, current_trans.origin.direction_to(target_global_pose.origin));
+				current_trans.basis.rotate_local(forward_vector, fabrik_data_chain[i].roll);
 			} else { // Use the target's Basis...
 				current_trans.basis = target_global_pose.basis.orthonormalized().scaled(current_trans.basis.get_scale());
 			}
@@ -1244,6 +1250,7 @@ void SkeletonModification3DFABRIK::chain_apply() {
 			Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(current_bone_idx);
 			// Rotate the bone towards the next bone in the chain:
 			current_trans.basis.rotate_to_align(forward_vector, current_trans.origin.direction_to(next_trans.origin));
+			current_trans.basis.rotate_local(forward_vector, fabrik_data_chain[i].roll);
 		}
 		current_trans = stack->skeleton->global_pose_to_local_pose(current_bone_idx, current_trans);
 		current_trans.origin = Vector3(0, 0, 0);
@@ -1490,6 +1497,16 @@ void SkeletonModification3DFABRIK::fabrik_joint_set_use_target_basis(int p_joint
 	fabrik_data_chain.write[p_joint_idx].use_target_basis = p_use_target_basis;
 }
 
+float SkeletonModification3DFABRIK::fabrik_joint_get_roll(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V(p_joint_idx, fabrik_data_chain.size(), 0.0);
+	return fabrik_data_chain[p_joint_idx].roll;
+}
+
+void SkeletonModification3DFABRIK::fabrik_joint_set_roll(int p_joint_idx, float p_roll) {
+	ERR_FAIL_INDEX(p_joint_idx, fabrik_data_chain.size());
+	fabrik_data_chain.write[p_joint_idx].roll = p_roll;
+}
+
 void SkeletonModification3DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification3DFABRIK::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification3DFABRIK::get_target_node);
@@ -1562,6 +1579,8 @@ bool SkeletonModification3DJiggle::_set(const StringName &p_path, const Variant 
 			jiggle_joint_set_use_gravity(which, p_value);
 		} else if (what == "gravity") {
 			jiggle_joint_set_gravity(which, p_value);
+		} else if (what == "roll") {
+			jiggle_joint_set_roll(which, Math::deg2rad(float(p_value)));
 		}
 		return true;
 	} else {
@@ -1599,6 +1618,8 @@ bool SkeletonModification3DJiggle::_get(const StringName &p_path, Variant &r_ret
 			r_ret = jiggle_joint_get_use_gravity(which);
 		} else if (what == "gravity") {
 			r_ret = jiggle_joint_get_gravity(which);
+		} else if (what == "roll") {
+			r_ret = Math::rad2deg(jiggle_joint_get_roll(which));
 		}
 		return true;
 	} else {
@@ -1621,8 +1642,9 @@ void SkeletonModification3DJiggle::_get_property_list(List<PropertyInfo> *p_list
 	for (int i = 0; i < jiggle_data_chain.size(); i++) {
 		String base_string = "joint_data/" + itos(i) + "/";
 
-		p_list->push_back(PropertyInfo(Variant::STRING, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "roll", PROPERTY_HINT_RANGE, "-360,360,0.01", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "override_defaults", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
 		if (jiggle_data_chain[i].override_defaults) {
@@ -1719,6 +1741,9 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 
 	// Rotate the bone using the dynamic position!
 	new_bone_trans.basis.rotate_to_align(forward_vector, new_bone_trans.origin.direction_to(jiggle_data_chain[p_joint_idx].dynamic_position));
+
+	// Roll
+	new_bone_trans.basis.rotate_local(forward_vector, jiggle_data_chain[p_joint_idx].roll);
 
 	new_bone_trans = stack->skeleton->global_pose_to_local_pose(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans);
 	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans, stack->strength, true);
@@ -1960,6 +1985,16 @@ Vector3 SkeletonModification3DJiggle::jiggle_joint_get_gravity(int joint_idx) co
 	return jiggle_data_chain[joint_idx].gravity;
 }
 
+void SkeletonModification3DJiggle::jiggle_joint_set_roll(int joint_idx, float p_roll) {
+	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
+	jiggle_data_chain.write[joint_idx].roll = p_roll;
+}
+
+float SkeletonModification3DJiggle::jiggle_joint_get_roll(int joint_idx) const {
+	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), 0.0);
+	return jiggle_data_chain[joint_idx].roll;
+}
+
 void SkeletonModification3DJiggle::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification3DJiggle::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification3DJiggle::get_target_node);
@@ -2000,6 +2035,8 @@ void SkeletonModification3DJiggle::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("jiggle_joint_get_use_gravity", "joint_idx"), &SkeletonModification3DJiggle::jiggle_joint_get_use_gravity);
 	ClassDB::bind_method(D_METHOD("jiggle_joint_set_gravity", "joint_idx", "gravity"), &SkeletonModification3DJiggle::jiggle_joint_set_gravity);
 	ClassDB::bind_method(D_METHOD("jiggle_joint_get_gravity", "joint_idx"), &SkeletonModification3DJiggle::jiggle_joint_get_gravity);
+	ClassDB::bind_method(D_METHOD("jiggle_joint_set_roll", "joint_idx", "roll"), &SkeletonModification3DJiggle::jiggle_joint_set_roll);
+	ClassDB::bind_method(D_METHOD("jiggle_joint_get_roll", "joint_idx"), &SkeletonModification3DJiggle::jiggle_joint_get_roll);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "jiggle_data_chain_length", PROPERTY_HINT_RANGE, "0,100,1"), "set_jiggle_data_chain_length", "get_jiggle_data_chain_length");
@@ -2116,11 +2153,11 @@ void SkeletonModification3DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_l
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "pole_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D", PROPERTY_USAGE_DEFAULT));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::STRING, "joint_one/bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "joint_one/bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	p_list->push_back(PropertyInfo(Variant::INT, "joint_one/bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_one/roll", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
 
-	p_list->push_back(PropertyInfo(Variant::STRING, "joint_two/bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	p_list->push_back(PropertyInfo(Variant::STRING_NAME, "joint_two/bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	p_list->push_back(PropertyInfo(Variant::INT, "joint_two/bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two/roll", PROPERTY_HINT_RANGE, "-360, 360, 0.01", PROPERTY_USAGE_DEFAULT));
 }
