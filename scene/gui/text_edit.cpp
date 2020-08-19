@@ -43,6 +43,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
+#include "scene/gui/rich_text_label.h"
 #endif
 
 #define TAB_PIXELS
@@ -1701,6 +1702,308 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
+#ifdef TOOLS_ENABLED
+			if (hovered_hint.type != ScriptLanguage::SymbolHint::SYMBOL_UNKNOWN) {
+
+				/*
+				For the reviewer:
+					I don't think this is the proper way to draw the hint box and it's text. I call draw_string()
+					for each piece of string and call get_string_size() to get offset to draw the next string repeatedly.
+					Also this may be on it's own separate function instead of dumping everything here for maintainability.
+					But consider the below code as a working sample to implement it properly.
+				*/
+
+				/* FIXME: HARDCODED BEGIN */
+				int char_per_line = 80;
+				int max_hint_lines = 8;
+				Ref<Font> hint_font = cache.font;
+				float hint_box_margin = 4;
+				Color hint_color_bg_rect = Color(.25, .25, .25);
+				Color hint_color_type = Color(0, 1, 1);
+				Color hint_color_class = Color(.4, .6, 0);
+				Color hint_color_symbol = Color(0.9, 0.74, 0.34);
+				/* HARDCODED END */
+
+				Point2 rect_draw_pos(hovered_word_position.x, (hovered_word_position.y + 1) * row_height);
+				Size2 hint_rect_size;
+				Vector<String> lines;
+				Point2 pos(rect_draw_pos);
+
+				if (!hovered_hint.description.is_empty()) {
+					Vector<String> words = hovered_hint.description.split(" ", false);
+					int word_count = 0;
+					String desc_line;
+					while (word_count < words.size()) {
+						if (lines.size() == max_hint_lines) {
+							lines.append("...");
+							desc_line = String();
+							break;
+						}
+						if ((!desc_line.is_empty() ? desc_line.size() + 1 : 0) + words[word_count].size() > char_per_line) {
+							if (!desc_line.is_empty()) {
+								hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(desc_line).width);
+								lines.append(desc_line);
+								desc_line = words[word_count];
+							} else {
+								hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(desc_line).width);
+								lines.append(words[word_count].substr(0, char_per_line));
+								desc_line = desc_line.substr(char_per_line);
+							}
+							word_count++;
+							continue;
+						}
+						if (desc_line.is_empty()) {
+							desc_line = words[word_count++];
+						} else {
+							desc_line = desc_line + " " + words[word_count++];
+						}
+					}
+					if (!desc_line.is_empty()) {
+						hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(desc_line).width);
+						lines.append(desc_line);
+					}
+					if (lines.size() > 0) {
+						hint_rect_size.height += (cache.line_spacing + hint_font->get_height()) * lines.size();
+					}
+				}
+
+				switch (hovered_hint.type) {
+					case ScriptLanguage::SymbolHint::SYMBOL_CLASS: {
+						Size2 hint_line_size = hint_font->get_string_size("class " + (!hovered_hint._namespace.is_empty() ? hovered_hint._namespace + "::" : "") + hovered_hint.symbol);
+						hint_rect_size.height += hint_line_size.height;
+						hint_rect_size.width = MAX(hint_rect_size.width, hint_line_size.width);
+
+						draw_rect(Rect2(pos, hint_rect_size + 2 * Size2(hint_box_margin, hint_box_margin)), hint_color_bg_rect);
+						pos += Point2(hint_box_margin, hint_font->get_height());
+						draw_string(hint_font, pos, "class ", HALIGN_LEFT, -1, cache.font_size, hint_color_type);
+						pos.width += hint_font->get_string_size("class ").width;
+						if (!hovered_hint._namespace.is_empty()) {
+							draw_string(hint_font, pos, hovered_hint._namespace, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+							pos.width += hint_font->get_string_size(hovered_hint._namespace).width;
+							draw_string(hint_font, pos, "::");
+							pos.width += hint_font->get_string_size("::").width;
+						}
+						draw_string(hint_font, pos, hovered_hint.symbol, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+					} break;
+					case ScriptLanguage::SymbolHint::SYMBOL_METHOD:
+					case ScriptLanguage::SymbolHint::SYMBOL_SIGNAL: {
+						bool is_method = hovered_hint.type == ScriptLanguage::SymbolHint::SYMBOL_METHOD;
+						Vector<String> hint_lines;
+						String hint_line = ((is_method) ? "method " : "signal ") + (!hovered_hint._namespace.is_empty() ? hovered_hint._namespace + "::" : "");
+						if (hint_line.size() + hovered_hint.symbol.size() + 1 > char_per_line) {
+							hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(hint_line).width);
+							hint_lines.append(hint_line);
+							hint_line = hovered_hint.symbol + "(";
+						} else {
+							hint_line += hovered_hint.symbol + "(";
+						}
+						for (int i = 0; i < hovered_hint.parameters.size(); i++) {
+							if (i != 0) {
+								hint_line += ", ";
+							}
+							if (hint_line.size() + hovered_hint.parameters[i].name.size() > char_per_line) {
+								hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(hint_line).width);
+								hint_lines.append(hint_line);
+								hint_line = hovered_hint.parameters[i].name;
+							} else {
+								hint_line += hovered_hint.parameters[i].name;
+							}
+
+							if (!hovered_hint.parameters[i].datatype.is_empty()) {
+								if (hovered_hint.parameters[i].datatype == Variant::get_type_name(Variant::NIL)) {
+									hovered_hint.parameters.write[i].datatype = "Variant";
+								}
+								if (hint_line.size() + 1 + hovered_hint.parameters[i].datatype.size() > char_per_line) {
+									hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(hint_line).width);
+									hint_lines.append(hint_line);
+									hint_line = ":" + hovered_hint.parameters[i].datatype;
+								} else {
+									hint_line += ":" + hovered_hint.parameters[i].datatype;
+								}
+							}
+							if (hovered_hint.parameters[i].default_value.get_type() != Variant::NIL) {
+								if (hint_line.size() + 3 + hovered_hint.parameters[i].default_value.operator String().size() > char_per_line) {
+									hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(hint_line).width);
+									hint_lines.append(hint_line);
+									hint_line = " = " + hovered_hint.parameters[i].default_value.operator String();
+								} else {
+									hint_line += " = " + hovered_hint.parameters[i].default_value.operator String();
+								}
+							}
+						}
+						hint_line += ")";
+						if (is_method && !hovered_hint.datatype.is_empty()) {
+							if (hint_line.size() + 4 + hovered_hint.datatype.size() > char_per_line) {
+								hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(hint_line).width);
+								hint_lines.append(hint_line);
+								hint_line = " -> " + hovered_hint.datatype;
+							} else {
+								hint_line += " -> " + hovered_hint.datatype;
+							}
+						}
+						if (!hint_line.is_empty()) {
+							hint_rect_size.width = MAX(hint_rect_size.width, hint_font->get_string_size(hint_line).width);
+							hint_lines.append(hint_line);
+						}
+						hint_rect_size.height += hint_lines.size() * (hint_font->get_height() + cache.line_spacing) - cache.line_spacing;
+
+						draw_rect(Rect2(pos, hint_rect_size + 2 * Size2(hint_box_margin, hint_box_margin)), hint_color_bg_rect);
+						pos += Point2(hint_box_margin, hint_font->get_height());
+
+						// Draw text.
+						int line_char_size = 0;
+						draw_string(hint_font, pos, ((is_method) ? "method" : "signal"), HALIGN_LEFT, -1, cache.font_size, hint_color_type);
+						pos.width += hint_font->get_string_size(((is_method) ? "method " : "signal ")).width;
+						line_char_size += 6; // Length of "method" / "signal".
+						if (!hovered_hint._namespace.is_empty()) {
+							draw_string(hint_font, pos, hovered_hint._namespace, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+							pos.width += hint_font->get_string_size(hovered_hint._namespace).width;
+							draw_string(hint_font, pos, "::");
+							pos.width += hint_font->get_string_size("::").width;
+							line_char_size += hovered_hint._namespace.size() + 2;
+						}
+						if (line_char_size + hovered_hint.symbol.size() + 1 > char_per_line) {
+							pos = Point2(rect_draw_pos.x + hint_box_margin, pos.height + hint_font->get_height() + cache.line_spacing);
+							line_char_size = 0;
+						}
+						draw_string(hint_font, pos, hovered_hint.symbol, HALIGN_LEFT, -1, cache.font_size, hint_color_symbol);
+						pos.width += hint_font->get_string_size(hovered_hint.symbol).width;
+						draw_string(hint_font, pos, "(");
+						pos.width += hint_font->get_string_size("(").width;
+						line_char_size += hovered_hint.symbol.size();
+
+						for (int i = 0; i < hovered_hint.parameters.size(); i++) {
+							if (i != 0) {
+								draw_string(hint_font, pos, ", ");
+								pos.width += hint_font->get_string_size(", ").width;
+								line_char_size += 2;
+							}
+							if (line_char_size + hovered_hint.parameters[i].name.size() > char_per_line) {
+								pos = Point2(rect_draw_pos.x + hint_box_margin, pos.height + hint_font->get_height() + cache.line_spacing);
+								hint_line = hovered_hint.parameters[i].name;
+								line_char_size = 0;
+							}
+							draw_string(hint_font, pos, hovered_hint.parameters[i].name);
+							pos.width += hint_font->get_string_size(hovered_hint.parameters[i].name).width;
+							line_char_size += hovered_hint.parameters[i].name.size();
+
+							if (!hovered_hint.parameters[i].datatype.is_empty()) {
+								if (line_char_size + 1 + hovered_hint.parameters[i].datatype.size() > char_per_line) {
+									pos = Point2(rect_draw_pos.x + hint_box_margin, pos.height + hint_font->get_height() + cache.line_spacing);
+									line_char_size = 0;
+								}
+								draw_string(hint_font, pos, ":");
+								pos.width += hint_font->get_string_size(":").width;
+								draw_string(hint_font, pos, hovered_hint.parameters[i].datatype, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+								pos.width += hint_font->get_string_size(hovered_hint.parameters[i].datatype).width;
+								line_char_size += 1 + hovered_hint.parameters[i].datatype.size();
+							}
+							if (hovered_hint.parameters[i].default_value.get_type() != Variant::NIL) {
+								if (line_char_size + 3 + hovered_hint.parameters[i].default_value.operator String().size() > char_per_line) {
+									pos = Point2(rect_draw_pos.x + hint_box_margin, pos.height + hint_font->get_height() + cache.line_spacing);
+									line_char_size = 0;
+								}
+								draw_string(hint_font, pos, " = ");
+								pos.width += hint_font->get_string_size(" = ").width;
+								draw_string(hint_font, pos, hovered_hint.parameters[i].default_value.operator String(), HALIGN_LEFT, -1, cache.font_size, hint_color_symbol);
+								pos.width += hint_font->get_string_size(hovered_hint.parameters[i].default_value.operator String()).width;
+								line_char_size += 3 + hovered_hint.parameters[i].default_value.operator String().size();
+							}
+						}
+						draw_string(hint_font, pos, ")");
+						pos.width += hint_font->get_string_size(")").width;
+						line_char_size += 1;
+
+						if (is_method && !hovered_hint.datatype.is_empty()) {
+							if (line_char_size + 4 + hovered_hint.datatype.size() > char_per_line) {
+								pos = Point2(rect_draw_pos.x + hint_box_margin, pos.height + hint_font->get_height() + cache.line_spacing);
+								line_char_size = 0;
+							}
+							draw_string(hint_font, pos, " -> ");
+							pos.width += hint_font->get_string_size(" -> ").width;
+							draw_string(hint_font, pos, hovered_hint.datatype, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+							line_char_size += 4 + hovered_hint.datatype.size();
+						}
+					} break;
+					case ScriptLanguage::SymbolHint::SYMBOL_PROPERTY: {
+						Size2 hint_line_size = hint_font->get_string_size("property " + (!hovered_hint._namespace.is_empty() ? hovered_hint._namespace + "::" : "") + hovered_hint.symbol + (!hovered_hint.datatype.is_empty() ? ":" + hovered_hint.datatype : ""));
+						hint_rect_size.height += hint_line_size.height;
+						hint_rect_size.width = MAX(hint_rect_size.width, hint_line_size.width);
+
+						draw_rect(Rect2(pos, hint_rect_size + 2 * Size2(hint_box_margin, hint_box_margin)), hint_color_bg_rect);
+						pos += Point2(hint_box_margin, hint_font->get_height());
+						draw_string(hint_font, pos, "property ", HALIGN_LEFT, -1, cache.font_size, hint_color_type);
+						pos.width += hint_font->get_string_size("property ").width;
+						if (!hovered_hint._namespace.is_empty()) {
+							draw_string(hint_font, pos, hovered_hint._namespace, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+							pos.width += hint_font->get_string_size(hovered_hint._namespace).width;
+							draw_string(hint_font, pos, "::");
+							pos.width += hint_font->get_string_size("::").width;
+						}
+						draw_string(hint_font, pos, hovered_hint.symbol, HALIGN_LEFT, -1, cache.font_size, hint_color_symbol);
+						if (!hovered_hint.datatype.is_empty()) {
+							pos.width += hint_font->get_string_size(hovered_hint.symbol).width;
+							draw_string(hint_font, pos, ":");
+							pos.width += hint_font->get_string_size(":").width;
+							draw_string(hint_font, pos, hovered_hint.datatype, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+						}
+					} break;
+					case ScriptLanguage::SymbolHint::SYMBOL_CONSTANT: {
+						String value = hovered_hint.value.operator String();
+						Size2 hint_line_size = hint_font->get_string_size("constant " + (!hovered_hint._namespace.is_empty() ? hovered_hint._namespace + "::" : "") + hovered_hint.symbol + " = " + value);
+						hint_rect_size.height += hint_line_size.height;
+						hint_rect_size.width = MAX(hint_rect_size.width, hint_line_size.width);
+
+						draw_rect(Rect2(pos, hint_rect_size + 2 * Size2(hint_box_margin, hint_box_margin)), hint_color_bg_rect);
+						pos += Point2(hint_box_margin, hint_font->get_height());
+						draw_string(hint_font, pos, "constant ", HALIGN_LEFT, -1, cache.font_size, hint_color_type);
+						pos.width += hint_font->get_string_size("constant ").width;
+						if (!hovered_hint._namespace.is_empty()) {
+							draw_string(hint_font, pos, hovered_hint._namespace, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+							pos.width += hint_font->get_string_size(hovered_hint._namespace).width;
+							draw_string(hint_font, pos, "::");
+							pos.width += hint_font->get_string_size("::").width;
+						}
+						draw_string(hint_font, pos, hovered_hint.symbol, HALIGN_LEFT, -1, cache.font_size, hint_color_symbol);
+						pos.width += hint_font->get_string_size(hovered_hint.symbol + " ").width;
+						draw_string(hint_font, pos, "=");
+						pos.width += hint_font->get_string_size("= ").width;
+						draw_string(hint_font, pos, value, HALIGN_LEFT, -1, cache.font_size, hint_color_symbol);
+					} break;
+					case ScriptLanguage::SymbolHint::SYMBOL_LOCAL_VAR: {
+						Size2 hint_line_size = hint_font->get_string_size("local_var " + (!hovered_hint._namespace.is_empty() ? hovered_hint._namespace + " " : "") + hovered_hint.symbol + (!hovered_hint.datatype.is_empty() ? ":" + hovered_hint.datatype : ""));
+						hint_rect_size.height += hint_line_size.height;
+						hint_rect_size.width = MAX(hint_rect_size.width, hint_line_size.width);
+
+						draw_rect(Rect2(pos, hint_rect_size + 2 * Size2(hint_box_margin, hint_box_margin)), hint_color_bg_rect);
+						pos += Point2(hint_box_margin, hint_font->get_height());
+						draw_string(hint_font, pos, "local_var ", HALIGN_LEFT, -1, cache.font_size, hint_color_type);
+						pos.width += hint_font->get_string_size("local_var ").width;
+						if (!hovered_hint._namespace.is_empty()) {
+							draw_string(hint_font, pos, hovered_hint._namespace + " ", HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+							pos.width += hint_font->get_string_size(hovered_hint._namespace + " ").width;
+						}
+						draw_string(hint_font, pos, hovered_hint.symbol, HALIGN_LEFT, -1, cache.font_size, hint_color_symbol);
+						if (!hovered_hint.datatype.is_empty()) {
+							pos.width += hint_font->get_string_size(hovered_hint.symbol).width;
+							draw_string(hint_font, pos, ":");
+							pos.width += hint_font->get_string_size(":").width;
+							draw_string(hint_font, pos, hovered_hint.datatype, HALIGN_LEFT, -1, cache.font_size, hint_color_class);
+						}
+					} break;
+					case ScriptLanguage::SymbolHint::SYMBOL_ENUM: {
+					} break;
+					default: {
+					} break;
+				}
+
+				for (int i = 0; i < lines.size(); i++) {
+					pos = Point2(rect_draw_pos.x + hint_box_margin, pos.height + hint_font->get_height() + cache.line_spacing);
+					draw_string(hint_font, pos, lines[i]);
+				}
+			}
+#endif
+
 			if (has_focus()) {
 				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
@@ -3124,11 +3427,31 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			mpos.x = get_size().x - mpos.x;
 		}
 		if (select_identifiers_enabled) {
-			if (!dragging_minimap && !dragging_selection && mm->is_command_pressed() && mm->get_button_mask() == 0) {
+			if (!dragging_minimap && !dragging_selection) {
 				String new_word = get_word_at_pos(mpos);
-				if (new_word != highlighted_word) {
-					emit_signal("symbol_validate", new_word);
+				if (mm->is_command_pressed() && mm->get_button_mask() == 0) {
+					if (new_word != highlighted_word) {
+						emit_signal("symbol_validate", new_word);
+					}
 				}
+#ifdef TOOLS_ENABLED
+				else {
+					if (new_word != hovered_hint.symbol) {
+						if (new_word.is_empty()) {
+							hovered_hint.symbol = String();
+							hovered_hint.type = ScriptLanguage::SymbolHint::SYMBOL_UNKNOWN;
+						} else {
+							Vector2 mouse_pos = mm->get_position();
+							// hovered_word_position.x is the x position of the hint rect but
+							// hovered_word_position.y is the line number of the rect and position will be
+							// calculated to align the rect with the next line.
+							_get_mouse_pos(mouse_pos, hovered_word_position.y, hovered_word_position.x);
+							hovered_word_position.x = mouse_pos.x;
+							emit_signal("hovered_symbol_validate", new_word);
+						}
+					}
+				}
+#endif // TOOLS_ENABLED
 			} else {
 				if (highlighted_word != String()) {
 					set_highlighted_word(String());
@@ -6711,6 +7034,16 @@ void TextEdit::set_highlighted_word(const String &new_word) {
 	update();
 }
 
+#ifdef TOOLS_ENABLED
+void TextEdit::set_hovered_hint(const ScriptLanguage::SymbolHint &p_symbol_hint) {
+	static RichTextLabel bbcode_to_text;
+	bbcode_to_text.set_use_bbcode(true);
+	hovered_hint = p_symbol_hint;
+	bbcode_to_text.parse_bbcode(hovered_hint.description.replace("\t", "").replace("\n", " "));
+	hovered_hint.description = bbcode_to_text.get_text();
+}
+#endif // TOOLS_ENABLED
+
 void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
 	select_identifiers_enabled = p_enable;
 }
@@ -7046,6 +7379,9 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "row"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+#ifdef TOOLS_ENABLED
+	ADD_SIGNAL(MethodInfo("hovered_symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+#endif
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);

@@ -873,7 +873,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 }
 
-void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
+void ScriptTextEditor::_validate_symbol(const String &p_symbol, bool p_lookup) {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 
 	Node *base = get_tree()->get_edited_scene_root();
@@ -881,19 +881,41 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 		base = _find_node_for_script(base, base, script);
 	}
 
+	bool valid = false;
 	ScriptLanguage::LookupResult result;
-	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
-		text_edit->set_highlighted_word(p_symbol);
+	result.hint.symbol = p_symbol;
+	if (ScriptServer::is_global_class(p_symbol)) {
+		valid = true;
+		result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_CLASS;
+		// TODO: Description.
+	} else if (p_symbol.is_resource_file()) {
+		valid = true;
+	} else if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK) {
+		valid = true;
+	} else if (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton) {
+		valid = true;
+		result.hint.type = ScriptLanguage::SymbolHint::SYMBOL_PROPERTY;
+		result.hint.datatype = "Resource";
 	} else if (p_symbol.is_rel_path()) {
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
+			valid = true;
+		} else {
+			valid = false;
+		}
+
+	} else {
+		valid = false;
+	}
+
+	if (p_lookup) {
+		if (valid) {
 			text_edit->set_highlighted_word(p_symbol);
 		} else {
 			text_edit->set_highlighted_word(String());
 		}
-
 	} else {
-		text_edit->set_highlighted_word(String());
+		text_edit->set_hovered_hint(result.hint);
 	}
 }
 
@@ -1691,7 +1713,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
-	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
+	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol), varray(true));
+	code_editor->get_text_editor()->connect("hovered_symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol), varray(false));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));

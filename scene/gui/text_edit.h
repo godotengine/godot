@@ -38,6 +38,10 @@
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_paragraph.h"
 
+#ifdef TOOLS_ENABLED
+#include "core/object/script_language.h"
+#endif
+
 class TextEdit : public Control {
 	GDCLASS(TextEdit, Control);
 
@@ -323,6 +327,10 @@ private:
 	float v_scroll_speed = 80.0;
 
 	String highlighted_word;
+#ifdef TOOLS_ENABLED
+	ScriptLanguage::SymbolHint hovered_hint;
+	Vector2i hovered_word_position;
+#endif
 
 	uint64_t last_dblclk = 0;
 
@@ -633,6 +641,9 @@ public:
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_highlighted_word(const String &new_word);
+#ifdef TOOLS_ENABLED
+	void set_hovered_hint(const ScriptLanguage::SymbolHint &p_symbol_hint);
+#endif
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
