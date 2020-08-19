@@ -2524,29 +2524,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 
 	if (preload->path == nullptr) {
 		push_error(R"(Expected resource path after "(".)");
-	} else if (preload->path->type != Node::LITERAL) {
-		push_error("Preloaded path must be a constant string.");
-	} else {
-		LiteralNode *path = static_cast<LiteralNode *>(preload->path);
-		if (path->value.get_type() != Variant::STRING) {
-			push_error("Preloaded path must be a constant string.");
-		} else {
-			preload->resolved_path = path->value;
-			// TODO: Save this as script dependency.
-			if (preload->resolved_path.is_rel_path()) {
-				preload->resolved_path = script_path.get_base_dir().plus_file(preload->resolved_path);
-			}
-			preload->resolved_path = preload->resolved_path.simplify_path();
-			if (!FileAccess::exists(preload->resolved_path)) {
-				push_error(vformat(R"(Preload file "%s" does not exist.)", preload->resolved_path));
-			} else {
-				// TODO: Don't load if validating: use completion cache.
-				preload->resource = ResourceLoader::load(preload->resolved_path);
-				if (preload->resource.is_null()) {
-					push_error(vformat(R"(Could not preload resource file "%s".)", preload->resolved_path));
-				}
-			}
-		}
 	}
 
 	pop_completion_call();

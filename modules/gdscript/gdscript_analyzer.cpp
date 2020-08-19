@@ -33,6 +33,7 @@
 #include "core/class_db.h"
 #include "core/hash_map.h"
 #include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
 #include "gdscript.h"
@@ -2301,6 +2302,37 @@ void GDScriptAnalyzer::reduce_literal(GDScriptParser::LiteralNode *p_literal) {
 }
 
 void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
+	if (!p_preload->path) {
+		return;
+	}
+
+	reduce_expression(p_preload->path);
+
+	if (!p_preload->path->is_constant) {
+		push_error("Preloaded path must be a constant string.", p_preload->path);
+		return;
+	}
+
+	if (p_preload->path->reduced_value.get_type() != Variant::STRING) {
+		push_error("Preloaded path must be a constant string.", p_preload->path);
+	} else {
+		p_preload->resolved_path = p_preload->path->reduced_value;
+		// TODO: Save this as script dependency.
+		if (p_preload->resolved_path.is_rel_path()) {
+			p_preload->resolved_path = parser->script_path.get_base_dir().plus_file(p_preload->resolved_path);
+		}
+		p_preload->resolved_path = p_preload->resolved_path.simplify_path();
+		if (!FileAccess::exists(p_preload->resolved_path)) {
+			push_error(vformat(R"(Preload file "%s" does not exist.)", p_preload->resolved_path), p_preload->path);
+		} else {
+			// TODO: Don't load if validating: use completion cache.
+			p_preload->resource = ResourceLoader::load(p_preload->resolved_path);
+			if (p_preload->resource.is_null()) {
+				push_error(vformat(R"(Could not p_preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
+			}
+		}
+	}
+
 	p_preload->is_constant = true;
 	p_preload->reduced_value = p_preload->resource;
 	p_preload->set_datatype(type_from_variant(p_preload->reduced_value));
