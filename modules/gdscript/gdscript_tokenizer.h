@@ -169,6 +169,7 @@ public:
 
 		const char *get_name() const;
 		bool is_identifier() const;
+		bool is_node_name() const;
 		StringName get_identifier() const { return source; }
 
 		Token(Type p_type) {
