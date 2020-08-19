@@ -372,11 +372,18 @@ inline void RasterizerCanvasGLES2::_prefill_default_batch(FillState &r_fill_stat
 			// another default command, just add to the existing batch
 			r_fill_state.curr_batch->num_commands++;
 		} else {
-#ifdef DEBUG_ENABLED
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 			if (r_fill_state.transform_extra_command_number_p1 != p_command_num) {
 				WARN_PRINT_ONCE("_prefill_default_batch : transform_extra_command_number_p1 != p_command_num");
 			}
 #endif
+			// if the first member of the batch is a transform we have to be careful
+			if (!r_fill_state.curr_batch->num_commands) {
+				// there can be leading useless extra transforms (sometimes happens with debug collision polys)
+				// we need to rejig the first_command for the first useful transform
+				r_fill_state.curr_batch->first_command += r_fill_state.transform_extra_command_number_p1 - 1;
+			}
+
 			// we do have a pending extra transform command to flush
 			// either the extra transform is in the prior command, or not, in which case we need 2 batches
 			r_fill_state.curr_batch->num_commands += 2;
