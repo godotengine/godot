@@ -986,9 +986,15 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal() {
 	signal->identifier = parse_identifier();
 
 	if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
-		while (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
+		do {
+			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
+				// Allow for trailing comma.
+				break;
+			}
+
 			ParameterNode *parameter = parse_parameter();
 			if (parameter == nullptr) {
+				push_error("Expected signal parameter name.");
 				break;
 			}
 			if (parameter->default_value != nullptr) {
@@ -1000,7 +1006,8 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal() {
 				signal->parameters_indices[parameter->identifier->name] = signal->parameters.size();
 				signal->parameters.push_back(parameter);
 			}
-		}
+		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
+
 		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after signal parameters.)*");
 	}
 
