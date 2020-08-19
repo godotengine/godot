@@ -555,8 +555,16 @@ void EditorExportPlugin::add_ios_framework(const String &p_path) {
 	ios_frameworks.push_back(p_path);
 }
 
+void EditorExportPlugin::add_ios_embedded_framework(const String &p_path) {
+	ios_embedded_frameworks.push_back(p_path);
+}
+
 Vector<String> EditorExportPlugin::get_ios_frameworks() const {
 	return ios_frameworks;
+}
+
+Vector<String> EditorExportPlugin::get_ios_embedded_frameworks() const {
+	return ios_embedded_frameworks;
 }
 
 void EditorExportPlugin::add_ios_plist_content(const String &p_plist_content) {
@@ -640,6 +648,7 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_ios_project_static_lib);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
 	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_ios_framework);
+	ClassDB::bind_method(D_METHOD("add_ios_embedded_framework", "path"), &EditorExportPlugin::add_ios_embedded_framework);
 	ClassDB::bind_method(D_METHOD("add_ios_plist_content", "plist_content"), &EditorExportPlugin::add_ios_plist_content);
 	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_ios_linker_flags);
 	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_ios_bundle_file);
