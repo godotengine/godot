@@ -168,6 +168,52 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 	}
 }
 
+bool GDScriptTokenizer::Token::is_node_name() const {
+	// This is meant to allow keywords with the $ notation, but not as general identifiers.
+	switch (type) {
+		case IDENTIFIER:
+		case AND:
+		case AS:
+		case ASSERT:
+		case AWAIT:
+		case BREAK:
+		case BREAKPOINT:
+		case CLASS_NAME:
+		case CLASS:
+		case CONST:
+		case CONTINUE:
+		case ELIF:
+		case ELSE:
+		case ENUM:
+		case EXTENDS:
+		case FOR:
+		case FUNC:
+		case IF:
+		case IN:
+		case IS:
+		case MATCH:
+		case NAMESPACE:
+		case NOT:
+		case OR:
+		case PASS:
+		case PRELOAD:
+		case RETURN:
+		case SELF:
+		case SIGNAL:
+		case STATIC:
+		case SUPER:
+		case TRAIT:
+		case UNDERSCORE:
+		case VAR:
+		case VOID:
+		case WHILE:
+		case YIELD:
+			return true;
+		default:
+			return false;
+	}
+}
+
 String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 	ERR_FAIL_INDEX_V_MSG(p_token_type, Token::TK_MAX, "<error>", "Using token type out of the enum.");
 	return token_names[p_token_type];
