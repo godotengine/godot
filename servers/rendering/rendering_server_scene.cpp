@@ -2044,6 +2044,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 					keep = false;
 				} else {
 					RSG::storage->particles_request_process(ins->base);
+					RSG::storage->particles_set_view_axis(ins->base, -p_cam_transform.basis.get_axis(2).normalized());
 					//particles visible? request redraw
 					RenderingServerRaster::redraw_request();
 				}
