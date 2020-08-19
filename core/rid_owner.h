@@ -236,7 +236,7 @@ public:
 	}
 
 	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
-		ERR_FAIL_INDEX_V(p_index, alloc_count, nullptr);
+		ERR_FAIL_UNSIGNED_INDEX_V(p_index, alloc_count, nullptr);
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
