@@ -36,6 +36,8 @@
 #include "servers/rendering/rasterizer_rd/rasterizer_effects_rd.h"
 #include "servers/rendering/rasterizer_rd/shader_compiler_rd.h"
 #include "servers/rendering/rasterizer_rd/shaders/giprobe_sdf.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/particles.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/rendering_device.h"
 
 class RasterizerStorageRD : public RasterizerStorage {
@@ -386,6 +388,9 @@ private:
 
 			uint32_t multimesh_render_index = 0;
 			uint64_t multimesh_render_pass = 0;
+
+			uint32_t particles_render_index = 0;
+			uint64_t particles_render_pass = 0;
 		};
 
 		uint32_t blend_shape_count = 0;
@@ -447,6 +452,215 @@ private:
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
 	void _update_dirty_multimeshes();
+
+	/* PARTICLES */
+
+	struct ParticleData {
+		float xform[16];
+		float velocity[3];
+		uint32_t active;
+		float color[4];
+		float custom[3];
+		float lifetime;
+		uint32_t pad[3];
+	};
+
+	struct ParticlesFrameParams {
+		uint32_t emitting;
+		float system_phase;
+		float prev_system_phase;
+		uint32_t cycle;
+
+		float explosiveness;
+		float randomness;
+		float time;
+		float delta;
+
+		uint32_t random_seed;
+		uint32_t pad[3];
+
+		float emission_transform[16];
+	};
+
+	struct Particles {
+		bool inactive;
+		float inactive_time;
+		bool emitting;
+		bool one_shot;
+		int amount;
+		float lifetime;
+		float pre_process_time;
+		float explosiveness;
+		float randomness;
+		bool restart_request;
+		AABB custom_aabb;
+		bool use_local_coords;
+		RID process_material;
+
+		RS::ParticlesDrawOrder draw_order;
+
+		Vector<RID> draw_passes;
+
+		RID particle_buffer;
+		RID particle_instance_buffer;
+		RID frame_params_buffer;
+
+		RID particles_material_uniform_set;
+		RID particles_copy_uniform_set;
+		RID particles_transforms_buffer_uniform_set;
+
+		RID particles_sort_buffer;
+		RID particles_sort_uniform_set;
+
+		bool dirty = false;
+		Particles *update_list = nullptr;
+
+		float phase;
+		float prev_phase;
+		uint64_t prev_ticks;
+		uint32_t random_seed;
+
+		uint32_t cycle_number;
+
+		float speed_scale;
+
+		int fixed_fps;
+		bool fractional_delta;
+		float frame_remainder;
+
+		bool clear;
+
+		Transform emission_transform;
+
+		Particles() :
+				inactive(true),
+				inactive_time(0.0),
+				emitting(false),
+				one_shot(false),
+				amount(0),
+				lifetime(1.0),
+				pre_process_time(0.0),
+				explosiveness(0.0),
+				randomness(0.0),
+				restart_request(false),
+				custom_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8))),
+				use_local_coords(true),
+				draw_order(RS::PARTICLES_DRAW_ORDER_INDEX),
+				prev_ticks(0),
+				random_seed(0),
+				cycle_number(0),
+				speed_scale(1.0),
+				fixed_fps(0),
+				fractional_delta(false),
+				frame_remainder(0),
+				clear(true) {
+		}
+
+		RasterizerScene::InstanceDependency instance_dependency;
+
+		ParticlesFrameParams frame_params;
+	};
+
+	void _particles_process(Particles *p_particles, float p_delta);
+
+	struct ParticlesShader {
+		struct PushConstant {
+			float lifetime;
+			uint32_t clear;
+			uint32_t total_particles;
+			uint32_t trail_size;
+			uint32_t use_fractional_delta;
+			uint32_t pad[3];
+		};
+
+		ParticlesShaderRD shader;
+		ShaderCompilerRD compiler;
+
+		RID default_shader;
+		RID default_material;
+		RID default_shader_rd;
+
+		RID base_uniform_set;
+
+		struct CopyPushConstant {
+			float sort_direction[3];
+			uint32_t total_particles;
+		};
+
+		enum {
+			COPY_MODE_FILL_INSTANCES,
+			COPY_MODE_FILL_SORT_BUFFER,
+			COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER,
+			COPY_MODE_MAX,
+		};
+
+		ParticlesCopyShaderRD copy_shader;
+		RID copy_shader_version;
+		RID copy_pipelines[COPY_MODE_MAX];
+
+	} particles_shader;
+
+	Particles *particle_update_list = nullptr;
+
+	struct ParticlesShaderData : public ShaderData {
+		bool valid;
+		RID version;
+
+		//RenderPipelineVertexFormatCacheRD pipelines[SKY_VERSION_MAX];
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String path;
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		RID pipeline;
+
+		bool uses_time;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		ParticlesShaderData();
+		virtual ~ParticlesShaderData();
+	};
+
+	ShaderData *_create_particles_shader_func();
+	static RasterizerStorageRD::ShaderData *_create_particles_shader_funcs() {
+		return base_singleton->_create_particles_shader_func();
+	}
+
+	struct ParticlesMaterialData : public MaterialData {
+		uint64_t last_frame;
+		ParticlesShaderData *shader_data;
+		RID uniform_buffer;
+		RID uniform_set;
+		Vector<RID> texture_cache;
+		Vector<uint8_t> ubo_data;
+		bool uniform_set_updated;
+
+		virtual void set_render_priority(int p_priority) {}
+		virtual void set_next_pass(RID p_pass) {}
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~ParticlesMaterialData();
+	};
+
+	MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);
+	static RasterizerStorageRD::MaterialData *_create_particles_material_funcs(ShaderData *p_shader) {
+		return base_singleton->_create_particles_material_func(static_cast<ParticlesShaderData *>(p_shader));
+	}
+
+	void update_particles();
+
+	mutable RID_Owner<Particles> particles_owner;
 
 	/* Skeleton */
 
@@ -977,6 +1191,19 @@ public:
 		return s->multimesh_render_index;
 	}
 
+	_FORCE_INLINE_ uint32_t mesh_surface_get_particles_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+
+		if (s->particles_render_pass != p_render_pass) {
+			(*r_index)++;
+			s->particles_render_pass = p_render_pass;
+			s->particles_render_index = *r_index;
+		}
+
+		return s->particles_render_index;
+	}
+
 	/* MULTIMESH API */
 
 	RID multimesh_create();
@@ -1407,39 +1634,75 @@ public:
 
 	/* PARTICLES */
 
-	RID particles_create() { return RID(); }
+	RID particles_create();
 
-	void particles_set_emitting(RID p_particles, bool p_emitting) {}
-	void particles_set_amount(RID p_particles, int p_amount) {}
-	void particles_set_lifetime(RID p_particles, float p_lifetime) {}
-	void particles_set_one_shot(RID p_particles, bool p_one_shot) {}
-	void particles_set_pre_process_time(RID p_particles, float p_time) {}
-	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) {}
-	void particles_set_randomness_ratio(RID p_particles, float p_ratio) {}
-	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) {}
-	void particles_set_speed_scale(RID p_particles, float p_scale) {}
-	void particles_set_use_local_coordinates(RID p_particles, bool p_enable) {}
-	void particles_set_process_material(RID p_particles, RID p_material) {}
-	void particles_set_fixed_fps(RID p_particles, int p_fps) {}
-	void particles_set_fractional_delta(RID p_particles, bool p_enable) {}
-	void particles_restart(RID p_particles) {}
+	void particles_set_emitting(RID p_particles, bool p_emitting);
+	void particles_set_amount(RID p_particles, int p_amount);
+	void particles_set_lifetime(RID p_particles, float p_lifetime);
+	void particles_set_one_shot(RID p_particles, bool p_one_shot);
+	void particles_set_pre_process_time(RID p_particles, float p_time);
+	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio);
+	void particles_set_randomness_ratio(RID p_particles, float p_ratio);
+	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb);
+	void particles_set_speed_scale(RID p_particles, float p_scale);
+	void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
+	void particles_set_process_material(RID p_particles, RID p_material);
+	void particles_set_fixed_fps(RID p_particles, int p_fps);
+	void particles_set_fractional_delta(RID p_particles, bool p_enable);
+	void particles_restart(RID p_particles);
 
-	void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) {}
+	void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order);
 
-	void particles_set_draw_passes(RID p_particles, int p_count) {}
-	void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) {}
+	void particles_set_draw_passes(RID p_particles, int p_count);
+	void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh);
 
-	void particles_request_process(RID p_particles) {}
-	AABB particles_get_current_aabb(RID p_particles) { return AABB(); }
-	AABB particles_get_aabb(RID p_particles) const { return AABB(); }
+	void particles_request_process(RID p_particles);
+	AABB particles_get_current_aabb(RID p_particles);
+	AABB particles_get_aabb(RID p_particles) const;
 
-	void particles_set_emission_transform(RID p_particles, const Transform &p_transform) {}
+	void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
 
-	bool particles_get_emitting(RID p_particles) { return false; }
-	int particles_get_draw_passes(RID p_particles) const { return 0; }
-	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
+	bool particles_get_emitting(RID p_particles);
+	int particles_get_draw_passes(RID p_particles) const;
+	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const;
 
-	virtual bool particles_is_inactive(RID p_particles) const { return false; }
+	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis);
+
+	virtual bool particles_is_inactive(RID p_particles) const;
+
+	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles) {
+		Particles *particles = particles_owner.getornull(p_particles);
+		ERR_FAIL_COND_V(!particles, 0);
+
+		return particles->amount;
+	}
+
+	_FORCE_INLINE_ uint32_t particles_is_using_local_coords(RID p_particles) {
+		Particles *particles = particles_owner.getornull(p_particles);
+		ERR_FAIL_COND_V(!particles, false);
+
+		return particles->use_local_coords;
+	}
+
+	_FORCE_INLINE_ RID particles_get_instance_buffer_uniform_set(RID p_particles, RID p_shader, uint32_t p_set) {
+		Particles *particles = particles_owner.getornull(p_particles);
+		ERR_FAIL_COND_V(!particles, RID());
+		if (particles->particles_transforms_buffer_uniform_set.is_null()) {
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.ids.push_back(particles->particle_instance_buffer);
+				uniforms.push_back(u);
+			}
+
+			particles->particles_transforms_buffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
+		}
+
+		return particles->particles_transforms_buffer_uniform_set;
+	}
 
 	/* GLOBAL VARIABLES API */
 

@@ -359,7 +359,7 @@ private:
 
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
-	/* REFLECTION PROBE INSTANCE */
+	/* DECAL INSTANCE */
 
 	struct DecalInstance {
 		RID decal;
