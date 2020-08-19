@@ -247,7 +247,6 @@ void Window::_make_window() {
 	}
 
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
-	DisplayServer::get_singleton()->show_window(window_id);
 }
 
 void Window::_update_from_window() {
