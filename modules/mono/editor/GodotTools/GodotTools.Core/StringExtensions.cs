@@ -43,7 +43,7 @@ namespace GodotTools.Core
                    path.StartsWith(DriveRoot, StringComparison.Ordinal);
         }
 
-        public static string ToSafeDirName(this string dirName, bool allowDirSeparator)
+        public static string ToSafeDirName(this string dirName, bool allowDirSeparator = false)
         {
             var invalidChars = new List<string> { ":", "*", "?", "\"", "<", ">", "|" };
 
