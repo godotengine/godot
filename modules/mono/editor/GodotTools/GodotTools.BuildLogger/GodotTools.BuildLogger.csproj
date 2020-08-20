@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{6CE9A984-37B1-4F8A-8FE9-609F05F071B3}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>7</LangVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.5.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />

@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using DotNet.Globbing;
 using Microsoft.Build.Construction;
+using Microsoft.Build.Globbing;
 
 namespace GodotTools.ProjectEditor
 {
@@ -133,9 +133,6 @@ namespace GodotTools.ProjectEditor
             var result = new List<string>();
             var existingFiles = GetAllFilesRecursive(Path.GetDirectoryName(projectPath), "*.cs");
 
-            var globOptions = new GlobOptions();
-            globOptions.Evaluation.CaseInsensitive = false;
-
             var root = ProjectRootElement.Open(projectPath);
             Debug.Assert(root != null);
 
@@ -151,7 +148,7 @@ namespace GodotTools.ProjectEditor
 
                     string normalizedInclude = item.Include.NormalizePath();
 
-                    var glob = Glob.Parse(normalizedInclude, globOptions);
+                    var glob = MSBuildGlob.Parse(normalizedInclude);
 
                     // TODO Check somehow if path has no blob to avoid the following loop...
 

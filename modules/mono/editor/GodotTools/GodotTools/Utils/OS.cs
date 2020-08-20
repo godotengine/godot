@@ -62,6 +62,11 @@ namespace GodotTools.Utils
             return name.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase);
         }
 
+        private static bool IsAnyOS(IEnumerable<string> names)
+        {
+            return names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
+        }
+
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isOSX = new Lazy<bool>(() => IsOS(Names.OSX));
         private static readonly Lazy<bool> _isX11 = new Lazy<bool>(() => IsOS(Names.X11));
@@ -71,6 +76,7 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsOS(Names.Android));
         private static readonly Lazy<bool> _isiOS = new Lazy<bool>(() => IsOS(Names.iOS));
         private static readonly Lazy<bool> _isHTML5 = new Lazy<bool>(() => IsOS(Names.HTML5));
+        private static readonly Lazy<bool> _isUnixLike = new Lazy<bool>(() => IsAnyOS(UnixLikePlatforms));
 
         public static bool IsWindows => _isWindows.Value || IsUWP;
         public static bool IsOSX => _isOSX.Value;
@@ -82,18 +88,9 @@ namespace GodotTools.Utils
         public static bool IsiOS => _isiOS.Value;
         public static bool IsHTML5 => _isHTML5.Value;
 
-        private static bool? _isUnixCache;
-        private static readonly string[] UnixLikePlatforms = { Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS };
+        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS};
 
-        public static bool IsUnixLike()
-        {
-            if (_isUnixCache.HasValue)
-                return _isUnixCache.Value;
-
-            string osName = GetPlatformName();
-            _isUnixCache = UnixLikePlatforms.Any(p => p.Equals(osName, StringComparison.OrdinalIgnoreCase));
-            return _isUnixCache.Value;
-        }
+        public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';
 
@@ -121,10 +118,10 @@ namespace GodotTools.Utils
                 return searchDirs.Select(dir => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
 
             return (from dir in searchDirs
-                    select Path.Combine(dir, name)
+                select Path.Combine(dir, name)
                 into path
-                    from ext in windowsExts
-                    select path + ext).FirstOrDefault(File.Exists);
+                from ext in windowsExts
+                select path + ext).FirstOrDefault(File.Exists);
         }
 
         private static string PathWhichUnix([NotNull] string name)
@@ -189,7 +186,7 @@ namespace GodotTools.Utils
 
             startInfo.UseShellExecute = false;
 
-            using (var process = new Process { StartInfo = startInfo })
+            using (var process = new Process {StartInfo = startInfo})
             {
                 process.Start();
                 process.WaitForExit();

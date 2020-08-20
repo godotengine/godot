@@ -72,7 +72,7 @@ namespace GodotTools
                     {
                         string[] csvColumns = file.GetCsvLine();
 
-                        if (csvColumns.Length == 1 && csvColumns[0].Empty())
+                        if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
                             return;
 
                         if (csvColumns.Length != 7)
@@ -115,12 +115,12 @@ namespace GodotTools
             // Get correct issue idx from issue list
             int issueIndex = (int)issuesList.GetItemMetadata(idx);
 
-            if (idx < 0 || idx >= issues.Count)
+            if (issueIndex < 0 || issueIndex >= issues.Count)
                 throw new IndexOutOfRangeException("Issue index out of range");
 
             BuildIssue issue = issues[issueIndex];
 
-            if (issue.ProjectFile.Empty() && issue.File.Empty())
+            if (string.IsNullOrEmpty(issue.ProjectFile) && string.IsNullOrEmpty(issue.File))
                 return;
 
             string projectDir = issue.ProjectFile.Length > 0 ? issue.ProjectFile.GetBaseDir() : BuildInfo.Solution.GetBaseDir();
@@ -158,14 +158,14 @@ namespace GodotTools
                     string tooltip = string.Empty;
                     tooltip += $"Message: {issue.Message}";
 
-                    if (!issue.Code.Empty())
+                    if (!string.IsNullOrEmpty(issue.Code))
                         tooltip += $"\nCode: {issue.Code}";
 
                     tooltip += $"\nType: {(issue.Warning ? "warning" : "error")}";
 
                     string text = string.Empty;
 
-                    if (!issue.File.Empty())
+                    if (!string.IsNullOrEmpty(issue.File))
                     {
                         text += $"{issue.File}({issue.Line},{issue.Column}): ";
 
@@ -174,7 +174,7 @@ namespace GodotTools
                         tooltip += $"\nColumn: {issue.Column}";
                     }
 
-                    if (!issue.ProjectFile.Empty())
+                    if (!string.IsNullOrEmpty(issue.ProjectFile))
                         tooltip += $"\nProject: {issue.ProjectFile}";
 
                     text += issue.Message;
