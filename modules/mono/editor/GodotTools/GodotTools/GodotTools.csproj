@@ -1,12 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{27B00618-A6F2-4828-B922-05CAEB08C286}</ProjectGuid>
-    <OutputType>Library</OutputType>
     <TargetFramework>net472</TargetFramework>
-    <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
-    <DataDirToolsOutputPath>$(GodotSourceRootPath)/bin/GodotSharp/Tools</DataDirToolsOutputPath>
-    <GodotApiConfiguration>Debug</GodotApiConfiguration>
-    <LangVersion>7</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <GodotApiConfiguration>Debug</GodotApiConfiguration> <!-- The Godot editor uses the Debug Godot API assemblies -->
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
     <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>

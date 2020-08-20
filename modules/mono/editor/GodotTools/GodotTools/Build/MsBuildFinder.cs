@@ -36,15 +36,13 @@ namespace GodotTools.Build
                     }
                     case BuildTool.MsBuildVs:
                     {
-                        if (_msbuildToolsPath.Empty() || !File.Exists(_msbuildToolsPath))
+                        if (string.IsNullOrEmpty(_msbuildToolsPath) || !File.Exists(_msbuildToolsPath))
                         {
                             // Try to search it again if it wasn't found last time or if it was removed from its location
                             _msbuildToolsPath = FindMsBuildToolsPathOnWindows();
 
-                            if (_msbuildToolsPath.Empty())
-                            {
+                            if (string.IsNullOrEmpty(_msbuildToolsPath))
                                 throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildVs}'.");
-                            }
                         }
 
                         if (!_msbuildToolsPath.EndsWith("\\"))
@@ -57,15 +55,14 @@ namespace GodotTools.Build
                         string msbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "msbuild.bat");
 
                         if (!File.Exists(msbuildPath))
-                        {
                             throw new FileNotFoundException($"Cannot find executable for '{BuildManager.PropNameMSBuildMono}'. Tried with path: {msbuildPath}");
-                        }
 
                         return (msbuildPath, BuildTool.MsBuildMono);
                     }
                     case BuildTool.JetBrainsMsBuild:
                     {
                         var editorPath = (string)editorSettings.GetSetting(RiderPathManager.EditorPathSettingName);
+
                         if (!File.Exists(editorPath))
                             throw new FileNotFoundException($"Cannot find Rider executable. Tried with path: {editorPath}");
 
@@ -83,7 +80,7 @@ namespace GodotTools.Build
                 }
             }
 
-            if (OS.IsUnixLike())
+            if (OS.IsUnixLike)
             {
                 switch (buildTool)
                 {
@@ -138,12 +135,12 @@ namespace GodotTools.Build
         {
             string ret = OS.PathWhich(name);
 
-            if (!ret.Empty())
+            if (!string.IsNullOrEmpty(ret))
                 return ret;
 
             string retFallback = OS.PathWhich($"{name}.exe");
 
-            if (!retFallback.Empty())
+            if (!string.IsNullOrEmpty(retFallback))
                 return retFallback;
 
             foreach (string hintDir in MsBuildHintDirs)
@@ -195,7 +192,7 @@ namespace GodotTools.Build
 
                 string value = line.Substring(sepIdx + 1).StripEdges();
 
-                if (value.Empty())
+                if (string.IsNullOrEmpty(value))
                     throw new FormatException("installationPath value is empty");
 
                 if (!value.EndsWith("\\"))
