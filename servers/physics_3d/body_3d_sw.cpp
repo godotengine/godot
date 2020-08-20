@@ -399,7 +399,7 @@ void Body3DSW::set_space(Space3DSW *p_space) {
 void Body3DSW::_compute_area_gravity_and_dampenings(const Area3DSW *p_area) {
 	if (p_area->is_gravity_point()) {
 		Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-		const t_real v_length = v.length();
+		const real_t v_length = v.length();
 		if (p_area->get_gravity_distance_scale() > 0 && v_length > 0) {
 			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v_length * p_area->get_gravity_distance_scale(), 2));
 		} else {
