@@ -13,7 +13,7 @@
 	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
-			A disabled collision shape has no effect in the world.
+			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			Sets whether this collision shape should only detect collision on one side (top or bottom).
