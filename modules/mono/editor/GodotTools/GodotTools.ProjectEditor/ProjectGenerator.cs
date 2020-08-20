@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 
@@ -41,7 +42,8 @@ namespace GodotTools.ProjectEditor
 
             var root = GenGameProject(name);
 
-            root.Save(path);
+            // Save (without BOM)
+            root.Save(path, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             return Guid.NewGuid().ToString().ToUpper();
         }
