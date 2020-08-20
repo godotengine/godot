@@ -1156,8 +1156,19 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, RID p_rende
 
 		if (render_buffers_has_volumetric_fog(p_render_buffers)) {
 			scene_state.ubo.volumetric_fog_enabled = true;
-			scene_state.ubo.volumetric_fog_inv_length = 1.0 / render_buffers_get_volumetric_fog_end(p_render_buffers);
-			scene_state.ubo.volumetric_fog_detail_spread = 1.0 / render_buffers_get_volumetric_fog_detail_spread(p_render_buffers); //reverse lookup
+			float fog_end = render_buffers_get_volumetric_fog_end(p_render_buffers);
+			if (fog_end > 0.0) {
+				scene_state.ubo.volumetric_fog_inv_length = 1.0 / fog_end;
+			} else {
+				scene_state.ubo.volumetric_fog_inv_length = 1.0;
+			}
+
+			float fog_detail_spread = render_buffers_get_volumetric_fog_detail_spread(p_render_buffers); //reverse lookup
+			if (fog_detail_spread > 0.0) {
+				scene_state.ubo.volumetric_fog_detail_spread = 1.0 / fog_detail_spread;
+			} else {
+				scene_state.ubo.volumetric_fog_detail_spread = 1.0;
+			}
 		}
 	}
 #if 0
@@ -1696,6 +1707,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	}
 	RID radiance_uniform_set;
 	bool draw_sky = false;
+	bool draw_sky_fog_only = false;
 
 	Color clear_color;
 	bool keep_color = false;
@@ -1711,12 +1723,20 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
+				if (render_buffers_has_volumetric_fog(p_render_buffer) || environment_is_fog_enabled(p_environment)) {
+					draw_sky_fog_only = true;
+					storage->material_set_param(sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+				}
 			} break;
 			case RS::ENV_BG_COLOR: {
 				clear_color = environment_get_bg_color(p_environment);
 				clear_color.r *= bg_energy;
 				clear_color.g *= bg_energy;
 				clear_color.b *= bg_energy;
+				if (render_buffers_has_volumetric_fog(p_render_buffer) || environment_is_fog_enabled(p_environment)) {
+					draw_sky_fog_only = true;
+					storage->material_set_param(sky_scene_state.fog_material, "clear_color", Variant(clear_color.to_linear()));
+				}
 			} break;
 			case RS::ENV_BG_SKY: {
 				draw_sky = true;
@@ -1733,18 +1753,19 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			}
 		}
 		// setup sky if used for ambient, reflections, or background
-		if (draw_sky || environment_get_reflection_source(p_environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
+		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
+			RENDER_TIMESTAMP("Setup Sky");
+			CameraMatrix projection = p_cam_projection;
+			if (p_reflection_probe.is_valid()) {
+				CameraMatrix correction;
+				correction.set_depth_correction(true);
+				projection = correction * p_cam_projection;
+			}
+
+			_setup_sky(p_environment, p_render_buffer, projection, p_cam_transform, screen_size);
+
 			RID sky = environment_get_sky(p_environment);
 			if (sky.is_valid()) {
-				RENDER_TIMESTAMP("Setup Sky");
-				CameraMatrix projection = p_cam_projection;
-				if (p_reflection_probe.is_valid()) {
-					CameraMatrix correction;
-					correction.set_depth_correction(true);
-					projection = correction * p_cam_projection;
-				}
-
-				_setup_sky(p_environment, p_cam_transform.origin, screen_size);
 				_update_sky(p_environment, projection, p_cam_transform);
 				radiance_uniform_set = sky_get_radiance_uniform_set_rd(sky, default_shader_rd, RADIANCE_UNIFORM_SET);
 			} else {
@@ -1813,8 +1834,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
 
 	{
-		bool will_continue_color = (can_continue_color || draw_sky || debug_giprobes || debug_sdfgi_probes);
-		bool will_continue_depth = (can_continue_depth || draw_sky || debug_giprobes || debug_sdfgi_probes);
+		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only || debug_giprobes || debug_sdfgi_probes);
+		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only || debug_giprobes || debug_sdfgi_probes);
 
 		//regular forward for now
 		Vector<Color> c;
@@ -1841,8 +1862,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	if (debug_giprobes) {
 		//debug giprobes
-		bool will_continue_color = (can_continue_color || draw_sky);
-		bool will_continue_depth = (can_continue_depth || draw_sky);
+		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
+		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
 
 		CameraMatrix dc;
 		dc.set_depth_correction(true);
@@ -1856,8 +1877,8 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	if (debug_sdfgi_probes) {
 		//debug giprobes
-		bool will_continue_color = (can_continue_color || draw_sky);
-		bool will_continue_depth = (can_continue_depth || draw_sky);
+		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only);
+		bool will_continue_depth = (can_continue_depth || draw_sky || draw_sky_fog_only);
 
 		CameraMatrix dc;
 		dc.set_depth_correction(true);
@@ -1867,7 +1888,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		RD::get_singleton()->draw_list_end();
 	}
 
-	if (draw_sky) {
+	if (draw_sky || draw_sky_fog_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
 		CameraMatrix projection = p_cam_projection;
@@ -2532,8 +2553,13 @@ void RasterizerSceneHighEndRD::_update_render_buffers_uniform_set(RID p_render_b
 			RD::Uniform u;
 			u.binding = 10;
 			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			RID vfog = render_buffers_get_volumetric_fog_texture(p_render_buffers);
-			if (vfog.is_null()) {
+			RID vfog = RID();
+			if (p_render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_buffers)) {
+				vfog = render_buffers_get_volumetric_fog_texture(p_render_buffers);
+				if (vfog.is_null()) {
+					vfog = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+				}
+			} else {
 				vfog = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 			}
 			u.ids.push_back(vfog);
