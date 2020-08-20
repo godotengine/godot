@@ -386,7 +386,10 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	if (p_area->is_gravity_point()) {
 		Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
 		const real_t v_length = v.length();
-		if (p_area->get_gravity_distance_scale() > 0 && v_length > 0) {
+		if (v_length <= 0) {
+			// Prevent Divide by Zero Error
+			// gravity += 0.0;
+		} else if (p_area->get_gravity_distance_scale() > 0) {
 			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v_length * p_area->get_gravity_distance_scale(), 2));
 		} else {
 			gravity += v.normalized() * p_area->get_gravity();
