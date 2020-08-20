@@ -45,6 +45,7 @@ namespace GodotTools
             get
             {
                 var projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
+                projectAssemblyName = projectAssemblyName.ToSafeDirName();
                 if (string.IsNullOrEmpty(projectAssemblyName))
                     projectAssemblyName = "UnnamedProject";
                 return projectAssemblyName;
