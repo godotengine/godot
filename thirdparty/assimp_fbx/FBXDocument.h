@@ -1102,7 +1102,6 @@ public:
 // so the memory overhead for them should be kept at a minimum.
 typedef std::unordered_map<uint64_t, LazyObject *> ObjectMap;
 typedef std::unordered_map<std::string, std::shared_ptr<const PropertyTable> > PropertyTemplateMap;
-
 typedef std::unordered_multimap<uint64_t, const Connection *> ConnectionMap;
 
 /** DOM class for global document settings, a single instance per document can
@@ -1194,12 +1193,8 @@ public:
 	const unsigned int *CreationTimeStamp() const {
 		return creationTimeStamp;
 	}
-	const FileGlobalSettings &GlobalSettings() const {
-		//ai_assert(globals.get());
-		return *globals.get();
-	}
+
 	const FileGlobalSettings *GlobalSettingsPtr() const {
-		//ai_assert(globals.get());
 		return globals.get();
 	}
 
@@ -1281,9 +1276,9 @@ private:
 	ConnectionMap src_connections;
 	ConnectionMap dest_connections;
 
-	unsigned int fbxVersion;
+	unsigned int fbxVersion = 0;
 	std::string creator;
-	unsigned int creationTimeStamp[7];
+	unsigned int creationTimeStamp[7] = {0};
 
 	std::vector<uint64_t> animationStacks;
 	std::vector<uint64_t> bind_poses;

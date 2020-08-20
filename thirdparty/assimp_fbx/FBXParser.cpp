@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @brief Implementation of the FBX parser and the rudimentary DOM that we use
  */
 
+#include <stdlib.h>     /* strtol */
 #include "thirdparty/zlib/zlib.h"
 
 #include "ByteSwapper.h"
@@ -284,6 +285,7 @@ size_t ParseTokenAsDim(const Token &t, const char *&err_out) {
 	const char *out = nullptr;
 	const size_t id = static_cast<size_t>(strtoul10_64(t.begin() + 1, &out, &length));
 	if (out > t.end()) {
+		print_error("failed to parse id");
 		err_out = "failed to parse ID";
 		return 0;
 	}
@@ -347,20 +349,19 @@ int ParseTokenAsInt(const Token &t, const char *&err_out) {
 		return static_cast<int>(ival);
 	}
 
-	//ai_assert(static_cast<size_t>(t.end() - t.begin()) > 0);
-
-	// XXX: should use size_t here
-	unsigned int length = static_cast<unsigned int>(t.end() - t.begin());
+	const size_t length = static_cast<size_t>(t.end() - t.begin());
 	if (length == 0) {
 		err_out = "expected valid integer number after asterisk";
-		return 0;
+		ERR_FAIL_V_MSG(0,"expected valid integer number after asterisk");
 	}
 
-	char *out = nullptr;
-	const int intval = strtol(t.begin(), &out, length);
+	// must not be null for strtol to work
+	char *out = (char *) t.end();
+	// string begin, end ptr ref, base 10
+	const int intval = strtol(t.begin(), &out, 10);
 	if (out == nullptr || out != t.end()) {
 		err_out = "failed to parse ID";
-		return 0;
+		ERR_FAIL_V_MSG(0,"failed to parse ID");
 	}
 
 	return intval;

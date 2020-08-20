@@ -251,9 +251,9 @@ FileGlobalSettings::~FileGlobalSettings() {
 
 // ------------------------------------------------------------------------------------------------
 Document::Document(const Parser &parser, const ImportSettings &settings) :
-		settings(settings), parser(parser) {
+		settings(settings), parser(parser), SafeToImport(false) {
 	// Cannot use array default initialization syntax because vc8 fails on it
-	for (auto &timeStamp : creationTimeStamp) {
+	for (unsigned int &timeStamp : creationTimeStamp) {
 		timeStamp = 0;
 	}
 

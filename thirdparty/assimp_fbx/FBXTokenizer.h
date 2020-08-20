@@ -92,9 +92,7 @@ public:
 
 	/** construct a binary token */
 	Token(const char *p_sbegin, const char *p_send, TokenType p_type, size_t p_offset);
-
 	~Token();
-
 public:
 	std::string StringContents() const {
 		return std::string(begin(), end());

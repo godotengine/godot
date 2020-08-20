@@ -342,7 +342,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 	state.fbx_root_node->godot_node = state.root;
 
 	// Size relative to cm.
-	const real_t fbx_unit_scale = p_document->GlobalSettings().UnitScaleFactor();
+	const real_t fbx_unit_scale = p_document->GlobalSettingsPtr()->UnitScaleFactor();
 
 	// Set FBX file scale is relative to CM must be converted to M
 	state.scale = fbx_unit_scale / 100.0;
