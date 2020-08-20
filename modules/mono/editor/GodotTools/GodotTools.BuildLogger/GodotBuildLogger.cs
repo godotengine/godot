@@ -70,13 +70,14 @@ namespace GodotTools.BuildLogger
         {
             string line = $"{e.File}({e.LineNumber},{e.ColumnNumber}): error {e.Code}: {e.Message}";
 
-            if (e.ProjectFile.Length > 0)
+            if (!string.IsNullOrEmpty(e.ProjectFile))
                 line += $" [{e.ProjectFile}]";
 
             WriteLine(line);
 
             string errorLine = $@"error,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
-                               $@"{e.Code.CsvEscape()},{e.Message.CsvEscape()},{e.ProjectFile.CsvEscape()}";
+                               $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
+                               $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             issuesStreamWriter.WriteLine(errorLine);
         }
 
@@ -89,8 +90,9 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber},{e.Code.CsvEscape()}," +
-                                 $@"{e.Message.CsvEscape()},{(e.ProjectFile != null ? e.ProjectFile.CsvEscape() : string.Empty)}";
+            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+                                 $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
+                                 $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             issuesStreamWriter.WriteLine(warningLine);
         }
 
