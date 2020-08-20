@@ -555,18 +555,15 @@ def generate_vs_project(env, num_jobs):
         # last double quote off, confusing MSBuild
         env["MSVSBUILDCOM"] = build_commandline(
             "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
-            " tools=!tools! -j"
-            + str(num_jobs)
+            " tools=!tools! -j" + str(num_jobs)
         )
         env["MSVSREBUILDCOM"] = build_commandline(
             "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
-            " tools=!tools! vsproj=yes -j"
-            + str(num_jobs)
+            " tools=!tools! vsproj=yes -j" + str(num_jobs)
         )
         env["MSVSCLEANCOM"] = build_commandline(
             "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no"
-            " target=$(Configuration) tools=!tools! -j"
-            + str(num_jobs)
+            " target=$(Configuration) tools=!tools! -j" + str(num_jobs)
         )
 
         # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
