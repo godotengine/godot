@@ -235,7 +235,10 @@ def configure(env):
         env.Append(CPPDEFINES=["ICLOUD_ENABLED"])
 
     env.Prepend(
-        CPPPATH=["$IPHONESDK/usr/include", "$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers",]
+        CPPPATH=[
+            "$IPHONESDK/usr/include",
+            "$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers",
+        ]
     )
 
     env["ENV"]["CODESIGN_ALLOCATE"] = "/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate"
