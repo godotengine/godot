@@ -194,8 +194,6 @@ void PhysicsBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void PhysicsBone3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &PhysicsBone3D::_direct_state_changed);
-
 	ClassDB::bind_method(D_METHOD("get_bone_id"), &PhysicsBone3D::get_bone_id);
 
 	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_name"), &PhysicsBone3D::set_bone_name);
