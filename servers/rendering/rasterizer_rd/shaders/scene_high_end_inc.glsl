@@ -43,12 +43,6 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
 
-	float time;
-	float reflection_multiplier; // one normally, zero when rendering reflections
-
-	bool pancake_shadows;
-	uint pad;
-
 	//use vec4s because std140 doesnt play nice with vec2s, z and w are wasted
 	vec4 directional_penumbra_shadow_kernel[32];
 	vec4 directional_soft_shadow_kernel[32];
@@ -108,6 +102,13 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 
 	vec3 fog_light_color;
 	float fog_sun_scatter;
+
+	float fog_aerial_perspective;
+
+	float time;
+	float reflection_multiplier; // one normally, zero when rendering reflections
+
+	bool pancake_shadows;
 }
 
 scene_data;

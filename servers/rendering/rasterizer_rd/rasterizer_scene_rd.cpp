@@ -2322,6 +2322,7 @@ void RasterizerSceneRD::_setup_sky(RID p_environment, RID p_render_buffers, cons
 	sky_scene_state.ubo.z_far = p_projection.get_z_far();
 	sky_scene_state.ubo.fog_enabled = environment_is_fog_enabled(p_environment);
 	sky_scene_state.ubo.fog_density = environment_get_fog_density(p_environment);
+	sky_scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_environment);
 	Color fog_color = environment_get_fog_light_color(p_environment).to_linear();
 	float fog_energy = environment_get_fog_light_energy(p_environment);
 	sky_scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
@@ -2971,7 +2972,7 @@ void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::Envi
 	env->sdfgi_y_scale = p_y_scale;
 }
 
-void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density) {
+void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -2982,6 +2983,7 @@ void RasterizerSceneRD::environment_set_fog(RID p_env, bool p_enable, const Colo
 	env->fog_density = p_density;
 	env->fog_height = p_height;
 	env->fog_height_density = p_height_density;
+	env->fog_aerial_perspective = p_fog_aerial_perspective;
 }
 
 bool RasterizerSceneRD::environment_is_fog_enabled(RID p_env) const {
@@ -3020,6 +3022,12 @@ float RasterizerSceneRD::environment_get_fog_height_density(RID p_env) const {
 	const Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->fog_height_density;
+}
+
+float RasterizerSceneRD::environment_get_fog_aerial_perspective(RID p_env) const {
+	const Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->fog_aerial_perspective;
 }
 
 void RasterizerSceneRD::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RenderingServer::EnvVolumetricFogShadowFilter p_shadow_filter) {
