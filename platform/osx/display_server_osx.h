@@ -230,6 +230,7 @@ public:
 	virtual Vector<int> get_window_list() const override;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
