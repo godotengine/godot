@@ -119,6 +119,9 @@ private:
 		Vector<NetData> rpc_methods;
 		Vector<NetData> rpc_properties;
 
+		float process_cumulative_time = 0.0f;
+		float physics_process_cumulative_time = 0.0f;
+
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
 		bool physics_process = false;
@@ -334,10 +337,14 @@ public:
 	/* PROCESSING */
 	void set_physics_process(bool p_process);
 	float get_physics_process_delta_time() const;
+	float get_physics_process_cumulative_time() const;
+	float get_physics_process_total_time() const;
 	bool is_physics_processing() const;
 
 	void set_process(bool p_process);
 	float get_process_delta_time() const;
+	float get_process_cumulative_time() const;
+	float get_process_total_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
