@@ -181,6 +181,7 @@ void main() {
 	float alpha = 1.0; // Only available to subpasses
 	vec4 half_res_color = vec4(1.0);
 	vec4 quarter_res_color = vec4(1.0);
+	vec4 custom_fog = vec4(0.0);
 
 #ifdef USE_CUBEMAP_PASS
 	vec3 inverted_cube_normal = cube_normal;
@@ -231,6 +232,10 @@ FRAGMENT_SHADER_CODE
 	if (scene_data.fog_enabled) {
 		vec4 fog = fog_process(cube_normal);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
+
+	if (custom_fog.a > 0.0) {
+		frag_color.rgb = mix(frag_color.rgb, custom_fog.rgb, custom_fog.a);
 	}
 
 #endif // DISABLE_FOG
