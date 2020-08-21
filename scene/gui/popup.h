@@ -33,12 +33,19 @@
 
 #include "scene/main/window.h"
 
+#include "core/local_vector.h"
+
 class Popup : public Window {
 	GDCLASS(Popup, Window);
 
-	Window *parent_visible;
+	LocalVector<Window *> visible_parents;
+	bool popped_up = false;
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
+
+	void _initialize_visible_parents();
+	void _deinitialize_visible_parents();
+
 	void _parent_focused();
 
 protected:
