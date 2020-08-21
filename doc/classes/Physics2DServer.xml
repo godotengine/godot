@@ -804,6 +804,7 @@
 			</argument>
 			<description>
 				Sets a body state using one of the [enum BodyState] constants.
+				Note that the method doesn't take effect immediately. The state will change on the next physics frame.
 			</description>
 		</method>
 		<method name="body_test_motion">
