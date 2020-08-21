@@ -162,13 +162,17 @@ env.CommandNoCache(
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
 env.CommandNoCache(
-    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header."),
+    "#core/authors.gen.h",
+    "../AUTHORS.md",
+    env.Run(core_builders.make_authors_header, "Generating authors header."),
 )
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
 env.CommandNoCache(
-    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header."),
+    "#core/donors.gen.h",
+    "../DONORS.md",
+    env.Run(core_builders.make_donors_header, "Generating donors header."),
 )
 
 # License

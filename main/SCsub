@@ -15,7 +15,9 @@ if env["tests"]:
 
 env_main.Depends("#main/splash.gen.h", "#main/splash.png")
 env_main.CommandNoCache(
-    "#main/splash.gen.h", "#main/splash.png", env.Run(main_builders.make_splash, "Building splash screen header."),
+    "#main/splash.gen.h",
+    "#main/splash.png",
+    env.Run(main_builders.make_splash, "Building splash screen header."),
 )
 
 env_main.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
@@ -27,7 +29,9 @@ env_main.CommandNoCache(
 
 env_main.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env_main.CommandNoCache(
-    "#main/app_icon.gen.h", "#main/app_icon.png", env.Run(main_builders.make_app_icon, "Building application icon."),
+    "#main/app_icon.gen.h",
+    "#main/app_icon.png",
+    env.Run(main_builders.make_app_icon, "Building application icon."),
 )
 
 lib = env_main.add_library("main", env.main_sources)
