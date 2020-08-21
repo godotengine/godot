@@ -599,9 +599,9 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 						if (path.get_subname_count() == 1 && Object::cast_to<Skeleton>(spatial)) {
 							Skeleton *sk = Object::cast_to<Skeleton>(spatial);
+							track_xform->skeleton = sk;
 							int bone_idx = sk->find_bone(path.get_subname(0));
 							if (bone_idx != -1) {
-								track_xform->skeleton = sk;
 								track_xform->bone_idx = bone_idx;
 							}
 						}
@@ -1207,7 +1207,7 @@ void AnimationTree::_process_graph(float p_delta) {
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						t->skeleton->set_bone_pose(t->bone_idx, xform);
 
-					} else {
+					} else if (!t->skeleton) {
 						t->spatial->set_transform(xform);
 					}
 
