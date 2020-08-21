@@ -1692,6 +1692,15 @@ void main() {
 	float clearcoat_gloss = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+#if defined(CUSTOM_FOG_USED)
+	vec4 custom_fog = vec4(0.0);
+#endif
+#if defined(CUSTOM_RADIANCE_USED)
+	vec4 custom_radiance = vec4(0.0);
+#endif
+#if defined(CUSTOM_IRRADIANCE_USED)
+	vec4 custom_irradiance = vec4(0.0);
+#endif
 
 #if defined(AO_USED)
 	float ao = 1.0;
@@ -1909,6 +1918,10 @@ FRAGMENT_SHADER_CODE
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 
+#if defined(CUSTOM_RADIANCE_USED)
+	specular_light = mix(specular_light, custom_radiance.rgb, custom_radiance.a);
+#endif
+
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
 	if (scene_data.use_ambient_light) {
@@ -1926,7 +1939,9 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 #endif // USE_LIGHTMAP
-
+#if defined(CUSTOM_IRRADIANCE_USED)
+	ambient_light = mix(specular_light, custom_irradiance.rgb, custom_irradiance.a);
+#endif
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	//radiance
@@ -2755,6 +2770,11 @@ FRAGMENT_SHADER_CODE
 		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 	}
 
+#if defined(CUSTOM_FOG_USED)
+	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, custom_fog.rgb, custom_fog.a);
+	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), custom_fog.a);
+#endif //CUSTOM_FOG_USED
+
 #else //MODE_MULTIPLE_RENDER_TARGETS
 
 #ifdef MODE_UNSHADED
@@ -2774,6 +2794,10 @@ FRAGMENT_SHADER_CODE
 		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
+
+#if defined(CUSTOM_FOG_USED)
+	frag_color.rgb = mix(frag_color.rgb, custom_fog.rgb, custom_fog.a);
+#endif //CUSTOM_FOG_USED
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 
