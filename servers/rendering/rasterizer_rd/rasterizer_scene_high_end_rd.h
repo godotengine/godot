@@ -308,12 +308,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float viewport_size[2];
 			float screen_pixel_size[2];
 
-			float time;
-			float reflection_multiplier;
-
-			uint32_t pancake_shadows;
-			uint32_t pad;
-
 			float directional_penumbra_shadow_kernel[128]; //32 vec4s
 			float directional_soft_shadow_kernel[128];
 			float penumbra_shadow_kernel[128];
@@ -366,7 +360,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			uint32_t volumetric_fog_pad;
 
 			// Fog
-
 			uint32_t fog_enabled;
 			float fog_density;
 			float fog_height;
@@ -374,6 +367,13 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 			float fog_light_color[3];
 			float fog_sun_scatter;
+
+			float fog_aerial_perspective;
+
+			float time;
+			float reflection_multiplier;
+
+			uint32_t pancake_shadows;
 		};
 
 		UBO ubo;

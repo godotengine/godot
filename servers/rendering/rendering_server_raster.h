@@ -589,7 +589,7 @@ public:
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
-	BIND8(environment_set_fog, RID, bool, const Color &, float, float, float, float, float)
+	BIND9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
 	BIND9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter)
 
 	BIND2(environment_set_volumetric_fog_volume_size, int, int)

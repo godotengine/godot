@@ -98,6 +98,10 @@
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
 			The background mode. See [enum BGMode] for possible values.
 		</member>
+		<member name="fog_aerial_perspective" type="float" setter="set_fog_aerial_perspective" getter="get_fog_aerial_perspective" default="0.0">
+			Blend factor between the fog's color and the color of the background [Sky]. Must have [member background_mode] set to [constant BG_SKY].
+			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
+		</member>
 		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.001">
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">

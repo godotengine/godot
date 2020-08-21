@@ -62,7 +62,8 @@ layout(set = 0, binding = 2, std140) uniform SceneData {
 	bool volumetric_fog_enabled;
 	float volumetric_fog_inv_length;
 	float volumetric_fog_detail_spread;
-	uint volumetric_fog_pad;
+
+	float fog_aerial_perspective;
 
 	vec3 fog_light_color;
 	float fog_sun_scatter;
@@ -140,8 +141,8 @@ vec4 volumetric_fog_process(vec2 screen_uv) {
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
 }
 
-vec4 fog_process(vec3 view) {
-	vec3 fog_color = scene_data.fog_light_color;
+vec4 fog_process(vec3 view, vec3 sky_color) {
+	vec3 fog_color = mix(scene_data.fog_light_color, sky_color, scene_data.fog_aerial_perspective);
 
 	if (scene_data.fog_sun_scatter > 0.001) {
 		vec4 sun_scatter = vec4(0.0);
@@ -225,7 +226,7 @@ FRAGMENT_SHADER_CODE
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (scene_data.fog_enabled) {
-		vec4 fog = fog_process(cube_normal);
+		vec4 fog = fog_process(cube_normal, frag_color.rgb);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
 

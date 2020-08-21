@@ -190,6 +190,7 @@ private:
 	float fog_density = 0.001;
 	float fog_height = 0.0;
 	float fog_height_density = 0.0; //can be negative to invert effect
+	float fog_aerial_perspective = 0.0;
 
 	void _update_fog();
 
@@ -368,6 +369,8 @@ public:
 	float get_fog_height() const;
 	void set_fog_height_density(float p_amount);
 	float get_fog_height_density() const;
+	void set_fog_aerial_perspective(float p_aerial_perspective);
+	float get_fog_aerial_perspective() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);
