@@ -653,6 +653,14 @@ void VisualServerViewport::viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_
 	VSG::storage->render_target_set_msaa(viewport->render_target, p_msaa);
 }
 
+void VisualServerViewport::viewport_set_use_fxaa(RID p_viewport, bool p_fxaa) {
+
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_use_fxaa(viewport->render_target, p_fxaa);
+}
+
 void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);

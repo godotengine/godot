@@ -282,6 +282,7 @@ private:
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
+	bool use_fxaa;
 	bool hdr;
 
 	Ref<ViewportTexture> default_texture;
@@ -494,6 +495,9 @@ public:
 
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
+
+	void set_use_fxaa(bool p_fxaa);
+	bool get_use_fxaa() const;
 
 	void set_hdr(bool p_hdr);
 	bool get_hdr() const;

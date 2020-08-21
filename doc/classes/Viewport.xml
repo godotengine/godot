@@ -241,6 +241,9 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
 		</member>
+		<member name="fxaa" type="bool" setter="set_use_fxaa" getter="get_use_fxaa" default="false">
+			Enables fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>

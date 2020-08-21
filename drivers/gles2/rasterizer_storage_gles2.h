@@ -1218,6 +1218,8 @@ public:
 		bool used_in_frame;
 		VS::ViewportMSAA msaa;
 
+		bool use_fxaa;
+
 		RID texture;
 
 		bool used_dof_blur_near;
@@ -1237,6 +1239,7 @@ public:
 				height(0),
 				used_in_frame(false),
 				msaa(VS::VIEWPORT_MSAA_DISABLED),
+				use_fxaa(false),
 				used_dof_blur_near(false),
 				mip_maps_allocated(false) {
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
@@ -1261,6 +1264,7 @@ public:
 	virtual bool render_target_was_used(RID p_render_target);
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
+	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 
 	/* CANVAS SHADOW */
 

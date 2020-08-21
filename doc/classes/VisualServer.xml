@@ -4231,6 +4231,17 @@
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
 			</description>
 		</method>
+		<method name="viewport_set_use_fxaa">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="fxaa" type="bool">
+			</argument>
+			<description>
+				Enables fast approximate antialiasing for this viewport. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+			</description>
+		</method>
 		<method name="viewport_set_vflip">
 			<return type="void">
 			</return>
