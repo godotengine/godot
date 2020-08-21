@@ -160,8 +160,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 	private void setButtonPausedState(boolean paused) {
 		mStatePaused = paused;
-		int stringResourceID = paused ? R.string.text_button_resume :
-										R.string.text_button_pause;
+		int stringResourceID = paused ? R.string.text_button_resume : R.string.text_button_pause;
 		mPauseButton.setText(stringResourceID);
 	}
 
@@ -318,7 +317,8 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 		// GodotEditText layout
 		GodotEditText edittext = new GodotEditText(this);
-		edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+				(int)getResources().getDimension(R.dimen.text_edit_height)));
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
