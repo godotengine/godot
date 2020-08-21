@@ -322,16 +322,40 @@
 				Returns the relative [NodePath] from this node to the specified [code]node[/code]. Both nodes must be in the same scene or the function will fail.
 			</description>
 		</method>
+		<method name="get_physics_process_cumulative_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the cumulative physics-bound frame time elapsed (in seconds) since this node has been active and running (i.e. not paused) in the current scene tree.
+			</description>
+		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the time elapsed (in seconds) since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.physics_ticks_per_second].
 			</description>
 		</method>
+		<method name="get_physics_process_total_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the total time elapsed (in seconds) since this node has been part of the current scene tree regardless of the pause state.
+			</description>
+		</method>
+		<method name="get_process_cumulative_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the cumulative time elapsed (in seconds) since this node has been active and running (i.e. not paused) in the current tree.
+			</description>
+		</method>
 		<method name="get_process_delta_time" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the time elapsed (in seconds) since the last process callback. This value may vary from frame to frame.
+			</description>
+		</method>
+		<method name="get_process_total_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the total time elapsed (in seconds) since this node has been part of the current scene tree regardless of the pause state.
 			</description>
 		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">

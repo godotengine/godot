@@ -55,13 +55,17 @@ void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
 			if (get_script_instance()) {
-				Variant time = get_process_delta_time();
+				double d_time = get_process_delta_time();
+				data.process_cumulative_time += d_time;
+				Variant time = d_time;
 				get_script_instance()->call(SceneStringNames::get_singleton()->_process, time);
 			}
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			if (get_script_instance()) {
-				Variant time = get_physics_process_delta_time();
+				double d_time = get_physics_process_delta_time();
+				data.physics_process_cumulative_time += d_time;
+				Variant time = d_time;
 				get_script_instance()->call(SceneStringNames::get_singleton()->_physics_process, time);
 			}
 
@@ -720,6 +724,22 @@ double Node::get_physics_process_delta_time() const {
 	}
 }
 
+double Node::get_physics_process_cumulative_time() const {
+	if (data.tree) {
+		return data.physics_process_cumulative_time;
+	} else {
+		return 0;
+	}
+}
+
+double Node::get_physics_process_total_time() const {
+	if (data.tree) {
+		return data.tree->get_physics_total_time();
+	} else {
+		return 0;
+	}
+}
+
 double Node::get_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_process_time();
@@ -744,6 +764,22 @@ void Node::set_process(bool p_process) {
 
 bool Node::is_processing() const {
 	return data.process;
+}
+
+double Node::get_process_cumulative_time() const {
+	if (data.tree) {
+		return data.process_cumulative_time;
+	} else {
+		return 0;
+	}
+}
+
+double Node::get_process_total_time() const {
+	if (data.tree) {
+		return data.tree->get_process_total_time();
+	} else {
+		return 0;
+	}
 }
 
 void Node::set_process_internal(bool p_process_internal) {
@@ -2591,8 +2627,12 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("propagate_call", "method", "args", "parent_first"), &Node::propagate_call, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_physics_process", "enable"), &Node::set_physics_process);
 	ClassDB::bind_method(D_METHOD("get_physics_process_delta_time"), &Node::get_physics_process_delta_time);
+	ClassDB::bind_method(D_METHOD("get_physics_process_cumulative_time"), &Node::get_physics_process_cumulative_time);
+	ClassDB::bind_method(D_METHOD("get_physics_process_total_time"), &Node::get_physics_process_total_time);
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
+	ClassDB::bind_method(D_METHOD("get_process_cumulative_time"), &Node::get_process_cumulative_time);
+	ClassDB::bind_method(D_METHOD("get_process_total_time"), &Node::get_process_total_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
 	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
 	ClassDB::bind_method(D_METHOD("get_process_priority"), &Node::get_process_priority);

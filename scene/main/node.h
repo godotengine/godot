@@ -122,6 +122,9 @@ private:
 		int network_master = 1; // Server by default.
 		Vector<MultiplayerAPI::RPCConfig> rpc_methods;
 
+		double process_cumulative_time = 0.0;
+		double physics_process_cumulative_time = 0.0;
+
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		// TODO: Should move all the stuff below to bits.
 		bool physics_process = false;
@@ -341,10 +344,14 @@ public:
 	/* PROCESSING */
 	void set_physics_process(bool p_process);
 	double get_physics_process_delta_time() const;
+	double get_physics_process_cumulative_time() const;
+	double get_physics_process_total_time() const;
 	bool is_physics_processing() const;
 
 	void set_process(bool p_process);
 	double get_process_delta_time() const;
+	double get_process_cumulative_time() const;
+	double get_process_total_time() const;
 	bool is_processing() const;
 
 	void set_physics_process_internal(bool p_process_internal);
