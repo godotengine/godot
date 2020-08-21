@@ -540,7 +540,7 @@ void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo(Variant::OBJECT, "modification_stack",
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {
@@ -653,16 +653,12 @@ void Skeleton2D::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_PROCESS) {
 		if (modification_stack.is_valid()) {
-			if (modification_stack->execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
-				execute_modification(get_process_delta_time());
-			}
+			execute_modification(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
 		}
 	}
 	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 		if (modification_stack.is_valid()) {
-			if (modification_stack->execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process) {
-				execute_modification(get_physics_process_delta_time());
-			}
+			execute_modification(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 		}
 	}
 }
@@ -699,7 +695,7 @@ Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 	return modification_stack;
 }
 
-void Skeleton2D::execute_modification(float delta) {
+void Skeleton2D::execute_modification(float delta, int p_execution_mode) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}
@@ -714,27 +710,34 @@ void Skeleton2D::execute_modification(float delta) {
 		modification_stack->set_skeleton(this);
 	}
 
-	modification_stack->execute(delta);
+	modification_stack->execute(delta, p_execution_mode);
 
-	// A hack: Override the CanvasItem transform using the RenderingServer so the local pose override is taken into account.
-	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i].local_pose_override_amount > 0) {
-			bones[i].bone->set_meta("_local_pose_override_enabled_", true);
-			bones[i].bone->set_transform(bones[i].local_pose_cache);
+	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
+	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
+		// A hack: Override the CanvasItem transform using the RenderingServer so the local pose override is taken into account.
+		for (int i = 0; i < bones.size(); i++) {
+			if (bones[i].local_pose_override_amount > 0) {
+				bones[i].bone->set_meta("_local_pose_override_enabled_", true);
+				bones[i].bone->set_transform(bones[i].local_pose_cache);
 
-			Transform2D final_trans = bones[i].local_pose_cache;
-			final_trans = final_trans.interpolate_with(bones[i].local_pose_override, bones[i].local_pose_override_amount);
+				Transform2D final_trans = bones[i].local_pose_cache;
+				final_trans = final_trans.interpolate_with(bones[i].local_pose_override, bones[i].local_pose_override_amount);
 
-			RenderingServer::get_singleton()->canvas_item_set_transform(bones[i].bone->get_canvas_item(), final_trans);
+				RenderingServer::get_singleton()->canvas_item_set_transform(bones[i].bone->get_canvas_item(), final_trans);
 
-			if (bones[i].local_pose_override_persistent) {
-				bones.write[i].local_pose_override_amount = 0.0;
+				if (bones[i].local_pose_override_persistent) {
+					bones.write[i].local_pose_override_amount = 0.0;
+				}
+			} else {
+				// TODO: see if there is a way to undo the override without having to resort to setting every bone's transform.
+				bones[i].bone->remove_meta("_local_pose_override_enabled_");
+				bones[i].bone->set_transform(bones.write[i].local_pose_cache);
+				RenderingServer::get_singleton()->canvas_item_set_transform(bones[i].bone->get_canvas_item(), bones[i].local_pose_cache);
 			}
-		} else {
-			// TODO: see if there is a way to undo the override without having to resort to setting every bone's transform.
-			bones[i].bone->remove_meta("_local_pose_override_enabled_");
-			bones[i].bone->set_transform(bones.write[i].local_pose_cache);
-			RenderingServer::get_singleton()->canvas_item_set_transform(bones[i].bone->get_canvas_item(), bones[i].local_pose_cache);
+		}
+	} else {
+		for (int i = 0; i < bones.size(); i++) {
+			bones[i].bone->set_transform(bones[i].local_pose_cache);
 		}
 	}
 }
@@ -750,7 +753,7 @@ void Skeleton2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton2D::set_modification_stack);
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton2D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modification"), &Skeleton2D::execute_modification);
+	ClassDB::bind_method(D_METHOD("execute_modification", "execution_mode"), &Skeleton2D::execute_modification);
 
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);

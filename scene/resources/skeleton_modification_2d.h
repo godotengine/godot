@@ -61,16 +61,12 @@ public:
 		execution_mode_process,
 		execution_mode_physics_process
 	};
-	int execution_mode = execution_mode_process;
-
-	void set_execution_mode(int p_mode);
-	int get_execution_mode();
 
 	Vector<Ref<SkeletonModification2D>> modifications;
 	int modifications_count = 0;
 
 	void setup();
-	void execute(float delta);
+	void execute(float delta, int p_execution_mode);
 
 	void enable_all_modifications(bool p_enable);
 	Ref<SkeletonModification2D> get_modification(int p_mod_idx) const;
@@ -85,6 +81,7 @@ public:
 	Skeleton2D *get_skeleton() const;
 
 	bool get_is_setup() const;
+	void set_is_setup(bool p_setup);
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const;
@@ -107,8 +104,9 @@ protected:
 	static void _bind_methods();
 
 	SkeletonModificationStack2D *stack;
+	int execution_mode = SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process;
 
-	bool enabled = false;
+	bool enabled = true;
 	bool is_setup = false;
 
 public:
@@ -117,6 +115,13 @@ public:
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
+
+	SkeletonModificationStack2D *get_modification_stack();
+	void set_is_setup(bool p_setup);
+	bool get_is_setup() const;
+
+	void set_execution_mode(int p_mode);
+	int get_execution_mode() const;
 
 	float clamp_angle(float angle, float min_bound, float max_bound, bool invert_clamp = false);
 
@@ -575,6 +580,32 @@ public:
 
 	SkeletonModification2DPhysicalBones();
 	~SkeletonModification2DPhysicalBones();
+};
+
+///////////////////////////////////////
+// SkeletonModification2DStackHolder
+///////////////////////////////////////
+
+class SkeletonModification2DStackHolder : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DStackHolder, SkeletonModification2D);
+
+protected:
+	static void _bind_methods();
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	Ref<SkeletonModificationStack2D> held_modification_stack;
+
+	void execute(float delta) override;
+	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+
+	void set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack);
+	Ref<SkeletonModificationStack2D> get_held_modification_stack() const;
+
+	SkeletonModification2DStackHolder();
+	~SkeletonModification2DStackHolder();
 };
 
 #endif // SKELETONMODIFICATION2D_H

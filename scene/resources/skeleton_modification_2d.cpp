@@ -45,7 +45,7 @@ void SkeletonModificationStack2D::_get_property_list(List<PropertyInfo> *p_list)
 				PropertyInfo(Variant::OBJECT, "modifications/" + itos(i),
 						PROPERTY_HINT_RESOURCE_TYPE,
 						"SkeletonModification2D",
-						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+						PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 	}
 }
 
@@ -89,7 +89,7 @@ void SkeletonModificationStack2D::setup() {
 	}
 }
 
-void SkeletonModificationStack2D::execute(float delta) {
+void SkeletonModificationStack2D::execute(float delta, int p_execution_mode) {
 	ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr || is_queued_for_deletion(),
 			"Modification stack is not properly setup and therefore cannot execute!");
 
@@ -106,7 +106,10 @@ void SkeletonModificationStack2D::execute(float delta) {
 		if (!modifications[i].is_valid()) {
 			continue;
 		}
-		modifications.get(i)->execute(delta);
+
+		if (modifications[i]->get_execution_mode() == p_execution_mode) {
+			modifications.get(i)->execute(delta);
+		}
 	}
 }
 
@@ -162,6 +165,10 @@ Skeleton2D *SkeletonModificationStack2D::get_skeleton() const {
 	return skeleton;
 }
 
+void SkeletonModificationStack2D::set_is_setup(bool p_setup) {
+	is_setup = p_setup;
+}
+
 bool SkeletonModificationStack2D::get_is_setup() const {
 	return is_setup;
 }
@@ -184,14 +191,6 @@ float SkeletonModificationStack2D::get_strength() const {
 	return strength;
 }
 
-void SkeletonModificationStack2D::set_execution_mode(int p_new_mode) {
-	execution_mode = p_new_mode;
-}
-
-int SkeletonModificationStack2D::get_execution_mode() {
-	return execution_mode;
-}
-
 void SkeletonModificationStack2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("setup"), &SkeletonModificationStack2D::setup);
 	ClassDB::bind_method(D_METHOD("execute", "delta"), &SkeletonModificationStack2D::execute);
@@ -205,6 +204,7 @@ void SkeletonModificationStack2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modification_count"), &SkeletonModificationStack2D::set_modification_count);
 	ClassDB::bind_method(D_METHOD("get_modification_count"), &SkeletonModificationStack2D::get_modification_count);
 
+	ClassDB::bind_method(D_METHOD("set_is_setup", "setup"), &SkeletonModificationStack2D::set_is_setup);
 	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModificationStack2D::get_is_setup);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModificationStack2D::set_enabled);
@@ -213,12 +213,10 @@ void SkeletonModificationStack2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &SkeletonModificationStack2D::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &SkeletonModificationStack2D::get_strength);
 
-	ClassDB::bind_method(D_METHOD("set_execution_mode", "execution_mode"), &SkeletonModificationStack2D::set_execution_mode);
-	ClassDB::bind_method(D_METHOD("get_execution_mode"), &SkeletonModificationStack2D::get_execution_mode);
+	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkeletonModificationStack2D::get_skeleton);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_modification_count", "get_modification_count");
 }
 
@@ -236,6 +234,12 @@ SkeletonModificationStack2D::SkeletonModificationStack2D() {
 ///////////////////////////////////////
 
 void SkeletonModification2D::execute(float delta) {
+	if (get_script_instance()) {
+		if (get_script_instance()->has_method("execute")) {
+			get_script_instance()->call("execute", delta);
+		}
+	}
+
 	if (!enabled)
 		return;
 }
@@ -244,6 +248,14 @@ void SkeletonModification2D::setup_modification(SkeletonModificationStack2D *p_s
 	stack = p_stack;
 	if (stack) {
 		is_setup = true;
+	} else {
+		WARN_PRINT("Could not setup modification with name " + get_name());
+	}
+
+	if (get_script_instance()) {
+		if (get_script_instance()->has_method("execute")) {
+			get_script_instance()->call("setup_modification", p_stack);
+		}
 	}
 }
 
@@ -303,14 +315,41 @@ float SkeletonModification2D::clamp_angle(float angle, float min_bound, float ma
 	return angle;
 }
 
+SkeletonModificationStack2D *SkeletonModification2D::get_modification_stack() {
+	return stack;
+}
+
+void SkeletonModification2D::set_is_setup(bool p_setup) {
+	is_setup = p_setup;
+}
+
+bool SkeletonModification2D::get_is_setup() const {
+	return is_setup;
+}
+
+void SkeletonModification2D::set_execution_mode(int p_mode) {
+	execution_mode = p_mode;
+}
+
+int SkeletonModification2D::get_execution_mode() const {
+	return execution_mode;
+}
+
 void SkeletonModification2D::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("execute"));
 	BIND_VMETHOD(MethodInfo("setup_modification"));
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);
+	ClassDB::bind_method(D_METHOD("get_modification_stack"), &SkeletonModification2D::get_modification_stack);
+	ClassDB::bind_method(D_METHOD("set_is_setup", "is_setup"), &SkeletonModification2D::set_is_setup);
+	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModification2D::get_is_setup);
+	ClassDB::bind_method(D_METHOD("set_execution_mode", "execution_mode"), &SkeletonModification2D::set_execution_mode);
+	ClassDB::bind_method(D_METHOD("get_execution_mode"), &SkeletonModification2D::get_execution_mode);
+	ClassDB::bind_method(D_METHOD("clamp_angle", "angle", "min", "max", "invert"), &SkeletonModification2D::clamp_angle);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
 }
 
 SkeletonModification2D::SkeletonModification2D() {
@@ -1684,7 +1723,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 
 	// Collision detection/response
 	if (use_colliders) {
-		if (stack->execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process) {
+		if (execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process) {
 			Ref<World2D> world_2d = stack->skeleton->get_world_2d();
 			ERR_FAIL_COND(world_2d.is_null());
 			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
@@ -2805,4 +2844,79 @@ SkeletonModification2DPhysicalBones::SkeletonModification2DPhysicalBones() {
 }
 
 SkeletonModification2DPhysicalBones::~SkeletonModification2DPhysicalBones() {
+}
+
+///////////////////////////////////////
+// StackHolder
+///////////////////////////////////////
+
+bool SkeletonModification2DStackHolder::_set(const StringName &p_path, const Variant &p_value) {
+	String path = p_path;
+
+	if (path == "held_modification_stack") {
+		set_held_modification_stack(p_value);
+	}
+	return true;
+}
+
+bool SkeletonModification2DStackHolder::_get(const StringName &p_path, Variant &r_ret) const {
+	String path = p_path;
+
+	if (path == "held_modification_stack") {
+		r_ret = get_held_modification_stack();
+	}
+	return true;
+}
+
+void SkeletonModification2DStackHolder::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "held_modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+}
+
+void SkeletonModification2DStackHolder::execute(float delta) {
+	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
+			"Modification is not setup and therefore cannot execute!");
+
+	if (held_modification_stack.is_valid()) {
+		held_modification_stack->execute(delta, execution_mode);
+	}
+}
+
+void SkeletonModification2DStackHolder::setup_modification(SkeletonModificationStack2D *p_stack) {
+	stack = p_stack;
+
+	if (stack != nullptr) {
+		is_setup = true;
+
+		if (held_modification_stack.is_valid()) {
+			held_modification_stack->set_skeleton(stack->get_skeleton());
+			held_modification_stack->setup();
+		}
+	}
+}
+
+void SkeletonModification2DStackHolder::set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack) {
+	held_modification_stack = p_held_stack;
+
+	if (is_setup && held_modification_stack.is_valid()) {
+		held_modification_stack->set_skeleton(stack->get_skeleton());
+		held_modification_stack->setup();
+	}
+}
+
+Ref<SkeletonModificationStack2D> SkeletonModification2DStackHolder::get_held_modification_stack() const {
+	return held_modification_stack;
+}
+
+void SkeletonModification2DStackHolder::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_held_modification_stack", "held_modification_stack"), &SkeletonModification2DStackHolder::set_held_modification_stack);
+	ClassDB::bind_method(D_METHOD("get_held_modification_stack"), &SkeletonModification2DStackHolder::get_held_modification_stack);
+}
+
+SkeletonModification2DStackHolder::SkeletonModification2DStackHolder() {
+	stack = nullptr;
+	is_setup = false;
+	enabled = true;
+}
+
+SkeletonModification2DStackHolder::~SkeletonModification2DStackHolder() {
 }

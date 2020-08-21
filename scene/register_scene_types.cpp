@@ -660,12 +660,13 @@ void register_scene_types() {
 	ClassDB::register_class<RemoteTransform2D>();
 
 	ClassDB::register_class<SkeletonModificationStack2D>();
-	ClassDB::register_virtual_class<SkeletonModification2D>();
+	ClassDB::register_class<SkeletonModification2D>();
 	ClassDB::register_class<SkeletonModification2DLookAt>();
 	ClassDB::register_class<SkeletonModification2DCCDIK>();
 	ClassDB::register_class<SkeletonModification2DFABRIK>();
 	ClassDB::register_class<SkeletonModification2DJiggle>();
 	ClassDB::register_class<SkeletonModification2DTwoBoneIK>();
+	ClassDB::register_class<SkeletonModification2DStackHolder>();
 
 	ClassDB::register_class<PhysicalBone2D>();
 	ClassDB::register_class<SkeletonModification2DPhysicalBones>();
