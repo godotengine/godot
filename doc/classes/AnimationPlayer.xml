@@ -10,6 +10,7 @@
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
+		<link title="2D Sprite animation">https://docs.godotengine.org/en/latest/tutorials/2d/2d_sprite_animation.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
