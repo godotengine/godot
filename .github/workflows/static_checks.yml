@@ -1,4 +1,4 @@
-name: Static Checks
+name: 📊 Static Checks
 on: [push, pull_request]
 
 jobs:

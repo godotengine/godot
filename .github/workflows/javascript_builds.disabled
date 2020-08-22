@@ -1,4 +1,4 @@
-name: JavaScript Builds
+name: 🌐 JavaScript Builds
 on: [push, pull_request]
 
 # Global Cache Settings

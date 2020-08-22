@@ -1,4 +1,4 @@
-name: Android Builds
+name: 🤖 Android Builds
 on: [push, pull_request]
 
 # Global Cache Settings
