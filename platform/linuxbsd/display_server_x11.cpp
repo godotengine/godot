@@ -83,6 +83,13 @@
 #define VALUATOR_TILTX 3
 #define VALUATOR_TILTY 4
 
+//#define DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+#define DEBUG_LOG_X11(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_LOG_X11(...)
+#endif
+
 static const double abs_resolution_mult = 10000.0;
 static const double abs_resolution_range_mult = 10.0;
 
@@ -697,6 +704,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 
 	WindowData &wd = windows[p_id];
 
+	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
+
 	while (wd.transient_children.size()) {
 		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
 	}
@@ -850,24 +859,34 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd_window = windows[p_window];
 
-	ERR_FAIL_COND(wd_window.transient_parent == p_parent);
+	WindowID prev_parent = wd_window.transient_parent;
+	ERR_FAIL_COND(prev_parent == p_parent);
 
 	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
 	if (p_parent == INVALID_WINDOW_ID) {
 		//remove transient
 
-		ERR_FAIL_COND(wd_window.transient_parent == INVALID_WINDOW_ID);
-		ERR_FAIL_COND(!windows.has(wd_window.transient_parent));
+		ERR_FAIL_COND(prev_parent == INVALID_WINDOW_ID);
+		ERR_FAIL_COND(!windows.has(prev_parent));
 
-		WindowData &wd_parent = windows[wd_window.transient_parent];
+		WindowData &wd_parent = windows[prev_parent];
 
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
 		XSetTransientForHint(x11_display, wd_window.x11_window, None);
+
+		// Set focus to parent sub window to avoid losing all focus with nested menus.
+		// RevertToPointerRoot is used to make sure we don't lose all focus in case
+		// a subwindow and its parent are both destroyed.
+		if (wd_window.menu_type && !wd_window.no_focus) {
+			if (!wd_parent.no_focus) {
+				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
+			}
+		}
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
-		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
+		ERR_FAIL_COND_MSG(prev_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
 		WindowData &wd_parent = windows[p_parent];
 
 		wd_window.transient_parent = p_parent;
@@ -2293,6 +2312,11 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 void DisplayServerX11::process_events() {
 	_THREAD_SAFE_METHOD_
 
+#ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
+	static int frame = 0;
+	++frame;
+#endif
+
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
 		bool focus_found = false;
@@ -2309,6 +2333,7 @@ void DisplayServerX11::process_events() {
 			if (delta > 250) {
 				//X11 can go between windows and have no focus for a while, when creating them or something else. Use this as safety to avoid unnecessary focus in/outs.
 				if (OS::get_singleton()->get_main_loop()) {
+					DEBUG_LOG_X11("All focus lost, triggering NOTIFICATION_APPLICATION_FOCUS_OUT\n");
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
@@ -2331,6 +2356,10 @@ void DisplayServerX11::process_events() {
 		XEvent event;
 		XNextEvent(x11_display, &event);
 
+		if (XFilterEvent(&event, None)) {
+			continue;
+		}
+
 		WindowID window_id = MAIN_WINDOW_ID;
 
 		// Assign the event to the relevant window
@@ -2339,10 +2368,6 @@ void DisplayServerX11::process_events() {
 				window_id = E->key();
 				break;
 			}
-		}
-
-		if (XFilterEvent(&event, None)) {
-			continue;
 		}
 
 		if (XGetEventData(x11_display, &event.xcookie)) {
@@ -2507,32 +2532,63 @@ void DisplayServerX11::process_events() {
 		XFreeEventData(x11_display, &event.xcookie);
 
 		switch (event.type) {
-			case Expose:
-				Main::force_redraw();
-				break;
+			case MapNotify: {
+				DEBUG_LOG_X11("[%u] MapNotify window=%lu (%u) \n", frame, event.xmap.window, window_id);
 
-			case NoExpose:
+				const WindowData &wd = windows[window_id];
+
+				// Set focus when menu window is started.
+				// RevertToPointerRoot is used to make sure we don't lose all focus in case
+				// a subwindow and its parent are both destroyed.
+				if (wd.menu_type && !wd.no_focus) {
+					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+				}
+			} break;
+
+			case Expose: {
+				DEBUG_LOG_X11("[%u] Expose window=%lu (%u), count='%u' \n", frame, event.xexpose.window, window_id, event.xexpose.count);
+
+				Main::force_redraw();
+			} break;
+
+			case NoExpose: {
+				DEBUG_LOG_X11("[%u] NoExpose drawable=%lu (%u) \n", frame, event.xnoexpose.drawable, window_id);
+
 				windows[window_id].minimized = true;
-				break;
+			} break;
 
 			case VisibilityNotify: {
+				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu (%u), state=%u \n", frame, event.xvisibility.window, window_id, event.xvisibility.state);
+
 				XVisibilityEvent *visibility = (XVisibilityEvent *)&event;
 				windows[window_id].minimized = (visibility->state == VisibilityFullyObscured);
 			} break;
+
 			case LeaveNotify: {
+				DEBUG_LOG_X11("[%u] LeaveNotify window=%lu (%u), mode='%u' \n", frame, event.xcrossing.window, window_id, event.xcrossing.mode);
+
 				if (!mouse_mode_grab) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
 				}
 
 			} break;
+
 			case EnterNotify: {
+				DEBUG_LOG_X11("[%u] EnterNotify window=%lu (%u), mode='%u' \n", frame, event.xcrossing.window, window_id, event.xcrossing.mode);
+
 				if (!mouse_mode_grab) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 				}
 			} break;
-			case FocusIn:
-				windows[window_id].focused = true;
-				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
+
+			case FocusIn: {
+				DEBUG_LOG_X11("[%u] FocusIn window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
+
+				WindowData &wd = windows[window_id];
+
+				wd.focused = true;
+
+				_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 
 				if (mouse_mode_grab) {
 					// Show and update the cursor if confined and the window regained focus.
@@ -2556,8 +2612,8 @@ void DisplayServerX11::process_events() {
 					XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
 				}*/
 #endif
-				if (windows[window_id].xic) {
-					XSetICFocus(windows[window_id].xic);
+				if (wd.xic) {
+					XSetICFocus(wd.xic);
 				}
 
 				if (!app_focused) {
@@ -2566,12 +2622,17 @@ void DisplayServerX11::process_events() {
 					}
 					app_focused = true;
 				}
-				break;
+			} break;
 
-			case FocusOut:
-				windows[window_id].focused = false;
+			case FocusOut: {
+				DEBUG_LOG_X11("[%u] FocusOut window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
+
+				WindowData &wd = windows[window_id];
+
+				wd.focused = false;
+
 				Input::get_singleton()->release_pressed_events();
-				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
+				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 
 				if (mouse_mode_grab) {
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -2600,14 +2661,26 @@ void DisplayServerX11::process_events() {
 				}
 				xi.state.clear();
 #endif
-				if (windows[window_id].xic) {
-					XSetICFocus(windows[window_id].xic);
+				if (wd.xic) {
+					XSetICFocus(wd.xic);
 				}
-				break;
+			} break;
 
-			case ConfigureNotify:
+			case ConfigureNotify: {
+				DEBUG_LOG_X11("[%u] ConfigureNotify window=%lu (%u), event=%lu, above=%lu, override_redirect=%u \n", frame, event.xconfigure.window, window_id, event.xconfigure.event, event.xconfigure.above, event.xconfigure.override_redirect);
+
+				const WindowData &wd = windows[window_id];
+
+				// Set focus when menu window is re-used.
+				// RevertToPointerRoot is used to make sure we don't lose all focus in case
+				// a subwindow and its parent are both destroyed.
+				if (wd.menu_type && !wd.no_focus) {
+					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+				}
+
 				_window_changed(&event);
-				break;
+			} break;
+
 			case ButtonPress:
 			case ButtonRelease: {
 				/* exit in case of a mouse button press */
@@ -2635,6 +2708,17 @@ void DisplayServerX11::process_events() {
 				mb->set_pressed((event.type == ButtonPress));
 
 				if (event.type == ButtonPress) {
+					DEBUG_LOG_X11("[%u] ButtonPress window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
+
+					const WindowData &wd = windows[window_id];
+
+					// Ensure window focus on click.
+					// RevertToPointerRoot is used to make sure we don't lose all focus in case
+					// a subwindow and its parent are both destroyed.
+					if (!wd.no_focus) {
+						XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
+					}
+
 					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
 					if (mb->get_button_index() == last_click_button_index) {
@@ -2653,6 +2737,8 @@ void DisplayServerX11::process_events() {
 						last_click_ms += diff;
 						last_click_pos = Point2i(event.xbutton.x, event.xbutton.y);
 					}
+				} else {
+					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 				}
 
 				Input::get_singleton()->accumulate_input_event(mb);
@@ -3148,10 +3234,37 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
 
-	WindowID id;
+	WindowID id = window_id_counter++;
+	WindowData &wd = windows[id];
+
+	if ((id != MAIN_WINDOW_ID) && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
+		wd.menu_type = true;
+	}
+
+	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
+		wd.menu_type = true;
+		wd.no_focus = true;
+	}
+
+	// Setup for menu subwindows:
+	// - override_redirect forces the WM not to interfere with the window, to avoid delays due to
+	//   handling decorations and placement.
+	//   On the other hand, focus changes need to be handled manually when this is set.
+	// - save_under is a hint for the WM to keep the content of windows behind to avoid repaint.
+	if (wd.menu_type) {
+		windowAttributes.override_redirect = True;
+		windowAttributes.save_under = True;
+		valuemask |= CWOverrideRedirect | CWSaveUnder;
+	}
+
 	{
-		WindowData wd;
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+
+		// Enable receiving notification when the window is initialized (MapNotify)
+		// so the focus can be set at the right time.
+		if (wd.menu_type && !wd.no_focus) {
+			XSelectInput(x11_display, wd.x11_window, StructureNotifyMask);
+		}
 
 		//associate PID
 		// make PID known to X11
@@ -3227,58 +3340,26 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 		_update_context(wd);
 
-		id = window_id_counter++;
+		if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
+			Hints hints;
+			Atom property;
+			hints.flags = 2;
+			hints.decorations = 0;
+			property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+		}
 
-		windows[id] = wd;
+		if (wd.menu_type) {
+			// Set Utility type to disable fade animations.
+			Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
+			Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
 
-		{
-			bool make_utility = false;
+			XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
+		} else {
+			Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
+			Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
 
-			if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
-				Hints hints;
-				Atom property;
-				hints.flags = 2;
-				hints.decorations = 0;
-				property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-
-				make_utility = true;
-			}
-			if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
-				make_utility = true;
-			}
-
-			if (make_utility) {
-				//this one seems to disable the fade animations for regular windows
-				//but has the drawback that will not get focus by default, so
-				//we need to force it, unless no focus requested
-
-				Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
-				Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
-
-				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
-
-				if (!(p_flags & WINDOW_FLAG_NO_FOCUS_BIT)) {
-					//but as utility appears unfocused, it needs to be forcefuly focused, unless no focus requested
-					XEvent xev;
-					Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
-
-					memset(&xev, 0, sizeof(xev));
-					xev.type = ClientMessage;
-					xev.xclient.window = wd.x11_window;
-					xev.xclient.message_type = net_active_window;
-					xev.xclient.format = 32;
-					xev.xclient.data.l[0] = 1;
-					xev.xclient.data.l[1] = CurrentTime;
-
-					XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-				}
-			} else {
-				Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
-				Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
-
-				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
-			}
+			XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
 		}
 
 		_update_size_hints(id);
@@ -3298,8 +3379,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 		XFree(visualInfo);
 	}
-
-	WindowData &wd = windows[id];
 
 	window_set_mode(p_mode, id);
 
