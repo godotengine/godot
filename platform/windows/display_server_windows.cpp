@@ -493,13 +493,15 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		wd.no_focus = true;
 	}
 
-	_update_window_style(window_id);
-
 	return window_id;
 }
 
 void DisplayServerWindows::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
+
+	if (p_id != MAIN_WINDOW_ID) {
+		_update_window_style(p_id);
+	}
 
 	ShowWindow(wd.hWnd, wd.no_focus ? SW_SHOWNOACTIVATE : SW_SHOW); // Show The Window
 	if (!wd.no_focus) {
