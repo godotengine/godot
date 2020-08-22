@@ -82,6 +82,7 @@ class PopupMenu : public Popup {
 	Vector<Item> items;
 	int initial_button_mask;
 	bool during_grabbed_click;
+	bool is_mouse_down = false;
 	int mouse_over;
 	int submenu_over;
 	Rect2 parent_rect;
