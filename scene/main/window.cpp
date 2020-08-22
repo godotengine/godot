@@ -246,6 +246,8 @@ void Window::_make_window() {
 		}
 	}
 
+	_update_window_callbacks();
+
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 	DisplayServer::get_singleton()->show_window(window_id);
 }
@@ -379,7 +381,6 @@ void Window::set_visible(bool p_visible) {
 		}
 		if (p_visible && window_id == DisplayServer::INVALID_WINDOW_ID) {
 			_make_window();
-			_update_window_callbacks();
 		}
 	} else {
 		if (visible) {
@@ -738,7 +739,6 @@ void Window::_notification(int p_what) {
 				//create
 				if (visible) {
 					_make_window();
-					_update_window_callbacks();
 				}
 			}
 		}
