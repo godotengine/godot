@@ -132,6 +132,9 @@ class DisplayServerX11 : public DisplayServer {
 
 		ObjectID instance_id;
 
+		bool menu_type = false;
+		bool no_focus = false;
+
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
 		bool fullscreen = false; //OS can't exit from this mode
