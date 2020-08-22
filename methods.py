@@ -574,6 +574,7 @@ def generate_vs_project(env, num_jobs):
                 '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
                 'set "tools=yes"',
                 '(if "$(Configuration)"=="release" (set "tools=no"))',
+                'set "custom_modules=%s"' % env["custom_modules"],
                 'call "' + batch_file + '" !plat!',
             ]
 
@@ -592,15 +593,15 @@ def generate_vs_project(env, num_jobs):
         # in a backslash, so we need to remove this, lest it escape the
         # last double quote off, confusing MSBuild
         env["MSVSBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j"
             + str(num_jobs)
         )
         env["MSVSREBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes custom_modules=!custom_modules! -j"
             + str(num_jobs)
         )
         env["MSVSCLEANCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! -j"
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j"
             + str(num_jobs)
         )
 
