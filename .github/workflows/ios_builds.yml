@@ -1,4 +1,4 @@
-name: iOS Builds
+name: 🍏 iOS Builds
 on: [push, pull_request]
 
 # Global Cache Settings

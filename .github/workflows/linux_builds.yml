@@ -1,4 +1,4 @@
-name: Linux Builds
+name: 🐧 Linux Builds
 on: [push, pull_request]
 
 # Global Cache Settings

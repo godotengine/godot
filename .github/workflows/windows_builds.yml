@@ -1,4 +1,4 @@
-name: Windows Builds
+name: 🏁 Windows Builds
 on: [push, pull_request]
 
 # Global Cache Settings
