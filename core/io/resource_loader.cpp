@@ -195,7 +195,8 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 		return res;
 	}
 
-	ERR_FAIL_COND_V_MSG(found, RES(), "Failed loading resource: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(found, RES(),
+			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
 
 #ifdef TOOLS_ENABLED
 	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
