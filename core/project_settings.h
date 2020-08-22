@@ -76,8 +76,8 @@ protected:
 	};
 
 	bool registering_order = true;
-	int last_order = 0;
-	int last_builtin_order = NO_BUILTIN_ORDER_BASE;
+	int last_order = NO_BUILTIN_ORDER_BASE;
+	int last_builtin_order = 0;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
@@ -142,6 +142,7 @@ public:
 	int get_order(const String &p_name) const;
 	void set_order(const String &p_name, int p_order);
 	void set_builtin_order(const String &p_name);
+	bool is_builtin_setting(const String &p_name) const;
 
 	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 

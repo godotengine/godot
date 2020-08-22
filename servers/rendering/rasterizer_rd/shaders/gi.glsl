@@ -80,7 +80,7 @@ struct GIProbeData {
 	float anisotropy_strength;
 	float ambient_occlusion;
 	float ambient_occlusion_size;
-	uint pad2;
+	uint mipmaps;
 };
 
 layout(set = 0, binding = 16, std140) uniform GIProbes {

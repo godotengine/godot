@@ -383,6 +383,14 @@ public:
 		CallNode() {
 			type = CALL;
 		}
+
+		Type get_callee_type() const {
+			if (callee == nullptr) {
+				return Type::NONE;
+			} else {
+				return callee->type;
+			}
+		}
 	};
 
 	struct CastNode : public ExpressionNode {
@@ -397,7 +405,10 @@ public:
 	struct EnumNode : public Node {
 		struct Value {
 			IdentifierNode *identifier = nullptr;
-			LiteralNode *custom_value = nullptr;
+			ExpressionNode *custom_value = nullptr;
+			EnumNode *parent_enum = nullptr;
+			int index = -1;
+			bool resolved = false;
 			int value = 0;
 			int line = 0;
 			int leftmost_column = 0;
@@ -1335,6 +1346,7 @@ public:
 		void print_tree(const GDScriptParser &p_parser);
 	};
 #endif // DEBUG_ENABLED
+	static void cleanup();
 };
 
 #endif // GDSCRIPT_PARSER_H

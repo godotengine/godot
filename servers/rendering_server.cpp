@@ -1747,11 +1747,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "bias", "light_affect", "ao_channel_affect", "blur", "bilateral_sharpness"), &RenderingServer::environment_set_ssao);
-	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "color", "sun_color", "sun_amount"), &RenderingServer::environment_set_fog);
-
-	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "enable", "depth_begin", "depth_end", "depth_curve", "transmit", "transmit_curve"), &RenderingServer::environment_set_fog_depth);
-
-	ClassDB::bind_method(D_METHOD("environment_set_fog_height", "env", "enable", "min_height", "max_height", "height_curve"), &RenderingServer::environment_set_fog_height);
+	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density"), &RenderingServer::environment_set_fog);
 
 	ClassDB::bind_method(D_METHOD("scenario_create"), &RenderingServer::scenario_create);
 	ClassDB::bind_method(D_METHOD("scenario_set_debug", "scenario", "debug_mode"), &RenderingServer::scenario_set_debug);
@@ -2411,6 +2407,17 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
 	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+
+	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/volume_depth", 128);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_depth", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/use_filter", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/use_filter", PropertyInfo(Variant::INT, "rendering/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"));
+	GLOBAL_DEF("rendering/volumetric_fog/directional_shadow_shrink", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/directional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/directional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/positional_shadow_shrink", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/positional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/positional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
 }
 
 RenderingServer::~RenderingServer() {

@@ -24,12 +24,13 @@
 # Allen H. <w84miracle@gmail.com>, 2020.
 # BinotaLIU <binota@protonmail.ch>, 2020.
 # BinotaLIU <me@binota.org>, 2020.
+# MintSoda <lionlxh@qq.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-07 15:56+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2020-07-31 03:47+0000\n"
+"Last-Translator: MintSoda <lionlxh@qq.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -10361,7 +10362,6 @@ msgid "Make node as Root"
 msgstr "將節點設為根節點"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
 msgstr "確定要刪除節點「%s」與其子節點嗎？"
 
@@ -12017,6 +12017,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"基於多邊形的形狀不應該被 CollisionShape2D 節點直接使用或編輯。請使用 "
+"CollisionPolygon2D 節點。"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""

@@ -405,6 +405,7 @@ private:
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 	bool console_visible = false;
+	bool own_console = false;
 
 	WNDCLASSEXW wc;
 
@@ -460,7 +461,6 @@ public:
 	virtual Vector<DisplayServer::WindowID> get_window_list() const;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
-	virtual void show_window(WindowID p_window);
 	virtual void delete_sub_window(WindowID p_window);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;

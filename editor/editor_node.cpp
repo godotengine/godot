@@ -498,6 +498,10 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
 				RS::GIProbeQuality gi_probe_quality = RS::GIProbeQuality(int(GLOBAL_GET("rendering/quality/gi_probes/quality")));
 				RS::get_singleton()->gi_probe_set_quality(gi_probe_quality);
+				RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/volumetric_fog/volume_size"), GLOBAL_GET("rendering/volumetric_fog/volume_depth"));
+				RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/volumetric_fog/use_filter")));
+				RS::get_singleton()->environment_set_volumetric_fog_directional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/directional_shadow_shrink"));
+				RS::get_singleton()->environment_set_volumetric_fog_positional_shadow_shrink_size(GLOBAL_GET("rendering/volumetric_fog/positional_shadow_shrink"));
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();
@@ -2620,7 +2624,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SETTINGS_TOGGLE_CONSOLE: {
 			bool was_visible = DisplayServer::get_singleton()->is_console_visible();
 			DisplayServer::get_singleton()->console_set_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
 			screenshot_timer->start();

@@ -390,6 +390,7 @@ public:
 		LIGHT_PARAM_SHADOW_BIAS,
 		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
 		LIGHT_PARAM_SHADOW_BLUR,
+		LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		LIGHT_PARAM_MAX
 	};
@@ -861,9 +862,20 @@ public:
 
 	virtual void environment_set_sdfgi_frames_to_converge(EnvironmentSDFGIFramesToConverge p_frames) = 0;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
-	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
-	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density) = 0;
+
+	enum EnvVolumetricFogShadowFilter {
+		ENV_VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED,
+		ENV_VOLUMETRIC_FOG_SHADOW_FILTER_LOW,
+		ENV_VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM,
+		ENV_VOLUMETRIC_FOG_SHADOW_FILTER_HIGH,
+	};
+
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, EnvVolumetricFogShadowFilter p_shadow_filter) = 0;
+	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
+	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
+	virtual void environment_set_volumetric_fog_directional_shadow_shrink_size(int p_shrink_size) = 0;
+	virtual void environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size) = 0;
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
 

@@ -45,7 +45,6 @@
 #include <IOKit/hid/IOHIDLib.h>
 
 #if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
 //TODO - reimplement OpenGLES
 
 #import <AppKit/NSOpenGLView.h>
@@ -2315,23 +2314,18 @@ DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, u
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_rect);
+	WindowData &wd = windows[id];
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
 		}
 	}
-
-	return id;
-}
-
-void DisplayServerOSX::show_window(WindowID p_id) {
-	WindowData &wd = windows[p_id];
-
 	if (wd.no_focus) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
+	return id;
 }
 
 void DisplayServerOSX::_send_window_event(const WindowData &wd, WindowEvent p_event) {
@@ -2375,7 +2369,11 @@ void DisplayServerOSX::_update_window(WindowData p_wd) {
 		[p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen
-		[p_wd.window_object setLevel:NSNormalWindowLevel];
+		if (p_wd.on_top) {
+			[p_wd.window_object setLevel:NSFloatingWindowLevel];
+		} else {
+			[p_wd.window_object setLevel:NSNormalWindowLevel];
+		}
 		[p_wd.window_object setHidesOnDeactivate:NO];
 	}
 }
@@ -3776,7 +3774,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(MAIN_WINDOW_ID);
+	[windows[main_window].window_object makeKeyAndOrderFront:nil];
 
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver == "opengl_es") {

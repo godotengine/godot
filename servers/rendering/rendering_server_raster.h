@@ -562,9 +562,13 @@ public:
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
-	BIND5(environment_set_fog, RID, bool, const Color &, const Color &, float)
-	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
-	BIND5(environment_set_fog_height, RID, bool, float, float, float)
+	BIND8(environment_set_fog, RID, bool, const Color &, float, float, float, float, float)
+	BIND9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter)
+
+	BIND2(environment_set_volumetric_fog_volume_size, int, int)
+	BIND1(environment_set_volumetric_fog_filter_active, bool)
+	BIND1(environment_set_volumetric_fog_directional_shadow_shrink_size, int)
+	BIND1(environment_set_volumetric_fog_positional_shadow_shrink_size, int)
 
 	BIND11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	BIND1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)

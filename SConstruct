@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 # Local
 import methods
-import gles_builders
+import glsl_builders
 import version
 from platform_methods import run_in_subprocess
 
@@ -310,9 +310,10 @@ if selected_platform in platform_list:
     from SCons import __version__ as scons_raw_version
 
     scons_ver = env._get_major_minor_revision(scons_raw_version)
-    if scons_ver >= (3, 1, 1):
-        env.Tool("compilation_db", toolpath=["misc/scons"])
-        env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
+
+    if scons_ver >= (4, 0, 0):
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
 
     if env["dev"]:
         env["verbose"] = True
@@ -629,18 +630,13 @@ if selected_platform in platform_list:
 
     if not env["platform"] == "server":
         GLSL_BUILDERS = {
-            "GLES2_GLSL": env.Builder(
-                action=env.Run(gles_builders.build_gles2_headers, 'Building GLES2_GLSL header: "$TARGET"'),
-                suffix="glsl.gen.h",
-                src_suffix=".glsl",
-            ),
             "RD_GLSL": env.Builder(
-                action=env.Run(gles_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+                action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
                 suffix="glsl.gen.h",
                 src_suffix=".glsl",
             ),
             "GLSL_HEADER": env.Builder(
-                action=env.Run(gles_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+                action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
                 suffix="glsl.gen.h",
                 src_suffix=".glsl",
             ),

@@ -495,17 +495,13 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 	_update_window_style(window_id);
 
-	return window_id;
-}
-
-void DisplayServerWindows::show_window(WindowID p_id) {
-	WindowData &wd = windows[p_id];
-
-	ShowWindow(wd.hWnd, wd.no_focus ? SW_SHOWNOACTIVATE : SW_SHOW); // Show The Window
-	if (!wd.no_focus) {
+	ShowWindow(wd.hWnd, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show The Window
+	if (!(p_flags & WINDOW_FLAG_NO_FOCUS_BIT)) {
 		SetForegroundWindow(wd.hWnd); // Slightly Higher Priority
 		SetFocus(wd.hWnd); // Sets Keyboard Focus To
 	}
+
+	return window_id;
 }
 
 void DisplayServerWindows::delete_sub_window(WindowID p_window) {
@@ -1135,10 +1131,17 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 void DisplayServerWindows::console_set_visible(bool p_enabled) {
 	_THREAD_SAFE_METHOD_
 
-	if (console_visible == p_enabled)
+	if (console_visible == p_enabled) {
 		return;
-	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-	console_visible = p_enabled;
+	}
+	if (p_enabled && GetConsoleWindow() == nullptr) { // Open new console if not attached.
+		own_console = true;
+		AllocConsole();
+	}
+	if (own_console) { // Note: Do not hide parent console.
+		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
+		console_visible = p_enabled;
+	}
 }
 
 bool DisplayServerWindows::is_console_visible() const {
@@ -2030,8 +2033,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					Ref<InputEventMouseMotion> mm;
 					mm.instance();
 					mm->set_window_id(window_id);
-					mm->set_control(GetKeyState(VK_CONTROL) != 0);
-					mm->set_shift(GetKeyState(VK_SHIFT) != 0);
+					mm->set_control(GetKeyState(VK_CONTROL) < 0);
+					mm->set_shift(GetKeyState(VK_SHIFT) < 0);
 					mm->set_alt(alt_mem);
 
 					mm->set_pressure(windows[window_id].last_pressure);
@@ -2173,8 +2176,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
 			}
 
-			mm->set_control((wParam & MK_CONTROL) != 0);
-			mm->set_shift((wParam & MK_SHIFT) != 0);
+			mm->set_control(GetKeyState(VK_CONTROL) < 0);
+			mm->set_shift(GetKeyState(VK_SHIFT) < 0);
 			mm->set_alt(alt_mem);
 
 			mm->set_button_mask(last_button_state);
@@ -3019,7 +3022,18 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	shift_mem = false;
 	control_mem = false;
 	meta_mem = false;
-	console_visible = IsWindowVisible(GetConsoleWindow());
+
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE *_file = nullptr;
+		freopen_s(&_file, "CONOUT$", "w", stdout);
+		freopen_s(&_file, "CONOUT$", "w", stderr);
+		freopen_s(&_file, "CONIN$", "r", stdin);
+
+		printf("\n");
+		console_visible = true;
+	} else {
+		console_visible = false;
+	}
 	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;
@@ -3125,7 +3139,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	show_window(MAIN_WINDOW_ID);
+	ShowWindow(windows[MAIN_WINDOW_ID].hWnd, SW_SHOW); // Show The Window
+	SetForegroundWindow(windows[MAIN_WINDOW_ID].hWnd); // Slightly Higher Priority
+	SetFocus(windows[MAIN_WINDOW_ID].hWnd); // Sets Keyboard Focus To
 
 #if defined(VULKAN_ENABLED)
 

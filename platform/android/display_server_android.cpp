@@ -36,9 +36,6 @@
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 
-#if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
-#endif
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/android/vulkan/vulkan_context_android.h"

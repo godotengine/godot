@@ -38,13 +38,14 @@ namespace GodotTools
 
         public BottomPanel BottomPanel { get; private set; }
 
-        public PlaySettings? CurrentPlaySettings { get; set; }
+        public bool SkipBuildBeforePlaying { get; set; } = false;
 
         public static string ProjectAssemblyName
         {
             get
             {
                 var projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
+                projectAssemblyName = projectAssemblyName.ToSafeDirName();
                 if (string.IsNullOrEmpty(projectAssemblyName))
                     projectAssemblyName = "UnnamedProject";
                 return projectAssemblyName;

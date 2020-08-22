@@ -880,7 +880,10 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 		if (n->get_script_instance()) {
 			n->get_script_instance()->call(p_method, (const Variant **)v, 1, err);
 		}
-		n->call(p_method, (const Variant **)v, 1, err);
+		MethodBind *method = ClassDB::get_method(n->get_class_name(), p_method);
+		if (method) {
+			method->call(n, (const Variant **)v, 1, err);
+		}
 	}
 
 	call_lock--;

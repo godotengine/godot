@@ -572,7 +572,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (progress) {
+		if (progress && resources_total > 0) {
 			*progress = resource_current / float(resources_total);
 		}
 	}
@@ -640,7 +640,7 @@ Error ResourceLoaderText::load() {
 				return error;
 			} else {
 				error = OK;
-				if (progress) {
+				if (progress && resources_total > 0) {
 					*progress = resource_current / float(resources_total);
 				}
 
@@ -674,7 +674,7 @@ Error ResourceLoaderText::load() {
 
 		resource_current++;
 
-		if (progress) {
+		if (progress && resources_total > 0) {
 			*progress = resource_current / float(resources_total);
 		}
 

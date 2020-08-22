@@ -44,7 +44,7 @@ class OS_OSX : public OS_Unix {
 
 	bool force_quit;
 
-	JoypadOSX *joypad_osx;
+	JoypadOSX *joypad_osx = nullptr;
 
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
