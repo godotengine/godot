@@ -1,4 +1,4 @@
-name: macOS Builds
+name: 🍎 macOS Builds
 on: [push, pull_request]
 
 # Global Cache Settings
