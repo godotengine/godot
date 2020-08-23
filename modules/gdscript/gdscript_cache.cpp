@@ -127,7 +127,7 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->parser_map.has(p_path)) {
-		ref = singleton->parser_map[p_path];
+		ref = Ref<GDScriptParserRef>(singleton->parser_map[p_path]);
 	} else {
 		if (!FileAccess::exists(p_path)) {
 			r_error = ERR_FILE_NOT_FOUND;
@@ -137,8 +137,7 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 		ref.instance();
 		ref->parser = parser;
 		ref->path = p_path;
-		singleton->parser_map[p_path] = ref;
-		ref->unreference();
+		singleton->parser_map[p_path] = ref.ptr();
 	}
 
 	r_error = ref->raise_status(p_status);
@@ -186,10 +185,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 	script->set_script_path(p_path);
 	script->load_source_code(p_path);
 
-	singleton->shallow_gdscript_cache[p_path] = script;
-	// The one in cache is not a hard reference: if the script dies somewhere else it's fine.
-	// Scripts remove themselves from cache when they die.
-	script->unreference();
+	singleton->shallow_gdscript_cache[p_path] = script.ptr();
 	return script;
 }
 
@@ -217,7 +213,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 		return script;
 	}
 
-	singleton->full_gdscript_cache[p_path] = script;
+	singleton->full_gdscript_cache[p_path] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_path);
 
 	return script;
@@ -226,7 +222,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 Error GDScriptCache::finish_compiling(const String &p_owner) {
 	// Mark this as compiled.
 	Ref<GDScript> script = get_shallow_script(p_owner);
-	singleton->full_gdscript_cache[p_owner] = script;
+	singleton->full_gdscript_cache[p_owner] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
 	Set<String> depends = singleton->dependencies[p_owner];
