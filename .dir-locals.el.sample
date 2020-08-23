@@ -1,9 +1,0 @@
-((c++-mode . ((dap-debug-template-configurations . (("Godot GDB"
-                                                        :type "gdb"
-                                                        :request "launch"
-                                                        :target (concat (getenv "GODOT_HOME") "/bin/godot.x11.tools.64"))
-                                                    ("Godot LLDB"
-                                                        :type "lldb"
-                                                        :request "launch"
-                                                        :target (concat (getenv "GODOT_HOME") "/bin/godot.x11.tools.64"))
-                                                    )))))
