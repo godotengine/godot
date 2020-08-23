@@ -222,6 +222,9 @@ void Area3D::_clear_monitoring() {
 			}
 			//ERR_CONTINUE(!node);
 
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_body_enter_tree));
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_body_exit_tree));
+
 			if (!E->get().in_tree) {
 				continue;
 			}
@@ -231,9 +234,6 @@ void Area3D::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->body_exited, node);
-
-			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_body_enter_tree));
-			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_body_exit_tree));
 		}
 	}
 
@@ -251,6 +251,9 @@ void Area3D::_clear_monitoring() {
 			}
 			//ERR_CONTINUE(!node);
 
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_area_enter_tree));
+			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_area_exit_tree));
+
 			if (!E->get().in_tree) {
 				continue;
 			}
@@ -260,9 +263,6 @@ void Area3D::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &Area3D::_area_enter_tree));
-			node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Area3D::_area_exit_tree));
 		}
 	}
 }
