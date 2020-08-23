@@ -69,6 +69,7 @@ class GDScript : public Script {
 
 	friend class GDScriptInstance;
 	friend class GDScriptFunction;
+	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
 	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
