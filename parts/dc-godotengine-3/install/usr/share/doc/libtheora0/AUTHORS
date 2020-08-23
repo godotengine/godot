@@ -1,0 +1,49 @@
+Monty <monty@xiph.org>
+	- Original VP3 port
+
+Ralph Giles
+Timothy B. Terriberry
+Monty
+	- Ongoing development
+	
+Dan B. Miller
+	- Pre alpha3 development
+	
+Rudolf Marek
+Wim Tayman
+Dan Lenski
+Nils Pipenbrinck
+Monty
+	- MMX optimized functions
+	
+Aaron Colwell
+Thomas Vander Stichele
+Jan Gerber
+Conrad Parker
+Cristian Adam
+Sebastian Pippin
+Simon Hosie
+	- Bug fixes, enhancements, build systems.
+	
+Mauricio Piacentini
+	- Original win32 projects and example ports
+	- VP3->Theora transcoder
+
+Silvia Pfeiffer
+	- Figures for the spec
+
+Michael Smith
+Andre Pang
+calc
+Chris Cheney
+Brendan Cully
+Edward Hervey
+Adam Moss
+Colin Ward
+Jeremy C. Reed
+Arc Riley
+Rodolphe Ortalo
+	- Bug fixes
+
+
+and other Xiph.org contributors

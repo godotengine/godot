@@ -1,0 +1,55 @@
+
+name: dc-godotengine-3
+version: '3.2.2'
+summary: Godot Engine – Multi-platform 2D and 3D game engine
+license: GPL-2.0
+base: core18
+description: |
+  Godot Engine is a feature-packed, cross-platform game engine to
+  create 2D and 3D games from a unified interface. It provides a
+  comprehensive set of common tools, so that users can focus on
+  making games without having to reinvent the wheel. Games can
+  be exported in one click to a number of platforms, including
+  the major desktop platforms (Linux, Mac OSX, Windows) as well
+  as mobile (Android, iOS) and web-based (HTML5) platforms..
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: i386
+  - build-on: amd64
+
+apps:
+  dc-godotengine-3:
+    command: $SNAP/bin/Godot
+    environment:
+      LD_LIBRARY_PATH: "$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio:$LD_LIBRARY_PATH"
+
+parts:
+  dc-godotengine-3:
+    plugin: dump
+    source:
+      - on amd64: https://downloads.tuxfamily.org/godotengine/3.2.2/Godot_v3.2.2-stable_x11.64.zip
+      - on i386: https://downloads.tuxfamily.org/godotengine/3.2.2/Godot_v3.2.2-stable_x11.32.zip
+    stage-packages:
+      - libgl1-mesa-dri
+      - libglu1-mesa
+      - libgl1-mesa-glx
+      - libgles2-mesa
+      - libflac8
+      - libxcursor1
+      - libxi6
+      - libxinerama1
+      - libxrandr2
+      - libxrender1
+      - libasound2
+      - libasyncns0
+      - libogg0
+      - libpulse0
+      - libsndfile1
+      - libtheora0
+      - libvorbis0a
+      - libvorbisenc2
+      - libvorbisfile3
+    organize:
+      'Godot_v*-stable_x11.*': 'bin/Godot'

@@ -1,0 +1,47 @@
+libpng 1.6.37 - April 14, 2019
+==============================
+
+This is a public release of libpng, intended for use in production code.
+
+
+Files available for download
+----------------------------
+
+Source files with LF line endings (for Unix/Linux):
+
+ * libpng-1.6.37.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.37.tar.gz
+
+Source files with CRLF line endings (for Windows):
+
+ * lp1637.7z (LZMA-compressed, recommended)
+ * lp1637.zip
+
+Other information:
+
+ * README.md
+ * LICENSE.md
+ * AUTHORS.md
+ * TRADEMARK.md
+
+
+Changes since the previous public release (version 1.6.36)
+----------------------------------------------------------
+
+ * Fixed a use-after-free vulnerability (CVE-2019-7317) in png_image_free.
+ * Fixed a memory leak in the ARM NEON implementation of png_do_expand_palette.
+ * Fixed a memory leak in pngtest.c.
+ * Fixed two vulnerabilities (CVE-2018-14048, CVE-2018-14550) in
+   contrib/pngminus; refactor.
+ * Changed the license of contrib/pngminus to MIT; refresh makefile and docs.
+   (Contributed by Willem van Schaik)
+ * Fixed a typo in the libpng license v2.
+   (Contributed by Miguel Ojeda)
+ * Added makefiles for AddressSanitizer-enabled builds.
+ * Cleaned up various makefiles.
+
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net.
+Subscription is required; visit
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe.

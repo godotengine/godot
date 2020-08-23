@@ -1,0 +1,52 @@
+This file is a list of frequently reported problems with ncurses which are
+considered bugs elsewhere or configuration problems. If you're going to report a
+bug in ncurses, you should probably look over this list first.
+
+********
+
+If you use escape codes to configure a terminal, ncurses applications will just
+overwrite your settings when they exit.
+
+The proper way to do this is to also provide a custom terminfo type which sets
+the terminal correctly. For instance, for controlling the cursor
+shape/color/etc., change the 'cnorm' capability.
+
+********
+
+If you hit the "Print Screen" key while in a Linux console, your current
+application will likely dump core.
+
+The kernel maps that key to ^\, which generates a SIGQUIT by default. There's no
+bug here (although why that key was chosen is unclear).
+
+********
+
+Home/End keys don't work in some non-full-screen applications.
+
+The situation with this is somewhat complicated. For a background summary, see:
+
+	http://invisible-island.net/xterm/xterm.faq.html#xterm_pc_style
+	http://invisible-island.net/xterm/xterm.faq.html#xterm_arrows
+
+Essentially, the key sequences in terminfo entries (particularly khome and kend)
+are for full-screen applications only. This means that they are only valid after
+an 'smkx' sequence, to put the terminal into application mode. If you want to
+use these sequences in non-application mode, you need to recognize similar
+sequences - the versions which start with CSI (\E [) rather than SS3 (\E O). One
+example of how is in /etc/zshrc in recent Debian ZSH packages.
+
+********
+
+The Debian terminfo entry for xterm doesn't work with some other xterms
+
+There's no way to win this. For a while, Debian made its xterm default to a
+terminal type of 'xterm-debian', which seemed to fix the problem. In that case,
+however, connecting to remote non-Debian machines requires you to change your
+terminal type (since there will be no entry for xterm-debian there). Having
+changed back to a default terminal type of 'xterm', when you sit at a non-Debian
+system using some other version of xterm, applications on the Debian system may
+use features not available in your current xterm.
+
+The only workaround for this problem is to set your terminal type from xterm to
+one of the feature-limited versions when you log in to a Debian system remotely.
+"xterm-r6" and the associated terminal types are appropriate for this.

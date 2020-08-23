@@ -1,0 +1,222 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: FLAC
+Upstream-Contact: https://www.xiph.org/flac/
+Source: https://git.xiph.org/?p=flac.git
+
+Files: *
+Copyright: 2011-2016, Xiph.Org Foundation
+License: GPL-2+ or LGPL-2.1+
+
+Files: doc/*
+Copyright: 2000-2009, Josh Coalson
+  2011-2016, Xiph.Org Foundation
+License: GFDL-1.1+
+ <!-- Permission is granted to copy, distribute and/or modify this document -->
+ <!-- under the terms of the GNU Free Documentation License, Version 1.1 -->
+ <!-- or any later version published by the Free Software Foundation; -->
+ <!-- with no invariant sections. -->
+ .
+ On Debian systems, the complete text of the GNU Free Documentation
+ License version 1.2 can be found in "/usr/share/common-licenses/GFDL-1.2".
+
+Files: examples/*
+ include/share/grabbag/picture.h
+ include/test_libs_common/*
+ src/flac/*
+ src/metaflac/*
+ src/plugin_common/charset.c
+ src/plugin_common/charset.h
+ src/plugin_common/dither.c
+ src/plugin_common/replaygain.c
+ src/plugin_common/replaygain.h
+ src/plugin_xmms/*
+ src/share/grabbag/picture.c
+ src/share/utf8/*
+ src/test_grabbag/*
+ src/test_libFLAC++/*
+ src/test_libFLAC/*
+ src/test_libs_common/*
+ src/test_seeking/*
+ src/test_streams/*
+ src/utils/flacdiff/*
+ src/utils/flactimer/*
+Copyright: 1994-2013, Free Software Foundation, Inc
+  1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
+  1999-2001, Håvard Kvålen <havardk@xmms.org>
+  2000-2001, Robert Leslie
+  2000-2002, Jerome Couderc <j.couderc@ifrance.com>
+  2000-2009, Josh Coalson
+  2001, Edmund Grimley Evans <edmundo@rano.org>
+  2001, Peter Harris <peter.harris@hummingbird.com>
+  2002-2009, Daisuke Shimamura
+  2003, Philip Jägenstedt
+  2011-2016, Xiph.Org Foundation
+License: GPL-2+
+
+Files: include/FLAC++/*
+ include/FLAC/*
+ include/share/alloc.h
+ include/share/compat.h
+ include/share/endswap.h
+ include/share/macros.h
+ include/share/private.h
+ include/share/safe_str.h
+ include/share/win_utf8_io.h
+ src/libFLAC++/*
+ src/libFLAC/*
+ src/share/grabbag/alloc.c
+ src/share/grabbag/snprintf.c
+ src/share/win_utf8_io/*
+Copyright: 1994-2013, Free Software Foundation, Inc
+  2000-2009, Josh Coalson
+  2011-2016, Xiph.Org Foundation
+License: BSD-3-clause
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Xiph.org Foundation nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Files: include/share/grabbag.h
+ include/share/grabbag/cuesheet.h
+ include/share/grabbag/file.h
+ include/share/grabbag/replaygain.h
+ include/share/grabbag/seektable.h
+ include/share/replaygain_analysis.h
+ include/share/replaygain_synthesis.h
+ src/plugin_common/all.h
+ src/plugin_common/defs.h
+ src/plugin_common/dither.h
+ src/plugin_common/tags.c
+ src/plugin_common/tags.h
+ src/share/grabbag/cuesheet.c
+ src/share/grabbag/file.c
+ src/share/grabbag/replaygain.c
+ src/share/grabbag/seektable.c
+ src/share/replaygain_analysis/*
+ src/share/replaygain_synthesis/*
+Copyright: 1994-2013, Free Software Foundation, Inc
+  2001, David Robinson and Glen Sawyer
+  2002, John Edwards
+  2002-2009, Josh Coalson
+  2011-2016, Xiph.Org Foundation
+License: LGPL-2.1+
+
+Files: include/share/getopt.h
+ src/share/getopt/getopt.c
+ src/share/getopt/getopt1.c
+Copyright: 1987-1998 Free Software Foundation, Inc
+License: LGPL-2+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+ .
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+ .
+ On Debian systems, the complete text of the GNU Lesser General
+ Public License can be found in "/usr/share/common-licenses/LGPL-2".
+
+Files: src/libFLAC/include/private/md5.h
+ src/libFLAC/md5.c
+Copyright: *No copyright*
+License: Public-domain
+ * This is the header file for the MD5 message-digest algorithm.
+ * The algorithm is due to Ron Rivest.  This code was
+ * written by Colin Plumb in 1993, no copyright is claimed.
+ * This code is in the public domain; do with it what you wish.
+ *
+ * Equivalent code is available from RSA Data Security, Inc.
+ * This code has been tested against that, and is equivalent,
+ * except that you don't need to include two pages of legalese
+ * with every copy.
+ *
+ * To compute the message digest of a chunk of bytes, declare an
+ * MD5Context structure, pass it to MD5Init, call MD5Update as
+ * needed on buffers full of bytes, and then call MD5Final, which
+ * will fill a supplied 16-byte array with the digest.
+ *
+ * Changed so as no longer to depend on Colin Plumb's `usual.h'
+ * header definitions; now uses stuff from dpkg's config.h
+ *  - Ian Jackson <ijackson@nyx.cs.du.edu>.
+ * Still in the public domain.
+ *
+ * Josh Coalson: made some changes to integrate with libFLAC.
+ * Still in the public domain, with no warranty.
+
+Files: src/flac/local_string_utils.c
+Copyright: 1998, Todd C. Miller <Todd.Miller@courtesan.com>
+License: ISC
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Files: debian/*
+Copyright: 2001-2005, Matt Zimmerman <mdz@debian.org>
+  2005-2007, Joshua Kwan <joshk@triplehelix.org>
+  2009-2018, Fabian Greffrath <fabian@debian.org>
+License: GPL-2+
+
+License: GPL-2+
+ This package is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>
+ .
+ The complete text of the GNU General Public License version 2
+ can be found in "/usr/share/common-licenses/GPL-2".
+
+License: LGPL-2.1+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ The complete text of the GNU Lesser General Public License
+ can be found in "/usr/share/common-licenses/LGPL-2.1".
+

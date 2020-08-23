@@ -1,0 +1,58 @@
+!BuildState
+assets:
+  installed-packages: []
+  installed-snaps:
+  - sublime-text=85
+  - canonical-livepatch=95
+  - multipass=2445
+  - gtk-common-themes=1506
+  - inkscape=7821
+  - snapcraft=5308
+  - godot=45
+  - snap-store=467
+  - freecad=16
+  - natron=120
+  - core18=1885
+  - openscad=52
+  - pixelorama=26
+  - code=41
+  - gimp=292
+  - kde-frameworks-5-core18=32
+  - blender=44
+  - snapd=8790
+  - vlc=1700
+  - gnome-3-28-1804=128
+  - dc-tiledmap=5
+  - meshlab=6
+  - gnome-3-34-1804=36
+  - core=9804
+  uname: 'Linux 5.4.0-42-generic #46-Ubuntu SMP Fri Jul 10 00:24:02 UTC 2020 x86_64
+    x86_64 x86_64 GNU/Linux'
+extracted_metadata:
+  files: []
+  metadata: !ExtractedMetadata
+    _data: {}
+project_options:
+  deb_arch: amd64
+properties:
+  after: []
+  artifacts: null
+  build: ''
+  build-attributes: []
+  build-packages:
+  - libglib2.0-dev
+  disable-parallel: false
+  install: ''
+  make-install-var: null
+  make-parameters: null
+  makefile: null
+  organize: {}
+  override-build: snapcraftctl build
+  prepare: ''
+schema_properties:
+- makefile
+- make-parameters
+- make-install-var
+- artifacts
+scriptlet_metadata: !ExtractedMetadata
+  _data: {}

@@ -1,0 +1,419 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+# ISO 8859-4 (Latin4) Compose Sequence
+#
+# Sequence Definition
+#
+# <Multi_key> Means <Compose>
+# Special Character
+# Right-hand side (Accented Alphabet)
+# These compose sequences are pure supposition on my part.
+# It would be nice to know what the real cultural conventions
+# are for compose sequences.
+<Multi_key> <A> <comma>			: "\241"	Aogonek
+<Multi_key> <comma> <A>			: "\241"	Aogonek
+<Multi_key> <k> <k>			: "\242"	kra
+<Multi_key> <R> <comma>			: "\243"	Rcedilla
+<Multi_key> <R> <cedilla>		: "\243"	Rcedilla
+<Multi_key> <comma> <R>			: "\243"	Rcedilla
+<Multi_key> <cedilla> <R>		: "\243"	Rcedilla
+<Multi_key> <x> <o>			: "\244"	currency
+<Multi_key> <o> <x>			: "\244"	currency
+<Multi_key> <X> <O>			: "\244"	currency
+<Multi_key> <O> <X>			: "\244"	currency
+<Multi_key> <x> <O>			: "\244"	currency
+<Multi_key> <O> <x>			: "\244"	currency
+<Multi_key> <X> <o>			: "\244"	currency
+<Multi_key> <o> <X>			: "\244"	currency
+<Multi_key> <x> <0>			: "\244"	currency
+<Multi_key> <0> <x>			: "\244"	currency
+<Multi_key> <X> <0>			: "\244"	currency
+<Multi_key> <0> <X>			: "\244"	currency
+<Multi_key> <I> <asciitilde>		: "\245"	Itilde
+<Multi_key> <asciitilde> <I>		: "\245"	Itilde
+<Multi_key> <L> <comma>			: "\246"	Lcedilla
+<Multi_key> <L> <cedilla>		: "\246"	Lcedilla
+<Multi_key> <comma> <L>			: "\246"	Lcedilla
+<Multi_key> <cedilla> <L>		: "\246"	Lcedilla
+<Multi_key> <s> <o>			: "\247"	section
+<Multi_key> <o> <s>			: "\247"	section
+<Multi_key> <S> <O>			: "\247"	section
+<Multi_key> <O> <S>			: "\247"	section
+<Multi_key> <S> <exclam>		: "\247"	section
+<Multi_key> <exclam> <S>		: "\247"	section
+<Multi_key> <s> <exclam>		: "\247"	section
+<Multi_key> <exclam> <s>		: "\247"	section
+<Multi_key> <S> <0>			: "\247"	section
+<Multi_key> <0> <S>			: "\247"	section
+<Multi_key> <s> <0>			: "\247"	section
+<Multi_key> <0> <s>			: "\247"	section
+<Multi_key> <quotedbl> <quotedbl>	: "\250"	diaeresis
+<Multi_key> <S> <less>			: "\251"	Scaron
+<Multi_key> <less> <S>			: "\251"	Scaron
+<Multi_key> <E> <minus>			: "\252"	Emacron
+<Multi_key> <minus> <E>			: "\252"	Emacron
+<Multi_key> <E> <underscore>		: "\252"	Emacron
+<Multi_key> <underscore> <E>		: "\252"	Emacron
+<Multi_key> <G> <comma>			: "\253"	Gcedilla
+<Multi_key> <G> <cedilla>		: "\253"	Gcedilla
+<Multi_key> <comma> <G>			: "\253"	Gcedilla
+<Multi_key> <cedilla> <G>		: "\253"	Gcedilla
+<Multi_key> <T> <minus>			: "\254"	Tstroke
+<Multi_key> <T> <slash>			: "\254"	Tstroke
+<Multi_key> <slash> <T>			: "\254"	Tstroke
+<Multi_key> <minus> <minus>		: "\255"	hyphen
+<Multi_key> <Z> <less>			: "\256"	Zcaron
+<Multi_key> <less> <Z>			: "\256"	Zcaron
+<Multi_key> <minus> <asciicircum>	: "\257"	macron
+<Multi_key> <asciicircum> <minus>	: "\257"	macron
+<Multi_key> <underscore> <asciicircum>	: "\257"	macron
+<Multi_key> <asciicircum> <underscore>	: "\257"	macron
+<Multi_key> <underscore> <underscore>	: "\257"	macron
+<Multi_key> <0> <asterisk>		: "\260"	degree
+<Multi_key> <asterisk> <0>		: "\260"	degree
+<Multi_key> <a> <comma>			: "\261"	aogonek
+<Multi_key> <comma> <a>			: "\261"	aogonek
+<Multi_key> <r> <comma>			: "\263"	rcedilla
+<Multi_key> <r> <cedilla>		: "\263"	rcedilla
+<Multi_key> <comma> <r>			: "\263"	rcedilla
+<Multi_key> <cedilla> <r>		: "\263"	rcedilla
+<Multi_key> <apostrophe> <apostrophe>	: "\264"	acute
+<Multi_key> <i> <asciitilde>		: "\265"	itilde
+<Multi_key> <asciitilde> <i>		: "\265"	itilde
+<Multi_key> <l> <comma>			: "\266"	lcedilla
+<Multi_key> <l> <cedilla>		: "\266"	lcedilla
+<Multi_key> <comma> <l>			: "\266"	lcedilla
+<Multi_key> <cedilla> <l>		: "\266"	lcedilla
+<Multi_key> <less> <less>		: "\267"	caron
+<Multi_key> <comma> <comma>		: "\270"        cedilla
+<Multi_key> <s> <less>			: "\271"	scaron
+<Multi_key> <less> <s>			: "\271"	scaron
+<Multi_key> <e> <minus>			: "\272"	emacron
+<Multi_key> <minus> <e>			: "\272"	emacron
+<Multi_key> <e> <underscore>		: "\272"	emacron
+<Multi_key> <underscore> <e>		: "\272"	emacron
+<Multi_key> <g> <comma>			: "\273"	gcedilla
+<Multi_key> <g> <cedilla>		: "\273"	gcedilla
+<Multi_key> <comma> <g>			: "\273"	gcedilla
+<Multi_key> <cedilla> <g>		: "\273"	gcedilla
+<Multi_key> <t> <minus>			: "\274"	tstroke
+<Multi_key> <t> <slash>			: "\274"	tstroke
+<Multi_key> <slash> <t>			: "\274"	tstroke
+<Multi_key> <N> <G>			: "\275"	ENG
+<Multi_key> <z> <less>			: "\276"	zcaron
+<Multi_key> <less> <z>			: "\276"	zcaron
+<Multi_key> <n> <g>			: "\277"	eng
+<Multi_key> <A> <underscore>		: "\300"	Amacron
+<Multi_key> <underscore> <A>		: "\300"	Amacron
+<Multi_key> <A> <minus>			: "\300"	Amacron
+<Multi_key> <minus> <A>			: "\300"	Amacron
+<Multi_key> <A> <acute>			: "\301"	Aacute
+<Multi_key> <acute> <A>			: "\301"	Aacute
+<Multi_key> <A> <apostrophe>		: "\301"	Aacute
+<Multi_key> <apostrophe> <A>		: "\301"	Aacute
+<Multi_key> <A> <asciicircum>		: "\302"	Acircumflex
+<Multi_key> <asciicircum> <A>		: "\302"	Acircumflex
+<Multi_key> <A> <greater>		: "\302"	Acircumflex
+<Multi_key> <greater> <A>		: "\302"	Acircumflex
+<Multi_key> <A> <asciitilde>		: "\303"	Atilde
+<Multi_key> <asciitilde> <A>		: "\303"	Atilde
+<Multi_key> <A> <quotedbl>		: "\304"	Adiaeresis
+<Multi_key> <quotedbl> <A>		: "\304"	Adiaeresis
+<Multi_key> <A> <asterisk>		: "\305"	Aring
+<Multi_key> <asterisk> <A>		: "\305"	Aring
+<Multi_key> <A> <E>			: "\306"	AE
+<Multi_key> <I> <comma>			: "\307"	Iogonek
+<Multi_key> <comma> <I>			: "\307"	Iogonek
+<Multi_key> <C> <less>			: "\310"	Ccaron
+<Multi_key> <less> <C>			: "\310"	Ccaron
+<Multi_key> <E> <acute>			: "\311"	Eacute
+<Multi_key> <acute> <E>			: "\311"	Eacute
+<Multi_key> <E> <apostrophe>		: "\311"	Eacute
+<Multi_key> <apostrophe> <E>		: "\311"	Eacute
+<Multi_key> <E> <comma>			: "\312"	Eogonek
+<Multi_key> <comma> <E>			: "\312"	Eogonek
+<Multi_key> <E> <quotedbl>		: "\313"	Ediaeresis
+<Multi_key> <quotedbl> <E>		: "\313"	Ediaeresis
+<Multi_key> <E> <period>		: "\314"	Eabovedot
+<Multi_key> <period> <E>		: "\314"	Eabovedot
+<Multi_key> <I> <acute>			: "\315"	Iacute
+<Multi_key> <acute> <I>			: "\315"	Iacute
+<Multi_key> <I> <apostrophe>		: "\315"	Iacute
+<Multi_key> <apostrophe> <I>		: "\315"	Iacute
+<Multi_key> <I> <asciicircum>		: "\316"	Icircumflex
+<Multi_key> <asciicircum> <I>		: "\316"	Icircumflex
+<Multi_key> <I> <greater>		: "\316"	Icircumflex
+<Multi_key> <greater> <I>		: "\316"	Icircumflex
+<Multi_key> <I> <minus>			: "\317"	Imacron
+<Multi_key> <minus> <I>			: "\317"	Imacron
+<Multi_key> <I> <underscore>		: "\317"	Imacron
+<Multi_key> <underscore> <I>		: "\317"	Imacron
+<Multi_key> <D> <minus>			: "\320"	Dstroke
+<Multi_key> <minus> <D>			: "\320"	Dstroke
+<Multi_key> <N> <comma>			: "\321"	Ncedilla
+<Multi_key> <N> <cedilla>		: "\321"	Ncedilla
+<Multi_key> <comma> <N>			: "\321"	Ncedilla
+<Multi_key> <cedilla> <N>		: "\321"	Ncedilla
+<Multi_key> <O> <underscore>		: "\322"	Omacron
+<Multi_key> <underscore> <O>		: "\322"	Omacron
+<Multi_key> <O> <minus>			: "\322"	Omacron
+<Multi_key> <minus> <O>			: "\322"	Omacron
+<Multi_key> <K> <comma>			: "\323"	Kcedilla
+<Multi_key> <K> <cedilla>		: "\323"	Kcedilla
+<Multi_key> <comma> <K>			: "\323"	Kcedilla
+<Multi_key> <cedilla> <K>		: "\323"	Kcedilla
+<Multi_key> <O> <asciicircum>		: "\324"	Ocircumflex
+<Multi_key> <asciicircum> <O>		: "\324"	Ocircumflex
+<Multi_key> <O> <greater>		: "\324"	Ocircumflex
+<Multi_key> <greater> <O>		: "\324"	Ocircumflex
+<Multi_key> <O> <asciitilde>		: "\325"	Otilde
+<Multi_key> <asciitilde> <O>		: "\325"	Otilde
+<Multi_key> <O> <quotedbl>		: "\326"	Odiaeresis
+<Multi_key> <quotedbl> <O>		: "\326"	Odiaeresis
+<Multi_key> <x> <x>			: "\327"	multiply
+<Multi_key> <O> <slash>			: "\330"	Ooblique
+<Multi_key> <slash> <O>			: "\330"	Ooblique
+<Multi_key> <U> <comma>			: "\331"	Uogonek
+<Multi_key> <comma> <U>			: "\331"	Uogonek
+<Multi_key> <U> <acute>			: "\332"	Uacute
+<Multi_key> <acute> <U>			: "\332"	Uacute
+<Multi_key> <U> <apostrophe>		: "\332"	Uacute
+<Multi_key> <apostrophe> <U>		: "\332"	Uacute
+<Multi_key> <U> <asciicircum>		: "\333"	Ucircumflex
+<Multi_key> <asciicircum> <U>		: "\333"	Ucircumflex
+<Multi_key> <U> <greater>		: "\333"	Ucircumflex
+<Multi_key> <greater> <U>		: "\333"	Ucircumflex
+<Multi_key> <U> <quotedbl>		: "\334"	Udiaeresis
+<Multi_key> <quotedbl> <U>		: "\334"	Udiaeresis
+<Multi_key> <U> <asciitilde>		: "\335"	Utilde
+<Multi_key> <asciitilde> <U>		: "\335"	Utilde
+<Multi_key> <U> <underscore>		: "\336"	Umacron
+<Multi_key> <underscore> <U>		: "\336"	Umacron
+<Multi_key> <U> <minus>			: "\336"	Umacron
+<Multi_key> <minus> <U>			: "\336"	Umacron
+<Multi_key> <s> <s>			: "\337"	ssharp
+<Multi_key> <a> <underscore>		: "\340"	amacron
+<Multi_key> <underscore> <a>		: "\340"	amacron
+<Multi_key> <a> <minus>			: "\340"	amacron
+<Multi_key> <minus> <a>			: "\340"	amacron
+<Multi_key> <a> <acute>			: "\341"	aacute
+<Multi_key> <acute> <a>			: "\341"	aacute
+<Multi_key> <a> <apostrophe>		: "\341"	aacute
+<Multi_key> <apostrophe> <a>		: "\341"	aacute
+<Multi_key> <a> <asciicircum>		: "\342"	acircumflex
+<Multi_key> <asciicircum> <a>		: "\342"	acircumflex
+<Multi_key> <a> <greater>		: "\342"	acircumflex
+<Multi_key> <greater> <a>		: "\342"	acircumflex
+<Multi_key> <a> <asciitilde>		: "\343"	atilde
+<Multi_key> <asciitilde> <a>		: "\343"	atilde
+<Multi_key> <a> <quotedbl>		: "\344"	adiaeresis
+<Multi_key> <quotedbl> <a>		: "\344"	adiaeresis
+<Multi_key> <a> <asterisk>		: "\345"	aring
+<Multi_key> <asterisk> <a>		: "\345"	aring
+<Multi_key> <a> <e>			: "\346"	ae
+<Multi_key> <i> <comma>			: "\347"	iogonek
+<Multi_key> <comma> <i>			: "\347"	iogonek
+<Multi_key> <c> <less>			: "\350"	ccaron
+<Multi_key> <less> <c>			: "\350"	ccaron
+<Multi_key> <e> <acute>			: "\351"	eacute
+<Multi_key> <acute> <e>			: "\351"	eacute
+<Multi_key> <e> <apostrophe>		: "\351"	eacute
+<Multi_key> <apostrophe> <e>		: "\351"	eacute
+<Multi_key> <e> <comma>			: "\352"	eogonek
+<Multi_key> <comma> <e>			: "\352"	eogonek
+<Multi_key> <e> <quotedbl>		: "\353"	ediaeresis
+<Multi_key> <quotedbl> <e>		: "\353"	ediaeresis
+<Multi_key> <e> <period>		: "\354"	eabovedot
+<Multi_key> <period> <e>		: "\354"	eabovedot
+<Multi_key> <i> <acute>			: "\355"	iacute
+<Multi_key> <acute> <i>			: "\355"	iacute
+<Multi_key> <i> <apostrophe>		: "\355"	iacute
+<Multi_key> <apostrophe> <i>		: "\355"	iacute
+<Multi_key> <i> <asciicircum>		: "\356"	icircumflex
+<Multi_key> <asciicircum> <i>		: "\356"	icircumflex
+<Multi_key> <i> <greater>		: "\356"	icircumflex
+<Multi_key> <greater> <i>		: "\356"	icircumflex
+<Multi_key> <i> <minus>			: "\357"	imacron
+<Multi_key> <minus> <i>			: "\357"	imacron
+<Multi_key> <i> <underscore>		: "\357"	imacron
+<Multi_key> <underscore> <i>		: "\357"	imacron
+<Multi_key> <d> <minus>			: "\360"	dstroke
+<Multi_key> <minus> <d>			: "\360"	dstroke
+<Multi_key> <n> <comma>			: "\361"	ncedilla
+<Multi_key> <n> <cedilla>		: "\361"	ncedilla
+<Multi_key> <comma> <n>			: "\361"	ncedilla
+<Multi_key> <cedilla> <n>		: "\361"	ncedilla
+<Multi_key> <o> <underscore>		: "\362"	omacron
+<Multi_key> <underscore> <o>		: "\362"	omacron
+<Multi_key> <o> <minus>			: "\362"	omacron
+<Multi_key> <minus> <o>			: "\362"	omacron
+<Multi_key> <k> <comma>			: "\363"	kcedilla
+<Multi_key> <k> <cedilla>		: "\363"	kcedilla
+<Multi_key> <comma> <k>			: "\363"	kcedilla
+<Multi_key> <cedilla> <k>		: "\363"	kcedilla
+<Multi_key> <o> <asciicircum>		: "\364"	ocircumflex
+<Multi_key> <asciicircum> <o>		: "\364"	ocircumflex
+<Multi_key> <o> <greater>		: "\364"	ocircumflex
+<Multi_key> <greater> <o>		: "\364"	ocircumflex
+<Multi_key> <o> <asciitilde>		: "\365"	otilde
+<Multi_key> <asciitilde> <o>		: "\365"	otilde
+<Multi_key> <o> <quotedbl>		: "\366"	odiaeresis
+<Multi_key> <quotedbl> <o>		: "\366"	odiaeresis
+<Multi_key> <minus> <colon>		: "\367"	division
+<Multi_key> <colon> <minus>		: "\367"	division
+
+<Multi_key> <o> <slash>			: "\370"	ooblique
+<Multi_key> <slash> <o>			: "\370"	ooblique
+<Multi_key> <u> <comma>			: "\371"	uogonek
+<Multi_key> <comma> <u>			: "\371"	uogonek
+<Multi_key> <u> <acute>			: "\372"	uacute
+<Multi_key> <acute> <u>			: "\372"	uacute
+<Multi_key> <u> <apostrophe>		: "\372"	uacute
+<Multi_key> <apostrophe> <u>		: "\372"	uacute
+<Multi_key> <u> <asciicircum>		: "\373"	ucircumflex
+<Multi_key> <asciicircum> <u>		: "\373"	ucircumflex
+<Multi_key> <u> <greater>		: "\373"	ucircumflex
+<Multi_key> <greater> <u>		: "\373"	ucircumflex
+<Multi_key> <u> <quotedbl>		: "\374"	udiaeresis
+<Multi_key> <quotedbl> <u>		: "\374"	udiaeresis
+<Multi_key> <u> <asciitilde>		: "\375"	utilde
+<Multi_key> <asciitilde> <u>		: "\375"	utilde
+<Multi_key> <u> <underscore>		: "\376"	umacron
+<Multi_key> <underscore> <u>		: "\376"	umacron
+<Multi_key> <u> <minus>			: "\376"	umacron
+<Multi_key> <minus> <u>			: "\376"	umacron
+<Multi_key> <period> <period>		: "\377"	abovedot
+
+<dead_abovedot> <E> 			: "\314"	Eabovedot
+<dead_abovedot> <e>			: "\354"	eabovedot
+<dead_abovedot> <abovedot>		: "\377"	abovedot
+<dead_abovedot> <dead_abovedot>		: "\377"	abovedot
+<dead_abovering> <A>			: "\305"	Aring
+<dead_abovering> <a>			: "\345"	aring
+<dead_acute> <acute>			: "\264"	acute
+<dead_acute> <dead_acute>		: "\264"	acute
+<dead_acute> <A>			: "\301"	Aacute
+<dead_acute> <E>			: "\311"	Eacute
+<dead_acute> <I>			: "\315"	Iacute
+<dead_acute> <U>			: "\332"	Uacute
+<dead_acute> <a>			: "\341"	aacute
+<dead_acute> <e>			: "\351"	eacute
+<dead_acute> <i>			: "\355"	iacute
+<dead_acute> <u>			: "\372"	uacute
+<dead_caron> <S>			: "\251"	Scaron
+<dead_caron> <Z>			: "\256"	Zcaron
+<dead_caron> <caron>			: "\267"	caron
+<dead_caron> <dead_caron>		: "\267"	caron
+<dead_caron> <s>			: "\271"	scaron
+<dead_caron> <z>			: "\276"	zcaron
+<dead_caron> <C>			: "\310"	Ccaron
+<dead_caron> <c>			: "\350"	ccaron
+<dead_cedilla> <R>			: "\243"	Rcedilla
+<dead_cedilla> <L>			: "\246"	Lcedilla
+<dead_cedilla> <G>			: "\253"	Gcedilla
+<dead_cedilla> <r>			: "\263"	rcedilla
+<dead_cedilla> <l>			: "\266"	lcedilla
+<dead_cedilla> <cedilla>		: "\270"	cedilla
+<dead_cedilla> <dead_cedilla>		: "\270"	cedilla
+<dead_cedilla> <g>			: "\273"	gcedilla
+<dead_cedilla> <N>			: "\321"	Ncedilla
+<dead_cedilla> <K>			: "\323"	Kcedilla
+<dead_cedilla> <n>			: "\361"	ncedilla
+<dead_cedilla> <k>			: "\363"	kcedilla
+<dead_circumflex> <A>			: "\302"	Acircumflex
+<dead_circumflex> <I>			: "\316"	Icircumflex
+<dead_circumflex> <O>			: "\324"	Ocircumflex
+<dead_circumflex> <U>			: "\333"	Ucircumflex
+<dead_circumflex> <a>			: "\342"	acircumflex
+<dead_circumflex> <i>			: "\356"	icircumflex
+<dead_circumflex> <o>			: "\364"	ocircumflex
+<dead_circumflex> <u>			: "\373"	ucircumflex
+<dead_diaeresis> <diaeresis>		: "\250"	diaeresis
+<dead_diaeresis> <dead_diaeresis>	: "\250"	diaeresis
+<dead_diaeresis> <A>			: "\304"	Adiaeresis
+<dead_diaeresis> <E>			: "\313"	Ediaeresis
+<dead_diaeresis> <O>			: "\326"	Odiaeresis
+<dead_diaeresis> <U>			: "\334"	Udiaeresis
+<dead_diaeresis> <a>			: "\344"	adiaeresis
+<dead_diaeresis> <e>			: "\353"	ediaeresis
+<dead_diaeresis> <o>			: "\366"	odiaeresis
+<dead_diaeresis> <u>			: "\374"	udiaeresis
+<dead_macron> <E>			: "\252"	Emacron
+<dead_macron> <macron>			: "\257"	macron
+<dead_macron> <dead_macron>		: "\257"	macron
+<dead_macron> <e>			: "\272"	emacron
+<dead_macron> <A>			: "\300"	Amacron
+<dead_macron> <I>			: "\317"	Imacron
+<dead_macron> <O>			: "\322"	Omacron
+<dead_macron> <U>			: "\336"	Umacron
+<dead_macron> <a>			: "\340"	amacron
+<dead_macron> <i>			: "\357"	imacron
+<dead_macron> <o>			: "\362"	omacron
+<dead_macron> <u>			: "\376"	umacron
+<dead_ogonek> <A>			: "\241"	Aogonek
+<dead_ogonek> <a>			: "\261"	aogonek
+<dead_ogonek> <ogonek>			: "\262"	ogonek
+<dead_ogonek> <dead_ogonek>		: "\262"	ogonek
+<dead_ogonek> <I>			: "\307"	Iogonek
+<dead_ogonek> <E>			: "\312"	Eogonek
+<dead_ogonek> <U>			: "\331"	Uogonek
+<dead_ogonek> <i>			: "\347"	iogonek
+<dead_ogonek> <e>			: "\352"	eogonek
+<dead_ogonek> <u>			: "\371"	uogonek
+<dead_abovering> <ring>			: "\260"	ring
+<dead_abovering> <dead_abovering>	: "\260"	ring
+<dead_tilde> <I>			: "\245"	Itilde
+<dead_tilde> <i>			: "\265"	itilde
+<dead_tilde> <A>			: "\303"	Atilde
+<dead_tilde> <O>			: "\325"	Otilde
+<dead_tilde> <U>			: "\335"	Utilde
+<dead_tilde> <a>			: "\343"	atilde
+<dead_tilde> <o>			: "\365"	otilde
+<dead_tilde> <u>			: "\375"	utilde
+<dead_tilde> <asciitilde>		: "~"		asciitilde
+<dead_tilde> <dead_tilde>		: "~"		asciitilde
+# End of Sequence Definition

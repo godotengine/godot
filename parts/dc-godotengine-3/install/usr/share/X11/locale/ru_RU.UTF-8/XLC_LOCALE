@@ -1,0 +1,214 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#	XLocale Database Sample for ru_RU.UTF-8
+#	Derived from en_US.UTF-8
+#
+
+#
+# 	XLC_FONTSET category
+#
+XLC_FONTSET
+
+on_demand_loading	True
+
+object_name		generic
+
+# 	fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name	ISO8859-1:GL
+	}
+	font	{
+		primary	ISO8859-1:GL
+		vertical_rotate	all
+	}
+}
+#	fs1 class (ISO8859 families)
+fs1	{
+	charset	{
+		name	ISO8859-1:GR
+	}
+	font	{
+		primary	ISO8859-1:GR
+	}
+}
+#	fs2 class (KOI8-R)
+fs2	{
+	charset	{
+		name	KOI8-R:GR
+	}
+	font	{
+		primary	KOI8-R:GR
+	}
+}
+#	fs3 class (MICROSOFT-CP1251)
+fs3	{
+	charset	{
+		name	MICROSOFT-CP1251:GR
+	}
+	font	{
+		primary	MICROSOFT-CP1251:GR
+	}
+}
+#	fs4 class (ISO8859-5)
+fs4	{
+	charset	{
+		name	ISO8859-5:GR
+	}
+	font	{
+		primary	ISO8859-5:GR
+	}
+}
+# 	fs5 class (Kanji)
+fs5	{
+	charset	{
+		name	JISX0208.1983-0:GL
+	}
+	font	{
+		primary	JISX0208.1983-0:GL
+	}
+}
+#	fs6 class (Korean Character)
+fs6	{
+	charset	{
+		name	KSC5601.1987-0:GL
+	}
+	font	{
+		primary	KSC5601.1987-0:GL
+	}
+}
+#	fs7 class (Chinese Han Character)
+fs7	{
+	charset	{
+		name	GB2312.1980-0:GL
+	}
+	font	{
+		primary	GB2312.1980-0:GL
+	}
+}
+#	fs8 class (Half Kana)
+fs8	{
+	charset	{
+		name	JISX0201.1976-0:GR
+	}
+	font	{
+		primary		JISX0201.1976-0:GR
+		vertical_rotate	all
+	}
+}
+#	ISO10646 should come last so the fonts above will actually be used
+#	fs9 class
+fs9	{
+	charset	{
+		name	ISO10646-1
+	}
+	font	{
+		primary	ISO10646-1
+	}
+}
+END XLC_FONTSET
+
+#
+# 	XLC_XLOCALE category
+#
+XLC_XLOCALE
+
+encoding_name		UTF-8
+mb_cur_max		6
+state_depend_encoding	False
+
+#	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	ct_encoding	ISO8859-1:GL
+}
+
+#	cs1 class
+cs1     {
+        side            GR:Default
+        length          1
+        ct_encoding     ISO8859-1:GR
+}
+
+#	cs2 class
+cs2	{
+	side		GR
+	length		2
+	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;			JISX0208.1983-1:GL; JISX0208.1983-1:GR
+
+}
+
+#	cs3 class
+cs3     {
+        side            GL
+        length          2
+        ct_encoding     KSC5601.1987-0:GL; KSC5601.1987-0:GR;                        KSC5601.1987-1:GL; KSC5601.1987-1:GR
+
+}
+
+#	cs4 class
+cs4     {
+        side            GR
+        length          2
+        ct_encoding     GB2312.1980-0:GL; GB2312.1980-0:GR
+}
+
+#	cs5 class
+cs5	{
+	side		GR
+	length		1
+	ct_encoding	JISX0201.1976-0:GR
+}
+
+#	cs6 class
+cs6	{
+	side		none
+	ct_encoding	ISO10646-1
+}
+
+END XLC_XLOCALE

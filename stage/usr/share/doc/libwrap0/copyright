@@ -1,0 +1,33 @@
+This package was debianized by Anthony Towns <ajt@debian.org> on
+Tue, 10 Aug 1999 12:06:33 +1000.
+
+It was downloaded from ftp://ftp.porcupine.org/pub/security/index.html
+
+and includes ftp://ftp.porcupine.org/pub/security/tcpd-blacklist-patch
+
+Copyright updated on 2001/06/08 from 
+ftp://ftp.porcupine.org/pub/security/tcp_wrappers_license
+
+Upstream Author: Wietse Venema
+
+Copyright:
+
+/************************************************************************
+* Copyright 1995 by Wietse Venema.  All rights reserved.  Some individual
+* files may be covered by other copyrights.
+*
+* This material was originally written and compiled by Wietse Venema at
+* Eindhoven University of Technology, The Netherlands, in 1990, 1991,
+* 1992, 1993, 1994 and 1995.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that this entire copyright notice
+* is duplicated in all such copies.
+*
+* This software is provided "as is" and without any expressed or implied
+* warranties, including, without limitation, the implied warranties of
+* merchantibility and fitness for any particular purpose.
+************************************************************************/
+
+Thanks to Wietse Venema for his permission to include the tcp_wrapper
+package in the Debian Distribution.

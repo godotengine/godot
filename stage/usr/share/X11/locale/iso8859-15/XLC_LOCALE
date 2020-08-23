@@ -1,0 +1,121 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  XLocale Database Sample for fcd/dis/iso 8859-15.
+#  When Final Committee Draft (FCD) 8859-15 is formalized
+#  then this file will be renamed iso8859-15.
+#  This file is provided as preliminary support for the Latin-9
+#  (a.k.a. Latin-0) character set so that Europeans who want
+#  the Euro currency character can do so.
+# 
+# 
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+# 	fs0 class 
+fs0	{
+	charset	{
+		name		ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-15:GL
+		substitute	ISO8859-15:GL
+		vertical_rotate	all
+	}
+}
+# 	fs1 class 
+fs1	{
+	charset	{
+		name		ISO8859-15:GR
+	}
+	font	{
+		primary		ISO8859-15:GR
+	}
+}
+END XLC_FONTSET
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		ISO8859-15
+mb_cur_max		1
+state_depend_encoding	False
+
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+
+
+
+
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+# 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-15:GL; ISO8859-1:GL
+}
+
+
+# 	cs1 class
+cs1	{
+	side		GR:Default
+	length		1
+
+	wc_encoding	\x30000000
+
+
+
+	ct_encoding	ISO8859-15:GR
+}
+
+END XLC_XLOCALE

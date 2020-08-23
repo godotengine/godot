@@ -1,0 +1,315 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libpng
+Source: http://www.libpng.org/pub/png/
+
+Files: *
+Copyright: 1995-2019 The PNG Reference Library Authors.
+           1998-2018 Glenn Randers-Pehrson
+           2018-2019 Cosmin Truta
+License: libpng
+
+Files: arm/arm_init.c
+       arm/filter_neon_intrinsics.c
+       arm/palette_neon_intrinsics.c
+Copyright: 2018 Cosmin Truta
+           2017-2018 Arm Holdings. All rights reserved.
+           2014,2016 Glenn Randers-Pehrson
+License: libpng
+
+Files: contrib/pngminus/*
+Copyright: 1999-2019 Willem van Schaik
+License: expat
+
+Files: contrib/tools/*
+Copyright: 2013-2017 John Cunningham Bowler
+License: libpng
+
+Files: pngwutil.c pngstruct.h pngwrite.c pnginfo.h pngrio.c png.h
+       pngread.c pngwio.c pngrutil.c pngmem.c pngget.c pngtest.c
+       pngrtran.c pngpriv.h pngset.c pngpread.c
+       pngdebug.h pngerror.c pngwtran.c png.c pngtrans.c example.c
+Copyright: 1996, 1997 Andreas Dilger
+           1995, 1996 Guy Eric Schalnat, Group 42, Inc.
+           1998-2013 Glenn Randers-Pehrson
+License: libpng
+
+Files: contrib/gregbook/rpng-win.c contrib/gregbook/rpng2-x.c contrib/gregbook/rpng-x.c
+       contrib/gregbook/readpng2.h contrib/gregbook/rpng2-win.c
+Copyright: 1998-2008 Greg Roelofs
+License: GPL-2+ or BSD-like-with-advertising-clause
+
+Files: contrib/gregbook/writepng.h contrib/gregbook/readppm.c
+       contrib/gregbook/readpng.h contrib/gregbook/wpng.c
+       contrib/gregbook/readpng.c contrib/gregbook/readpng2.c
+       contrib/gregbook/writepng.c contrib/visupng/resource.h
+       contrib/visupng/cexcept.h
+Copyright: 2000-2008 Adam M. Costello and Cosmin Truta
+License: GPL-2+ or BSD-like-with-advertising-clause
+
+Files: contrib/visupng/PngFile.c contrib/visupng/PngFile.h
+       contrib/visupng/VisualPng.c
+Copyright: 2000,2017 Willem van Schaik
+License: libpng
+
+Files: contrib/libtests/tarith.c
+Copyright: 2011-2013 John Cunningham Bowler
+License: libpng
+
+Files: contrib/oss-fuzz/*
+Copyright: 2017 Glenn Randers-Pehrson
+           2016 Google Inc.
+License: libpng OR Apache-2.0 OR BSD-3-clause
+
+Files: contrib/oss-fuzz/Dockerfile
+Copyright: 2016 Google Inc.
+License: Apache-2.0
+
+Files: debian/*
+Copyright:      2001 Philippe Troin <phil@fifi.org>
+                2002 Junichi Uekawa <dancer@debian.org>
+                2003 Josselin Mouette <joss@debian.org>
+           2006-2009 Anibal Monsalve Salazar <anibal@debian.org>
+           2011-2014 Nobuhiro Iwamatsu <iwamatsu@debian.org>
+           2016-2019 Gianfranco Costamagna <locutusofborg@debian.org>
+           2016-2017 Tobias Frost <tobi@debian.org>
+License: GPL-2+
+
+License: expat
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+License: GPL-2+
+ This package is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>
+ .
+ On Debian systems, the complete text of the GNU General
+ Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
+
+License: BSD-like-with-advertising-clause
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute
+ it freely, subject to the following restrictions:
+ .
+ 1. Redistributions of source code must retain the above copyright
+     notice, disclaimer, and this list of conditions.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, disclaimer, and this list of conditions in the documenta-
+    tion and/or other materials provided with the distribution.
+  3. All advertising materials mentioning features or use of this
+     software must display the following acknowledgment:
+ .
+ This product includes software developed by Greg Roelofs
+ and contributors for the book, "PNG: The Definitive Guide,"
+ published by O'Reilly and Associates.
+
+License: libpng
+ Here is the copyright and license for libpng:
+ . 
+   libpng versions 1.2.6, August 15, 2004, through 1.5.2, March 31, 2011, are
+   Copyright (c) 2004, 2006-2011 Glenn Randers-Pehrson, and are
+   distributed according to the same disclaimer and license as libpng-1.2.5
+   with the following individual added to the list of Contributing Authors
+ .
+     Cosmin Truta
+ .
+   libpng versions 1.0.7, July 1, 2000, through 1.2.5 - October 3, 2002, are
+   Copyright (c) 2000-2002 Glenn Randers-Pehrson, and are
+   distributed according to the same disclaimer and license as libpng-1.0.6
+   with the following individuals added to the list of Contributing Authors
+ .
+     Simon-Pierre Cadieux
+     Eric S. Raymond
+     Gilles Vollant
+ .
+   and with the following additions to the disclaimer:
+ .
+   There is no warranty against interference with your enjoyment of the
+   library or against infringement.  There is no warranty that our
+   efforts or the library will fulfill any of your particular purposes
+   or needs.  This library is provided with all faults, and the entire
+   risk of satisfactory quality, performance, accuracy, and effort is with
+   the user.
+ .
+   libpng versions 0.97, January 1998, through 1.0.6, March 20, 2000, are
+   Copyright (c) 1998, 1999 Glenn Randers-Pehrson, and are
+   distributed according to the same disclaimer and license as libpng-0.96,
+   with the following individuals added to the list of Contributing Authors:
+ .
+     Tom Lane
+     Glenn Randers-Pehrson
+     Willem van Schaik
+ .
+   (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
+   (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ .
+   Authors and maintainers:
+   libpng versions 0.71, May 1995, through 0.88, January 1996: Guy Schalnat
+   libpng versions 0.89c, June 1996, through 0.96, May 1997: Andreas Dilger
+   libpng versions 0.97, January 1998, through 1.2.26 - April 2, 2008: Glenn
+   See also "Contributing Authors", below.
+ .
+ .
+   COPYRIGHT NOTICE, DISCLAIMER, and LICENSE:
+ .
+   If you modify libpng you may insert additional notices immediately following
+   this sentence.
+ .
+   libpng versions 1.2.6, August 15, 2004, through 1.2.26, April 2, 2008, are
+   Copyright (c) 2004, 2006-2008 Glenn Randers-Pehrson, and are
+   distributed according to the same disclaimer and license as libpng-1.2.5
+   with the following individual added to the list of Contributing Authors:
+ .
+      Cosmin Truta
+ .
+   libpng versions 1.0.7, July 1, 2000, through 1.2.5, October 3, 2002, are
+   Copyright (c) 2000-2002 Glenn Randers-Pehrson, and are
+   distributed according to the same disclaimer and license as libpng-1.0.6
+   with the following individuals added to the list of Contributing Authors:
+ .
+      Simon-Pierre Cadieux
+      Eric S. Raymond
+      Gilles Vollant
+ .
+   and with the following additions to the disclaimer:
+ .
+      There is no warranty against interference with your enjoyment of the
+      library or against infringement.  There is no warranty that our
+      efforts or the library will fulfill any of your particular purposes
+      or needs.  This library is provided with all faults, and the entire
+      risk of satisfactory quality, performance, accuracy, and effort is with
+      the user.
+ .
+   libpng versions 0.97, January 1998, through 1.0.6, March 20, 2000, are
+   Copyright (c) 1998, 1999, 2000 Glenn Randers-Pehrson, and are
+   distributed according to the same disclaimer and license as libpng-0.96,
+   with the following individuals added to the list of Contributing Authors:
+ .
+      Tom Lane
+      Glenn Randers-Pehrson
+      Willem van Schaik
+ .
+   libpng versions 0.89, June 1996, through 0.96, May 1997, are
+   Copyright (c) 1996, 1997 Andreas Dilger
+   Distributed according to the same disclaimer and license as libpng-0.88,
+   with the following individuals added to the list of Contributing Authors:
+ .
+      John Bowler
+      Kevin Bracey
+      Sam Bushell
+      Magnus Holmgren
+      Greg Roelofs
+      Tom Tanner
+ .
+   libpng versions 0.5, May 1995, through 0.88, January 1996, are
+   Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.
+ .
+   For the purposes of this copyright and license, "Contributing Authors"
+   is defined as the following set of individuals:
+ .
+      Andreas Dilger
+      Dave Martindale
+      Guy Eric Schalnat
+      Paul Schmidt
+      Tim Wegner
+ .
+   The PNG Reference Library is supplied "AS IS".  The Contributing Authors
+   and Group 42, Inc. disclaim all warranties, expressed or implied,
+   including, without limitation, the warranties of merchantability and of
+   fitness for any purpose.  The Contributing Authors and Group 42, Inc.
+   assume no liability for direct, indirect, incidental, special, exemplary,
+   or consequential damages, which may result from the use of the PNG
+   Reference Library, even if advised of the possibility of such damage.
+ .
+   Permission is hereby granted to use, copy, modify, and distribute this
+   source code, or portions hereof, for any purpose, without fee, subject
+   to the following restrictions:
+ .
+   1. The origin of this source code must not be misrepresented.
+ .
+   2. Altered versions must be plainly marked as such and
+      must not be misrepresented as being the original source.
+ .
+   3. This Copyright notice may not be removed or altered from
+      any source or altered source distribution.
+ .
+   The Contributing Authors and Group 42, Inc. specifically permit, without
+   fee, and encourage the use of this source code as a component to
+   supporting the PNG file format in commercial products.  If you use this
+   source code in a product, acknowledgment is not required but would be
+   appreciated.
+ .
+   contrib/pngsuite:
+   --------
+   (c) Willem van Schaik, 1999, 2011
+ .
+   Permission to use, copy, modify, and distribute these images for any
+   purpose and without fee is hereby granted.
+
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+  http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian systems, the full text of the Apache License
+ can be found in the file `/usr/share/common-licenses/Apache-2.0'.
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. Neither the name of the University nor the names of its contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+

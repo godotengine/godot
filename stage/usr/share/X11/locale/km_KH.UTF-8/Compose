@@ -1,0 +1,53 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+include "/usr/share/X11/locale/en_US.UTF-8/Compose"
+
+# Khmer digraphs
+<U17ff>	:	"ាំ"
+<U17fe>	:	"ោះ"
+<U17fd>	:	"េះ"
+<U17fc>	:	"ុំ"
+<U17fb>	:	"ុះ"

@@ -1,0 +1,307 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libsndfile
+Upstream-Contact: Erik de Castro Lopo <erikd@mega-nerd.com>
+Source: https://github.com/erikd/libsndfile/
+
+Files: *
+Copyright: 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
+License: LGPL-2.1+
+
+Files: src/*
+Copyright: 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
+License: LGPL-2.1+
+
+Files: src/GSM610/*
+Copyright: 1992, Jutta Degener and Carsten Bormann, Technische Universität Berlin
+License: gsm
+  Any use of this software is permitted provided that this notice is not
+  removed and that neither the authors nor the Technische Universitaet Berlin
+  are deemed to have made any representations as to the suitability of this
+  software for any purpose nor are held responsible for any defects of
+  this software.  THERE IS ABSOLUTELY NO WARRANTY FOR THIS SOFTWARE.
+  .
+  As a matter of courtesy, the authors request to be informed about uses
+  this software has found, about bugs in this software, and about any
+  improvements that may be of general interest.
+
+Files: src/ALAC/*
+Copyright: 2011, Apple Inc.
+  2012-2015, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: Apache-2.0
+
+Files: src/ALAC/shift.h
+Copyright: 2014, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: LGPL-2.1+
+
+Files: src/G72x/*
+Copyright: Sun Microsystems, Inc.
+License: sun
+  This source code is a product of Sun Microsystems, Inc. and is provided
+  for unrestricted use.  Users may copy or modify this source code without
+  charge.
+  .
+  SUN SOURCE CODE IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING
+  THE WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
+  .
+  Sun source code is provided with no support and without any obligation on
+  the part of Sun Microsystems, Inc. to assist in its use, correction,
+  modification or enhancement.
+  .
+  SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
+  INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY THIS SOFTWARE
+  OR ANY PART THEREOF.
+  .
+  In no event will Sun Microsystems, Inc. be liable for any lost revenue
+  or profits or other special, indirect and consequential damages, even if
+  Sun has been advised of the possibility of such damages.
+  .
+  Sun Microsystems, Inc.
+  2550 Garcia Avenue
+  Mountain View, California  94043
+
+Files: src/G72x/g72x_test.c
+Copyright: 1999-2014, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: GPL-2+
+
+Files: src/*ima_oki*
+Copyright: 2007, <robs@users.sourceforge.net>
+  2007-2014, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: LGPL-2+
+
+Files: src/aiff.c
+  src/wav.c
+  src/wavlike.c
+Copyright: 1999-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2004-2005, David Viens <davidv@plogue.com>
+License: LGPL-2.1+
+
+Files: src/*.py
+Copyright: 2003-2017, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: src/sndfile.hh
+Copyright: 2005-2012, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: src/ogg_vorbis.c
+Copyright: 2002-2005, Michael Smith <msmith@xiph.org>
+  2002-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2007, John ffitch
+License: BSD-3-clause and LGPL-2.1+
+
+Files: src/ogg.c
+Copyright: 2002-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2007, John ffitch
+License: LGPL-2.1+
+
+Files: src/flac.c
+Copyright: 2004, Tobias Gehrig <tgehrig@ira.uka.de>
+  2004-2017, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: LGPL-2.1+
+
+Files: src/cart.c
+Copyright: 2006, Paul Davis <paul@linuxaudiosystems.com>
+  2006-2013, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2012, Chris Roberts <c.roberts@csrfm.com>
+License: LGPL-2.1+
+
+Files: src/chunk.c
+Copyright: 2008-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2012, IOhannes m zmoelnig, IEM <zmoelnig@iem.at>
+License: LGPL-2.1+
+
+Files: src/sd2.c
+Copyright: 2001-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2004, Paavo Jumppanen
+License: LGPL-2.1+
+
+Files: src/broadcast.c
+Copyright: 2006, Paul Davis <paul@linuxaudiosystems.com>
+  2006-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: LGPL-2.1+
+
+Files: src/wve.c
+Copyright: 2002-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2007, Reuben Thomas
+License: LGPL-2.1+
+
+Files: src/file_io.c
+Copyright: 2002-2014, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2003, Ross Bencina <rbencina@iprimus.com.au>
+License: LGPL-2.1+
+
+Files: src/rf64.c
+Copyright: 2008-2017, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2009, Uli Franke <cls@nebadje.org>
+License: LGPL-2.1+
+
+Files: programs/*
+Copyright: 1999-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: programs/common.c
+  programs/sndfile-metadata-*.c
+Copyright: 1999-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2008-2010, George Blood Audio
+License: BSD-3-clause
+
+Files: programs/sndfile-cmp.c
+Copyright: 2008, Conrad Parker <conrad@metadecks.org>
+  2008-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: programs/sndfile-play-beos.cpp
+Copyright: 2001, Marcus Overhagen <marcus@overhagen.de>
+License: GPL-2+
+
+Files: examples/*
+Copyright: 1999-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: examples/sndfilehandle.cc
+Copyright: 2007-2011, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: GPL-2+
+
+Files: Octave/sndfile_load.m
+  Octave/sndfile_play.m
+  Octave/sndfile_save.m
+Copyright: 2002-2011, Erik de Castro Lopo
+License: GPL-2+
+
+Files: tests/*
+Copyright:  1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
+License: GPL-2+
+
+Files: tests/*.sh.in
+Copyright: 2008-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: regtest/*
+Copyright: 2005-2011, Erik de Castro Lopo
+License: GPL-2+
+
+Files: Scripts/android-configure.sh
+Copyright: 2013-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: BSD-3-clause
+
+Files: M4/stack_protect.m4
+Copyright: 2013, Xiph.org Foundation
+License: BSD-3-clause
+
+Files: M4/ax_add_fortify_source.m4
+Copyright: 2017, David Seifert <soap@gentoo.org>
+License: FSFAP
+  Copying and distribution of this file, with or without modification, are
+  permitted in any medium without royalty provided the copyright notice
+  and this notice are preserved.  This file is offered as-is, without any
+  warranty.
+
+Files: M4/extra_pkg.m4
+Copyright: 2004, Scott James Remnant <scott@netsplit.com>.
+  2008-2012, Erik de Castro Lopo <erikd@mega-nerd.com>
+License: GPL-2+
+
+Files: debian/*
+Copyright: 2016-2017, Erik de Castro Lopo <erikd@mega-nerd.com>
+  2016-2017, IOhannes m zmölnig <umlaeute@debian.org>
+License: LGPL-2.1+
+
+
+License: LGPL-2.1+
+  This package is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published
+  by the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+  .
+  This package is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+  .
+  You should have received a copy of the 'GNU Lesser General Public
+  License' along with this program.  If not, see
+  <http://www.gnu.org/licenses/>.
+Comment:
+  On Debian systems, the complete text of the GNU Lesser General Public License
+  (LGPL) version 2.1 can be found in "/usr/share/common-licenses/LGPL-2.1".
+
+License: LGPL-2+
+  This package is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published
+  by the Free Software Foundation; either version 2 of the License.
+  .
+  This package is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+  .
+  You should have received a copy of the 'GNU Lesser General Public
+  License' along with this program.  If not, see
+  <http://www.gnu.org/licenses/>.
+Comment:
+  On Debian systems, the complete text of the GNU Lesser General Public License
+  (LGPL) version 2 can be found in "/usr/share/common-licenses/LGPL-2".
+
+License: GPL-2+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by the
+  Free Software Foundation; either version 2, or (at your option) any
+  later version.
+  .
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+  .
+  You should have received a copy of the GNU General Public License along
+  with this program.  If not, see <http://www.gnu.org/licenses/>.
+Comment:
+  On Debian systems, the complete text of the GNU General Public License
+  (GPL) version 2 can be found in "/usr/share/common-licenses/GPL-2".
+
+License: BSD-3-clause
+  All rights reserved.
+  .
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+  .
+  1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.
+  3. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior
+    written permission.
+  .
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY
+  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+  PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR
+  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+  IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+
+License: Apache-2.0
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  .
+      http://www.apache.org/licenses/LICENSE-2.0
+  .
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+Comment:
+  On Debian systems, the complete text of the Apache 2.0 License
+  can be found in /usr/share/common-licenses/Apache-2.0 file.

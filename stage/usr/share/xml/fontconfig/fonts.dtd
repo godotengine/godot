@@ -1,0 +1,233 @@
+<!-- This is the Document Type Definition for font configuration files -->
+<!ELEMENT fontconfig (dir | 
+		      cache | 
+		      cachedir |
+		      include | 
+		      config |
+		      selectfont |
+		      match | 
+		      alias)* >
+
+<!-- 
+    Add a directory that provides fonts
+-->
+<!ELEMENT dir (#PCDATA)>
+<!ATTLIST dir
+	  prefix    CDATA       "default"
+	  xml:space (default|preserve) 'preserve'>
+
+<!--
+    Define the per-user file that holds cache font information.
+
+    If the filename begins with '~', it is replaced with the users
+    home directory path.
+-->
+<!ELEMENT cache (#PCDATA)>
+<!ATTLIST cache xml:space (default|preserve) 'preserve'>
+
+<!--
+    Add a directory that is searched for font cache files.
+    These hold per-directory cache data and are searched in
+    order for each directory. When writing cache files, the first
+    directory which allows the cache file to be created is used.
+
+    A leading '~' in a directory name is replaced with the users
+    home directory path.
+-->
+<!ELEMENT cachedir (#PCDATA)>
+<!ATTLIST cachedir
+	  prefix    CDATA      "default"
+	  xml:space (default|preserve) 'preserve'>
+
+<!--
+    Reference another configuration file; note that this
+    is another complete font configuration file and not
+    just a file included by the XML parser.
+
+    Set 'ignore_missing' to 'yes' if errors are to be ignored.
+
+    If the filename begins with '~', it is replaced with the users
+    home directory path.
+-->
+<!ELEMENT include (#PCDATA)>
+<!ATTLIST include
+	  ignore_missing    (no|yes)		"no"
+	  prefix	    CDATA               "default"
+	  deprecated	    (yes|no)		"no"
+	  xml:space	    (default|preserve)	"preserve">
+
+<!--
+    Global library configuration data
+ -->
+<!ELEMENT config (blank|rescan)*>
+
+<!--
+    Specify the set of Unicode encoding values which
+    represent glyphs that are allowed to contain no
+    data.  With this list, fontconfig can examine
+    fonts for broken glyphs and eliminate them from
+    the set of valid Unicode chars.  This idea
+    was borrowed from Mozilla
+ -->
+<!ELEMENT blank (int|range)*>
+
+<!--
+    Aliases are just a special case for multiple match elements
+
+    They are syntactically equivalent to:
+
+    <match>
+	<test name="family">
+	    <string value=[family]/>
+	</test>
+	<edit name="family" mode="prepend">
+	    <string value=[prefer]/>
+	    ...
+	</edit>
+	<edit name="family" mode="append">
+	    <string value=[accept]/>
+	    ...
+	</edit>
+	<edit name="family" mode="append_last">
+	    <string value=[default]/>
+	    ...
+	</edit>
+    </match>
+-->
+<!--
+    Periodically rescan the font configuration and
+    directories to synch internal state with filesystem
+ -->
+<!ELEMENT rescan (int)>
+
+<!--
+    Edit list of available fonts at startup/reload time
+ -->
+<!ELEMENT selectfont (rejectfont | acceptfont)* >
+
+<!ELEMENT rejectfont (glob | pattern)*>
+
+<!ELEMENT acceptfont (glob | pattern)*>
+
+<!ELEMENT glob (#PCDATA)>
+
+<!ELEMENT pattern (patelt)*>
+
+<!ENTITY % constant 'int|double|string|matrix|bool|charset|langset|const'>
+
+<!ELEMENT patelt (%constant;)*>
+<!ATTLIST patelt
+	  name CDATA	#REQUIRED>
+
+<!ELEMENT alias (test?, family*, prefer?, accept?, default?)>
+<!ATTLIST alias
+	  binding (weak|strong|same) "weak">
+<!ELEMENT prefer (family)*>
+<!ELEMENT accept (family)*>
+<!ELEMENT default (family)*>
+<!ELEMENT family (#PCDATA)>
+<!ATTLIST family xml:space (default|preserve) 'preserve'>
+
+<!ENTITY % expr 'int|double|string|matrix|bool|charset|langset
+		|name|const
+		|or|and|eq|not_eq|less|less_eq|more|more_eq|contains|not_contains
+		|plus|minus|times|divide|not|if|floor|ceil|round|trunc'>
+
+<!--
+    Match and edit patterns.
+
+    If 'target' is 'pattern', execute the match before selecting a font.
+    if 'target' is 'font', execute the match on the result of a font
+    selection.
+-->
+<!ELEMENT match (test|edit)+>
+<!ATTLIST match
+	  target (pattern|font|scan) "pattern">
+
+<!--
+    Match a field in a pattern
+
+    if 'qual' is 'any', then the match succeeds if any value in the field matches.
+    if 'qual' is 'all', then the match succeeds only if all values match.
+    if 'qual' is 'first', then the match succeeds only if the first value matches.
+    if 'qual' is 'not_first', then the match succeeds only if any value other than
+    	the first matches.
+    For match elements with target=font, if test 'target' is 'pattern',
+    then the test is applied to the pattern used in matching rather than
+    to the resulting font.
+
+    Match elements with target=scan are applied as fonts are scanned.
+    They edit the pattern generated from the scanned font and affect
+    what the fontconfig database contains.
+-->
+<!ELEMENT test (%expr;)*>
+<!ATTLIST test 
+	  qual (any|all|first|not_first)    "any"
+	  name CDATA	    #REQUIRED
+	  target (pattern|font|default)		"default"
+	  ignore-blanks (true|false)	"false"
+	  compare (eq|not_eq|less|less_eq|more|more_eq|contains|not_contains)	"eq">
+
+<!--
+    Edit a field in a pattern
+
+    The enclosed values are used together to edit the list of values
+    associated with 'name'.
+
+    If 'name' matches one of those used in a test element for this match element:
+	if 'mode' is 'assign', replace the matched value.
+	if 'mode' is 'assign_replace', replace all of the values
+	if 'mode' is 'prepend', insert before the matched value
+	if 'mode' is 'append', insert after the matched value
+	if 'mode' is 'prepend_first', insert before all of the values
+	if 'mode' is 'append_last', insert after all of the values
+    If 'name' doesn't match any of those used in a test element:
+	if 'mode' is 'assign' or 'assign_replace, replace all of the values
+	if 'mode' is 'prepend' or 'prepend_first', insert before all of the values
+	if 'mode' is 'append' or 'append_last', insert after all of the values
+-->
+<!ELEMENT edit (%expr;)*>
+<!ATTLIST edit
+	  name CDATA	    #REQUIRED
+	  mode (assign|assign_replace|prepend|append|prepend_first|append_last|delete|delete_all) "assign"
+	  binding (weak|strong|same) "weak">
+
+<!--
+    Elements of expressions follow
+-->
+<!ELEMENT int (#PCDATA)>
+<!ATTLIST int xml:space (default|preserve) 'preserve'>
+<!ELEMENT double (#PCDATA)>
+<!ATTLIST double xml:space (default|preserve) 'preserve'>
+<!ELEMENT string (#PCDATA)>
+<!ATTLIST string xml:space (default|preserve) 'preserve'>
+<!ELEMENT matrix ((%expr;), (%expr;), (%expr;), (%expr;))>
+<!ELEMENT bool (#PCDATA)>
+<!ELEMENT charset (int|range)*>
+<!ELEMENT range (int,int)>
+<!ELEMENT langset (string)*>
+<!ELEMENT name (#PCDATA)>
+<!ATTLIST name xml:space (default|preserve) 'preserve'
+	  target (default|font|pattern) 'default'>
+<!ELEMENT const (#PCDATA)>
+<!ATTLIST const xml:space (default|preserve) 'preserve'>
+<!ELEMENT or (%expr;)*>
+<!ELEMENT and (%expr;)*>
+<!ELEMENT eq ((%expr;), (%expr;))>
+<!ELEMENT not_eq ((%expr;), (%expr;))>
+<!ELEMENT less ((%expr;), (%expr;))>
+<!ELEMENT less_eq ((%expr;), (%expr;))>
+<!ELEMENT more ((%expr;), (%expr;))>
+<!ELEMENT more_eq ((%expr;), (%expr;))>
+<!ELEMENT contains ((%expr;), (%expr;))>
+<!ELEMENT not_contains ((%expr;), (%expr;))>
+<!ELEMENT plus (%expr;)*>
+<!ELEMENT minus (%expr;)*>
+<!ELEMENT times (%expr;)*>
+<!ELEMENT divide (%expr;)*>
+<!ELEMENT not (%expr;)>
+<!ELEMENT if ((%expr;), (%expr;), (%expr;))>
+<!ELEMENT floor (%expr;)>
+<!ELEMENT ceil (%expr;)>
+<!ELEMENT round (%expr;)>
+<!ELEMENT trunc (%expr;)>

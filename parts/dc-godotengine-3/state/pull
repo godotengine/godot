@@ -1,0 +1,122 @@
+!PullState
+assets:
+  build-packages: []
+  build-snaps: []
+  source-details: null
+  stage-packages:
+  - libxdmcp6=1:1.1.3-0ubuntu1
+  - libgles2-mesa=20.0.8-0ubuntu1~20.04.1
+  - libvulkan1=1.2.131.2-1
+  - libdbus-1-3=1.12.16-2ubuntu2.1
+  - libdrm-nouveau2=2.4.101-2
+  - gcc-10-base=10-20200411-0ubuntu1
+  - libpciaccess0=0.16-0ubuntu1
+  - libxcb-present0=1.14-2
+  - libgl1=1.3.1-1ubuntu0.20.04.1
+  - libglapi-mesa=20.0.8-0ubuntu1~20.04.1
+  - libpixman-1-0=0.38.4-0ubuntu1
+  - libasound2-data=1.2.2-2.1ubuntu1
+  - libxrender1=1:0.9.10-1
+  - libelf1=0.176-1.1build1
+  - libogg0=1.3.4-0ubuntu1
+  - libbsd0=0.10.0-1
+  - libwrap0=7.6.q-30
+  - libxcursor1=1:1.2.0-2
+  - libvorbisfile3=1.3.6-2ubuntu1
+  - libxcb-shm0=1.14-2
+  - libgles2=1.3.1-1ubuntu0.20.04.1
+  - libxcb-render0=1.14-2
+  - fontconfig-config=2.13.1-2ubuntu3
+  - libx11-6=2:1.6.9-2ubuntu1
+  - libexpat1=2.2.9-1build1
+  - libxshmfence1=1.3-1
+  - libdrm-amdgpu1=2.4.101-2
+  - libllvm10=1:10.0.0-4ubuntu1
+  - libxau6=1:1.0.9-0ubuntu1
+  - libpulse0=1:13.99.1-1ubuntu3.5
+  - libtinfo6=6.2-0ubuntu2
+  - libxcb1=1.14-2
+  - libxi6=2:1.7.10-0ubuntu1
+  - libvorbisenc2=1.3.6-2ubuntu1
+  - libxinerama1=2:1.1.4-2
+  - fonts-dejavu-core=2.37-1
+  - ucf=3.0038+nmu1
+  - libxrandr2=2:1.5.2-0ubuntu1
+  - libtheora0=1.1.1+dfsg.1-15ubuntu2
+  - libsndfile1=1.0.28-7
+  - libdrm2=2.4.101-2
+  - libglx0=1.3.1-1ubuntu0.20.04.1
+  - libglu1-mesa=9.0.1-1build1
+  - libxfixes3=1:5.0.3-2
+  - libfontconfig1=2.13.1-2ubuntu3
+  - libasyncns0=0.8-6
+  - libx11-data=2:1.6.9-2ubuntu1
+  - libgl1-mesa-dri=20.0.8-0ubuntu1~20.04.1
+  - libasound2=1.2.2-2.1ubuntu1
+  - libxxf86vm1=1:1.1.4-1build1
+  - libgcc-s1=10-20200411-0ubuntu1
+  - libxdamage1=1:1.1.5-2
+  - libgl1-mesa-glx=20.0.8-0ubuntu1~20.04.1
+  - libflac8=1.3.3-1build1
+  - libedit2=3.1-20191231-1
+  - libdrm-intel1=2.4.101-2
+  - libsensors-config=1:3.6.0-2ubuntu1
+  - libfreetype6=2.10.1-2
+  - libffi7=3.3-4
+  - libzstd1=1.4.4+dfsg-3
+  - libdrm-radeon1=2.4.101-2
+  - libvorbis0a=1.3.6-2ubuntu1
+  - libcairo2=1.16.0-4ubuntu1
+  - libxcb-glx0=1.14-2
+  - libxcb-dri2-0=1.14-2
+  - libsensors5=1:3.6.0-2ubuntu1
+  - libxcb-dri3-0=1.14-2
+  - libx11-xcb1=2:1.6.9-2ubuntu1
+  - libxcb-sync1=1.14-2
+  - libxext6=2:1.3.4-0ubuntu1
+  - libglx-mesa0=20.0.8-0ubuntu1~20.04.1
+  - libglvnd0=1.3.1-1ubuntu0.20.04.1
+  - libdrm-common=2.4.101-2
+  - libpng16-16=1.6.37-2
+extracted_metadata:
+  files: []
+  metadata: !ExtractedMetadata
+    _data: {}
+project_options:
+  deb_arch: amd64
+properties:
+  override-pull: snapcraftctl pull
+  parse-info: []
+  plugin: dump
+  source:
+  - on amd64: https://downloads.tuxfamily.org/godotengine/3.2.2/Godot_v3.2.2-stable_x11.64.zip
+  - on i386: https://downloads.tuxfamily.org/godotengine/3.2.2/Godot_v3.2.2-stable_x11.32.zip
+  source-branch: ''
+  source-commit: ''
+  source-depth: 0
+  source-subdir: ''
+  source-tag: ''
+  source-type: ''
+  stage-packages:
+  - libgl1-mesa-dri
+  - libglu1-mesa
+  - libgl1-mesa-glx
+  - libgles2-mesa
+  - libflac8
+  - libxcursor1
+  - libxi6
+  - libxinerama1
+  - libxrandr2
+  - libxrender1
+  - libasound2
+  - libasyncns0
+  - libogg0
+  - libpulse0
+  - libsndfile1
+  - libtheora0
+  - libvorbis0a
+  - libvorbisenc2
+  - libvorbisfile3
+schema_properties: []
+scriptlet_metadata: !ExtractedMetadata
+  _data: {}

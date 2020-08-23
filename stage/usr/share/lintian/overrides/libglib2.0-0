@@ -1,0 +1,7 @@
+# GObject uses GLib functions instead of using libc directly
+libglib2.0-0: hardening-no-fortify-functions usr/lib/*/libgobject-2.0.so.*
+# It's a deliberate choice of bundling them together
+libglib2.0-0: package-name-doesnt-match-sonames libgio-2.0-0 libglib-2.0-0 libgmodule-2.0-0 libgobject-2.0-0 libgthread-2.0-0
+# These empty directories are deliberate.
+libglib2.0-0: package-contains-empty-directory usr/lib/*/gio/modules/
+libglib2.0-0: package-contains-empty-directory usr/share/glib-2.0/schemas/

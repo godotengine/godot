@@ -1,0 +1,5 @@
+# We need to include the revision, otherwise dpkg-dev gets confused with the
+# upstream part containing a dash, as the tools will strip the apparent
+# version revision for the comparison.
+libedit2: symbols-file-contains-current-version-with-debian-revision on symbol *
+libedit2: symbols-file-contains-debian-revision on symbol *

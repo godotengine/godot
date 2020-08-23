@@ -1,0 +1,119 @@
+#
+# Copyright (C) 2018 Red Hat, Inc.
+#
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 2.1 of the
+# licence, or (at your option) any later version.
+#
+# This is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+# License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this library; if not, see <http://www.gnu.org/licenses/>.
+#
+
+# Check for bash
+[ -z "$BASH_VERSION" ] && return
+
+####################################################################################################
+
+# Check whether the suggestions have common prefix (i.e. suggestions won't be
+# shown and prefix will be completed first)
+__has_common_prefix() {
+    for (( i = 1; i < ${#COMPREPLY[@]}; i++ )); do
+        if [[ "${COMPREPLY[i-1]:${#cur}:1}" != "${COMPREPLY[i]:${#cur}:1}" ]]; then
+            return 1 # False
+        fi
+    done
+
+    return 0 # True
+}
+
+# Complete file location
+__gio_location() {
+    # Prevent breaking on colons, we have to work with uris
+    local cur
+    _get_comp_words_by_ref -n : cur
+
+    # Resolve dirname for dir listing
+    local dir=""
+    if [[ $cur =~ "/"$ ]]; then
+        dir="$cur"
+    elif [[ $cur =~ "/" ]]; then
+        # Subtract basename because dirname cmd doesn't work well with schemes
+        dir=${cur%$(basename "$cur")}
+    fi
+
+    # List volumes and mounts
+    local mounts=( )
+    while IFS=$'\n' read mount; do
+        # Do not care about local mounts
+        [[ "$mount" =~ ^"file:" ]] && continue
+
+        # Use only matching mounts
+        [[ "$mount" =~ ^"$cur" && "$mount" != "$cur" ]] && mounts+=("$mount")
+    done < <(gio mount -li | sed -n -r 's/^ *(default_location|activation_root)=(.*)$/\2/p' | sort -u)
+
+    # Workaround to unescape dir name (e.g. "\ " -> " ")
+    declare -a tmp="( ${dir} )"
+    unescaped_dir="${tmp[0]}"
+
+    # List files
+    local files=()
+    local names=()
+    while IFS=$'\t' read name size type; do
+        # Escape name properly
+        local escaped_name="$(printf "%q" "$name")"
+
+        # Append slash for directories and space for files
+        if [[ "$type" == "(directory)" ]]; then
+            escaped_name="$escaped_name/"
+        else
+            escaped_name="$escaped_name "
+        fi
+
+        path="$dir$escaped_name"
+
+        # Use only matching paths
+        if [[ "$path" =~ ^"$cur" ]]; then
+            files+=("$path")
+            names+=("$escaped_name")
+        fi
+    done < <(gio list -hl "$unescaped_dir" 2> /dev/null)
+
+    COMPREPLY=("${files[@]}" "${mounts[@]}")
+
+    # Workaround to show suggestions as basenames only
+    if ! __has_common_prefix; then
+        COMPREPLY=("${mounts[@]} ${names[@]}")
+
+        # Workaround to prevent overwritting suggestions, it adds empty
+        # suggestion, otherwise names with colons will be corrupted
+        COMPREPLY+=(" ")
+
+        return 0
+    fi
+
+    # Workaround to complete names with colons, it removes colon prefix from
+    # COMPREPLY
+    __ltrim_colon_completions "$cur"
+}
+
+__gio() {
+    # Complete subcommands
+    if (( ${COMP_CWORD} == 1 )); then
+        COMPREPLY=($(compgen -W "help version cat copy info list mime mkdir monitor mount move open rename remove save set trash tree" -- "${COMP_WORDS[1]}"))
+        compopt +o nospace
+        return 0
+    fi
+
+    # Complete file locations
+    __gio_location
+}
+
+####################################################################################################
+
+complete -o nospace -F __gio gio

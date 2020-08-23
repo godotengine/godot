@@ -1,0 +1,623 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files:
+ *
+Copyright:
+ Copyright © 2004-2006, 2008-2019 Guillem Jover <guillem@hadrons.org>
+License: BSD-3-clause
+
+Files:
+ man/arc4random.3bsd
+ man/tree.3bsd
+Copyright:
+ Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
+ All rights reserved.
+License: BSD-4-clause-Niels-Provos
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. All advertising materials mentioning features or use of this software
+    must display the following acknowledgement:
+      This product includes software developed by Niels Provos.
+ 4. The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Files:
+ man/getprogname.3bsd
+Copyright:
+ Copyright © 2001 Christopher G. Demetriou
+ All rights reserved.
+License: BSD-4-clause-Christopher-G-Demetriou
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. All advertising materials mentioning features or use of this software
+    must display the following acknowledgement:
+          This product includes software developed for the
+          NetBSD Project.  See http://www.netbsd.org/ for
+          information about NetBSD.
+ 4. The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Files:
+ include/bsd/err.h
+ include/bsd/stdlib.h
+ include/bsd/sys/param.h
+ include/bsd/unistd.h
+ src/bsd_getopt.c
+ src/err.c
+ src/fgetln.c
+ src/progname.c
+Copyright:
+ Copyright © 2005, 2008-2012 Guillem Jover <guillem@hadrons.org>
+ Copyright © 2005 Hector Garcia Alvarez
+ Copyright © 2005 Aurelien Jarno
+ Copyright © 2006 Robert Millan
+ Copyright © 2018 Facebook, Inc.
+License: BSD-3-clause
+
+Files:
+ include/bsd/netinet/ip_icmp.h
+ include/bsd/sys/bitstring.h
+ include/bsd/sys/queue.h
+ include/bsd/sys/time.h
+ include/bsd/timeconv.h
+ include/bsd/vis.h
+ man/bitstring.3bsd
+ man/errc.3bsd
+ man/explicit_bzero.3bsd
+ man/fgetln.3bsd
+ man/fgetwln.3bsd
+ man/fpurge.3bsd
+ man/funopen.3bsd
+ man/getbsize.3bsd
+ man/heapsort.3bsd
+ man/nlist.3bsd
+ man/queue.3bsd
+ man/radixsort.3bsd
+ man/reallocarray.3bsd
+ man/reallocf.3bsd
+ man/setmode.3bsd
+ man/strmode.3bsd
+ man/strnstr.3bsd
+ man/strtoi.3bsd
+ man/strtou.3bsd
+ man/unvis.3bsd
+ man/vis.3bsd
+ man/wcslcpy.3bsd
+ src/getbsize.c
+ src/heapsort.c
+ src/merge.c
+ src/nlist.c
+ src/radixsort.c
+ src/setmode.c
+ src/strmode.c
+ src/strnstr.c
+ src/strtoi.c
+ src/strtou.c
+ src/unvis.c
+Copyright:
+ Copyright © 1980, 1982, 1986, 1989-1994
+     The Regents of the University of California.  All rights reserved.
+ Copyright © 2001 Mike Barcroft <mike@FreeBSD.org>
+ .
+ Some code is derived from software contributed to Berkeley by
+ the American National Standards Committee X3, on Information
+ Processing Systems.
+ .
+ Some code is derived from software contributed to Berkeley by
+ Peter McIlroy.
+ .
+ Some code is derived from software contributed to Berkeley by
+ Ronnie Kon at Mindcraft Inc., Kevin Lew and Elmer Yglesias.
+ .
+ Some code is derived from software contributed to Berkeley by
+ Dave Borman at Cray Research, Inc.
+ .
+ Some code is derived from software contributed to Berkeley by
+ Paul Vixie.
+ .
+ Some code is derived from software contributed to Berkeley by
+ Chris Torek.
+ .
+ Copyright © UNIX System Laboratories, Inc.
+ All or some portions of this file are derived from material licensed
+ to the University of California by American Telephone and Telegraph
+ Co. or Unix System Laboratories, Inc. and are reproduced herein with
+ the permission of UNIX System Laboratories, Inc.
+License: BSD-3-clause-Regents
+
+Files:
+ src/vis.c
+Copyright:
+ Copyright © 1989, 1993
+     The Regents of the University of California.  All rights reserved.
+ .
+ Copyright © 1999, 2005 The NetBSD Foundation, Inc.
+ All rights reserved.
+License: BSD-3-clause-Regents and BSD-2-clause-NetBSD
+
+Files:
+ include/bsd/libutil.h
+Copyright:
+ Copyright © 1996  Peter Wemm <peter@FreeBSD.org>.
+ All rights reserved.
+ Copyright © 2002 Networks Associates Technology, Inc.
+ All rights reserved.
+License: BSD-3-clause-author
+
+Files:
+ man/timeradd.3bsd
+Copyright:
+ Copyright © 2009 Jukka Ruohonen <jruohonen@iki.fi>
+ Copyright © 1999 Kelly Yancey <kbyanc@posi.net>
+ All rights reserved.
+License: BSD-3-clause-John-Birrell
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. Neither the name of the author nor the names of any co-contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY JOHN BIRRELL AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+Files:
+ man/setproctitle.3bsd
+Copyright:
+ Copyright © 1995 Peter Wemm <peter@FreeBSD.org>
+ All rights reserved.
+License: BSD-5-clause-Peter-Wemm
+ Redistribution and use in source and binary forms, with or without
+ modification, is permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice immediately at the beginning of the file, without modification,
+    this list of conditions, and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. This work was done expressly for inclusion into FreeBSD.  Other use
+    is permitted provided this notation is included.
+ 4. Absolutely no warranty of function or purpose is made by the author
+    Peter Wemm.
+ 5. Modifications may be freely made to this file providing the above
+    conditions are met.
+
+Files:
+ include/bsd/stringlist.h
+ man/fmtcheck.3bsd
+ man/humanize_number.3bsd
+ man/stringlist.3bsd
+ man/timeval.3bsd
+ src/fmtcheck.c
+ src/humanize_number.c
+ src/stringlist.c
+ src/strtonum.c
+Copyright:
+ Copyright © 1994, 1997-2000, 2002, 2008, 2010, 2014
+     The NetBSD Foundation, Inc.
+ Copyright © 2013 John-Mark Gurney <jmg@FreeBSD.org>
+ All rights reserved.
+ .
+ Some code was contributed to The NetBSD Foundation by Allen Briggs.
+ .
+ Some code was contributed to The NetBSD Foundation by Luke Mewburn.
+ .
+ Some code is derived from software contributed to The NetBSD Foundation
+ by Jason R. Thorpe of the Numerical Aerospace Simulation Facility,
+ NASA Ames Research Center, by Luke Mewburn and by Tomas Svensson.
+ .
+ Some code is derived from software contributed to The NetBSD Foundation
+ by Julio M. Merino Vidal, developed as part of Google's Summer of Code
+ 2005 program.
+ .
+ Some code is derived from software contributed to The NetBSD Foundation
+ by Christos Zoulas.
+ .
+ Some code is derived from software contributed to The NetBSD Foundation
+ by Jukka Ruohonen.
+License: BSD-2-clause-NetBSD
+
+Files:
+ include/bsd/sys/endian.h
+ man/byteorder.3bsd
+ man/closefrom.3bsd
+ man/expand_number.3bsd
+ man/flopen.3bsd
+ man/getpeereid.3bsd
+ man/pidfile.3bsd
+ src/expand_number.c
+ src/hash/sha512.h
+ src/hash/sha512c.c
+ src/pidfile.c
+ src/reallocf.c
+ src/timeconv.c
+Copyright:
+ Copyright © 1998, M. Warner Losh <imp@freebsd.org>
+ All rights reserved.
+ .
+ Copyright © 2001 Dima Dorfman.
+ All rights reserved.
+ .
+ Copyright © 2001 FreeBSD Inc.
+ All rights reserved.
+ .
+ Copyright © 2002 Thomas Moestl <tmm@FreeBSD.org>
+ All rights reserved.
+ .
+ Copyright © 2002 Mike Barcroft <mike@FreeBSD.org>
+ All rights reserved.
+ .
+ Copyright © 2005 Pawel Jakub Dawidek <pjd@FreeBSD.org>
+ All rights reserved.
+ .
+ Copyright © 2005 Colin Percival
+ All rights reserved.
+ .
+ Copyright © 2007 Eric Anderson <anderson@FreeBSD.org>
+ Copyright © 2007 Pawel Jakub Dawidek <pjd@FreeBSD.org>
+ All rights reserved.
+ .
+ Copyright © 2007 Dag-Erling Coïdan Smørgrav
+ All rights reserved.
+ .
+ Copyright © 2009 Advanced Computing Technologies LLC
+ Written by: John H. Baldwin <jhb@FreeBSD.org>
+ All rights reserved.
+ .
+ Copyright © 2011 Guillem Jover <guillem@hadrons.org>
+License: BSD-2-clause
+
+Files:
+ src/flopen.c
+Copyright:
+ Copyright © 2007-2009 Dag-Erling Coïdan Smørgrav
+ All rights reserved.
+License: BSD-2-clause-verbatim
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer
+    in this position and unchanged.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+Files:
+ include/bsd/sys/tree.h
+ man/fparseln.3bsd
+ src/fparseln.c
+Copyright:
+ Copyright © 1997 Christos Zoulas.
+ All rights reserved.
+ .
+ Copyright © 2002 Niels Provos <provos@citi.umich.edu>
+ All rights reserved.
+License: BSD-2-clause-author
+
+Files:
+ include/bsd/readpassphrase.h
+ man/readpassphrase.3bsd
+ man/strlcpy.3bsd
+ man/strtonum.3bsd
+ src/arc4random.c
+ src/arc4random_linux.h
+ src/arc4random_openbsd.h
+ src/arc4random_uniform.c
+ src/arc4random_unix.h
+ src/arc4random_win.h
+ src/closefrom.c
+ src/getentropy_aix.c
+ src/getentropy_bsd.c
+ src/getentropy_hpux.c
+ src/getentropy_hurd.c
+ src/getentropy_linux.c
+ src/getentropy_osx.c
+ src/getentropy_solaris.c
+ src/getentropy_win.c
+ src/readpassphrase.c
+ src/reallocarray.c
+ src/strlcat.c
+ src/strlcpy.c
+Copyright:
+ Copyright © 2004 Ted Unangst and Todd Miller
+ All rights reserved.
+ .
+ Copyright © 1996 David Mazieres <dm@uun.org>
+ Copyright © 1998, 2000-2002, 2004-2005, 2007, 2010, 2012-2015
+     Todd C. Miller <Todd.Miller@courtesan.com>
+ Copyright © 2004 Ted Unangst
+ Copyright © 2008 Damien Miller <djm@openbsd.org>
+ Copyright © 2008 Otto Moerbeek <otto@drijf.net>
+ Copyright © 2013 Markus Friedl <markus@openbsd.org>
+ Copyright © 2014 Bob Beck <beck@obtuse.com>
+ Copyright © 2014 Brent Cook <bcook@openbsd.org>
+ Copyright © 2014 Pawel Jakub Dawidek <pjd@FreeBSD.org>
+ Copyright © 2014 Theo de Raadt <deraadt@openbsd.org>
+ Copyright © 2015 Michael Felt <aixtools@gmail.com>
+ Copyright © 2015 Guillem Jover <guillem@hadrons.org>
+License: ISC
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Files:
+ src/inet_net_pton.c
+Copyright:
+ Copyright © 1996 by Internet Software Consortium.
+License: ISC-Original
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM DISCLAIMS
+ ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL INTERNET SOFTWARE
+ CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ SOFTWARE.
+
+Files:
+ src/setproctitle.c
+Copyright:
+ Copyright © 2010 William Ahern
+ Copyright © 2012 Guillem Jover <guillem@hadrons.org>
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to permit
+ persons to whom the Software is furnished to do so, subject to the
+ following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+ USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Files:
+ include/bsd/md5.h
+ src/hash/md5.c
+Copyright:
+ None
+License: public-domain-Colin-Plumb
+ This code implements the MD5 message-digest algorithm.
+ The algorithm is due to Ron Rivest. This code was
+ written by Colin Plumb in 1993, no copyright is claimed.
+ This code is in the public domain; do with it what you wish.
+
+Files:
+ src/explicit_bzero.c
+ src/chacha_private.h
+Copyright:
+ None
+License: public-domain
+ Public domain.
+
+Files:
+ man/mdX.3bsd
+ src/hash/md5hl.c
+ src/hash/helper.c
+Copyright:
+ None
+License: Beerware
+ "THE BEER-WARE LICENSE" (Revision 42):
+ <phk@login.dkuug.dk> wrote this file.  As long as you retain this notice you
+ can do whatever you want with this stuff. If we meet some day, and you think
+ this stuff is worth it, you can buy me a beer in return.   Poul-Henning Kamp
+
+License: BSD-3-clause-Regents
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. Neither the name of the University nor the names of its contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+License: BSD-3-clause-author
+ Redistribution and use in source and binary forms, with or without
+ modification, is permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-2-clause-NetBSD
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+ BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-2-clause-author
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-2-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.

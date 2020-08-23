@@ -1,0 +1,167 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+# koi8-c Compose Sequence
+#
+# Sequence Definition
+#
+#
+
+# <Multi_key> Means <Compose>
+# Special Character
+<Multi_key> <plus> <plus>               : "#"   numbersign
+<Multi_key> <apostrophe> <space>        : "'"   apostrophe
+<Multi_key> <space> <apostrophe>        : "'"   apostrophe
+<Multi_key> <A> <T>                     : "@"   at
+<Multi_key> <parenleft> <parenleft>     : "["   bracketleft
+<Multi_key> <slash> <slash>             : "\\"  backslash
+<Multi_key> <slash> <less>              : "\\"  backslash
+<Multi_key> <less> <slash>              : "\\"  backslash
+<Multi_key> <parenright> <parenright>   : "]"   bracketright
+<Multi_key> <asciicircum> <space>       : "^"   asciicircum
+<Multi_key> <space> <asciicircum>       : "^"   asciicircum
+<Multi_key> <greater> <space>           : "^"   asciicircum
+<Multi_key> <space> <greater>           : "^"   asciicircum
+<Multi_key> <grave> <space>             : "`"   grave
+<Multi_key> <space> <grave>             : "`"   grave
+<Multi_key> <parenleft> <minus>         : "{"   braceleft
+<Multi_key> <minus> <parenleft>         : "{"   braceleft
+<Multi_key> <slash> <asciicircum>       : "|"   bar
+<Multi_key> <asciicircum> <slash>       : "|"   bar
+<Multi_key> <V> <L>                     : "|"   bar
+<Multi_key> <L> <V>                     : "|"   bar
+<Multi_key> <v> <l>                     : "|"   bar
+<Multi_key> <l> <v>                     : "|"   bar
+<Multi_key> <parenright> <minus>        : "}"   braceright
+<Multi_key> <minus> <parenright>        : "}"   braceright
+<Multi_key> <asciitilde> <space>        : "~"   asciitilde
+<Multi_key> <space> <asciitilde>        : "~"   asciitilde
+<Multi_key> <minus> <space>             : "~"   asciitilde
+<Multi_key> <space> <minus>             : "~"   asciitilde
+
+<Multi_key> <space> <space>             : "\240"	nobreakspace
+
+<Multi_key> <Cyrillic_ghe> <minus>      : "\200"	Cyrillic_ghe_bar
+<Multi_key> <Cyrillic_GHE> <minus>      : "\220"	Cyrillic_GHE_bar
+<Multi_key> <Cyrillic_zhe> <comma>      : "\201"	Cyrillic_zhe_descender
+<Multi_key> <Cyrillic_ZHE> <comma>      : "\221"	Cyrillic_ZHE_descender
+<Multi_key> <Cyrillic_ka> <comma>       : "\202"	Cyrillic_ka_descender
+<Multi_key> <Cyrillic_KA> <comma>       : "\222"	Cyrillic_KA_descender
+<Multi_key> <Cyrillic_ka> <slash>       : "\203"	Cyrillic_ka_vertstroke
+<Multi_key> <Cyrillic_KA> <slash>       : "\223"	Cyrillic_KA_vertstroke
+<Multi_key> <Cyrillic_ka> <bar>         : "\203"	Cyrillic_ka_vertstroke
+<Multi_key> <Cyrillic_KA> <bar>         : "\223"	Cyrillic_KA_vertstroke
+<Multi_key> <Cyrillic_en> <comma>	: "\204"	Cyrillic_en_descender
+<Multi_key> <Cyrillic_EN> <comma>	: "\224"	Cyrillic_EN_descender
+<Multi_key> <Cyrillic_u> <apostrophe>	: "\205"	Cyrillic_u_straight
+<Multi_key> <Cyrillic_U> <apostrophe>	: "\225"	Cyrillic_U_straight
+<Multi_key> <Cyrillic_u> <bar>		: "\205"	Cyrillic_u_straight
+<Multi_key> <Cyrillic_U> <bar>		: "\225"	Cyrillic_U_straight
+<Multi_key> <Cyrillic_u> <comma>	: "\206"	Cyrillic_u_straight_bar
+<Multi_key> <Cyrillic_U> <comma>	: "\226"	Cyrillic_U_straight_bat
+<Multi_key> <Cyrillic_u> <slash>	: "\206"	Cyrillic_u_straight_bar
+<Multi_key> <Cyrillic_U> <slash>	: "\226"	Cyrillic_U_straight_bat
+<Multi_key> <Cyrillic_ha> <comma>	: "\207"	Cyrillic_ha_descender
+<Multi_key> <Cyrillic_HA> <comma>	: "\227"	Cyrillic_HA_descender
+<Multi_key> <Cyrillic_che> <comma>	: "\210"	Cyrillic_che_descender
+<Multi_key> <Cyrillic_CHE> <comma>	: "\230"	Cyrillic_CHE_descender
+<Multi_key> <Cyrillic_che> <slash>      : "\211"	Cyrillic_che_vertstroke
+<Multi_key> <Cyrillic_CHE> <slash>      : "\231"	Cyrillic_CHE_vertstroke
+<Multi_key> <Cyrillic_che> <bar>        : "\211"	Cyrillic_che_vertstroke
+<Multi_key> <Cyrillic_CHE> <bar>        : "\231"	Cyrillic_CHE_vertstroke
+<Multi_key> <Cyrillic_ha> <apostrophe>	: "\212"	Cyrillic_shha
+<Multi_key> <Cyrillic_HA> <apostrophe>	: "\232"	Cyrillic_SHHA
+<Multi_key> <h> <apostrophe>		: "\212"	Cyrillic_shha
+<Multi_key> <H> <apostrophe>		: "\232"	Cyrillic_SHHA
+<Multi_key> <h> <h>			: "\212"	Cyrillic_shha
+<Multi_key> <H> <H>			: "\232"	Cyrillic_SHHA
+<Multi_key> <Cyrillic_ie> <Cyrillic_ie>	: "\213"	Cyrillic_schwa
+<Multi_key> <Cyrillic_IE> <Cyrillic_IE>	: "\233"	Cyrillic_SCHWA
+<Multi_key> <e> <e>			: "\213"	Cyrillic_schwa
+<Multi_key> <E> <E>			: "\233"	Cyrillic_SCHWA
+<Multi_key> <Cyrillic_i> <minus> 	: "\214"	Cyrillic_i_macron
+<Multi_key> <Cyrillic_I> <minus>      	: "\234"	Cyrillic_I_macron
+<Multi_key> <Cyrillic_o> <minus>	: "\215"	Cyrillic_o_bar
+<Multi_key> <Cyrillic_O> <minus>	: "\235"	Cyrillic_O_bar
+<Multi_key> <Cyrillic_u> <minus>	: "\216"	Cyrillic_u_macron
+<Multi_key> <Cyrillic_U> <minus>	: "\236"	Cyrillic_U_macron
+
+<Multi_key> <Cyrillic_de> <Cyrillic_je>	: "\241"	Serbian_dje
+<Multi_key> <Cyrillic_DE> <Cyrillic_JE>	: "\261"	Serbian_DJE
+<Multi_key> <Cyrillic_ghe> <Cyrillic_je> : "\242"	Macedonia_gje
+<Multi_key> <Cyrillic_GHE> <Cyrillic_JE> : "\262"	Macedonia_GJE
+<Multi_key> <Cyrillic_shorti> <Cyrillic_o> : "\243"	Cyrillic_io
+<Multi_key> <Cyrillic_SHORTI> <Cyrillic_O> : "\263"	Cyrillic_IO
+<Multi_key> <Cyrillic_je> <Cyrillic_o>	: "\243"	Cyrillic_io
+<Multi_key> <Cyrillic_JE> <Cyrillic_O>	: "\263"	Cyrillic_IO
+<Multi_key> <Cyrillic_ie> <colon>	: "\243"	Cyrillic_io
+<Multi_key> <Cyrillic_IE> <colon>	: "\263"	Cyrillic_IO
+
+<Multi_key> <Cyrillic_el> <Cyrillic_je>	: "\251"	Cyrillic_lje
+<Multi_key> <Cyrillic_EL> <Cyrillic_JE>	: "\271"	Cyrillic_LJE
+<Multi_key> <Cyrillic_en> <Cyrillic_je>	: "\252"	Cyrillic_nje
+<Multi_key> <Cyrillic_EN> <Cyrillic_JE>	: "\272"	Cyrillic_NJE
+
+<Multi_key> <Cyrillic_shorti> <Cyrillic_u> : "\300"	Cyrillic_yu
+<Multi_key> <Cyrillic_SHORTI> <Cyrillic_U> : "\340"	Cyrillic_YU
+<Multi_key> <Cyrillic_je> <Cyrillic_u>	: "\300"	Cyrillic_yu
+<Multi_key> <Cyrillic_JE> <Cyrillic_U>	: "\340"	Cyrillic_YU
+
+<Multi_key> <Cyrillic_te> <Cyrillic_es>	: "\303"	Cyrillic_tse
+<Multi_key> <Cyrillic_TE> <Cyrillic_ES>	: "\343"	Cyrillic_TSE
+
+<Multi_key> <Cyrillic_shorti> <Cyrillic_a> : "\321"	Cyrillic_ya
+<Multi_key> <Cyrillic_SHORTI> <Cyrillic_A> : "\361"	Cyrillic_YA
+<Multi_key> <Cyrillic_je> <Cyrillic_a>	: "\321"	Cyrillic_ya
+<Multi_key> <Cyrillic_JE> <Cyrillic_A>	: "\361"	Cyrillic_YA
+
+
+<Multi_key> <Cyrillic_sha> <comma>	: "\335"	Cyrillic_shcha
+<Multi_key> <Cyrillic_SHA> <comma>	: "\375"	Cyrillic_SHCHA
+
+
+
+# End of Sequence Definition

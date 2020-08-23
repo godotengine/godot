@@ -1,0 +1,2 @@
+# false positive: we only say dbus when talking about a package name
+libdbus-1-3: capitalization-error-in-description dbus D-Bus

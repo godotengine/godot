@@ -1,0 +1,220 @@
+# List of AMDGPU IDs
+#
+# Syntax:
+# device_id,	revision_id,	product_name        <-- single tab after comma
+
+1.0.0
+15DD,	81,	AMD Ryzen Embedded V1807B with Radeon Vega Gfx
+15DD,	82,	AMD Ryzen Embedded V1756B with Radeon Vega Gfx
+15DD,	83,	AMD Ryzen Embedded V1605B with Radeon Vega Gfx
+15DD,	85,	AMD Ryzen Embedded V1202B with Radeon Vega Gfx
+6600,	0,	AMD Radeon HD 8600/8700M
+6600,	81,	AMD Radeon (TM) R7 M370
+6601,	0,	AMD Radeon (TM) HD 8500M/8700M
+6604,	0,	AMD Radeon R7 M265 Series
+6604,	81,	AMD Radeon (TM) R7 M350
+6605,	0,	AMD Radeon R7 M260 Series
+6605,	81,	AMD Radeon (TM) R7 M340
+6606,	0,	AMD Radeon HD 8790M
+6607,	0,	AMD Radeon (TM) HD8530M
+6608,	0,	AMD FirePro W2100
+6610,	0,	AMD Radeon HD 8600 Series
+6610,	81,	AMD Radeon (TM) R7 350
+6610,	83,	AMD Radeon (TM) R5 340
+6611,	0,	AMD Radeon HD 8500 Series
+6613,	0,	AMD Radeon HD 8500 series
+6617,	C7,	AMD Radeon R7 240 Series
+6640,	0,	AMD Radeon HD 8950
+6640,	80,	AMD Radeon (TM) R9 M380
+6646,	0,	AMD Radeon R9 M280X
+6646,	80,	AMD Radeon (TM) R9 M470X
+6647,	0,	AMD Radeon R9 M270X
+6647,	80,	AMD Radeon (TM) R9 M380
+6649,	0,	AMD FirePro W5100
+6658,	0,	AMD Radeon R7 200 Series
+665C,	0,	AMD Radeon HD 7700 Series
+665D,	0,	AMD Radeon R7 200 Series
+665F,	81,	AMD Radeon (TM) R7 300 Series
+6660,	0,	AMD Radeon HD 8600M Series
+6660,	81,	AMD Radeon (TM) R5 M335
+6660,	83,	AMD Radeon (TM) R5 M330
+6663,	0,	AMD Radeon HD 8500M Series
+6663,	83,	AMD Radeon (TM) R5 M320
+6664,	0,	AMD Radeon R5 M200 Series
+6665,	0,	AMD Radeon R5 M200 Series
+6665,	83,	AMD Radeon (TM) R5 M320
+6667,	0,	AMD Radeon R5 M200 Series
+666F,	0,	AMD Radeon HD 8500M
+66AF,	C1,	AMD Radeon VII
+6780,	0,	ATI FirePro V (FireGL V) Graphics Adapter
+678A,	0,	ATI FirePro V (FireGL V) Graphics Adapter
+6798,	0,	AMD Radeon HD 7900 Series
+679A,	0,	AMD Radeon HD 7900 Series
+679B,	0,	AMD Radeon HD 7900 Series
+679E,	0,	AMD Radeon HD 7800 Series
+67A0,	0,	AMD Radeon FirePro W9100
+67A1,	0,	AMD Radeon FirePro W8100
+67B0,	0,	AMD Radeon R9 200 Series
+67B0,	80,	AMD Radeon (TM) R9 390 Series
+67B1,	0,	AMD Radeon R9 200 Series
+67B1,	80,	AMD Radeon (TM) R9 390 Series
+67B9,	0,	AMD Radeon R9 200 Series
+67DF,	C1,	Radeon RX 580 Series
+67DF,	C2,	Radeon RX 570 Series
+67DF,	C3,	Radeon RX 580 Series
+67DF,	C4,	AMD Radeon (TM) RX 480 Graphics
+67DF,	C5,	AMD Radeon (TM) RX 470 Graphics
+67DF,	C6,	Radeon RX 570 Series
+67DF,	C7,	AMD Radeon (TM) RX 480 Graphics
+67DF,	CF,	AMD Radeon (TM) RX 470 Graphics
+67DF,	D7,	Radeon(TM) RX 470 Graphics
+67DF,	E0,	Radeon RX 470 Series
+67DF,	E1,	Radeon RX 590 Series
+67DF,	E3,	Radeon RX Series
+67DF,	E7,	Radeon RX 580 Series
+67DF,	EF,	Radeon RX 570 Series
+67DF,	F7,	Radeon RX P30PH
+67C2,	01,	AMD Radeon (TM) Pro V7350x2
+67C2,	02,	AMD Radeon (TM) Pro V7300X
+67C4,	00,	AMD Radeon (TM) Pro WX 7100 Graphics
+67C7,	00,	AMD Radeon (TM) Pro WX 5100 Graphics
+67C0,	00,	AMD Radeon (TM) Pro WX 7100 Graphics
+67D0,	01,	AMD Radeon (TM) Pro V7350x2
+67D0,	02,	AMD Radeon (TM) Pro V7300X
+67E0,	00,	AMD Radeon (TM) Pro WX Series
+67E3,	00,	AMD Radeon (TM) Pro WX 4100
+67E8,	00,	AMD Radeon (TM) Pro WX Series
+67E8,	01,	AMD Radeon (TM) Pro WX Series
+67E8,	80,	AMD Radeon (TM) E9260 Graphics
+67EB,	00,	AMD Radeon (TM) Pro V5300X
+67EF,	C0,	AMD Radeon (TM) RX Graphics
+67EF,	C1,	AMD Radeon (TM) RX 460 Graphics
+67EF,	C3,	Radeon RX Series
+67EF,	C5,	AMD Radeon (TM) RX 460 Graphics
+67EF,	C7,	AMD Radeon (TM) RX Graphics
+67EF,	CF,	AMD Radeon (TM) RX 460 Graphics
+67EF,	E2,	RX 560X
+67EF,	E0,	Radeon RX 560 Series
+67EF,	E1,	Radeon RX Series
+67EF,	E3,	Radeon RX Series
+67EF,	E5,	Radeon RX 560 Series
+67EF,	EF,	AMD Radeon (TM) RX Graphics
+67EF,	FF,	Radeon(TM) RX 460 Graphics
+67FF,	C0,	AMD Radeon (TM) RX Graphics
+67FF,	C1,	AMD Radeon (TM) RX Graphics
+67FF,	CF,	Radeon RX 560 Series
+67FF,	EF,	Radeon RX 560 Series
+67FF,	FF,	Radeon RX 550 Series
+6800,	0,	AMD Radeon HD 7970M
+6801,	0,	AMD Radeon(TM) HD8970M
+6808,	0,	ATI FirePro V(FireGL V) Graphics Adapter
+6809,	0,	ATI FirePro V(FireGL V) Graphics Adapter
+6810,	0,	AMD Radeon(TM) HD 8800 Series
+6810,	81,	AMD Radeon (TM) R7 370 Series
+6811,	0,	AMD Radeon(TM) HD8800 Series
+6811,	81,	AMD Radeon (TM) R7 300 Series
+6818,	0,	AMD Radeon HD 7800 Series
+6819,	0,	AMD Radeon HD 7800 Series
+6820,	0,	AMD Radeon HD 8800M Series
+6820,	81,	AMD Radeon (TM) R9 M375
+6820,	83,	AMD Radeon (TM) R9 M375X
+6821,	0,	AMD Radeon HD 8800M Series
+6821,	87,	AMD Radeon (TM) R7 M380
+6821,	83,	AMD Radeon R9 (TM) M370X
+6822,	0,	AMD Radeon E8860
+6823,	0,	AMD Radeon HD 8800M Series
+6825,	0,	AMD Radeon HD 7800M Series
+6827,	0,	AMD Radeon HD 7800M Series
+6828,	0,	ATI FirePro V(FireGL V) Graphics Adapter
+682B,	0,	AMD Radeon HD 8800M Series
+682B,	87,	AMD Radeon (TM) R9 M360
+682C,	0,	AMD FirePro W4100
+682D,	0,	AMD Radeon HD 7700M Series
+682F,	0,	AMD Radeon HD 7700M Series
+6835,	0,	AMD Radeon R7 Series / HD 9000 Series
+6837,	0,	AMD Radeon HD7700 Series
+683D,	0,	AMD Radeon HD 7700 Series
+683F,	0,	AMD Radeon HD 7700 Series
+6860,	00,	Radeon Instinct MI25
+6860,	01,	Radeon Instinct MI25
+6860,	02,	Radeon Instinct MI25
+6860,	03,	Radeon Pro V340
+6860,	04,	Radeon Instinct MI25x2
+6860,	07,	Radeon (TM) Pro V320
+6861,	00,	Radeon Pro WX 9100
+6862,	00,	Radeon Pro SSG
+6863,	00,	Radeon Vega Frontier Edition
+6864,	03,	Radeon Pro V340
+6864,	04,	Instinct MI25x2
+6868,	00,	Radeon (TM) PRO WX 8200
+686C,	00,	Radeon Instinct MI25 MxGPU
+686C,	01,	Radeon Instinct MI25 MxGPU
+686C,	02,	Radeon Instinct MI25 MxGPU
+686C,	03,	Radeon Pro V340 MxGPU
+686C,	04,	Radeon Instinct MI25x2 MxGPU
+686C,	05,	Radeon Pro V340L MxGPU
+686C,	06,	Radeon Instinct MI25 MxGPU
+687F,	C0,	Radeon RX Vega
+687F,	C1,	Radeon RX Vega
+687F,	C3,	Radeon RX Vega
+6900,	0,	AMD Radeon R7 M260
+6900,	81,	AMD Radeon (TM) R7 M360
+6900,	83,	AMD Radeon (TM) R7 M340
+6901,	0,	AMD Radeon R5 M255
+6907,	0,	AMD Radeon R5 M255
+6907,	87,	AMD Radeon (TM) R5 M315
+6920,	0,	AMD RADEON R9 M395X
+6920,	1,	AMD RADEON R9 M390X
+6921,	0,	AMD Radeon R9 M295X
+6929,	0,	AMD FirePro S7150
+692B,	0,	AMD FirePro W7100
+6938,	0,	AMD Radeon R9 200 Series
+6938,	F0,	AMD Radeon R9 200 Series
+6938,	F1,	AMD Radeon (TM) R9 380 Series
+6939,	F0,	AMD Radeon R9 200 Series
+6939,	0,	AMD Radeon R9 200 Series
+6939,	F1,	AMD Radeon (TM) R9 380 Series
+6980,	00,	Radeon Pro WX3100
+6981,	00,	AMD Radeon (TM) Pro WX 3200 Series
+6981,	01,	AMD Radeon (TM) Pro WX 3200 Series
+6981,	10,	AMD Radeon (TM) Pro WX 3200 Series
+6985,	00,	AMD Radeon Pro WX3100
+6987,	80,	AMD Embedded Radeon E9171
+6987,	C0,	Radeon 550X Series
+6987,	C3,	Radeon 540X Series
+6995,	00,	AMD Radeon Pro WX2100
+6997,	00,	Radeon Pro WX2100
+699F,	81,	AMD Embedded Radeon E9170 Series
+699F,	C0,	Radeon 500 Series
+699F,	C1,	Radeon 540 Series
+699F,	C3,	Radeon 500 Series
+699F,	C7,	Radeon RX550/550 Series
+7300,	C1,	AMD FirePro (TM) S9300 x2
+7300,	C8,	AMD Radeon (TM) R9 Fury Series
+7300,	C9,	Radeon (TM) Pro Duo
+7300,	CB,	AMD Radeon (TM) R9 Fury Series
+7300,	CA,	AMD Radeon (TM) R9 Fury Series
+7312,	00,	AMD Radeon Pro W5700
+731F,	C0,	AMD Radeon RX 5700 XT 50th Anniversary
+731F,	C1,	AMD Radeon RX 5700 XT
+731F,	C2,	AMD Radeon RX 5600M
+731F,	C3,	AMD Radeon RX 5700M
+731F,	C4,	AMD Radeon RX 5700
+731F,	C5,	AMD Radeon RX 5700 XT
+731F,	CA,	AMD Radeon RX 5600 XT
+731F,	CB,	AMD Radeon RX 5600 OEM
+7340,	C1,	Radeon RX 5500M
+7340,	C5,	Radeon RX 5500 XT
+7340,	C7,	Radeon RX 5500
+7341,	00,	AMD Radeon Pro W5500
+7347,	00,	AMD Radeon Pro W5500M
+9874,	C4,	AMD Radeon R7 Graphics
+9874,	C5,	AMD Radeon R6 Graphics
+9874,	C6,	AMD Radeon R6 Graphics
+9874,	C7,	AMD Radeon R5 Graphics
+9874,	C8,	AMD Radeon R7 Graphics
+9874,	81,	AMD Radeon R6 Graphics
+9874,	87,	AMD Radeon R5 Graphics
+9874,	85,	AMD Radeon R6 Graphics
+9874,	84,	AMD Radeon R7 Graphics
+6FDF,	EF,	AMD Radeon RX 580 2048SP

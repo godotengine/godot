@@ -1,0 +1,2 @@
+# Is now 0a due to past packaging mixup
+libvorbis0a: package-name-doesnt-match-sonames libvorbis0

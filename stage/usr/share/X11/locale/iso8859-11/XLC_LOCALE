@@ -1,0 +1,115 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  XLocale Database Sample for iso8859-11.
+# 
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+# 	fs0 class 
+fs0	{
+	charset	{
+		name		ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-11:GL
+		substitute	ISO8859-1:GL
+		vertical_rotate	all
+	}
+}
+# 	fs1 class 
+fs1	{
+	charset	{
+		name		ISO8859-11:GR
+	}
+	font	{
+		primary		ISO8859-11:GR
+	}
+}
+END XLC_FONTSET
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		ISO8859-11
+mb_cur_max		1
+state_depend_encoding	False
+
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+
+
+
+
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+# 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-11:GL; ISO8859-1:GL
+}
+
+
+# 	cs1 class
+cs1	{
+	side		GR:Default
+	length		1
+
+	wc_encoding	\x30000000
+
+
+
+	ct_encoding	ISO8859-11:GR
+}
+
+END XLC_XLOCALE

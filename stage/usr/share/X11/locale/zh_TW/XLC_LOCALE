@@ -1,0 +1,185 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  XLocale Database Sample for zh_TW
+# 
+# Note: In lib/X11/lcCT.c, charset names for CNS11643 coded character
+# sets are defined as CNS11643.1986-1 and -2.  In the ECMA Registry,
+# CNS coded character sets 1-7 are registered as CNS 11643-1992.
+# CJK.INF Version 1.7 (August 15, 1995) written by Ken Lunde says
+# plane 14 of CNS 11643-1983 now became plane 3 of CNS 11643-1992.
+# I do not know how Taiwanese EUC is organized currently, so I left the
+# X11R6 organization of fsN/csN as it is and only changed "CNS11643-*"
+# to "CNS11643.1986-*".
+#	1995-10-24	T. Numata (numa@rp.open.cs.fujitsu.co.jp)
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+# 	fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name	ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-1:GL
+		vertical_rotate	all
+	}
+}
+# 	fs1 class
+fs1	{
+	charset	{
+		name	CNS11643.1986-1:GL
+	}
+	font	{
+		primary	CNS11643.1986-1:GL
+	}
+}
+# 	fs2 class
+fs2	{
+	charset	{
+		name	CNS11643.1986-2:GL
+	}
+	font	{
+		primary	CNS11643.1986-2:GL
+	}
+}
+# 	fs3 class 
+fs3	{
+	charset	{
+		name	CNS11643.1986-14:GL
+	}
+	font	{
+		primary	CNS11643.1986-14:GL
+	}
+}
+# 	fs4 class 
+fs4	{
+	charset	{
+		name	CNS11643.1986-15:GL
+	}
+	font	{
+		primary	CNS11643.1986-15:GL
+	}
+}
+# 	fs5 class 
+fs5	{
+	charset	{
+		name	CNS11643.1986-16:GL
+	}
+	font	{
+		primary	CNS11643.1986-16:GL
+	}
+}
+END XLC_FONTSET
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		zh_TW.euc
+mb_cur_max		4
+state_depend_encoding	False
+wc_encoding_mask	\x3fffc000
+wc_shift_bits		7
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+# 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL; CNS11643.1986-0:GL
+}
+
+# 	cs1 class
+cs1	{
+	side		GR:Default
+	length		2
+	wc_encoding	\x30000000
+	ct_encoding	CNS11643.1986-1:GR
+}
+
+# 	cs2 class	# plane 2
+cs2	{
+	side		GR
+	length		2
+	mb_encoding	<SS> \x8e\xa2
+	wc_encoding	\x10088000
+	ct_encoding	CNS11643.1986-2:GR
+}
+
+# 	cs3 class	# plane 14
+cs3	{
+	side		GR
+	length		2
+	mb_encoding	<SS> \x8e\xae
+	wc_encoding	\x100b8000
+	ct_encoding	CNS11643.1986-14:GR
+}
+
+# 	cs4 class	# plane 15
+cs4	{
+	side		GR
+	length		2
+	mb_encoding	<SS> \x8e\xaf
+	wc_encoding	\x100bc000
+	ct_encoding	CNS11643.1986-15:GR
+}
+
+# 	cs5 class	# plane 16
+cs5	{
+	side		GR
+	length		2
+	mb_encoding	<SS> \x8e\xb0
+	wc_encoding	\x100c0000
+	ct_encoding	CNS11643.1986-16:GR
+}
+
+END XLC_XLOCALE

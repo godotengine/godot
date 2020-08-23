@@ -1,0 +1,26 @@
+#!/bin/sh
+
+SERVER_BUG_SCRIPT=/usr/share/bug/xserver-xorg-core/script
+
+exec >&3
+
+echo "glxinfo:"
+echo "--------"
+
+if [ -z "$DISPLAY" ]; then
+    echo "DISPLAY is not set."
+else
+    if which glxinfo >/dev/null 2>&1; then
+        glxinfo
+    else
+        echo "glxinfo is not available (missing mesa-utils package)."
+    fi
+fi
+
+echo
+
+if [ -x "$SERVER_BUG_SCRIPT" ]; then
+    $SERVER_BUG_SCRIPT 3>&1
+else
+    echo "$SERVER_BUG_SCRIPT not available"
+fi

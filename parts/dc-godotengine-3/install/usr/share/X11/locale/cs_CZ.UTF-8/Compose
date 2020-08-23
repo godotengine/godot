@@ -1,0 +1,57 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# UTF-8 (Unicode) compose sequences
+#
+# Modified for Czech, following iso8859-2/Compose
+#   by James Cloos <cloos@jhcloos.com>
+#	based on bug report by Vladimír Marek <vlmarek@volny.cz>
+
+# Use the sequences from en_US.UTF-8 as the basis:
+include "/usr/share/X11/locale/en_US.UTF-8/Compose"
+
+#  Overriding U with caron:
+<dead_caron> <u>                        : "ů"   U016F  #  LATIN SMALL LETTER U WITH RING ABOVE
+<dead_caron> <U>                        : "Ů"   U016E  #  LATIN CAPITAL LETTER U WITH RING ABOVE

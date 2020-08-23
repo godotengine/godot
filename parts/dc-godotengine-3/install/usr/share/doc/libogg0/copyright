@@ -1,0 +1,87 @@
+This package was debianized by Christopher L Cheney <ccheney@debian.org> on
+Sun, 29 Oct 2000 01:11:57 -0500.
+
+It was downloaded from http://www.xiph.org
+
+Upstream Authors:
+ Christopher Montgomery <monty@xiph.org>
+ Greg Maxwell <greg@xiph.org>
+ Ralph Giles <giles@xiph.org>
+ Cristian Adam <cristian.adam@gmail.com>
+ Tim Terriberry <tterribe@xiph.org>
+
+Copyright (c) 2002-2011, Xiph.org Foundation
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+- Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+- Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+- Neither the name of the Xiph.Org Foundation nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+RFC 5334 is distributed with the following permission:
+
+12.  Copying Conditions
+
+   The authors agree to grant third parties the irrevocable right to
+   copy, use and distribute the work, with or without modification, in
+   any medium, without royalty, provided that, unless separate
+   permission is granted, redistributed modified works do not contain
+   misleading author, version, name of work, or endorsement information.
+
+
+For RFC 3533 the following additional permission is granted:
+
+Received: from mail-vw0-f52.google.com ([209.85.212.52])
+        by master.debian.org with esmtps (TLS1.0:RSA_ARCFOUR_SHA1:16)
+        (Exim 4.72)
+        (envelope-from <silviapfeiffer1@gmail.com>)
+        id 1QsTXr-0004MO-Ek
+        for ron@debian.org; Sun, 14 Aug 2011 05:47:35 +0000
+In-Reply-To: <20110813065417.GV2324@audi.shelbyville.oz>
+References: <20110813065417.GV2324@audi.shelbyville.oz>
+From: Silvia Pfeiffer <silviapfeiffer1@gmail.com>
+Date: Sun, 14 Aug 2011 15:47:09 +1000
+Message-ID: <CAHp8n2nmGN+G09aA118KN86NeX9yw_VJAQNFZebm74k195zz+Q@mail.gmail.com>
+Subject: Re: Distributing the libogg RFCs in the Debian package
+To: Ron <ron@debian.org>
+Cc: Christopher Montgomery <monty@xiph.org>,
+        Ivo Emanuel Goncalves <justivo@gmail.com>
+
+Hi Ron,
+
+I am happy to have the RFCs that I authored or co-authored to be
+published with the additional license as stated below and permit those
+RFCs to be distributed under the same terms as libogg itself.
+
+Cheers,
+Silvia.
+
+>  The author(s) agree to grant third parties the irrevocable
+>  right to copy, use and distribute the work, with or without
+>  modification, in any medium, without royalty, provided that,
+>  unless separate permission is granted, redistributed modified
+>  works do not contain misleading author, version, name of work,
+>  or endorsement information.
+

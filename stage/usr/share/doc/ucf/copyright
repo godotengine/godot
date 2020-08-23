@@ -1,0 +1,123 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ucf
+Upstream-Contact:  Manoj Srivastava <srivasta@debian.org>
+Source: https://anonscm.debian.org/users/srivasta/debian/ucf.git
+Copyright: 2002, 2003, 2003, 2004, 2005, 2006, 2015 Manoj Srivastava <srivasta@debian.org>
+License: GPL-2
+
+Files: *
+Copyright: 2002, 2003, 2003, 2004, 2005, 2006, 2015 Manoj Srivastava <srivasta@debian.org>
+License: GPL-2
+
+Files: debian/po/ca.po
+Copyright: 2004 Aleix Badia i Bosch <abadia@ica.es>
+           2008, 2009, 2010 Jordi Mallach <jordi@debian.org>
+License: GPL-2
+
+Files: debian/po/cs.po
+Copyright: 2014 Miroslav Kure <kurem@debian.cz>
+License: GPL-2
+
+Files: debian/po/da.po
+Copyright: 2005, 2007 Claus Hindsgaul <claus.hindsgaul@gmail.com>
+           2010, 2014, 2018 Joe Hansen <joedalton2@yahoo.dk>
+License: GPL-2
+
+Files: debian/po/de.po
+Copyright: 2004-2009 Erik Schanze <eriks@debian.org>
+           2014, 2018 Holger Wansing <linux@wansing-online.de>
+License: GPL-2
+
+Files: debian/po/es.po
+Copyright: 2004 Lucas Wall <kthulhu@usa.net>
+           2007, 2010 Javier Fernandez-Sanguino <jfs@debian.org>
+	   2014,2018 Matías Bellone <matiasbellone+debian@gmail.com>
+License: GPL-2
+
+Files: debian/po/eu.po
+Copyright: 2007, 2009 Piarres Beobide <pi@beobide.net>, 2007, 2009
+           2009, 2014 Iñaki Larrañaga Murgoitio <dooteo@zundan.com>
+License: GPL-2
+
+Files: debian/po/fi.po
+Copyright: 2009, 2014 Esko Arajärvi <edu@iki.fi>
+License: GPL-2
+
+Files: debian/po/fr.po
+Copyright: 2007 Eric Madesclair <eric-m@wanadoo.fr>
+           2009, 2014 Christian Perrier <bubulle@debian.org>
+	   2018 Jean-Pierre Giraud <jean-pierregiraud@neuf.fr>
+License: GPL-2
+
+Files: debian/po/gl.po
+Copyright: 2006, 2007 Jacobo Tarrio <jtarrio@debian.org>
+           2009 Marce Villarino <mvillarino@gmail.com>
+License: GPL-2
+
+Files: debian/po/it.po
+Copyright: 2005-2010 Luca Bruno <lucab@debian.org>
+License: GPL-2
+
+Files: debian/po/ja.po
+Copyright: 2018 Kenshi Muto <kmuto@debian.org>
+License: GPL-2
+
+Files: debian/po/nl.po
+Copyright: 2006 Kurt De Bree <kdebree@telenet.be>
+           2011 Jeroen Schot <schot@a-eskwadraat.nl>
+	   2016 Frans Spiesschaert <Frans.Spiesschaert@yucom.be>
+License: GPL-2
+
+Files: debian/po/pl.po
+Copyright: 2007 Wojciech Zaręba <wojtekz@comp.waw.pl>
+           2012, 2014 Michał Kułach <michal.kulach@gmail.com>
+License: GPL-2
+
+Files: debian/po/pt_BR.po
+Copyright: 2010 Flamarion Jorge <jorge.flamarion@gmail.com>
+           2014-2018 Adriano Rafael Gomes <adrianorg@debian.org>
+License: GPL-2
+
+Files: debian/po/pt.po
+Copyright: 2007 Bruno Queiros <brunomiguelqueiros@sapo.pt>
+           2010-2018 Américo Monteiro <a_monteiro@gmx.com>
+License: GPL-2
+
+Files: debian/po/ru.po
+Copyright: 2006, 2007 Yuri Kozlov <kozlov.y@gmail.com>
+           2009, 2014, 2018 Yuri Kozlov <yuray@komyakino.ru>
+License: GPL-2
+
+Files: debian/po/sk.po
+Copyright: 2011, 2014 Slavko <linux@slavino.sk>
+License: GPL-2
+
+Files: debian/po/sv.po
+Copyright: 2007 Daniel Nylander <po@danielnylander.se>
+	   2009, 2014 Martin Bagge <brother@bsnet.se>
+License: GPL-2
+
+Files: debian/po/vi.po
+Copyright: 2005-2009 Clytie Siddall <clytie@riverland.net.au>
+License: GPL-2
+
+License: GPL-2
+   ucf is Copyright (C) 2002, 2003, 2003, 2004, 2005, 2006 Manoj
+   Srivastava <srivasta@debian.org>
+   .
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 dated June, 1991.
+   .
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   .
+   On Debian GNU/Linux systems, the complete text of the GNU General
+   Public License can be found in `/usr/share/common-licenses/GPL-2'.
+   .
+   A copy of the GNU General Public License is also available at
+   <URL:http://www.gnu.org/copyleft/gpl.html>.  You may also obtain
+   it by writing to the Free Software Foundation, Inc., 51 Franklin
+   St, Fifth Floor, Boston, MA 02110-1301 USA

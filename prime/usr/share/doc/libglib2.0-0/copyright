@@ -1,0 +1,107 @@
+This package was debianized by Akira TAGOH <tagoh@debian.org> on
+Thu,  7 Mar 2002 01:05:25 +0900.
+
+It was downloaded from <https://download.gnome.org/sources/glib/>.
+
+Original Authors
+----------------
+Peter Mattis       <petm@xcf.berkeley.edu>
+Spencer Kimball    <spencer@xcf.berkeley.edu>
+Josh MacDonald     <jmacd@xcf.berkeley.edu>
+
+Please do not mail the original authors asking questions about this
+version of GLib.
+
+GLib Team
+---------
+Shawn T. Amundson  <amundson@gimp.org>
+Jeff Garzik        <jgarzik@pobox.com>
+Raja R Harinath    <harinath@cs.umn.edu>
+Tim Janik          <timj@gtk.org>
+Elliot Lee         <sopwith@redhat.com>
+Tor Lillqvist      <tml@iki.fi>
+Paolo Molaro       <lupus@debian.org>
+Havoc Pennington   <hp@pobox.com>
+Manish Singh       <yosh@gimp.org>
+Owen Taylor        <otaylor@gtk.org>
+Sebastian Wilhelmi <wilhelmi@ira.uka.de>
+
+The random number generator "Mersenne Twister", which is used by GLib,
+was developed and originally coded by:
+Makoto Matsumoto   <matumoto@math.keio.ac.jp>
+Takuji Nishimura   <nisimura@math.keio.ac.jp>
+
+Major copyright holders:
+
+    Copyright © 1995-2018 Red Hat, Inc.
+    Copyright © 2008-2010 Novell, Inc.
+    Copyright © 2008-2010 Codethink Limited.
+    Copyright © 2008-2018 Collabora, Ltd.
+    Copyright © 2018 Endless Mobile, Inc.
+    Copyright © 2018 Emmanuele Bassi
+
+License:
+
+    This package is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this package; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+On Debian systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL'.
+
+Files:
+ gobject/tests/taptestrunner.py
+Copyright:
+ 2015 Remko Tronçon
+License: Expat
+
+Files:
+ tests/gen-casefold-txt.py
+ tests/gen-casemap-txt.py
+Copyright:
+ 1998-1999 Tom Tromey
+ 2001 Red Hat Software
+License: GPL-2+
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, see <http://www.gnu.org/licenses/>.

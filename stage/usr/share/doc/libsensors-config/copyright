@@ -1,0 +1,65 @@
+This package was debianized by Stephen Crowley crow@debian.org and is now
+maintained by Aurelien Jarno <aurel32@debian.org>.
+
+It was downloaded from https://hwmon.wiki.kernel.org/lm_sensors
+i
+
+Authors:
+  Frodo Looijaard <frodol@dds.nl>
+  Merlin Hughes <merlin@merlin.org>
+  Mark M. Hoffman <mhoffman@lightlink.com>
+  Jean Delvare <khali@linux-fr.org>
+  Ondřej Lysoněk <olysonek@redhat.com>
+
+
+Copyright:
+  Copyright 1998, 1999 Adrian Baugh <adrian.baugh@keble.ox.ac.uk>
+  Copyright 1998-2003 Frodo Looijaard <frodol@dds.nl>
+  Copyright 1999-2002 Merlin Hughes <merlin@merlin.org>
+  Copyright 1999-2005 Mark D. Studebaker <mdsxyz123@yahoo.com>
+  Copyright 2001 Philip Edelbrock
+  Copyright 2003-2015 Jean Delvare <khali@linux-fr.org>
+  Copyright 2003 Marius Reiner <marius.reiner@hdev.de>
+  Copyright 2005, 2006 Mark M. Hoffman <mhoffman@lightlink.com>
+  Copyright 2008, Juerg Haefliger <juergh@gmail.com>
+  Copyright 2018 Ondřej Lysoněk <olysonek@redhat.com>
+
+
+License of the lm-sensors library as a whole (libsensors4-dev, libsensors5
+and libsensors-config packages):
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+  MA 02110-1301 USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU Lesser General Public
+License version 2.1 can be found in /usr/share/common-licenses/LGPL-2.1.
+
+
+License of the lm-sensors tools (fancontrol and lm-sensors packages):
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+On Debian systems, the complete text of the GNU General Public
+License, version 2, can be found in /usr/share/common-licenses/GPL-2.

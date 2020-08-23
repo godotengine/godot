@@ -1,0 +1,136 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  XLocale Database Sample for zh_TW.UTF-8
+# 
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+
+on_demand_loading	True
+
+object_name		generic
+
+#	We leave the legacy encodings in for the moment, because we don't
+#	have that many ISO10646 fonts yet.
+# 	fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name	ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-1:GL
+		vertical_rotate	all
+	}
+}
+#	fs1 class (ISO8859 families)
+fs1	{
+	charset	{
+		name	ISO8859-1:GR
+	}
+	font	{
+		primary	ISO8859-1:GR
+	}
+}
+# 	fs2 class (Chinese Han Character (Traditional))
+fs2	{
+        charset {
+                name    BIG5-0:GLGR
+        }
+        font    {
+                primary BIG5-0:GLGR
+				substitute BIG5-0:GLGR
+        }
+}
+#	fs3 class
+fs3	{
+	charset	{
+		name	ISO10646-1
+	}
+	font	{
+		primary	ISO10646-1
+	}
+}
+END XLC_FONTSET
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		UTF-8
+mb_cur_max		6
+state_depend_encoding	False
+
+#	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	ct_encoding	ISO8859-1:GL
+}
+
+#	cs1 class
+cs1     {
+        side            GR:Default
+        length          1
+        ct_encoding     ISO8859-1:GR
+}
+ 
+#	cs2 class
+cs2	{
+	side		none
+	length		2
+	ct_encoding	BIG5-0:GLGR
+}
+
+#	cs3 class
+cs3	{
+	side		none
+	ct_encoding	ISO10646-1
+}
+
+END XLC_XLOCALE

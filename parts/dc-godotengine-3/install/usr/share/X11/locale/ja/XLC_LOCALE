@@ -1,0 +1,167 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#  XLocale Database Sample for ja_JP.euc 
+# 
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+# 	fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name		ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-1:GL
+		substitute	JISX0201.1976-0:GL
+		vertical_rotate	all
+	}
+}
+# 	fs1 class (Kanji)
+fs1	{
+	charset	{
+		name		JISX0208.1983-0:GL
+		udc_area	\x7521,\x7e7e
+	}
+	font	{
+		primary		JISX0208.1983-0:GL
+                substitute      JISX0208.1990-0:GL
+	}
+}
+# 	fs2 class (Half Kana)
+fs2	{
+	charset	{
+		name		JISX0201.1976-0:GR
+	}
+	font	{
+		primary		JISX0201.1976-0:GR
+		substitute      JISX0201.1976-0:GR
+		vertical_rotate	all
+	}
+}
+# 	fs3 class (Supplementary Kanji)
+# fs3	{
+#	charset	{
+#		name		JISX0212.1990-0:GL
+#		udc_area	\x7521,\x7e7e
+#	}
+#	font	{
+#		primary		JISX0212.1990-0:GL
+# 	}
+# }
+END XLC_FONTSET
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		ja.euc
+mb_cur_max		3
+state_depend_encoding	False
+
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+
+
+
+
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+# 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL; JISX0201.1976-0:GL
+}
+
+# 	cs1 class
+cs1	{
+	side		GR:Default
+	length		2
+
+	wc_encoding	\x30000000
+
+
+
+	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;			JISX0208.1983-1:GL; JISX0208.1983-1:GR
+
+}
+
+# 	cs2 class
+cs2	{
+	side		GR
+	length		1
+	mb_encoding	<SS> \x8e
+
+	wc_encoding	\x10000000
+
+
+
+	ct_encoding	JISX0201.1976-0:GR
+}
+
+# 	cs3 class
+# cs3	{
+# 	side		GL
+# 	length		2
+# 	mb_encoding	<SS> \x8f
+# #if 1
+# 	wc_encoding	\x20000000
+# #else
+# 	wc_encoding	\x00008000
+# #endif
+# 	ct_encoding	JISX0212.1990-0:GL; JISX0212.1990-0:GR
+# }
+
+
+END XLC_XLOCALE
+

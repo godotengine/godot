@@ -1,0 +1,343 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: mesa
+Source: https://mesa.freedesktop.org/archive/
+
+Files: *
+Copyright:
+	2005 Aapo Tahkola
+	2011 Adam Rak <adam.rak@streamnovation.com>
+	2014 Adrián Arroyo Calle <adrian.arroyocalle@gmail.com>
+	2010-2018 Advanced Micro Devices, Inc.
+	2002-2012 Apple Inc.
+	2009 Artur Wyszynski <harakash@gmail.com>
+	2000-2001 ATI Technologies Inc.
+	2015-2016 Axel Davy <axel.davy@ens.fr>
+	1988-2004 Bart Massey
+	2016 Bas Nieuwenhuizen
+	2011 Benjamin Franzke
+	2005-2008 Ben Skeggs
+	2015 Boyan Ding
+	1999-2016 Brian Paul
+	2014-2018 Broadcom
+	2011 Bryan Cain
+	2007 Carl Worth
+	2009-2011 Chia-I Wu <olvaffe@gmail.com>
+	2016 Christian Gmeiner <christian.gmeiner@gmail.com>
+	2010-2014 Christian König
+	2010-2012 Christoph Bumiller
+	2014-2017 Connor Abbott
+	2008-2010 Corbin Simpson
+	1999-2016 Dave Airlie
+	2008 Dennis Smit
+	2012-2017 Etnaviv Project
+	2003 Felix Kuehling
+	2009-2016 Francisco Jerez
+	2008-2010 George Sapountzis <gsapountzis@gmail.com>
+	2017 Gert Wollny
+	2013-2017 Google, Inc.
+	2017 Grazvydas Ignotas
+	2013 Gregory Hainaut <gregory.hainaut@gmail.com>
+	2002 Greg Parker
+	2013 Grigori Goronzy <greg@chown.ath.cx>
+	2008-2013 Haiku, Inc.
+	2002-2006 IBM Corporation
+	2011-2017 Ilia Mirkin
+	2006-2018 Intel Corporation
+	2007-2012 Jakob Bornecrantz
+	2017 Jason Ekstrand
+	2008-2010 Jerome Glisse <glisse@freedesktop.org>
+	2009-2013 Joakim Sindholt <opensource@zhasha.com>
+	2007 Joe Perches <joe@perches.com>
+	2006 John Maddock
+	2014-2017 Jon Turney
+	2008-2009 Jose Fonseca
+	1988-2017 Keith Packard
+	1997 Keith Whitwell
+	2011 Lauri Kasanen
+	2010 Luca Barbieri
+	2010-2013 LunarG, Inc.
+	2011-2013 Maarten Lankhorst
+	2008-2010 Maciej Cencora <m.cencora@gmail.com>
+	2010-2014 Marek Olšák <maraeo@gmail.com>
+	2011 Morgan Armand <morgan.devel@gmail.com>
+	2016 Nayan Deshmukh
+	2004-2009 Nicolai Haehnle <nhaehnle@gmail.com>
+	2007-2013 Nouveau Project
+	2012-2018 NVIDIA Corporation
+	2010 Orasanu Lucian
+	2015-2016 Patrick Rudolph <siro@das-labor.org>
+	2009 Pauli Nieminen
+	2006-2008 Philippe Houdoin
+	2015 Philip Taylor <philip@zaynar.co.uk>
+	1998-1999 Precision Insight, Inc.
+	2007-2018 Red Hat, Inc.
+	2018 Rhys Perry
+	2012-2018 Rob Clark <robclark@freedesktop.org>
+	2004 Roland Scheidegger
+	2015 Samuel Pitoiset
+	1991-2000 Silicon Graphics, Inc.
+	2018 Stefan Schake <stschake@gmail.com>
+	2003-2005 Stefan Gustavson
+	2008 Steven G. Johnson
+	2016 Steven Toth <stoth@kernellabs.com>
+	2011-2014 The Chromium OS authors
+	2007-2013 The Nouveau Project
+	2001-2004 The SCons Foundation
+	2002 The Weather Channel, Inc.
+	2006 Thierry Reding <thierry@gilfi.de>
+	2010 Thomas Balling Sörensen
+	2015-2017 Thomas Helland
+	1995 Thorsten Ohl
+	2013-2018 Timothy Arceri
+	2002 Todd C. Miller <Todd.Miller@courtesan.com>
+	2010-2014 Tom Stellard <tstellar@gmail.com>
+	2004 Torrey T. Lyons
+	2003-2008 Tungsten Graphics, Inc.
+	2012-2013 Vadim Girlin <vadimgirlin@gmail.com>
+	2000 VA Linux Systems Inc.
+	2015-2018 Valve Corporation
+	1998-2017 VMware, Inc.
+	1992 Vrije Universiteit, The Netherlands
+	1999 Wittawat Yamwong
+	2005 Zack Rusin
+License: MIT
+
+Files: include/EGL/eglextchromium.h
+Copyright: 2013 The Chromium Authors
+License: BSD-3-google
+
+Files: include/GL/glcorearb.h
+       include/GL/glext.h
+       include/GL/glxext.h
+Copyright: 2013-2017 The Khronos Group Inc.
+License: Khronos
+
+Files: include/GLES/egl.h
+       include/GLES/glplatform.h
+       include/GLES2/gl2platform.h
+       include/GLES3/gl3platform.h
+       include/vulkan/*
+Copyright: 2015-2018 The Khronos Group Inc.
+	   2015 The Android Open Source Project
+	   2015-2016 Valve Corporation
+License: Apache-2.0
+
+Files: include/c11/*
+Copyright: 2012 yohhoy
+License: BSL
+
+Files: src/gallium/auxiliary/postprocess/pp_mlaa*
+Copyright: 2010 Jorge Jimenez (jorge@iryoku.com)
+	   2010 Belen Masia (bmasia@unizar.es)
+	   2010 Jose I. Echevarria (joseignacioechevarria@gmail.com)
+	   2010 Fernando Navarro (fernandn@microsoft.com)
+	   2010 Diego Gutierrez (diegog@unizar.es)
+	   2011 Lauri Kasanen (cand@gmx.com)
+License: MLAA
+
+Files: src/glx/clientattrib.c
+       src/glx/compsize.c
+       src/glx/eval.c
+       src/glx/glxclient.h
+       src/glx/glxcmds.c
+       src/glx/glxcurrent.c
+       src/glx/glxext.cGreg
+       src/glx/packrender.h
+       src/glx/packsingle.h
+       src/glx/pixel.c
+       src/glx/pixelstore.c
+       src/glx/render2.c
+       src/glx/renderpix.c
+       src/glx/single2.c
+       src/glx/singlepix.c
+       src/glx/vertarr.c
+Copyright: 1991-2000 Silicon Graphics, Inc.
+License: SGI
+
+Files: src/getopt
+Copyright: 2000 The NetBSD Foundation, Inc.
+License: BSD-2-clause
+
+Files: src/gtest/include src/gtest/src
+Copyright: 2008-2015 Google, Inc.
+License: BSD-3-google
+
+Files: debian
+Copyright: 2006, Thierry Reding <thierry@gilfi.de>
+License: GPL
+
+License: MIT
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+License: Khronos
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and/or associated documentation files (the
+ "Materials"), to deal in the Materials without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Materials, and to
+ permit persons to whom the Materials are furnished to do so, subject to
+ the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Materials.
+ .
+ THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+
+License: SGI
+ SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
+ Copyright (C) 1991-2000 Silicon Graphics, Inc. All Rights Reserved.
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice including the dates of first publication and
+ either this permission notice or a reference to
+ http://oss.sgi.com/projects/FreeB/
+ shall be included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ SILICON GRAPHICS, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ .
+ Except as contained in this notice, the name of Silicon Graphics, Inc.
+ shall not be used in advertising or otherwise to promote the sale, use or
+ other dealings in this Software without prior written authorization from
+ Silicon Graphics, Inc.
+
+License: Apache-2.0
+ On Debian systems, the full text of the Apache-2.0 license
+ can be found in the file '/usr/share/common-licenses/Apache-2.0'.
+
+License: BSL
+ Permission is hereby granted, free of charge, to any person or organization
+ obtaining a copy of the software and accompanying documentation covered by
+ this license (the "Software") to use, reproduce, display, distribute,
+ execute, and transmit the Software, and to prepare [[derivative work]]s of the
+ Software, and to permit third-parties to whom the Software is furnished to
+ do so, all subject to the following:
+ .
+ The copyright notices in the Software and this entire statement, including
+ the above license grant, this restriction and the following disclaimer,
+ must be included in all copies of the Software, in whole or in part, and
+ all derivative works of the Software, unless such copies or derivative
+ works are solely in the form of machine-executable object code generated by
+ a source language processor.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ DEALINGS IN THE SOFTWARE.
+
+License: MLAA
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+    1. Redistributions of source code must retain the above copyright notice,
+       this list of conditions and the following disclaimer.
+ .
+    2. Redistributions in binary form must reproduce the following statement:
+ .
+       "Uses Jimenez's MLAA. Copyright (C) 2010 by Jorge Jimenez, Belen Masia,
+        Jose I. Echevarria, Fernando Navarro and Diego Gutierrez."
+ .
+       Only for use in the Mesa project, this point 2 is filled by naming the
+       technique Jimenez's MLAA in the Mesa config options.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS OR CONTRIBUTORS
+ BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+
+License: GPL
+ On Debian systems, the full text of the GPL license
+ can be found in the file '/usr/share/common-licenses/GPL'.
+
+License: BSD-3-google
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+ .
+     * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above
+ copyright notice, this list of conditions and the following disclaimer
+ in the documentation and/or other materials provided with the
+ distribution.
+     * Neither the name of Google Inc. nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-2-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+ BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.

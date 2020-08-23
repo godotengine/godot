@@ -1,0 +1,115 @@
+#! /bin/sh
+# postrm.skeleton
+# Skeleton maintainer script showing all the possible cases.
+# Written by Charles Briscoe-Smith, March-June 1998.  Public Domain.
+
+# Abort if any command returns an error value
+set -e
+
+# This script is called twice during the removal of the package; once
+# after the removal of the package's files from the system, and as
+# the final step in the removal of this package, after the package's
+# conffiles have been removed.
+
+# Ensure the menu system is updated
+: [ ! -x /usr/bin/update-menus ] || /usr/bin/update-menus
+
+case "$1" in
+  remove)
+    # This package is being removed, but its configuration has not yet
+    # been purged.
+    :
+
+    # Remove diversion
+    : dpkg-divert --package foo --remove --rename \
+    :             --divert /usr/bin/other.real /usr/bin/other
+
+    # ldconfig is NOT needed during removal of a library, only during
+    # installation
+
+    ;;
+  purge)
+    # This package has previously been removed and is now having
+    # its configuration purged from the system.
+    :
+
+    # we mimic dpkg as closely as possible, so we remove configuration
+    # files with dpkg backup extensions too:
+    ### Some of the following is from Tore Anderson:
+    for ext in '~' '%' .bak .ucf-new .ucf-old .ucf-dist;  do
+	rm -f /etc/foo.conf$ext
+    done
+ 
+    # remove the configuration file itself
+    rm -f /etc/foo.conf
+
+    # and finally clear it out from the ucf database
+    if which ucf >/dev/null; then
+        ucf --purge /etc/foo.conf
+    fi    
+    if which ucfr >/dev/null; then
+        ucfr --purge foo /etc/foo.conf
+    fi    
+
+    # Remove symlinks from /etc/rc?.d
+    : update-rc.d foo remove >/dev/null
+
+    ;;
+  disappear)
+    if test "$2" != overwriter; then
+      echo "$0: undocumented call to \`postrm $*'" 1>&2
+      exit 0
+    fi
+    # This package has been completely overwritten by package $3
+    # (version $4).  All our files are already gone from the system.
+    # This is a special case: neither "prerm remove" nor "postrm remove"
+    # have been called, because dpkg didn't know that this package would
+    # disappear until this stage.
+    :
+
+    ;;
+  upgrade)
+    # About to upgrade FROM THIS VERSION to version $2 of this package.
+    # "prerm upgrade" has been called for this version, and "preinst
+    # upgrade" has been called for the new version.  Last chance to
+    # clean up.
+    :
+
+    ;;
+  failed-upgrade)
+    # About to upgrade from version $2 of this package TO THIS VERSION.
+    # "prerm upgrade" has been called for the old version, and "preinst
+    # upgrade" has been called for this version.  This is only used if
+    # the previous version's "postrm upgrade" couldn't handle it and
+    # returned non-zero. (Fix old postrm bugs here.)
+    :
+
+    ;;
+  abort-install)
+    # Back out of an attempt to install this package.  Undo the effects of
+    # "preinst install...".  There are two sub-cases.
+    :
+
+    if test "${2+set}" = set; then
+      # When the install was attempted, version $2's configuration
+      # files were still on the system.  Undo the effects of "preinst
+      # install $2".
+      :
+
+    else
+      # We were being installed from scratch.  Undo the effects of
+      # "preinst install".
+      :
+
+    fi ;;
+  abort-upgrade)
+    # Back out of an attempt to upgrade this package from version $2
+    # TO THIS VERSION.  Undo the effects of "preinst upgrade $2".
+    :
+
+    ;;
+  *) echo "$0: didn't understand being called with \`$1'" 1>&2
+     exit 0;;
+esac
+
+exit 0

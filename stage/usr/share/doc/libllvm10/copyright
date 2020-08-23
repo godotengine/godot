@@ -1,0 +1,123 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: LLVM/Clang
+Source: https://llvm.org/releases/download.html
+
+Files: *
+Copyright: 2003-2017 University of Illinois at Urbana-Champaign.
+License: APACHE-2-LLVM-EXCEPTIONS
+ On Debian systems the full text of the Apache Software License 2.0 can be
+ found in the `/usr/share/common-licenses/Apache-2.0' file.
+ .
+ ---- LLVM Exceptions to the Apache 2.0 License ----
+ .
+ As an exception, if, as a result of your compiling your source code, portions
+ of this Software are embedded into an Object form of such source code, you
+ may redistribute such embedded portions in such Object form without complying
+ with the conditions of Sections 4(a), 4(b) and 4(d) of the License.
+ .
+ In addition, if you combine or link compiled forms of this Software with
+ software that is licensed under the GPLv2 ("Combined Software") and if a
+ court of competent jurisdiction determines that the patent provision (Section
+ 3), the indemnity provision (Section 9) or other Section of the License
+ conflicts with the conditions of the GPLv2, you may retroactively and
+ prospectively choose to deem waived or otherwise exclude such Section(s) of
+ the License, but only in their entirety and only with respect to the Combined
+ Software.
+
+Files: compiler-rt/lib/BlocksRuntime/*
+ lldb/tools/debugserver/source/MacOSX/stack_logging.h
+Copyright: 2008-2010 Apple, Inc.
+License: MIT
+
+Files: llvm/lib/Support/reg*
+Copyright: 1992, 1993, 1994 Henry Spencer
+           1992, 1993, 1994 The Regents of the University of California
+License: BSD-3-clause
+
+Files: llvm/lib/Support/MD5.cpp llvm/include/llvm/Support/MD5.h
+Copyright: 2001 Alexander Peslyak <solar at openwall.com>
+License: solar-public-domain
+ This software was written by Alexander Peslyak in 2001.  No copyright is
+ claimed, and the software is hereby placed in the public domain.
+ In case this attempt to disclaim copyright and place the software in the
+ public domain is deemed null and void, then the software is
+ Copyright (c) 2001 Alexander Peslyak and it is hereby released to the
+ general public under the following terms:
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted.
+ .
+ * There's ABSOLUTELY NO WARRANTY, express or implied.
+
+Files: lldb/third_party/Python/module/unittest2*
+Copyright: 1999-2003 Steve Purcell
+           2003-2010 Python Software Foundation
+License: Python
+ This module is free software, and you may redistribute it and/or modify
+ it under the same terms as Python itself, so long as this copyright message
+ and disclaimer are retained in their original form.
+ .
+ IN NO EVENT SHALL THE AUTHOR BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,
+ SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF
+ THIS CODE, EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+ DAMAGE.
+ .
+ THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS,
+ AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
+ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+Files: llvm/llvmtest/YAMLParser/*
+Copyright: 2006 Kirill Simonov
+License: MIT
+
+Files: llvm/utils/unittest/googletest/*
+Copyright: 2006-2008, Google Inc.
+License: BSD-3-Clause
+
+Files: llvm/utils/unittest/googlemock/*
+Copyright: 2008, Google Inc.
+License: BSD-3-Clause
+
+Files: clang/lib/Headers/cuda_wrappers/*
+ clang/lib/Headers/avx512vlvp2intersectintrin.h
+ clang/lib/Headers/avx512vp2intersectintrin.h
+Copyright: 2016-2020, Google Inc.
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+
+License: MIT
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.

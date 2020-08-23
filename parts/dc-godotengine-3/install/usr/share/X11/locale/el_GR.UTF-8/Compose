@@ -1,0 +1,2026 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#
+# UTF-8 compose sequence definitions for the greek keyboard layout.
+#
+# This file is mostly meant to be used along with the xkb/symbols/el
+# symbols definition file. In addition, the dead key definitions in
+# the machine generated part are really only relevant to the
+# "polytonic" variant in that file.
+#
+# The definitions herein cover the following ISO 10646 / Unicode
+# ranges:
+#	- Basic Latin (0000-007F) (complete coverage)
+#	- Latin-1 Supplement (0080-00FF) (complete coverage)
+#	- Greek and Coptic (0370-03FF) (only the big ISO 8859-7 based
+#	  part at the beginning)
+#	- Greek Extended (1F00-1FFF) (complete coverage)
+#	- There are also six (6) characters from other ranges.
+# Moreover, the following character sets are completely covered:
+#	- ISO 8859-1
+#	- ISO 8859-7
+#
+# This file consists of four parts. Two of them have been adapted from
+# the iso8859-1/Compose and iso8859-7/Compose files. The other two
+# parts have been created by:
+#	Vasilis Vasaitis <vvas@hal.csd.auth.gr>
+# based on the idea and initial implementation by:
+#	Alejandros Diamandidis <adia@egnatia.ee.auth.gr>
+
+# Part 1
+#
+# ISO 8859-1 (Latin-1) multi-key definitions extracted and converted
+# from the iso8859-1/Compose file.
+
+# Special Character
+<Multi_key> <plus> <plus>		: "#"	numbersign
+<Multi_key> <apostrophe> <space>	: "'"	apostrophe
+<Multi_key> <space> <apostrophe>	: "'"	apostrophe
+<Multi_key> <A> <T>			: "@"	at
+<Multi_key> <parenleft> <parenleft>	: "["	bracketleft
+<Multi_key> <slash> <less>		: "\\"	backslash
+<Multi_key> <less> <slash>		: "\\"	backslash
+<Multi_key> <parenright> <parenright>	: "]"	bracketright
+<Multi_key> <asciicircum> <space>	: "^"	asciicircum
+<Multi_key> <space> <asciicircum>	: "^"	asciicircum
+<Multi_key> <greater> <space>		: "^"	asciicircum
+<Multi_key> <space> <greater>		: "^"	asciicircum
+<Multi_key> <grave> <space>		: "`"	grave
+<Multi_key> <space> <grave>		: "`"	grave
+<Multi_key> <parenleft> <minus>		: "{"	braceleft
+<Multi_key> <minus> <parenleft>		: "{"	braceleft
+<Multi_key> <slash> <asciicircum>	: "|"	bar
+<Multi_key> <asciicircum> <slash>	: "|"	bar
+<Multi_key> <V> <L>			: "|"	bar
+<Multi_key> <L> <V>			: "|"	bar
+<Multi_key> <v> <l>			: "|"	bar
+<Multi_key> <l> <v>			: "|"	bar
+<Multi_key> <parenright> <minus>	: "}"	braceright
+<Multi_key> <minus> <parenright>	: "}"	braceright
+<Multi_key> <asciitilde> <space>	: "~"	asciitilde
+<Multi_key> <space> <asciitilde>	: "~"	asciitilde
+<Multi_key> <minus> <space>		: "~"	asciitilde
+<Multi_key> <space> <minus>		: "~"	asciitilde
+<Multi_key> <exclam> <exclam>		: "¡"	exclamdown
+<Multi_key> <c> <slash>			: "¢"	cent
+<Multi_key> <slash> <c>			: "¢"	cent
+<Multi_key> <C> <slash>			: "¢"	cent
+<Multi_key> <slash> <C>			: "¢"	cent
+<Multi_key> <C> <bar>			: "¢"	cent
+<Multi_key> <bar> <C>			: "¢"	cent
+<Multi_key> <c> <bar>			: "¢"	cent
+<Multi_key> <bar> <c>			: "¢"	cent
+<Multi_key> <l> <minus>			: "£"	sterling
+<Multi_key> <minus> <l>			: "£"	sterling
+<Multi_key> <L> <minus>			: "£"	sterling
+<Multi_key> <minus> <L>			: "£"	sterling
+<Multi_key> <l> <equal>			: "£"	sterling
+<Multi_key> <equal> <l>			: "£"	sterling
+<Multi_key> <L> <equal>			: "£"	sterling
+<Multi_key> <equal> <L>			: "£"	sterling
+<Multi_key> <y> <minus>			: "¥"	yen
+<Multi_key> <minus> <y>			: "¥"	yen
+<Multi_key> <Y> <minus>			: "¥"	yen
+<Multi_key> <minus> <Y>			: "¥"	yen
+<Multi_key> <y> <equal>			: "¥"	yen
+<Multi_key> <equal> <y>			: "¥"	yen
+<Multi_key> <Y> <equal>			: "¥"	yen
+<Multi_key> <equal> <Y>			: "¥"	yen
+<Multi_key> <s> <o>			: "§"	section
+<Multi_key> <o> <s>			: "§"	section
+<Multi_key> <S> <O>			: "§"	section
+<Multi_key> <O> <S>			: "§"	section
+<Multi_key> <S> <exclam>		: "§"	section
+<Multi_key> <exclam> <S>		: "§"	section
+<Multi_key> <s> <exclam>		: "§"	section
+<Multi_key> <exclam> <s>		: "§"	section
+<Multi_key> <S> <0>			: "§"	section
+<Multi_key> <0> <S>			: "§"	section
+<Multi_key> <s> <0>			: "§"	section
+<Multi_key> <0> <s>			: "§"	section
+<Multi_key> <x> <o>			: "¤"	currency
+<Multi_key> <o> <x>			: "¤"	currency
+<Multi_key> <X> <O>			: "¤"	currency
+<Multi_key> <O> <X>			: "¤"	currency
+<Multi_key> <x> <O>			: "¤"	currency
+<Multi_key> <O> <x>			: "¤"	currency
+<Multi_key> <X> <o>			: "¤"	currency
+<Multi_key> <o> <X>			: "¤"	currency
+<Multi_key> <x> <0>			: "¤"	currency
+<Multi_key> <0> <x>			: "¤"	currency
+<Multi_key> <X> <0>			: "¤"	currency
+<Multi_key> <0> <X>			: "¤"	currency
+<Multi_key> <c> <o>			: "©"	copyright
+<Multi_key> <o> <c>			: "©"	copyright
+<Multi_key> <C> <O>			: "©"	copyright
+<Multi_key> <O> <C>			: "©"	copyright
+<Multi_key> <c> <O>			: "©"	copyright
+<Multi_key> <O> <c>			: "©"	copyright
+<Multi_key> <C> <o>			: "©"	copyright
+<Multi_key> <o> <C>			: "©"	copyright
+<Multi_key> <c> <0>			: "©"	copyright
+<Multi_key> <0> <c>			: "©"	copyright
+<Multi_key> <C> <0>			: "©"	copyright
+<Multi_key> <0> <C>			: "©"	copyright
+<Multi_key> <parenleft> <c>		: "©"	copyright
+<Multi_key> <a> <underscore>		: "ª"	ordfeminine
+<Multi_key> <underscore> <a>		: "ª"	ordfeminine
+<Multi_key> <A> <underscore>		: "ª"	ordfeminine
+<Multi_key> <underscore> <A>		: "ª"	ordfeminine
+<Multi_key> <o> <underscore>		: "º"	masculine
+<Multi_key> <underscore> <o>		: "º"	masculine
+<Multi_key> <O> <underscore>		: "º"	masculine
+<Multi_key> <underscore> <O>		: "º"	masculine
+<Multi_key> <less> <less>		: "«"	guillemotleft
+<Multi_key> <greater> <greater>		: "»"	guillemotright
+<Multi_key> <0> <asciicircum>		: "°"	degree
+<Multi_key> <asciicircum> <0>		: "°"	degree
+<Multi_key> <0> <asterisk>		: "°"	degree
+<Multi_key> <asterisk> <0>		: "°"	degree
+<Multi_key> <plus> <minus>		: "±"	plusminus
+<Multi_key> <minus> <plus>		: "±"	plusminus
+<Multi_key> <slash> <u>			: "µ"	mu
+<Multi_key> <u> <slash>			: "µ"	mu
+<Multi_key> <slash> <U>			: "µ"	mu
+<Multi_key> <U> <slash>			: "µ"	mu
+<Multi_key> <1> <asciicircum>		: "¹"	onesuperior
+<Multi_key> <asciicircum> <1>		: "¹"	onesuperior
+<Multi_key> <S> <1>			: "¹"	onesuperior
+<Multi_key> <1> <S>			: "¹"	onesuperior
+<Multi_key> <s> <1>			: "¹"	onesuperior
+<Multi_key> <1> <s>			: "¹"	onesuperior
+<Multi_key> <2> <asciicircum>		: "²"	twosuperior
+<Multi_key> <asciicircum> <2>		: "²"	twosuperior
+<Multi_key> <S> <2>			: "²"	twosuperior
+<Multi_key> <2> <S>			: "²"	twosuperior
+<Multi_key> <s> <2>			: "²"	twosuperior
+<Multi_key> <2> <s>			: "²"	twosuperior
+<Multi_key> <3> <asciicircum>		: "³"	threesuperior
+<Multi_key> <asciicircum> <3>		: "³"	threesuperior
+<Multi_key> <S> <3>			: "³"	threesuperior
+<Multi_key> <3> <S>			: "³"	threesuperior
+<Multi_key> <s> <3>			: "³"	threesuperior
+<Multi_key> <3> <s>			: "³"	threesuperior
+<Multi_key> <p> <exclam>		: "¶"	paragraph
+<Multi_key> <exclam> <p>		: "¶"	paragraph
+<Multi_key> <P> <exclam>		: "¶"	paragraph
+<Multi_key> <exclam> <P>		: "¶"	paragraph
+<Multi_key> <period> <asciicircum>	: "·"	periodcentered
+<Multi_key> <asciicircum> <period>	: "·"	periodcentered
+<Multi_key> <period> <minus>		: "·"	periodcentered
+<Multi_key> <period> <equal>		: "•"	enfilledcircbullet
+<Multi_key> <period> <period>		: "…"	ellipsis
+<Multi_key> <1> <4>			: "¼"	onequarter
+<Multi_key> <1> <2>			: "½"	onehalf
+<Multi_key> <3> <4>			: "¾"	threequarters
+<Multi_key> <question> <question>	: "¿"	questiondown
+<Multi_key> <space> <space>		: " "	nobreakspace
+<Multi_key> <bar> <bar>			: "¦"	brokenbar
+<Multi_key> <exclam> <asciicircum>	: "¦"	brokenbar
+<Multi_key> <asciicircum> <exclam>	: "¦"	brokenbar
+<Multi_key> <V> <B>			: "¦"	brokenbar
+<Multi_key> <B> <V>			: "¦"	brokenbar
+<Multi_key> <v> <b>			: "¦"	brokenbar
+<Multi_key> <b> <v>			: "¦"	brokenbar
+<Multi_key> <minus> <comma>		: "¬"	notsign
+<Multi_key> <comma> <minus>		: "¬"	notsign
+<Multi_key> <minus> <minus>		: "­"	hyphen
+<Multi_key> <R> <O>			: "®"	registered
+<Multi_key> <O> <R>			: "®"	registered
+<Multi_key> <parenleft> <r>		: "®"	registered
+<Multi_key> <minus> <asciicircum>	: "¯"	macron
+<Multi_key> <asciicircum> <minus>	: "¯"	macron
+<Multi_key> <underscore> <asciicircum>	: "¯"	macron
+<Multi_key> <asciicircum> <underscore>	: "¯"	macron
+<Multi_key> <underscore> <underscore>	: "¯"	macron
+<Multi_key> <minus> <colon>		: "÷"	division
+<Multi_key> <colon> <minus>		: "÷"	division
+<Multi_key> <x> <x>			: "×"	multiply
+<Multi_key> <apostrophe> <apostrophe>	: "´"	acute
+<Multi_key> <comma> <comma>		: "¸"	cedilla
+<Multi_key> <quotedbl> <quotedbl>	: "¨"	diaeresis
+# Accented Alphabet
+<Multi_key> <A> <grave>			: "À"	Agrave
+<Multi_key> <grave> <A>			: "À"	Agrave
+<Multi_key> <A> <acute>			: "Á"	Aacute
+<Multi_key> <acute> <A>			: "Á"	Aacute
+<Multi_key> <A> <apostrophe>		: "Á"	Aacute
+<Multi_key> <apostrophe> <A>		: "Á"	Aacute
+<Multi_key> <A> <asciicircum>		: "Â"	Acircumflex
+<Multi_key> <asciicircum> <A>		: "Â"	Acircumflex
+<Multi_key> <A> <greater>		: "Â"	Acircumflex
+<Multi_key> <greater> <A>		: "Â"	Acircumflex
+<Multi_key> <A> <asciitilde>		: "Ã"	Atilde
+<Multi_key> <asciitilde> <A>		: "Ã"	Atilde
+<Multi_key> <A> <minus>			: "Ã"	Atilde
+<Multi_key> <minus> <A>			: "Ã"	Atilde
+<Multi_key> <A> <quotedbl>		: "Ä"	Adiaeresis
+<Multi_key> <quotedbl> <A>		: "Ä"	Adiaeresis
+<Multi_key> <A> <diaeresis>		: "Ä"	Adiaeresis
+<Multi_key> <diaeresis> <A>		: "Ä"	Adiaeresis
+<Multi_key> <A> <asterisk>		: "Å"	Aring
+<Multi_key> <asterisk> <A>		: "Å"	Aring
+<Multi_key> <A> <A>			: "Å"	Aring
+<Multi_key> <A> <O>			: "Å"	Aring
+<Multi_key> <A> <E>			: "Æ"	AE
+<Multi_key> <a> <grave>			: "à"	agrave
+<Multi_key> <grave> <a>			: "à"	agrave
+<Multi_key> <a> <acute>			: "á"	aacute
+<Multi_key> <acute> <a>			: "á"	aacute
+<Multi_key> <a> <apostrophe>		: "á"	aacute
+<Multi_key> <apostrophe> <a>		: "á"	aacute
+<Multi_key> <a> <asciicircum>		: "â"	acircumflex
+<Multi_key> <asciicircum> <a>		: "â"	acircumflex
+<Multi_key> <a> <greater>		: "â"	acircumflex
+<Multi_key> <greater> <a>		: "â"	acircumflex
+<Multi_key> <a> <asciitilde>		: "ã"	atilde
+<Multi_key> <asciitilde> <a>		: "ã"	atilde
+<Multi_key> <a> <minus>			: "ã"	atilde
+<Multi_key> <minus> <a>			: "ã"	atilde
+<Multi_key> <a> <quotedbl>		: "ä"	adiaeresis
+<Multi_key> <quotedbl> <a>		: "ä"	adiaeresis
+<Multi_key> <a> <diaeresis>		: "ä"	adiaeresis
+<Multi_key> <diaeresis> <a>		: "ä"	adiaeresis
+<Multi_key> <a> <asterisk>		: "å"	aring
+<Multi_key> <asterisk> <a>		: "å"	aring
+<Multi_key> <a> <a>			: "å"	aring
+<Multi_key> <a> <o>			: "å"	aring
+<Multi_key> <a> <e>			: "æ"	ae
+<Multi_key> <acute> <C>			: "Ç"	Ccedilla
+<Multi_key> <acute> <c>			: "ç"	ccedilla
+<Multi_key> <C> <comma>			: "Ç"	Ccedilla
+<Multi_key> <C> <cedilla>		: "Ç"	Ccedilla
+<Multi_key> <comma> <C>			: "Ç"	Ccedilla
+<Multi_key> <cedilla> <C>		: "Ç"	Ccedilla
+<Multi_key> <c> <comma>			: "ç"	ccedilla
+<Multi_key> <c> <cedilla>		: "ç"	ccedilla
+<Multi_key> <comma> <c>			: "ç"	ccedilla
+<Multi_key> <cedilla> <c>		: "ç"	ccedilla
+<Multi_key> <minus> <D>			: "Ð"	ETH
+<Multi_key> <D> <minus>			: "Ð"	ETH
+<Multi_key> <minus> <d>			: "ð"	eth
+<Multi_key> <d> <minus>			: "ð"	eth
+<Multi_key> <E> <grave>			: "È"	Egrave
+<Multi_key> <grave> <E>			: "È"	Egrave
+<Multi_key> <E> <acute>			: "É"	Eacute
+<Multi_key> <acute> <E>			: "É"	Eacute
+<Multi_key> <E> <apostrophe>		: "É"	Eacute
+<Multi_key> <apostrophe> <E>		: "É"	Eacute
+<Multi_key> <E> <asciicircum>		: "Ê"	Ecircumflex
+<Multi_key> <asciicircum> <E>		: "Ê"	Ecircumflex
+<Multi_key> <E> <greater>		: "Ê"	Ecircumflex
+<Multi_key> <greater> <E>		: "Ê"	Ecircumflex
+<Multi_key> <E> <quotedbl>		: "Ë"	Ediaeresis
+<Multi_key> <quotedbl> <E>		: "Ë"	Ediaeresis
+<Multi_key> <E> <diaeresis>		: "Ë"	Ediaeresis
+<Multi_key> <diaeresis> <E>		: "Ë"	Ediaeresis
+<Multi_key> <e> <grave>			: "è"	egrave
+<Multi_key> <grave> <e>			: "è"	egrave
+<Multi_key> <e> <acute>			: "é"	eacute
+<Multi_key> <acute> <e>			: "é"	eacute
+<Multi_key> <e> <apostrophe>		: "é"	eacute
+<Multi_key> <apostrophe> <e>		: "é"	eacute
+<Multi_key> <e> <asciicircum>		: "ê"	ecircumflex
+<Multi_key> <asciicircum> <e>		: "ê"	ecircumflex
+<Multi_key> <e> <greater>		: "ê"	ecircumflex
+<Multi_key> <greater> <e>		: "ê"	ecircumflex
+<Multi_key> <e> <quotedbl>		: "ë"	ediaeresis
+<Multi_key> <quotedbl> <e>		: "ë"	ediaeresis
+<Multi_key> <e> <diaeresis>		: "ë"	ediaeresis
+<Multi_key> <diaeresis> <e>		: "ë"	ediaeresis
+<Multi_key> <I> <grave>			: "Ì"	Igrave
+<Multi_key> <grave> <I>			: "Ì"	Igrave
+<Multi_key> <I> <acute>			: "Í"	Iacute
+<Multi_key> <acute> <I>			: "Í"	Iacute
+<Multi_key> <I> <apostrophe>		: "Í"	Iacute
+<Multi_key> <apostrophe> <I>		: "Í"	Iacute
+<Multi_key> <I> <asciicircum>		: "Î"	Icircumflex
+<Multi_key> <asciicircum> <I>		: "Î"	Icircumflex
+<Multi_key> <I> <greater>		: "Î"	Icircumflex
+<Multi_key> <greater> <I>		: "Î"	Icircumflex
+<Multi_key> <I> <quotedbl>		: "Ï"	Idiaeresis
+<Multi_key> <quotedbl> <I>		: "Ï"	Idiaeresis
+<Multi_key> <I> <diaeresis>		: "Ï"	Idiaeresis
+<Multi_key> <diaeresis> <I>		: "Ï"	Idiaeresis
+<Multi_key> <i> <grave>			: "ì"	igrave
+<Multi_key> <grave> <i>			: "ì"	igrave
+<Multi_key> <i> <acute>			: "í"	iacute
+<Multi_key> <acute> <i>			: "í"	iacute
+<Multi_key> <i> <apostrophe>		: "í"	iacute
+<Multi_key> <apostrophe> <i>		: "í"	iacute
+<Multi_key> <i> <asciicircum>		: "î"	icircumflex
+<Multi_key> <asciicircum> <i>		: "î"	icircumflex
+<Multi_key> <i> <greater>		: "î"	icircumflex
+<Multi_key> <greater> <i>		: "î"	icircumflex
+<Multi_key> <i> <quotedbl>		: "ï"	idiaeresis
+<Multi_key> <quotedbl> <i>		: "ï"	idiaeresis
+<Multi_key> <i> <diaeresis>		: "ï"	idiaeresis
+<Multi_key> <diaeresis> <i>		: "ï"	idiaeresis
+<Multi_key> <N> <asciitilde>		: "Ñ"	Ntilde
+<Multi_key> <asciitilde> <N>		: "Ñ"	Ntilde
+<Multi_key> <N> <minus>			: "Ñ"	Ntilde
+<Multi_key> <minus> <N>			: "Ñ"	Ntilde
+<Multi_key> <n> <asciitilde>		: "ñ"	ntilde
+<Multi_key> <asciitilde> <n>		: "ñ"	ntilde
+<Multi_key> <n> <minus>			: "ñ"	ntilde
+<Multi_key> <minus> <n>			: "ñ"	ntilde
+<Multi_key> <O> <grave>			: "Ò"	Ograve
+<Multi_key> <grave> <O>			: "Ò"	Ograve
+<Multi_key> <O> <acute>			: "Ó"	Oacute
+<Multi_key> <acute> <O>			: "Ó"	Oacute
+<Multi_key> <O> <apostrophe>		: "Ó"	Oacute
+<Multi_key> <apostrophe> <O>		: "Ó"	Oacute
+<Multi_key> <O> <asciicircum>		: "Ô"	Ocircumflex
+<Multi_key> <asciicircum> <O>		: "Ô"	Ocircumflex
+<Multi_key> <O> <greater>		: "Ô"	Ocircumflex
+<Multi_key> <greater> <O>		: "Ô"	Ocircumflex
+<Multi_key> <O> <asciitilde>		: "Õ"	Otilde
+<Multi_key> <asciitilde> <O>		: "Õ"	Otilde
+<Multi_key> <O> <minus>			: "Õ"	Otilde
+<Multi_key> <minus> <O>			: "Õ"	Otilde
+<Multi_key> <O> <quotedbl>		: "Ö"	Odiaeresis
+<Multi_key> <quotedbl> <O>		: "Ö"	Odiaeresis
+<Multi_key> <O> <diaeresis>		: "Ö"	Odiaeresis
+<Multi_key> <diaeresis> <O>		: "Ö"	Odiaeresis
+<Multi_key> <O> <slash>			: "Ø"	Ooblique
+<Multi_key> <slash> <O>			: "Ø"	Ooblique
+<Multi_key> <o> <grave>			: "ò"	ograve
+<Multi_key> <grave> <o>			: "ò"	ograve
+<Multi_key> <o> <acute>			: "ó"	oacute
+<Multi_key> <acute> <o>			: "ó"	oacute
+<Multi_key> <o> <apostrophe>		: "ó"	oacute
+<Multi_key> <apostrophe> <o>		: "ó"	oacute
+<Multi_key> <o> <asciicircum>		: "ô"	ocircumflex
+<Multi_key> <asciicircum> <o>		: "ô"	ocircumflex
+<Multi_key> <o> <greater>		: "ô"	ocircumflex
+<Multi_key> <greater> <o>		: "ô"	ocircumflex
+<Multi_key> <o> <asciitilde>		: "õ"	otilde
+<Multi_key> <asciitilde> <o>		: "õ"	otilde
+<Multi_key> <o> <minus>			: "õ"	otilde
+<Multi_key> <minus> <o>			: "õ"	otilde
+<Multi_key> <o> <quotedbl>		: "ö"	odiaeresis
+<Multi_key> <quotedbl> <o>		: "ö"	odiaeresis
+<Multi_key> <o> <diaeresis>		: "ö"	odiaeresis
+<Multi_key> <diaeresis> <o>		: "ö"	odiaeresis
+<Multi_key> <o> <slash>			: "ø"	oslash
+<Multi_key> <slash> <o>			: "ø"	oslash
+<Multi_key> <U> <grave>			: "Ù"	Ugrave
+<Multi_key> <grave> <U>			: "Ù"	Ugrave
+<Multi_key> <U> <acute>			: "Ú"	Uacute
+<Multi_key> <acute> <U>			: "Ú"	Uacute
+<Multi_key> <U> <apostrophe>		: "Ú"	Uacute
+<Multi_key> <apostrophe> <U>		: "Ú"	Uacute
+<Multi_key> <U> <asciicircum>		: "Û"	Ucircumflex
+<Multi_key> <asciicircum> <U>		: "Û"	Ucircumflex
+<Multi_key> <U> <greater>		: "Û"	Ucircumflex
+<Multi_key> <greater> <U>		: "Û"	Ucircumflex
+<Multi_key> <U> <quotedbl>		: "Ü"	Udiaeresis
+<Multi_key> <quotedbl> <U>		: "Ü"	Udiaeresis
+<Multi_key> <U> <diaeresis>		: "Ü"	Udiaeresis
+<Multi_key> <diaeresis> <U>		: "Ü"	Udiaeresis
+<Multi_key> <u> <grave>			: "ù"	ugrave
+<Multi_key> <grave> <u>			: "ù"	ugrave
+<Multi_key> <u> <acute>			: "ú"	uacute
+<Multi_key> <acute> <u>			: "ú"	uacute
+<Multi_key> <u> <apostrophe>		: "ú"	uacute
+<Multi_key> <apostrophe> <u>		: "ú"	uacute
+<Multi_key> <u> <asciicircum>		: "û"	ucircumflex
+<Multi_key> <asciicircum> <u>		: "û"	ucircumflex
+<Multi_key> <u> <greater>		: "û"	ucircumflex
+<Multi_key> <greater> <u>		: "û"	ucircumflex
+<Multi_key> <u> <quotedbl>		: "ü"	udiaeresis
+<Multi_key> <quotedbl> <u>		: "ü"	udiaeresis
+<Multi_key> <u> <diaeresis>		: "ü"	udiaeresis
+<Multi_key> <diaeresis> <u>		: "ü"	udiaeresis
+<Multi_key> <s> <s>			: "ß"	ssharp
+<Multi_key> <T> <H>			: "Þ"	THORN
+<Multi_key> <t> <h>			: "þ"	thorn
+<Multi_key> <Y> <acute>			: "Ý"	Yacute
+<Multi_key> <acute> <Y>			: "Ý"	Yacute
+<Multi_key> <Y> <apostrophe>		: "Ý"	Yacute
+<Multi_key> <apostrophe> <Y>		: "Ý"	Yacute
+<Multi_key> <y> <acute>			: "ý"	yacute
+<Multi_key> <acute> <y>			: "ý"	yacute
+<Multi_key> <y> <apostrophe>		: "ý"	yacute
+<Multi_key> <apostrophe> <y>		: "ý"	yacute
+<Multi_key> <y> <quotedbl>		: "ÿ"	ydiaeresis
+<Multi_key> <quotedbl> <y>		: "ÿ"	ydiaeresis
+<Multi_key> <y> <diaeresis>		: "ÿ"	ydiaeresis
+<Multi_key> <diaeresis> <y>		: "ÿ"	ydiaeresis
+
+# Part 2
+#
+# Greek Extended multi-key and dead key definitions. These have been
+# machine-generated by a perl script, found at:
+#	http://hal.csd.auth.gr/~vvas/i18n/xkb/polytonic-compose.pl
+
+<Multi_key> <greater> <Greek_alpha>                     : "ἀ"  U1f00
+<dead_horn> <Greek_alpha>                               : "ἀ"  U1f00
+<dead_psili> <Greek_alpha>                               : "ἀ"  U1f00
+<Multi_key> <less> <Greek_alpha>                        : "ἁ"  U1f01
+<dead_ogonek> <Greek_alpha>                             : "ἁ"  U1f01
+<dead_dasia> <Greek_alpha>                             : "ἁ"  U1f01
+<Multi_key> <greater> <grave> <Greek_alpha>             : "ἂ"  U1f02
+<Multi_key> <grave> <greater> <Greek_alpha>             : "ἂ"  U1f02
+<dead_horn> <dead_grave> <Greek_alpha>                  : "ἂ"  U1f02
+<dead_psili> <dead_grave> <Greek_alpha>                  : "ἂ"  U1f02
+<dead_grave> <dead_horn> <Greek_alpha>                  : "ἂ"  U1f02
+<dead_grave> <dead_psili> <Greek_alpha>                  : "ἂ"  U1f02
+<Multi_key> <less> <grave> <Greek_alpha>                : "ἃ"  U1f03
+<Multi_key> <grave> <less> <Greek_alpha>                : "ἃ"  U1f03
+<dead_ogonek> <dead_grave> <Greek_alpha>                : "ἃ"  U1f03
+<dead_dasia> <dead_grave> <Greek_alpha>                : "ἃ"  U1f03
+<dead_grave> <dead_ogonek> <Greek_alpha>                : "ἃ"  U1f03
+<dead_grave> <dead_dasia> <Greek_alpha>                : "ἃ"  U1f03
+<Multi_key> <greater> <apostrophe> <Greek_alpha>        : "ἄ"  U1f04
+<Multi_key> <apostrophe> <greater> <Greek_alpha>        : "ἄ"  U1f04
+<dead_horn> <dead_acute> <Greek_alpha>                  : "ἄ"  U1f04
+<dead_psili> <dead_acute> <Greek_alpha>                  : "ἄ"  U1f04
+<dead_acute> <dead_horn> <Greek_alpha>                  : "ἄ"  U1f04
+<dead_acute> <dead_psili> <Greek_alpha>                  : "ἄ"  U1f04
+<Multi_key> <less> <apostrophe> <Greek_alpha>           : "ἅ"  U1f05
+<Multi_key> <apostrophe> <less> <Greek_alpha>           : "ἅ"  U1f05
+<dead_ogonek> <dead_acute> <Greek_alpha>                : "ἅ"  U1f05
+<dead_dasia> <dead_acute> <Greek_alpha>                : "ἅ"  U1f05
+<dead_acute> <dead_ogonek> <Greek_alpha>                : "ἅ"  U1f05
+<dead_acute> <dead_dasia> <Greek_alpha>                : "ἅ"  U1f05
+<Multi_key> <greater> <asciitilde> <Greek_alpha>        : "ἆ"  U1f06
+<Multi_key> <asciitilde> <greater> <Greek_alpha>        : "ἆ"  U1f06
+<dead_horn> <dead_tilde> <Greek_alpha>                  : "ἆ"  U1f06
+<dead_psili> <dead_tilde> <Greek_alpha>                  : "ἆ"  U1f06
+<dead_tilde> <dead_horn> <Greek_alpha>                  : "ἆ"  U1f06
+<dead_tilde> <dead_psili> <Greek_alpha>                  : "ἆ"  U1f06
+<Multi_key> <less> <asciitilde> <Greek_alpha>           : "ἇ"  U1f07
+<Multi_key> <asciitilde> <less> <Greek_alpha>           : "ἇ"  U1f07
+<dead_ogonek> <dead_tilde> <Greek_alpha>                : "ἇ"  U1f07
+<dead_dasia> <dead_tilde> <Greek_alpha>                : "ἇ"  U1f07
+<dead_tilde> <dead_ogonek> <Greek_alpha>                : "ἇ"  U1f07
+<dead_tilde> <dead_dasia> <Greek_alpha>                : "ἇ"  U1f07
+<Multi_key> <greater> <Greek_ALPHA>                     : "Ἀ"  U1f08
+<dead_horn> <Greek_ALPHA>                               : "Ἀ"  U1f08
+<dead_psili> <Greek_ALPHA>                               : "Ἀ"  U1f08
+<Multi_key> <less> <Greek_ALPHA>                        : "Ἁ"  U1f09
+<dead_ogonek> <Greek_ALPHA>                             : "Ἁ"  U1f09
+<dead_dasia> <Greek_ALPHA>                             : "Ἁ"  U1f09
+<Multi_key> <greater> <grave> <Greek_ALPHA>             : "Ἂ"  U1f0a
+<Multi_key> <grave> <greater> <Greek_ALPHA>             : "Ἂ"  U1f0a
+<dead_horn> <dead_grave> <Greek_ALPHA>                  : "Ἂ"  U1f0a
+<dead_psili> <dead_grave> <Greek_ALPHA>                  : "Ἂ"  U1f0a
+<dead_grave> <dead_horn> <Greek_ALPHA>                  : "Ἂ"  U1f0a
+<dead_grave> <dead_psili> <Greek_ALPHA>                  : "Ἂ"  U1f0a
+<Multi_key> <less> <grave> <Greek_ALPHA>                : "Ἃ"  U1f0b
+<Multi_key> <grave> <less> <Greek_ALPHA>                : "Ἃ"  U1f0b
+<dead_ogonek> <dead_grave> <Greek_ALPHA>                : "Ἃ"  U1f0b
+<dead_dasia> <dead_grave> <Greek_ALPHA>                : "Ἃ"  U1f0b
+<dead_grave> <dead_ogonek> <Greek_ALPHA>                : "Ἃ"  U1f0b
+<dead_grave> <dead_dasia> <Greek_ALPHA>                : "Ἃ"  U1f0b
+<Multi_key> <greater> <apostrophe> <Greek_ALPHA>        : "Ἄ"  U1f0c
+<Multi_key> <apostrophe> <greater> <Greek_ALPHA>        : "Ἄ"  U1f0c
+<dead_horn> <dead_acute> <Greek_ALPHA>                  : "Ἄ"  U1f0c
+<dead_psili> <dead_acute> <Greek_ALPHA>                  : "Ἄ"  U1f0c
+<dead_acute> <dead_horn> <Greek_ALPHA>                  : "Ἄ"  U1f0c
+<dead_acute> <dead_psili> <Greek_ALPHA>                  : "Ἄ"  U1f0c
+<Multi_key> <less> <apostrophe> <Greek_ALPHA>           : "Ἅ"  U1f0d
+<Multi_key> <apostrophe> <less> <Greek_ALPHA>           : "Ἅ"  U1f0d
+<dead_ogonek> <dead_acute> <Greek_ALPHA>                : "Ἅ"  U1f0d
+<dead_dasia> <dead_acute> <Greek_ALPHA>                : "Ἅ"  U1f0d
+<dead_acute> <dead_ogonek> <Greek_ALPHA>                : "Ἅ"  U1f0d
+<dead_acute> <dead_dasia> <Greek_ALPHA>                : "Ἅ"  U1f0d
+<Multi_key> <greater> <asciitilde> <Greek_ALPHA>        : "Ἆ"  U1f0e
+<Multi_key> <asciitilde> <greater> <Greek_ALPHA>        : "Ἆ"  U1f0e
+<dead_horn> <dead_tilde> <Greek_ALPHA>                  : "Ἆ"  U1f0e
+<dead_psili> <dead_tilde> <Greek_ALPHA>                  : "Ἆ"  U1f0e
+<dead_tilde> <dead_horn> <Greek_ALPHA>                  : "Ἆ"  U1f0e
+<dead_tilde> <dead_psili> <Greek_ALPHA>                  : "Ἆ"  U1f0e
+<Multi_key> <less> <asciitilde> <Greek_ALPHA>           : "Ἇ"  U1f0f
+<Multi_key> <asciitilde> <less> <Greek_ALPHA>           : "Ἇ"  U1f0f
+<dead_ogonek> <dead_tilde> <Greek_ALPHA>                : "Ἇ"  U1f0f
+<dead_dasia> <dead_tilde> <Greek_ALPHA>                : "Ἇ"  U1f0f
+<dead_tilde> <dead_ogonek> <Greek_ALPHA>                : "Ἇ"  U1f0f
+<dead_tilde> <dead_dasia> <Greek_ALPHA>                : "Ἇ"  U1f0f
+<Multi_key> <greater> <Greek_epsilon>                   : "ἐ"  U1f10
+<dead_horn> <Greek_epsilon>                             : "ἐ"  U1f10
+<dead_psili> <Greek_epsilon>                             : "ἐ"  U1f10
+<Multi_key> <less> <Greek_epsilon>                      : "ἑ"  U1f11
+<dead_ogonek> <Greek_epsilon>                           : "ἑ"  U1f11
+<dead_dasia> <Greek_epsilon>                           : "ἑ"  U1f11
+<Multi_key> <greater> <grave> <Greek_epsilon>           : "ἒ"  U1f12
+<Multi_key> <grave> <greater> <Greek_epsilon>           : "ἒ"  U1f12
+<dead_horn> <dead_grave> <Greek_epsilon>                : "ἒ"  U1f12
+<dead_psili> <dead_grave> <Greek_epsilon>                : "ἒ"  U1f12
+<dead_grave> <dead_horn> <Greek_epsilon>                : "ἒ"  U1f12
+<dead_grave> <dead_psili> <Greek_epsilon>                : "ἒ"  U1f12
+<Multi_key> <less> <grave> <Greek_epsilon>              : "ἓ"  U1f13
+<Multi_key> <grave> <less> <Greek_epsilon>              : "ἓ"  U1f13
+<dead_ogonek> <dead_grave> <Greek_epsilon>              : "ἓ"  U1f13
+<dead_dasia> <dead_grave> <Greek_epsilon>              : "ἓ"  U1f13
+<dead_grave> <dead_ogonek> <Greek_epsilon>              : "ἓ"  U1f13
+<dead_grave> <dead_dasia> <Greek_epsilon>              : "ἓ"  U1f13
+<Multi_key> <greater> <apostrophe> <Greek_epsilon>      : "ἔ"  U1f14
+<Multi_key> <apostrophe> <greater> <Greek_epsilon>      : "ἔ"  U1f14
+<dead_horn> <dead_acute> <Greek_epsilon>                : "ἔ"  U1f14
+<dead_psili> <dead_acute> <Greek_epsilon>                : "ἔ"  U1f14
+<dead_acute> <dead_horn> <Greek_epsilon>                : "ἔ"  U1f14
+<dead_acute> <dead_psili> <Greek_epsilon>                : "ἔ"  U1f14
+<Multi_key> <less> <apostrophe> <Greek_epsilon>         : "ἕ"  U1f15
+<Multi_key> <apostrophe> <less> <Greek_epsilon>         : "ἕ"  U1f15
+<dead_ogonek> <dead_acute> <Greek_epsilon>              : "ἕ"  U1f15
+<dead_dasia> <dead_acute> <Greek_epsilon>              : "ἕ"  U1f15
+<dead_acute> <dead_ogonek> <Greek_epsilon>              : "ἕ"  U1f15
+<dead_acute> <dead_dasia> <Greek_epsilon>              : "ἕ"  U1f15
+<Multi_key> <greater> <Greek_EPSILON>                   : "Ἐ"  U1f18
+<dead_horn> <Greek_EPSILON>                             : "Ἐ"  U1f18
+<dead_psili> <Greek_EPSILON>                             : "Ἐ"  U1f18
+<Multi_key> <less> <Greek_EPSILON>                      : "Ἑ"  U1f19
+<dead_ogonek> <Greek_EPSILON>                           : "Ἑ"  U1f19
+<dead_dasia> <Greek_EPSILON>                           : "Ἑ"  U1f19
+<Multi_key> <greater> <grave> <Greek_EPSILON>           : "Ἒ"  U1f1a
+<Multi_key> <grave> <greater> <Greek_EPSILON>           : "Ἒ"  U1f1a
+<dead_horn> <dead_grave> <Greek_EPSILON>                : "Ἒ"  U1f1a
+<dead_psili> <dead_grave> <Greek_EPSILON>                : "Ἒ"  U1f1a
+<dead_grave> <dead_horn> <Greek_EPSILON>                : "Ἒ"  U1f1a
+<dead_grave> <dead_psili> <Greek_EPSILON>                : "Ἒ"  U1f1a
+<Multi_key> <less> <grave> <Greek_EPSILON>              : "Ἓ"  U1f1b
+<Multi_key> <grave> <less> <Greek_EPSILON>              : "Ἓ"  U1f1b
+<dead_ogonek> <dead_grave> <Greek_EPSILON>              : "Ἓ"  U1f1b
+<dead_dasia> <dead_grave> <Greek_EPSILON>              : "Ἓ"  U1f1b
+<dead_grave> <dead_ogonek> <Greek_EPSILON>              : "Ἓ"  U1f1b
+<dead_grave> <dead_dasia> <Greek_EPSILON>              : "Ἓ"  U1f1b
+<Multi_key> <greater> <apostrophe> <Greek_EPSILON>      : "Ἔ"  U1f1c
+<Multi_key> <apostrophe> <greater> <Greek_EPSILON>      : "Ἔ"  U1f1c
+<dead_horn> <dead_acute> <Greek_EPSILON>                : "Ἔ"  U1f1c
+<dead_psili> <dead_acute> <Greek_EPSILON>                : "Ἔ"  U1f1c
+<dead_acute> <dead_horn> <Greek_EPSILON>                : "Ἔ"  U1f1c
+<dead_acute> <dead_psili> <Greek_EPSILON>                : "Ἔ"  U1f1c
+<Multi_key> <less> <apostrophe> <Greek_EPSILON>         : "Ἕ"  U1f1d
+<Multi_key> <apostrophe> <less> <Greek_EPSILON>         : "Ἕ"  U1f1d
+<dead_ogonek> <dead_acute> <Greek_EPSILON>              : "Ἕ"  U1f1d
+<dead_dasia> <dead_acute> <Greek_EPSILON>              : "Ἕ"  U1f1d
+<dead_acute> <dead_ogonek> <Greek_EPSILON>              : "Ἕ"  U1f1d
+<dead_acute> <dead_dasia> <Greek_EPSILON>              : "Ἕ"  U1f1d
+<Multi_key> <greater> <Greek_eta>                       : "ἠ"  U1f20
+<dead_horn> <Greek_eta>                                 : "ἠ"  U1f20
+<dead_psili> <Greek_eta>                                 : "ἠ"  U1f20
+<Multi_key> <less> <Greek_eta>                          : "ἡ"  U1f21
+<dead_ogonek> <Greek_eta>                               : "ἡ"  U1f21
+<dead_dasia> <Greek_eta>                               : "ἡ"  U1f21
+<Multi_key> <greater> <grave> <Greek_eta>               : "ἢ"  U1f22
+<Multi_key> <grave> <greater> <Greek_eta>               : "ἢ"  U1f22
+<dead_horn> <dead_grave> <Greek_eta>                    : "ἢ"  U1f22
+<dead_psili> <dead_grave> <Greek_eta>                    : "ἢ"  U1f22
+<dead_grave> <dead_horn> <Greek_eta>                    : "ἢ"  U1f22
+<dead_grave> <dead_psili> <Greek_eta>                    : "ἢ"  U1f22
+<Multi_key> <less> <grave> <Greek_eta>                  : "ἣ"  U1f23
+<Multi_key> <grave> <less> <Greek_eta>                  : "ἣ"  U1f23
+<dead_ogonek> <dead_grave> <Greek_eta>                  : "ἣ"  U1f23
+<dead_dasia> <dead_grave> <Greek_eta>                  : "ἣ"  U1f23
+<dead_grave> <dead_ogonek> <Greek_eta>                  : "ἣ"  U1f23
+<dead_grave> <dead_dasia> <Greek_eta>                  : "ἣ"  U1f23
+<Multi_key> <greater> <apostrophe> <Greek_eta>          : "ἤ"  U1f24
+<Multi_key> <apostrophe> <greater> <Greek_eta>          : "ἤ"  U1f24
+<dead_horn> <dead_acute> <Greek_eta>                    : "ἤ"  U1f24
+<dead_psili> <dead_acute> <Greek_eta>                    : "ἤ"  U1f24
+<dead_acute> <dead_horn> <Greek_eta>                    : "ἤ"  U1f24
+<dead_acute> <dead_psili> <Greek_eta>                    : "ἤ"  U1f24
+<Multi_key> <less> <apostrophe> <Greek_eta>             : "ἥ"  U1f25
+<Multi_key> <apostrophe> <less> <Greek_eta>             : "ἥ"  U1f25
+<dead_ogonek> <dead_acute> <Greek_eta>                  : "ἥ"  U1f25
+<dead_dasia> <dead_acute> <Greek_eta>                  : "ἥ"  U1f25
+<dead_acute> <dead_ogonek> <Greek_eta>                  : "ἥ"  U1f25
+<dead_acute> <dead_dasia> <Greek_eta>                  : "ἥ"  U1f25
+<Multi_key> <greater> <asciitilde> <Greek_eta>          : "ἦ"  U1f26
+<Multi_key> <asciitilde> <greater> <Greek_eta>          : "ἦ"  U1f26
+<dead_horn> <dead_tilde> <Greek_eta>                    : "ἦ"  U1f26
+<dead_psili> <dead_tilde> <Greek_eta>                    : "ἦ"  U1f26
+<dead_tilde> <dead_horn> <Greek_eta>                    : "ἦ"  U1f26
+<dead_tilde> <dead_psili> <Greek_eta>                    : "ἦ"  U1f26
+<Multi_key> <less> <asciitilde> <Greek_eta>             : "ἧ"  U1f27
+<Multi_key> <asciitilde> <less> <Greek_eta>             : "ἧ"  U1f27
+<dead_ogonek> <dead_tilde> <Greek_eta>                  : "ἧ"  U1f27
+<dead_dasia> <dead_tilde> <Greek_eta>                  : "ἧ"  U1f27
+<dead_tilde> <dead_ogonek> <Greek_eta>                  : "ἧ"  U1f27
+<dead_tilde> <dead_dasia> <Greek_eta>                  : "ἧ"  U1f27
+<Multi_key> <greater> <Greek_ETA>                       : "Ἠ"  U1f28
+<dead_horn> <Greek_ETA>                                 : "Ἠ"  U1f28
+<dead_psili> <Greek_ETA>                                 : "Ἠ"  U1f28
+<Multi_key> <less> <Greek_ETA>                          : "Ἡ"  U1f29
+<dead_ogonek> <Greek_ETA>                               : "Ἡ"  U1f29
+<dead_dasia> <Greek_ETA>                               : "Ἡ"  U1f29
+<Multi_key> <greater> <grave> <Greek_ETA>               : "Ἢ"  U1f2a
+<Multi_key> <grave> <greater> <Greek_ETA>               : "Ἢ"  U1f2a
+<dead_horn> <dead_grave> <Greek_ETA>                    : "Ἢ"  U1f2a
+<dead_psili> <dead_grave> <Greek_ETA>                    : "Ἢ"  U1f2a
+<dead_grave> <dead_horn> <Greek_ETA>                    : "Ἢ"  U1f2a
+<dead_grave> <dead_psili> <Greek_ETA>                    : "Ἢ"  U1f2a
+<Multi_key> <less> <grave> <Greek_ETA>                  : "Ἣ"  U1f2b
+<Multi_key> <grave> <less> <Greek_ETA>                  : "Ἣ"  U1f2b
+<dead_ogonek> <dead_grave> <Greek_ETA>                  : "Ἣ"  U1f2b
+<dead_dasia> <dead_grave> <Greek_ETA>                  : "Ἣ"  U1f2b
+<dead_grave> <dead_ogonek> <Greek_ETA>                  : "Ἣ"  U1f2b
+<dead_grave> <dead_dasia> <Greek_ETA>                  : "Ἣ"  U1f2b
+<Multi_key> <greater> <apostrophe> <Greek_ETA>          : "Ἤ"  U1f2c
+<Multi_key> <apostrophe> <greater> <Greek_ETA>          : "Ἤ"  U1f2c
+<dead_horn> <dead_acute> <Greek_ETA>                    : "Ἤ"  U1f2c
+<dead_psili> <dead_acute> <Greek_ETA>                    : "Ἤ"  U1f2c
+<dead_acute> <dead_horn> <Greek_ETA>                    : "Ἤ"  U1f2c
+<dead_acute> <dead_psili> <Greek_ETA>                    : "Ἤ"  U1f2c
+<Multi_key> <less> <apostrophe> <Greek_ETA>             : "Ἥ"  U1f2d
+<Multi_key> <apostrophe> <less> <Greek_ETA>             : "Ἥ"  U1f2d
+<dead_ogonek> <dead_acute> <Greek_ETA>                  : "Ἥ"  U1f2d
+<dead_dasia> <dead_acute> <Greek_ETA>                  : "Ἥ"  U1f2d
+<dead_acute> <dead_ogonek> <Greek_ETA>                  : "Ἥ"  U1f2d
+<dead_acute> <dead_dasia> <Greek_ETA>                  : "Ἥ"  U1f2d
+<Multi_key> <greater> <asciitilde> <Greek_ETA>          : "Ἦ"  U1f2e
+<Multi_key> <asciitilde> <greater> <Greek_ETA>          : "Ἦ"  U1f2e
+<dead_horn> <dead_tilde> <Greek_ETA>                    : "Ἦ"  U1f2e
+<dead_psili> <dead_tilde> <Greek_ETA>                    : "Ἦ"  U1f2e
+<dead_tilde> <dead_horn> <Greek_ETA>                    : "Ἦ"  U1f2e
+<dead_tilde> <dead_psili> <Greek_ETA>                    : "Ἦ"  U1f2e
+<Multi_key> <less> <asciitilde> <Greek_ETA>             : "Ἧ"  U1f2f
+<Multi_key> <asciitilde> <less> <Greek_ETA>             : "Ἧ"  U1f2f
+<dead_ogonek> <dead_tilde> <Greek_ETA>                  : "Ἧ"  U1f2f
+<dead_dasia> <dead_tilde> <Greek_ETA>                  : "Ἧ"  U1f2f
+<dead_tilde> <dead_ogonek> <Greek_ETA>                  : "Ἧ"  U1f2f
+<dead_tilde> <dead_dasia> <Greek_ETA>                  : "Ἧ"  U1f2f
+<Multi_key> <greater> <Greek_iota>                      : "ἰ"  U1f30
+<dead_horn> <Greek_iota>                                : "ἰ"  U1f30
+<dead_psili> <Greek_iota>                                : "ἰ"  U1f30
+<Multi_key> <less> <Greek_iota>                         : "ἱ"  U1f31
+<dead_ogonek> <Greek_iota>                              : "ἱ"  U1f31
+<dead_dasia> <Greek_iota>                              : "ἱ"  U1f31
+<Multi_key> <greater> <grave> <Greek_iota>              : "ἲ"  U1f32
+<Multi_key> <grave> <greater> <Greek_iota>              : "ἲ"  U1f32
+<dead_horn> <dead_grave> <Greek_iota>                   : "ἲ"  U1f32
+<dead_psili> <dead_grave> <Greek_iota>                   : "ἲ"  U1f32
+<dead_grave> <dead_horn> <Greek_iota>                   : "ἲ"  U1f32
+<dead_grave> <dead_psili> <Greek_iota>                   : "ἲ"  U1f32
+<Multi_key> <less> <grave> <Greek_iota>                 : "ἳ"  U1f33
+<Multi_key> <grave> <less> <Greek_iota>                 : "ἳ"  U1f33
+<dead_ogonek> <dead_grave> <Greek_iota>                 : "ἳ"  U1f33
+<dead_dasia> <dead_grave> <Greek_iota>                 : "ἳ"  U1f33
+<dead_grave> <dead_ogonek> <Greek_iota>                 : "ἳ"  U1f33
+<dead_grave> <dead_dasia> <Greek_iota>                 : "ἳ"  U1f33
+<Multi_key> <greater> <apostrophe> <Greek_iota>         : "ἴ"  U1f34
+<Multi_key> <apostrophe> <greater> <Greek_iota>         : "ἴ"  U1f34
+<dead_horn> <dead_acute> <Greek_iota>                   : "ἴ"  U1f34
+<dead_psili> <dead_acute> <Greek_iota>                   : "ἴ"  U1f34
+<dead_acute> <dead_horn> <Greek_iota>                   : "ἴ"  U1f34
+<dead_acute> <dead_psili> <Greek_iota>                   : "ἴ"  U1f34
+<Multi_key> <less> <apostrophe> <Greek_iota>            : "ἵ"  U1f35
+<Multi_key> <apostrophe> <less> <Greek_iota>            : "ἵ"  U1f35
+<dead_ogonek> <dead_acute> <Greek_iota>                 : "ἵ"  U1f35
+<dead_dasia> <dead_acute> <Greek_iota>                 : "ἵ"  U1f35
+<dead_acute> <dead_ogonek> <Greek_iota>                 : "ἵ"  U1f35
+<dead_acute> <dead_dasia> <Greek_iota>                 : "ἵ"  U1f35
+<Multi_key> <greater> <asciitilde> <Greek_iota>         : "ἶ"  U1f36
+<Multi_key> <asciitilde> <greater> <Greek_iota>         : "ἶ"  U1f36
+<dead_horn> <dead_tilde> <Greek_iota>                   : "ἶ"  U1f36
+<dead_psili> <dead_tilde> <Greek_iota>                   : "ἶ"  U1f36
+<dead_tilde> <dead_horn> <Greek_iota>                   : "ἶ"  U1f36
+<dead_tilde> <dead_psili> <Greek_iota>                   : "ἶ"  U1f36
+<Multi_key> <less> <asciitilde> <Greek_iota>            : "ἷ"  U1f37
+<Multi_key> <asciitilde> <less> <Greek_iota>            : "ἷ"  U1f37
+<dead_ogonek> <dead_tilde> <Greek_iota>                 : "ἷ"  U1f37
+<dead_dasia> <dead_tilde> <Greek_iota>                 : "ἷ"  U1f37
+<dead_tilde> <dead_ogonek> <Greek_iota>                 : "ἷ"  U1f37
+<dead_tilde> <dead_dasia> <Greek_iota>                 : "ἷ"  U1f37
+<Multi_key> <greater> <Greek_IOTA>                      : "Ἰ"  U1f38
+<dead_horn> <Greek_IOTA>                                : "Ἰ"  U1f38
+<dead_psili> <Greek_IOTA>                                : "Ἰ"  U1f38
+<Multi_key> <less> <Greek_IOTA>                         : "Ἱ"  U1f39
+<dead_ogonek> <Greek_IOTA>                              : "Ἱ"  U1f39
+<dead_dasia> <Greek_IOTA>                              : "Ἱ"  U1f39
+<Multi_key> <greater> <grave> <Greek_IOTA>              : "Ἲ"  U1f3a
+<Multi_key> <grave> <greater> <Greek_IOTA>              : "Ἲ"  U1f3a
+<dead_horn> <dead_grave> <Greek_IOTA>                   : "Ἲ"  U1f3a
+<dead_psili> <dead_grave> <Greek_IOTA>                   : "Ἲ"  U1f3a
+<dead_grave> <dead_horn> <Greek_IOTA>                   : "Ἲ"  U1f3a
+<dead_grave> <dead_psili> <Greek_IOTA>                   : "Ἲ"  U1f3a
+<Multi_key> <less> <grave> <Greek_IOTA>                 : "Ἳ"  U1f3b
+<Multi_key> <grave> <less> <Greek_IOTA>                 : "Ἳ"  U1f3b
+<dead_ogonek> <dead_grave> <Greek_IOTA>                 : "Ἳ"  U1f3b
+<dead_dasia> <dead_grave> <Greek_IOTA>                 : "Ἳ"  U1f3b
+<dead_grave> <dead_ogonek> <Greek_IOTA>                 : "Ἳ"  U1f3b
+<dead_grave> <dead_dasia> <Greek_IOTA>                 : "Ἳ"  U1f3b
+<Multi_key> <greater> <apostrophe> <Greek_IOTA>         : "Ἴ"  U1f3c
+<Multi_key> <apostrophe> <greater> <Greek_IOTA>         : "Ἴ"  U1f3c
+<dead_horn> <dead_acute> <Greek_IOTA>                   : "Ἴ"  U1f3c
+<dead_psili> <dead_acute> <Greek_IOTA>                   : "Ἴ"  U1f3c
+<dead_acute> <dead_horn> <Greek_IOTA>                   : "Ἴ"  U1f3c
+<dead_acute> <dead_psili> <Greek_IOTA>                   : "Ἴ"  U1f3c
+<Multi_key> <less> <apostrophe> <Greek_IOTA>            : "Ἵ"  U1f3d
+<Multi_key> <apostrophe> <less> <Greek_IOTA>            : "Ἵ"  U1f3d
+<dead_ogonek> <dead_acute> <Greek_IOTA>                 : "Ἵ"  U1f3d
+<dead_dasia> <dead_acute> <Greek_IOTA>                 : "Ἵ"  U1f3d
+<dead_acute> <dead_ogonek> <Greek_IOTA>                 : "Ἵ"  U1f3d
+<dead_acute> <dead_dasia> <Greek_IOTA>                 : "Ἵ"  U1f3d
+<Multi_key> <greater> <asciitilde> <Greek_IOTA>         : "Ἶ"  U1f3e
+<Multi_key> <asciitilde> <greater> <Greek_IOTA>         : "Ἶ"  U1f3e
+<dead_horn> <dead_tilde> <Greek_IOTA>                   : "Ἶ"  U1f3e
+<dead_psili> <dead_tilde> <Greek_IOTA>                   : "Ἶ"  U1f3e
+<dead_tilde> <dead_horn> <Greek_IOTA>                   : "Ἶ"  U1f3e
+<dead_tilde> <dead_psili> <Greek_IOTA>                   : "Ἶ"  U1f3e
+<Multi_key> <less> <asciitilde> <Greek_IOTA>            : "Ἷ"  U1f3f
+<Multi_key> <asciitilde> <less> <Greek_IOTA>            : "Ἷ"  U1f3f
+<dead_ogonek> <dead_tilde> <Greek_IOTA>                 : "Ἷ"  U1f3f
+<dead_dasia> <dead_tilde> <Greek_IOTA>                 : "Ἷ"  U1f3f
+<dead_tilde> <dead_ogonek> <Greek_IOTA>                 : "Ἷ"  U1f3f
+<dead_tilde> <dead_dasia> <Greek_IOTA>                 : "Ἷ"  U1f3f
+<Multi_key> <greater> <Greek_omicron>                   : "ὀ"  U1f40
+<dead_horn> <Greek_omicron>                             : "ὀ"  U1f40
+<dead_psili> <Greek_omicron>                             : "ὀ"  U1f40
+<Multi_key> <less> <Greek_omicron>                      : "ὁ"  U1f41
+<dead_ogonek> <Greek_omicron>                           : "ὁ"  U1f41
+<dead_dasia> <Greek_omicron>                           : "ὁ"  U1f41
+<Multi_key> <greater> <grave> <Greek_omicron>           : "ὂ"  U1f42
+<Multi_key> <grave> <greater> <Greek_omicron>           : "ὂ"  U1f42
+<dead_horn> <dead_grave> <Greek_omicron>                : "ὂ"  U1f42
+<dead_psili> <dead_grave> <Greek_omicron>                : "ὂ"  U1f42
+<dead_grave> <dead_horn> <Greek_omicron>                : "ὂ"  U1f42
+<dead_grave> <dead_psili> <Greek_omicron>                : "ὂ"  U1f42
+<Multi_key> <less> <grave> <Greek_omicron>              : "ὃ"  U1f43
+<Multi_key> <grave> <less> <Greek_omicron>              : "ὃ"  U1f43
+<dead_ogonek> <dead_grave> <Greek_omicron>              : "ὃ"  U1f43
+<dead_dasia> <dead_grave> <Greek_omicron>              : "ὃ"  U1f43
+<dead_grave> <dead_ogonek> <Greek_omicron>              : "ὃ"  U1f43
+<dead_grave> <dead_dasia> <Greek_omicron>              : "ὃ"  U1f43
+<Multi_key> <greater> <apostrophe> <Greek_omicron>      : "ὄ"  U1f44
+<Multi_key> <apostrophe> <greater> <Greek_omicron>      : "ὄ"  U1f44
+<dead_horn> <dead_acute> <Greek_omicron>                : "ὄ"  U1f44
+<dead_psili> <dead_acute> <Greek_omicron>                : "ὄ"  U1f44
+<dead_acute> <dead_horn> <Greek_omicron>                : "ὄ"  U1f44
+<dead_acute> <dead_psili> <Greek_omicron>                : "ὄ"  U1f44
+<Multi_key> <less> <apostrophe> <Greek_omicron>         : "ὅ"  U1f45
+<Multi_key> <apostrophe> <less> <Greek_omicron>         : "ὅ"  U1f45
+<dead_ogonek> <dead_acute> <Greek_omicron>              : "ὅ"  U1f45
+<dead_dasia> <dead_acute> <Greek_omicron>              : "ὅ"  U1f45
+<dead_acute> <dead_ogonek> <Greek_omicron>              : "ὅ"  U1f45
+<dead_acute> <dead_dasia> <Greek_omicron>              : "ὅ"  U1f45
+<Multi_key> <greater> <Greek_OMICRON>                   : "Ὀ"  U1f48
+<dead_horn> <Greek_OMICRON>                             : "Ὀ"  U1f48
+<dead_psili> <Greek_OMICRON>                             : "Ὀ"  U1f48
+<Multi_key> <less> <Greek_OMICRON>                      : "Ὁ"  U1f49
+<dead_ogonek> <Greek_OMICRON>                           : "Ὁ"  U1f49
+<dead_dasia> <Greek_OMICRON>                           : "Ὁ"  U1f49
+<Multi_key> <greater> <grave> <Greek_OMICRON>           : "Ὂ"  U1f4a
+<Multi_key> <grave> <greater> <Greek_OMICRON>           : "Ὂ"  U1f4a
+<dead_horn> <dead_grave> <Greek_OMICRON>                : "Ὂ"  U1f4a
+<dead_psili> <dead_grave> <Greek_OMICRON>                : "Ὂ"  U1f4a
+<dead_grave> <dead_horn> <Greek_OMICRON>                : "Ὂ"  U1f4a
+<dead_grave> <dead_psili> <Greek_OMICRON>                : "Ὂ"  U1f4a
+<Multi_key> <less> <grave> <Greek_OMICRON>              : "Ὃ"  U1f4b
+<Multi_key> <grave> <less> <Greek_OMICRON>              : "Ὃ"  U1f4b
+<dead_ogonek> <dead_grave> <Greek_OMICRON>              : "Ὃ"  U1f4b
+<dead_dasia> <dead_grave> <Greek_OMICRON>              : "Ὃ"  U1f4b
+<dead_grave> <dead_ogonek> <Greek_OMICRON>              : "Ὃ"  U1f4b
+<dead_grave> <dead_dasia> <Greek_OMICRON>              : "Ὃ"  U1f4b
+<Multi_key> <greater> <apostrophe> <Greek_OMICRON>      : "Ὄ"  U1f4c
+<Multi_key> <apostrophe> <greater> <Greek_OMICRON>      : "Ὄ"  U1f4c
+<dead_horn> <dead_acute> <Greek_OMICRON>                : "Ὄ"  U1f4c
+<dead_psili> <dead_acute> <Greek_OMICRON>                : "Ὄ"  U1f4c
+<dead_acute> <dead_horn> <Greek_OMICRON>                : "Ὄ"  U1f4c
+<dead_acute> <dead_psili> <Greek_OMICRON>                : "Ὄ"  U1f4c
+<Multi_key> <less> <apostrophe> <Greek_OMICRON>         : "Ὅ"  U1f4d
+<Multi_key> <apostrophe> <less> <Greek_OMICRON>         : "Ὅ"  U1f4d
+<dead_ogonek> <dead_acute> <Greek_OMICRON>              : "Ὅ"  U1f4d
+<dead_dasia> <dead_acute> <Greek_OMICRON>              : "Ὅ"  U1f4d
+<dead_acute> <dead_ogonek> <Greek_OMICRON>              : "Ὅ"  U1f4d
+<dead_acute> <dead_dasia> <Greek_OMICRON>              : "Ὅ"  U1f4d
+<Multi_key> <greater> <Greek_upsilon>                   : "ὐ"  U1f50
+<dead_horn> <Greek_upsilon>                             : "ὐ"  U1f50
+<dead_psili> <Greek_upsilon>                             : "ὐ"  U1f50
+<Multi_key> <less> <Greek_upsilon>                      : "ὑ"  U1f51
+<dead_ogonek> <Greek_upsilon>                           : "ὑ"  U1f51
+<dead_dasia> <Greek_upsilon>                           : "ὑ"  U1f51
+<Multi_key> <greater> <grave> <Greek_upsilon>           : "ὒ"  U1f52
+<Multi_key> <grave> <greater> <Greek_upsilon>           : "ὒ"  U1f52
+<dead_horn> <dead_grave> <Greek_upsilon>                : "ὒ"  U1f52
+<dead_psili> <dead_grave> <Greek_upsilon>                : "ὒ"  U1f52
+<dead_grave> <dead_horn> <Greek_upsilon>                : "ὒ"  U1f52
+<dead_grave> <dead_psili> <Greek_upsilon>                : "ὒ"  U1f52
+<Multi_key> <less> <grave> <Greek_upsilon>              : "ὓ"  U1f53
+<Multi_key> <grave> <less> <Greek_upsilon>              : "ὓ"  U1f53
+<dead_ogonek> <dead_grave> <Greek_upsilon>              : "ὓ"  U1f53
+<dead_dasia> <dead_grave> <Greek_upsilon>              : "ὓ"  U1f53
+<dead_grave> <dead_ogonek> <Greek_upsilon>              : "ὓ"  U1f53
+<dead_grave> <dead_dasia> <Greek_upsilon>              : "ὓ"  U1f53
+<Multi_key> <greater> <apostrophe> <Greek_upsilon>      : "ὔ"  U1f54
+<Multi_key> <apostrophe> <greater> <Greek_upsilon>      : "ὔ"  U1f54
+<dead_horn> <dead_acute> <Greek_upsilon>                : "ὔ"  U1f54
+<dead_psili> <dead_acute> <Greek_upsilon>                : "ὔ"  U1f54
+<dead_acute> <dead_horn> <Greek_upsilon>                : "ὔ"  U1f54
+<dead_acute> <dead_psili> <Greek_upsilon>                : "ὔ"  U1f54
+<Multi_key> <less> <apostrophe> <Greek_upsilon>         : "ὕ"  U1f55
+<Multi_key> <apostrophe> <less> <Greek_upsilon>         : "ὕ"  U1f55
+<dead_ogonek> <dead_acute> <Greek_upsilon>              : "ὕ"  U1f55
+<dead_dasia> <dead_acute> <Greek_upsilon>              : "ὕ"  U1f55
+<dead_acute> <dead_ogonek> <Greek_upsilon>              : "ὕ"  U1f55
+<dead_acute> <dead_dasia> <Greek_upsilon>              : "ὕ"  U1f55
+<Multi_key> <greater> <asciitilde> <Greek_upsilon>      : "ὖ"  U1f56
+<Multi_key> <asciitilde> <greater> <Greek_upsilon>      : "ὖ"  U1f56
+<dead_horn> <dead_tilde> <Greek_upsilon>                : "ὖ"  U1f56
+<dead_psili> <dead_tilde> <Greek_upsilon>                : "ὖ"  U1f56
+<dead_tilde> <dead_horn> <Greek_upsilon>                : "ὖ"  U1f56
+<dead_tilde> <dead_psili> <Greek_upsilon>                : "ὖ"  U1f56
+<Multi_key> <less> <asciitilde> <Greek_upsilon>         : "ὗ"  U1f57
+<Multi_key> <asciitilde> <less> <Greek_upsilon>         : "ὗ"  U1f57
+<dead_ogonek> <dead_tilde> <Greek_upsilon>              : "ὗ"  U1f57
+<dead_dasia> <dead_tilde> <Greek_upsilon>              : "ὗ"  U1f57
+<dead_tilde> <dead_ogonek> <Greek_upsilon>              : "ὗ"  U1f57
+<dead_tilde> <dead_dasia> <Greek_upsilon>              : "ὗ"  U1f57
+<Multi_key> <less> <Greek_UPSILON>                      : "Ὑ"  U1f59
+<dead_ogonek> <Greek_UPSILON>                           : "Ὑ"  U1f59
+<dead_dasia> <Greek_UPSILON>                           : "Ὑ"  U1f59
+<Multi_key> <less> <grave> <Greek_UPSILON>              : "Ὓ"  U1f5b
+<Multi_key> <grave> <less> <Greek_UPSILON>              : "Ὓ"  U1f5b
+<dead_ogonek> <dead_grave> <Greek_UPSILON>              : "Ὓ"  U1f5b
+<dead_dasia> <dead_grave> <Greek_UPSILON>              : "Ὓ"  U1f5b
+<dead_grave> <dead_ogonek> <Greek_UPSILON>              : "Ὓ"  U1f5b
+<dead_grave> <dead_dasia> <Greek_UPSILON>              : "Ὓ"  U1f5b
+<Multi_key> <less> <apostrophe> <Greek_UPSILON>         : "Ὕ"  U1f5d
+<Multi_key> <apostrophe> <less> <Greek_UPSILON>         : "Ὕ"  U1f5d
+<dead_ogonek> <dead_acute> <Greek_UPSILON>              : "Ὕ"  U1f5d
+<dead_dasia> <dead_acute> <Greek_UPSILON>              : "Ὕ"  U1f5d
+<dead_acute> <dead_ogonek> <Greek_UPSILON>              : "Ὕ"  U1f5d
+<dead_acute> <dead_dasia> <Greek_UPSILON>              : "Ὕ"  U1f5d
+<Multi_key> <less> <asciitilde> <Greek_UPSILON>         : "Ὗ"  U1f5f
+<Multi_key> <asciitilde> <less> <Greek_UPSILON>         : "Ὗ"  U1f5f
+<dead_ogonek> <dead_tilde> <Greek_UPSILON>              : "Ὗ"  U1f5f
+<dead_dasia> <dead_tilde> <Greek_UPSILON>              : "Ὗ"  U1f5f
+<dead_tilde> <dead_ogonek> <Greek_UPSILON>              : "Ὗ"  U1f5f
+<dead_tilde> <dead_dasia> <Greek_UPSILON>              : "Ὗ"  U1f5f
+<Multi_key> <greater> <Greek_omega>                     : "ὠ"  U1f60
+<dead_horn> <Greek_omega>                               : "ὠ"  U1f60
+<dead_psili> <Greek_omega>                               : "ὠ"  U1f60
+<Multi_key> <less> <Greek_omega>                        : "ὡ"  U1f61
+<dead_ogonek> <Greek_omega>                             : "ὡ"  U1f61
+<dead_dasia> <Greek_omega>                             : "ὡ"  U1f61
+<Multi_key> <greater> <grave> <Greek_omega>             : "ὢ"  U1f62
+<Multi_key> <grave> <greater> <Greek_omega>             : "ὢ"  U1f62
+<dead_horn> <dead_grave> <Greek_omega>                  : "ὢ"  U1f62
+<dead_psili> <dead_grave> <Greek_omega>                  : "ὢ"  U1f62
+<dead_grave> <dead_horn> <Greek_omega>                  : "ὢ"  U1f62
+<dead_grave> <dead_psili> <Greek_omega>                  : "ὢ"  U1f62
+<Multi_key> <less> <grave> <Greek_omega>                : "ὣ"  U1f63
+<Multi_key> <grave> <less> <Greek_omega>                : "ὣ"  U1f63
+<dead_ogonek> <dead_grave> <Greek_omega>                : "ὣ"  U1f63
+<dead_dasia> <dead_grave> <Greek_omega>                : "ὣ"  U1f63
+<dead_grave> <dead_ogonek> <Greek_omega>                : "ὣ"  U1f63
+<dead_grave> <dead_dasia> <Greek_omega>                : "ὣ"  U1f63
+<Multi_key> <greater> <apostrophe> <Greek_omega>        : "ὤ"  U1f64
+<Multi_key> <apostrophe> <greater> <Greek_omega>        : "ὤ"  U1f64
+<dead_horn> <dead_acute> <Greek_omega>                  : "ὤ"  U1f64
+<dead_psili> <dead_acute> <Greek_omega>                  : "ὤ"  U1f64
+<dead_acute> <dead_horn> <Greek_omega>                  : "ὤ"  U1f64
+<dead_acute> <dead_psili> <Greek_omega>                  : "ὤ"  U1f64
+<Multi_key> <less> <apostrophe> <Greek_omega>           : "ὥ"  U1f65
+<Multi_key> <apostrophe> <less> <Greek_omega>           : "ὥ"  U1f65
+<dead_ogonek> <dead_acute> <Greek_omega>                : "ὥ"  U1f65
+<dead_dasia> <dead_acute> <Greek_omega>                : "ὥ"  U1f65
+<dead_acute> <dead_ogonek> <Greek_omega>                : "ὥ"  U1f65
+<dead_acute> <dead_dasia> <Greek_omega>                : "ὥ"  U1f65
+<Multi_key> <greater> <asciitilde> <Greek_omega>        : "ὦ"  U1f66
+<Multi_key> <asciitilde> <greater> <Greek_omega>        : "ὦ"  U1f66
+<dead_horn> <dead_tilde> <Greek_omega>                  : "ὦ"  U1f66
+<dead_psili> <dead_tilde> <Greek_omega>                  : "ὦ"  U1f66
+<dead_tilde> <dead_horn> <Greek_omega>                  : "ὦ"  U1f66
+<dead_tilde> <dead_psili> <Greek_omega>                  : "ὦ"  U1f66
+<Multi_key> <less> <asciitilde> <Greek_omega>           : "ὧ"  U1f67
+<Multi_key> <asciitilde> <less> <Greek_omega>           : "ὧ"  U1f67
+<dead_ogonek> <dead_tilde> <Greek_omega>                : "ὧ"  U1f67
+<dead_dasia> <dead_tilde> <Greek_omega>                : "ὧ"  U1f67
+<dead_tilde> <dead_ogonek> <Greek_omega>                : "ὧ"  U1f67
+<dead_tilde> <dead_dasia> <Greek_omega>                : "ὧ"  U1f67
+<Multi_key> <greater> <Greek_OMEGA>                     : "Ὠ"  U1f68
+<dead_horn> <Greek_OMEGA>                               : "Ὠ"  U1f68
+<dead_psili> <Greek_OMEGA>                               : "Ὠ"  U1f68
+<Multi_key> <less> <Greek_OMEGA>                        : "Ὡ"  U1f69
+<dead_ogonek> <Greek_OMEGA>                             : "Ὡ"  U1f69
+<dead_dasia> <Greek_OMEGA>                             : "Ὡ"  U1f69
+<Multi_key> <greater> <grave> <Greek_OMEGA>             : "Ὢ"  U1f6a
+<Multi_key> <grave> <greater> <Greek_OMEGA>             : "Ὢ"  U1f6a
+<dead_horn> <dead_grave> <Greek_OMEGA>                  : "Ὢ"  U1f6a
+<dead_psili> <dead_grave> <Greek_OMEGA>                  : "Ὢ"  U1f6a
+<dead_grave> <dead_horn> <Greek_OMEGA>                  : "Ὢ"  U1f6a
+<dead_grave> <dead_psili> <Greek_OMEGA>                  : "Ὢ"  U1f6a
+<Multi_key> <less> <grave> <Greek_OMEGA>                : "Ὣ"  U1f6b
+<Multi_key> <grave> <less> <Greek_OMEGA>                : "Ὣ"  U1f6b
+<dead_ogonek> <dead_grave> <Greek_OMEGA>                : "Ὣ"  U1f6b
+<dead_dasia> <dead_grave> <Greek_OMEGA>                : "Ὣ"  U1f6b
+<dead_grave> <dead_ogonek> <Greek_OMEGA>                : "Ὣ"  U1f6b
+<dead_grave> <dead_dasia> <Greek_OMEGA>                : "Ὣ"  U1f6b
+<Multi_key> <greater> <apostrophe> <Greek_OMEGA>        : "Ὤ"  U1f6c
+<Multi_key> <apostrophe> <greater> <Greek_OMEGA>        : "Ὤ"  U1f6c
+<dead_horn> <dead_acute> <Greek_OMEGA>                  : "Ὤ"  U1f6c
+<dead_psili> <dead_acute> <Greek_OMEGA>                  : "Ὤ"  U1f6c
+<dead_acute> <dead_horn> <Greek_OMEGA>                  : "Ὤ"  U1f6c
+<dead_acute> <dead_psili> <Greek_OMEGA>                  : "Ὤ"  U1f6c
+<Multi_key> <less> <apostrophe> <Greek_OMEGA>           : "Ὥ"  U1f6d
+<Multi_key> <apostrophe> <less> <Greek_OMEGA>           : "Ὥ"  U1f6d
+<dead_ogonek> <dead_acute> <Greek_OMEGA>                : "Ὥ"  U1f6d
+<dead_dasia> <dead_acute> <Greek_OMEGA>                : "Ὥ"  U1f6d
+<dead_acute> <dead_ogonek> <Greek_OMEGA>                : "Ὥ"  U1f6d
+<dead_acute> <dead_dasia> <Greek_OMEGA>                : "Ὥ"  U1f6d
+<Multi_key> <greater> <asciitilde> <Greek_OMEGA>        : "Ὦ"  U1f6e
+<Multi_key> <asciitilde> <greater> <Greek_OMEGA>        : "Ὦ"  U1f6e
+<dead_horn> <dead_tilde> <Greek_OMEGA>                  : "Ὦ"  U1f6e
+<dead_psili> <dead_tilde> <Greek_OMEGA>                  : "Ὦ"  U1f6e
+<dead_tilde> <dead_horn> <Greek_OMEGA>                  : "Ὦ"  U1f6e
+<dead_tilde> <dead_psili> <Greek_OMEGA>                  : "Ὦ"  U1f6e
+<Multi_key> <less> <asciitilde> <Greek_OMEGA>           : "Ὧ"  U1f6f
+<Multi_key> <asciitilde> <less> <Greek_OMEGA>           : "Ὧ"  U1f6f
+<dead_ogonek> <dead_tilde> <Greek_OMEGA>                : "Ὧ"  U1f6f
+<dead_dasia> <dead_tilde> <Greek_OMEGA>                : "Ὧ"  U1f6f
+<dead_tilde> <dead_ogonek> <Greek_OMEGA>                : "Ὧ"  U1f6f
+<dead_tilde> <dead_dasia> <Greek_OMEGA>                : "Ὧ"  U1f6f
+<Multi_key> <grave> <Greek_alpha>                       : "ὰ"  U1f70
+<dead_grave> <Greek_alpha>                              : "ὰ"  U1f70
+<Multi_key> <grave> <Greek_epsilon>                     : "ὲ"  U1f72
+<dead_grave> <Greek_epsilon>                            : "ὲ"  U1f72
+<Multi_key> <grave> <Greek_eta>                         : "ὴ"  U1f74
+<dead_grave> <Greek_eta>                                : "ὴ"  U1f74
+<Multi_key> <grave> <Greek_iota>                        : "ὶ"  U1f76
+<dead_grave> <Greek_iota>                               : "ὶ"  U1f76
+<Multi_key> <grave> <Greek_omicron>                     : "ὸ"  U1f78
+<dead_grave> <Greek_omicron>                            : "ὸ"  U1f78
+<Multi_key> <grave> <Greek_upsilon>                     : "ὺ"  U1f7a
+<dead_grave> <Greek_upsilon>                            : "ὺ"  U1f7a
+<Multi_key> <grave> <Greek_omega>                       : "ὼ"  U1f7c
+<dead_grave> <Greek_omega>                              : "ὼ"  U1f7c
+<Multi_key> <bar> <greater> <Greek_alpha>               : "ᾀ"  U1f80
+<Multi_key> <greater> <bar> <Greek_alpha>               : "ᾀ"  U1f80
+<dead_iota> <dead_horn> <Greek_alpha>                   : "ᾀ"  U1f80
+<dead_iota> <dead_psili> <Greek_alpha>                   : "ᾀ"  U1f80
+<dead_horn> <dead_iota> <Greek_alpha>                   : "ᾀ"  U1f80
+<dead_psili> <dead_iota> <Greek_alpha>                   : "ᾀ"  U1f80
+<Multi_key> <bar> <less> <Greek_alpha>                  : "ᾁ"  U1f81
+<Multi_key> <less> <bar> <Greek_alpha>                  : "ᾁ"  U1f81
+<dead_iota> <dead_ogonek> <Greek_alpha>                 : "ᾁ"  U1f81
+<dead_iota> <dead_dasia> <Greek_alpha>                 : "ᾁ"  U1f81
+<dead_ogonek> <dead_iota> <Greek_alpha>                 : "ᾁ"  U1f81
+<dead_dasia> <dead_iota> <Greek_alpha>                 : "ᾁ"  U1f81
+<Multi_key> <bar> <greater> <grave> <Greek_alpha>       : "ᾂ"  U1f82
+<Multi_key> <bar> <grave> <greater> <Greek_alpha>       : "ᾂ"  U1f82
+<Multi_key> <greater> <bar> <grave> <Greek_alpha>       : "ᾂ"  U1f82
+<Multi_key> <greater> <grave> <bar> <Greek_alpha>       : "ᾂ"  U1f82
+<Multi_key> <grave> <bar> <greater> <Greek_alpha>       : "ᾂ"  U1f82
+<Multi_key> <grave> <greater> <bar> <Greek_alpha>       : "ᾂ"  U1f82
+<dead_iota> <dead_horn> <dead_grave> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_iota> <dead_psili> <dead_grave> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_iota> <dead_grave> <dead_horn> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_iota> <dead_grave> <dead_psili> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_horn> <dead_iota> <dead_grave> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_psili> <dead_iota> <dead_grave> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_horn> <dead_grave> <dead_iota> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_psili> <dead_grave> <dead_iota> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_grave> <dead_iota> <dead_horn> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_grave> <dead_iota> <dead_psili> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_grave> <dead_horn> <dead_iota> <Greek_alpha>      : "ᾂ"  U1f82
+<dead_grave> <dead_psili> <dead_iota> <Greek_alpha>      : "ᾂ"  U1f82
+<Multi_key> <bar> <less> <grave> <Greek_alpha>          : "ᾃ"  U1f83
+<Multi_key> <bar> <grave> <less> <Greek_alpha>          : "ᾃ"  U1f83
+<Multi_key> <less> <bar> <grave> <Greek_alpha>          : "ᾃ"  U1f83
+<Multi_key> <less> <grave> <bar> <Greek_alpha>          : "ᾃ"  U1f83
+<Multi_key> <grave> <bar> <less> <Greek_alpha>          : "ᾃ"  U1f83
+<Multi_key> <grave> <less> <bar> <Greek_alpha>          : "ᾃ"  U1f83
+<dead_iota> <dead_ogonek> <dead_grave> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_iota> <dead_dasia> <dead_grave> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_iota> <dead_grave> <dead_ogonek> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_iota> <dead_grave> <dead_dasia> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_ogonek> <dead_iota> <dead_grave> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_dasia> <dead_iota> <dead_grave> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_ogonek> <dead_grave> <dead_iota> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_dasia> <dead_grave> <dead_iota> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_grave> <dead_iota> <dead_ogonek> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_grave> <dead_iota> <dead_dasia> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_grave> <dead_ogonek> <dead_iota> <Greek_alpha>    : "ᾃ"  U1f83
+<dead_grave> <dead_dasia> <dead_iota> <Greek_alpha>    : "ᾃ"  U1f83
+<Multi_key> <bar> <greater> <apostrophe> <Greek_alpha>  : "ᾄ"  U1f84
+<Multi_key> <bar> <apostrophe> <greater> <Greek_alpha>  : "ᾄ"  U1f84
+<Multi_key> <greater> <bar> <apostrophe> <Greek_alpha>  : "ᾄ"  U1f84
+<Multi_key> <greater> <apostrophe> <bar> <Greek_alpha>  : "ᾄ"  U1f84
+<Multi_key> <apostrophe> <bar> <greater> <Greek_alpha>  : "ᾄ"  U1f84
+<Multi_key> <apostrophe> <greater> <bar> <Greek_alpha>  : "ᾄ"  U1f84
+<dead_iota> <dead_horn> <dead_acute> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_iota> <dead_psili> <dead_acute> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_iota> <dead_acute> <dead_horn> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_iota> <dead_acute> <dead_psili> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_horn> <dead_iota> <dead_acute> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_psili> <dead_iota> <dead_acute> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_horn> <dead_acute> <dead_iota> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_psili> <dead_acute> <dead_iota> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_acute> <dead_iota> <dead_horn> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_acute> <dead_iota> <dead_psili> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_acute> <dead_horn> <dead_iota> <Greek_alpha>      : "ᾄ"  U1f84
+<dead_acute> <dead_psili> <dead_iota> <Greek_alpha>      : "ᾄ"  U1f84
+<Multi_key> <bar> <less> <apostrophe> <Greek_alpha>     : "ᾅ"  U1f85
+<Multi_key> <bar> <apostrophe> <less> <Greek_alpha>     : "ᾅ"  U1f85
+<Multi_key> <less> <bar> <apostrophe> <Greek_alpha>     : "ᾅ"  U1f85
+<Multi_key> <less> <apostrophe> <bar> <Greek_alpha>     : "ᾅ"  U1f85
+<Multi_key> <apostrophe> <bar> <less> <Greek_alpha>     : "ᾅ"  U1f85
+<Multi_key> <apostrophe> <less> <bar> <Greek_alpha>     : "ᾅ"  U1f85
+<dead_iota> <dead_ogonek> <dead_acute> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_iota> <dead_dasia> <dead_acute> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_iota> <dead_acute> <dead_ogonek> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_iota> <dead_acute> <dead_dasia> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_ogonek> <dead_iota> <dead_acute> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_dasia> <dead_iota> <dead_acute> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_ogonek> <dead_acute> <dead_iota> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_dasia> <dead_acute> <dead_iota> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_acute> <dead_iota> <dead_ogonek> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_acute> <dead_iota> <dead_dasia> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_acute> <dead_ogonek> <dead_iota> <Greek_alpha>    : "ᾅ"  U1f85
+<dead_acute> <dead_dasia> <dead_iota> <Greek_alpha>    : "ᾅ"  U1f85
+<Multi_key> <bar> <greater> <asciitilde> <Greek_alpha>  : "ᾆ"  U1f86
+<Multi_key> <bar> <asciitilde> <greater> <Greek_alpha>  : "ᾆ"  U1f86
+<Multi_key> <greater> <bar> <asciitilde> <Greek_alpha>  : "ᾆ"  U1f86
+<Multi_key> <greater> <asciitilde> <bar> <Greek_alpha>  : "ᾆ"  U1f86
+<Multi_key> <asciitilde> <bar> <greater> <Greek_alpha>  : "ᾆ"  U1f86
+<Multi_key> <asciitilde> <greater> <bar> <Greek_alpha>  : "ᾆ"  U1f86
+<dead_iota> <dead_horn> <dead_tilde> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_iota> <dead_psili> <dead_tilde> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_iota> <dead_tilde> <dead_horn> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_iota> <dead_tilde> <dead_psili> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_horn> <dead_iota> <dead_tilde> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_psili> <dead_iota> <dead_tilde> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_horn> <dead_tilde> <dead_iota> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_psili> <dead_tilde> <dead_iota> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_tilde> <dead_iota> <dead_horn> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_tilde> <dead_iota> <dead_psili> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_tilde> <dead_horn> <dead_iota> <Greek_alpha>      : "ᾆ"  U1f86
+<dead_tilde> <dead_psili> <dead_iota> <Greek_alpha>      : "ᾆ"  U1f86
+<Multi_key> <bar> <less> <asciitilde> <Greek_alpha>     : "ᾇ"  U1f87
+<Multi_key> <bar> <asciitilde> <less> <Greek_alpha>     : "ᾇ"  U1f87
+<Multi_key> <less> <bar> <asciitilde> <Greek_alpha>     : "ᾇ"  U1f87
+<Multi_key> <less> <asciitilde> <bar> <Greek_alpha>     : "ᾇ"  U1f87
+<Multi_key> <asciitilde> <bar> <less> <Greek_alpha>     : "ᾇ"  U1f87
+<Multi_key> <asciitilde> <less> <bar> <Greek_alpha>     : "ᾇ"  U1f87
+<dead_iota> <dead_ogonek> <dead_tilde> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_iota> <dead_dasia> <dead_tilde> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_iota> <dead_tilde> <dead_ogonek> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_iota> <dead_tilde> <dead_dasia> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_ogonek> <dead_iota> <dead_tilde> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_dasia> <dead_iota> <dead_tilde> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_ogonek> <dead_tilde> <dead_iota> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_dasia> <dead_tilde> <dead_iota> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_tilde> <dead_iota> <dead_ogonek> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_tilde> <dead_iota> <dead_dasia> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_tilde> <dead_ogonek> <dead_iota> <Greek_alpha>    : "ᾇ"  U1f87
+<dead_tilde> <dead_dasia> <dead_iota> <Greek_alpha>    : "ᾇ"  U1f87
+<Multi_key> <bar> <greater> <Greek_ALPHA>               : "ᾈ"  U1f88
+<Multi_key> <greater> <bar> <Greek_ALPHA>               : "ᾈ"  U1f88
+<dead_iota> <dead_horn> <Greek_ALPHA>                   : "ᾈ"  U1f88
+<dead_iota> <dead_psili> <Greek_ALPHA>                   : "ᾈ"  U1f88
+<dead_horn> <dead_iota> <Greek_ALPHA>                   : "ᾈ"  U1f88
+<dead_psili> <dead_iota> <Greek_ALPHA>                   : "ᾈ"  U1f88
+<Multi_key> <bar> <less> <Greek_ALPHA>                  : "ᾉ"  U1f89
+<Multi_key> <less> <bar> <Greek_ALPHA>                  : "ᾉ"  U1f89
+<dead_iota> <dead_ogonek> <Greek_ALPHA>                 : "ᾉ"  U1f89
+<dead_iota> <dead_dasia> <Greek_ALPHA>                 : "ᾉ"  U1f89
+<dead_ogonek> <dead_iota> <Greek_ALPHA>                 : "ᾉ"  U1f89
+<dead_dasia> <dead_iota> <Greek_ALPHA>                 : "ᾉ"  U1f89
+<Multi_key> <bar> <greater> <grave> <Greek_ALPHA>       : "ᾊ"  U1f8a
+<Multi_key> <bar> <grave> <greater> <Greek_ALPHA>       : "ᾊ"  U1f8a
+<Multi_key> <greater> <bar> <grave> <Greek_ALPHA>       : "ᾊ"  U1f8a
+<Multi_key> <greater> <grave> <bar> <Greek_ALPHA>       : "ᾊ"  U1f8a
+<Multi_key> <grave> <bar> <greater> <Greek_ALPHA>       : "ᾊ"  U1f8a
+<Multi_key> <grave> <greater> <bar> <Greek_ALPHA>       : "ᾊ"  U1f8a
+<dead_iota> <dead_horn> <dead_grave> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_iota> <dead_psili> <dead_grave> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_iota> <dead_grave> <dead_horn> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_iota> <dead_grave> <dead_psili> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_horn> <dead_iota> <dead_grave> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_psili> <dead_iota> <dead_grave> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_horn> <dead_grave> <dead_iota> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_psili> <dead_grave> <dead_iota> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_grave> <dead_iota> <dead_horn> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_grave> <dead_iota> <dead_psili> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_grave> <dead_horn> <dead_iota> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<dead_grave> <dead_psili> <dead_iota> <Greek_ALPHA>      : "ᾊ"  U1f8a
+<Multi_key> <bar> <less> <grave> <Greek_ALPHA>          : "ᾋ"  U1f8b
+<Multi_key> <bar> <grave> <less> <Greek_ALPHA>          : "ᾋ"  U1f8b
+<Multi_key> <less> <bar> <grave> <Greek_ALPHA>          : "ᾋ"  U1f8b
+<Multi_key> <less> <grave> <bar> <Greek_ALPHA>          : "ᾋ"  U1f8b
+<Multi_key> <grave> <bar> <less> <Greek_ALPHA>          : "ᾋ"  U1f8b
+<Multi_key> <grave> <less> <bar> <Greek_ALPHA>          : "ᾋ"  U1f8b
+<dead_iota> <dead_ogonek> <dead_grave> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_iota> <dead_dasia> <dead_grave> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_iota> <dead_grave> <dead_ogonek> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_iota> <dead_grave> <dead_dasia> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_ogonek> <dead_iota> <dead_grave> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_dasia> <dead_iota> <dead_grave> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_ogonek> <dead_grave> <dead_iota> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_dasia> <dead_grave> <dead_iota> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_grave> <dead_iota> <dead_ogonek> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_grave> <dead_iota> <dead_dasia> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_grave> <dead_ogonek> <dead_iota> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<dead_grave> <dead_dasia> <dead_iota> <Greek_ALPHA>    : "ᾋ"  U1f8b
+<Multi_key> <bar> <greater> <apostrophe> <Greek_ALPHA>  : "ᾌ"  U1f8c
+<Multi_key> <bar> <apostrophe> <greater> <Greek_ALPHA>  : "ᾌ"  U1f8c
+<Multi_key> <greater> <bar> <apostrophe> <Greek_ALPHA>  : "ᾌ"  U1f8c
+<Multi_key> <greater> <apostrophe> <bar> <Greek_ALPHA>  : "ᾌ"  U1f8c
+<Multi_key> <apostrophe> <bar> <greater> <Greek_ALPHA>  : "ᾌ"  U1f8c
+<Multi_key> <apostrophe> <greater> <bar> <Greek_ALPHA>  : "ᾌ"  U1f8c
+<dead_iota> <dead_horn> <dead_acute> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_iota> <dead_psili> <dead_acute> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_iota> <dead_acute> <dead_horn> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_iota> <dead_acute> <dead_psili> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_horn> <dead_iota> <dead_acute> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_psili> <dead_iota> <dead_acute> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_horn> <dead_acute> <dead_iota> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_psili> <dead_acute> <dead_iota> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_acute> <dead_iota> <dead_horn> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_acute> <dead_iota> <dead_psili> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_acute> <dead_horn> <dead_iota> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<dead_acute> <dead_psili> <dead_iota> <Greek_ALPHA>      : "ᾌ"  U1f8c
+<Multi_key> <bar> <less> <apostrophe> <Greek_ALPHA>     : "ᾍ"  U1f8d
+<Multi_key> <bar> <apostrophe> <less> <Greek_ALPHA>     : "ᾍ"  U1f8d
+<Multi_key> <less> <bar> <apostrophe> <Greek_ALPHA>     : "ᾍ"  U1f8d
+<Multi_key> <less> <apostrophe> <bar> <Greek_ALPHA>     : "ᾍ"  U1f8d
+<Multi_key> <apostrophe> <bar> <less> <Greek_ALPHA>     : "ᾍ"  U1f8d
+<Multi_key> <apostrophe> <less> <bar> <Greek_ALPHA>     : "ᾍ"  U1f8d
+<dead_iota> <dead_ogonek> <dead_acute> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_iota> <dead_dasia> <dead_acute> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_iota> <dead_acute> <dead_ogonek> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_iota> <dead_acute> <dead_dasia> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_ogonek> <dead_iota> <dead_acute> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_dasia> <dead_iota> <dead_acute> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_ogonek> <dead_acute> <dead_iota> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_dasia> <dead_acute> <dead_iota> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_acute> <dead_iota> <dead_ogonek> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_acute> <dead_iota> <dead_dasia> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_acute> <dead_ogonek> <dead_iota> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<dead_acute> <dead_dasia> <dead_iota> <Greek_ALPHA>    : "ᾍ"  U1f8d
+<Multi_key> <bar> <greater> <asciitilde> <Greek_ALPHA>  : "ᾎ"  U1f8e
+<Multi_key> <bar> <asciitilde> <greater> <Greek_ALPHA>  : "ᾎ"  U1f8e
+<Multi_key> <greater> <bar> <asciitilde> <Greek_ALPHA>  : "ᾎ"  U1f8e
+<Multi_key> <greater> <asciitilde> <bar> <Greek_ALPHA>  : "ᾎ"  U1f8e
+<Multi_key> <asciitilde> <bar> <greater> <Greek_ALPHA>  : "ᾎ"  U1f8e
+<Multi_key> <asciitilde> <greater> <bar> <Greek_ALPHA>  : "ᾎ"  U1f8e
+<dead_iota> <dead_horn> <dead_tilde> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_iota> <dead_psili> <dead_tilde> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_iota> <dead_tilde> <dead_horn> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_iota> <dead_tilde> <dead_psili> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_horn> <dead_iota> <dead_tilde> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_psili> <dead_iota> <dead_tilde> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_horn> <dead_tilde> <dead_iota> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_psili> <dead_tilde> <dead_iota> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_tilde> <dead_iota> <dead_horn> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_tilde> <dead_iota> <dead_psili> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_tilde> <dead_horn> <dead_iota> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<dead_tilde> <dead_psili> <dead_iota> <Greek_ALPHA>      : "ᾎ"  U1f8e
+<Multi_key> <bar> <less> <asciitilde> <Greek_ALPHA>     : "ᾏ"  U1f8f
+<Multi_key> <bar> <asciitilde> <less> <Greek_ALPHA>     : "ᾏ"  U1f8f
+<Multi_key> <less> <bar> <asciitilde> <Greek_ALPHA>     : "ᾏ"  U1f8f
+<Multi_key> <less> <asciitilde> <bar> <Greek_ALPHA>     : "ᾏ"  U1f8f
+<Multi_key> <asciitilde> <bar> <less> <Greek_ALPHA>     : "ᾏ"  U1f8f
+<Multi_key> <asciitilde> <less> <bar> <Greek_ALPHA>     : "ᾏ"  U1f8f
+<dead_iota> <dead_ogonek> <dead_tilde> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_iota> <dead_dasia> <dead_tilde> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_iota> <dead_tilde> <dead_ogonek> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_iota> <dead_tilde> <dead_dasia> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_ogonek> <dead_iota> <dead_tilde> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_dasia> <dead_iota> <dead_tilde> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_ogonek> <dead_tilde> <dead_iota> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_dasia> <dead_tilde> <dead_iota> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_tilde> <dead_iota> <dead_ogonek> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_tilde> <dead_iota> <dead_dasia> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_tilde> <dead_ogonek> <dead_iota> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<dead_tilde> <dead_dasia> <dead_iota> <Greek_ALPHA>    : "ᾏ"  U1f8f
+<Multi_key> <bar> <greater> <Greek_eta>                 : "ᾐ"  U1f90
+<Multi_key> <greater> <bar> <Greek_eta>                 : "ᾐ"  U1f90
+<dead_iota> <dead_horn> <Greek_eta>                     : "ᾐ"  U1f90
+<dead_iota> <dead_psili> <Greek_eta>                     : "ᾐ"  U1f90
+<dead_horn> <dead_iota> <Greek_eta>                     : "ᾐ"  U1f90
+<dead_psili> <dead_iota> <Greek_eta>                     : "ᾐ"  U1f90
+<Multi_key> <bar> <less> <Greek_eta>                    : "ᾑ"  U1f91
+<Multi_key> <less> <bar> <Greek_eta>                    : "ᾑ"  U1f91
+<dead_iota> <dead_ogonek> <Greek_eta>                   : "ᾑ"  U1f91
+<dead_iota> <dead_dasia> <Greek_eta>                   : "ᾑ"  U1f91
+<dead_ogonek> <dead_iota> <Greek_eta>                   : "ᾑ"  U1f91
+<dead_dasia> <dead_iota> <Greek_eta>                   : "ᾑ"  U1f91
+<Multi_key> <bar> <greater> <grave> <Greek_eta>         : "ᾒ"  U1f92
+<Multi_key> <bar> <grave> <greater> <Greek_eta>         : "ᾒ"  U1f92
+<Multi_key> <greater> <bar> <grave> <Greek_eta>         : "ᾒ"  U1f92
+<Multi_key> <greater> <grave> <bar> <Greek_eta>         : "ᾒ"  U1f92
+<Multi_key> <grave> <bar> <greater> <Greek_eta>         : "ᾒ"  U1f92
+<Multi_key> <grave> <greater> <bar> <Greek_eta>         : "ᾒ"  U1f92
+<dead_iota> <dead_horn> <dead_grave> <Greek_eta>        : "ᾒ"  U1f92
+<dead_iota> <dead_psili> <dead_grave> <Greek_eta>        : "ᾒ"  U1f92
+<dead_iota> <dead_grave> <dead_horn> <Greek_eta>        : "ᾒ"  U1f92
+<dead_iota> <dead_grave> <dead_psili> <Greek_eta>        : "ᾒ"  U1f92
+<dead_horn> <dead_iota> <dead_grave> <Greek_eta>        : "ᾒ"  U1f92
+<dead_psili> <dead_iota> <dead_grave> <Greek_eta>        : "ᾒ"  U1f92
+<dead_horn> <dead_grave> <dead_iota> <Greek_eta>        : "ᾒ"  U1f92
+<dead_psili> <dead_grave> <dead_iota> <Greek_eta>        : "ᾒ"  U1f92
+<dead_grave> <dead_iota> <dead_horn> <Greek_eta>        : "ᾒ"  U1f92
+<dead_grave> <dead_iota> <dead_psili> <Greek_eta>        : "ᾒ"  U1f92
+<dead_grave> <dead_horn> <dead_iota> <Greek_eta>        : "ᾒ"  U1f92
+<dead_grave> <dead_psili> <dead_iota> <Greek_eta>        : "ᾒ"  U1f92
+<Multi_key> <bar> <less> <grave> <Greek_eta>            : "ᾓ"  U1f93
+<Multi_key> <bar> <grave> <less> <Greek_eta>            : "ᾓ"  U1f93
+<Multi_key> <less> <bar> <grave> <Greek_eta>            : "ᾓ"  U1f93
+<Multi_key> <less> <grave> <bar> <Greek_eta>            : "ᾓ"  U1f93
+<Multi_key> <grave> <bar> <less> <Greek_eta>            : "ᾓ"  U1f93
+<Multi_key> <grave> <less> <bar> <Greek_eta>            : "ᾓ"  U1f93
+<dead_iota> <dead_ogonek> <dead_grave> <Greek_eta>      : "ᾓ"  U1f93
+<dead_iota> <dead_dasia> <dead_grave> <Greek_eta>      : "ᾓ"  U1f93
+<dead_iota> <dead_grave> <dead_ogonek> <Greek_eta>      : "ᾓ"  U1f93
+<dead_iota> <dead_grave> <dead_dasia> <Greek_eta>      : "ᾓ"  U1f93
+<dead_ogonek> <dead_iota> <dead_grave> <Greek_eta>      : "ᾓ"  U1f93
+<dead_dasia> <dead_iota> <dead_grave> <Greek_eta>      : "ᾓ"  U1f93
+<dead_ogonek> <dead_grave> <dead_iota> <Greek_eta>      : "ᾓ"  U1f93
+<dead_dasia> <dead_grave> <dead_iota> <Greek_eta>      : "ᾓ"  U1f93
+<dead_grave> <dead_iota> <dead_ogonek> <Greek_eta>      : "ᾓ"  U1f93
+<dead_grave> <dead_iota> <dead_dasia> <Greek_eta>      : "ᾓ"  U1f93
+<dead_grave> <dead_ogonek> <dead_iota> <Greek_eta>      : "ᾓ"  U1f93
+<dead_grave> <dead_dasia> <dead_iota> <Greek_eta>      : "ᾓ"  U1f93
+<Multi_key> <bar> <greater> <apostrophe> <Greek_eta>    : "ᾔ"  U1f94
+<Multi_key> <bar> <apostrophe> <greater> <Greek_eta>    : "ᾔ"  U1f94
+<Multi_key> <greater> <bar> <apostrophe> <Greek_eta>    : "ᾔ"  U1f94
+<Multi_key> <greater> <apostrophe> <bar> <Greek_eta>    : "ᾔ"  U1f94
+<Multi_key> <apostrophe> <bar> <greater> <Greek_eta>    : "ᾔ"  U1f94
+<Multi_key> <apostrophe> <greater> <bar> <Greek_eta>    : "ᾔ"  U1f94
+<dead_iota> <dead_horn> <dead_acute> <Greek_eta>        : "ᾔ"  U1f94
+<dead_iota> <dead_psili> <dead_acute> <Greek_eta>        : "ᾔ"  U1f94
+<dead_iota> <dead_acute> <dead_horn> <Greek_eta>        : "ᾔ"  U1f94
+<dead_iota> <dead_acute> <dead_psili> <Greek_eta>        : "ᾔ"  U1f94
+<dead_horn> <dead_iota> <dead_acute> <Greek_eta>        : "ᾔ"  U1f94
+<dead_psili> <dead_iota> <dead_acute> <Greek_eta>        : "ᾔ"  U1f94
+<dead_horn> <dead_acute> <dead_iota> <Greek_eta>        : "ᾔ"  U1f94
+<dead_psili> <dead_acute> <dead_iota> <Greek_eta>        : "ᾔ"  U1f94
+<dead_acute> <dead_iota> <dead_horn> <Greek_eta>        : "ᾔ"  U1f94
+<dead_acute> <dead_iota> <dead_psili> <Greek_eta>        : "ᾔ"  U1f94
+<dead_acute> <dead_horn> <dead_iota> <Greek_eta>        : "ᾔ"  U1f94
+<dead_acute> <dead_psili> <dead_iota> <Greek_eta>        : "ᾔ"  U1f94
+<Multi_key> <bar> <less> <apostrophe> <Greek_eta>       : "ᾕ"  U1f95
+<Multi_key> <bar> <apostrophe> <less> <Greek_eta>       : "ᾕ"  U1f95
+<Multi_key> <less> <bar> <apostrophe> <Greek_eta>       : "ᾕ"  U1f95
+<Multi_key> <less> <apostrophe> <bar> <Greek_eta>       : "ᾕ"  U1f95
+<Multi_key> <apostrophe> <bar> <less> <Greek_eta>       : "ᾕ"  U1f95
+<Multi_key> <apostrophe> <less> <bar> <Greek_eta>       : "ᾕ"  U1f95
+<dead_iota> <dead_ogonek> <dead_acute> <Greek_eta>      : "ᾕ"  U1f95
+<dead_iota> <dead_dasia> <dead_acute> <Greek_eta>      : "ᾕ"  U1f95
+<dead_iota> <dead_acute> <dead_ogonek> <Greek_eta>      : "ᾕ"  U1f95
+<dead_iota> <dead_acute> <dead_dasia> <Greek_eta>      : "ᾕ"  U1f95
+<dead_ogonek> <dead_iota> <dead_acute> <Greek_eta>      : "ᾕ"  U1f95
+<dead_dasia> <dead_iota> <dead_acute> <Greek_eta>      : "ᾕ"  U1f95
+<dead_ogonek> <dead_acute> <dead_iota> <Greek_eta>      : "ᾕ"  U1f95
+<dead_dasia> <dead_acute> <dead_iota> <Greek_eta>      : "ᾕ"  U1f95
+<dead_acute> <dead_iota> <dead_ogonek> <Greek_eta>      : "ᾕ"  U1f95
+<dead_acute> <dead_iota> <dead_dasia> <Greek_eta>      : "ᾕ"  U1f95
+<dead_acute> <dead_ogonek> <dead_iota> <Greek_eta>      : "ᾕ"  U1f95
+<dead_acute> <dead_dasia> <dead_iota> <Greek_eta>      : "ᾕ"  U1f95
+<Multi_key> <bar> <greater> <asciitilde> <Greek_eta>    : "ᾖ"  U1f96
+<Multi_key> <bar> <asciitilde> <greater> <Greek_eta>    : "ᾖ"  U1f96
+<Multi_key> <greater> <bar> <asciitilde> <Greek_eta>    : "ᾖ"  U1f96
+<Multi_key> <greater> <asciitilde> <bar> <Greek_eta>    : "ᾖ"  U1f96
+<Multi_key> <asciitilde> <bar> <greater> <Greek_eta>    : "ᾖ"  U1f96
+<Multi_key> <asciitilde> <greater> <bar> <Greek_eta>    : "ᾖ"  U1f96
+<dead_iota> <dead_horn> <dead_tilde> <Greek_eta>        : "ᾖ"  U1f96
+<dead_iota> <dead_psili> <dead_tilde> <Greek_eta>        : "ᾖ"  U1f96
+<dead_iota> <dead_tilde> <dead_horn> <Greek_eta>        : "ᾖ"  U1f96
+<dead_iota> <dead_tilde> <dead_psili> <Greek_eta>        : "ᾖ"  U1f96
+<dead_horn> <dead_iota> <dead_tilde> <Greek_eta>        : "ᾖ"  U1f96
+<dead_psili> <dead_iota> <dead_tilde> <Greek_eta>        : "ᾖ"  U1f96
+<dead_horn> <dead_tilde> <dead_iota> <Greek_eta>        : "ᾖ"  U1f96
+<dead_psili> <dead_tilde> <dead_iota> <Greek_eta>        : "ᾖ"  U1f96
+<dead_tilde> <dead_iota> <dead_horn> <Greek_eta>        : "ᾖ"  U1f96
+<dead_tilde> <dead_iota> <dead_psili> <Greek_eta>        : "ᾖ"  U1f96
+<dead_tilde> <dead_horn> <dead_iota> <Greek_eta>        : "ᾖ"  U1f96
+<dead_tilde> <dead_psili> <dead_iota> <Greek_eta>        : "ᾖ"  U1f96
+<Multi_key> <bar> <less> <asciitilde> <Greek_eta>       : "ᾗ"  U1f97
+<Multi_key> <bar> <asciitilde> <less> <Greek_eta>       : "ᾗ"  U1f97
+<Multi_key> <less> <bar> <asciitilde> <Greek_eta>       : "ᾗ"  U1f97
+<Multi_key> <less> <asciitilde> <bar> <Greek_eta>       : "ᾗ"  U1f97
+<Multi_key> <asciitilde> <bar> <less> <Greek_eta>       : "ᾗ"  U1f97
+<Multi_key> <asciitilde> <less> <bar> <Greek_eta>       : "ᾗ"  U1f97
+<dead_iota> <dead_ogonek> <dead_tilde> <Greek_eta>      : "ᾗ"  U1f97
+<dead_iota> <dead_dasia> <dead_tilde> <Greek_eta>      : "ᾗ"  U1f97
+<dead_iota> <dead_tilde> <dead_ogonek> <Greek_eta>      : "ᾗ"  U1f97
+<dead_iota> <dead_tilde> <dead_dasia> <Greek_eta>      : "ᾗ"  U1f97
+<dead_ogonek> <dead_iota> <dead_tilde> <Greek_eta>      : "ᾗ"  U1f97
+<dead_dasia> <dead_iota> <dead_tilde> <Greek_eta>      : "ᾗ"  U1f97
+<dead_ogonek> <dead_tilde> <dead_iota> <Greek_eta>      : "ᾗ"  U1f97
+<dead_dasia> <dead_tilde> <dead_iota> <Greek_eta>      : "ᾗ"  U1f97
+<dead_tilde> <dead_iota> <dead_ogonek> <Greek_eta>      : "ᾗ"  U1f97
+<dead_tilde> <dead_iota> <dead_dasia> <Greek_eta>      : "ᾗ"  U1f97
+<dead_tilde> <dead_ogonek> <dead_iota> <Greek_eta>      : "ᾗ"  U1f97
+<dead_tilde> <dead_dasia> <dead_iota> <Greek_eta>      : "ᾗ"  U1f97
+<Multi_key> <bar> <greater> <Greek_ETA>                 : "ᾘ"  U1f98
+<Multi_key> <greater> <bar> <Greek_ETA>                 : "ᾘ"  U1f98
+<dead_iota> <dead_horn> <Greek_ETA>                     : "ᾘ"  U1f98
+<dead_iota> <dead_psili> <Greek_ETA>                     : "ᾘ"  U1f98
+<dead_horn> <dead_iota> <Greek_ETA>                     : "ᾘ"  U1f98
+<dead_psili> <dead_iota> <Greek_ETA>                     : "ᾘ"  U1f98
+<Multi_key> <bar> <less> <Greek_ETA>                    : "ᾙ"  U1f99
+<Multi_key> <less> <bar> <Greek_ETA>                    : "ᾙ"  U1f99
+<dead_iota> <dead_ogonek> <Greek_ETA>                   : "ᾙ"  U1f99
+<dead_iota> <dead_dasia> <Greek_ETA>                   : "ᾙ"  U1f99
+<dead_ogonek> <dead_iota> <Greek_ETA>                   : "ᾙ"  U1f99
+<dead_dasia> <dead_iota> <Greek_ETA>                   : "ᾙ"  U1f99
+<Multi_key> <bar> <greater> <grave> <Greek_ETA>         : "ᾚ"  U1f9a
+<Multi_key> <bar> <grave> <greater> <Greek_ETA>         : "ᾚ"  U1f9a
+<Multi_key> <greater> <bar> <grave> <Greek_ETA>         : "ᾚ"  U1f9a
+<Multi_key> <greater> <grave> <bar> <Greek_ETA>         : "ᾚ"  U1f9a
+<Multi_key> <grave> <bar> <greater> <Greek_ETA>         : "ᾚ"  U1f9a
+<Multi_key> <grave> <greater> <bar> <Greek_ETA>         : "ᾚ"  U1f9a
+<dead_iota> <dead_horn> <dead_grave> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_iota> <dead_psili> <dead_grave> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_iota> <dead_grave> <dead_horn> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_iota> <dead_grave> <dead_psili> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_horn> <dead_iota> <dead_grave> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_psili> <dead_iota> <dead_grave> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_horn> <dead_grave> <dead_iota> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_psili> <dead_grave> <dead_iota> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_grave> <dead_iota> <dead_horn> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_grave> <dead_iota> <dead_psili> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_grave> <dead_horn> <dead_iota> <Greek_ETA>        : "ᾚ"  U1f9a
+<dead_grave> <dead_psili> <dead_iota> <Greek_ETA>        : "ᾚ"  U1f9a
+<Multi_key> <bar> <less> <grave> <Greek_ETA>            : "ᾛ"  U1f9b
+<Multi_key> <bar> <grave> <less> <Greek_ETA>            : "ᾛ"  U1f9b
+<Multi_key> <less> <bar> <grave> <Greek_ETA>            : "ᾛ"  U1f9b
+<Multi_key> <less> <grave> <bar> <Greek_ETA>            : "ᾛ"  U1f9b
+<Multi_key> <grave> <bar> <less> <Greek_ETA>            : "ᾛ"  U1f9b
+<Multi_key> <grave> <less> <bar> <Greek_ETA>            : "ᾛ"  U1f9b
+<dead_iota> <dead_ogonek> <dead_grave> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_iota> <dead_dasia> <dead_grave> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_iota> <dead_grave> <dead_ogonek> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_iota> <dead_grave> <dead_dasia> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_ogonek> <dead_iota> <dead_grave> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_dasia> <dead_iota> <dead_grave> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_ogonek> <dead_grave> <dead_iota> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_dasia> <dead_grave> <dead_iota> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_grave> <dead_iota> <dead_ogonek> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_grave> <dead_iota> <dead_dasia> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_grave> <dead_ogonek> <dead_iota> <Greek_ETA>      : "ᾛ"  U1f9b
+<dead_grave> <dead_dasia> <dead_iota> <Greek_ETA>      : "ᾛ"  U1f9b
+<Multi_key> <bar> <greater> <apostrophe> <Greek_ETA>    : "ᾜ"  U1f9c
+<Multi_key> <bar> <apostrophe> <greater> <Greek_ETA>    : "ᾜ"  U1f9c
+<Multi_key> <greater> <bar> <apostrophe> <Greek_ETA>    : "ᾜ"  U1f9c
+<Multi_key> <greater> <apostrophe> <bar> <Greek_ETA>    : "ᾜ"  U1f9c
+<Multi_key> <apostrophe> <bar> <greater> <Greek_ETA>    : "ᾜ"  U1f9c
+<Multi_key> <apostrophe> <greater> <bar> <Greek_ETA>    : "ᾜ"  U1f9c
+<dead_iota> <dead_horn> <dead_acute> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_iota> <dead_psili> <dead_acute> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_iota> <dead_acute> <dead_horn> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_iota> <dead_acute> <dead_psili> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_horn> <dead_iota> <dead_acute> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_psili> <dead_iota> <dead_acute> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_horn> <dead_acute> <dead_iota> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_psili> <dead_acute> <dead_iota> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_acute> <dead_iota> <dead_horn> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_acute> <dead_iota> <dead_psili> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_acute> <dead_horn> <dead_iota> <Greek_ETA>        : "ᾜ"  U1f9c
+<dead_acute> <dead_psili> <dead_iota> <Greek_ETA>        : "ᾜ"  U1f9c
+<Multi_key> <bar> <less> <apostrophe> <Greek_ETA>       : "ᾝ"  U1f9d
+<Multi_key> <bar> <apostrophe> <less> <Greek_ETA>       : "ᾝ"  U1f9d
+<Multi_key> <less> <bar> <apostrophe> <Greek_ETA>       : "ᾝ"  U1f9d
+<Multi_key> <less> <apostrophe> <bar> <Greek_ETA>       : "ᾝ"  U1f9d
+<Multi_key> <apostrophe> <bar> <less> <Greek_ETA>       : "ᾝ"  U1f9d
+<Multi_key> <apostrophe> <less> <bar> <Greek_ETA>       : "ᾝ"  U1f9d
+<dead_iota> <dead_ogonek> <dead_acute> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_iota> <dead_dasia> <dead_acute> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_iota> <dead_acute> <dead_ogonek> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_iota> <dead_acute> <dead_dasia> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_ogonek> <dead_iota> <dead_acute> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_dasia> <dead_iota> <dead_acute> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_ogonek> <dead_acute> <dead_iota> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_dasia> <dead_acute> <dead_iota> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_acute> <dead_iota> <dead_ogonek> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_acute> <dead_iota> <dead_dasia> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_acute> <dead_ogonek> <dead_iota> <Greek_ETA>      : "ᾝ"  U1f9d
+<dead_acute> <dead_dasia> <dead_iota> <Greek_ETA>      : "ᾝ"  U1f9d
+<Multi_key> <bar> <greater> <asciitilde> <Greek_ETA>    : "ᾞ"  U1f9e
+<Multi_key> <bar> <asciitilde> <greater> <Greek_ETA>    : "ᾞ"  U1f9e
+<Multi_key> <greater> <bar> <asciitilde> <Greek_ETA>    : "ᾞ"  U1f9e
+<Multi_key> <greater> <asciitilde> <bar> <Greek_ETA>    : "ᾞ"  U1f9e
+<Multi_key> <asciitilde> <bar> <greater> <Greek_ETA>    : "ᾞ"  U1f9e
+<Multi_key> <asciitilde> <greater> <bar> <Greek_ETA>    : "ᾞ"  U1f9e
+<dead_iota> <dead_horn> <dead_tilde> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_iota> <dead_psili> <dead_tilde> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_iota> <dead_tilde> <dead_horn> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_iota> <dead_tilde> <dead_psili> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_horn> <dead_iota> <dead_tilde> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_psili> <dead_iota> <dead_tilde> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_horn> <dead_tilde> <dead_iota> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_psili> <dead_tilde> <dead_iota> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_tilde> <dead_iota> <dead_horn> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_tilde> <dead_iota> <dead_psili> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_tilde> <dead_horn> <dead_iota> <Greek_ETA>        : "ᾞ"  U1f9e
+<dead_tilde> <dead_psili> <dead_iota> <Greek_ETA>        : "ᾞ"  U1f9e
+<Multi_key> <bar> <less> <asciitilde> <Greek_ETA>       : "ᾟ"  U1f9f
+<Multi_key> <bar> <asciitilde> <less> <Greek_ETA>       : "ᾟ"  U1f9f
+<Multi_key> <less> <bar> <asciitilde> <Greek_ETA>       : "ᾟ"  U1f9f
+<Multi_key> <less> <asciitilde> <bar> <Greek_ETA>       : "ᾟ"  U1f9f
+<Multi_key> <asciitilde> <bar> <less> <Greek_ETA>       : "ᾟ"  U1f9f
+<Multi_key> <asciitilde> <less> <bar> <Greek_ETA>       : "ᾟ"  U1f9f
+<dead_iota> <dead_ogonek> <dead_tilde> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_iota> <dead_dasia> <dead_tilde> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_iota> <dead_tilde> <dead_ogonek> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_iota> <dead_tilde> <dead_dasia> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_ogonek> <dead_iota> <dead_tilde> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_dasia> <dead_iota> <dead_tilde> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_ogonek> <dead_tilde> <dead_iota> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_dasia> <dead_tilde> <dead_iota> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_tilde> <dead_iota> <dead_ogonek> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_tilde> <dead_iota> <dead_dasia> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_tilde> <dead_ogonek> <dead_iota> <Greek_ETA>      : "ᾟ"  U1f9f
+<dead_tilde> <dead_dasia> <dead_iota> <Greek_ETA>      : "ᾟ"  U1f9f
+<Multi_key> <bar> <greater> <Greek_omega>               : "ᾠ"  U1fa0
+<Multi_key> <greater> <bar> <Greek_omega>               : "ᾠ"  U1fa0
+<dead_iota> <dead_horn> <Greek_omega>                   : "ᾠ"  U1fa0
+<dead_iota> <dead_psili> <Greek_omega>                   : "ᾠ"  U1fa0
+<dead_horn> <dead_iota> <Greek_omega>                   : "ᾠ"  U1fa0
+<dead_psili> <dead_iota> <Greek_omega>                   : "ᾠ"  U1fa0
+<Multi_key> <bar> <less> <Greek_omega>                  : "ᾡ"  U1fa1
+<Multi_key> <less> <bar> <Greek_omega>                  : "ᾡ"  U1fa1
+<dead_iota> <dead_ogonek> <Greek_omega>                 : "ᾡ"  U1fa1
+<dead_iota> <dead_dasia> <Greek_omega>                 : "ᾡ"  U1fa1
+<dead_ogonek> <dead_iota> <Greek_omega>                 : "ᾡ"  U1fa1
+<dead_dasia> <dead_iota> <Greek_omega>                 : "ᾡ"  U1fa1
+<Multi_key> <bar> <greater> <grave> <Greek_omega>       : "ᾢ"  U1fa2
+<Multi_key> <bar> <grave> <greater> <Greek_omega>       : "ᾢ"  U1fa2
+<Multi_key> <greater> <bar> <grave> <Greek_omega>       : "ᾢ"  U1fa2
+<Multi_key> <greater> <grave> <bar> <Greek_omega>       : "ᾢ"  U1fa2
+<Multi_key> <grave> <bar> <greater> <Greek_omega>       : "ᾢ"  U1fa2
+<Multi_key> <grave> <greater> <bar> <Greek_omega>       : "ᾢ"  U1fa2
+<dead_iota> <dead_horn> <dead_grave> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_iota> <dead_psili> <dead_grave> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_iota> <dead_grave> <dead_horn> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_iota> <dead_grave> <dead_psili> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_horn> <dead_iota> <dead_grave> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_psili> <dead_iota> <dead_grave> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_horn> <dead_grave> <dead_iota> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_psili> <dead_grave> <dead_iota> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_grave> <dead_iota> <dead_horn> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_grave> <dead_iota> <dead_psili> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_grave> <dead_horn> <dead_iota> <Greek_omega>      : "ᾢ"  U1fa2
+<dead_grave> <dead_psili> <dead_iota> <Greek_omega>      : "ᾢ"  U1fa2
+<Multi_key> <bar> <less> <grave> <Greek_omega>          : "ᾣ"  U1fa3
+<Multi_key> <bar> <grave> <less> <Greek_omega>          : "ᾣ"  U1fa3
+<Multi_key> <less> <bar> <grave> <Greek_omega>          : "ᾣ"  U1fa3
+<Multi_key> <less> <grave> <bar> <Greek_omega>          : "ᾣ"  U1fa3
+<Multi_key> <grave> <bar> <less> <Greek_omega>          : "ᾣ"  U1fa3
+<Multi_key> <grave> <less> <bar> <Greek_omega>          : "ᾣ"  U1fa3
+<dead_iota> <dead_ogonek> <dead_grave> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_iota> <dead_dasia> <dead_grave> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_iota> <dead_grave> <dead_ogonek> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_iota> <dead_grave> <dead_dasia> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_ogonek> <dead_iota> <dead_grave> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_dasia> <dead_iota> <dead_grave> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_ogonek> <dead_grave> <dead_iota> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_dasia> <dead_grave> <dead_iota> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_grave> <dead_iota> <dead_ogonek> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_grave> <dead_iota> <dead_dasia> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_grave> <dead_ogonek> <dead_iota> <Greek_omega>    : "ᾣ"  U1fa3
+<dead_grave> <dead_dasia> <dead_iota> <Greek_omega>    : "ᾣ"  U1fa3
+<Multi_key> <bar> <greater> <apostrophe> <Greek_omega>  : "ᾤ"  U1fa4
+<Multi_key> <bar> <apostrophe> <greater> <Greek_omega>  : "ᾤ"  U1fa4
+<Multi_key> <greater> <bar> <apostrophe> <Greek_omega>  : "ᾤ"  U1fa4
+<Multi_key> <greater> <apostrophe> <bar> <Greek_omega>  : "ᾤ"  U1fa4
+<Multi_key> <apostrophe> <bar> <greater> <Greek_omega>  : "ᾤ"  U1fa4
+<Multi_key> <apostrophe> <greater> <bar> <Greek_omega>  : "ᾤ"  U1fa4
+<dead_iota> <dead_horn> <dead_acute> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_iota> <dead_psili> <dead_acute> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_iota> <dead_acute> <dead_horn> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_iota> <dead_acute> <dead_psili> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_horn> <dead_iota> <dead_acute> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_psili> <dead_iota> <dead_acute> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_horn> <dead_acute> <dead_iota> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_psili> <dead_acute> <dead_iota> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_acute> <dead_iota> <dead_horn> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_acute> <dead_iota> <dead_psili> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_acute> <dead_horn> <dead_iota> <Greek_omega>      : "ᾤ"  U1fa4
+<dead_acute> <dead_psili> <dead_iota> <Greek_omega>      : "ᾤ"  U1fa4
+<Multi_key> <bar> <less> <apostrophe> <Greek_omega>     : "ᾥ"  U1fa5
+<Multi_key> <bar> <apostrophe> <less> <Greek_omega>     : "ᾥ"  U1fa5
+<Multi_key> <less> <bar> <apostrophe> <Greek_omega>     : "ᾥ"  U1fa5
+<Multi_key> <less> <apostrophe> <bar> <Greek_omega>     : "ᾥ"  U1fa5
+<Multi_key> <apostrophe> <bar> <less> <Greek_omega>     : "ᾥ"  U1fa5
+<Multi_key> <apostrophe> <less> <bar> <Greek_omega>     : "ᾥ"  U1fa5
+<dead_iota> <dead_ogonek> <dead_acute> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_iota> <dead_dasia> <dead_acute> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_iota> <dead_acute> <dead_ogonek> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_iota> <dead_acute> <dead_dasia> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_ogonek> <dead_iota> <dead_acute> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_dasia> <dead_iota> <dead_acute> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_ogonek> <dead_acute> <dead_iota> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_dasia> <dead_acute> <dead_iota> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_acute> <dead_iota> <dead_ogonek> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_acute> <dead_iota> <dead_dasia> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_acute> <dead_ogonek> <dead_iota> <Greek_omega>    : "ᾥ"  U1fa5
+<dead_acute> <dead_dasia> <dead_iota> <Greek_omega>    : "ᾥ"  U1fa5
+<Multi_key> <bar> <greater> <asciitilde> <Greek_omega>  : "ᾦ"  U1fa6
+<Multi_key> <bar> <asciitilde> <greater> <Greek_omega>  : "ᾦ"  U1fa6
+<Multi_key> <greater> <bar> <asciitilde> <Greek_omega>  : "ᾦ"  U1fa6
+<Multi_key> <greater> <asciitilde> <bar> <Greek_omega>  : "ᾦ"  U1fa6
+<Multi_key> <asciitilde> <bar> <greater> <Greek_omega>  : "ᾦ"  U1fa6
+<Multi_key> <asciitilde> <greater> <bar> <Greek_omega>  : "ᾦ"  U1fa6
+<dead_iota> <dead_horn> <dead_tilde> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_iota> <dead_psili> <dead_tilde> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_iota> <dead_tilde> <dead_horn> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_iota> <dead_tilde> <dead_psili> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_horn> <dead_iota> <dead_tilde> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_psili> <dead_iota> <dead_tilde> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_horn> <dead_tilde> <dead_iota> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_psili> <dead_tilde> <dead_iota> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_tilde> <dead_iota> <dead_horn> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_tilde> <dead_iota> <dead_psili> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_tilde> <dead_horn> <dead_iota> <Greek_omega>      : "ᾦ"  U1fa6
+<dead_tilde> <dead_psili> <dead_iota> <Greek_omega>      : "ᾦ"  U1fa6
+<Multi_key> <bar> <less> <asciitilde> <Greek_omega>     : "ᾧ"  U1fa7
+<Multi_key> <bar> <asciitilde> <less> <Greek_omega>     : "ᾧ"  U1fa7
+<Multi_key> <less> <bar> <asciitilde> <Greek_omega>     : "ᾧ"  U1fa7
+<Multi_key> <less> <asciitilde> <bar> <Greek_omega>     : "ᾧ"  U1fa7
+<Multi_key> <asciitilde> <bar> <less> <Greek_omega>     : "ᾧ"  U1fa7
+<Multi_key> <asciitilde> <less> <bar> <Greek_omega>     : "ᾧ"  U1fa7
+<dead_iota> <dead_ogonek> <dead_tilde> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_iota> <dead_dasia> <dead_tilde> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_iota> <dead_tilde> <dead_ogonek> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_iota> <dead_tilde> <dead_dasia> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_ogonek> <dead_iota> <dead_tilde> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_dasia> <dead_iota> <dead_tilde> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_ogonek> <dead_tilde> <dead_iota> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_dasia> <dead_tilde> <dead_iota> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_tilde> <dead_iota> <dead_ogonek> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_tilde> <dead_iota> <dead_dasia> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_tilde> <dead_ogonek> <dead_iota> <Greek_omega>    : "ᾧ"  U1fa7
+<dead_tilde> <dead_dasia> <dead_iota> <Greek_omega>    : "ᾧ"  U1fa7
+<Multi_key> <bar> <greater> <Greek_OMEGA>               : "ᾨ"  U1fa8
+<Multi_key> <greater> <bar> <Greek_OMEGA>               : "ᾨ"  U1fa8
+<dead_iota> <dead_horn> <Greek_OMEGA>                   : "ᾨ"  U1fa8
+<dead_iota> <dead_psili> <Greek_OMEGA>                   : "ᾨ"  U1fa8
+<dead_horn> <dead_iota> <Greek_OMEGA>                   : "ᾨ"  U1fa8
+<dead_psili> <dead_iota> <Greek_OMEGA>                   : "ᾨ"  U1fa8
+<Multi_key> <bar> <less> <Greek_OMEGA>                  : "ᾩ"  U1fa9
+<Multi_key> <less> <bar> <Greek_OMEGA>                  : "ᾩ"  U1fa9
+<dead_iota> <dead_ogonek> <Greek_OMEGA>                 : "ᾩ"  U1fa9
+<dead_iota> <dead_dasia> <Greek_OMEGA>                 : "ᾩ"  U1fa9
+<dead_ogonek> <dead_iota> <Greek_OMEGA>                 : "ᾩ"  U1fa9
+<dead_dasia> <dead_iota> <Greek_OMEGA>                 : "ᾩ"  U1fa9
+<Multi_key> <bar> <greater> <grave> <Greek_OMEGA>       : "ᾪ"  U1faa
+<Multi_key> <bar> <grave> <greater> <Greek_OMEGA>       : "ᾪ"  U1faa
+<Multi_key> <greater> <bar> <grave> <Greek_OMEGA>       : "ᾪ"  U1faa
+<Multi_key> <greater> <grave> <bar> <Greek_OMEGA>       : "ᾪ"  U1faa
+<Multi_key> <grave> <bar> <greater> <Greek_OMEGA>       : "ᾪ"  U1faa
+<Multi_key> <grave> <greater> <bar> <Greek_OMEGA>       : "ᾪ"  U1faa
+<dead_iota> <dead_horn> <dead_grave> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_iota> <dead_psili> <dead_grave> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_iota> <dead_grave> <dead_horn> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_iota> <dead_grave> <dead_psili> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_horn> <dead_iota> <dead_grave> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_psili> <dead_iota> <dead_grave> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_horn> <dead_grave> <dead_iota> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_psili> <dead_grave> <dead_iota> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_grave> <dead_iota> <dead_horn> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_grave> <dead_iota> <dead_psili> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_grave> <dead_horn> <dead_iota> <Greek_OMEGA>      : "ᾪ"  U1faa
+<dead_grave> <dead_psili> <dead_iota> <Greek_OMEGA>      : "ᾪ"  U1faa
+<Multi_key> <bar> <less> <grave> <Greek_OMEGA>          : "ᾫ"  U1fab
+<Multi_key> <bar> <grave> <less> <Greek_OMEGA>          : "ᾫ"  U1fab
+<Multi_key> <less> <bar> <grave> <Greek_OMEGA>          : "ᾫ"  U1fab
+<Multi_key> <less> <grave> <bar> <Greek_OMEGA>          : "ᾫ"  U1fab
+<Multi_key> <grave> <bar> <less> <Greek_OMEGA>          : "ᾫ"  U1fab
+<Multi_key> <grave> <less> <bar> <Greek_OMEGA>          : "ᾫ"  U1fab
+<dead_iota> <dead_ogonek> <dead_grave> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_iota> <dead_dasia> <dead_grave> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_iota> <dead_grave> <dead_ogonek> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_iota> <dead_grave> <dead_dasia> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_ogonek> <dead_iota> <dead_grave> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_dasia> <dead_iota> <dead_grave> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_ogonek> <dead_grave> <dead_iota> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_dasia> <dead_grave> <dead_iota> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_grave> <dead_iota> <dead_ogonek> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_grave> <dead_iota> <dead_dasia> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_grave> <dead_ogonek> <dead_iota> <Greek_OMEGA>    : "ᾫ"  U1fab
+<dead_grave> <dead_dasia> <dead_iota> <Greek_OMEGA>    : "ᾫ"  U1fab
+<Multi_key> <bar> <greater> <apostrophe> <Greek_OMEGA>  : "ᾬ"  U1fac
+<Multi_key> <bar> <apostrophe> <greater> <Greek_OMEGA>  : "ᾬ"  U1fac
+<Multi_key> <greater> <bar> <apostrophe> <Greek_OMEGA>  : "ᾬ"  U1fac
+<Multi_key> <greater> <apostrophe> <bar> <Greek_OMEGA>  : "ᾬ"  U1fac
+<Multi_key> <apostrophe> <bar> <greater> <Greek_OMEGA>  : "ᾬ"  U1fac
+<Multi_key> <apostrophe> <greater> <bar> <Greek_OMEGA>  : "ᾬ"  U1fac
+<dead_iota> <dead_horn> <dead_acute> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_iota> <dead_psili> <dead_acute> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_iota> <dead_acute> <dead_horn> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_iota> <dead_acute> <dead_psili> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_horn> <dead_iota> <dead_acute> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_psili> <dead_iota> <dead_acute> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_horn> <dead_acute> <dead_iota> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_psili> <dead_acute> <dead_iota> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_acute> <dead_iota> <dead_horn> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_acute> <dead_iota> <dead_psili> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_acute> <dead_horn> <dead_iota> <Greek_OMEGA>      : "ᾬ"  U1fac
+<dead_acute> <dead_psili> <dead_iota> <Greek_OMEGA>      : "ᾬ"  U1fac
+<Multi_key> <bar> <less> <apostrophe> <Greek_OMEGA>     : "ᾭ"  U1fad
+<Multi_key> <bar> <apostrophe> <less> <Greek_OMEGA>     : "ᾭ"  U1fad
+<Multi_key> <less> <bar> <apostrophe> <Greek_OMEGA>     : "ᾭ"  U1fad
+<Multi_key> <less> <apostrophe> <bar> <Greek_OMEGA>     : "ᾭ"  U1fad
+<Multi_key> <apostrophe> <bar> <less> <Greek_OMEGA>     : "ᾭ"  U1fad
+<Multi_key> <apostrophe> <less> <bar> <Greek_OMEGA>     : "ᾭ"  U1fad
+<dead_iota> <dead_ogonek> <dead_acute> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_iota> <dead_dasia> <dead_acute> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_iota> <dead_acute> <dead_ogonek> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_iota> <dead_acute> <dead_dasia> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_ogonek> <dead_iota> <dead_acute> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_dasia> <dead_iota> <dead_acute> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_ogonek> <dead_acute> <dead_iota> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_dasia> <dead_acute> <dead_iota> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_acute> <dead_iota> <dead_ogonek> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_acute> <dead_iota> <dead_dasia> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_acute> <dead_ogonek> <dead_iota> <Greek_OMEGA>    : "ᾭ"  U1fad
+<dead_acute> <dead_dasia> <dead_iota> <Greek_OMEGA>    : "ᾭ"  U1fad
+<Multi_key> <bar> <greater> <asciitilde> <Greek_OMEGA>  : "ᾮ"  U1fae
+<Multi_key> <bar> <asciitilde> <greater> <Greek_OMEGA>  : "ᾮ"  U1fae
+<Multi_key> <greater> <bar> <asciitilde> <Greek_OMEGA>  : "ᾮ"  U1fae
+<Multi_key> <greater> <asciitilde> <bar> <Greek_OMEGA>  : "ᾮ"  U1fae
+<Multi_key> <asciitilde> <bar> <greater> <Greek_OMEGA>  : "ᾮ"  U1fae
+<Multi_key> <asciitilde> <greater> <bar> <Greek_OMEGA>  : "ᾮ"  U1fae
+<dead_iota> <dead_horn> <dead_tilde> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_iota> <dead_psili> <dead_tilde> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_iota> <dead_tilde> <dead_horn> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_iota> <dead_tilde> <dead_psili> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_horn> <dead_iota> <dead_tilde> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_psili> <dead_iota> <dead_tilde> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_horn> <dead_tilde> <dead_iota> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_psili> <dead_tilde> <dead_iota> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_tilde> <dead_iota> <dead_horn> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_tilde> <dead_iota> <dead_psili> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_tilde> <dead_horn> <dead_iota> <Greek_OMEGA>      : "ᾮ"  U1fae
+<dead_tilde> <dead_psili> <dead_iota> <Greek_OMEGA>      : "ᾮ"  U1fae
+<Multi_key> <bar> <less> <asciitilde> <Greek_OMEGA>     : "ᾯ"  U1faf
+<Multi_key> <bar> <asciitilde> <less> <Greek_OMEGA>     : "ᾯ"  U1faf
+<Multi_key> <less> <bar> <asciitilde> <Greek_OMEGA>     : "ᾯ"  U1faf
+<Multi_key> <less> <asciitilde> <bar> <Greek_OMEGA>     : "ᾯ"  U1faf
+<Multi_key> <asciitilde> <bar> <less> <Greek_OMEGA>     : "ᾯ"  U1faf
+<Multi_key> <asciitilde> <less> <bar> <Greek_OMEGA>     : "ᾯ"  U1faf
+<dead_iota> <dead_ogonek> <dead_tilde> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_iota> <dead_dasia> <dead_tilde> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_iota> <dead_tilde> <dead_ogonek> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_iota> <dead_tilde> <dead_dasia> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_ogonek> <dead_iota> <dead_tilde> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_dasia> <dead_iota> <dead_tilde> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_ogonek> <dead_tilde> <dead_iota> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_dasia> <dead_tilde> <dead_iota> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_tilde> <dead_iota> <dead_ogonek> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_tilde> <dead_iota> <dead_dasia> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_tilde> <dead_ogonek> <dead_iota> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_tilde> <dead_dasia> <dead_iota> <Greek_OMEGA>    : "ᾯ"  U1faf
+<dead_breve> <Greek_alpha>                              : "ᾰ"  U1fb0
+<dead_macron> <Greek_alpha>                             : "ᾱ"  U1fb1
+<dead_breve> <Greek_ALPHA>                              : "Ᾰ"  U1fb8
+<dead_macron> <Greek_ALPHA>                             : "Ᾱ"  U1fb9
+<dead_breve> <Greek_iota>                               : "ῐ"  U1fd0
+<dead_macron> <Greek_iota>                              : "ῑ"  U1fd1
+<dead_breve> <Greek_IOTA>                               : "Ῐ"  U1fd8
+<dead_macron> <Greek_IOTA>                              : "Ῑ"  U1fd9
+<dead_breve> <Greek_upsilon>                            : "ῠ"  U1fe0
+<dead_macron> <Greek_upsilon>                           : "ῡ"  U1fe1
+<dead_breve> <Greek_UPSILON>                            : "Ῠ"  U1fe8
+<dead_macron> <Greek_UPSILON>                           : "Ῡ"  U1fe9
+<Multi_key> <grave> <Greek_ALPHA>                       : "Ὰ"  U1fba
+<dead_grave> <Greek_ALPHA>                              : "Ὰ"  U1fba
+<Multi_key> <grave> <Greek_EPSILON>                     : "Ὲ"  U1fc8
+<dead_grave> <Greek_EPSILON>                            : "Ὲ"  U1fc8
+<Multi_key> <grave> <Greek_ETA>                         : "Ὴ"  U1fca
+<dead_grave> <Greek_ETA>                                : "Ὴ"  U1fca
+<Multi_key> <grave> <Greek_IOTA>                        : "Ὶ"  U1fda
+<dead_grave> <Greek_IOTA>                               : "Ὶ"  U1fda
+<Multi_key> <grave> <Greek_UPSILON>                     : "Ὺ"  U1fea
+<dead_grave> <Greek_UPSILON>                            : "Ὺ"  U1fea
+<Multi_key> <grave> <Greek_OMICRON>                     : "Ὸ"  U1ff8
+<dead_grave> <Greek_OMICRON>                            : "Ὸ"  U1ff8
+<Multi_key> <grave> <Greek_OMEGA>                       : "Ὼ"  U1ffa
+<dead_grave> <Greek_OMEGA>                              : "Ὼ"  U1ffa
+<Multi_key> <bar> <grave> <Greek_alpha>                 : "ᾲ"  U1fb2
+<Multi_key> <grave> <bar> <Greek_alpha>                 : "ᾲ"  U1fb2
+<dead_iota> <dead_grave> <Greek_alpha>                  : "ᾲ"  U1fb2
+<dead_grave> <dead_iota> <Greek_alpha>                  : "ᾲ"  U1fb2
+<Multi_key> <bar> <Greek_alpha>                         : "ᾳ"  U1fb3
+<dead_iota> <Greek_alpha>                               : "ᾳ"  U1fb3
+<Multi_key> <bar> <apostrophe> <Greek_alpha>            : "ᾴ"  U1fb4
+<Multi_key> <apostrophe> <bar> <Greek_alpha>            : "ᾴ"  U1fb4
+<dead_iota> <dead_acute> <Greek_alpha>                  : "ᾴ"  U1fb4
+<dead_acute> <dead_iota> <Greek_alpha>                  : "ᾴ"  U1fb4
+<Multi_key> <asciitilde> <Greek_alpha>                  : "ᾶ"  U1fb6
+<dead_tilde> <Greek_alpha>                              : "ᾶ"  U1fb6
+<Multi_key> <bar> <asciitilde> <Greek_alpha>            : "ᾷ"  U1fb7
+<Multi_key> <asciitilde> <bar> <Greek_alpha>            : "ᾷ"  U1fb7
+<dead_iota> <dead_tilde> <Greek_alpha>                  : "ᾷ"  U1fb7
+<dead_tilde> <dead_iota> <Greek_alpha>                  : "ᾷ"  U1fb7
+<Multi_key> <bar> <grave> <Greek_eta>                   : "ῂ"  U1fc2
+<Multi_key> <grave> <bar> <Greek_eta>                   : "ῂ"  U1fc2
+<dead_iota> <dead_grave> <Greek_eta>                    : "ῂ"  U1fc2
+<dead_grave> <dead_iota> <Greek_eta>                    : "ῂ"  U1fc2
+<Multi_key> <bar> <Greek_eta>                           : "ῃ"  U1fc3
+<dead_iota> <Greek_eta>                                 : "ῃ"  U1fc3
+<Multi_key> <bar> <apostrophe> <Greek_eta>              : "ῄ"  U1fc4
+<Multi_key> <apostrophe> <bar> <Greek_eta>              : "ῄ"  U1fc4
+<dead_iota> <dead_acute> <Greek_eta>                    : "ῄ"  U1fc4
+<dead_acute> <dead_iota> <Greek_eta>                    : "ῄ"  U1fc4
+<Multi_key> <asciitilde> <Greek_eta>                    : "ῆ"  U1fc6
+<dead_tilde> <Greek_eta>                                : "ῆ"  U1fc6
+<Multi_key> <bar> <asciitilde> <Greek_eta>              : "ῇ"  U1fc7
+<Multi_key> <asciitilde> <bar> <Greek_eta>              : "ῇ"  U1fc7
+<dead_iota> <dead_tilde> <Greek_eta>                    : "ῇ"  U1fc7
+<dead_tilde> <dead_iota> <Greek_eta>                    : "ῇ"  U1fc7
+<Multi_key> <quotedbl> <grave> <Greek_iota>             : "ῒ"  U1fd2
+<Multi_key> <grave> <quotedbl> <Greek_iota>             : "ῒ"  U1fd2
+<dead_diaeresis> <dead_grave> <Greek_iota>              : "ῒ"  U1fd2
+<dead_grave> <dead_diaeresis> <Greek_iota>              : "ῒ"  U1fd2
+<Multi_key> <asciitilde> <Greek_iota>                   : "ῖ"  U1fd6
+<dead_tilde> <Greek_iota>                               : "ῖ"  U1fd6
+<Multi_key> <quotedbl> <asciitilde> <Greek_iota>        : "ῗ"  U1fd7
+<Multi_key> <asciitilde> <quotedbl> <Greek_iota>        : "ῗ"  U1fd7
+<dead_diaeresis> <dead_tilde> <Greek_iota>              : "ῗ"  U1fd7
+<dead_tilde> <dead_diaeresis> <Greek_iota>              : "ῗ"  U1fd7
+<Multi_key> <quotedbl> <grave> <Greek_upsilon>          : "ῢ"  U1fe2
+<Multi_key> <grave> <quotedbl> <Greek_upsilon>          : "ῢ"  U1fe2
+<dead_diaeresis> <dead_grave> <Greek_upsilon>           : "ῢ"  U1fe2
+<dead_grave> <dead_diaeresis> <Greek_upsilon>           : "ῢ"  U1fe2
+<Multi_key> <asciitilde> <Greek_upsilon>                : "ῦ"  U1fe6
+<dead_tilde> <Greek_upsilon>                            : "ῦ"  U1fe6
+<Multi_key> <quotedbl> <asciitilde> <Greek_upsilon>     : "ῧ"  U1fe7
+<Multi_key> <asciitilde> <quotedbl> <Greek_upsilon>     : "ῧ"  U1fe7
+<dead_diaeresis> <dead_tilde> <Greek_upsilon>           : "ῧ"  U1fe7
+<dead_tilde> <dead_diaeresis> <Greek_upsilon>           : "ῧ"  U1fe7
+<Multi_key> <bar> <grave> <Greek_omega>                 : "ῲ"  U1ff2
+<Multi_key> <grave> <bar> <Greek_omega>                 : "ῲ"  U1ff2
+<dead_iota> <dead_grave> <Greek_omega>                  : "ῲ"  U1ff2
+<dead_grave> <dead_iota> <Greek_omega>                  : "ῲ"  U1ff2
+<Multi_key> <bar> <Greek_omega>                         : "ῳ"  U1ff3
+<dead_iota> <Greek_omega>                               : "ῳ"  U1ff3
+<Multi_key> <bar> <apostrophe> <Greek_omega>            : "ῴ"  U1ff4
+<Multi_key> <apostrophe> <bar> <Greek_omega>            : "ῴ"  U1ff4
+<dead_iota> <dead_acute> <Greek_omega>                  : "ῴ"  U1ff4
+<dead_acute> <dead_iota> <Greek_omega>                  : "ῴ"  U1ff4
+<Multi_key> <asciitilde> <Greek_omega>                  : "ῶ"  U1ff6
+<dead_tilde> <Greek_omega>                              : "ῶ"  U1ff6
+<Multi_key> <bar> <asciitilde> <Greek_omega>            : "ῷ"  U1ff7
+<Multi_key> <asciitilde> <bar> <Greek_omega>            : "ῷ"  U1ff7
+<dead_iota> <dead_tilde> <Greek_omega>                  : "ῷ"  U1ff7
+<dead_tilde> <dead_iota> <Greek_omega>                  : "ῷ"  U1ff7
+<Multi_key> <bar> <Greek_ALPHA>                         : "ᾼ"  U1fbc
+<dead_iota> <Greek_ALPHA>                               : "ᾼ"  U1fbc
+<Multi_key> <bar> <Greek_ETA>                           : "ῌ"  U1fcc
+<dead_iota> <Greek_ETA>                                 : "ῌ"  U1fcc
+<Multi_key> <bar> <Greek_OMEGA>                         : "ῼ"  U1ffc
+<dead_iota> <Greek_OMEGA>                               : "ῼ"  U1ffc
+<Multi_key> <greater> <Greek_rho>                       : "ῤ"  U1fe4
+<dead_horn> <Greek_rho>                                 : "ῤ"  U1fe4
+<dead_psili> <Greek_rho>                                 : "ῤ"  U1fe4
+<Multi_key> <less> <Greek_rho>                          : "ῥ"  U1fe5
+<dead_ogonek> <Greek_rho>                               : "ῥ"  U1fe5
+<dead_dasia> <Greek_rho>                               : "ῥ"  U1fe5
+<Multi_key> <less> <Greek_RHO>                          : "Ῥ"  U1fec
+<dead_ogonek> <Greek_RHO>                               : "Ῥ"  U1fec
+<dead_dasia> <Greek_RHO>                               : "Ῥ"  U1fec
+<dead_horn> <dead_grave> <space>                        : "῍"  U1fcd
+<dead_psili> <dead_grave> <space>                        : "῍"  U1fcd
+<dead_grave> <dead_horn> <space>                        : "῍"  U1fcd
+<dead_grave> <dead_psili> <space>                        : "῍"  U1fcd
+<dead_horn> <dead_acute> <space>                        : "῎"  U1fce
+<dead_psili> <dead_acute> <space>                        : "῎"  U1fce
+<dead_acute> <dead_horn> <space>                        : "῎"  U1fce
+<dead_acute> <dead_psili> <space>                        : "῎"  U1fce
+<dead_horn> <dead_tilde> <space>                        : "῏"  U1fcf
+<dead_psili> <dead_tilde> <space>                        : "῏"  U1fcf
+<dead_tilde> <dead_horn> <space>                        : "῏"  U1fcf
+<dead_tilde> <dead_psili> <space>                        : "῏"  U1fcf
+<dead_ogonek> <dead_grave> <space>                      : "῝"  U1fdd
+<dead_dasia> <dead_grave> <space>                      : "῝"  U1fdd
+<dead_grave> <dead_ogonek> <space>                      : "῝"  U1fdd
+<dead_grave> <dead_dasia> <space>                      : "῝"  U1fdd
+<dead_ogonek> <dead_acute> <space>                      : "῞"  U1fde
+<dead_dasia> <dead_acute> <space>                      : "῞"  U1fde
+<dead_acute> <dead_ogonek> <space>                      : "῞"  U1fde
+<dead_acute> <dead_dasia> <space>                      : "῞"  U1fde
+<dead_ogonek> <dead_tilde> <space>                      : "῟"  U1fdf
+<dead_dasia> <dead_tilde> <space>                      : "῟"  U1fdf
+<dead_tilde> <dead_ogonek> <space>                      : "῟"  U1fdf
+<dead_tilde> <dead_dasia> <space>                      : "῟"  U1fdf
+<dead_diaeresis> <dead_grave> <space>                   : "῭"  U1fed
+<dead_grave> <dead_diaeresis> <space>                   : "῭"  U1fed
+<dead_diaeresis> <dead_tilde> <space>                   : "῁"  U1fc1
+<dead_tilde> <dead_diaeresis> <space>                   : "῁"  U1fc1
+<dead_horn> <space>                                     : "᾿"  U1fbf
+<dead_psili> <space>                                     : "᾿"  U1fbf
+<dead_horn> <dead_horn>                                 : "᾿"  U1fbf
+<dead_psili> <dead_horn>                                 : "᾿"  U1fbf
+<dead_ogonek> <space>                                   : "῾"  U1ffe
+<dead_dasia> <space>                                   : "῾"  U1ffe
+<dead_ogonek> <dead_ogonek>                             : "῾"  U1ffe
+<dead_dasia> <dead_ogonek>                             : "῾"  U1ffe
+<dead_grave> <space>                                    : "`"  U1fef
+<dead_grave> <dead_grave>                               : "`"  U1fef
+<dead_tilde> <space>                                    : "῀"  U1fc0
+<dead_tilde> <dead_tilde>                               : "῀"  U1fc0
+<dead_horn> <underscore>                                : "᾽"  U1fbd
+<dead_psili> <underscore>                                : "᾽"  U1fbd
+<dead_iota> <underscore>                                : "ι"  U1fbe
+<dead_iota> <space>                                     : "ͺ"  U037a
+<dead_iota> <dead_iota>                                 : "ͺ"  U037a
+
+# Part 3
+#
+# ISO 8859-7 (Greek) multi-key and dead key definitions extracted and
+# converted from the iso8859-7/Compose file.
+
+<Multi_key> <Greek_ALPHA> <apostrophe>	: "Ά" Greek_ALPHAaccent
+<Multi_key> <apostrophe> <Greek_ALPHA>	: "Ά" Greek_ALPHAaccent
+<Multi_key> <Greek_EPSILON> <apostrophe>: "Έ" Greek_EPSILONaccent
+<Multi_key> <apostrophe> <Greek_EPSILON>: "Έ" Greek_EPSILONaccent
+<Multi_key> <Greek_ETA> <apostrophe>	: "Ή" Greek_ETAaccent
+<Multi_key> <apostrophe> <Greek_ETA>	: "Ή" Greek_ETAaccent
+<Multi_key> <Greek_IOTA> <apostrophe>	: "Ί" Greek_IOTAaccent
+<Multi_key> <apostrophe> <Greek_IOTA>	: "Ί" Greek_IOTAaccent
+<Multi_key> <Greek_OMICRON> <apostrophe>: "Ό" Greek_OMICRONaccent
+<Multi_key> <apostrophe> <Greek_OMICRON>: "Ό" Greek_OMICRONaccent
+<Multi_key> <Greek_UPSILON> <apostrophe>: "Ύ" Greek_UPSILONaccent
+<Multi_key> <apostrophe> <Greek_UPSILON>: "Ύ" Greek_UPSILONaccent
+<Multi_key> <Greek_OMEGA> <apostrophe>	: "Ώ" Greek_OMEGAaccent
+<Multi_key> <apostrophe> <Greek_OMEGA>	: "Ώ" Greek_OMEGAaccent
+<Multi_key> <Greek_IOTA> <quotedbl>	: "Ϊ" Greek_IOTAdieresis
+<Multi_key> <quotedbl> <Greek_IOTA>	: "Ϊ" Greek_IOTAdieresis
+<Multi_key> <Greek_UPSILON> <quotedbl>	: "Ϋ" Greek_UPSILONdieresis
+<Multi_key> <quotedbl> <Greek_UPSILON>	: "Ϋ" Greek_UPSILONdieresis
+
+<Multi_key> <Greek_alpha> <apostrophe>	: "ά" Greek_alphaaccent
+<Multi_key> <apostrophe> <Greek_alpha>	: "ά" Greek_alphaaccent
+<Multi_key> <Greek_epsilon> <apostrophe>: "έ" Greek_epsilonaccent
+<Multi_key> <apostrophe> <Greek_epsilon>: "έ" Greek_epsilonaccent
+<Multi_key> <Greek_eta> <apostrophe>	: "ή" Greek_etaaccent
+<Multi_key> <apostrophe> <Greek_eta>	: "ή" Greek_etaaccent
+<Multi_key> <Greek_iota> <apostrophe>	: "ί" Greek_iotaaccent
+<Multi_key> <apostrophe> <Greek_iota>	: "ί" Greek_iotaaccent
+<Multi_key> <Greek_omicron> <apostrophe>: "ό" Greek_omicronaccent
+<Multi_key> <apostrophe> <Greek_omicron>: "ό" Greek_omicronaccent
+<Multi_key> <Greek_upsilon> <apostrophe>: "ύ" Greek_upsilonaccent
+<Multi_key> <apostrophe> <Greek_upsilon>: "ύ" Greek_upsilonaccent
+<Multi_key> <Greek_omega> <apostrophe>	: "ώ" Greek_omegaaccent
+<Multi_key> <apostrophe> <Greek_omega>	: "ώ" Greek_omegaaccent
+<Multi_key> <Greek_iota> <quotedbl>	: "ϊ" Greek_iotadieresis
+<Multi_key> <quotedbl> <Greek_iota>	: "ϊ" Greek_iotadieresis
+<Multi_key> <Greek_upsilon> <quotedbl>	: "ϋ" Greek_upsilondieresis
+<Multi_key> <quotedbl> <Greek_upsilon>	: "ϋ" Greek_upsilondieresis
+
+<Multi_key> <apostrophe> <quotedbl> <Greek_iota>	: "ΐ" Greek_iotaaccentdieresis
+<Multi_key> <quotedbl> <apostrophe> <Greek_iota>	: "ΐ" Greek_iotaaccentdieresis
+<Multi_key> <apostrophe> <quotedbl> <Greek_upsilon>	: "ΰ" Greek_upsilonaccentdieresis
+<Multi_key> <quotedbl> <apostrophe> <Greek_upsilon>	: "ΰ" Greek_upsilonaccentdieresis
+<Multi_key> <apostrophe> <quotedbl> <space>		: "΅" Greek_accentdieresis
+<Multi_key> <quotedbl> <apostrophe> <space>		: "΅" Greek_accentdieresis
+
+<dead_acute> <Greek_alpha>		: "ά"	Greek_alphaaccent
+<dead_acute> <Greek_epsilon>		: "έ"	Greek_epsilonaccent
+<dead_acute> <Greek_eta>		: "ή"	Greek_etaaccent
+<dead_acute> <Greek_iota>		: "ί"	Greek_iotaaccent
+<dead_acute> <Greek_omicron>		: "ό"	Greek_omicronaccent
+<dead_acute> <Greek_upsilon>		: "ύ"	Greek_upsilonaccent
+<dead_acute> <Greek_omega>		: "ώ"	Greek_omegaaccent
+<dead_acute> <Greek_ALPHA>		: "Ά"	Greek_ALPHAaccent
+<dead_acute> <Greek_EPSILON>		: "Έ"	Greek_EPSILONaccent
+<dead_acute> <Greek_ETA>		: "Ή"	Greek_ETAaccent
+<dead_acute> <Greek_IOTA>		: "Ί"	Greek_IOTAaccent
+<dead_acute> <Greek_OMICRON>		: "Ό"	Greek_OMICRONaccent
+<dead_acute> <Greek_UPSILON>		: "Ύ"	Greek_UPSILONaccent
+<dead_acute> <Greek_OMEGA>		: "Ώ"	Greek_OMEGAaccent
+<dead_acute> <space>			: "΄"	U0384
+<dead_acute> <dead_acute>		: "΄"	U0384
+<dead_acute> <period>			: "·"	periodcentered
+<dead_acute> <less>			: "«"	guillemotleft
+<dead_acute> <greater>			: "»"	guillemotright
+
+<dead_diaeresis> <Greek_iota>		: "ϊ"	Greek_iotadieresis
+<dead_diaeresis> <Greek_upsilon>	: "ϋ"	Greek_upsilondieresis
+<dead_diaeresis> <Greek_IOTA>		: "Ϊ"	Greek_IOTAdieresis
+<dead_diaeresis> <Greek_UPSILON>	: "Ϋ"	Greek_UPSILONdieresis
+<dead_diaeresis> <space>		: "¨"	diaeresis
+<dead_diaeresis> <dead_diaeresis>	: "¨"	diaeresis
+<dead_diaeresis> <period>		: "·"	periodcentered
+<dead_diaeresis> <less>			: "«"	guillemotleft
+<dead_diaeresis> <greater>		: "»"	guillemotright
+
+<dead_acute> <dead_diaeresis> <Greek_iota>	: "ΐ"	Greek_iotaaccentdieresis
+<dead_acute> <dead_diaeresis> <Greek_upsilon>	: "ΰ"	Greek_upsilonaccentdieresis
+<dead_acute> <dead_diaeresis> <space>		: "΅"	Greek_accentdieresis
+
+<dead_diaeresis> <dead_acute> <Greek_iota>	: "ΐ"	Greek_iotaaccentdieresis
+<dead_diaeresis> <dead_acute> <Greek_upsilon>	: "ΰ"	Greek_upsilonaccentdieresis
+<dead_diaeresis> <dead_acute> <space>		: "΅"	Greek_accentdieresis
+
+# Part 4
+#
+# Miscellaneous extensions.
+
+<dead_macron> <space>			: "¯"	macron
+<dead_macron> <dead_macron>		: "¯"	macron
+<dead_breve> <space>			: "˘"	breve
+<dead_breve> <dead_breve>		: "˘"	breve
+
+<dead_grave> <underscore>		: "`"	grave
+<dead_acute> <underscore>		: "´"	acute
+<dead_tilde> <underscore>		: "~"	asciitilde
+
+<Multi_key> <less> <apostrophe> <space>	: "‘"	leftsinglequotemark
+<Multi_key> <apostrophe> <less> <space>	: "‘"	leftsinglequotemark
+<Multi_key> <greater> <apostrophe> <space>	: "’"	rightsinglequotemark
+<Multi_key> <apostrophe> <greater> <space>	: "’"	rightsinglequotemark
+<Multi_key> <asciitilde> <asciitilde>	: "―"	Greek_horizbar
+<Multi_key> <asciicircum> <asciicircum>	: "˘"	breve
+
+<Multi_key> <slash> <slash>		: "ʹ"	U0374
+<Multi_key> <backslash> <backslash>	: "͵"	U0375
+<Multi_key> <semicolon> <semicolon>	: ";"	U037e
+<Multi_key> <colon> <colon>		: "·"	U0387
+
+<Multi_key> <C> <equal>			: "€"	EuroSign
+<Multi_key> <equal> <C>			: "€"	EuroSign
+<Multi_key> <c> <equal>			: "€"	EuroSign
+<Multi_key> <equal> <c>			: "€"	EuroSign
+<Multi_key> <E> <equal>			: "€"	EuroSign
+<Multi_key> <equal> <E>			: "€"	EuroSign
+<Multi_key> <e> <equal>			: "€"	EuroSign
+<Multi_key> <equal> <e>			: "€"	EuroSign
+<Multi_key> <Greek_EPSILON> <equal>	: "€"	EuroSign
+<Multi_key> <equal> <Greek_EPSILON>	: "€"	EuroSign
+<Multi_key> <Greek_epsilon> <equal>	: "€"	EuroSign
+<Multi_key> <equal> <Greek_epsilon>	: "€"	EuroSign
+
+<Multi_key> <Greek_DELTA> <Greek_RHO>	: "₯"	U20af
+<Multi_key> <Greek_DELTA> <Greek_rho>	: "₯"	U20af
+<Multi_key> <Greek_delta> <Greek_RHO>	: "₯"	U20af
+<Multi_key> <Greek_delta> <Greek_rho>	: "₯"	U20af
+
+<Multi_key> <question> <exclam>         : "‽"   U203D # INTERROBANG
+<Multi_key> <exclam> <question>         : "‽"   U203D # INTERROBANG
+
+<Multi_key> <1> <3>			: "⅓"	U2153 # VULGAR FRACTION ONE THIRD
+<Multi_key> <2> <3>			: "⅔"	U2154 # VULGAR FRACTION TWO THIRDS
+<Multi_key> <1> <5>			: "⅕"	U2155 # VULGAR FRACTION ONE FIFTH
+<Multi_key> <2> <5>			: "⅖"	U2156 # VULGAR FRACTION TWO FIFTHS
+<Multi_key> <3> <5>			: "⅗"	U2157 # VULGAR FRACTION THREE FIFTHS
+<Multi_key> <4> <5>			: "⅘"	U2158 # VULGAR FRACTION FOUR FIFTHS
+<Multi_key> <1> <6>			: "⅙"	U2159 # VULGAR FRACTION ONE SIXTH
+<Multi_key> <5> <6>			: "⅚"	U215A # VULGAR FRACTION FIVE SIXTHS
+<Multi_key> <1> <8>			: "⅛"	U215B # VULGAR FRACTION ONE EIGHTH
+<Multi_key> <3> <8>			: "⅜"	U215C # VULGAR FRACTION THREE EIGHTHS
+<Multi_key> <5> <8>			: "⅝"	U215D # VULGAR FRACTION FIVE EIGHTHS
+<Multi_key> <7> <8>			: "⅞"	U215E # VULGAR FRACTION SEVEN EIGHTHS
+
+#
+# Khmer digraphs
+#
+
+<U17ff> :   "ាំ"
+<U17fe> :   "ោះ"
+<U17fd> :   "េះ"
+<U17fc> :   "ុំ"
+<U17fb> :   "ុះ"
+
+# End

@@ -1,0 +1,43 @@
+PULSEAUDIO SOUND SERVER
+
+WEB SITE:
+	http://pulseaudio.org/
+
+GIT:
+	https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git
+
+GitLab:
+	https://gitlab.freedesktop.org/pulseaudio/pulseaudio
+
+MAILING LIST:
+	http://lists.freedesktop.org/mailman/listinfo/pulseaudio-discuss
+
+GIT COMMITS MAILING LIST:
+	http://lists.freedesktop.org/mailman/listinfo/pulseaudio-commits
+
+TRAC/BUGZILLA TICKET CHANGES MAILING LIST:
+	http://lists.freedesktop.org/mailman/listinfo/pulseaudio-bugs
+
+IRC:
+	#pulseaudio on irc.freenode.org
+
+FRESHMEAT:
+	http://freshmeat.net/projects/pulseaudio/
+
+OHLOH:
+	http://www.ohloh.net/projects/4038
+
+AUTHORS:
+	Several
+
+HACKING:
+	In order to run pulseaudio from the build dir __OPTIMIZE__ should be
+	disabled (look at src/pulsecore/core-util.h::pa_run_from_build_tree()),
+	this can be done by passing "CFLAGS=-O0" to the configure script:
+	  ./autogen.sh
+	  CFLAGS="-ggdb3 -O0" LDFLAGS="-ggdb3" ./configure
+	  make
+	  ./src/pulseaudio -n -F src/default.pa -p $(pwd)/src/
+
+SPELLING:
+        PulseAudio

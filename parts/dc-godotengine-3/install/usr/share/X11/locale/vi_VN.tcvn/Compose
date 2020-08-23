@@ -1,0 +1,180 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1998/12/18 Le Hong Boi $
+#
+# TCVN 5712-2 Compose Sequences
+#
+# Sequence Definition
+#
+# dead key accent keysyms
+# Special Character
+<dead_grave> <space>			: "`"	grave
+<dead_hook> <space>			: " "	space
+<dead_tilde> <space>			: "~"	asciitilde
+<dead_acute> <space>			: "'"	apostrophe
+<dead_acute> <apostrophe>		: "\264"	acute
+# Accented Alphabet
+<dead_grave> <A>			: "\200"	Agrave
+<dead_grave> <a>			: "\265"	agrave
+<dead_hook> <A>				: "\266"	Ahook
+<dead_hook> <a>				: "\266"	ahook
+<dead_tilde> <A>			: "\202"	Atilde
+<dead_tilde> <a>			: "\267"	atilde
+<dead_acute> <A>			: "\203"	Aacute
+<dead_acute> <a>			: "\270"	aacute
+<dead_belowdot> <A>			: "\271"	Abelowdot
+<dead_belowdot> <a>			: "\271"	abelowdot
+<dead_grave> <Abreve>			: "\273"	Abrevegrave
+<dead_grave> <abreve>			: "\273"	abrevegrave
+<dead_hook> <Abreve>			: "\274"	Abrevehook
+<dead_hook> <abreve>			: "\274"	abrevehook
+<dead_tilde> <Abreve>			: "\275"	Abrevetilde
+<dead_tilde> <abreve>			: "\275"	abrevetilde
+<dead_acute> <Abreve>			: "\276"	Abreveacute
+<dead_acute> <abreve>			: "\276"	abreveacute
+<dead_belowdot> <Abreve>		: "\306"	Abrevebelowdot
+<dead_belowdot> <abreve>		: "\306"	abrevebelowdot
+<dead_grave> <Acircumflex>		: "\307"	Acircumflexgrave
+<dead_grave> <acircumflex>		: "\307"	acircumflexgrave
+<dead_hook> <Acircumflex>		: "\310"	Acircumflexhook
+<dead_hook> <acircumflex>		: "\310"	acircumflexhook
+<dead_tilde> <Acircumflex>		: "\311"	Acircumflextilde
+<dead_tilde> <acircumflex>		: "\311"	acircumflextilde
+<dead_acute> <Acircumflex>		: "\312"	Acircumflexacute
+<dead_acute> <acircumflex>		: "\312"	acircumflexacute
+<dead_belowdot> <Acircumflex>		: "\313"	Acircumflexbelowdot
+<dead_belowdot> <acircumflex>		: "\313"	acircumflexbelowdot
+<dead_grave> <E>			: "\207"	Egrave
+<dead_grave> <e>			: "\314"	egrave
+<dead_hook> <E>				: "\316"	Ehook
+<dead_hook> <e>				: "\316"	ehook
+<dead_tilde> <E>			: "\317"	Etilde
+<dead_tilde> <e>			: "\317"	etilde
+<dead_acute> <E>			: "\212"	Eacute
+<dead_acute> <e>			: "\320"	eacute
+<dead_belowdot> <E>			: "\321"	Ebelowdot
+<dead_belowdot> <e>			: "\321"	ebelowdot
+<dead_grave> <Ecircumflex>		: "\322"	Ecircumflexgrave
+<dead_grave> <ecircumflex>		: "\322"	ecircumflexgrave
+<dead_hook> <Ecircumflex>		: "\323"	Ecircumflexhook
+<dead_hook> <ecircumflex>		: "\323"	ecircumflexhook
+<dead_tilde> <Ecircumflex>		: "\324"	Ecircumflextilde
+<dead_tilde> <ecircumflex>		: "\324"	ecircumflextilde
+<dead_acute> <Ecircumflex>		: "\325"	Ecircumflexacute
+<dead_acute> <ecircumflex>		: "\325"	ecircumflexacute
+<dead_belowdot> <Ecircumflex>		: "\326"	Ecircumflexbelowdot
+<dead_belowdot> <ecircumflex>		: "\326"	ecircumflexbelowdot
+<dead_grave> <I>			: "\215"	Igrave
+<dead_grave> <i>			: "\327"	igrave
+<dead_hook> <I>				: "\330"	Ihook
+<dead_hook> <i>				: "\330"	ihook
+<dead_tilde> <I>			: "\217"	Itilde
+<dead_tilde> <i>			: "\334"	itilde
+<dead_acute> <I>			: "\220"	Iacute
+<dead_acute> <i>			: "\335"	iacute
+<dead_belowdot> <I>			: "\336"	Ibelowdot
+<dead_belowdot> <i>			: "\336"	ibelowdot
+<dead_grave> <O>			: "\222"	Ograve
+<dead_grave> <o>			: "\337"	ograve
+<dead_hook> <O>				: "\341"	Ohook
+<dead_hook> <o>				: "\341"	ohook
+<dead_tilde> <O>			: "\224"	Otilde
+<dead_tilde> <o>			: "\342"	otilde
+<dead_acute> <O>			: "\225"	Oacute
+<dead_acute> <o>			: "\343"	oacute
+<dead_belowdot> <O>			: "\344"	Obelowdot
+<dead_belowdot> <o>			: "\344"	obelowdot
+<dead_grave> <Ocircumflex>		: "\345"	Ocircumflexgrave
+<dead_grave> <ocircumflex>		: "\345"	ocircumflexgrave
+<dead_hook> <Ocircumflex>		: "\346"	Ocircumflexhook
+<dead_hook> <ocircumflex>		: "\346"	ocircumflexhook
+<dead_tilde> <Ocircumflex>		: "\347"	Ocircumflextilde
+<dead_tilde> <ocircumflex>		: "\347"	ocircumflextilde
+<dead_acute> <Ocircumflex>		: "\350"	Ocircumflexacute
+<dead_acute> <ocircumflex>		: "\350"	ocircumflexacute
+<dead_belowdot> <Ocircumflex>		: "\351"	Ocircumflexbelowdot
+<dead_belowdot> <ocircumflex>		: "\351"	ocircumflexbelowdot
+<dead_grave> <Ohorn>			: "\352"	Ohorngrave
+<dead_grave> <ohorn>			: "\352"	ohorngrave
+<dead_hook> <Ohorn>			: "\353"	Ohornhook
+<dead_hook> <ohorn>			: "\353"	ohornhook
+<dead_tilde> <Ohorn>			: "\354"	Ohorntilde
+<dead_tilde> <ohorn>			: "\354"	ohorntilde
+<dead_acute> <Ohorn>			: "\355"	Ohornacute
+<dead_acute> <ohorn>			: "\355"	ohornacute
+<dead_belowdot> <Ohorn>			: "\356"	Ohornbelowdot
+<dead_belowdot> <ohorn>			: "\356"	ohornbelowdot
+<dead_grave> <U>			: "\235"	Ugrave
+<dead_grave> <u>			: "\357"	ugrave
+<dead_hook> <U>				: "\361"	Uhook
+<dead_hook> <u>				: "\361"	uhook
+<dead_tilde> <U>			: "\237"	Utilde
+<dead_tilde> <u>			: "\362"	utilde
+<dead_acute> <U>			: "\001"	Uacute
+<dead_acute> <u>			: "\363"	uacute
+<dead_belowdot> <U>			: "\364"	Ubelowdot
+<dead_belowdot> <u>			: "\364"	ubelowdot
+<dead_grave> <Uhorn>			: "\365"	Uhorngrave
+<dead_grave> <uhorn>			: "\365"	uhorngrave
+<dead_hook> <Uhorn>			: "\366"	Uhornhook
+<dead_hook> <uhorn>			: "\366"	uhornhook
+<dead_tilde> <Uhorn>			: "\367"	Uhorntilde
+<dead_tilde> <uhorn>			: "\367"	uhorntilde
+<dead_acute> <Uhorn>			: "\370"	Uhornacute
+<dead_acute> <uhorn>			: "\370"	uhornacute
+<dead_belowdot> <Uhorn>			: "\371"	Uhornbelowdot
+<dead_belowdot> <uhorn>			: "\371"	uhornbelowdot
+<dead_grave> <Y>			: "\023"	Ygrave
+<dead_grave> <y>			: "\372"	ygrave
+<dead_hook> <Y>				: "\373"	Yhook
+<dead_hook> <y>				: "\373"	yhook
+<dead_tilde> <Y>			: "\374"	Ytilde
+<dead_tilde> <y>			: "\374"	ytilde
+<dead_acute> <Y>			: "\026"	Yacute
+<dead_acute> <y>			: "\375"	yacute
+<dead_belowdot> <Y>			: "\376"	Ybelowdot
+<dead_belowdot> <y>			: "\376"	ybelowdot
+# End of Sequence Definition

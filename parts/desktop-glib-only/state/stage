@@ -1,0 +1,85 @@
+!StageState
+directories: !!set
+  bin: null
+  usr: null
+  usr/bin: null
+  usr/lib: null
+  usr/lib/x86_64-linux-gnu: null
+  usr/lib/x86_64-linux-gnu/gio: null
+  usr/lib/x86_64-linux-gnu/gio/modules: null
+  usr/lib/x86_64-linux-gnu/glib-2.0: null
+  usr/share: null
+  usr/share/bash-completion: null
+  usr/share/bash-completion/completions: null
+  usr/share/doc: null
+  usr/share/doc/libelf1: null
+  usr/share/doc/libffi7: null
+  usr/share/doc/libglib2.0-0: null
+  usr/share/doc/libglib2.0-bin: null
+  usr/share/doc/libglib2.0-data: null
+  usr/share/glib-2.0: null
+  usr/share/glib-2.0/schemas: null
+  usr/share/lintian: null
+  usr/share/lintian/overrides: null
+  usr/share/man: null
+  usr/share/man/man1: null
+files: !!set
+  bin/desktop-launch: null
+  usr/bin/gapplication: null
+  usr/bin/gdbus: null
+  usr/bin/gio: null
+  usr/bin/gio-querymodules: null
+  usr/bin/glib-compile-schemas: null
+  usr/bin/gresource: null
+  usr/bin/gsettings: null
+  usr/lib/x86_64-linux-gnu/glib-2.0/gio-launch-desktop: null
+  usr/lib/x86_64-linux-gnu/glib-2.0/gio-querymodules: null
+  usr/lib/x86_64-linux-gnu/glib-2.0/glib-compile-schemas: null
+  usr/lib/x86_64-linux-gnu/libelf-0.176.so: null
+  usr/lib/x86_64-linux-gnu/libelf.so.1: null
+  usr/lib/x86_64-linux-gnu/libffi.so.7: null
+  usr/lib/x86_64-linux-gnu/libffi.so.7.1.0: null
+  usr/lib/x86_64-linux-gnu/libgio-2.0.so.0: null
+  usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.6400.3: null
+  usr/lib/x86_64-linux-gnu/libglib-2.0.so.0: null
+  usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.6400.3: null
+  usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0: null
+  usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.6400.3: null
+  usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0: null
+  usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.6400.3: null
+  usr/lib/x86_64-linux-gnu/libgthread-2.0.so.0: null
+  usr/lib/x86_64-linux-gnu/libgthread-2.0.so.0.6400.3: null
+  usr/share/bash-completion/completions/gapplication: null
+  usr/share/bash-completion/completions/gdbus: null
+  usr/share/bash-completion/completions/gio: null
+  usr/share/bash-completion/completions/gresource: null
+  usr/share/bash-completion/completions/gsettings: null
+  usr/share/doc/libelf1/changelog.Debian.gz: null
+  usr/share/doc/libelf1/copyright: null
+  usr/share/doc/libffi7/changelog.Debian.gz: null
+  usr/share/doc/libffi7/copyright: null
+  usr/share/doc/libglib2.0-0/NEWS.gz: null
+  usr/share/doc/libglib2.0-0/README.md.gz: null
+  usr/share/doc/libglib2.0-0/changelog.Debian.gz: null
+  usr/share/doc/libglib2.0-0/copyright: null
+  usr/share/doc/libglib2.0-bin/changelog.Debian.gz: null
+  usr/share/doc/libglib2.0-bin/copyright: null
+  usr/share/doc/libglib2.0-data/changelog.Debian.gz: null
+  usr/share/doc/libglib2.0-data/copyright: null
+  usr/share/lintian/overrides/libglib2.0-0: null
+  usr/share/lintian/overrides/libglib2.0-bin: null
+  usr/share/man/man1/gapplication.1.gz: null
+  usr/share/man/man1/gdbus.1.gz: null
+  usr/share/man/man1/gio-querymodules.1.gz: null
+  usr/share/man/man1/gio.1.gz: null
+  usr/share/man/man1/glib-compile-schemas.1.gz: null
+  usr/share/man/man1/gresource.1.gz: null
+  usr/share/man/man1/gsettings.1.gz: null
+project_options: {}
+properties:
+  filesets: {}
+  override-stage: snapcraftctl stage
+  stage:
+  - '*'
+scriptlet_metadata: !ExtractedMetadata
+  _data: {}

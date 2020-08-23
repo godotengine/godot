@@ -1,0 +1,39 @@
+!PullState
+assets:
+  build-packages:
+  - libglib2.0-dev
+  build-snaps: []
+  source-details:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-branch: ''
+    source-checksum: ''
+    source-commit: 1c04184cce644acd07cc01f5255a6405eb89893b
+    source-tag: ''
+  stage-packages:
+  - libelf1=0.176-1.1build1
+  - libglib2.0-bin=2.64.3-1~ubuntu20.04.1
+  - libglib2.0-data=2.64.3-1~ubuntu20.04.1
+  - libffi7=3.3-4
+  - libglib2.0-0=2.64.3-1~ubuntu20.04.1
+extracted_metadata:
+  files: []
+  metadata: !ExtractedMetadata
+    _data: {}
+project_options:
+  deb_arch: amd64
+properties:
+  override-pull: snapcraftctl pull
+  parse-info: []
+  plugin: make
+  source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+  source-branch: ''
+  source-commit: ''
+  source-depth: 0
+  source-subdir: glib-only
+  source-tag: ''
+  source-type: ''
+  stage-packages:
+  - libglib2.0-bin
+schema_properties: []
+scriptlet_metadata: !ExtractedMetadata
+  _data: {}

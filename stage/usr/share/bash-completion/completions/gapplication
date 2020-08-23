@@ -1,0 +1,55 @@
+
+# Check for bash
+[ -z "$BASH_VERSION" ] && return
+
+####################################################################################################
+
+__app() {
+  case "${COMP_CWORD}" in
+    1)
+      COMPREPLY=($(compgen -W "help version list-apps launch action list-actions" -- "${COMP_WORDS[1]}"))
+      return 0
+      ;;
+
+    2)
+      case "${COMP_WORDS[1]}" in
+        launch|action|list-actions)
+          COMPREPLY=($(compgen -W "`gapplication list-apps`" -- "${COMP_WORDS[2]}"))
+          return 0
+          ;;
+
+        *)
+          COMPREPLY=()
+          return 0
+          ;;
+      esac
+      ;;
+  esac
+
+  # Otherwise, what we will do is based on the command in ${COMP_WORDS[1]}
+  case "${COMP_WORDS[1]}" in
+    action)
+      # Word 3 is the action name.  This is the only one we can help with.
+      if [ "${COMP_CWORD}" == 3 ]; then
+        COMPREPLY=($(compgen -W "`gapplication list-actions "${COMP_WORDS[2]}"`" -- "${COMP_WORDS[3]}"))
+        return 0
+      else
+        COMPREPLY=()
+        return 0
+      fi
+      ;;
+    launch)
+      # Filenames...
+      COMPREPLY=($(compgen -A file "${COMP_WORDS[COMP_CWORD]}"))
+      return 0
+      ;;
+    *)
+      # Nothing else should be out this far...
+      COMPREPLY=()
+      return 0
+  esac
+}
+
+####################################################################################################
+
+complete -F __app gapplication

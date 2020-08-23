@@ -1,0 +1,70 @@
+tcp_wrappers for Debian
+-----------------------
+
+Extensions:
+-----------
+
+There are a number of Debian specific changes to TCP wrappers:
+
+    * libwrap.so.0 is available for dynamic linking.
+
+    * You can blacklist a whole bunch of hosts at once by specifying a
+      file that contains a list of those hosts instead of just naming
+      a host. See the hosts_access(5) manpage.
+
+    * You can allow or disallow access to a service depending on the
+      exit status of a program. See the hosts_access(5) manpage.
+
+    * CIDR support in hosts_access(5) functions.
+
+    * %r and %R parameters in hosts_access(5) functions.
+
+    * Servers can be matched by port number other than by process name.
+
+    * IPv6 support.
+
+Library versioning:
+-------------------
+
+TCP wrappers isn't distributed as a shared library upstream, so the
+versioning scheme used for TCP wrappers may not match Linux's library
+versioning scheme. Hence, libwrap has a soname of libwrap0 (version 7.6),
+instead of libwrap7 (version 6).
+
+Build options:
+--------------
+
+STYLE		= "-DPROCESS_OPTIONS -DACLEXEC"
+
+	Debian TCP Wrappers use the extended syntax for /etc/hosts.allow
+	and /etc/hosts.deny. This particularly affects spawning other
+	commands on connections, see the hosts_options(5) manpage for
+	more details.
+
+FACILITY	= LOG_DAEMON
+SEVERITY	= LOG_INFO
+
+	TCP Wrappers logs as daemon.info (rather than mail.info).
+
+BUGS		= 
+
+	Linux has no bugs. :)
+
+VSYSLOG		=
+
+	libc6 has vsyslog built in.
+
+UMASK		= -DDAEMON_UMASK=022
+NETGROUP	= -DNETGROUP
+
+RFC931_TIMEOUT	= 10
+ACCESS		= -DHOSTS_ACCESS
+TABLES		= -DHOSTS_DENY=\"/etc/hosts.deny\" -DHOSTS_ALLOW=\"/etc/hosts.al
+low\"
+KILL_OPT	= -DKILL_IP_OPTIONS
+
+EXTRA_CFLAGS="-DSYS_ERRLIST_DEFINED -DHAVE_STRERROR -DHAVE_WEAKSYMS -DINET6=1 -Dss_family=__ss_family -Dss_len=__ss_len"
+
+The options ALWAYS_RFC931, ALWAYS_HOSTNAME and PARANOID have not been
+enabled because these features can be enabled at runtime. The option
+APPEND_DOT is not enabled because of compatibility reasons.

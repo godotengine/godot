@@ -1,0 +1,116 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+# (c) 1996, X11R6 L10N for Taiwan and Big5 Encoding Project
+#
+# modified for X11R6.3 by Hung-Chi Chu <hcchu@r350.ee.ntu.edu.tw> 1998/01/10
+# modified for Big5HKSCS by Roger So <roger.so@sw-linux.com> 
+#
+#
+#	XLC_FONTSET category
+#
+XLC_FONTSET
+# fs0 class (7 bit ASCII)
+fs0	{
+	charset	{
+		name	ISO8859-1:GL
+	}
+	font	{
+		primary		ISO8859-1:GL
+		vertical_rotate	all
+        }
+}
+
+# fs1 class (HKSCS extensions)
+fs1	{
+	charset	{
+		name	BIG5HKSCS-0:GLGR
+	}
+	font	{
+		primary		BIG5HKSCS-0:GLGR
+		substitute	BIG5HKSCS-0:GLGR
+	}
+}
+END XLC_FONTSET
+
+#
+#	XLC_XLOCALE category
+#
+XLC_XLOCALE
+
+encoding_name		zh_HK.big5hkscs
+mb_cur_max		2
+state_depend_encoding	False
+
+wc_encoding_mask	\x00008000
+wc_shift_bits		8
+
+use_stdc_env		True
+force_convert_to_mb	True
+
++XCOMM	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL
+}
+
+#	cs1 class
+cs1	{
+	side		none
+	length		2
+	byte1		\x85,\xfe
+	byte2		\x40,\x7e;\xa1,\xfe
+
+	wc_encoding	\x00008000
+	ct_encoding	BIG5HKSCS-0:GLGR:\x1b\x25\x2f\x32
+
+	mb_conversion	[\x8540,\xfefe]->\x0540
+	ct_conversion	[\x0540,\x7efe]->\x8540
+}
+
+END XLC_XLOCALE

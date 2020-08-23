@@ -1,0 +1,1022 @@
+!
+! Copyright 1993, 1995, 1998  The Open Group
+
+! Permission to use, copy, modify, distribute, and sell this software and its
+! documentation for any purpose is hereby granted without fee, provided that
+! the above copyright notice appear in all copies and that both that
+! copyright notice and this permission notice appear in supporting
+! documentation.
+! 
+! The above copyright notice and this permission notice shall be
+! included in all copies or substantial portions of the Software.
+! 
+! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+! EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+! MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+! IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
+! OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+! ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+! OTHER DEALINGS IN THE SOFTWARE.
+! 
+! Except as contained in this notice, the name of The Open Group shall
+! not be used in advertising or otherwise to promote the sale, use or
+! other dealings in this Software without prior written authorization
+! from The Open Group.
+!
+!
+! these are used in XGetErrorMessage.
+XlibMessage.XError: X Error of failed request
+XlibMessage.MajorCode: Major opcode of failed request:  %d
+XlibMessage.MinorCode: Minor opcode of failed request:  %d
+XlibMessage.ResourceID: Resource id in failed request:  0x%lx
+XlibMessage.Value: Value in failed request:  0x%lx
+XlibMessage.AtomID: Atom id in failed request:  0x%lx
+XlibMessage.ErrorSerial: Serial number of failed request:  %lu
+XlibMessage.CurrentSerial: Current serial number in output stream:  %lu
+! X request codes.
+XRequest.1:X_CreateWindow
+XRequest.2:X_ChangeWindowAttributes
+XRequest.3:X_GetWindowAttributes
+XRequest.4:X_DestroyWindow
+XRequest.5:X_DestroySubwindows
+XRequest.6:X_ChangeSaveSet
+XRequest.7:X_ReparentWindow
+XRequest.8:X_MapWindow
+XRequest.9:X_MapSubwindows
+XRequest.10:X_UnmapWindow
+XRequest.11:X_UnmapSubwindows
+XRequest.12:X_ConfigureWindow
+XRequest.13:X_CirculateWindow
+XRequest.14:X_GetGeometry
+XRequest.15:X_QueryTree
+XRequest.16:X_InternAtom
+XRequest.17:X_GetAtomName
+XRequest.18:X_ChangeProperty
+XRequest.19:X_DeleteProperty
+XRequest.20:X_GetProperty
+XRequest.21:X_ListProperties
+XRequest.22:X_SetSelectionOwner
+XRequest.23:X_GetSelectionOwner
+XRequest.24:X_ConvertSelection
+XRequest.25:X_SendEvent
+XRequest.26:X_GrabPointer
+XRequest.27:X_UngrabPointer
+XRequest.28:X_GrabButton
+XRequest.29:X_UngrabButton
+XRequest.30:X_ChangeActivePointerGrab
+XRequest.31:X_GrabKeyboard
+XRequest.32:X_UngrabKeyboard
+XRequest.33:X_GrabKey
+XRequest.34:X_UngrabKey
+XRequest.35:X_AllowEvents
+XRequest.36:X_GrabServer
+XRequest.37:X_UngrabServer
+XRequest.38:X_QueryPointer
+XRequest.39:X_GetMotionEvents
+XRequest.40:X_TranslateCoords
+XRequest.41:X_WarpPointer
+XRequest.42:X_SetInputFocus
+XRequest.43:X_GetInputFocus
+XRequest.44:X_QueryKeymap
+XRequest.45:X_OpenFont
+XRequest.46:X_CloseFont
+XRequest.47:X_QueryFont
+XRequest.48:X_QueryTextExtents
+XRequest.49:X_ListFonts
+XRequest.50:X_ListFontsWithInfo
+XRequest.51:X_SetFontPath
+XRequest.52:X_GetFontPath
+XRequest.53:X_CreatePixmap
+XRequest.54:X_FreePixmap
+XRequest.55:X_CreateGC
+XRequest.56:X_ChangeGC
+XRequest.57:X_CopyGC
+XRequest.58:X_SetDashes
+XRequest.59:X_SetClipRectangles
+XRequest.60:X_FreeGC
+XRequest.61:X_ClearArea
+XRequest.62:X_CopyArea
+XRequest.63:X_CopyPlane
+XRequest.64:X_PolyPoint
+XRequest.65:X_PolyLine
+XRequest.66:X_PolySegment
+XRequest.67:X_PolyRectangle
+XRequest.68:X_PolyArc
+XRequest.69:X_FillPoly
+XRequest.70:X_PolyFillRectangle
+XRequest.71:X_PolyFillArc
+XRequest.72:X_PutImage
+XRequest.73:X_GetImage
+XRequest.74:X_PolyText8
+XRequest.75:X_PolyText16
+XRequest.76:X_ImageText8
+XRequest.77:X_ImageText16
+XRequest.78:X_CreateColormap
+XRequest.79:X_FreeColormap
+XRequest.80:X_CopyColormapAndFree
+XRequest.81:X_InstallColormap
+XRequest.82:X_UninstallColormap
+XRequest.83:X_ListInstalledColormaps
+XRequest.84:X_AllocColor
+XRequest.85:X_AllocNamedColor
+XRequest.86:X_AllocColorCells
+XRequest.87:X_AllocColorPlanes
+XRequest.88:X_FreeColors
+XRequest.89:X_StoreColors
+XRequest.90:X_StoreNamedColor
+XRequest.91:X_QueryColors
+XRequest.92:X_LookupColor
+XRequest.93:X_CreateCursor
+XRequest.94:X_CreateGlyphCursor
+XRequest.95:X_FreeCursor
+XRequest.96:X_RecolorCursor
+XRequest.97:X_QueryBestSize
+XRequest.98:X_QueryExtension
+XRequest.99:X_ListExtensions
+XRequest.100:X_ChangeKeyboardMapping
+XRequest.101:X_GetKeyboardMapping
+XRequest.102:X_ChangeKeyboardControl
+XRequest.103:X_GetKeyboardControl
+XRequest.104:X_Bell
+XRequest.105:X_ChangePointerControl
+XRequest.106:X_GetPointerControl
+XRequest.107:X_SetScreenSaver
+XRequest.108:X_GetScreenSaver
+XRequest.109:X_ChangeHosts
+XRequest.110:X_ListHosts
+XRequest.111:X_SetAccessControl
+XRequest.112:X_SetCloseDownMode
+XRequest.113:X_KillClient
+XRequest.114:X_RotateProperties
+XRequest.115:X_ForceScreenSaver
+XRequest.116:X_SetPointerMapping
+XRequest.117:X_GetPointerMapping
+XRequest.118:X_SetModifierMapping
+XRequest.119:X_GetModifierMapping
+XRequest.127:X_NoOperation
+! X Error Codes
+XProtoError.0: unknown error code 0
+XProtoError.1: BadRequest (invalid request code or no such operation)
+XProtoError.2: BadValue (integer parameter out of range for operation)
+XProtoError.3: BadWindow (invalid Window parameter)
+XProtoError.4: BadPixmap (invalid Pixmap parameter)
+XProtoError.5: BadAtom (invalid Atom parameter)
+XProtoError.6: BadCursor (invalid Cursor parameter)
+XProtoError.7: BadFont (invalid Font parameter)
+XProtoError.8: BadMatch (invalid parameter attributes)
+XProtoError.9: BadDrawable (invalid Pixmap or Window parameter)
+XProtoError.10: BadAccess (attempt to access private resource denied)
+XProtoError.11: BadAlloc (insufficient resources for operation)
+XProtoError.12: BadColor (invalid Colormap parameter)
+XProtoError.13: BadGC (invalid GC parameter)
+XProtoError.14: BadIDChoice (invalid resource ID chosen for this connection)
+XProtoError.15: BadName (named color or font does not exist)
+XProtoError.16: BadLength (poly request too large or internal Xlib length error)
+XProtoError.17: BadImplementation (server does not implement operation)
+! Multi-Buffering extension, not an X Consortium standard
+XRequest.Multi-Buffering.0: X_MbufGetBufferVersion
+XRequest.Multi-Buffering.1: X_MbufCreateImageBuffers
+XRequest.Multi-Buffering.2: X_MbufDestroyImageBuffers
+XRequest.Multi-Buffering.3: X_MbufDisplayImageBuffers
+XRequest.Multi-Buffering.4: X_MbufSetMultiBufferAttributes
+XRequest.Multi-Buffering.5: X_MbufGetMultiBufferAttributes
+XRequest.Multi-Buffering.6: X_MbufSetBufferAttributes
+XRequest.Multi-Buffering.7: X_MbufGetBufferAttributes
+XRequest.Multi-Buffering.8: X_MbufGetBufferInfo
+XRequest.Multi-Buffering.9: X_MbufCreateStereoWindow
+XProtoError.Multi-Buffering.0: BadBuffer (invalid Buffer parameter)
+XlibMessage.Multi-Buffering.0: Buffer id in failed request:  0x%lx
+! SHAPE extension, an X Consortium standard
+XRequest.SHAPE.0: X_ShapeQueryVersion
+XRequest.SHAPE.1: X_ShapeRectangles
+XRequest.SHAPE.2: X_ShapeMask
+XRequest.SHAPE.3: X_ShapeCombine
+XRequest.SHAPE.4: X_ShapeOffset
+XRequest.SHAPE.5: X_ShapeQueryExtents
+XRequest.SHAPE.6: X_ShapeSelectInput
+XRequest.SHAPE.7: X_ShapeInputSelected
+XRequest.SHAPE.8: X_ShapeGetRectangles
+! Input extension, an X Consortium standard
+XRequest.XInputExtension.1:X_GetExtensionVersion
+XRequest.XInputExtension.2:X_ListInputDevices
+XRequest.XInputExtension.3:X_OpenDevice
+XRequest.XInputExtension.4:X_CloseDevice
+XRequest.XInputExtension.5:X_SetDeviceMode
+XRequest.XInputExtension.6:X_SelectExtensionEvent
+XRequest.XInputExtension.7:X_GetSelectedExtensionEvents
+XRequest.XInputExtension.8:X_ChangeDeviceDontPropagateList
+XRequest.XInputExtension.9:X_GetDeviceDontPropagateList
+XRequest.XInputExtension.10:X_GetDeviceMotionEvents
+XRequest.XInputExtension.11:X_ChangeKeyboardDevice
+XRequest.XInputExtension.12:X_ChangePointerDevice
+XRequest.XInputExtension.13:X_GrabDevice
+XRequest.XInputExtension.14:X_UngrabDevice
+XRequest.XInputExtension.15:X_GrabDeviceKey
+XRequest.XInputExtension.16:X_UngrabDeviceKey
+XRequest.XInputExtension.17:X_GrabDeviceButton
+XRequest.XInputExtension.18:X_UngrabDeviceButton
+XRequest.XInputExtension.19:X_AllowDeviceEvents
+XRequest.XInputExtension.20:X_GetDeviceFocus
+XRequest.XInputExtension.21:X_SetDeviceFocus
+XRequest.XInputExtension.22:X_GetFeedbackControl
+XRequest.XInputExtension.23:X_ChangeFeedbackControl
+XRequest.XInputExtension.24:X_GetDeviceKeyMapping
+XRequest.XInputExtension.25:X_ChangeDeviceKeyMapping
+XRequest.XInputExtension.26:X_GetDeviceModifierMapping
+XRequest.XInputExtension.27:X_SetDeviceModifierMapping
+XRequest.XInputExtension.28:X_GetDeviceButtonMapping
+XRequest.XInputExtension.29:X_SetDeviceButtonMapping
+XRequest.XInputExtension.30:X_QueryDeviceState
+XRequest.XInputExtension.31:X_SendExtensionEvent
+XRequest.XInputExtension.32:X_DeviceBell
+XRequest.XInputExtension.33:X_SetDeviceValuators
+XRequest.XInputExtension.34:X_GetDeviceControl
+XRequest.XInputExtension.35:X_ChangeDeviceControl
+XRequest.XInputExtension.36: X_ListDeviceProperties
+XRequest.XInputExtension.37: X_ChangeDeviceProperty
+XRequest.XInputExtension.38: X_DeleteDeviceProperty
+XRequest.XInputExtension.39: X_GetDeviceProperty
+XProtoError.XInputExtension.0: XI_BadDevice (invalid Device parameter)
+XlibMessage.XInputExtension.0: Device id in failed request: 0x%lx
+XProtoError.XInputExtension.1: XI_BadEvent (invalid Event parameter)
+XlibMessage.XInputExtension.1: Event id in failed request: 0x%lx
+XProtoError.XInputExtension.2: XI_BadMode (invalid Mode parameter)
+XlibMessage.XInputExtension.2: Mode id in failed request: 0x%lx
+XProtoError.XInputExtension.3: XI_DeviceBusy
+XlibMessage.XInputExtension.3: Device id in failed request: 0x%lx
+XProtoError.XInputExtension.4: XI_BadClass (invalid Class parameter)
+XlibMessage.XInputExtension.4: Class id in failed request: 0x%lx
+! MIT-SHM extension, experimental, not an X Consortium standard
+XRequest.MIT-SHM.0: X_ShmQueryVersion
+XRequest.MIT-SHM.1: X_ShmAttach
+XRequest.MIT-SHM.2: X_ShmDetach
+XRequest.MIT-SHM.3: X_ShmPutImage
+XRequest.MIT-SHM.4: X_ShmGetImage
+XRequest.MIT-SHM.5: X_ShmCreatePixmap
+XProtoError.MIT-SHM.0: BadShmSeg (invalid shared segment parameter)
+XlibMessage.MIT-SHM.0: Segment id in failed request:  0x%lx
+! MIT-SUNDRY-NONSTANDARD extension, definitely not an X Consortium standard
+XRequest.MIT-SUNDRY-NONSTANDARD.0: X_MITSetBugMode
+XRequest.MIT-SUNDRY-NONSTANDARD.1: X_MITGetBugMode
+! X3D-PEX extension
+XRequest.X3D-PEX.1: PEX_GetExtensionInfo
+XRequest.X3D-PEX.2: PEX_GetEnumeratedTypeInfo
+XRequest.X3D-PEX.3: PEX_GetImpDepConstants
+XRequest.X3D-PEX.4: PEX_CreateLookupTable
+XRequest.X3D-PEX.5: PEX_CopyLookupTable
+XRequest.X3D-PEX.6: PEX_FreeLookupTable
+XRequest.X3D-PEX.7: PEX_GetTableInfo
+XRequest.X3D-PEX.8: PEX_GetPredefinedEntries
+XRequest.X3D-PEX.9: PEX_GetDefinedIndices
+XRequest.X3D-PEX.10: PEX_GetTableEntry
+XRequest.X3D-PEX.11: PEX_GetTableEntries
+XRequest.X3D-PEX.12: PEX_SetTableEntries
+XRequest.X3D-PEX.13: PEX_DeleteTableEntries
+XRequest.X3D-PEX.14: PEX_CreatePipelineContext
+XRequest.X3D-PEX.15: PEX_CopyPipelineContext
+XRequest.X3D-PEX.16: PEX_FreePipelineContext
+XRequest.X3D-PEX.17: PEX_GetPipelineContext
+XRequest.X3D-PEX.18: PEX_ChangePipelineContext
+XRequest.X3D-PEX.19: PEX_CreateRenderer
+XRequest.X3D-PEX.20: PEX_FreeRenderer
+XRequest.X3D-PEX.21: PEX_ChangeRenderer
+XRequest.X3D-PEX.22: PEX_GetRendererAttributes
+XRequest.X3D-PEX.23: PEX_GetRendererDynamics
+XRequest.X3D-PEX.24: PEX_BeginRendering
+XRequest.X3D-PEX.25: PEX_EndRendering
+XRequest.X3D-PEX.26: PEX_BeginStructure
+XRequest.X3D-PEX.27: PEX_EndStructure
+XRequest.X3D-PEX.28: PEX_RenderOutputCommands
+XRequest.X3D-PEX.29: PEX_RenderNetwork
+XRequest.X3D-PEX.30: PEX_CreateStructure
+XRequest.X3D-PEX.31: PEX_CopyStructure
+XRequest.X3D-PEX.32: PEX_DestroyStructures
+XRequest.X3D-PEX.33: PEX_GetStructureInfo
+XRequest.X3D-PEX.34: PEX_GetElementInfo
+XRequest.X3D-PEX.35: PEX_GetStructuresInNetwork
+XRequest.X3D-PEX.36: PEX_GetAncestors
+XRequest.X3D-PEX.37: PEX_GetDescendants
+XRequest.X3D-PEX.38: PEX_FetchElements
+XRequest.X3D-PEX.39: PEX_SetEditingMode
+XRequest.X3D-PEX.40: PEX_SetElementPointer
+XRequest.X3D-PEX.41: PEX_SetElementPointerAtLabel
+XRequest.X3D-PEX.42: PEX_ElementSearch
+XRequest.X3D-PEX.43: PEX_StoreElements
+XRequest.X3D-PEX.44: PEX_DeleteElements
+XRequest.X3D-PEX.45: PEX_DeleteElementsToLabel
+XRequest.X3D-PEX.46: PEX_DeleteBetweenLabels
+XRequest.X3D-PEX.47: PEX_CopyElements
+XRequest.X3D-PEX.48: PEX_ChangeStructureRefs
+XRequest.X3D-PEX.49: PEX_CreateNameSet
+XRequest.X3D-PEX.50: PEX_CopyNameSet
+XRequest.X3D-PEX.51: PEX_FreeNameSet
+XRequest.X3D-PEX.52: PEX_GetNameSet
+XRequest.X3D-PEX.53: PEX_ChangeNameSet
+XRequest.X3D-PEX.54: PEX_CreateSearchContext
+XRequest.X3D-PEX.55: PEX_CopySearchContext
+XRequest.X3D-PEX.56: PEX_FreeSearchContext
+XRequest.X3D-PEX.57: PEX_GetSearchContext
+XRequest.X3D-PEX.58: PEX_ChangeSearchContext
+XRequest.X3D-PEX.59: PEX_SearchNetwork
+XRequest.X3D-PEX.60: PEX_CreatePhigsWks
+XRequest.X3D-PEX.61: PEX_FreePhigsWks
+XRequest.X3D-PEX.62: PEX_GetWksInfo
+XRequest.X3D-PEX.63: PEX_GetDynamics
+XRequest.X3D-PEX.64: PEX_GetViewRep
+XRequest.X3D-PEX.65: PEX_RedrawAllStructures
+XRequest.X3D-PEX.66: PEX_UpdateWorkstation
+XRequest.X3D-PEX.67: PEX_RedrawClipRegion
+XRequest.X3D-PEX.68: PEX_ExecuteDeferredActions
+XRequest.X3D-PEX.69: PEX_SetViewPriority
+XRequest.X3D-PEX.70: PEX_SetDisplayUpdateMode
+XRequest.X3D-PEX.71: PEX_MapDCtoWC
+XRequest.X3D-PEX.72: PEX_MapWCtoDC
+XRequest.X3D-PEX.73: PEX_SetViewRep
+XRequest.X3D-PEX.74: PEX_SetWksWindow
+XRequest.X3D-PEX.75: PEX_SetWksViewport
+XRequest.X3D-PEX.76: PEX_SetHlhsrMode
+XRequest.X3D-PEX.77: PEX_SetWksBufferMode
+XRequest.X3D-PEX.78: PEX_PostStructure
+XRequest.X3D-PEX.79: PEX_UnpostStructure
+XRequest.X3D-PEX.80: PEX_UnpostAllStructures
+XRequest.X3D-PEX.81: PEX_GetWksPostings
+XRequest.X3D-PEX.82: PEX_GetPickDevice
+XRequest.X3D-PEX.83: PEX_ChangePickDevice
+XRequest.X3D-PEX.84: PEX_CreatePickMeasure
+XRequest.X3D-PEX.85: PEX_FreePickMeasure
+XRequest.X3D-PEX.86: PEX_GetPickMeasure
+XRequest.X3D-PEX.87: PEX_UpdatePickMeasure
+XRequest.X3D-PEX.88: PEX_OpenFont
+XRequest.X3D-PEX.89: PEX_CloseFont
+XRequest.X3D-PEX.90: PEX_QueryFont
+XRequest.X3D-PEX.91: PEX_ListFonts
+XRequest.X3D-PEX.92: PEX_ListFontsWithInfo
+XRequest.X3D-PEX.93: PEX_QueryTextExtents
+XRequest.X3D-PEX.94: PEX_MatchRenderingTargets
+XRequest.X3D-PEX.95: PEX_Escape
+XRequest.X3D-PEX.96: PEX_EscapeWithReply
+XRequest.X3D-PEX.97: PEX_RenderElements
+XRequest.X3D-PEX.98: PEX_AccumulateState
+XRequest.X3D-PEX.99: PEX_BeginPickOne
+XRequest.X3D-PEX.100: PEX_EndPickOne
+XRequest.X3D-PEX.101: PEX_PickOne
+XRequest.X3D-PEX.102: PEX_BeginPickAll
+XRequest.X3D-PEX.103: PEX_EndPickAll
+XRequest.X3D-PEX.104: PEX_PickAll
+XProtoError.X3D-PEX.0: PEXColorTypeError
+XlibMessage.X3D-PEX.0: Color type in failed request:  0x%lx
+XProtoError.X3D-PEX.1: PEXRendererStateError
+XlibMessage.X3D-PEX.1: Renderer id in failed request:  0x%lx
+XProtoError.X3D-PEX.2: PEXFloatingPointFormatError
+XlibMessage.X3D-PEX.2: Format in failed request:  0x%lx
+XProtoError.X3D-PEX.3: PEXLabelError
+XlibMessage.X3D-PEX.3: Label in failed request:  0x%lx
+XProtoError.X3D-PEX.4: PEXLookupTableError
+XlibMessage.X3D-PEX.4: Table id in failed request:  0x%lx
+XProtoError.X3D-PEX.5: PEXNameSetError
+XlibMessage.X3D-PEX.5: Nameset in failed request:  0x%lx
+XProtoError.X3D-PEX.6: PEXPathError
+XlibMessage.X3D-PEX.6: Path id in failed request:  0x%lx
+XProtoError.X3D-PEX.7: PEXFontError
+XlibMessage.X3D-PEX.7: Font id in failed request:  0x%lx
+XProtoError.X3D-PEX.8: PEXPhigsWksError
+XlibMessage.X3D-PEX.8: Workstation id in failed request:  0x%lx
+XProtoError.X3D-PEX.9: PEXPickMeasureError
+XlibMessage.X3D-PEX.9: Device id in failed request:  0x%lx
+XProtoError.X3D-PEX.10: PEXPipelineContextError
+XlibMessage.X3D-PEX.10: Context id in failed request:  0x%lx
+XProtoError.X3D-PEX.11: PEXRendererError
+XlibMessage.X3D-PEX.11: Renderer id in failed request:  0x%lx
+XProtoError.X3D-PEX.12: PEXSearchContextError
+XlibMessage.X3D-PEX.12: Context id in failed request:  0x%lx
+XProtoError.X3D-PEX.13: PEXStructureError
+XlibMessage.X3D-PEX.13: Structure id in failed request:  0x%lx
+XProtoError.X3D-PEX.14: PEXOutputCommandError
+XlibMessage.X3D-PEX.14: Resource id in failed request:  0x%lx
+! XTEST extension, an X Consortium standard
+XRequest.XTEST.0: X_XTestGetVersion
+XRequest.XTEST.1: X_XTestCompareCursor
+XRequest.XTEST.2: X_XTestFakeInput
+XRequest.XTEST.3: X_XTestGrabControl
+! BIG-REQUESTS extension, an X Consortium standard
+XRequest.BIG-REQUESTS.0: X_BigReqEnable
+! XIE extension, an X Consortium standard
+XRequest.XIE.1: XIE_QueryImageExtension
+XRequest.XIE.2: XIE_QueryTechniques
+XRequest.XIE.3: XIE_CreateColorList
+XRequest.XIE.4: XIE_DestroyColorList
+XRequest.XIE.5: XIE_PurgeColorList
+XRequest.XIE.6: XIE_QueryColorList
+XRequest.XIE.7: XIE_CreateLUT
+XRequest.XIE.8: XIE_DestroyLUT
+XRequest.XIE.9: XIE_CreatePhotomap
+XRequest.XIE.10: XIE_DestroyPhotomap
+XRequest.XIE.11: XIE_QueryPhotomap
+XRequest.XIE.12: XIE_CreateROI
+XRequest.XIE.13: XIE_DestroyROI
+XRequest.XIE.14: XIE_CreatePhotospace
+XRequest.XIE.15: XIE_DestroyPhotospace
+XRequest.XIE.16: XIE_ExecuteImmediate
+XRequest.XIE.17: XIE_CreatePhotoflo
+XRequest.XIE.18: XIE_DestroyPhotoflo
+XRequest.XIE.19: XIE_ExecutePhotoflo
+XRequest.XIE.20: XIE_ModifyPhotoflo
+XRequest.XIE.21: XIE_RedefinePhotoflo
+XRequest.XIE.22: XIE_PutClientData
+XRequest.XIE.23: XIE_GetClientData
+XRequest.XIE.24: XIE_QueryPhotoflo
+XRequest.XIE.25: XIE_Await
+XRequest.XIE.26: XIE_Abort
+XProtoError.XIE.0: XIE_ColorListError
+XlibMessage.XIE.0: ColorList in failed request:  0x%lx
+XProtoError.XIE.1: XIE_LUTError
+XlibMessage.XIE.1: LUT in failed request:  0x%lx
+XProtoError.XIE.2: XIE_PhotofloError
+XlibMessage.XIE.2: Photoflo in failed request:  0x%lx
+XProtoError.XIE.3: XIE_PhotomapError
+XlibMessage.XIE.3: Photomap in failed request:  0x%lx
+XProtoError.XIE.4: XIE_PhotospaceError
+XlibMessage.XIE.4: Photospace in failed request:  0x%lx
+XProtoError.XIE.5: XIE_ROIError
+XlibMessage.XIE.5: ROI in failed request:  0x%lx
+XProtoError.XIE.6: XIE_FloError
+XlibMessage.XIE.6: Photoflo in failed request:  0x%lx
+! SYNC extension, an X Consortium standard
+XRequest.SYNC.0: X_SyncInitialize
+XRequest.SYNC.1: X_SyncListSystemCounters
+XRequest.SYNC.2: X_SyncCreateCounter
+XRequest.SYNC.3: X_SyncSetCounter
+XRequest.SYNC.4: X_SyncChangeCounter
+XRequest.SYNC.5: X_SyncQueryCounter
+XRequest.SYNC.6: X_SyncDestroyCounter
+XRequest.SYNC.7: X_SyncAwait
+XRequest.SYNC.8: X_SyncCreateAlarm
+XRequest.SYNC.9: X_SyncChangeAlarm
+XRequest.SYNC.10: X_SyncQueryAlarm
+XRequest.SYNC.11: X_SyncDestroyAlarm
+XRequest.SYNC.12: X_SyncSetPriority
+XRequest.SYNC.13: X_SyncGetPriority
+XProtoError.SYNC.0: XSyncBadCounter
+XlibMessage.SYNC.0: Counter in failed request:  0x%lx
+XProtoError.SYNC.1: XSyncBadAlarm
+XlibMessage.SYNC.1: Alarm in failed request:  0x%lx
+! XKB extension
+XRequest.XKEYBOARD.0: XkbUseExtension
+XRequest.XKEYBOARD.1: XkbSelectEvents
+XRequest.XKEYBOARD.2: OBSOLETE
+XRequest.XKEYBOARD.3: XkbBell
+XRequest.XKEYBOARD.4: XkbGetState
+XRequest.XKEYBOARD.5: XkbLatchLockState
+XRequest.XKEYBOARD.6: XkbGetControls
+XRequest.XKEYBOARD.7: XkbSetControls
+XRequest.XKEYBOARD.8: XkbGetMap
+XRequest.XKEYBOARD.9: XkbSetMap
+XRequest.XKEYBOARD.10: XkbGetCompatMap
+XRequest.XKEYBOARD.11: XkbSetCompatMap
+XRequest.XKEYBOARD.12: XkbGetIndicatorState
+XRequest.XKEYBOARD.13: XkbGetIndicatorMap
+XRequest.XKEYBOARD.14: XkbSetIndicatorMap
+XRequest.XKEYBOARD.15: XkbGetNamedIndicator
+XRequest.XKEYBOARD.16: XkbSetNamedIndicator
+XRequest.XKEYBOARD.17: XkbGetNames
+XRequest.XKEYBOARD.18: XkbSetNames
+XRequest.XKEYBOARD.19: XkbGetGeometry
+XRequest.XKEYBOARD.20: XkbSetGeometry
+XRequest.XKEYBOARD.21: XkbPerClientFlags
+XRequest.XKEYBOARD.22: XkbListComponents
+XRequest.XKEYBOARD.23: XkbGetKbdByName
+XRequest.XKEYBOARD.24: XkbGetDeviceInfo
+XRequest.XKEYBOARD.25: XkbSetDeviceInfo
+XRequest.XKEYBOARD.101: XkbSetDebuggingFlags
+XProtoError.XKEYBOARD.0: XkbBadKeyboard
+XlibMessage.XKEYBOARD.0: Device id in failed request:  0x%lx
+! GLX extension for OpenGL, an OpenGL Architectural Review Board standard
+! GLX Commands
+XRequest.GLX.7: X_GLXQueryVersion
+XRequest.GLX.3: X_GLXCreateContext
+XRequest.GLX.4: X_GLXDestroyContext
+XRequest.GLX.5: X_GLXMakeCurrent
+XRequest.GLX.6: X_GLXIsDirect
+XRequest.GLX.10: X_GLXCopyContext
+XRequest.GLX.8: X_GLXWaitGL
+XRequest.GLX.9: X_GLXWaitX
+XRequest.GLX.11: X_GLXSwapBuffers
+XRequest.GLX.12: X_GLXUseXFont
+XRequest.GLX.13: X_GLXCreateGLXPixmap
+XRequest.GLX.15: X_GLXDestroyGLXPixmap
+XRequest.GLX.14: X_GLXGetVisualConfigs
+XRequest.GLX.16: X_GLXVendorPrivate
+XRequest.GLX.17: X_GLXVendorPrivateWithReply
+XRequest.GLX.18: X_GLXQueryExtensionsString
+XRequest.GLX.19: X_GLXQueryServerString
+XRequest.GLX.20: X_GLXClientInfo
+XRequest.GLX.21: X_GLXGetFBConfigs
+XRequest.GLX.22: X_GLXCreatePixmap
+XRequest.GLX.23: X_GLXDestroyPixmap
+XRequest.GLX.24: X_GLXCreateNewContext
+XRequest.GLX.25: X_GLXQueryContext
+XRequest.GLX.26: X_GLXMakeContextCurrent
+XRequest.GLX.27: X_GLXCreatePbuffer
+XRequest.GLX.28: X_GLXDestroyPbuffer
+XRequest.GLX.29: X_GLXGetDrawableAttributes
+XRequest.GLX.30: X_GLXChangeDrawableAttributes
+XRequest.GLX.31: X_GLXCreateWindow
+XRequest.GLX.32: X_GLXDestroyWindow
+! GL Non-rendering Commands
+XRequest.GLX.103: X_GLXDeleteLists
+XRequest.GLX.102: X_GLXEndList
+XRequest.GLX.105: X_GLXFeedbackBuffer
+XRequest.GLX.108: X_GLXFinish
+XRequest.GLX.142: X_GLXFlush
+XRequest.GLX.104: X_GLXGenLists
+XRequest.GLX.112: X_GLXGetBooleanv
+XRequest.GLX.113: X_GLXGetClipPlane
+XRequest.GLX.114: X_GLXGetDoublev
+XRequest.GLX.115: X_GLXGetError
+XRequest.GLX.116: X_GLXGetFloatv
+XRequest.GLX.117: X_GLXGetIntegerv
+XRequest.GLX.118: X_GLXGetLightfv
+XRequest.GLX.119: X_GLXGetLightiv
+XRequest.GLX.120: X_GLXGetMapdv
+XRequest.GLX.121: X_GLXGetMapfv
+XRequest.GLX.122: X_GLXGetMapiv
+XRequest.GLX.123: X_GLXGetMaterialfv
+XRequest.GLX.124: X_GLXGetMaterialiv
+XRequest.GLX.125: X_GLXGetPixelfv
+XRequest.GLX.126: X_GLXGetPixelMapuiv
+XRequest.GLX.127: X_GLXGetPixelMapusv
+XRequest.GLX.129: X_GLXGetString
+XRequest.GLX.130: X_GLXGetTexEnvfv
+XRequest.GLX.131: X_GLXGetTexEnviv
+XRequest.GLX.132: X_GLXGetTexGendv
+XRequest.GLX.133: X_GLXGetTexGenfv
+XRequest.GLX.134: X_GLXGetTexGeniv
+XRequest.GLX.138: X_GLXGetTexLevelParameterfv
+XRequest.GLX.139: X_GLXGetTexLevelParameteriv
+XRequest.GLX.136: X_GLXGetTexParameterfv
+XRequest.GLX.137: X_GLXGetTexParameteriv
+XRequest.GLX.140: X_GLXIsEnabled
+XRequest.GLX.141: X_GLXIsList
+XRequest.GLX.101: X_GLXNewList
+XRequest.GLX.109: X_GLXPixelStoref
+XRequest.GLX.110: X_GLXPixelStorei
+XRequest.GLX.107: X_GLXRenderMode
+XRequest.GLX.106: X_GLXSelectBuffer
+! GL Non-rendering Commands That Return Pixel Data
+XRequest.GLX.128: X_GLXGetPolygonStipple
+XRequest.GLX.135: X_GLXGetTexImage
+XRequest.GLX.111: X_GLXReadPixels
+! GL Rendering Commands
+XRequest.GLX.1: X_GLXRender
+XRequest.GLX.2: X_GLXRenderLarge
+! GLX Errors
+XProtoError.GLX.0: GLXBadContext
+XProtoError.GLX.1: GLXBadContextState
+XProtoError.GLX.2: GLXBadDrawable
+XProtoError.GLX.3: GLXBadPixmap
+XProtoError.GLX.4: GLXBadContextTag
+XProtoError.GLX.5: GLXBadCurrentWindow
+XProtoError.GLX.6: GLXBadRenderRequest
+XProtoError.GLX.7: GLXBadLargeRequest
+XProtoError.GLX.8: GLXUnsupportedPrivateRequest
+XProtoError.GLX.9: GLXBadFBConfig
+XProtoError.GLX.10: GLXBadPbuffer
+XProtoError.GLX.11: GLXBadCurrentDrawable
+XProtoError.GLX.12: GLXBadWindow
+XProtoError.GLX.13: GLXBadProfileARB
+! XC-MISC extension, an X Consortium standard
+XRequest.XC-MISC.0: XCMiscGetVersion
+XRequest.XC-MISC.1: XCMiscGetXIDRange
+! RECORD extension
+XRequest.RECORD.0: XRecordQueryVersion
+XRequest.RECORD.1: XRecordCreateContext
+XRequest.RECORD.2: XRecordRegisterClients
+XRequest.RECORD.3: XRecordUnregisterClients
+XRequest.RECORD.4: XRecordGetContext
+XRequest.RECORD.5: XRecordEnableContext
+XRequest.RECORD.6: XRecordDisableContext
+XRequest.RECORD.7: XRecordFreeContext
+XProtoError.RECORD.0: XRecordBadContext
+XlibMessage.RECORD.0: Context in failed request:  0x%lx
+! XFree86-VidModeExtension  -- not an X Consortium standard
+XRequest.XFree86-VidModeExtension.0: XF86VidModeQueryVersion
+XRequest.XFree86-VidModeExtension.1: XF86VidModeGetModeLine
+XRequest.XFree86-VidModeExtension.2: XF86VidModeModModeLine
+XRequest.XFree86-VidModeExtension.3: XF86VidModeSwitchMode
+XRequest.XFree86-VidModeExtension.4: XF86VidModeGetMonitor
+XRequest.XFree86-VidModeExtension.5: XF86VidModeLockModeSwitch
+XRequest.XFree86-VidModeExtension.6: XF86VidModeGetAllModeLines
+XRequest.XFree86-VidModeExtension.7: XF86VidModeAddModeLine
+XRequest.XFree86-VidModeExtension.8: XF86VidModeDeleteModeLine
+XRequest.XFree86-VidModeExtension.9: XF86VidModeValidateModeLine
+XRequest.XFree86-VidModeExtension.10: XF86VidModeSwitchToMode
+XRequest.XFree86-VidModeExtension.11: XF86VidModeGetViewPort
+XRequest.XFree86-VidModeExtension.12: XF86VidModeSetViewPort
+XRequest.XFree86-VidModeExtension.13: XF86VidModeGetDotClocks
+XRequest.XFree86-VidModeExtension.14: XF86VidModeSetClientVersion
+XRequest.XFree86-VidModeExtension.15: XF86VidModeSetGamma
+XRequest.XFree86-VidModeExtension.16: XF86VidModeGetGamma
+XRequest.XFree86-VidModeExtension.17: XF86VidModeGetGammaRamp
+XRequest.XFree86-VidModeExtension.18: XF86VidModeSetGammaRamp
+XRequest.XFree86-VidModeExtension.19: XF86VidModeGetGammaRampSize
+XRequest.XFree86-VidModeExtension.20: XF86VidModeGetPermissions
+XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
+XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
+XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings
+XProtoError.XFree86-VidModeExtension.3: XF86VidModeModeUnsuitable
+XProtoError.XFree86-VidModeExtension.4: XF86VidModeExtensionDisabled
+XProtoError.XFree86-VidModeExtension.5: XF86VidModeClientNotLocal
+XProtoError.XFree86-VidModeExtension.6: XF86VidModeZoomLocked
+! XFree86-Misc -- not an X Consortium standard
+XRequest.XFree86-Misc.0: XF86MiscQueryVersion
+XRequest.XFree86-Misc.1: XF86MiscGetSaver
+XRequest.XFree86-Misc.2: XF86MiscSetSaver
+XRequest.XFree86-Misc.3: XF86MiscGetMouseSettings
+XRequest.XFree86-Misc.4: XF86MiscGetKbdSettings
+XRequest.XFree86-Misc.5: XF86MiscSetMouseSettings
+XRequest.XFree86-Misc.6: XF86MiscSetKbdSettings
+XRequest.XFree86-Misc.7: XF86MiscSetGrabKeysState
+XRequest.XFree86-Misc.8: XF86MiscSetClientVersion
+XRequest.XFree86-Misc.9: XF86MiscGetFilePaths
+XProtoError.XFree86-Misc.0: XF86MiscBadMouseProtocol
+XProtoError.XFree86-Misc.1: XF86MiscBadMouseBaudRate
+XProtoError.XFree86-Misc.2: XF86MiscBadMouseFlags
+XProtoError.XFree86-Misc.3: XF86MiscBadMouseCombo
+XProtoError.XFree86-Misc.4: XF86MiscBadKbdType
+XProtoError.XFree86-Misc.5: XF86MiscModInDevDisabled
+XProtoError.XFree86-Misc.6: XF86MiscModInDevClientNotLocal
+XProtoError.XFree86-Misc.7: XF86MiscNoModule
+! XFree86-DGA  -- not an X Consortium standard
+XRequest.XFree86-DGA.0: XF86DGAQueryVersion
+XRequest.XFree86-DGA.1: XF86DGAGetVideoLL
+XRequest.XFree86-DGA.2: XF86DGADirectVideo
+XRequest.XFree86-DGA.3: XF86DGAGetViewPortSize
+XRequest.XFree86-DGA.4: XF86DGASetViewPort
+XRequest.XFree86-DGA.5: XF86DGAGetVidPage
+XRequest.XFree86-DGA.6: XF86DGASetVidPage
+XRequest.XFree86-DGA.7: XF86DGAInstallColormap
+XRequest.XFree86-DGA.8: XF86DGAQueryDirectVideo
+XRequest.XFree86-DGA.9: XF86DGAViewPortChanged
+XRequest.XFree86-DGA.10: XF86DGAObsolete1
+XRequest.XFree86-DGA.11: XF86DGAObsolete2
+XRequest.XFree86-DGA.12: XDGAQueryModes
+XRequest.XFree86-DGA.13: XDGASetMode
+XRequest.XFree86-DGA.14: XDGASetViewport
+XRequest.XFree86-DGA.15: XDGAInstallColormap
+XRequest.XFree86-DGA.16: XDGASelectInput
+XRequest.XFree86-DGA.17: XDGAFillRectangle
+XRequest.XFree86-DGA.18: XDGACopyArea
+XRequest.XFree86-DGA.19: XDGACopyTransparentArea
+XRequest.XFree86-DGA.20: XDGAGetViewportStatus
+XRequest.XFree86-DGA.21: XDGASync
+XRequest.XFree86-DGA.22: XDGAOpenFramebuffer
+XRequest.XFree86-DGA.23: XDGACloseFramebuffer
+XRequest.XFree86-DGA.24: XDGASetClientVersion
+XRequest.XFree86-DGA.25: XDGAChangePixmapMode
+XRequest.XFree86-DGA.26: XDGACreateColormap
+XProtoError.XFree86-DGA.0: XF86DGAClientNotLocal
+XProtoError.XFree86-DGA.1: XF86DGANoDirectVideoMode
+XProtoError.XFree86-DGA.2: XF86DGAScreenNotActive
+XProtoError.XFree86-DGA.3: XF86DGADirectNotActivated
+XProtoError.XFree86-DGA.4: XF86DGAOperationNotSupported
+! DOUBLE-BUFFER (DBE), an X Consortium standard
+XRequest.DOUBLE-BUFFER.0: DBEGetVersion
+XRequest.DOUBLE-BUFFER.1: DBEAllocateBackBufferName
+XRequest.DOUBLE-BUFFER.2: DBEDeallocateBackBufferName
+XRequest.DOUBLE-BUFFER.3: DBESwapBuffers
+XRequest.DOUBLE-BUFFER.4: DBEBeginIdiom
+XRequest.DOUBLE-BUFFER.5: DBEEndIdiom
+XRequest.DOUBLE-BUFFER.6: DBEGetVisualInfo
+XRequest.DOUBLE-BUFFER.7: DBEGetBackBufferAttributes
+XProtoError.DOUBLE-BUFFER.0: DBEBadBuffer  (invalid BackBuffer parameter)
+XlibMessage.DOUBLE-BUFFER.0: BackBuffer in failed request:  0x%lx
+! SECURITY
+XRequest.SECURITY.0: SecurityQueryVersion
+XRequest.SECURITY.1: SecurityGenerateAuthorization
+XProtoError.SECURITY.0: SecurityBadAuthorization  (invalid authorization id)
+XProtoError.SECURITY.1: SecurityBadAuthorizationProtocol  (invalid authorization name or data)
+XlibMessage.SECURITY.1: authorization id in failed request:  0x%lx
+! AppGroup
+XRequest.APPGROUP.0: XagQueryVersion
+XRequest.APPGROUP.1: XagCreate
+XRequest.APPGROUP.2: XagDestroy
+XRequest.APPGROUP.3: XagGetAttr
+XRequest.APPGROUP.4: XagQuery
+XRequest.APPGROUP.5: XagCreateAssoc
+XRequest.APPGROUP.6: XagDestroyAssoc
+XProtoError.APPGROUP.0: XagBadAppGroup  (invalid AppGroup parameter)
+! LBX
+XRequest.LBX.0: LbxQueryVersion
+XRequest.LBX.1: LbxStartProxy
+XRequest.LBX.2: LbxStopProxy
+XRequest.LBX.3: LbxSwitch
+XRequest.LBX.4: LbxNewClient
+XRequest.LBX.5: LbxCloseClient
+XRequest.LBX.6: LbxModifySequence
+XRequest.LBX.7: LbxAllowMotion
+XRequest.LBX.8: LbxIncrementPixel
+XRequest.LBX.9: LbxDelta
+XRequest.LBX.10: LbxGetModifierMapping
+XRequest.LBX.11: LbxQueryTag
+XRequest.LBX.12: LbxInvalidateTag
+XRequest.LBX.13: LbxPolyPoint
+XRequest.LBX.14: LbxPolyLine
+XRequest.LBX.15: LbxPolySegment
+XRequest.LBX.16: LbxPolyRectangle
+XRequest.LBX.17: LbxPolyArc
+XRequest.LBX.18: LbxFillPoly
+XRequest.LBX.19: LbxPolyFillRectangle
+XRequest.LBX.20: LbxPolyFillArc
+XRequest.LBX.21: LbxGetKeyboardMapping
+XRequest.LBX.22: LbxQueryFont
+XRequest.LBX.23: LbxChangeProperty
+XRequest.LBX.24: LbxGetProperty
+XRequest.LBX.25: LbxTagData
+XRequest.LBX.26: LbxCopyArea
+XRequest.LBX.27: LbxCopyPlane
+XRequest.LBX.28: LbxPolyText8
+XRequest.LBX.29: LbxPolyText16
+XRequest.LBX.30: LbxImageText8
+XRequest.LBX.31: LbxImageText16
+XRequest.LBX.32: LbxQueryExtension
+XRequest.LBX.33: LbxPutImage
+XRequest.LBX.34: LbxGetImage
+XRequest.LBX.35: LbxBeginLargeRequest
+XRequest.LBX.36: LbxLargeRequestData
+XRequest.LBX.37: LbxEndLargeRequest
+XRequest.LBX.38: LbxInternAtoms
+XRequest.LBX.39: LbxGetWinAttrAndGeom
+XRequest.LBX.40: LbxGrabCmap
+XRequest.LBX.41: LbxReleaseCmap
+XRequest.LBX.42: LbxAllocColor
+XRequest.LBX.43: LbxSync
+XProtoError.LBX.0: BadLbxClient
+! XpExtension
+XRequest.XpExtension.0: PrintQueryVersion
+XRequest.XpExtension.1: PrintGetPrinterList
+XRequest.XpExtension.2: PrintCreateContext
+XRequest.XpExtension.3: PrintSetContext
+XRequest.XpExtension.4: PrintGetContext
+XRequest.XpExtension.5: PrintDestroyContext
+XRequest.XpExtension.6: PrintGetContextScreen
+XRequest.XpExtension.7: PrintStartJob
+XRequest.XpExtension.8: PrintEndJob
+XRequest.XpExtension.9: PrintStartDoc
+XRequest.XpExtension.10: PrintEndDoc
+XRequest.XpExtension.11: PrintPutDocumentData
+XRequest.XpExtension.12: PrintGetDocumentData
+XRequest.XpExtension.13: PrintStartPage
+XRequest.XpExtension.14: PrintEndPage
+XRequest.XpExtension.15: PrintSelectInput
+XRequest.XpExtension.16: PrintInputSelected
+XRequest.XpExtension.17: PrintGetAttributes
+XRequest.XpExtension.18: PrintSetAttributes
+XRequest.XpExtension.19: PrintGetOneAttribute
+XRequest.XpExtension.20: PrintRehashPrinterList
+XRequest.XpExtension.21: PrintGetPageDimensions
+XRequest.XpExtension.22: PrintQueryScreens
+XRequest.XpExtension.23: PrintSetImageResolution
+XRequest.XpExtension.24: PrintGetImageResolution
+XProtoError.XpExtension.0: XPBadContext (Print Context invalid or missing)
+XlibMessage.XpExtension.0: Context in failed request:  0x%lx
+XProtoError.XpExtension.1: XPBadSequence (Illegal sequence of XP operations)
+XProtoError.XpExtension.2: XPBadResourceID (X resource not valid)
+! TOG-CUP, an X Project Team specification
+XRequest.TOG-CUP.0: CUPQueryVersion
+XRequest.TOG-CUP.1: CUPGetReservedColormapEntries
+XRequest.TOG-CUP.2: CUPStoreColors
+! Extended-Visual-Information, an X Project Team specification
+XRequest.Extended-Visual-Information.0: EVIQueryVersion
+XRequest.Extended-Visual-Information.1: EVIGetVisualInfo
+! DPMS (Display Power Management Signaling), an X Project Team specification
+XRequest.DPMS.0: DPMSGetVersion
+XRequest.DPMS.1: DPMSCapable
+XRequest.DPMS.2: DPMSGetTimeouts
+XRequest.DPMS.3: DPMSSetTimeouts
+XRequest.DPMS.4: DPMSEnable
+XRequest.DPMS.5: DPMSDisable
+XRequest.DPMS.6: DPMSForceLevel
+XRequest.DPMS.7: DPMSInfo
+! XINERAMA, not an X Project Team specification
+XRequest.XINERAMA.0: XINERAMAQueryVersion
+XRequest.XINERAMA.1: XINERAMAGetState
+XRequest.XINERAMA.2: XINERAMAGetScreenCount
+XRequest.XINERAMA.3: XINERAMAGetScreenSize
+XRequest.XINERAMA.4: XINERAMAIsActive
+XRequest.XINERAMA.5: XINERAMAQueryScreens
+! XF86Rush extension, not a standard spec
+Xrequest.XFree86-Rush.0: XF86RushQueryVersion
+Xrequest.XFree86-Rush.1: XF86RushLockPixmap
+Xrequest.XFree86-Rush.2: XF86RushUnlockPixmap
+Xrequest.XFree86-Rush.3: XF86RushUnlockAllPixmaps
+Xrequest.XFree86-Rush.4: XF86RushGetCopyMode
+Xrequest.XFree86-Rush.5: XF86RushSetCopyMode
+Xrequest.XFree86-Rush.6: XF86RushGetPixelStride
+Xrequest.XFree86-Rush.7: XF86RushSetPixelStride
+Xrequest.XFree86-Rush.8: XF86RushOverlayPixmap
+Xrequest.XFree86-Rush.9: XF86RushStatusRegOffset
+Xrequest.XFree86-Rush.10: XF86RushAT3DEnableRegs
+Xrequest.XFree86-Rush.11: XF86RushAT3DDisableRegs
+! XVideo
+Xrequest.XVideo.0: XvQueryExtension
+Xrequest.XVideo.1: XvQueryAdaptors
+Xrequest.XVideo.2: XvQueryEncodings
+Xrequest.XVideo.3: XvGrabPort
+Xrequest.XVideo.4: XvUngrabPort
+Xrequest.XVideo.5: XvPutVideo
+Xrequest.XVideo.6: XvPutStill
+Xrequest.XVideo.7: XvGetVideo
+Xrequest.XVideo.8: XvGetStill
+Xrequest.XVideo.9: XvStopVideo
+Xrequest.XVideo.10: XvSelectVideoNotify
+Xrequest.XVideo.11: XvSelectPortNotify
+Xrequest.XVideo.12: XvQueryBestSize
+Xrequest.XVideo.13: XvSetPortAttribute
+Xrequest.XVideo.14: XvGetPortAttribute
+Xrequest.XVideo.15: XvQueryPortAttributes
+Xrequest.XVideo.16: XvListImageFormats
+Xrequest.XVideo.17: XvQueryImageAttributes
+Xrequest.XVideo.18: XvPutImage
+Xrequest.XVideo.19: XvShmPutImage
+XProtoError.XVideo.0: XvBadPort
+XProtoError.XVideo.1: XvBadEncoding
+XProtoError.XVideo.2: XvBadControl
+! XFree86-Bigfont
+Xrequest.XFree86-Bigfont.0: XF86BigfontQueryVersion
+Xrequest.XFree86-Bigfont.1: XF86BigfontQueryFont
+! Adobe-DPS-Extension, not a standard
+XRequest.Adobe-DPS-Extension.1: PSInit
+XRequest.Adobe-DPS-Extension.2: PSCreateContext
+XRequest.Adobe-DPS-Extension.3: PSCreateSpace
+XRequest.Adobe-DPS-Extension.4: PSGiveInput
+XRequest.Adobe-DPS-Extension.5: PSGetStatus
+XRequest.Adobe-DPS-Extension.6: PSDestroySpace
+XRequest.Adobe-DPS-Extension.7: PSReset
+XRequest.Adobe-DPS-Extension.8: PSNotifyContext
+XRequest.Adobe-DPS-Extension.9: PSCreateContextFromID
+XRequest.Adobe-DPS-Extension.10: PSXIDFromContext
+XRequest.Adobe-DPS-Extension.11: PSContextFromXID
+XRequest.Adobe-DPS-Extension.12: PSSetStatusMask
+XRequest.Adobe-DPS-Extension.13: PSCreateSecureContext
+XRequest.Adobe-DPS-Extension.14: PSNotifyWhenReady
+XProtoError.Adobe-DPS-Extension.0: PSErrorBadContext (invalid Context parameter)
+XlibMessage.Adobe-DPS-Extension.0: Context id in failed request:  0x%lx
+XProtoError.Adobe-DPS-Extension.1: PSErrorBadSpace (invalid Space parameter)
+XlibMessage.Adobe-DPS-Extension.1: Space id in failed request:  0x%lx
+XProtoError.Adobe-DPS-Extension.2: PSErrorAbort (interpreter aborted)
+XlibMessage.Adobe-DPS-Extension.2: Value in failed request:  0x%lx
+! RANDR
+XRequest.RANDR.0: RRQueryVersion
+XRequest.RANDR.1: RROldGetScreenInfo
+XRequest.RANDR.2: RRSetScreenConfig
+XRequest.RANDR.3: RROldScreenChangeSelectInput
+XRequest.RANDR.4: RRSelectInput
+XRequest.RANDR.5: RRGetScreenInfo
+XRequest.RANDR.6: RRGetScreenSizeRange
+XRequest.RANDR.7: RRSetScreenSize
+XRequest.RANDR.8: RRGetScreenResources
+XRequest.RANDR.9: RRGetOutputInfo
+XRequest.RANDR.10: RRListOutputProperties
+XRequest.RANDR.11: RRQueryOutputProperty
+XRequest.RANDR.12: RRConfigureOutputProperty
+XRequest.RANDR.13: RRChangeOutputProperty
+XRequest.RANDR.14: RRDeleteOutputProperty
+XRequest.RANDR.15: RRGetOutputProperty
+XRequest.RANDR.16: RRCreateMode
+XRequest.RANDR.17: RRDestroyMode
+XRequest.RANDR.18: RRAddOutputMode
+XRequest.RANDR.19: RRDeleteOutputMode
+XRequest.RANDR.20: RRGetCrtcInfo
+XRequest.RANDR.21: RRSetCrtcConfig
+XRequest.RANDR.22: RRGetCrtcGammaSize
+XRequest.RANDR.23: RRGetCrtcGamma
+XRequest.RANDR.24: RRSetCrtcGamma
+XRequest.RANDR.25: RRGetScreenResourcesCurrent
+XRequest.RANDR.26: RRSetCrtcTransform
+XRequest.RANDR.27: RRGetCrtcTransform
+XRequest.RANDR.28: RRGetPanning
+XRequest.RANDR.29: RRSetPanning
+XRequest.RANDR.30: RRSetOutputPrimary
+XRequest.RANDR.31: RRGetOutputPrimary
+XRequest.RANDR.32: RRGetProviders
+XRequest.RANDR.33: RRGetProviderInfo
+XRequest.RANDR.34: RRSetProviderOffloadSink
+XRequest.RANDR.35: RRSetProviderOutputSource
+XRequest.RANDR.36: RRListProviderProperties
+XRequest.RANDR.37: RRQueryProviderProperty
+XRequest.RANDR.38: RRConfigureProviderProperty
+XRequest.RANDR.39: RRChangeProviderProperty
+XRequest.RANDR.40: RRDeleteProviderProperty
+XRequest.RANDR.41: RRGetProviderProperty
+XProtoError.RANDR.0: BadRROutput (invalid Output parameter)
+XlibMessage.RANDR.0: Output id in failed request: 0x%lx
+XProtoError.RANDR.1: BadRRCrtc (invalid Crtc parameter)
+XlibMessage.RANDR.1: Crtc id in failed request: 0x%lx
+XProtoError.RANDR.2: BadRRMode (invalid Mode parameter)
+XlibMessage.RANDR.2: Mode id in failed request: 0x%lx
+XProtoError.RANDR.3: BadRRProvider (invalid Provider parameter)
+XlibMessage.RANDR.3: Provider id in failed request: 0x%lx
+! RENDER
+XRequest.RENDER.0: RenderQueryVersion
+XRequest.RENDER.1: RenderQueryPictFormats
+XRequest.RENDER.2: RenderQueryPictIndexValues
+XRequest.RENDER.3: RenderQueryDithers
+XRequest.RENDER.4: RenderCreatePicture
+XRequest.RENDER.5: RenderChangePicture
+XRequest.RENDER.6: RenderSetPictureClipRectangles
+XRequest.RENDER.7: RenderFreePicture
+XRequest.RENDER.8: RenderComposite
+XRequest.RENDER.9: RenderScale
+XRequest.RENDER.10: RenderTrapezoids
+XRequest.RENDER.11: RenderTriangles
+XRequest.RENDER.12: RenderTriStrip
+XRequest.RENDER.13: RenderTriFan
+XRequest.RENDER.14: RenderColorTrapezoids
+XRequest.RENDER.15: RenderColorTriangles
+XRequest.RENDER.16: RenderTransform
+XRequest.RENDER.17: RenderCreateGlyphSet
+XRequest.RENDER.18: RenderReferenceGlyphSet
+XRequest.RENDER.19: RenderFreeGlyphSet
+XRequest.RENDER.20: RenderAddGlyphs
+XRequest.RENDER.21: RenderAddGlyphsFromPicture
+XRequest.RENDER.22: RenderFreeGlyphs
+XRequest.RENDER.23: RenderCompositeGlyphs8
+XRequest.RENDER.24: RenderCompositeGlyphs16
+XRequest.RENDER.25: RenderCompositeGlyphs32
+XRequest.RENDER.26: RenderFillRectangles
+XRequest.RENDER.27: RenderCreateCursor
+XRequest.RENDER.28: RenderSetPictureTransform
+XRequest.RENDER.29: RenderQueryFilters
+XRequest.RENDER.30: RenderSetPictureFilter
+XRequest.RENDER.31: RenderCreateAnimCursor
+XRequest.RENDER.32: RenderAddTraps
+XRequest.RENDER.33: RenderCreateSolidFill
+XRequest.RENDER.34: RenderCreateLinearGradient
+XRequest.RENDER.35: RenderCreateRadialGradient
+XRequest.RENDER.36: RenderCreateConicalGradient
+XProtoError.RENDER.0: RenderBadFormat (invalid PictFormat parameter)
+XlibMessage.RENDER.0: PictFormat id in failed request: 0x%lx
+XProtoError.RENDER.1: RenderBadPicture (invalid Picture parameter)
+XlibMessage.RENDER.1: Picture id in failed request: 0x%lx
+XProtoError.RENDER.2: RenderBadPictOp (invalid PictOp parameter)
+XlibMessage.RENDER.2: PictOp in failed request: 0x%lx
+XProtoError.RENDER.3: RenderBadGlyphSet (invalid GlyphSet parameter)
+XlibMessage.RENDER.3: GlyphSet id in failed request: 0x%lx
+XProtoError.RENDER.4: RenderBadGlyph (invalid Glyph parameter)
+XlibMessage.RENDER.4: Glyph in failed request: 0x%lx
+! XFixes
+XRequest.XFIXES.0: XFixesQueryVersion
+XRequest.XFIXES.1: XFixesChangeSaveSet
+XRequest.XFIXES.2: XFixesSelectSelectionInput
+XRequest.XFIXES.3: XFixesSelectCursorInput
+XRequest.XFIXES.4: XFixesGetCursorImage
+XRequest.XFIXES.5: XFixesCreateRegion
+XRequest.XFIXES.6: XFixesCreateRegionFromBitmap
+XRequest.XFIXES.7: XFixesCreateRegionFromWindow
+XRequest.XFIXES.8: XFixesCreateRegionFromGC
+XRequest.XFIXES.9: XFixesCreateRegionFromPicture
+XRequest.XFIXES.10: XFixesDestroyRegion
+XRequest.XFIXES.11: XFixesSetRegion
+XRequest.XFIXES.12: XFixesCopyRegion
+XRequest.XFIXES.13: XFixesUnionRegion
+XRequest.XFIXES.14: XFixesIntersectRegion
+XRequest.XFIXES.15: XFixesSubtractRegion
+XRequest.XFIXES.16: XFixesInvertRegion
+XRequest.XFIXES.17: XFixesTranslateRegion
+XRequest.XFIXES.18: XFixesRegionExtents
+XRequest.XFIXES.19: XFixesFetchRegion
+XRequest.XFIXES.20: XFixesSetGCClipRegion
+XRequest.XFIXES.21: XFixesSetWindowShapeRegion
+XRequest.XFIXES.22: XFixesSetPictureClipRegion
+XRequest.XFIXES.23: XFixesSetCursorName
+XRequest.XFIXES.24: XFixesGetCursorName
+XRequest.XFIXES.25: XFixesGetCursorImageAndName
+XRequest.XFIXES.26: XFixesChangeCursor
+XRequest.XFIXES.27: XFixesChangeCursorByName
+XRequest.XFIXES.28: XFixesExpandRegion
+XRequest.XFIXES.29: XFixesHideCursor
+XRequest.XFIXES.30: XFixesShowCursor
+XProtoError.XFIXES.0: BadRegion (invalid Region parameter)
+XlibMessage.XFIXES.0: Region id in failed request:  0x%lx
+! DAMAGE extension
+XRequest.DAMAGE.0: XDamageQueryVersion
+XRequest.DAMAGE.1: XDamageCreate
+XRequest.DAMAGE.2: XDamageDestroy
+XRequest.DAMAGE.3: XDamageSubtract
+XRequest.DAMAGE.4: XDamageAdd
+XProtoError.DAMAGE.0: BadDamage (invalid Damage parameter)
+XlibMessage.DAMAGE.0: Damage id in failed request: 0x%lx
+! DRI2 extension
+XRequest.DRI2.0: DRI2QueryVersion
+XRequest.DRI2.1: DRI2Connect
+XRequest.DRI2.2: DRI2Authenticate
+XRequest.DRI2.3: DRI2CreateDrawable
+XRequest.DRI2.4: DRI2DestroyDrawable
+XRequest.DRI2.5: DRI2GetBuffers
+XRequest.DRI2.6: DRI2CopyRegion
+XRequest.DRI2.7: DRI2GetBuffersWithFormat	
+XRequest.DRI2.8: DRI2SwapBuffers		
+XRequest.DRI2.9: DRI2GetMSC			
+XRequest.DRI2.10: DRI2WaitMSC			
+XRequest.DRI2.11: DRI2WaitSBC			
+XRequest.DRI2.12: DRI2SwapInterval		

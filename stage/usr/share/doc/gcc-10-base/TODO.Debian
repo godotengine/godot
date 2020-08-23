@@ -1,0 +1,46 @@
+(It is recommended to edit this file with emacs' todoo mode)
+Last updated: 2008-05-02
+
+* General
+
+- Clean up the sprawl of debian/rules.  I'm sure there are neater
+  ways to do some of it; perhaps split it up into some more files?
+  Partly done.
+
+- Make debian/rules control build the control file without unpacking
+  the sources or applying patches.  Currently, it unpacks the sources,
+  patches them, creates the control file, and a subsequent
+  dpkg-buildpackage deletes the sources, re-unpacks them, and
+  re-patches them.
+
+- Reorganise debian/rules.defs to decide which packages to build in a
+  more straightforward and less error-prone fashion: (1) start with
+  all languages; override the list of languages depending on the name
+  of the source package (gcc-4.3, gnat-4.3, gdc-4.3).  (2)
+  filter the list of languages depending on the target platform; (3)
+  depending on the languages to build, decide on which libraries to
+  build.
+
+o [Ludovic Brenta] Ada
+
+- Done: Link the gnat tools with libgnat.so, instead of statically.
+
+- Done: Build libgnatvsn containing parts of the compiler (version
+  string, etc.) under GNAT-Modified GPL.  Link the gnat tools with it.
+
+- Done: Build libgnatprj containing parts of the compiler (the project
+  manager) under pure GPL.  Link the gnat tools with it.
+
+- Done: Build both the zero-cost and setjump/longjump exceptions
+  versions of libgnat.  In particular, gnat-glade (distributed systems)
+  works best with SJLJ.
+
+- Done: Re-enable running the test suite.
+
+- Add support for building cross-compilers.
+
+- Add support for multilib (not yet supported upstream).
+
+* Fortran
+
+- gfortran man page generation

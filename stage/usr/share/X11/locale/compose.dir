@@ -1,0 +1,1118 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#	This file contains compose table file names.
+#	The first word is the compose table file name
+#	and the second word is the full locale name.
+#
+#
+# Note that no Compose tables exist for ISO 8859-11, Microsoft code
+# pages, Fujitsu's S90 or U90 character sets, or TIS620 yet.
+#
+iso8859-1/Compose		C
+iso8859-1/Compose		aa_DJ.ISO8859-1
+iso8859-1/Compose		af_ZA.ISO8859-1
+iso8859-15/Compose		an_ES.ISO8859-15
+iso8859-6/Compose		ar_AA.ISO8859-6
+iso8859-6/Compose		ar_AE.ISO8859-6
+iso8859-6/Compose		ar_BH.ISO8859-6
+iso8859-6/Compose		ar_DZ.ISO8859-6
+iso8859-6/Compose		ar_EG.ISO8859-6
+iso8859-6/Compose		ar_IQ.ISO8859-6
+iso8859-6/Compose		ar_JO.ISO8859-6
+iso8859-6/Compose		ar_KW.ISO8859-6
+iso8859-6/Compose		ar_LB.ISO8859-6
+iso8859-6/Compose		ar_LY.ISO8859-6
+iso8859-6/Compose		ar_MA.ISO8859-6
+iso8859-6/Compose		ar_OM.ISO8859-6
+iso8859-6/Compose		ar_QA.ISO8859-6
+iso8859-6/Compose		ar_SA.ISO8859-6
+iso8859-6/Compose		ar_SD.ISO8859-6
+iso8859-6/Compose		ar_SY.ISO8859-6
+iso8859-6/Compose		ar_TN.ISO8859-6
+iso8859-6/Compose		ar_YE.ISO8859-6
+iso8859-9e/Compose		az_AZ.ISO8859-9E
+koi8-c/Compose			az_AZ.KOI8-C
+microsoft-cp1251/Compose	be_BY.CP1251
+iso8859-5/Compose		be_BY.ISO8859-5
+iso8859-5/Compose		bg_BG.ISO8859-5
+microsoft-cp1251/Compose	bg_BG.CP1251
+koi8-r/Compose			bg_BG.KOI8-R
+iso8859-1/Compose		br_FR.ISO8859-1
+iso8859-14/Compose		br_FR.ISO8859-14
+iso8859-15/Compose		br_FR.ISO8859-15
+iso8859-2/Compose		bs_BA.ISO8859-2
+iso8859-1/Compose		ca_AD.ISO8859-1
+iso8859-15/Compose		ca_AD.ISO8859-15
+iso8859-1/Compose		ca_ES.ISO8859-1
+iso8859-15/Compose		ca_ES.ISO8859-15
+iso8859-1/Compose		ca_FR.ISO8859-1
+iso8859-15/Compose		ca_FR.ISO8859-15
+iso8859-1/Compose		ca_IT.ISO8859-1
+iso8859-15/Compose		ca_IT.ISO8859-15
+iso8859-2/Compose		cs_CZ.ISO8859-2
+iso8859-1/Compose		cy_GB.ISO8859-1
+iso8859-14/Compose		cy_GB.ISO8859-14
+iso8859-15/Compose		cy_GB.ISO8859-15
+iso8859-1/Compose		da_DK.ISO8859-1
+iso8859-15/Compose		da_DK.ISO8859-15
+iso8859-1/Compose		de_AT.ISO8859-1
+iso8859-15/Compose		de_AT.ISO8859-15
+iso8859-1/Compose		de_BE.ISO8859-1
+iso8859-15/Compose		de_BE.ISO8859-15
+iso8859-1/Compose		de_CH.ISO8859-1
+iso8859-15/Compose		de_CH.ISO8859-15
+iso8859-1/Compose		de_DE.ISO8859-1
+iso8859-15/Compose		de_DE.ISO8859-15
+iso8859-1/Compose		de_LI.ISO8859-1
+iso8859-15/Compose		de_LI.ISO8859-15
+iso8859-1/Compose		de_LU.ISO8859-1
+iso8859-15/Compose		de_LU.ISO8859-15
+iso8859-4/Compose		ee_EE.ISO8859-4
+iso8859-7/Compose		el_GR.ISO8859-7
+iso8859-15/Compose		el_GR.ISO8859-15
+iso8859-1/Compose		en_AU.ISO8859-1
+iso8859-1/Compose		en_BE.ISO8859-1
+iso8859-15/Compose		en_BE.ISO8859-15
+iso8859-1/Compose		en_BW.ISO8859-1
+iso8859-1/Compose		en_BZ.ISO8859-1
+iso8859-1/Compose		en_CA.ISO8859-1
+iso8859-1/Compose		en_DK.ISO8859-1
+iso8859-15/Compose		en_DK.ISO8859-15
+iso8859-1/Compose		en_EN.ISO8859-1
+iso8859-1/Compose		en_GB.ISO8859-1
+iso8859-15/Compose		en_GB.ISO8859-15
+iso8859-1/Compose		en_HK.ISO8859-1
+iso8859-1/Compose		en_IE.ISO8859-1
+iso8859-15/Compose		en_IE.ISO8859-15
+iso8859-1/Compose		en_IN.ISO8859-1
+iso8859-15/Compose		en_IN.ISO8859-15
+iso8859-1/Compose		en_JM.ISO8859-1
+iso8859-1/Compose		en_NZ.ISO8859-1
+iso8859-1/Compose		en_PH.ISO8859-1
+iso8859-1/Compose		en_SG.ISO8859-1
+iso8859-1/Compose		en_TT.ISO8859-1
+iso8859-1/Compose		en_UK.ISO8859-1
+iso8859-15/Compose		en_UK.ISO8859-15
+iso8859-1/Compose		en_US.ISO8859-1
+iso8859-15/Compose		en_US.ISO8859-15
+iso8859-1/Compose		en_ZA.ISO8859-1
+iso8859-15/Compose		en_ZA.ISO8859-15
+iso8859-1/Compose		en_ZW.ISO8859-1
+iso8859-3/Compose		eo_EO.ISO8859-3
+iso8859-3/Compose		eo_XX.ISO8859-3
+iso8859-1/Compose		es_AR.ISO8859-1
+iso8859-1/Compose		es_BO.ISO8859-1
+iso8859-1/Compose		es_CL.ISO8859-1
+iso8859-1/Compose		es_CO.ISO8859-1
+iso8859-1/Compose		es_CR.ISO8859-1
+iso8859-1/Compose		es_DO.ISO8859-1
+iso8859-1/Compose		es_EC.ISO8859-1
+iso8859-1/Compose		es_ES.ISO8859-1
+iso8859-15/Compose		es_ES.ISO8859-15
+iso8859-1/Compose		es_GT.ISO8859-1
+iso8859-1/Compose		es_HN.ISO8859-1
+iso8859-1/Compose		es_MX.ISO8859-1
+iso8859-1/Compose		es_NI.ISO8859-1
+iso8859-1/Compose		es_PA.ISO8859-1
+iso8859-15/Compose		es_PA.ISO8859-15
+iso8859-1/Compose		es_PE.ISO8859-1
+iso8859-15/Compose		es_PE.ISO8859-15
+iso8859-1/Compose		es_PR.ISO8859-1
+iso8859-1/Compose		es_PY.ISO8859-1
+iso8859-15/Compose		es_PY.ISO8859-15
+iso8859-1/Compose		es_SV.ISO8859-1
+iso8859-15/Compose		es_SV.ISO8859-15
+iso8859-1/Compose		es_US.ISO8859-1
+iso8859-1/Compose		es_UY.ISO8859-1
+iso8859-15/Compose		es_UY.ISO8859-15
+iso8859-1/Compose		es_VE.ISO8859-1
+iso8859-15/Compose		es_VE.ISO8859-15
+iso8859-1/Compose		et_EE.ISO8859-1
+iso8859-4/Compose		et_EE.ISO8859-4
+iso8859-13/Compose		et_EE.ISO8859-13
+iso8859-15/Compose		et_EE.ISO8859-15
+iso8859-1/Compose		eu_ES.ISO8859-1
+iso8859-15/Compose		eu_ES.ISO8859-15
+iso8859-1/Compose		eu_FR.ISO8859-1
+iso8859-15/Compose		eu_FR.ISO8859-15
+isiri-3342/Compose		fa_IR.ISIRI-3342
+iso8859-1/Compose		fi_FI.ISO8859-1
+iso8859-15/Compose		fi_FI.ISO8859-15
+iso8859-1/Compose		fo_FO.ISO8859-1
+iso8859-15/Compose		fo_FO.ISO8859-15
+iso8859-1/Compose		fr_BE.ISO8859-1
+iso8859-15/Compose		fr_BE.ISO8859-15
+iso8859-1/Compose		fr_CA.ISO8859-1
+iso8859-15/Compose		fr_CA.ISO8859-15
+iso8859-1/Compose		fr_CH.ISO8859-1
+iso8859-15/Compose		fr_CH.ISO8859-15
+iso8859-1/Compose		fr_FR.ISO8859-1
+iso8859-15/Compose		fr_FR.ISO8859-15
+iso8859-1/Compose		fr_LU.ISO8859-1
+iso8859-15/Compose		fr_LU.ISO8859-15
+iso8859-1/Compose		ga_IE.ISO8859-1
+iso8859-14/Compose		ga_IE.ISO8859-14
+iso8859-15/Compose		ga_IE.ISO8859-15
+iso8859-1/Compose		gd_GB.ISO8859-1
+iso8859-14/Compose		gd_GB.ISO8859-14
+iso8859-15/Compose		gd_GB.ISO8859-15
+iso8859-1/Compose		gl_ES.ISO8859-1
+iso8859-15/Compose		gl_ES.ISO8859-15
+iso8859-1/Compose		gv_GB.ISO8859-1
+iso8859-14/Compose		gv_GB.ISO8859-14
+iso8859-15/Compose		gv_GB.ISO8859-15
+iso8859-8/Compose		he_IL.ISO8859-8
+microsoft-cp1255/Compose	he_IL.CP1255
+iscii-dev/Compose		hi_IN.ISCII-DEV
+iso8859-2/Compose		hr_HR.ISO8859-2
+iso8859-2/Compose		hu_HU.ISO8859-2
+armscii-8/Compose		hy_AM.ARMSCII-8
+iso8859-1/Compose		id_ID.ISO8859-1
+iso8859-1/Compose		is_IS.ISO8859-1
+iso8859-15/Compose		is_IS.ISO8859-15
+iso8859-1/Compose		it_CH.ISO8859-1
+iso8859-1/Compose		it_IT.ISO8859-1
+iso8859-15/Compose		it_IT.ISO8859-15
+ja/Compose			ja_JP.eucJP
+ja.SJIS/Compose		ja_JP.SJIS
+ja.JIS/Compose			ja_JP.JIS7
+georgian-academy/Compose	ka_GE.GEORGIAN-ACADEMY
+georgian-ps/Compose		ka_GE.GEORGIAN-PS
+iso8859-1/Compose		kl_GL.ISO8859-1
+iso8859-1/Compose		kw_GB.ISO8859-1
+iso8859-14/Compose		kw_GB.ISO8859-14
+iso8859-15/Compose		kw_GB.ISO8859-15
+iso8859-10/Compose		lg_UG.ISO8859-10
+# Remove ko/Compose, as requested in https://bugs.debian.org/89703
+# ko/Compose:			ko_KR.eucKR
+ibm-cp1133/Compose		lo_LA.IBM-CP1133
+mulelao-1/Compose		lo_LA.MULELAO-1
+iso8859-4/Compose		lt_LT.ISO8859-4
+iso8859-13/Compose		lt_LT.ISO8859-13
+iso8859-4/Compose		lv_LV.ISO8859-4
+iso8859-13/Compose		lv_LV.ISO8859-13
+iso8859-13/Compose		mi_NZ.ISO8859-13
+iso8859-5/Compose		mk_MK.ISO8859-5
+microsoft-cp1251/Compose	mk_MK.CP1251
+iso8859-1/Compose		ms_MY.ISO8859-1
+iso8859-3/Compose		mt_MT.ISO8859-3
+iso8859-1/Compose		nl_BE.ISO8859-1
+iso8859-15/Compose		nl_BE.ISO8859-15
+iso8859-1/Compose		nl_NL.ISO8859-1
+iso8859-15/Compose		nl_NL.ISO8859-15
+iso8859-1/Compose		no_NO.ISO8859-1
+iso8859-15/Compose		no_NO.ISO8859-15
+iso8859-1/Compose		nb_NO.ISO8859-1
+iso8859-15/Compose		nb_NO.ISO8859-15
+iso8859-1/Compose		nn_NO.ISO8859-1
+iso8859-15/Compose		nn_NO.ISO8859-15
+iso8859-1/Compose		nr_ZA.ISO8859-1
+iso8859-15/Compose		nso_ZA.ISO8859-15
+iso8859-1/Compose		ny_NO.ISO8859-1
+iso8859-15/Compose		ny_NO.ISO8859-15
+iso8859-1/Compose		oc_FR.ISO8859-1
+iso8859-15/Compose		oc_FR.ISO8859-15
+iso8859-1/Compose		om_KE.ISO8859-1
+# Presumably, "pd" is "Pennsylvania 'Dutch'", a U.S. dialect of German.
+# This is not an ISO language code defined for it, and the GNU C Library
+# doesn't support it.
+# iso8859-1/Compose:		pd_DE.ISO8859-1
+# iso8859-15/Compose:		pd_DE.ISO8859-15
+# iso8859-1/Compose:		pd_US.ISO8859-1
+# iso8859-15/Compose:		pd_US.ISO8859-15
+iso8859-1/Compose		ph_PH.ISO8859-1
+iso8859-2/Compose		pl_PL.ISO8859-2
+iso8859-1/Compose		pp_AN.ISO8859-1
+iso8859-1/Compose		pt_BR.ISO8859-1
+iso8859-1/Compose		pt_PT.ISO8859-1
+iso8859-15/Compose		pt_PT.ISO8859-15
+iso8859-2/Compose		ro_RO.ISO8859-2
+koi8-r/Compose			ru_RU.KOI8-R
+iso8859-5/Compose		ru_RU.ISO8859-5
+microsoft-cp1251/Compose	ru_RU.CP1251
+microsoft-cp1251/Compose	ru_UA.CP1251
+koi8-u/Compose			ru_UA.KOI8-U
+iso8859-1/Compose		rw_RW.ISO8859-1
+iso8859-2/Compose		sh_YU.ISO8859-2
+iso8859-2/Compose		sk_SK.ISO8859-2
+iso8859-2/Compose		sl_SI.ISO8859-2
+iso8859-1/Compose		so_DJ.ISO8859-1
+iso8859-1/Compose		so_KE.ISO8859-1
+iso8859-1/Compose		so_SO.ISO8859-1
+iso8859-2/Compose		sq_AL.ISO8859-2
+iso8859-2/Compose		sr_CS.ISO8859-2
+iso8859-5/Compose		sr_CS.ISO8859-5
+iso8859-2/Compose		sr_YU.ISO8859-2
+microsoft-cp1251/Compose	sr_YU.CP1251
+iso8859-5/Compose		sr_YU.ISO8859-5
+iso8859-1/Compose		ss_ZA.ISO8859-1
+iso8859-1/Compose		st_ZA.ISO8859-1
+iso8859-1/Compose		sv_FI.ISO8859-1
+iso8859-15/Compose		sv_FI.ISO8859-15
+iso8859-1/Compose		sv_SE.ISO8859-1
+iso8859-15/Compose		sv_SE.ISO8859-15
+tscii-0/Compose		ta_IN.TSCII-0
+koi8-c/Compose			tg_TJ.KOI8-C
+iso8859-1/Compose		tl_PH.ISO8859-1
+iso8859-11/Compose		th_TH.ISO8859-11
+th_TH/Compose			th_TH.TIS620
+iso8859-15/Compose		tn_ZA.ISO8859-15
+iso8859-9/Compose		tr_TR.ISO8859-9
+iso8859-1/Compose		ts_ZA.ISO8859-1
+tatar-cyr/Compose		tt_RU.TATAR-CYR
+microsoft-cp1251/Compose	uk_UA.CP1251
+koi8-c/Compose			tt_RU.KOI8-C
+koi8-u/Compose			uk_UA.KOI8-U
+iso8859-5/Compose		uk_UA.ISO8859-5
+microsoft-cp1256/Compose	ur_PK.CP1256
+iso8859-1/Compose		uz_UZ.ISO8859-1
+vi_VN.viscii/Compose		vi_VN.VISCII
+vi_VN.tcvn/Compose		vi_VN.TCVN
+iso8859-1/Compose		wa_BE.ISO8859-1
+iso8859-15/Compose		wa_BE.ISO8859-15
+iso8859-1/Compose		xh_ZA.ISO8859-1
+microsoft-cp1255/Compose	yi_US.CP1255
+zh_CN/Compose			zh_CN.eucCN
+zh_CN/Compose			zh_CN.gb2312
+zh_CN.gbk/Compose		zh_CN.gbk
+zh_CN.gb18030/Compose		zh_CN.gb18030
+zh_HK.big5/Compose		zh_HK.big5
+zh_HK.big5hkscs/Compose	zh_HK.big5-hkscs
+zh_HK.big5hkscs/Compose	zh_HK.Big5-HKSCS
+zh_HK.big5hkscs/Compose	zh_HK.big5hkscs
+zh_HK.big5hkscs/Compose	zh_HK.Big5HKSCS
+zh_CN/Compose		zh_SG.gb2312
+zh_CN.gbk/Compose		zh_SG.gbk
+zh_TW.big5/Compose		zh_TW.big5
+zh_TW/Compose			zh_TW.eucTW
+iso8859-1/Compose		zu_ZA.ISO8859-1
+#
+#
+en_US.UTF-8/Compose		aa_ER.UTF-8
+en_US.UTF-8/Compose		aa_ET.UTF-8
+en_US.UTF-8/Compose		C.UTF-8
+en_US.UTF-8/Compose		af_ZA.UTF-8
+am_ET.UTF-8/Compose		am_ET.UTF-8
+en_US.UTF-8/Compose		ar_AA.UTF-8
+en_US.UTF-8/Compose		ar_AE.UTF-8
+en_US.UTF-8/Compose		ar_BH.UTF-8
+en_US.UTF-8/Compose		ar_DZ.UTF-8
+en_US.UTF-8/Compose		ar_EG.UTF-8
+en_US.UTF-8/Compose		ar_IN.UTF-8
+en_US.UTF-8/Compose		ar_IQ.UTF-8
+en_US.UTF-8/Compose		ar_JO.UTF-8
+en_US.UTF-8/Compose		ar_KW.UTF-8
+en_US.UTF-8/Compose		ar_LB.UTF-8
+en_US.UTF-8/Compose		ar_LY.UTF-8
+en_US.UTF-8/Compose		ar_MA.UTF-8
+en_US.UTF-8/Compose		ar_OM.UTF-8
+en_US.UTF-8/Compose		ar_QA.UTF-8
+en_US.UTF-8/Compose		ar_SA.UTF-8
+en_US.UTF-8/Compose		ar_SD.UTF-8
+en_US.UTF-8/Compose		ar_SY.UTF-8
+en_US.UTF-8/Compose		ar_TN.UTF-8
+en_US.UTF-8/Compose		ar_YE.UTF-8
+en_US.UTF-8/Compose		ast_ES.UTF-8
+en_US.UTF-8/Compose		as_IN.UTF-8
+en_US.UTF-8/Compose		az_AZ.UTF-8
+en_US.UTF-8/Compose		be_BY.UTF-8
+en_US.UTF-8/Compose		bg_BG.UTF-8
+en_US.UTF-8/Compose		bn_BD.UTF-8
+en_US.UTF-8/Compose		bn_IN.UTF-8
+en_US.UTF-8/Compose		bo_IN.UTF-8
+en_US.UTF-8/Compose		br_FR.UTF-8
+en_US.UTF-8/Compose		bs_BA.UTF-8
+en_US.UTF-8/Compose		byn_ER.UTF-8
+en_US.UTF-8/Compose		ca_AD.UTF-8
+en_US.UTF-8/Compose		ca_ES.UTF-8
+en_US.UTF-8/Compose		ca_FR.UTF-8
+en_US.UTF-8/Compose		ca_IT.UTF-8
+cs_CZ.UTF-8/Compose		cs_CZ.UTF-8
+en_US.UTF-8/Compose		cy_GB.UTF-8
+en_US.UTF-8/Compose		da_DK.UTF-8
+en_US.UTF-8/Compose		de_AT.UTF-8
+en_US.UTF-8/Compose		de_BE.UTF-8
+en_US.UTF-8/Compose		de_CH.UTF-8
+en_US.UTF-8/Compose		de_DE.UTF-8
+en_US.UTF-8/Compose		de_IT.UTF-8
+en_US.UTF-8/Compose		de_LI.UTF-8
+en_US.UTF-8/Compose		de_LU.UTF-8
+el_GR.UTF-8/Compose		el_CY.UTF-8
+el_GR.UTF-8/Compose		el_GR.UTF-8
+en_US.UTF-8/Compose		en_AU.UTF-8
+en_US.UTF-8/Compose		en_BE.UTF-8
+en_US.UTF-8/Compose		en_BW.UTF-8
+en_US.UTF-8/Compose		en_BZ.UTF-8
+en_US.UTF-8/Compose		en_CA.UTF-8
+en_US.UTF-8/Compose		en_DK.UTF-8
+en_US.UTF-8/Compose		en_EN.UTF-8
+en_US.UTF-8/Compose		en_GB.UTF-8
+en_US.UTF-8/Compose		en_HK.UTF-8
+en_US.UTF-8/Compose		en_IE.UTF-8
+en_US.UTF-8/Compose		en_IN.UTF-8
+en_US.UTF-8/Compose		en_JM.UTF-8
+en_US.UTF-8/Compose		en_MT.UTF-8
+en_US.UTF-8/Compose		en_NZ.UTF-8
+en_US.UTF-8/Compose		en_PH.UTF-8
+en_US.UTF-8/Compose		en_SG.UTF-8
+en_US.UTF-8/Compose		en_TT.UTF-8
+en_US.UTF-8/Compose		en_UK.UTF-8
+en_US.UTF-8/Compose		en_US.UTF-8
+en_US.UTF-8/Compose		en_ZA.UTF-8
+en_US.UTF-8/Compose		en_ZW.UTF-8
+en_US.UTF-8/Compose		eo_EO.UTF-8
+en_US.UTF-8/Compose		eo_XX.UTF-8
+en_US.UTF-8/Compose		es_AR.UTF-8
+en_US.UTF-8/Compose		es_BO.UTF-8
+en_US.UTF-8/Compose		es_CL.UTF-8
+en_US.UTF-8/Compose		es_CO.UTF-8
+en_US.UTF-8/Compose		es_CR.UTF-8
+en_US.UTF-8/Compose		es_DO.UTF-8
+en_US.UTF-8/Compose		es_EC.UTF-8
+en_US.UTF-8/Compose		es_ES.UTF-8
+en_US.UTF-8/Compose		es_GT.UTF-8
+en_US.UTF-8/Compose		es_HN.UTF-8
+en_US.UTF-8/Compose		es_MX.UTF-8
+en_US.UTF-8/Compose		es_NI.UTF-8
+en_US.UTF-8/Compose		es_PA.UTF-8
+en_US.UTF-8/Compose		es_PE.UTF-8
+en_US.UTF-8/Compose		es_PR.UTF-8
+en_US.UTF-8/Compose		es_PY.UTF-8
+en_US.UTF-8/Compose		es_SV.UTF-8
+en_US.UTF-8/Compose		es_US.UTF-8
+en_US.UTF-8/Compose		es_UY.UTF-8
+en_US.UTF-8/Compose		es_VE.UTF-8
+en_US.UTF-8/Compose		et_EE.UTF-8
+en_US.UTF-8/Compose		eu_ES.UTF-8
+en_US.UTF-8/Compose		eu_FR.UTF-8
+en_US.UTF-8/Compose		fa_IR.UTF-8
+fi_FI.UTF-8/Compose		fi_FI.UTF-8
+en_US.UTF-8/Compose		fo_FO.UTF-8
+en_US.UTF-8/Compose		fr_BE.UTF-8
+en_US.UTF-8/Compose		fr_CA.UTF-8
+en_US.UTF-8/Compose		fr_CH.UTF-8
+en_US.UTF-8/Compose		fr_FR.UTF-8
+en_US.UTF-8/Compose		fr_LU.UTF-8
+en_US.UTF-8/Compose		ga_IE.UTF-8
+en_US.UTF-8/Compose		gd_GB.UTF-8
+en_US.UTF-8/Compose       gez_ER.UTF-8
+en_US.UTF-8/Compose       gez_ET.UTF-8
+en_US.UTF-8/Compose		gl_ES.UTF-8
+en_US.UTF-8/Compose		gu_IN.UTF-8
+en_US.UTF-8/Compose		gv_GB.UTF-8
+en_US.UTF-8/Compose		he_IL.UTF-8
+en_US.UTF-8/Compose		hi_IN.UTF-8
+en_US.UTF-8/Compose		hne_IN.UTF-8
+en_US.UTF-8/Compose		hr_HR.UTF-8
+en_US.UTF-8/Compose		hu_HU.UTF-8
+en_US.UTF-8/Compose		hy_AM.UTF-8
+en_US.UTF-8/Compose		id_ID.UTF-8
+en_US.UTF-8/Compose		is_IS.UTF-8
+en_US.UTF-8/Compose		it_CH.UTF-8
+en_US.UTF-8/Compose		it_IT.UTF-8
+en_US.UTF-8/Compose		iu_CA.UTF-8
+en_US.UTF-8/Compose		iw_IL.UTF-8
+ja_JP.UTF-8/Compose		ja_JP.UTF-8
+en_US.UTF-8/Compose		ka_GE.UTF-8
+en_US.UTF-8/Compose		kk_KZ.UTF-8
+en_US.UTF-8/Compose		kl_GL.UTF-8
+km_KH.UTF-8/Compose		km_KH.UTF-8
+en_US.UTF-8/Compose		kn_IN.UTF-8
+ko_KR.UTF-8/Compose		ko_KR.UTF-8
+en_US.UTF-8/Compose		ks_IN.UTF-8
+en_US.UTF-8/Compose		ks_IN.UTF-8@devanagari
+en_US.UTF-8/Compose		ku_TR.UTF-8
+en_US.UTF-8/Compose		kw_GB.UTF-8
+en_US.UTF-8/Compose		ky_KG.UTF-8
+en_US.UTF-8/Compose		lo_LA.UTF-8
+en_US.UTF-8/Compose		lt_LT.UTF-8
+en_US.UTF-8/Compose		lv_LV.UTF-8
+en_US.UTF-8/Compose		mai_IN.UTF-8
+en_US.UTF-8/Compose		mi_NZ.UTF-8
+en_US.UTF-8/Compose		mk_MK.UTF-8
+en_US.UTF-8/Compose		ml_IN.UTF-8
+en_US.UTF-8/Compose		mn_MN.UTF-8
+en_US.UTF-8/Compose		mr_IN.UTF-8
+en_US.UTF-8/Compose		ms_MY.UTF-8
+en_US.UTF-8/Compose		mt_MT.UTF-8
+en_US.UTF-8/Compose		ne_NP.UTF-8
+en_US.UTF-8/Compose		nl_BE.UTF-8
+en_US.UTF-8/Compose		nl_NL.UTF-8
+en_US.UTF-8/Compose		nn_NO.UTF-8
+en_US.UTF-8/Compose		no_NO.UTF-8
+en_US.UTF-8/Compose		nb_NO.UTF-8
+en_US.UTF-8/Compose		nr_ZA.UTF-8
+en_US.UTF-8/Compose		nso_ZA.UTF-8
+# ny is the language code for Nyanja (spoken in Malawi), not Nynorsk.
+# See <URL: http://www.ethnologue.com/show_iso639.asp?code=nya >.
+# en_US.UTF-8/Compose: ny_NO.UTF-8
+en_US.UTF-8/Compose		oc_FR.UTF-8
+en_US.UTF-8/Compose		or_IN.UTF-8
+en_US.UTF-8/Compose       om_ET.UTF-8
+en_US.UTF-8/Compose		pa_IN.UTF-8
+en_US.UTF-8/Compose		pa_PK.UTF-8
+# Presumably, "pd" is "Pennsylvania 'Dutch'", a U.S. dialect of German.
+# This is not an ISO language code defined for it, and the GNU C Library
+# doesn't support it.
+# en_US.UTF-8/Compose: pd_DE.UTF-8
+# en_US.UTF-8/Compose: pd_US.UTF-8
+en_US.UTF-8/Compose		ph_PH.UTF-8
+en_US.UTF-8/Compose		pl_PL.UTF-8
+en_US.UTF-8/Compose		pp_AN.UTF-8
+pt_BR.UTF-8/Compose		pt_BR.UTF-8
+pt_PT.UTF-8/Compose		pt_PT.UTF-8
+en_US.UTF-8/Compose		ro_RO.UTF-8
+ru_RU.UTF-8/Compose		ru_RU.UTF-8
+en_US.UTF-8/Compose		ru_UA.UTF-8
+en_US.UTF-8/Compose		rw_RW.UTF-8
+en_US.UTF-8/Compose		sa_IN.UTF-8
+en_US.UTF-8/Compose		sd_IN.UTF-8
+en_US.UTF-8/Compose		sd_IN.UTF-8@devanagari
+en_US.UTF-8/Compose		se_NO.UTF-8
+en_US.UTF-8/Compose		sh_BA.UTF-8
+en_US.UTF-8/Compose		sh_YU.UTF-8
+en_US.UTF-8/Compose		sid_ET.UTF-8
+en_US.UTF-8/Compose		si_LK.UTF-8
+en_US.UTF-8/Compose		sk_SK.UTF-8
+en_US.UTF-8/Compose		sl_SI.UTF-8
+en_US.UTF-8/Compose		so_ET.UTF-8
+en_US.UTF-8/Compose		sq_AL.UTF-8
+sr_CS.UTF-8/Compose		sr_CS.UTF-8
+en_US.UTF-8/Compose		sr_ME.UTF-8
+en_US.UTF-8/Compose		sr_RS.UTF-8
+en_US.UTF-8/Compose		sr_YU.UTF-8
+en_US.UTF-8/Compose		ss_ZA.UTF-8
+en_US.UTF-8/Compose		st_ZA.UTF-8
+en_US.UTF-8/Compose		sv_FI.UTF-8
+en_US.UTF-8/Compose		sv_SE.UTF-8
+en_US.UTF-8/Compose		ta_IN.UTF-8
+en_US.UTF-8/Compose		te_IN.UTF-8
+en_US.UTF-8/Compose		tg_TJ.UTF-8
+# Following entry commented to allow Thai XIM as default for X apps
+# See Debian bug#520509
+# th_TH.UTF-8/Compose:		th_TH.UTF-8
+en_US.UTF-8/Compose		ti_ER.UTF-8
+en_US.UTF-8/Compose		ti_ET.UTF-8
+en_US.UTF-8/Compose		tig_ER.UTF-8
+en_US.UTF-8/Compose		tl_PH.UTF-8
+en_US.UTF-8/Compose		tn_ZA.UTF-8
+en_US.UTF-8/Compose		tr_TR.UTF-8
+en_US.UTF-8/Compose		ts_ZA.UTF-8
+en_US.UTF-8/Compose		tt_RU.UTF-8
+en_US.UTF-8/Compose		uk_UA.UTF-8
+en_US.UTF-8/Compose		ur_IN.UTF-8
+en_US.UTF-8/Compose		ur_PK.UTF-8
+en_US.UTF-8/Compose		uz_UZ.UTF-8
+en_US.UTF-8/Compose		ve_ZA.UTF-8
+en_US.UTF-8/Compose		vi_VN.UTF-8
+en_US.UTF-8/Compose		wa_BE.UTF-8
+en_US.UTF-8/Compose		xh_ZA.UTF-8
+en_US.UTF-8/Compose		yi_US.UTF-8
+zh_CN.UTF-8/Compose		zh_CN.UTF-8
+zh_HK.UTF-8/Compose		zh_HK.UTF-8
+en_US.UTF-8/Compose		zh_SG.UTF-8
+zh_TW.UTF-8/Compose		zh_TW.UTF-8
+en_US.UTF-8/Compose		zu_ZA.UTF-8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#	This file contains compose table file names.
+#	The first word is the compose table file name
+#	and the second word is the full locale name.
+#
+#
+# Note that no Compose tables exist for ISO 8859-11, Microsoft code
+# pages, Fujitsu's S90 or U90 character sets, or TIS620 yet.
+#
+iso8859-1/Compose:		C
+iso8859-1/Compose:		aa_DJ.ISO8859-1
+iso8859-1/Compose:		af_ZA.ISO8859-1
+iso8859-15/Compose:		an_ES.ISO8859-15
+iso8859-6/Compose:		ar_AA.ISO8859-6
+iso8859-6/Compose:		ar_AE.ISO8859-6
+iso8859-6/Compose:		ar_BH.ISO8859-6
+iso8859-6/Compose:		ar_DZ.ISO8859-6
+iso8859-6/Compose:		ar_EG.ISO8859-6
+iso8859-6/Compose:		ar_IQ.ISO8859-6
+iso8859-6/Compose:		ar_JO.ISO8859-6
+iso8859-6/Compose:		ar_KW.ISO8859-6
+iso8859-6/Compose:		ar_LB.ISO8859-6
+iso8859-6/Compose:		ar_LY.ISO8859-6
+iso8859-6/Compose:		ar_MA.ISO8859-6
+iso8859-6/Compose:		ar_OM.ISO8859-6
+iso8859-6/Compose:		ar_QA.ISO8859-6
+iso8859-6/Compose:		ar_SA.ISO8859-6
+iso8859-6/Compose:		ar_SD.ISO8859-6
+iso8859-6/Compose:		ar_SY.ISO8859-6
+iso8859-6/Compose:		ar_TN.ISO8859-6
+iso8859-6/Compose:		ar_YE.ISO8859-6
+iso8859-9e/Compose:		az_AZ.ISO8859-9E
+koi8-c/Compose:			az_AZ.KOI8-C
+microsoft-cp1251/Compose:	be_BY.CP1251
+iso8859-5/Compose:		be_BY.ISO8859-5
+iso8859-5/Compose:		bg_BG.ISO8859-5
+microsoft-cp1251/Compose:	bg_BG.CP1251
+koi8-r/Compose:			bg_BG.KOI8-R
+iso8859-1/Compose:		br_FR.ISO8859-1
+iso8859-14/Compose:		br_FR.ISO8859-14
+iso8859-15/Compose:		br_FR.ISO8859-15
+iso8859-2/Compose:		bs_BA.ISO8859-2
+iso8859-1/Compose:		ca_AD.ISO8859-1
+iso8859-15/Compose:		ca_AD.ISO8859-15
+iso8859-1/Compose:		ca_ES.ISO8859-1
+iso8859-15/Compose:		ca_ES.ISO8859-15
+iso8859-1/Compose:		ca_FR.ISO8859-1
+iso8859-15/Compose:		ca_FR.ISO8859-15
+iso8859-1/Compose:		ca_IT.ISO8859-1
+iso8859-15/Compose:		ca_IT.ISO8859-15
+iso8859-2/Compose:		cs_CZ.ISO8859-2
+iso8859-1/Compose:		cy_GB.ISO8859-1
+iso8859-14/Compose:		cy_GB.ISO8859-14
+iso8859-15/Compose:		cy_GB.ISO8859-15
+iso8859-1/Compose:		da_DK.ISO8859-1
+iso8859-15/Compose:		da_DK.ISO8859-15
+iso8859-1/Compose:		de_AT.ISO8859-1
+iso8859-15/Compose:		de_AT.ISO8859-15
+iso8859-1/Compose:		de_BE.ISO8859-1
+iso8859-15/Compose:		de_BE.ISO8859-15
+iso8859-1/Compose:		de_CH.ISO8859-1
+iso8859-15/Compose:		de_CH.ISO8859-15
+iso8859-1/Compose:		de_DE.ISO8859-1
+iso8859-15/Compose:		de_DE.ISO8859-15
+iso8859-1/Compose:		de_LI.ISO8859-1
+iso8859-15/Compose:		de_LI.ISO8859-15
+iso8859-1/Compose:		de_LU.ISO8859-1
+iso8859-15/Compose:		de_LU.ISO8859-15
+iso8859-4/Compose:		ee_EE.ISO8859-4
+iso8859-7/Compose:		el_GR.ISO8859-7
+iso8859-15/Compose:		el_GR.ISO8859-15
+iso8859-1/Compose:		en_AU.ISO8859-1
+iso8859-1/Compose:		en_BE.ISO8859-1
+iso8859-15/Compose:		en_BE.ISO8859-15
+iso8859-1/Compose:		en_BW.ISO8859-1
+iso8859-1/Compose:		en_BZ.ISO8859-1
+iso8859-1/Compose:		en_CA.ISO8859-1
+iso8859-1/Compose:		en_DK.ISO8859-1
+iso8859-15/Compose:		en_DK.ISO8859-15
+iso8859-1/Compose:		en_EN.ISO8859-1
+iso8859-1/Compose:		en_GB.ISO8859-1
+iso8859-15/Compose:		en_GB.ISO8859-15
+iso8859-1/Compose:		en_HK.ISO8859-1
+iso8859-1/Compose:		en_IE.ISO8859-1
+iso8859-15/Compose:		en_IE.ISO8859-15
+iso8859-1/Compose:		en_IN.ISO8859-1
+iso8859-15/Compose:		en_IN.ISO8859-15
+iso8859-1/Compose:		en_JM.ISO8859-1
+iso8859-1/Compose:		en_NZ.ISO8859-1
+iso8859-1/Compose:		en_PH.ISO8859-1
+iso8859-1/Compose:		en_SG.ISO8859-1
+iso8859-1/Compose:		en_TT.ISO8859-1
+iso8859-1/Compose:		en_UK.ISO8859-1
+iso8859-15/Compose:		en_UK.ISO8859-15
+iso8859-1/Compose:		en_US.ISO8859-1
+iso8859-15/Compose:		en_US.ISO8859-15
+iso8859-1/Compose:		en_ZA.ISO8859-1
+iso8859-15/Compose:		en_ZA.ISO8859-15
+iso8859-1/Compose:		en_ZW.ISO8859-1
+iso8859-3/Compose:		eo_EO.ISO8859-3
+iso8859-3/Compose:		eo_XX.ISO8859-3
+iso8859-1/Compose:		es_AR.ISO8859-1
+iso8859-1/Compose:		es_BO.ISO8859-1
+iso8859-1/Compose:		es_CL.ISO8859-1
+iso8859-1/Compose:		es_CO.ISO8859-1
+iso8859-1/Compose:		es_CR.ISO8859-1
+iso8859-1/Compose:		es_DO.ISO8859-1
+iso8859-1/Compose:		es_EC.ISO8859-1
+iso8859-1/Compose:		es_ES.ISO8859-1
+iso8859-15/Compose:		es_ES.ISO8859-15
+iso8859-1/Compose:		es_GT.ISO8859-1
+iso8859-1/Compose:		es_HN.ISO8859-1
+iso8859-1/Compose:		es_MX.ISO8859-1
+iso8859-1/Compose:		es_NI.ISO8859-1
+iso8859-1/Compose:		es_PA.ISO8859-1
+iso8859-15/Compose:		es_PA.ISO8859-15
+iso8859-1/Compose:		es_PE.ISO8859-1
+iso8859-15/Compose:		es_PE.ISO8859-15
+iso8859-1/Compose:		es_PR.ISO8859-1
+iso8859-1/Compose:		es_PY.ISO8859-1
+iso8859-15/Compose:		es_PY.ISO8859-15
+iso8859-1/Compose:		es_SV.ISO8859-1
+iso8859-15/Compose:		es_SV.ISO8859-15
+iso8859-1/Compose:		es_US.ISO8859-1
+iso8859-1/Compose:		es_UY.ISO8859-1
+iso8859-15/Compose:		es_UY.ISO8859-15
+iso8859-1/Compose:		es_VE.ISO8859-1
+iso8859-15/Compose:		es_VE.ISO8859-15
+iso8859-1/Compose:		et_EE.ISO8859-1
+iso8859-4/Compose:		et_EE.ISO8859-4
+iso8859-13/Compose:		et_EE.ISO8859-13
+iso8859-15/Compose:		et_EE.ISO8859-15
+iso8859-1/Compose:		eu_ES.ISO8859-1
+iso8859-15/Compose:		eu_ES.ISO8859-15
+iso8859-1/Compose:		eu_FR.ISO8859-1
+iso8859-15/Compose:		eu_FR.ISO8859-15
+isiri-3342/Compose:		fa_IR.ISIRI-3342
+iso8859-1/Compose:		fi_FI.ISO8859-1
+iso8859-15/Compose:		fi_FI.ISO8859-15
+iso8859-1/Compose:		fo_FO.ISO8859-1
+iso8859-15/Compose:		fo_FO.ISO8859-15
+iso8859-1/Compose:		fr_BE.ISO8859-1
+iso8859-15/Compose:		fr_BE.ISO8859-15
+iso8859-1/Compose:		fr_CA.ISO8859-1
+iso8859-15/Compose:		fr_CA.ISO8859-15
+iso8859-1/Compose:		fr_CH.ISO8859-1
+iso8859-15/Compose:		fr_CH.ISO8859-15
+iso8859-1/Compose:		fr_FR.ISO8859-1
+iso8859-15/Compose:		fr_FR.ISO8859-15
+iso8859-1/Compose:		fr_LU.ISO8859-1
+iso8859-15/Compose:		fr_LU.ISO8859-15
+iso8859-1/Compose:		ga_IE.ISO8859-1
+iso8859-14/Compose:		ga_IE.ISO8859-14
+iso8859-15/Compose:		ga_IE.ISO8859-15
+iso8859-1/Compose:		gd_GB.ISO8859-1
+iso8859-14/Compose:		gd_GB.ISO8859-14
+iso8859-15/Compose:		gd_GB.ISO8859-15
+iso8859-1/Compose:		gl_ES.ISO8859-1
+iso8859-15/Compose:		gl_ES.ISO8859-15
+iso8859-1/Compose:		gv_GB.ISO8859-1
+iso8859-14/Compose:		gv_GB.ISO8859-14
+iso8859-15/Compose:		gv_GB.ISO8859-15
+iso8859-8/Compose:		he_IL.ISO8859-8
+microsoft-cp1255/Compose:	he_IL.CP1255
+iscii-dev/Compose:		hi_IN.ISCII-DEV
+iso8859-2/Compose:		hr_HR.ISO8859-2
+iso8859-2/Compose:		hu_HU.ISO8859-2
+armscii-8/Compose:		hy_AM.ARMSCII-8
+iso8859-1/Compose:		id_ID.ISO8859-1
+iso8859-1/Compose:		is_IS.ISO8859-1
+iso8859-15/Compose:		is_IS.ISO8859-15
+iso8859-1/Compose:		it_CH.ISO8859-1
+iso8859-1/Compose:		it_IT.ISO8859-1
+iso8859-15/Compose:		it_IT.ISO8859-15
+ja/Compose:			ja_JP.eucJP
+ja.SJIS/Compose:		ja_JP.SJIS
+ja.JIS/Compose:			ja_JP.JIS7
+georgian-academy/Compose:	ka_GE.GEORGIAN-ACADEMY
+georgian-ps/Compose:		ka_GE.GEORGIAN-PS
+iso8859-1/Compose:		kl_GL.ISO8859-1
+iso8859-1/Compose:		kw_GB.ISO8859-1
+iso8859-14/Compose:		kw_GB.ISO8859-14
+iso8859-15/Compose:		kw_GB.ISO8859-15
+iso8859-10/Compose:		lg_UG.ISO8859-10
+# Remove ko/Compose, as requested in https://bugs.debian.org/89703
+# ko/Compose:			ko_KR.eucKR
+ibm-cp1133/Compose:		lo_LA.IBM-CP1133
+mulelao-1/Compose:		lo_LA.MULELAO-1
+iso8859-4/Compose:		lt_LT.ISO8859-4
+iso8859-13/Compose:		lt_LT.ISO8859-13
+iso8859-4/Compose:		lv_LV.ISO8859-4
+iso8859-13/Compose:		lv_LV.ISO8859-13
+iso8859-13/Compose:		mi_NZ.ISO8859-13
+iso8859-5/Compose:		mk_MK.ISO8859-5
+microsoft-cp1251/Compose:	mk_MK.CP1251
+iso8859-1/Compose:		ms_MY.ISO8859-1
+iso8859-3/Compose:		mt_MT.ISO8859-3
+iso8859-1/Compose:		nl_BE.ISO8859-1
+iso8859-15/Compose:		nl_BE.ISO8859-15
+iso8859-1/Compose:		nl_NL.ISO8859-1
+iso8859-15/Compose:		nl_NL.ISO8859-15
+iso8859-1/Compose:		no_NO.ISO8859-1
+iso8859-15/Compose:		no_NO.ISO8859-15
+iso8859-1/Compose:		nb_NO.ISO8859-1
+iso8859-15/Compose:		nb_NO.ISO8859-15
+iso8859-1/Compose:		nn_NO.ISO8859-1
+iso8859-15/Compose:		nn_NO.ISO8859-15
+iso8859-1/Compose:		nr_ZA.ISO8859-1
+iso8859-15/Compose:		nso_ZA.ISO8859-15
+iso8859-1/Compose:		ny_NO.ISO8859-1
+iso8859-15/Compose:		ny_NO.ISO8859-15
+iso8859-1/Compose:		oc_FR.ISO8859-1
+iso8859-15/Compose:		oc_FR.ISO8859-15
+iso8859-1/Compose:		om_KE.ISO8859-1
+# Presumably, "pd" is "Pennsylvania 'Dutch'", a U.S. dialect of German.
+# This is not an ISO language code defined for it, and the GNU C Library
+# doesn't support it.
+# iso8859-1/Compose:		pd_DE.ISO8859-1
+# iso8859-15/Compose:		pd_DE.ISO8859-15
+# iso8859-1/Compose:		pd_US.ISO8859-1
+# iso8859-15/Compose:		pd_US.ISO8859-15
+iso8859-1/Compose:		ph_PH.ISO8859-1
+iso8859-2/Compose:		pl_PL.ISO8859-2
+iso8859-1/Compose:		pp_AN.ISO8859-1
+iso8859-1/Compose:		pt_BR.ISO8859-1
+iso8859-1/Compose:		pt_PT.ISO8859-1
+iso8859-15/Compose:		pt_PT.ISO8859-15
+iso8859-2/Compose:		ro_RO.ISO8859-2
+koi8-r/Compose:			ru_RU.KOI8-R
+iso8859-5/Compose:		ru_RU.ISO8859-5
+microsoft-cp1251/Compose:	ru_RU.CP1251
+microsoft-cp1251/Compose:	ru_UA.CP1251
+koi8-u/Compose:			ru_UA.KOI8-U
+iso8859-1/Compose:		rw_RW.ISO8859-1
+iso8859-2/Compose:		sh_YU.ISO8859-2
+iso8859-2/Compose:		sk_SK.ISO8859-2
+iso8859-2/Compose:		sl_SI.ISO8859-2
+iso8859-1/Compose:		so_DJ.ISO8859-1
+iso8859-1/Compose:		so_KE.ISO8859-1
+iso8859-1/Compose:		so_SO.ISO8859-1
+iso8859-2/Compose:		sq_AL.ISO8859-2
+iso8859-2/Compose:		sr_CS.ISO8859-2
+iso8859-5/Compose:		sr_CS.ISO8859-5
+iso8859-2/Compose:		sr_YU.ISO8859-2
+microsoft-cp1251/Compose:	sr_YU.CP1251
+iso8859-5/Compose:		sr_YU.ISO8859-5
+iso8859-1/Compose:		ss_ZA.ISO8859-1
+iso8859-1/Compose:		st_ZA.ISO8859-1
+iso8859-1/Compose:		sv_FI.ISO8859-1
+iso8859-15/Compose:		sv_FI.ISO8859-15
+iso8859-1/Compose:		sv_SE.ISO8859-1
+iso8859-15/Compose:		sv_SE.ISO8859-15
+tscii-0/Compose:		ta_IN.TSCII-0
+koi8-c/Compose:			tg_TJ.KOI8-C
+iso8859-1/Compose:		tl_PH.ISO8859-1
+iso8859-11/Compose:		th_TH.ISO8859-11
+th_TH/Compose:			th_TH.TIS620
+iso8859-15/Compose:		tn_ZA.ISO8859-15
+iso8859-9/Compose:		tr_TR.ISO8859-9
+iso8859-1/Compose:		ts_ZA.ISO8859-1
+tatar-cyr/Compose:		tt_RU.TATAR-CYR
+microsoft-cp1251/Compose:	uk_UA.CP1251
+koi8-c/Compose:			tt_RU.KOI8-C
+koi8-u/Compose:			uk_UA.KOI8-U
+iso8859-5/Compose:		uk_UA.ISO8859-5
+microsoft-cp1256/Compose:	ur_PK.CP1256
+iso8859-1/Compose:		uz_UZ.ISO8859-1
+vi_VN.viscii/Compose:		vi_VN.VISCII
+vi_VN.tcvn/Compose:		vi_VN.TCVN
+iso8859-1/Compose:		wa_BE.ISO8859-1
+iso8859-15/Compose:		wa_BE.ISO8859-15
+iso8859-1/Compose:		xh_ZA.ISO8859-1
+microsoft-cp1255/Compose:	yi_US.CP1255
+zh_CN/Compose:			zh_CN.eucCN
+zh_CN/Compose:			zh_CN.gb2312
+zh_CN.gbk/Compose:		zh_CN.gbk
+zh_CN.gb18030/Compose:		zh_CN.gb18030
+zh_HK.big5/Compose:		zh_HK.big5
+zh_HK.big5hkscs/Compose:	zh_HK.big5-hkscs
+zh_HK.big5hkscs/Compose:	zh_HK.Big5-HKSCS
+zh_HK.big5hkscs/Compose:	zh_HK.big5hkscs
+zh_HK.big5hkscs/Compose:	zh_HK.Big5HKSCS
+zh_CN/Compose:		zh_SG.gb2312
+zh_CN.gbk/Compose:		zh_SG.gbk
+zh_TW.big5/Compose:		zh_TW.big5
+zh_TW/Compose:			zh_TW.eucTW
+iso8859-1/Compose:		zu_ZA.ISO8859-1
+#
+#
+en_US.UTF-8/Compose:		aa_ER.UTF-8
+en_US.UTF-8/Compose:		aa_ET.UTF-8
+en_US.UTF-8/Compose:		C.UTF-8
+en_US.UTF-8/Compose:		af_ZA.UTF-8
+am_ET.UTF-8/Compose:		am_ET.UTF-8
+en_US.UTF-8/Compose:		ar_AA.UTF-8
+en_US.UTF-8/Compose:		ar_AE.UTF-8
+en_US.UTF-8/Compose:		ar_BH.UTF-8
+en_US.UTF-8/Compose:		ar_DZ.UTF-8
+en_US.UTF-8/Compose:		ar_EG.UTF-8
+en_US.UTF-8/Compose:		ar_IN.UTF-8
+en_US.UTF-8/Compose:		ar_IQ.UTF-8
+en_US.UTF-8/Compose:		ar_JO.UTF-8
+en_US.UTF-8/Compose:		ar_KW.UTF-8
+en_US.UTF-8/Compose:		ar_LB.UTF-8
+en_US.UTF-8/Compose:		ar_LY.UTF-8
+en_US.UTF-8/Compose:		ar_MA.UTF-8
+en_US.UTF-8/Compose:		ar_OM.UTF-8
+en_US.UTF-8/Compose:		ar_QA.UTF-8
+en_US.UTF-8/Compose:		ar_SA.UTF-8
+en_US.UTF-8/Compose:		ar_SD.UTF-8
+en_US.UTF-8/Compose:		ar_SY.UTF-8
+en_US.UTF-8/Compose:		ar_TN.UTF-8
+en_US.UTF-8/Compose:		ar_YE.UTF-8
+en_US.UTF-8/Compose:		ast_ES.UTF-8
+en_US.UTF-8/Compose:		as_IN.UTF-8
+en_US.UTF-8/Compose:		az_AZ.UTF-8
+en_US.UTF-8/Compose:		be_BY.UTF-8
+en_US.UTF-8/Compose:		bg_BG.UTF-8
+en_US.UTF-8/Compose:		bn_BD.UTF-8
+en_US.UTF-8/Compose:		bn_IN.UTF-8
+en_US.UTF-8/Compose:		bo_IN.UTF-8
+en_US.UTF-8/Compose:		br_FR.UTF-8
+en_US.UTF-8/Compose:		bs_BA.UTF-8
+en_US.UTF-8/Compose:		byn_ER.UTF-8
+en_US.UTF-8/Compose:		ca_AD.UTF-8
+en_US.UTF-8/Compose:		ca_ES.UTF-8
+en_US.UTF-8/Compose:		ca_FR.UTF-8
+en_US.UTF-8/Compose:		ca_IT.UTF-8
+cs_CZ.UTF-8/Compose:		cs_CZ.UTF-8
+en_US.UTF-8/Compose:		cy_GB.UTF-8
+en_US.UTF-8/Compose:		da_DK.UTF-8
+en_US.UTF-8/Compose:		de_AT.UTF-8
+en_US.UTF-8/Compose:		de_BE.UTF-8
+en_US.UTF-8/Compose:		de_CH.UTF-8
+en_US.UTF-8/Compose:		de_DE.UTF-8
+en_US.UTF-8/Compose:		de_IT.UTF-8
+en_US.UTF-8/Compose:		de_LI.UTF-8
+en_US.UTF-8/Compose:		de_LU.UTF-8
+el_GR.UTF-8/Compose:		el_CY.UTF-8
+el_GR.UTF-8/Compose:		el_GR.UTF-8
+en_US.UTF-8/Compose:		en_AU.UTF-8
+en_US.UTF-8/Compose:		en_BE.UTF-8
+en_US.UTF-8/Compose:		en_BW.UTF-8
+en_US.UTF-8/Compose:		en_BZ.UTF-8
+en_US.UTF-8/Compose:		en_CA.UTF-8
+en_US.UTF-8/Compose:		en_DK.UTF-8
+en_US.UTF-8/Compose:		en_EN.UTF-8
+en_US.UTF-8/Compose:		en_GB.UTF-8
+en_US.UTF-8/Compose:		en_HK.UTF-8
+en_US.UTF-8/Compose:		en_IE.UTF-8
+en_US.UTF-8/Compose:		en_IN.UTF-8
+en_US.UTF-8/Compose:		en_JM.UTF-8
+en_US.UTF-8/Compose:		en_MT.UTF-8
+en_US.UTF-8/Compose:		en_NZ.UTF-8
+en_US.UTF-8/Compose:		en_PH.UTF-8
+en_US.UTF-8/Compose:		en_SG.UTF-8
+en_US.UTF-8/Compose:		en_TT.UTF-8
+en_US.UTF-8/Compose:		en_UK.UTF-8
+en_US.UTF-8/Compose:		en_US.UTF-8
+en_US.UTF-8/Compose:		en_ZA.UTF-8
+en_US.UTF-8/Compose:		en_ZW.UTF-8
+en_US.UTF-8/Compose:		eo_EO.UTF-8
+en_US.UTF-8/Compose:		eo_XX.UTF-8
+en_US.UTF-8/Compose:		es_AR.UTF-8
+en_US.UTF-8/Compose:		es_BO.UTF-8
+en_US.UTF-8/Compose:		es_CL.UTF-8
+en_US.UTF-8/Compose:		es_CO.UTF-8
+en_US.UTF-8/Compose:		es_CR.UTF-8
+en_US.UTF-8/Compose:		es_DO.UTF-8
+en_US.UTF-8/Compose:		es_EC.UTF-8
+en_US.UTF-8/Compose:		es_ES.UTF-8
+en_US.UTF-8/Compose:		es_GT.UTF-8
+en_US.UTF-8/Compose:		es_HN.UTF-8
+en_US.UTF-8/Compose:		es_MX.UTF-8
+en_US.UTF-8/Compose:		es_NI.UTF-8
+en_US.UTF-8/Compose:		es_PA.UTF-8
+en_US.UTF-8/Compose:		es_PE.UTF-8
+en_US.UTF-8/Compose:		es_PR.UTF-8
+en_US.UTF-8/Compose:		es_PY.UTF-8
+en_US.UTF-8/Compose:		es_SV.UTF-8
+en_US.UTF-8/Compose:		es_US.UTF-8
+en_US.UTF-8/Compose:		es_UY.UTF-8
+en_US.UTF-8/Compose:		es_VE.UTF-8
+en_US.UTF-8/Compose:		et_EE.UTF-8
+en_US.UTF-8/Compose:		eu_ES.UTF-8
+en_US.UTF-8/Compose:		eu_FR.UTF-8
+en_US.UTF-8/Compose:		fa_IR.UTF-8
+fi_FI.UTF-8/Compose:		fi_FI.UTF-8
+en_US.UTF-8/Compose:		fo_FO.UTF-8
+en_US.UTF-8/Compose:		fr_BE.UTF-8
+en_US.UTF-8/Compose:		fr_CA.UTF-8
+en_US.UTF-8/Compose:		fr_CH.UTF-8
+en_US.UTF-8/Compose:		fr_FR.UTF-8
+en_US.UTF-8/Compose:		fr_LU.UTF-8
+en_US.UTF-8/Compose:		ga_IE.UTF-8
+en_US.UTF-8/Compose:		gd_GB.UTF-8
+en_US.UTF-8/Compose:       gez_ER.UTF-8
+en_US.UTF-8/Compose:       gez_ET.UTF-8
+en_US.UTF-8/Compose:		gl_ES.UTF-8
+en_US.UTF-8/Compose:		gu_IN.UTF-8
+en_US.UTF-8/Compose:		gv_GB.UTF-8
+en_US.UTF-8/Compose:		he_IL.UTF-8
+en_US.UTF-8/Compose:		hi_IN.UTF-8
+en_US.UTF-8/Compose:		hne_IN.UTF-8
+en_US.UTF-8/Compose:		hr_HR.UTF-8
+en_US.UTF-8/Compose:		hu_HU.UTF-8
+en_US.UTF-8/Compose:		hy_AM.UTF-8
+en_US.UTF-8/Compose:		id_ID.UTF-8
+en_US.UTF-8/Compose:		is_IS.UTF-8
+en_US.UTF-8/Compose:		it_CH.UTF-8
+en_US.UTF-8/Compose:		it_IT.UTF-8
+en_US.UTF-8/Compose:		iu_CA.UTF-8
+en_US.UTF-8/Compose:		iw_IL.UTF-8
+ja_JP.UTF-8/Compose:		ja_JP.UTF-8
+en_US.UTF-8/Compose:		ka_GE.UTF-8
+en_US.UTF-8/Compose:		kk_KZ.UTF-8
+en_US.UTF-8/Compose:		kl_GL.UTF-8
+km_KH.UTF-8/Compose:		km_KH.UTF-8
+en_US.UTF-8/Compose:		kn_IN.UTF-8
+ko_KR.UTF-8/Compose:		ko_KR.UTF-8
+en_US.UTF-8/Compose:		ks_IN.UTF-8
+en_US.UTF-8/Compose:		ks_IN.UTF-8@devanagari
+en_US.UTF-8/Compose:		ku_TR.UTF-8
+en_US.UTF-8/Compose:		kw_GB.UTF-8
+en_US.UTF-8/Compose:		ky_KG.UTF-8
+en_US.UTF-8/Compose:		lo_LA.UTF-8
+en_US.UTF-8/Compose:		lt_LT.UTF-8
+en_US.UTF-8/Compose:		lv_LV.UTF-8
+en_US.UTF-8/Compose:		mai_IN.UTF-8
+en_US.UTF-8/Compose:		mi_NZ.UTF-8
+en_US.UTF-8/Compose:		mk_MK.UTF-8
+en_US.UTF-8/Compose:		ml_IN.UTF-8
+en_US.UTF-8/Compose:		mn_MN.UTF-8
+en_US.UTF-8/Compose:		mr_IN.UTF-8
+en_US.UTF-8/Compose:		ms_MY.UTF-8
+en_US.UTF-8/Compose:		mt_MT.UTF-8
+en_US.UTF-8/Compose:		ne_NP.UTF-8
+en_US.UTF-8/Compose:		nl_BE.UTF-8
+en_US.UTF-8/Compose:		nl_NL.UTF-8
+en_US.UTF-8/Compose:		nn_NO.UTF-8
+en_US.UTF-8/Compose:		no_NO.UTF-8
+en_US.UTF-8/Compose:		nb_NO.UTF-8
+en_US.UTF-8/Compose:		nr_ZA.UTF-8
+en_US.UTF-8/Compose:		nso_ZA.UTF-8
+# ny is the language code for Nyanja (spoken in Malawi), not Nynorsk.
+# See <URL: http://www.ethnologue.com/show_iso639.asp?code=nya >.
+# en_US.UTF-8/Compose: ny_NO.UTF-8
+en_US.UTF-8/Compose:		oc_FR.UTF-8
+en_US.UTF-8/Compose:		or_IN.UTF-8
+en_US.UTF-8/Compose:       om_ET.UTF-8
+en_US.UTF-8/Compose:		pa_IN.UTF-8
+en_US.UTF-8/Compose:		pa_PK.UTF-8
+# Presumably, "pd" is "Pennsylvania 'Dutch'", a U.S. dialect of German.
+# This is not an ISO language code defined for it, and the GNU C Library
+# doesn't support it.
+# en_US.UTF-8/Compose: pd_DE.UTF-8
+# en_US.UTF-8/Compose: pd_US.UTF-8
+en_US.UTF-8/Compose:		ph_PH.UTF-8
+en_US.UTF-8/Compose:		pl_PL.UTF-8
+en_US.UTF-8/Compose:		pp_AN.UTF-8
+pt_BR.UTF-8/Compose:		pt_BR.UTF-8
+pt_PT.UTF-8/Compose:		pt_PT.UTF-8
+en_US.UTF-8/Compose:		ro_RO.UTF-8
+ru_RU.UTF-8/Compose:		ru_RU.UTF-8
+en_US.UTF-8/Compose:		ru_UA.UTF-8
+en_US.UTF-8/Compose:		rw_RW.UTF-8
+en_US.UTF-8/Compose:		sa_IN.UTF-8
+en_US.UTF-8/Compose:		sd_IN.UTF-8
+en_US.UTF-8/Compose:		sd_IN.UTF-8@devanagari
+en_US.UTF-8/Compose:		se_NO.UTF-8
+en_US.UTF-8/Compose:		sh_BA.UTF-8
+en_US.UTF-8/Compose:		sh_YU.UTF-8
+en_US.UTF-8/Compose:		sid_ET.UTF-8
+en_US.UTF-8/Compose:		si_LK.UTF-8
+en_US.UTF-8/Compose:		sk_SK.UTF-8
+en_US.UTF-8/Compose:		sl_SI.UTF-8
+en_US.UTF-8/Compose:		so_ET.UTF-8
+en_US.UTF-8/Compose:		sq_AL.UTF-8
+sr_CS.UTF-8/Compose:		sr_CS.UTF-8
+en_US.UTF-8/Compose:		sr_ME.UTF-8
+en_US.UTF-8/Compose:		sr_RS.UTF-8
+en_US.UTF-8/Compose:		sr_YU.UTF-8
+en_US.UTF-8/Compose:		ss_ZA.UTF-8
+en_US.UTF-8/Compose:		st_ZA.UTF-8
+en_US.UTF-8/Compose:		sv_FI.UTF-8
+en_US.UTF-8/Compose:		sv_SE.UTF-8
+en_US.UTF-8/Compose:		ta_IN.UTF-8
+en_US.UTF-8/Compose:		te_IN.UTF-8
+en_US.UTF-8/Compose:		tg_TJ.UTF-8
+# Following entry commented to allow Thai XIM as default for X apps
+# See Debian bug#520509
+# th_TH.UTF-8/Compose:		th_TH.UTF-8
+en_US.UTF-8/Compose:		ti_ER.UTF-8
+en_US.UTF-8/Compose:		ti_ET.UTF-8
+en_US.UTF-8/Compose:		tig_ER.UTF-8
+en_US.UTF-8/Compose:		tl_PH.UTF-8
+en_US.UTF-8/Compose:		tn_ZA.UTF-8
+en_US.UTF-8/Compose:		tr_TR.UTF-8
+en_US.UTF-8/Compose:		ts_ZA.UTF-8
+en_US.UTF-8/Compose:		tt_RU.UTF-8
+en_US.UTF-8/Compose:		uk_UA.UTF-8
+en_US.UTF-8/Compose:		ur_IN.UTF-8
+en_US.UTF-8/Compose:		ur_PK.UTF-8
+en_US.UTF-8/Compose:		uz_UZ.UTF-8
+en_US.UTF-8/Compose:		ve_ZA.UTF-8
+en_US.UTF-8/Compose:		vi_VN.UTF-8
+en_US.UTF-8/Compose:		wa_BE.UTF-8
+en_US.UTF-8/Compose:		xh_ZA.UTF-8
+en_US.UTF-8/Compose:		yi_US.UTF-8
+zh_CN.UTF-8/Compose:		zh_CN.UTF-8
+zh_HK.UTF-8/Compose:		zh_HK.UTF-8
+en_US.UTF-8/Compose:		zh_SG.UTF-8
+zh_TW.UTF-8/Compose:		zh_TW.UTF-8
+en_US.UTF-8/Compose:		zu_ZA.UTF-8

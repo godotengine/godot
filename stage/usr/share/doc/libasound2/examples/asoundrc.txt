@@ -1,0 +1,480 @@
+# Configuration file syntax
+
+# Include a new configuration file
+<filename>
+
+# Simple assign
+name [=] value [,|;]
+
+# Compound assign (first style)
+name [=] {
+	name1 [=] value [,|;]
+	...
+}
+
+# Compound assign (second style)
+name.name1 [=] value [,|;]
+
+# Array assign (first style)
+name [
+	value0 [,|;]
+	value1 [,|;]
+	...
+]
+
+# Array assign (second style)
+name.0 [=] value0 [,|;]
+name.1 [=] value1 [,|;]
+
+# ******************************************************************************
+
+# Server definition
+server.NAME {
+  host STR		# host where the server is located (if map to local address 
+			# server is local, and then it may be started automatically)
+  [socket STR]		# PF_LOCAL socket name to listen/connect
+  [port INT]		# PF_INET port number to listen/connect
+}
+
+# PCM type definition
+pcm_type.NAME {
+  [lib STR]		# Library file (default libasound.so)
+  [open	STR]		# Open function (default _snd_pcm_NAME_open)
+  [redirect {		# Redirect this PCM to an another
+     [filename STR]	# Configuration file specification
+     name STR		# PCM name specification
+  }]
+}
+
+# PCM scope type definition
+pcm_scope_type.NAME {
+  [lib STR]		# Library file (default libasound.so)
+  [open STR]		# Open function (default _snd_pcm_scope_NAME_open)
+}
+
+# PCM scope definition
+pcm_scope.NAME {
+  type STR		# Scope type
+  ...
+}
+
+# Slave PCM definition
+pcm_slave.NAME {
+  pcm STR		# PCM name
+  # or
+  pcm { }		# PCM definition
+  format STR		# Format
+  channels INT		# Channels
+  rate INT		# Rate
+  period_time INT	# Period time
+  buffer_time INT	# Buffer time
+  etc.
+}
+
+# Hook arguments definition
+hook_args.NAME {
+  ...			# Arbitrary arguments
+}
+
+# PCM hook type
+pcm_hook_type.NAME {
+  [lib STR]		# Library file (default libasound.so)
+  [install STR]		# Install function (default _snd_pcm_hook_NAME_install)
+}
+
+# PCM hook definition
+pcm_hook.NAME {
+  type STR		# PCM Hook type (see pcm_hook_type)
+  [args STR]		# Arguments for install function (see hook_args)
+  # or
+  [args { }]		# Arguments for install function
+}
+
+# PCM definition
+pcm.NAME {
+  type STR		# Type
+  [comment ANY]		# Saved comments
+
+
+# PCM types:
+  type hw 		# Kernel PCM
+  card INT/STR		# Card name or number
+  [device] INT		# Device number (default 0)	
+  [subdevice] INT	# Subdevice number, -1 first available (default -1)
+  mmap_emulation BOOL	# enable mmap emulation for ro/wo devices
+
+
+  type hooks 		# PCM with hooks
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+  }
+  hooks {
+    ID STR		# Hook name (see pcm_hook)
+    # or
+    ID { }		# Hook definition (see pcm_hook)
+  }
+
+  type plug		# Format adjusted PCM
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+    [format STR]	# Slave format (default nearest) or "unchanged"
+    [channels INT]	# Slave channels (default nearest) or "unchanged"
+    [rate INT]		# Slave rate (default nearest) or "unchanged"
+  }
+  route_policy STR	# route policy for automatic ttable generation
+			# STR can be 'default', 'average', 'copy', 'duplicate'
+			# average: result is average of input channels
+			# copy: only first channels are copied to destination
+			# duplicate: duplicate first set of channels
+			# default: copy policy, except for mono capture - sum
+  ttable {	 	# Transfer table (bidimensional compound of 
+	        	# cchannels * schannels numbers)
+    CCHANNEL {
+      SCHANNEL REAL	# route value (0.0 ... 1.0)
+    }
+  }
+
+
+  type copy		# Copy conversion PCM
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+  }
+
+
+  type linear		# Linear format conversion PCM
+  type adpcm		# IMA-ADPCM format conversion PCM
+  type alaw		# A-Law format conversion PCM
+  type mulaw		# Mu-Law format conversion PCM
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+    format STR		# Slave format
+  }
+
+
+  type rate		# Rate conversion PCM
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+    [format STR]	# Slave format (default client format)
+    rate INT		# Slave rate
+  }
+
+
+  type route		# Attenuated static route PCM
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+    [format STR]	# Slave format (default client format)
+    [channels INT]	# Slave channels (default client channels)
+  }
+  ttable {	 	# Transfer table (bidimensional compound of 
+	        	# cchannels * schannels numbers)
+    CCHANNEL {
+      SCHANNEL REAL	# route value (0.0 ... 1.0)
+    }
+  }
+
+
+  type multi		# Linked PCMs (exclusive access to selected channels)
+  slaves {		# Slaves definitions
+    ID STR		# Slave name for slave N (see pcm_slave)
+    # or
+    ID {		# Slave definition for slave N
+      pcm STR		# Slave PCM name
+    # or
+      pcm { }		# Slave PCM definition
+      channels INT	# Slave channels
+    }
+  }
+  bindings {		# Bindings table
+    N {			# Binding for client channel N
+      slave STR		# Slave key
+      channel INT	# Slave channel
+    }
+  }
+  [master INT]		# Define the master slave
+
+
+  type file		# File plugin
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+  }
+  file STR		# File name
+  # or
+  file INT		# File descriptor
+  [format STR]		# File format (NYI)
+  [perm INT]		# File permission (default 0600)
+
+  type meter		# Meter PCM
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition or name
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+  }
+  [frequency INT]	# Updates per second
+  scopes {		# Scopes
+    ID STR		# Scope name (see pcm_scope)
+  # or
+    ID { }		# Scope definition (see pcm_scope)
+  }
+
+
+  type droute		# Attenuated dynamic route PCM (NYI)
+  slave STR		# Slave name (see pcm_slave)
+  # or
+  slave {		# Slave definition
+    pcm STR		# Slave PCM name
+    # or
+    pcm { }		# Slave PCM definition
+    [format STR]	# Slave format (default client format)
+    [channels INT]	# Slave channels (default client channels)
+  }
+  ctl STR		# Ctl name
+  bindings {		# Bindings table
+    ID {		# Binding entry
+      cchannels {	# Client channels
+        C INT		# Client channel
+      }
+      schannel {	# Slave channels
+        S INT		# Slave channel
+      }
+      control STR	# Control name of C * S (or C values: only if C == S)
+    }
+  }
+
+
+  type null		# Null endpoint plugin
+  [time INT]		# Time related or not (NYI)
+
+
+  type shm		# Shared memory client PCM
+  server STR		# Server name
+  pcm STR		# PCM name on server
+
+
+  type share		# Share PCM
+  slave STR		# Slave name (see pcm_slave)
+  bindings {		# Bindings table
+    N INT		# Slave channel for client channel N
+  }
+
+
+  type mix		# Mix PCM
+  slave STR		# Slave name (see pcm_slave)
+  bindings {		# Bindings table
+    N INT		# Slave channel for client channel N
+  }
+
+
+  type ladspa		# LADSPA plugin PCM
+  slave STR		# Slave name (see pcm_slave)
+  path STR		# Path or paths (delimited with ':')
+  plugins | playback_plugins | capture_plugins {
+    N {			# Configuration for LADSPA plugin N
+      id #		# LADSPA plugin ID (for example 1043)
+      label STR		# LADSPA plugin label (for example 'delay_5s')
+      filename STR	# Full filename of .so library with LADPA plugin code
+      policy STR	# Policy can be 'none' or 'duplicate'
+      input | output {
+        bindings {
+          C INT or STR  # C - channel, INT - audio port index, STR - audio port name
+        }
+        controls {
+          I INT or REAL # I - control port index, INT or REAL - control value
+        }
+      }
+    }
+  }
+
+  type dmix		# Direct mixing plugin
+  slave STR		# Slave name (see pcm_slave)
+  ipc_key INT		# Unique ipc key
+  ipc_perm INT		# ipc permissions (default 0600)
+  ipc_gid INT		# ipc gid (default -1 = disable)
+  ipc_key_add_uid BOOL  # Add current uid to ipc_key
+  bindings {		# Bindings table
+    N INT		# Slave channel for client channel N
+  }
+
+  type dsnoop		# Direct snoop (split one capture stream to more)
+  slave STR		# Slave name (see pcm_slave)
+  ipc_key INT		# Unique ipc key
+  ipc_perm INT		# ipc permissions (default 0600)
+  ipc_gid INT		# ipc gid (default -1 = disable)
+  ipc_key_add_uid BOOL  # Add current uid to ipc_key
+  bindings {		# Bindings table
+    N INT		# Slave channel for client channel N
+  }
+
+  type dshare		# Share channels from one stream
+  slave STR		# Slave name (see pcm_slave)
+  ipc_key INT		# Unique ipc key
+  ipc_perm INT		# ipc permissions (default 0600)
+  ipc_gid INT		# ipc gid (default -1 = disable)
+  ipc_key_add_uid BOOL  # Add current uid to ipc_key
+  bindings {		# Bindings table
+    N INT		# Slave channel for client channel N
+  }
+}
+
+# CTL type definition
+ctl_type.NAME {
+  [lib STR]		# Library file (default libasound.so)
+  [open STR]		# Open function (default _snd_ctl_NAME_open)
+}
+
+# CTL definition
+ctl.NAME {
+  type STR		# Type
+  [comment ANY]		# Saved comments
+
+# CTL types
+  type hw
+  card STR/INT		# Card name or number
+
+
+  type shm		# Shared memory client CTL
+  server STR		# Server name
+  ctl STR		# CTL name on server
+
+
+}
+
+
+# RAWMIDI type definition
+rawmidi_type.NAME {
+  [lib STR]		# Library file (default libasound.so)
+  [open STR]		# Open function (default _snd_rawmidi_NAME_open)
+}
+
+# RAWMIDI definition
+rawmidi.NAME {
+  type STR		# Type
+  [comment ANY]		# Saved comments
+
+# RAWMIDI types:
+  type hw 		# Kernel RAWMIDI
+  card INT/STR		# Card name or number
+  [device] INT		# Device number (default 0)	
+  [subdevice] INT	# Subdevice number, -1 first available (default -1)
+
+
+}
+
+# SEQ type definition
+seq_type.NAME {
+  [lib STR]		# Library file (default libasound.so)
+  [open STR]		# Open function (default _snd_seq_NAME_open)
+}
+
+# SEQ definition
+seq.NAME {
+  type STR		# Type
+  [comment ANY]		# Saved comments
+
+# SEQ types:
+  type hw 		# Kernel SEQ
+
+
+}
+
+# Aliases
+DEF.NAME1 NAME2		# DEF.NAME1 is an alias for DEF.NAME2
+
+Some examples:
+
+pcm.trident {
+	type hw
+	card 0
+	device 0
+}
+
+pcm.ice1712 {
+	type hw
+	card 1
+	device 0
+}
+
+pcm.ice1712_spdif {
+	type plug
+	ttable.0.8 1
+	ttable.1.9 1
+	slave.pcm ice1712
+}
+
+pcm_slave.rs {
+	pcm trident
+	rate 44100
+}
+
+pcm.r {
+	type rate
+	slave rs
+}
+
+pcm.m {
+	type meter
+	slave.pcm plug:trident
+	frequency 50
+	scopes [
+		{
+			type level
+		}
+	]
+}
+
+pcm_scope_type.level {
+	lib /home/abramo/scopes/scope-level.so
+} 
+
+# an example command is 'aplay -D plug:ladspa <filename>'
+# otherwise, the ladspa plugin expects FLOAT type which
+# is very rare
+pcm.ladspa {
+        type ladspa
+        slave.pcm "plughw:0,0";
+        path "/home/perex/src/ladspa_sdk/plugins";
+        plugins [
+                {
+                        label delay_5s
+                        input {
+                                controls [ 0.8 0.2 ]
+                        }
+                }
+        ]
+}
+
+# an example command for dmix plugin to force 44100Hz mixing rate:
+# aplay -D"plug:'dmix:RATE=44100'" <filename>
+# an example command for dmix plugin to force 44100Hz and hw:1,0 output device
+# aplay -Dplug:\'dmix:SLAVE=\"hw:1,0\",RATE=44100\' <filename>
+# an example command for dmix plugin to force 32-bit signed little endian format
+# aplay -D"plug:'dmix:FORMAT=S32_LE'" <filename>

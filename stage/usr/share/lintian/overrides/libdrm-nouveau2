@@ -1,0 +1,1 @@
+libdrm-nouveau2: symbols-declares-dependency-on-other-package libdrm-nouveau-private

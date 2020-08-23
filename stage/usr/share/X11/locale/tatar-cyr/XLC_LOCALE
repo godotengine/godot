@@ -1,0 +1,128 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  XLocale Database Sample for tatar-cyr.
+# 
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+# 	fs0 class 
+fs0	{
+	charset	{
+		name		ISO8859-1:GL
+	}
+	font	{
+		primary		TATAR-CYR:GL
+		substitute	ISO8859-1:GL
+		vertical_rotate	all
+	}
+}
+# 	fs1 class 
+fs1	{
+	charset	{
+		name		TATAR-CYR:GR
+	}
+	font	{
+		primary		TATAR-CYR:GR
+	}
+}
+END XLC_FONTSET
+
+#
+#	XLC_CHARSET_DEFINE category
+#
+XLC_CHARSET_DEFINE
+csd0	{
+	charset_name	TATAR-CYR
+	side		GR
+	length		1
+	string_encoding	False
+	sequence	\x1b%/1
+}
+END XLC_CHARSET_DEFINE
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		TATAR-CYR
+mb_cur_max		1
+state_depend_encoding	False
+
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+
+
+
+
+
+use_stdc_env		True
+force_convert_to_mb	True
+
+# 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	TATAR-CYR:GL; ISO8859-1:GL
+}
+
+
+# 	cs1 class
+cs1	{
+	side		GR:Default
+	length		1
+
+	wc_encoding	\x30000000
+
+
+
+	ct_encoding	TATAR-CYR:GR
+}
+
+END XLC_XLOCALE

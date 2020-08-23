@@ -1,0 +1,12 @@
+#!/bin/sh
+# Fallback implementation of gio-launch-desktop. If we upgrade from a
+# GLib version between 2.57.2 and 2.63.5, as long as that version is
+# still loaded into some process, it requires this executable to launch
+# .desktop files.
+#
+# This script will be removed after Ubuntu 20.04 and Debian 11 are released.
+# Do not rely on it.
+
+set -eu
+export GIO_LAUNCHED_DESKTOP_FILE_PID="$$"
+exec "$@"

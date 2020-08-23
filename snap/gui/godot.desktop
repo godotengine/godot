@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Godot Engine
+GenericName=Godot Engine
+Comment=Multi-platform 2D and 3D game engine with a feature rich editor
+Exec=dc-godotengine-3 -p
+Icon=${SNAP}/meta/gui/godot.png
+Terminal=false
+Type=Application
+Categories=Development;IDE;

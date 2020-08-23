@@ -1,0 +1,192 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+# 	XLC_FONTSET category
+# 
+XLC_FONTSET
+
+on_demand_loading	True
+
+object_name		generic
+
+# We leave the legacy encodings in for the moment, because we don't
+# have that many ISO10646 fonts yet.
+#   fs0 class (7 bit ASCII)
+fs0 {
+  charset {
+    name  ISO8859-1:GL
+  }
+  font  {
+    primary   ISO8859-1:GL
+    vertical_rotate all
+  }
+}
+# fs1 class (ISO8859 families)
+fs1 {
+  charset {
+    name  ISO8859-1:GR
+  }
+  font  {
+    primary ISO8859-1:GR
+  }
+}
+
+#   fs2 class (Korean Character)
+fs2	{
+	charset	{
+		name	KSC5601.1987-0:GL
+	}
+	font	{
+		primary	KSC5601.1987-0:GL
+	}
+}
+# 	fs3 class (Kanji)
+fs3	{
+	charset	{
+		name	JISX0208.1983-0:GL
+	}
+	font	{
+		primary	JISX0208.1983-0:GL
+	}
+}
+#   fs4 class (Chinese Han Character)
+fs4	{
+	charset	{
+		name	GB2312.1980-0:GL
+	}
+	font	{
+		primary	GB2312.1980-0:GL
+	}
+}
+#	fs5 class (Half Kana)
+fs5	{
+	charset	{
+		name	JISX0201.1976-0:GR
+	}
+	font	{
+		primary		JISX0201.1976-0:GR
+		vertical_rotate	all
+	}
+}
+
+# ISO10646-1 is put last to make usually better-looking
+# other fonts are picked up before iso10646-1 fonts.
+# Moreover, some iso10646-1 fonts don't have any glyph at all
+# in ISO8859-X ranges.
+
+# fs6 class
+fs6 {
+  charset {
+    name  ISO10646-1
+  }
+  font  {
+    primary ISO10646-1
+  }
+}
+
+END XLC_FONTSET
+
+# 
+# 	XLC_XLOCALE category
+# 
+XLC_XLOCALE
+
+encoding_name		UTF-8
+mb_cur_max		6
+state_depend_encoding	False
+
+#	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	ct_encoding	ISO8859-1:GL
+}
+
+#	cs1 class
+cs1     {
+        side            GR:Default
+        length          1
+        ct_encoding     ISO8859-1:GR
+}
+
+#	cs2 class
+cs2     {
+        side            GL
+        length          2
+        ct_encoding     KSC5601.1987-0:GL; KSC5601.1987-0:GR;                        KSC5601.1987-1:GL; KSC5601.1987-1:GR
+
+}
+ 
+#	cs3 class
+cs3	{
+	side		GR
+	length		2
+	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;			JISX0208.1983-1:GL; JISX0208.1983-1:GR
+
+}
+ 
+#	cs4 class
+cs4     {
+        side            GR
+        length          2
+        ct_encoding     GB2312.1980-0:GL; GB2312.1980-0:GR
+}
+ 
+#	cs5 class
+cs5	{
+	side		GR
+	length		1
+	ct_encoding	JISX0201.1976-0:GR
+}
+
+#	cs6 class
+cs6	{
+	side		none
+	ct_encoding	ISO10646-1
+}
+
+END XLC_XLOCALE

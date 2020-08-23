@@ -1,0 +1,7 @@
+ucf: no-debconf-config
+ucf: debconf-is-not-a-registry usr/bin/ucf
+ucf: unused-debconf-template ucf/title
+ucf: unused-debconf-template ucf/changeprompt_threeway
+ucf: unused-debconf-template ucf/changeprompt
+ucf: unused-debconf-template ucf/show_diff
+ucf: unused-debconf-template ucf/conflicts_found

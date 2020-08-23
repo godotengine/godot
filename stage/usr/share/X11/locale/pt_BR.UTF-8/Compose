@@ -1,0 +1,79 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# UTF-8 (Unicode) compose sequences
+#
+# Originally modified for Brazilian Portuguese
+#   by Gustavo Noronha Silva <kov@debian.org>.
+# Transformed to an include file plus some overrides
+#   by Benno Schulenberg <bensberg@justemail.net>
+
+# Use the sequences from en_US.UTF-8 as the basis:
+include "/usr/share/X11/locale/en_US.UTF-8/Compose"
+
+# This one should probably be deleted, because in
+# en_US.UTF8 this is lowercase schwa, not uppercase:
+<Multi_key> <e> <e> 			: "Ə" U018f
+
+# Two nice additions -- maybe add to en_US.UTF8?
+<Multi_key> <quotedbl> <backslash> 	: "〝" U301d	# REVERSED DOUBLE PRIME QUOTATION MARK
+<Multi_key> <quotedbl> <slash>  	: "〞" U301e	# DOUBLE PRIME QUOTATION MARK
+
+#  Overriding C with acute:
+<dead_acute> <C> 			: "Ç" Ccedilla	# LATIN CAPITAL LETTER C WITH CEDILLA
+<dead_acute> <c> 			: "ç" ccedilla	# LATIN SMALL LETTER C WITH CEDILLA
+
+#  Overriding E with ogonek:
+<Multi_key> <comma> <E> 		: "Ȩ" U0228	# LATIN CAPITAL LETTER E WITH CEDILLA
+<Multi_key> <comma> <e> 		: "ȩ" U0229	# LATIN SMALL LETTER E WITH CEDILLA
+
+#  Overriding U with ogonek:
+<Multi_key> <U> <comma> <E> 		: "Ḝ" U1E1C	# LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
+<Multi_key> <U> <comma> <e> 		: "ḝ" U1E1D	# LATIN SMALL LETTER E WITH CEDILLA AND BREVE
+
+# These two should probably go back into en_US.UTF8;
+# they were most likely mistakenly dropped in June 2006:
+<Multi_key> <acute> <U03D2> 		: "ϓ" U03D3	# GREEK UPSILON WITH ACUTE AND HOOK SYMBOL
+<Multi_key> <apostrophe> <U03D2> 	: "ϓ" U03D3	# GREEK UPSILON WITH ACUTE AND HOOK SYMBOL

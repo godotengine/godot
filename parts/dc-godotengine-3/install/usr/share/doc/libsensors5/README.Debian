@@ -1,0 +1,15 @@
+README.Debian for libsensors5
+-----------------------------
+
+lm-sensors requires kernel support to access sensor devices. There are
+two parts to these modules: generic drivers to access devices on the i2c
+bus, and drivers to support specific sensor devices.
+
+All the necessary modules are included in the kernel tree. Just have a
+look at "I2C Hardware Sensors Chip support" in your kernel configuration.
+
+Once you have your kernel properly configured, you need to probe for the 
+sensors available on your system. You can use the sensors-detect program to 
+do this.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 05 Mar 2009 01:30:18 +0100

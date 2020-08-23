@@ -1,0 +1,4 @@
+A possibility that could be explored is to only ship development packages
+for the wide libraries.  Doing so would give automatic UTF-8 support at the
+cost of increased memory usage, see for instance
+https://bugzilla.redhat.com/show_bug.cgi?id=1270534#c26.

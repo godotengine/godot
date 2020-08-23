@@ -1,0 +1,37 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: alsa-lib
+Upstream-Contact: Jarsolav Kysela <perex@suse.cz>
+Source: ftp://ftp.alsa-project.org/pub/lib
+Comment: This package was debianized by Wichert Akkerman 7 Jun 1998.
+         Masato Taruishi took over on 17 Oct 1999.
+         Since September 2002 it has been maintained by the participants in
+         the pkg-alsa project at alioth.debian.org.
+
+Files: *
+Copyright: 1998-2017 Jarsolav Kysela <perex@suse.cz> and others
+License: LPGL-2.1+
+
+Files: debian/*
+Copyright: 1998-1999 Wichert Akkerman
+           1999-2002 Masato Taruishi
+           2002-2017 Debian ALSA Maintainers
+License: LPGL-2.1+
+
+License: LPGL-2.1+
+ This library is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as
+ published by the Free Software Foundation; either version 2.1 of
+ the License, or (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ Boston, MA  02110-1301  USA
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public License
+ can be found in /usr/share/common-licenses/LGPL-2.1.

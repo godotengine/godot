@@ -1,0 +1,25 @@
+Document: libpng16
+Title: A description on how to use and modify libpng (version 1.5.X)
+Author: Glenn Randers-Pehrson
+Abstract: This file describes how to use and modify the PNG reference library
+ (known as libpng) for your own use.  There are five sections to this
+ file: introduction, structures, reading, writing, and modification and
+ configuration notes for various special platforms.  In addition to this
+ file, example.c is a good starting point for using the library, as
+ it is heavily commented and should include everything most people
+ will need.  We assume that libpng is already installed; see the
+ INSTALL file for instructions on how to install libpng.
+ .
+ Libpng was written as a companion to the PNG specification, as a way
+ of reducing the amount of time and effort it takes to support the PNG
+ file format in application programs.  The PNG specification is available
+ as RFC 2083 <http://www.ietf.org/rfc/rfc2083.txt> and as a
+ W3C Recommendation <http://www.w3.org/TR/REC-png-multi.html>. Some
+ additional chunks are described in the special-purpose public chunks
+ documents at <ftp://ftp.uu.net/graphics/png/documents/>.  Other information
+ about PNG, and the latest version of libpng, can be found at the PNG home
+ page, <http://www.libpng.org/pub/png/>.
+Section: Programming
+
+Format: text
+Files: /usr/share/doc/libpng16-16/libpng-manual.txt.gz

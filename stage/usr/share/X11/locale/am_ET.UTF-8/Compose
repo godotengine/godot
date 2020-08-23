@@ -1,0 +1,405 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+# UTF-8 (Unicode) compose sequence
+# for Ethiopean layout.
+# Designed as a part of OLPC project
+#
+# 2007 Sergey Udaltsov <svu@gnome.org>
+#
+
+
+#
+# Group I
+#
+
+# Modifier: /u/
+<u> <U1200> : "ሁ" U1201 # key h (base character ሀ)
+<u> <U1208> : "ሉ" U1209 # key l (base character ለ)
+<u> <U1218> : "ሙ" U1219 # key m (base character መ)
+<u> <U1228> : "ሩ" U1229 # key r (base character ረ)
+<u> <U1230> : "ሱ" U1231 # key s (base character ሰ)
+<u> <U1240> : "ቁ" U1241 # key q (base character ቀ)
+<u> <U1260> : "ቡ" U1261 # key b (base character በ)
+<u> <U1270> : "ቱ" U1271 # key t (base character ተ)
+<u> <U1290> : "ኑ" U1291 # key n (base character ነ)
+<u> <U12A0> : "ኡ" U12A1 # key x (base character አ)
+<u> <U12A8> : "ኩ" U12A9 # key k (base character ከ)
+<u> <U12C8> : "ዉ" U12C9 # key w (base character ወ)
+<u> <U12D8> : "ዙ" U12D9 # key z (base character ዘ)
+<u> <U12E8> : "ዩ" U12E9 # key y (base character የ)
+<u> <U12F0> : "ዱ" U12F1 # key d (base character ደ)
+<u> <U1300> : "ጁ" U1301 # key j (base character ጀ)
+<u> <U1308> : "ጉ" U1309 # key g (base character ገ)
+<u> <U1340> : "ፁ" U1341 # key [ (base character ፀ)
+<u> <U1348> : "ፉ" U1349 # key f (base character ፈ)
+<u> <U1350> : "ፑ" U1351 # key p (base character ፐ)
+<u> <U1238> : "ሹ" U1239 # key v (base character ሸ)
+<u> <U1328> : "ጩ" U1329 # key ] (base character ጨ)
+
+# Modifier: /i/
+<i> <U1200> : "ሂ" U1202 # key h (base character ሀ)
+<i> <U1208> : "ሊ" U120A # key l (base character ለ)
+<i> <U1218> : "ሚ" U121A # key m (base character መ)
+<i> <U1228> : "ሪ" U122A # key r (base character ረ)
+<i> <U1230> : "ሲ" U1232 # key s (base character ሰ)
+<i> <U1240> : "ቂ" U1242 # key q (base character ቀ)
+<i> <U1260> : "ቢ" U1262 # key b (base character በ)
+<i> <U1270> : "ቲ" U1272 # key t (base character ተ)
+<i> <U1290> : "ኒ" U1292 # key n (base character ነ)
+<i> <U12A0> : "ኢ" U12A2 # key x (base character አ)
+<i> <U12A8> : "ኪ" U12AA # key k (base character ከ)
+<i> <U12C8> : "ዊ" U12CA # key w (base character ወ)
+<i> <U12D8> : "ዚ" U12DA # key z (base character ዘ)
+<i> <U12E8> : "ዪ" U12EA # key y (base character የ)
+<i> <U12F0> : "ዲ" U12F2 # key d (base character ደ)
+<i> <U1300> : "ጂ" U1302 # key j (base character ጀ)
+<i> <U1308> : "ጊ" U130A # key g (base character ገ)
+<i> <U1340> : "ፂ" U1342 # key [ (base character ፀ)
+<i> <U1348> : "ፊ" U134A # key f (base character ፈ)
+<i> <U1350> : "ፒ" U1352 # key p (base character ፐ)
+<i> <U1238> : "ሺ" U123A # key v (base character ሸ)
+<i> <U1328> : "ጪ" U132A # key ] (base character ጨ)
+
+# Modifier: /a/
+<a> <U1200> : "ሃ" U1203 # key h (base character ሀ)
+<a> <U1208> : "ላ" U120B # key l (base character ለ)
+<a> <U1218> : "ማ" U121B # key m (base character መ)
+<a> <U1228> : "ራ" U122B # key r (base character ረ)
+<a> <U1230> : "ሳ" U1233 # key s (base character ሰ)
+<a> <U1240> : "ቃ" U1243 # key q (base character ቀ)
+<a> <U1260> : "ባ" U1263 # key b (base character በ)
+<a> <U1270> : "ታ" U1273 # key t (base character ተ)
+<a> <U1290> : "ና" U1293 # key n (base character ነ)
+<a> <U12A0> : "ኣ" U12A3 # key x (base character አ)
+<a> <U12A8> : "ካ" U12AB # key k (base character ከ)
+<a> <U12C8> : "ዋ" U12CB # key w (base character ወ)
+<a> <U12D8> : "ዛ" U12DB # key z (base character ዘ)
+<a> <U12E8> : "ያ" U12EB # key y (base character የ)
+<a> <U12F0> : "ዳ" U12F3 # key d (base character ደ)
+<a> <U1300> : "ጃ" U1303 # key j (base character ጀ)
+<a> <U1308> : "ጋ" U130B # key g (base character ገ)
+<a> <U1340> : "ፃ" U1343 # key [ (base character ፀ)
+<a> <U1348> : "ፋ" U134B # key f (base character ፈ)
+<a> <U1350> : "ፓ" U1353 # key p (base character ፐ)
+<a> <U1238> : "ሻ" U123B # key v (base character ሸ)
+<a> <U1328> : "ጫ" U132B # key ] (base character ጨ)
+
+# Modifier: /e/
+<e> <U1200> : "ሄ" U1204 # key h (base character ሀ)
+<e> <U1208> : "ሌ" U120C # key l (base character ለ)
+<e> <U1218> : "ሜ" U121C # key m (base character መ)
+<e> <U1228> : "ሬ" U122C # key r (base character ረ)
+<e> <U1230> : "ሴ" U1234 # key s (base character ሰ)
+<e> <U1240> : "ቄ" U1244 # key q (base character ቀ)
+<e> <U1260> : "ቤ" U1264 # key b (base character በ)
+<e> <U1270> : "ቴ" U1274 # key t (base character ተ)
+<e> <U1290> : "ኔ" U1294 # key n (base character ነ)
+<e> <U12A0> : "ኤ" U12A4 # key x (base character አ)
+<e> <U12A8> : "ኬ" U12AC # key k (base character ከ)
+<e> <U12C8> : "ዌ" U12CC # key w (base character ወ)
+<e> <U12D8> : "ዜ" U12DC # key z (base character ዘ)
+<e> <U12E8> : "ዬ" U12EC # key y (base character የ)
+<e> <U12F0> : "ዴ" U12F4 # key d (base character ደ)
+<e> <U1300> : "ጄ" U1304 # key j (base character ጀ)
+<e> <U1308> : "ጌ" U130C # key g (base character ገ)
+<e> <U1340> : "ፄ" U1344 # key [ (base character ፀ)
+<e> <U1348> : "ፌ" U134C # key f (base character ፈ)
+<e> <U1350> : "ፔ" U1354 # key p (base character ፐ)
+<e> <U1238> : "ሼ" U123C # key v (base character ሸ)
+<e> <U1328> : "ጬ" U132C # key ] (base character ጨ)
+
+# Modifier: /c/
+<c> <U1200> : "ህ" U1205 # key h (base character ሀ)
+<c> <U1208> : "ል" U120D # key l (base character ለ)
+<c> <U1218> : "ም" U121D # key m (base character መ)
+<c> <U1228> : "ር" U122D # key r (base character ረ)
+<c> <U1230> : "ስ" U1235 # key s (base character ሰ)
+<c> <U1240> : "ቅ" U1245 # key q (base character ቀ)
+<c> <U1260> : "ብ" U1265 # key b (base character በ)
+<c> <U1270> : "ት" U1275 # key t (base character ተ)
+<c> <U1290> : "ን" U1295 # key n (base character ነ)
+<c> <U12A0> : "እ" U12A5 # key x (base character አ)
+<c> <U12A8> : "ክ" U12AD # key k (base character ከ)
+<c> <U12C8> : "ው" U12CD # key w (base character ወ)
+<c> <U12D8> : "ዝ" U12DD # key z (base character ዘ)
+<c> <U12E8> : "ይ" U12ED # key y (base character የ)
+<c> <U12F0> : "ድ" U12F5 # key d (base character ደ)
+<c> <U1300> : "ጅ" U1305 # key j (base character ጀ)
+<c> <U1308> : "ግ" U130D # key g (base character ገ)
+<c> <U1340> : "ፅ" U1345 # key [ (base character ፀ)
+<c> <U1348> : "ፍ" U134D # key f (base character ፈ)
+<c> <U1350> : "ፕ" U1355 # key p (base character ፐ)
+<c> <U1238> : "ሽ" U123D # key v (base character ሸ)
+<c> <U1328> : "ጭ" U132D # key ] (base character ጨ)
+
+# Modifier: /o/
+<o> <U1200> : "ሆ" U1206 # key h (base character ሀ)
+<o> <U1208> : "ሎ" U120E # key l (base character ለ)
+<o> <U1218> : "ሞ" U121E # key m (base character መ)
+<o> <U1228> : "ሮ" U122E # key r (base character ረ)
+<o> <U1230> : "ሶ" U1236 # key s (base character ሰ)
+<o> <U1240> : "ቆ" U1246 # key q (base character ቀ)
+<o> <U1260> : "ቦ" U1266 # key b (base character በ)
+<o> <U1270> : "ቶ" U1276 # key t (base character ተ)
+<o> <U1290> : "ኖ" U1296 # key n (base character ነ)
+<o> <U12A0> : "ኦ" U12A6 # key x (base character አ)
+<o> <U12A8> : "ኮ" U12AE # key k (base character ከ)
+<o> <U12C8> : "ዎ" U12CE # key w (base character ወ)
+<o> <U12D8> : "ዞ" U12DE # key z (base character ዘ)
+<o> <U12E8> : "ዮ" U12EE # key y (base character የ)
+<o> <U12F0> : "ዶ" U12F6 # key d (base character ደ)
+<o> <U1300> : "ጆ" U1306 # key j (base character ጀ)
+<o> <U1308> : "ጎ" U130E # key g (base character ገ)
+<o> <U1340> : "ፆ" U1346 # key [ (base character ፀ)
+<o> <U1348> : "ፎ" U134E # key f (base character ፈ)
+<o> <U1350> : "ፖ" U1356 # key p (base character ፐ)
+<o> <U1238> : "ሾ" U123E # key v (base character ሸ)
+<o> <U1328> : "ጮ" U132E # key ] (base character ጨ)
+
+# Modifier: /A/
+<A> <U1208> : "ሏ" U120F # key l (base character ለ)
+<A> <U1218> : "ሟ" U121F # key m (base character መ)
+<A> <U1228> : "ሯ" U122F # key r (base character ረ)
+<A> <U1230> : "ሷ" U1237 # key s (base character ሰ)
+<A> <U1240> : "ቋ" U124B # key q (base character ቀ)
+<A> <U1260> : "ቧ" U1267 # key b (base character በ)
+<A> <U1270> : "ቷ" U1277 # key t (base character ተ)
+<A> <U1290> : "ኗ" U1297 # key n (base character ነ)
+<A> <U12A0> : "ኧ" U12A7 # key x (base character አ)
+<A> <U12A8> : "ኳ" U12B3 # key k (base character ከ)
+<A> <U12D8> : "ዟ" U12DF # key z (base character ዘ)
+<A> <U12F0> : "ዷ" U12F7 # key d (base character ደ)
+<A> <U1300> : "ጇ" U1307 # key j (base character ጀ)
+<A> <U1308> : "ጓ" U1313 # key g (base character ገ)
+<A> <U1348> : "ፏ" U134F # key f (base character ፈ)
+<A> <U1350> : "ፗ" U1357 # key p (base character ፐ)
+<A> <U1238> : "ሿ" U123F # key v (base character ሸ)
+<A> <U1328> : "ጯ" U132F # key ] (base character ጨ)
+
+# Modifier: /U/
+<U> <U1240> : "ቍ" U124D # key q (base character ቀ)
+<U> <U12A8> : "ኵ" U12B5 # key k (base character ከ)
+<U> <U1308> : "ጕ" U1315 # key g (base character ገ)
+
+# Modifier: /I/
+<I> <U1240> : "ቊ" U124A # key q (base character ቀ)
+<I> <U12A8> : "ኲ" U12B2 # key k (base character ከ)
+<I> <U1308> : "ጒ" U1312 # key g (base character ገ)
+
+# Modifier: /E/
+<E> <U1240> : "ቌ" U124C # key q (base character ቀ)
+<E> <U12A8> : "ኴ" U12B4 # key k (base character ከ)
+<E> <U1308> : "ጔ" U1314 # key g (base character ገ)
+
+# Modifier: /O/
+<O> <U1240> : "ቈ" U1248 # key q (base character ቀ)
+<O> <U12A8> : "ኰ" U12B0 # key k (base character ከ)
+<O> <U1308> : "ጐ" U1310 # key g (base character ገ)
+
+#
+# Group II
+#
+# Modifier: /u/
+<u> <U1210> : "ሑ" U1211 # key h (base character ሐ)
+<u> <U1220> : "ሡ" U1221 # key s (base character ሠ)
+<u> <U1250> : "ቑ" U1251 # key q (base character ቐ)
+<u> <U1278> : "ቹ" U1279 # key c (base character ቸ)
+<u> <U1320> : "ጡ" U1321 # key t (base character ጠ)
+<u> <U1298> : "ኙ" U1299 # key n (base character ኘ)
+<u> <U12D0> : "ዑ" U12D1 # key x (base character ዐ)
+<u> <U12B8> : "ኹ" U12B9 # key k (base character ኸ)
+<u> <U12E0> : "ዡ" U12E1 # key z (base character ዠ)
+<u> <U12F8> : "ዹ" U12F9 # key d (base character ዸ)
+<u> <U1318> : "ጙ" U1319 # key g (base character ጘ)
+<u> <U1338> : "ጹ" U1339 # key [ (base character ጸ)
+<u> <U1330> : "ጱ" U1331 # key p (base character ጰ)
+<u> <U1280> : "ኁ" U1281 # key ] (base character ኀ)
+<u> <U1268> : "ቩ" U1269 # key v (base character ቨ)
+
+# Modifier: /i/
+<i> <U1210> : "ሒ" U1212 # key h (base character ሐ)
+<i> <U1220> : "ሢ" U1222 # key s (base character ሠ)
+<i> <U1250> : "ቒ" U1252 # key q (base character ቐ)
+<i> <U1278> : "ቺ" U127A # key c (base character ቸ)
+<i> <U1320> : "ጢ" U1322 # key t (base character ጠ)
+<i> <U1298> : "ኚ" U129A # key n (base character ኘ)
+<i> <U12D0> : "ዒ" U12D2 # key x (base character ዐ)
+<i> <U12B8> : "ኺ" U12BA # key k (base character ኸ)
+<i> <U12E0> : "ዢ" U12E2 # key z (base character ዠ)
+<i> <U12F8> : "ዺ" U12FA # key d (base character ዸ)
+<i> <U1318> : "ጚ" U131A # key g (base character ጘ)
+<i> <U1338> : "ጺ" U133A # key [ (base character ጸ)
+<i> <U1330> : "ጲ" U1332 # key p (base character ጰ)
+<i> <U1280> : "ኂ" U1282 # key ] (base character ኀ)
+<i> <U1268> : "ቪ" U126A # key v (base character ቨ)
+
+# Modifier: /a/
+<a> <U1210> : "ሓ" U1213 # key h (base character ሐ)
+<a> <U1220> : "ሣ" U1223 # key s (base character ሠ)
+<a> <U1250> : "ቓ" U1253 # key q (base character ቐ)
+<a> <U1278> : "ቻ" U127B # key c (base character ቸ)
+<a> <U1320> : "ጣ" U1323 # key t (base character ጠ)
+<a> <U1298> : "ኛ" U129B # key n (base character ኘ)
+<a> <U12D0> : "ዓ" U12D3 # key x (base character ዐ)
+<a> <U12B8> : "ኻ" U12BB # key k (base character ኸ)
+<a> <U12E0> : "ዣ" U12E3 # key z (base character ዠ)
+<a> <U12F8> : "ዻ" U12FB # key d (base character ዸ)
+<a> <U1318> : "ጛ" U131B # key g (base character ጘ)
+<a> <U1338> : "ጻ" U133B # key [ (base character ጸ)
+<a> <U1330> : "ጳ" U1333 # key p (base character ጰ)
+<a> <U1280> : "ኃ" U1283 # key ] (base character ኀ)
+<a> <U1268> : "ቫ" U126B # key v (base character ቨ)
+
+# Modifier: /e/
+<e> <U1210> : "ሔ" U1214 # key h (base character ሐ)
+<e> <U1220> : "ሤ" U1224 # key s (base character ሠ)
+<e> <U1250> : "ቔ" U1254 # key q (base character ቐ)
+<e> <U1278> : "ቼ" U127C # key c (base character ቸ)
+<e> <U1320> : "ጤ" U1324 # key t (base character ጠ)
+<e> <U1298> : "ኜ" U129C # key n (base character ኘ)
+<e> <U12D0> : "ዔ" U12D4 # key x (base character ዐ)
+<e> <U12B8> : "ኼ" U12BC # key k (base character ኸ)
+<e> <U12E0> : "ዤ" U12E4 # key z (base character ዠ)
+<e> <U12F8> : "ዼ" U12FC # key d (base character ዸ)
+<e> <U1318> : "ጜ" U131C # key g (base character ጘ)
+<e> <U1338> : "ጼ" U133C # key [ (base character ጸ)
+<e> <U1330> : "ጴ" U1334 # key p (base character ጰ)
+<e> <U1280> : "ኄ" U1284 # key ] (base character ኀ)
+<e> <U1268> : "ቬ" U126C # key v (base character ቨ)
+
+# Modifier: /c/
+<c> <U1210> : "ሕ" U1215 # key h (base character ሐ)
+<c> <U1220> : "ሥ" U1225 # key s (base character ሠ)
+<c> <U1250> : "ቕ" U1255 # key q (base character ቐ)
+<c> <U1278> : "ች" U127D # key c (base character ቸ)
+<c> <U1320> : "ጥ" U1325 # key t (base character ጠ)
+<c> <U1298> : "ኝ" U129D # key n (base character ኘ)
+<c> <U12D0> : "ዕ" U12D5 # key x (base character ዐ)
+<c> <U12B8> : "ኽ" U12BD # key k (base character ኸ)
+<c> <U12E0> : "ዥ" U12E5 # key z (base character ዠ)
+<c> <U12F8> : "ዽ" U12FD # key d (base character ዸ)
+<c> <U1318> : "ጝ" U131D # key g (base character ጘ)
+<c> <U1338> : "ጽ" U133D # key [ (base character ጸ)
+<c> <U1330> : "ጵ" U1335 # key p (base character ጰ)
+<c> <U1280> : "ኅ" U1285 # key ] (base character ኀ)
+<c> <U1268> : "ቭ" U126D # key v (base character ቨ)
+
+# Modifier: /o/
+<o> <U1210> : "ሖ" U1216 # key h (base character ሐ)
+<o> <U1220> : "ሦ" U1226 # key s (base character ሠ)
+<o> <U1250> : "ቖ" U1256 # key q (base character ቐ)
+<o> <U1278> : "ቾ" U127E # key c (base character ቸ)
+<o> <U1320> : "ጦ" U1326 # key t (base character ጠ)
+<o> <U1298> : "ኞ" U129E # key n (base character ኘ)
+<o> <U12D0> : "ዖ" U12D6 # key x (base character ዐ)
+<o> <U12B8> : "ኾ" U12BE # key k (base character ኸ)
+<o> <U12E0> : "ዦ" U12E6 # key z (base character ዠ)
+<o> <U12F8> : "ዾ" U12FE # key d (base character ዸ)
+<o> <U1318> : "ጞ" U131E # key g (base character ጘ)
+<o> <U1338> : "ጾ" U133E # key [ (base character ጸ)
+<o> <U1330> : "ጶ" U1336 # key p (base character ጰ)
+<o> <U1280> : "ኆ" U1286 # key ] (base character ኀ)
+<o> <U1268> : "ቮ" U126E # key v (base character ቨ)
+
+# Modifier: /A/
+<A> <U1210> : "ሗ" U1217 # key h (base character ሐ)
+<A> <U1220> : "ሧ" U1227 # key s (base character ሠ)
+<A> <U1250> : "ቛ" U125B # key q (base character ቐ)
+<A> <U1278> : "ቿ" U127F # key c (base character ቸ)
+<A> <U1320> : "ጧ" U1327 # key t (base character ጠ)
+<A> <U1298> : "ኟ" U129F # key n (base character ኘ)
+<A> <U12B8> : "ዃ" U12C3 # key k (base character ኸ)
+<A> <U12E0> : "ዧ" U12E7 # key z (base character ዠ)
+<A> <U12F8> : "ዿ" U12FF # key d (base character ዸ)
+<A> <U1338> : "ጿ" U133F # key [ (base character ጸ)
+<A> <U1330> : "ጷ" U1337 # key p (base character ጰ)
+<A> <U1280> : "ኋ" U128B # key ] (base character ኀ)
+<A> <U1268> : "ቯ" U126F # key v (base character ቨ)
+
+# Modifier: /U/
+<U> <U1250> : "ቝ" U125D # key q (base character ቐ)
+<U> <U12B8> : "ዅ" U12C5 # key k (base character ኸ)
+
+# Modifier: /I/
+<I> <U1250> : "ቚ" U125A # key q (base character ቐ)
+<I> <U12B8> : "ዂ" U12C2 # key k (base character ኸ)
+
+# Modifier: /E/
+<E> <U1250> : "ቜ" U125C # key q (base character ቐ)
+<E> <U12B8> : "ዄ" U12C4 # key k (base character ኸ)
+
+# Modifier: /O/
+<O> <U1250> : "ቘ" U1258 # key q (base character ቐ)
+<O> <U12B8> : "ዀ" U12C0 # key k (base character ኸ)
+
+#
+# Group III
+# 
+<backslash> <quotedbl> : "፥" U1365 # key "
+<backslash> <apostrophe> : "፦" U1366 # key "
+<backslash> <minus> : "|" U007C # key -
+<backslash> <underscore> : "¥" U00A5 # key _
+<backslash> <question> : "፧" U1367 # key ?
+
+# 
+# Khmer digraphs
+# 
+
+<U17ff> :   "ាំ"
+<U17fe> :   "ោះ"
+<U17fd> :   "េះ"
+<U17fc> :   "ុំ"
+<U17fb> :   "ុះ"
+
+#
+# Arabic Lam-Alef ligatures
+#
+
+<UFEFB>	:   "لا" # ARABIC LIGATURE LAM WITH ALEF
+<UFEF7>	:   "لأ" # ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE
+<UFEF9>	:   "لإ" # ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW
+<UFEF5>	:   "لآ" # ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE
