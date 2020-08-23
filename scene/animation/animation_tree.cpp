@@ -1208,7 +1208,7 @@ void AnimationTree::_process_graph(float p_delta) {
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						t->skeleton->set_bone_pose(t->bone_idx, xform);
 
-					} else if (t->skeleton == nullptr) {
+					} else if (!t->skeleton) {
 						t->spatial->set_transform(xform);
 					}
 
