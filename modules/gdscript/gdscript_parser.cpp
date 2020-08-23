@@ -3574,15 +3574,6 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 		switch (tokenizer->get_token()) {
 
 			case GDScriptTokenizer::TK_IDENTIFIER: {
-
-				completion_type = COMPLETION_EXTENDS;
-				completion_class = current_class;
-				completion_function = current_function;
-				completion_line = tokenizer->get_token_line();
-				completion_block = current_block;
-				completion_ident_is_call = false;
-				completion_found = true;
-
 				StringName identifier = tokenizer->get_token_identifier();
 				p_class->extends_class.push_back(identifier);
 			} break;
@@ -3604,7 +3595,15 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 			case GDScriptTokenizer::TK_IDENTIFIER:
 			case GDScriptTokenizer::TK_PERIOD:
 				continue;
-
+			case GDScriptTokenizer::TK_CURSOR:
+				completion_type = COMPLETION_EXTENDS;
+				completion_class = current_class;
+				completion_function = current_function;
+				completion_line = tokenizer->get_token_line();
+				completion_block = current_block;
+				completion_ident_is_call = false;
+				completion_found = true;
+				return;
 			default:
 				return;
 		}
