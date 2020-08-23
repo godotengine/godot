@@ -2702,9 +2702,27 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 			Ref<GDScript> gds = scr;
 			if (gds.is_valid()) {
 				result.kind = GDScriptParser::DataType::CLASS;
-				Ref<GDScriptParserRef> ref = get_parser_for(gds->get_path());
+				// This might be an inner class, so we want to get the parser for the root.
+				// But still get the inner class from that tree.
+				GDScript *current = gds.ptr();
+				List<StringName> class_chain;
+				while (current->_owner) {
+					// Push to front so it's in reverse.
+					class_chain.push_front(current->name);
+					current = current->_owner;
+				}
+
+				Ref<GDScriptParserRef> ref = get_parser_for(current->path);
 				ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
-				result.class_type = ref->get_parser()->head;
+
+				GDScriptParser::ClassNode *found = ref->get_parser()->head;
+
+				// It should be okay to assume this exists, since we have a complete script already.
+				for (const List<StringName>::Element *E = class_chain.front(); E; E = E->next()) {
+					found = found->get_member(E->get()).m_class;
+				}
+
+				result.class_type = found;
 				result.script_path = ref->get_parser()->script_path;
 			} else {
 				result.kind = GDScriptParser::DataType::SCRIPT;
