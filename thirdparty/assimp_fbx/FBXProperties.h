@@ -48,7 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 namespace Assimp {
@@ -94,9 +94,9 @@ private:
 	T value;
 };
 
-typedef std::unordered_map<std::string, std::shared_ptr<Property> > DirectPropertyMap;
-typedef std::unordered_map<std::string, const Property *> PropertyMap;
-typedef std::unordered_map<std::string, const Element *> LazyPropertyMap;
+typedef std::map<std::string, std::shared_ptr<Property> > DirectPropertyMap;
+typedef std::map<std::string, const Property *> PropertyMap;
+typedef std::map<std::string, const Element *> LazyPropertyMap;
 
 /** 
  *  Represents a property table as can be found in the newer FBX files (Properties60, Properties70)

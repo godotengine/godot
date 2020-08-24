@@ -129,8 +129,8 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const Assim
 			&collect_first,
 			Color());
 
-	// TODO what about tangends?
-	// TODO what about binormals?
+	// TODO what about tangents?
+	// TODO what about bi-nomials?
 	// TODO there is other?
 
 	HashMap<int, SurfaceId> polygon_surfaces = extract_per_polygon(
@@ -235,6 +235,9 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const Assim
 			surface_data->surface_polygon_vertex[polygon_index].push_back(surface_polygon_vertex_index);
 		}
 	}
+
+	print_verbose("[debug UV 1] UV1: " + itos(uvs_0.size()));
+	print_verbose("[debug UV 2] UV2: " + itos(uvs_1.size()));
 
 	// Phase 4. Per each surface just insert the vertices and add the indices.
 	for (const SurfaceId *surface_id = surfaces.next(nullptr); surface_id != nullptr; surface_id = surfaces.next(surface_id)) {
@@ -436,7 +439,7 @@ void FBXMeshData::reorganize_vertices(
 
 		HashMap<int, HashMap<int, Vector2> > *uv_raw = &r_uv_1_raw;
 		Vector2 *this_vert_poly_uv = &this_vert_poly_uv1;
-		for (int kk = 0; kk < 2; kk += 1) {
+		for (int kk = 0; kk < 2; kk++) {
 			if (uv_raw->has(index)) {
 				const HashMap<PolygonId, Vector2> *uvs = uv_raw->getptr(index);
 
@@ -591,11 +594,13 @@ void FBXMeshData::add_vertex(
 	}
 
 	if (p_uvs_0.has(p_vertex)) {
+		print_verbose("uv1: " + p_uvs_0[p_vertex]);
 		// Inverts Y UV.
 		p_surface_tool->add_uv(Vector2(p_uvs_0[p_vertex].x, 1 - p_uvs_0[p_vertex].y));
 	}
 
 	if (p_uvs_1.has(p_vertex)) {
+		print_verbose("uv2: " + p_uvs_1[p_vertex]);
 		// Inverts Y UV.
 		p_surface_tool->add_uv2(Vector2(p_uvs_1[p_vertex].x, 1 - p_uvs_1[p_vertex].y));
 	}

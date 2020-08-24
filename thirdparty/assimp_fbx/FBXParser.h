@@ -49,7 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <map>
 #include <memory>
-#include <unordered_map>
+#include <map>
 
 #include "core/color.h"
 #include "core/math/transform.h"

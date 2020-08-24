@@ -268,10 +268,12 @@ const MeshGeometry::MappingData<Vector3> &MeshGeometry::get_normals() const {
 }
 
 const MeshGeometry::MappingData<Vector2> &MeshGeometry::get_uv_0() const {
+	print_verbose("uv 0 size: " + itos(m_uv_0.data.size()));
 	return m_uv_0;
 }
 
 const MeshGeometry::MappingData<Vector2> &MeshGeometry::get_uv_1() const {
+	print_verbose("uv 1 size: " + itos(m_uv_1.data.size()));
 	return m_uv_1;
 }
 
