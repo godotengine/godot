@@ -236,7 +236,22 @@ Ref<Shape> Mesh::create_convex_shape() const {
 		Array a = surface_get_arrays(i);
 		ERR_FAIL_COND_V(a.empty(), Ref<ConvexPolygonShape>());
 		PoolVector<Vector3> v = a[ARRAY_VERTEX];
-		vertices.append_array(v);
+		int vert_count = v.size();
+		PoolVector<Vector3>::Read vr = v.read();
+		// Insert verts only if they're not duplicates.
+		for (int insert_i = 0; insert_i < vert_count; ++insert_i) {
+			Vector3 vert = vr[insert_i];
+			bool duplicate = false;
+			for (int vi = 0; vi < vertices.size(); ++vi) {
+				if (vertices[vi].is_equal_approx(vert)) {
+					duplicate = true;
+					break;
+				}
+			}
+			if (!duplicate) {
+				vertices.append(vert);
+			}
+		}
 	}
 
 	Ref<ConvexPolygonShape> shape = memnew(ConvexPolygonShape);
