@@ -653,12 +653,12 @@ void Skeleton2D::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_PROCESS) {
 		if (modification_stack.is_valid()) {
-			execute_modification(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
+			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
 		}
 	}
 	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 		if (modification_stack.is_valid()) {
-			execute_modification(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
+			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 		}
 	}
 }
@@ -695,7 +695,7 @@ Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 	return modification_stack;
 }
 
-void Skeleton2D::execute_modification(float delta, int p_execution_mode) {
+void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
 	if (!modification_stack.is_valid()) {
 		return;
 	}
@@ -753,7 +753,7 @@ void Skeleton2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton2D::set_modification_stack);
 	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton2D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modification", "execution_mode"), &Skeleton2D::execute_modification);
+	ClassDB::bind_method(D_METHOD("execute_modifications", "execution_mode", "execution_mode"), &Skeleton2D::execute_modifications);
 
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);

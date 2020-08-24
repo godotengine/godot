@@ -21,7 +21,6 @@
 			</return>
 			<description>
 				Returns whether the constraints to this modification are inverted or not.
-
 			</description>
 		</method>
 		<method name="get_constraint_angle_max" qualifiers="const">

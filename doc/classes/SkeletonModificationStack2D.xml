@@ -43,8 +43,10 @@
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
+			<argument index="1" name="execution_mode" type="int">
+			</argument>
 			<description>
-				Executes all of the [SkeletonModification2D]s in the stack, starting from index [code]0[/code] to [member modification_count].
+				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [code]execution_mode[/code], starting from index [code]0[/code] to [member modification_count].
 				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
 			</description>
 		</method>
@@ -62,6 +64,13 @@
 			</argument>
 			<description>
 				Returns the [SkeletonModification2D] at the passed-in index, [code]mod_idx[/code].
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton2D">
+			</return>
+			<description>
+				Returns the [Skeleton2D] node that the SkeletonModificationStack2D is bound to.
 			</description>
 		</method>
 		<method name="set_modification">
@@ -86,9 +95,6 @@
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="false">
 			When [code]true[/code], the modification's in the stack will be called. This is handled automatically through the [Skeleton2D] node.
-		</member>
-		<member name="execution_mode" type="int" setter="set_execution_mode" getter="get_execution_mode" default="0">
-			When the modification will be executed. Can be set to either [code]_process[/code] or [code]_physics_process[/code]. For physics-related or physics-aware modifications, using [code]_physics_process[/code] may be required.
 		</member>
 		<member name="modification_count" type="int" setter="set_modification_count" getter="get_modification_count" default="0">
 			The number of modifications in the stack.

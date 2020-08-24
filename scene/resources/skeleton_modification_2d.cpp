@@ -165,10 +165,6 @@ Skeleton2D *SkeletonModificationStack2D::get_skeleton() const {
 	return skeleton;
 }
 
-void SkeletonModificationStack2D::set_is_setup(bool p_setup) {
-	is_setup = p_setup;
-}
-
 bool SkeletonModificationStack2D::get_is_setup() const {
 	return is_setup;
 }
@@ -193,7 +189,7 @@ float SkeletonModificationStack2D::get_strength() const {
 
 void SkeletonModificationStack2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("setup"), &SkeletonModificationStack2D::setup);
-	ClassDB::bind_method(D_METHOD("execute", "delta"), &SkeletonModificationStack2D::execute);
+	ClassDB::bind_method(D_METHOD("execute", "delta", "execution_mode"), &SkeletonModificationStack2D::execute);
 
 	ClassDB::bind_method(D_METHOD("enable_all_modifications", "enabled"), &SkeletonModificationStack2D::enable_all_modifications);
 	ClassDB::bind_method(D_METHOD("get_modification", "mod_idx"), &SkeletonModificationStack2D::get_modification);
@@ -204,7 +200,6 @@ void SkeletonModificationStack2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modification_count"), &SkeletonModificationStack2D::set_modification_count);
 	ClassDB::bind_method(D_METHOD("get_modification_count"), &SkeletonModificationStack2D::get_modification_count);
 
-	ClassDB::bind_method(D_METHOD("set_is_setup", "setup"), &SkeletonModificationStack2D::set_is_setup);
 	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModificationStack2D::get_is_setup);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModificationStack2D::set_enabled);

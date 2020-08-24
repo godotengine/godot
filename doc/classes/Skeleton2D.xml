@@ -10,13 +10,15 @@
 		<link title="2D skeletons">https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
-		<method name="execute_modification">
+		<method name="execute_modifications">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="float">
+			<argument index="0" name="execution_mode" type="float">
+			</argument>
+			<argument index="1" name="execution_mode" type="int">
 			</argument>
 			<description>
-				Executes all the modifications on the [SkeletonModificationStack2D], if the skeleton has one.
+				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton3D has one assigned.
 			</description>
 		</method>
 		<method name="get_bone">

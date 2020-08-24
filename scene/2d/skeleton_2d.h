@@ -159,7 +159,7 @@ public:
 
 	Ref<SkeletonModificationStack2D> get_modification_stack() const;
 	void set_modification_stack(Ref<SkeletonModificationStack2D> p_stack);
-	void execute_modification(float delta, int p_execution_mode);
+	void execute_modifications(float delta, int p_execution_mode);
 
 	Skeleton2D();
 	~Skeleton2D();

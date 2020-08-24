@@ -81,7 +81,6 @@ public:
 	Skeleton2D *get_skeleton() const;
 
 	bool get_is_setup() const;
-	void set_is_setup(bool p_setup);
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const;
