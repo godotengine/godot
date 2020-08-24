@@ -2696,11 +2696,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				const GDScriptParser::ConstantNode *constant = member.constant;
 				StringName name = constant->identifier->name;
 
-				ERR_CONTINUE(constant->initializer->type != GDScriptParser::Node::LITERAL);
-
-				const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(constant->initializer);
-
-				p_script->constants.insert(name, literal->value);
+				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
 
 				p_script->member_lines[name] = constant->start_line;
