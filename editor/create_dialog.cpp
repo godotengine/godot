@@ -170,6 +170,7 @@ void CreateDialog::_update_search() {
 	root->set_text(0, base_type);
 	root->set_icon(0, search_options->get_theme_icon(icon_fallback, "EditorIcons"));
 	search_options_types[base_type] = root;
+	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
 
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text == "";
