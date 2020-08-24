@@ -180,8 +180,8 @@
 		<member name="ccdik_data_chain_length" type="int" setter="set_ccdik_data_chain_length" getter="get_ccdik_data_chain_length" default="0">
 			The amount of CCDIK joints in the CCDIK modification.
 		</member>
-		<member name="perform_in_local_pose" type="bool" setter="set_perform_in_local_pose" getter="get_perform_in_local_pose" default="true">
-			A boolean to set whether the CCDIK modification executes the algorithm relative to the local pose, rather than the global pose. Changing this value gives different results, though executing in local pose generally gives the best result for most bone chains.
+		<member name="high_quality_solve" type="bool" setter="set_use_high_quality_solve" getter="get_use_high_quality_solve" default="true">
+			When true, the CCDIK algorithm will perform a higher quality solve that returns more natural results. A high quality solve requires more computation power to solve though, and therefore can be disabled to save performance.
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the CCDIK modification. This node is what the CCDIK chain will attempt to rotate the bone chain to.

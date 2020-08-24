@@ -11,6 +11,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_collision_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the collision mask that the Jiggle modifier will take into account when performing physics calculations.
+			</description>
+		</method>
+		<method name="get_use_colliders" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the Jiggle modifier is taking physics colliders into account when solving.
+			</description>
+		</method>
 		<method name="jiggle_joint_get_bone_index" qualifiers="const">
 			<return type="int">
 			</return>
@@ -63,6 +77,15 @@
 			</argument>
 			<description>
 				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is overriding the default jiggle joint data defined in the modification.
+			</description>
+		</method>
+		<method name="jiggle_joint_get_roll" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="joint_idx" type="int">
+			</argument>
+			<description>
+				Returns the amount of roll/twist applied to the bone that the Jiggle joint is applied to.
 			</description>
 		</method>
 		<method name="jiggle_joint_get_stiffness" qualifiers="const">
@@ -149,6 +172,17 @@
 				Sets whether the Jiggle joint at [code]joint_idx[/code] should override the default Jiggle joint settings. Setting this to true will make the joint use its own settings rather than the default ones attached to the modification.
 			</description>
 		</method>
+		<method name="jiggle_joint_set_roll">
+			<return type="void">
+			</return>
+			<argument index="0" name="joint_idx" type="int">
+			</argument>
+			<argument index="1" name="roll" type="float">
+			</argument>
+			<description>
+				Sets the amount of roll/twist on the bone the Jiggle joint is attached to.
+			</description>
+		</method>
 		<method name="jiggle_joint_set_stiffness">
 			<return type="void">
 			</return>
@@ -169,6 +203,24 @@
 			</argument>
 			<description>
 				Sets whether the Jiggle joint at [code]joint_idx[/code] should use gravity.
+			</description>
+		</method>
+		<method name="set_collision_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+				Sets the collision mask that the Jiggle modifier takes into account when performing physics calculations.
+			</description>
+		</method>
+		<method name="set_use_colliders">
+			<return type="void">
+			</return>
+			<argument index="0" name="use_colliders" type="bool">
+			</argument>
+			<description>
+				When [code]true[/code], the Jiggle modifier will use raycasting to prevent the Jiggle joints from rotating themselves into collision objects when solving.
 			</description>
 		</method>
 	</methods>

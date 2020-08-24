@@ -39,6 +39,13 @@
 				Returns the length of the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
+		<method name="get_joint_one_roll" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the amount of roll/twist applied to the first bone in the TwoBoneIK modification.
+			</description>
+		</method>
 		<method name="get_joint_two_bone_idx" qualifiers="const">
 			<return type="int">
 			</return>
@@ -58,6 +65,13 @@
 			</return>
 			<description>
 				Returns the length of the second bone in the TwoBoneIK modification.
+			</description>
+		</method>
+		<method name="get_joint_two_roll" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the amount of roll/twist applied to the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="get_pole_node" qualifiers="const">
@@ -125,6 +139,15 @@
 				Sets the length of the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
+		<method name="set_joint_one_roll">
+			<return type="void">
+			</return>
+			<argument index="0" name="roll" type="float">
+			</argument>
+			<description>
+				Sets the amount of roll/twist applied to the first bone in the TwoBoneIK modification.
+			</description>
+		</method>
 		<method name="set_joint_two_bone_idx">
 			<return type="void">
 			</return>
@@ -150,6 +173,15 @@
 			</argument>
 			<description>
 				Sets the length of the second bone in the TwoBoneIK modification.
+			</description>
+		</method>
+		<method name="set_joint_two_roll">
+			<return type="void">
+			</return>
+			<argument index="0" name="roll" type="float">
+			</argument>
+			<description>
+				Sets the amount of roll/twist applied to the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
 		<method name="set_pole_node">
@@ -191,8 +223,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" override="true" default="false" />
-			When true, the modification's [method execute] function will be called by the [SkeletonModificationStack3D].
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the TwoBoneIK modification. This node is what the modification will attempt to rotate the bones to reach.
 		</member>

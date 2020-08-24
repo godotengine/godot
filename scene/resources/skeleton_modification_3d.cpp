@@ -189,7 +189,7 @@ float SkeletonModificationStack3D::get_strength() const {
 
 void SkeletonModificationStack3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("setup"), &SkeletonModificationStack3D::setup);
-	ClassDB::bind_method(D_METHOD("execute", "delta"), &SkeletonModificationStack3D::execute);
+	ClassDB::bind_method(D_METHOD("execute", "delta", "execution_mode"), &SkeletonModificationStack3D::execute);
 
 	ClassDB::bind_method(D_METHOD("enable_all_modifications", "enabled"), &SkeletonModificationStack3D::enable_all_modifications);
 	ClassDB::bind_method(D_METHOD("get_modification", "mod_idx"), &SkeletonModificationStack3D::get_modification);
