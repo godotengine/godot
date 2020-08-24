@@ -384,13 +384,17 @@ void Body2DSW::set_space(Space2DSW *p_space) {
 
 void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	if (p_area->is_gravity_point()) {
+		const real_t EVENT_HORIZON = 1.0; // TODO: Make user modifiable
+		const real_t gravity_distance_scale = p_area->get_gravity_distance_scale();
 		Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-		const real_t v_length = v.length();
-		if (v_length <= 0) {
-			// Prevent Divide by Zero Error
-			// gravity += 0.0;
-		} else if (p_area->get_gravity_distance_scale() > 0) {
-			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v_length * p_area->get_gravity_distance_scale(), 2));
+		real_t v_length = v.length();
+		if (gravity_distance_scale > 0 && v_length > EVENT_HORIZON) {
+			real_t new_gravity = (p_area->get_gravity() / Math::pow(v_length * gravity_distance_scale, 2));
+			if (isinf(new_gravity)) {
+				WARN_PRINT_ONCE("Gravity is Infinite");
+			} else {
+				gravity += v.normalized() * new_gravity;
+			}
 		} else {
 			gravity += v.normalized() * p_area->get_gravity();
 		}
