@@ -79,6 +79,11 @@ public:
 		TOOL_MAX
 	};
 
+	enum AddNodeOption {
+		ADD_NODE,
+		ADD_INSTANCE,
+	};
+
 private:
 	EditorNode *editor;
 
@@ -284,6 +289,7 @@ private:
 
 	bool ruler_tool_active;
 	Point2 ruler_tool_origin;
+	Point2 node_create_position;
 
 	MenuOption last_option;
 
@@ -376,6 +382,7 @@ private:
 	Button *key_auto_insert_button;
 
 	PopupMenu *selection_menu;
+	PopupMenu *add_node_menu;
 
 	Control *top_ruler;
 	Control *left_ruler;
@@ -436,6 +443,9 @@ private:
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
+	void _add_node_pressed(int p_result);
+	void _node_created(Node *p_node);
+	void _reset_create_position();
 
 	UndoRedo *undo_redo;
 	bool _build_bones_list(Node *p_node);
