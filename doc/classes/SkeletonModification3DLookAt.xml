@@ -9,6 +9,53 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_additional_rotation" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the amount of extra rotation that is applied to the bone after the LookAt modification executes.
+			</description>
+		</method>
+		<method name="get_lock_rotation_plane" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the plane that the LookAt modification is limiting rotation to.
+			</description>
+		</method>
+		<method name="get_lock_rotation_to_plane" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the LookAt modification is limiting rotation to a single plane in 3D space.
+			</description>
+		</method>
+		<method name="set_additional_rotation">
+			<return type="void">
+			</return>
+			<argument index="0" name="additional_rotation" type="Vector3">
+			</argument>
+			<description>
+				Sets the amount of extra rotation to be applied after the LookAt modification executes. This allows you to adjust the finished result.
+			</description>
+		</method>
+		<method name="set_lock_rotation_plane">
+			<return type="void">
+			</return>
+			<argument index="0" name="plane" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lock_rotation_to_plane">
+			<return type="void">
+			</return>
+			<argument index="0" name="lock_to_plane" type="bool">
+			</argument>
+			<description>
+				When [code]true[/code], the LookAt modification will limit its rotation to a single plane in 3D space. The plane used can be configured using the [code]set_lock_rotation_plane[/code] function.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="bone_index" type="int" setter="set_bone_index" getter="get_bone_index" default="-2">
@@ -18,19 +65,6 @@
 		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
 			The name of the bone that should be operated on by this modification.
 			When possible, this will also update the [member bone_index] based on data provided by the [Skeleton3D].
-		</member>
-		<member name="lock_rotation_x" type="bool" setter="set_lock_rotation_x" getter="get_lock_rotation_x" default="false">
-			When true, rotation on the X axis will be ignored/locked in place.
-		</member>
-		<member name="lock_rotation_y" type="bool" setter="set_lock_rotation_y" getter="get_lock_rotation_y" default="false">
-			When true, rotation on the Y axis will be ignored/locked in place.
-		</member>
-		<member name="lock_rotation_z" type="bool" setter="set_lock_rotation_z" getter="get_lock_rotation_z" default="false">
-			When true, rotation on the Z axis will be ignored/locked in place.
-		</member>
-		<member name="rotation_offset" type="Vector3" setter="set_rotation_offset" getter="get_rotation_offset" default="Vector3( 0, 0, 0 )">
-			The amount of extra rotation applied after performing the modification. This allows you to adjust if necessary, or offset the rotation if the bone's forward direction does not line up with the forward direction of the 3D model being used.
-			[b]Note:[/b] The rotation has to be in degrees!
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the modification.

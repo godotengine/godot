@@ -69,8 +69,10 @@
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
+			<argument index="1" name="execution_mode" type="int">
+			</argument>
 			<description>
-				Executes all the modifications on the SkeletonModification3D, if the skeleton has one.
+				Executes all the modifications on the [SkeletonModificationStack3D], if the Skeleton3D has one assigned.
 			</description>
 		</method>
 		<method name="find_bone" qualifiers="const">
@@ -175,15 +177,6 @@
 			</argument>
 			<description>
 				Returns the rest transform for a bone [code]bone_idx[/code].
-			</description>
-		</method>
-		<method name="get_bound_child_nodes_to_bone" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<description>
-				[i]Deprecated soon.[/i]
 			</description>
 		</method>
 		<method name="get_modification_stack">
@@ -410,17 +403,6 @@
 				Sets the modification stack for this skeleton to the passed-in modification stack, [code]modification_stack[/code].
 			</description>
 		</method>
-		<method name="unbind_child_node_from_bone">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<argument index="1" name="node" type="Node">
-			</argument>
-			<description>
-				[i]Deprecated soon.[/i]
-			</description>
-		</method>
 		<method name="unparent_bone_and_rest">
 			<return type="void" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -444,6 +426,13 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="bone_pose_changed">
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				This signal is emitted when one of the bones in the Skeleton3D node have changed their pose. This is used to inform nodes that rely on bone positions that one of the bones in the Skeleton3D have changed their transform/pose.
+			</description>
+		</signal>
 		<signal name="pose_updated">
 			<description>
 			</description>

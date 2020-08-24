@@ -4,9 +4,8 @@
 		A resource that holds a stack of [SkeletonModification3D]s.
 	</brief_description>
 	<description>
-		This resource is used by the Skeleton and holds a stack of [SkeletonModification3D]s.
-		This resource controls the order of the modifications, which controls how they are applied. Modification order is especially important for full-body IK setups, as you need to execute the modifications in the correct order to get the desired results. For example, you want to execute a modification on the spine [i]before[/i] the arms on a humanoid skeleton.
-		This resource also controls how strongly the modifications are applied.
+		This resource is used by the Skeleton and holds a stack of [SkeletonModification3D]s. The SkeletonModificationStack3D controls the order of the modifications, which controls how they are applied. Modification order is especially important for full-body IK setups, as you need to execute the modifications in the correct order to get the desired results. For example, you want to execute a modification on the spine [i]before[/i] the arms on a humanoid skeleton.
+		Additionally, the SkeletonModificationStack3D also controls how strongly the modifications are applied to the [Skeleton3D] node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -43,8 +42,10 @@
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
+			<argument index="1" name="execution_mode" type="int">
+			</argument>
 			<description>
-				Executes all of the [SkeletonModification3D]s in the stack, starting from index [code]0[/code] to [member modification_count].
+				Executes all of the [SkeletonModification3D]s in the stack that use the same execution mode as the passed-in [code]execution_mode[/code], starting from index [code]0[/code] to [member modification_count].
 				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
 			</description>
 		</method>
@@ -62,6 +63,13 @@
 			</argument>
 			<description>
 				Returns the [SkeletonModification3D] at the passed-in index, [code]mod_idx[/code].
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton3D">
+			</return>
+			<description>
+				Returns the [Skeleton3D] node that the SkeletonModificationStack3D is bound to.
 			</description>
 		</method>
 		<method name="set_modification">
@@ -90,7 +98,7 @@
 		<member name="modification_count" type="int" setter="set_modification_count" getter="get_modification_count" default="0">
 			The amount of modifications in the stack.
 		</member>
-		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="0.0">
+		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
 			The interpolation strength of the modifications in stack. A value of [code]0[/code] will make it where the modifications are not applied, a strength of [code]0.5[/code] will be half applied, and a strength of [code]1[/code] will allow the modifications to be fully applied and override the skeleton bone poses.
 		</member>
 	</members>
