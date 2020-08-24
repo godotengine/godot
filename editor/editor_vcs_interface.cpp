@@ -394,7 +394,7 @@ void EditorVCSInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_pull"), &EditorVCSInterface::_pull);
 	ClassDB::bind_method(D_METHOD("_fetch"), &EditorVCSInterface::_fetch);
 	ClassDB::bind_method(D_METHOD("_set_up_credentials"), &EditorVCSInterface::_set_up_credentials);
-	ClassDB::bind_method(D_METHOD("_get_line_diff"), &EditorVCSInterface::_get_line_diff);
+	// ClassDB::bind_method(D_METHOD("_get_line_diff"), &EditorVCSInterface::_get_line_diff);
 
 	ClassDB::bind_method(D_METHOD("is_addon_ready"), &EditorVCSInterface::is_addon_ready);
 

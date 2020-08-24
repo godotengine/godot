@@ -40,6 +40,7 @@
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
+
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
@@ -97,9 +98,13 @@ private:
 	OptionButton *diff_view_type_select;
 	List<EditorVCSInterface::DiffFile> diff_content;
 
+	void _notification(int p_what);
 	void _initialize_vcs();
 	void _selected_a_vcs(int p_id);
 	void _populate_available_vcs_names();
+	bool _load_addon(String p_path);
+	void _set_up();
+	void _set_credentials();
 
 	void _pull();
 	void _push();
