@@ -1214,6 +1214,7 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 			r_tag.name += String::chr(c);
 		}
 
+		r_tag.name.parse_utf8(r_tag.name.ascii(true).get_data());
 		r_tag.name = r_tag.name.strip_edges();
 
 		return OK;
