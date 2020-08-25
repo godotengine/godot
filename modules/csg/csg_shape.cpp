@@ -2230,7 +2230,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 								}
 							}
 							final_polygon_size = final_polygon_max - final_polygon_min;
-							triangles = Geometry::triangulate_polygon(final_polygon);
+							triangles = Geometry2D::triangulate_polygon(final_polygon);
 						}
 
 						for (int j = 0; j < triangles.size(); j += 3) {
@@ -2268,7 +2268,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 								}
 							}
 							final_polygon_size = final_polygon_max - final_polygon_min;
-							triangles = Geometry::triangulate_polygon(final_polygon2);
+							triangles = Geometry2D::triangulate_polygon(final_polygon2);
 						}
 
 						for (int j = 0; j < triangles.size(); j += 3) {
@@ -2387,16 +2387,16 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPolygon3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPolygon3D::get_smooth_faces);
 
-	ClassDB::bind_method(D_METHOD("set_path_interpolate", "path_interpolate"), &CSGPolygon::set_path_interpolate);
-	ClassDB::bind_method(D_METHOD("get_path_interpolate"), &CSGPolygon::get_path_interpolate);
+	ClassDB::bind_method(D_METHOD("set_path_interpolate", "path_interpolate"), &CSGPolygon3D::set_path_interpolate);
+	ClassDB::bind_method(D_METHOD("get_path_interpolate"), &CSGPolygon3D::get_path_interpolate);
 
-	ClassDB::bind_method(D_METHOD("set_path_polygon2", "path_polygon2"), &CSGPolygon::set_path_polygon2);
-	ClassDB::bind_method(D_METHOD("get_path_polygon2"), &CSGPolygon::get_path_polygon2);
+	ClassDB::bind_method(D_METHOD("set_path_polygon2", "path_polygon2"), &CSGPolygon3D::set_path_polygon2);
+	ClassDB::bind_method(D_METHOD("get_path_polygon2"), &CSGPolygon3D::get_path_polygon2);
 
-	ClassDB::bind_method(D_METHOD("set_path_curve", "path_curve"), &CSGPolygon::set_path_curve);
-	ClassDB::bind_method(D_METHOD("get_path_curve"), &CSGPolygon::get_path_curve);
+	ClassDB::bind_method(D_METHOD("set_path_curve", "path_curve"), &CSGPolygon3D::set_path_curve);
+	ClassDB::bind_method(D_METHOD("get_path_curve"), &CSGPolygon3D::get_path_curve);
 
-	ClassDB::bind_method(D_METHOD("_path_curve_changed"), &CSGPolygon::_path_curve_changed);
+	ClassDB::bind_method(D_METHOD("_path_curve_changed"), &CSGPolygon3D::_path_curve_changed);
 
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CSGPolygon3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &CSGPolygon3D::_has_editable_3d_polygon_no_depth);
@@ -2559,7 +2559,7 @@ Ref<Material> CSGPolygon3D::get_material() const {
 	return material;
 }
 
-void CSGPolygon::set_path_interpolate(const bool p_path_interpolate) {
+void CSGPolygon3D::set_path_interpolate(const bool p_path_interpolate) {
 	path_interpolate = p_path_interpolate;
 	if (path_polygon2.empty()) {
 		path_polygon2 = polygon;
@@ -2568,11 +2568,11 @@ void CSGPolygon::set_path_interpolate(const bool p_path_interpolate) {
 	update_gizmo();
 }
 
-bool CSGPolygon::get_path_interpolate() const {
+bool CSGPolygon3D::get_path_interpolate() const {
 	return path_interpolate;
 }
 
-void CSGPolygon::set_path_polygon2(const Vector<Vector2> &p_path_polygon2) {
+void CSGPolygon3D::set_path_polygon2(const Vector<Vector2> &p_path_polygon2) {
 	path_polygon2 = p_path_polygon2;
 	_make_dirty();
 	update_gizmo();
@@ -2582,7 +2582,7 @@ Vector<Vector2> CSGPolygon::get_path_polygon2() const {
 	return path_polygon2;
 }
 
-void CSGPolygon::set_path_curve(const Ref<Curve> &p_path_curve) {
+void CSGPolygon3D::set_path_curve(const Ref<Curve> &p_path_curve) {
 	// Cleanup previous connection if any
 	if (path_curve.is_valid()) {
 		path_curve->disconnect(CoreStringNames::get_singleton()->changed, this, "_path_curve_changed");
