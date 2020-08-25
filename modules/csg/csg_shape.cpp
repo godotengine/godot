@@ -2578,29 +2578,29 @@ void CSGPolygon3D::set_path_polygon2(const Vector<Vector2> &p_path_polygon2) {
 	update_gizmo();
 }
 
-Vector<Vector2> CSGPolygon::get_path_polygon2() const {
+Vector<Vector2> CSGPolygon3D::get_path_polygon2() const {
 	return path_polygon2;
 }
 
 void CSGPolygon3D::set_path_curve(const Ref<Curve> &p_path_curve) {
 	// Cleanup previous connection if any
 	if (path_curve.is_valid()) {
-		path_curve->disconnect(CoreStringNames::get_singleton()->changed, this, "_path_curve_changed");
+		path_curve->disconnect("path_curve_changed", callable_mp(this, &CSGPolygon3D::_path_curve_changed));
 	}
 	path_curve = p_path_curve;
 		// Connect to the curve so the line will update when it is changed
 	if (path_curve.is_valid()) {
-		path_curve->connect(CoreStringNames::get_singleton()->changed, this, "_path_curve_changed");
+		path_curve->connect("path_curve_changed", callable_mp(this, &CSGPolygon3D::_path_curve_changed));
 	}
 	_make_dirty();
 	update_gizmo();
 }
 
-Ref<Curve> CSGPolygon::get_path_curve() const {
+Ref<Curve> CSGPolygon3D::get_path_curve() const {
 	return path_curve;
 }
 
-void CSGPolygon::_path_curve_changed() {
+void CSGPolygon3D::_path_curve_changed() {
 	if (path_interpolate) {
 		_make_dirty();
 		update_gizmo();
