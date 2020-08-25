@@ -2226,7 +2226,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 									if (p.y < final_polygon_min.y) {
 										 final_polygon_min.y = p.y;
 									}
-									if (p.x > final_polygon_max.x) { 
+									if (p.x > final_polygon_max.x) {
 										final_polygon_max.x = p.x;
 									}
 									if (p.y > final_polygon_max.y) {
@@ -2256,7 +2256,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 					if (i == splits && !path_joined) {
 
-						if (do_interpolation) { 
+						if (do_interpolation) {
 							Vector2 p;
 							for (int j = 0; j < final_polygon2.size(); j++) {
    								p = final_polygon2[j];
@@ -2271,7 +2271,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 									if (p.y < final_polygon_min.y) {
 										 final_polygon_min.y = p.y;
 									}
-									if (p.x > final_polygon_max.x) { 
+									if (p.x > final_polygon_max.x) {
 										final_polygon_max.x = p.x;
 									}
 									if (p.y > final_polygon_max.y) {
