@@ -311,8 +311,6 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		DS_OSX->window_set_transient(wd.transient_children.front()->get(), DisplayServerOSX::INVALID_WINDOW_ID);
 	}
 
-	DS_OSX->windows.erase(window_id);
-
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {
 		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[wd.transient_parent];
 		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to parent.
@@ -332,6 +330,8 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		DS_OSX->context_vulkan->window_destroy(window_id);
 	}
 #endif
+
+	DS_OSX->windows.erase(window_id);
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
@@ -3803,9 +3803,11 @@ DisplayServerOSX::~DisplayServerOSX() {
 	}
 
 	//destroy all windows
-	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		[E->get().window_object setContentView:nil];
-		[E->get().window_object close];
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E;) {
+		Map<WindowID, WindowData>::Element *F = E;
+		E = E->next();
+		[F->get().window_object setContentView:nil];
+		[F->get().window_object close];
 	}
 
 	//destroy drivers
