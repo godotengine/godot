@@ -97,6 +97,7 @@ private:
 		Node *parent;
 		Node *owner;
 		Vector<Node *> children; // list of children
+		Vector<Node *> internal_children; // list of hidden children (not returned by get_children() etc.)
 		int pos;
 		int depth;
 		int blocked; // safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
@@ -178,7 +179,7 @@ private:
 	void _duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const;
 	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = nullptr) const;
 
-	TypedArray<Node> _get_children() const;
+	TypedArray<Node> _get_children(bool p_skip_internal = false) const;
 	Array _get_groups() const;
 
 	Variant _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -267,12 +268,12 @@ public:
 	StringName get_name() const;
 	void set_name(const String &p_name);
 
-	void add_child(Node *p_child, bool p_legible_unique_name = false);
+	void add_child(Node *p_child, bool p_legible_unique_name = false, bool p_internal = false);
 	void add_sibling(Node *p_sibling, bool p_legible_unique_name = false);
 	void remove_child(Node *p_child);
 
-	int get_child_count() const;
-	Node *get_child(int p_index) const;
+	int get_child_count(bool p_skip_internal = false) const;
+	Node *get_child(int p_index, bool p_skip_internal = false) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
@@ -309,7 +310,8 @@ public:
 	void get_groups(List<GroupInfo> *p_groups) const;
 	int get_persistent_group_count() const;
 
-	void move_child(Node *p_child, int p_pos);
+	void move_child(Node *p_child, int p_pos, bool p_skip_internal = false);
+	void _move_child(Node *p_child, int p_pos);
 	void raise();
 
 	void set_owner(Node *p_owner);
@@ -317,7 +319,7 @@ public:
 	void get_owned_by(Node *p_by, List<Node *> *p_owned);
 
 	void remove_and_skip();
-	int get_index() const;
+	int get_index(bool p_skip_internal = false) const;
 
 	void print_tree();
 	void print_tree_pretty();

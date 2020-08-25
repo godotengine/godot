@@ -1504,7 +1504,7 @@ ItemList::ItemList() {
 	auto_height_value = 0.0f;
 
 	scroll_bar = memnew(VScrollBar);
-	add_child(scroll_bar);
+	add_child(scroll_bar, false, true);
 
 	shape_changed = true;
 	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));

@@ -1454,7 +1454,7 @@ PopupMenu::PopupMenu() {
 	submenu_timer->set_wait_time(0.3);
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
-	add_child(submenu_timer);
+	add_child(submenu_timer, false, true);
 }
 
 PopupMenu::~PopupMenu() {

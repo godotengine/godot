@@ -730,7 +730,7 @@ ColorPicker::ColorPicker() :
 	screen = nullptr;
 
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
-	add_child(hb_edit);
+	add_child(hb_edit, false, true);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	uv_edit = memnew(Control);
@@ -766,12 +766,12 @@ ColorPicker::ColorPicker() :
 	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
-	add_child(vbl);
+	add_child(vbl, false, true);
 
-	add_child(memnew(HSeparator));
+	add_child(memnew(HSeparator), false, true);
 
 	VBoxContainer *vbr = memnew(VBoxContainer);
-	add_child(vbr);
+	add_child(vbr, false, true);
 	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	for (int i = 0; i < 4; i++) {
@@ -843,11 +843,11 @@ ColorPicker::ColorPicker() :
 	set_pick_color(Color(1, 1, 1));
 
 	preset_separator = memnew(HSeparator);
-	add_child(preset_separator);
+	add_child(preset_separator, false, true);
 
 	preset_container = memnew(HBoxContainer);
 	preset_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(preset_container);
+	add_child(preset_container, false, true);
 
 	preset = memnew(TextureRect);
 	preset_container->add_child(preset);
@@ -974,7 +974,7 @@ void ColorPickerButton::_update_picker() {
 		picker = memnew(ColorPicker);
 		picker->set_anchors_and_margins_preset(PRESET_WIDE);
 		popup->add_child(picker);
-		add_child(popup);
+		add_child(popup, false, true);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("modal_closed", callable_mp(this, &ColorPickerButton::_modal_closed));
 		popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
