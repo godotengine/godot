@@ -2415,7 +2415,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "StandardMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_interpolate"), "set_path_interpolate", "get_path_interpolate");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "path_polygon2"), "set_path_polygon2", "get_path_polygon2");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "path_polygon2"), "set_path_polygon2", "get_path_polygon2");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "path_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_path_curve", "get_path_curve");
 
 	BIND_ENUM_CONSTANT(MODE_DEPTH);
