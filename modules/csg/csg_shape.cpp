@@ -2055,7 +2055,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 				if (do_interpolation) {
 					if (!path_curve.is_null() && path_polygon2.size() == final_polygon.size()) {
-
 						final_polygon2 = path_polygon2;
 						if (Triangulate::get_area(final_polygon2) > 0) {
 							final_polygon2.invert();
@@ -2075,7 +2074,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						curve_pos2 = path_curve->interpolate(0);
 
 						if (path_joined && curve_pos2 != path_curve->interpolate(1.0)) {
-
 							interpolate_curve = path_curve->duplicate();
 
 							if (path_curve->get_point_count() > 1 && path_curve->get_point_position(path_curve->get_point_count() - 1).x == 1.0) {
@@ -2093,8 +2091,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						if (path_curve.is_null()) {
 							WARN_PRINT("path_curve is null, interpolation not effective");
 						}
-						if (path_polygon2.size() != final_polygon.size())
-						 {
+						if (path_polygon2.size() != final_polygon.size()) {
 							WARN_PRINT("path_polygon2 size is different of polygon size, interpolation not effective");
 						}
 					}
@@ -2139,18 +2136,12 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 						if (do_interpolation) {
 							curve_pos = curve_pos2;
-							curve_pos2 = interpolate_curve->interpolate((float) i / (float) splits);
+							curve_pos2 = interpolate_curve->interpolate((float)i / (float) splits);
 
 							for (int j = 0; j < final_polygon.size(); j++) {
 								// A + (B - A) * t
-								final_polygon.set(j, Vector2(
-									median_polygon[j].x + modified_polygon[j].x * curve_pos,
-									median_polygon[j].y + modified_polygon[j].y * curve_pos
-								));
-								final_polygon2.set(j, Vector2(
-									median_polygon[j].x + modified_polygon[j].x * curve_pos2,
-									median_polygon[j].y + modified_polygon[j].y * curve_pos2
-								));
+								final_polygon.set(j, Vector2(median_polygon[j].x + modified_polygon[j].x * curve_pos, median_polygon[j].y + modified_polygon[j].y * curve_pos));
+								final_polygon2.set(j, Vector2(median_polygon[j].x + modified_polygon[j].x * curve_pos2, median_polygon[j].y + modified_polygon[j].y * curve_pos2));
 							}
 						}
 
@@ -2203,18 +2194,13 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 							face++;
 						}
-					}
-					else if (!path_joined) {
+					} else if (!path_joined) {
 						// i == 0
 						if (do_interpolation) {
 							Vector2 p;
 							for (int j = 0; j < final_polygon.size(); j++) {
-
-								final_polygon.set(j, Vector2(
-									median_polygon[j].x + modified_polygon[j].x * curve_pos2,
-									median_polygon[j].y + modified_polygon[j].y * curve_pos2
-								));
-								   p = final_polygon[j];
+								final_polygon.set(j, Vector2(median_polygon[j].x + modified_polygon[j].x * curve_pos2, median_polygon[j].y + modified_polygon[j].y * curve_pos2));
+								p = final_polygon[j];
 
 								if (j == 0) {
 									final_polygon_min = p;
@@ -2224,7 +2210,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 										final_polygon_min.x = p.x;
 									}
 									if (p.y < final_polygon_min.y) {
-										 final_polygon_min.y = p.y;
+										final_polygon_min.y = p.y;
 									}
 									if (p.x > final_polygon_max.x) {
 										final_polygon_max.x = p.x;
@@ -2255,7 +2241,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					}
 
 					if (i == splits && !path_joined) {
-
 						if (do_interpolation) {
 							Vector2 p;
 							for (int j = 0; j < final_polygon2.size(); j++) {
@@ -2269,7 +2254,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 										final_polygon_min.x = p.x;
 									}
 									if (p.y < final_polygon_min.y) {
-										 final_polygon_min.y = p.y;
+										final_polygon_min.y = p.y;
 									}
 									if (p.x > final_polygon_max.x) {
 										final_polygon_max.x = p.x;
@@ -2600,7 +2585,7 @@ void CSGPolygon3D::set_path_curve(const Ref<Curve> &p_path_curve) {
 		path_curve->disconnect("path_curve_changed", callable_mp(this, &CSGPolygon3D::_path_curve_changed));
 	}
 	path_curve = p_path_curve;
-		// Connect to the curve so the line will update when it is changed
+	// Connect to the curve so the line will update when it is changed
 	if (path_curve.is_valid()) {
 		path_curve->connect("path_curve_changed", callable_mp(this, &CSGPolygon3D::_path_curve_changed));
 	}
