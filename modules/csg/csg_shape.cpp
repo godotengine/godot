@@ -2239,7 +2239,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							face++;
 						}
 					}
-					
+
 					if (i == splits && !path_joined) {
 						if (do_interpolation) {
 							Vector2 p;
