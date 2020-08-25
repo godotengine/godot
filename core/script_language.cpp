@@ -31,8 +31,6 @@
 #include "script_language.h"
 
 #include "core/core_string_names.h"
-#include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
 #include "core/project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -168,7 +166,7 @@ void ScriptServer::init_languages() {
 
 			for (int i = 0; i < script_classes.size(); i++) {
 				Dictionary c = script_classes[i];
-				if (!c.has("class") || !c.has("language") || !c.has("path") || !FileAccess::exists(ResourceLoader::path_remap(c["path"])) || !c.has("base"))
+				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base"))
 					continue;
 				add_global_class(c["class"], c["base"], c["language"], c["path"]);
 			}
