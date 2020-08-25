@@ -107,7 +107,7 @@
 - (void)keyboardOnScreen:(NSNotification *)notification;
 - (void)keyboardHidden:(NSNotification *)notification;
 
-@property NSTimeInterval animationInterval;
+@property(nonatomic, assign) NSTimeInterval animationInterval;
 @property(nonatomic, assign) BOOL useCADisplayLink;
 
 @end

@@ -34,9 +34,6 @@
 @interface ViewController : UIViewController <GKGameCenterControllerDelegate> {
 };
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:
-		(UIInterfaceOrientation)p_orientation;
-
 - (void)didReceiveMemoryWarning;
 
 - (void)viewDidLoad;

@@ -80,10 +80,12 @@ void _hide_keyboard() {
 };
 
 Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height) {
-	UIEdgeInsets insets = UIEdgeInsetsMake(0, 0, 0, 0);
-	if (_instance != nil && [_instance respondsToSelector:@selector(safeAreaInsets)]) {
+	UIEdgeInsets insets = UIEdgeInsetsZero;
+
+	if (@available(iOS 11.0, *)) {
 		insets = [_instance safeAreaInsets];
 	}
+
 	ERR_FAIL_COND_V(insets.left < 0 || insets.top < 0 || insets.right < 0 || insets.bottom < 0,
 			Rect2(0, 0, p_window_width, p_window_height));
 	UIEdgeInsets window_insets = UIEdgeInsetsMake(_points_to_pixels(insets.top), _points_to_pixels(insets.left), _points_to_pixels(insets.bottom), _points_to_pixels(insets.right));
@@ -699,7 +701,7 @@ static void clear_touches() {
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 
 	if (object == _instance.avPlayerItem && [keyPath isEqualToString:@"status"]) {
-		if (_instance.avPlayerItem.status == AVPlayerStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
+		if (_instance.avPlayerItem.status == AVPlayerItemStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
 			_stop_video();
 			video_found_error = true;
 		}
