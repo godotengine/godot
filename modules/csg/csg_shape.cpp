@@ -2058,7 +2058,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 						final_polygon2 = path_polygon2;
 						if (Triangulate::get_area(final_polygon2) > 0) {
-							final_polygon2.invert(); 
+							final_polygon2.invert();
 						}
 
 						float p = 2.0;
@@ -2141,14 +2141,14 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							curve_pos = curve_pos2;
 							curve_pos2 = interpolate_curve->interpolate((float) i / (float) splits);
 
-							for (int j = 0; j < final_polygon.size(); j++) { 
+							for (int j = 0; j < final_polygon.size(); j++) {
 								// A + (B - A) * t
 								final_polygon.set(j, Vector2(
-									median_polygon[j].x + modified_polygon[j].x * curve_pos, 
+									median_polygon[j].x + modified_polygon[j].x * curve_pos,
 									median_polygon[j].y + modified_polygon[j].y * curve_pos
 								));
-								final_polygon2.set(j, Vector2( 
-									median_polygon[j].x + modified_polygon[j].x * curve_pos2, 
+								final_polygon2.set(j, Vector2(
+									median_polygon[j].x + modified_polygon[j].x * curve_pos2,
 									median_polygon[j].y + modified_polygon[j].y * curve_pos2
 								));
 							}
@@ -2204,15 +2204,14 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							face++;
 						}
 					}
-
 					else if (!path_joined) {
 						// i == 0
-						if (do_interpolation) {						
+						if (do_interpolation) {
 							Vector2 p;
 							for (int j = 0; j < final_polygon.size(); j++) {
 
-								final_polygon.set(j, Vector2( 
-									median_polygon[j].x + modified_polygon[j].x * curve_pos2, 
+								final_polygon.set(j, Vector2(
+									median_polygon[j].x + modified_polygon[j].x * curve_pos2,
 									median_polygon[j].y + modified_polygon[j].y * curve_pos2
 								));
 								   p = final_polygon[j];
@@ -2221,11 +2220,18 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 									final_polygon_min = p;
 									final_polygon_max = final_polygon_min;
 								} else {
-									if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
-									if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
-
-									if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
-									if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+									if (p.x < final_polygon_min.x) {
+										final_polygon_min.x = p.x;
+									}
+									if (p.y < final_polygon_min.y) {
+										 final_polygon_min.y = p.y;
+									}
+									if (p.x > final_polygon_max.x) { 
+										final_polygon_max.x = p.x;
+									}
+									if (p.y > final_polygon_max.y) {
+										final_polygon_max.y = p.y;
+									}
 								}
 							}
 							final_polygon_size = final_polygon_max - final_polygon_min;
@@ -2259,11 +2265,18 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 									final_polygon_min = p;
 									final_polygon_max = final_polygon_min;
 								} else {
-									if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
-									if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
-
-									if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
-									if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+									if (p.x < final_polygon_min.x) {
+										final_polygon_min.x = p.x;
+									}
+									if (p.y < final_polygon_min.y) {
+										 final_polygon_min.y = p.y;
+									}
+									if (p.x > final_polygon_max.x) { 
+										final_polygon_max.x = p.x;
+									}
+									if (p.y > final_polygon_max.y) {
+										final_polygon_max.y = p.y;
+									}
 								}
 							}
 							final_polygon_size = final_polygon_max - final_polygon_min;
