@@ -2136,7 +2136,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 						if (do_interpolation) {
 							curve_pos = curve_pos2;
-							curve_pos2 = interpolate_curve->interpolate((float)i / (float) splits);
+							curve_pos2 = interpolate_curve->interpolate((float)i / (float)splits);
 
 							for (int j = 0; j < final_polygon.size(); j++) {
 								// A + (B - A) * t
@@ -2244,7 +2244,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						if (do_interpolation) {
 							Vector2 p;
 							for (int j = 0; j < final_polygon2.size(); j++) {
-   								p = final_polygon2[j];
+								p = final_polygon2[j];
 
 								if (j == 0) {
 									final_polygon_min = p;
