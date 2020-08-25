@@ -42,12 +42,12 @@ int add_cmdline(int, char **);
 int add_path(int p_argc, char **p_args) {
 
 	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
-	if (!str)
+	if (!str) {
 		return p_argc;
+	}
 
-	p_args[p_argc++] = "--path";
-	[str retain]; // memory leak lol (maybe make it static here and delete it in ViewController destructor? @todo
-	p_args[p_argc++] = (char *)[str cString];
+	p_args[p_argc++] = (char *)"--path";
+	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
 	p_args[p_argc] = NULL;
 
 	return p_argc;
@@ -60,12 +60,11 @@ int add_cmdline(int p_argc, char **p_args) {
 		return p_argc;
 
 	for (int i = 0; i < [arr count]; i++) {
-
 		NSString *str = [arr objectAtIndex:i];
-		if (!str)
+		if (!str) {
 			continue;
-		[str retain]; // @todo delete these at some point
-		p_args[p_argc++] = (char *)[str cString];
+		}
+		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
 	};
 
 	p_args[p_argc] = NULL;
@@ -81,7 +80,7 @@ int add_cmdline(int p_argc, char **p_args) {
 @implementation ViewController
 
 - (void)didReceiveMemoryWarning {
-
+	[super didReceiveMemoryWarning];
 	printf("*********** did receive memory warning!\n");
 };
 

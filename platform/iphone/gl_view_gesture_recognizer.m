@@ -68,17 +68,18 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 		[self.view touchesBegan:delayedTouches withEvent:delayedEvent];
 	}
 
+	[delayedTouches release];
 	delayedTouches = nil;
 	delayedEvent = nil;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSSet *cleared = [self clearTouches:touches phase:UITouchPhaseBegan];
+	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseBegan];
 	[self delayTouches:cleared andEvent:event];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSSet *cleared = [self clearTouches:touches phase:UITouchPhaseMoved];
+	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseMoved];
 
 	if (delayTimer) {
 		// We should check if movement was significant enough to fire an event
@@ -95,20 +96,24 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 			if (distance > kGLGestureMovementDistance) {
 				[delayTimer fire];
 				[self.view touchesMoved:cleared withEvent:event];
+				[cleared release];
 				return;
 			}
 		}
+		[cleared release];
 		return;
 	}
 
 	[self.view touchesMoved:cleared withEvent:event];
+	[cleared release];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	[delayTimer fire];
 
-	NSSet *cleared = [self clearTouches:touches phase:UITouchPhaseEnded];
+	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseEnded];
 	[self.view touchesEnded:cleared withEvent:event];
+	[cleared release];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -116,7 +121,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	[self.view touchesCancelled:touches withEvent:event];
 };
 
-- (NSSet *)clearTouches:(NSSet *)touches phase:(UITouchPhase)phaseToSave {
+- (NSSet *)copyClearedTouches:(NSSet *)touches phase:(UITouchPhase)phaseToSave {
 	NSMutableSet *cleared = [touches mutableCopy];
 
 	for (UITouch *touch in touches) {

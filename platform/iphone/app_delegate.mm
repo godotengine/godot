@@ -49,8 +49,10 @@ void _set_keep_screen_on(bool p_enabled);
 Error _shell_open(String p_uri) {
 	NSString *url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 
-	if (![[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]])
+	if (![[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]]) {
+		[url release];
 		return ERR_CANT_OPEN;
+	}
 
 	printf("opening url %ls\n", p_uri.c_str());
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
@@ -548,7 +550,7 @@ static int frame_count = 0;
 					// can use that instead? (note that left and right seem swapped)
 
 					switch ([[UIApplication sharedApplication] statusBarOrientation]) {
-						case UIDeviceOrientationLandscapeLeft: {
+						case UIInterfaceOrientationLandscapeLeft: {
 							OSIPhone::get_singleton()->update_gravity(-gravity.y, gravity.x,
 									gravity.z);
 							OSIPhone::get_singleton()->update_accelerometer(
@@ -559,7 +561,7 @@ static int frame_count = 0;
 							OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x,
 									rotation.z);
 						}; break;
-						case UIDeviceOrientationLandscapeRight: {
+						case UIInterfaceOrientationLandscapeRight: {
 							OSIPhone::get_singleton()->update_gravity(gravity.y, -gravity.x,
 									gravity.z);
 							OSIPhone::get_singleton()->update_accelerometer(
@@ -570,7 +572,7 @@ static int frame_count = 0;
 							OSIPhone::get_singleton()->update_gyroscope(rotation.y, -rotation.x,
 									rotation.z);
 						}; break;
-						case UIDeviceOrientationPortraitUpsideDown: {
+						case UIInterfaceOrientationPortraitUpsideDown: {
 							OSIPhone::get_singleton()->update_gravity(-gravity.x, gravity.y,
 									gravity.z);
 							OSIPhone::get_singleton()->update_accelerometer(
@@ -595,7 +597,7 @@ static int frame_count = 0;
 					};
 				}
 
-				bool quit_request = OSIPhone::get_singleton()->iterate();
+				OSIPhone::get_singleton()->iterate();
 			};
 
 		}; break;
@@ -614,7 +616,6 @@ static int frame_count = 0;
 
 	is_focus_out = false;
 
-	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	// disable idle timer
 	// application.idleTimerDisabled = YES;
 
