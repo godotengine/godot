@@ -50,6 +50,29 @@
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
+		<method name="get_plural_forms">
+			<return type="int">
+			</return>
+			<argument index="0" name="locale" type="String">
+			</argument>
+			<description>
+				Returns the number of plural forms the [code]locale[/code] has. For example, the Arabic language has six plural forms, English has two, Russian has three and so on.
+				Search "plural form localization" online for more information and the complete list.
+			</description>
+		</method>
+		<method name="get_plural_index">
+			<return type="int">
+			</return>
+			<argument index="0" name="locale" type="String">
+			</argument>
+			<argument index="1" name="n" type="int">
+			</argument>
+			<description>
+				Returns the plural form index based on the [code]locale[/code] and [code]n[/code] passed in.
+				For example, English has two forms, with singular having index 0 and plural having index 1. When [code]n[/code] is not one, which signifies plural in English, the returned index is 1 since it maps to the plural form.
+				Different languages have different range of plural forms, see [method get_plural_forms].
+			</description>
+		</method>
 		<method name="get_translation_object">
 			<return type="Translation">
 			</return>
@@ -57,7 +80,7 @@
 			</argument>
 			<description>
 				Returns the [Translation] instance based on the [code]locale[/code] passed in.
-				It will return a [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
+				It will return [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
 			</description>
 		</method>
 		<method name="remove_translation">

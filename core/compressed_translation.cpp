@@ -31,6 +31,7 @@
 #include "compressed_translation.h"
 
 #include "core/pair.h"
+#include "core/translation_plural_rules.h"
 
 extern "C" {
 #include "thirdparty/misc/smaz.h"
@@ -272,8 +273,10 @@ StringName PHashTranslation::get_message(const StringName &p_src_text, const Str
 }
 
 StringName PHashTranslation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
-	// The use of plurals translation is not yet supported in PHashTranslation.
-	return get_message(p_src_text, p_context);
+	// It is assumed for now that PHashTranslation is only used by CSV translation. So get_plural_message() method follows the CSV plural format to fetch the translation.
+	int index = TranslationPluralRules::get_plural_index(get_locale(), p_n);
+	String search_src = String(p_src_text) + "[" + String::num_int64(index) + "]";
+	return get_message(search_src, p_context);
 }
 
 void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {

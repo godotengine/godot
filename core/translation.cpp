@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "core/translation_plural_rules.h"
 
 // ISO 639-1 language codes, with the addition of glibc locales with their
 // regional identifiers. This list must match the language names (in English)
@@ -845,9 +846,7 @@ void Translation::add_message(const StringName &p_src_text, const StringName &p_
 }
 
 void Translation::add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context) {
-	WARN_PRINT("Translation class doesn't handle plural messages. Calling add_plural_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles plurals, such as TranslationPO class");
-	ERR_FAIL_COND_MSG(p_plural_xlated_texts.empty(), "Parameter vector p_plural_xlated_texts passed in is empty.");
-	translation_map[p_src_text] = p_plural_xlated_texts[0];
+	WARN_PRINT("Translation class doesn't use add_plural_message(), as plural keys are appended with subscript by users. Calling add_plural_message() on a Translation instance is probably a mistake.");
 }
 
 StringName Translation::get_message(const StringName &p_src_text, const StringName &p_context) const {
@@ -864,8 +863,24 @@ StringName Translation::get_message(const StringName &p_src_text, const StringNa
 }
 
 StringName Translation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
-	WARN_PRINT("Translation class doesn't handle plural messages. Calling get_plural_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles plurals, such as TranslationPO class");
-	return get_message(p_src_text);
+	int index = TranslationPluralRules::get_plural_index(locale, p_n);
+	String search_src = String(p_src_text) + "[" + String::num_int64(index) + "]";
+
+	const Map<StringName, StringName>::Element *E = translation_map.find(search_src);
+	if (E) {
+		return E->get();
+	}
+
+	// Fallback to singular translation.
+	WARN_PRINT("CSV plural translation for \"" + String(search_src) + "\" with locale \"" + locale + "\" is not found. Returning singular translation...");
+	search_src.set(search_src.length() - 2, '0');
+	E = translation_map.find(search_src);
+	if (!E) {
+		WARN_PRINT("Singular translation \"" + String(search_src) + "\" with locale \"" + locale + "\" is not found.");
+		return StringName();
+	}
+
+	return E->get();
 }
 
 void Translation::erase_message(const StringName &p_src_text, const StringName &p_context) {
@@ -979,6 +994,14 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+int TranslationServer::get_plural_index(const String &p_locale, int p_n) {
+	return TranslationPluralRules::get_plural_index(p_locale, p_n);
+}
+
+int TranslationServer::get_plural_forms(const String &p_locale) {
+	return TranslationPluralRules::get_plural_forms(p_locale);
+}
+
 String TranslationServer::get_locale_name(const String &p_locale) const {
 	if (!locale_name_map.has(p_locale)) {
 		return String();
@@ -1085,7 +1108,7 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
 	if (!enabled) {
-		if (p_n == 1) {
+		if (p_message_plural == StringName() || p_n == 1) {
 			return p_message;
 		}
 		return p_message_plural;
@@ -1100,7 +1123,7 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 	}
 
 	if (!res) {
-		if (p_n == 1) {
+		if (p_message_plural == StringName() || p_n == 1) {
 			return p_message;
 		}
 		return p_message_plural;
@@ -1269,6 +1292,8 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
+	ClassDB::bind_method(D_METHOD("get_plural_index", "locale", "n"), &TranslationServer::get_plural_index);
+	ClassDB::bind_method(D_METHOD("get_plural_forms", "locale"), &TranslationServer::get_plural_forms);
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
 

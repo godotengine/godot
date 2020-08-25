@@ -493,28 +493,29 @@
 			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
-				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
-				See <link>https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link> for examples of the usage of this method.
+				Translates a message using translation catalogs configured in the Project Settings. Only works if message translation is enabled (which it is by default). See [method set_message_translation].
+				If you're translating using PO files, an additional context could be used to specify the translation context. If you're translating using CSV files, the [code]context[/code] parameter is ignored.
+				If the translation fails, [code]message[/code] will be returned.
 			</description>
 		</method>
 		<method name="tr_n" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="message" type="StringName">
+			<argument index="0" name="n" type="int">
 			</argument>
-			<argument index="1" name="plural_message" type="StringName">
+			<argument index="1" name="message" type="StringName">
 			</argument>
-			<argument index="2" name="n" type="int">
+			<argument index="2" name="plural_message" type="StringName" default="&quot;&quot;">
 			</argument>
 			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Translates a message involving plurals using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
-				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].
-				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
-				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. In such cases, use [method tr].
-				See <link>https://docs.godotengine.org/en/latest/tutorials/i18n/localization_using_gettext.html</link> for examples of the usage of this method.
+				Translates a message involving plurals using translation catalogs configured in the Project Settings. Only works if message translation is enabled (which it is by default). See [method set_message_translation].
+				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form based on the selected language.
+				If you're translating using CSV files, only the parameters [code]n[/code] and [code]message[/code] are relevant. The other two will be ignored.
+				If you're translating using PO files, you must provide a [code]plural_message[/code]. An additional context could be used to specify the translation context when using PO files.
+				If the translation fails, CSV translation will try to return the base form ([code]message[0][/code]) of the target language. If it fails again, it will return back the key, which is [code]message[/code]. For PO translation, when the translation fails, it will return [code]message[/code] or [code]plural_message[/code] based on English plural rule.
+				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. Normally one should use [method tr] in these cases. Search online for advise on how to deal with these situation.
 			</description>
 		</method>
 	</methods>

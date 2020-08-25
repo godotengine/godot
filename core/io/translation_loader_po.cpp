@@ -139,12 +139,19 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				}
 			} else if (config == "") {
 				config = msg_str;
-				// Record plural rule.
-				int p_start = config.find("Plural-Forms");
-				if (p_start != -1) {
-					int p_end = config.find("\n", p_start);
-					translation->set_plural_rule(config.substr(p_start, p_end - p_start));
-					plural_forms = translation->get_plural_forms();
+				// Set plural_forms and locale.
+				int nplural_start = config.find("nplurals=");
+				if (nplural_start != -1) {
+					nplural_start += String("nplurals=").length();
+					int nplural_end = config.find(";", nplural_start);
+					plural_forms = config.substr(nplural_start, nplural_end - nplural_start).to_int();
+
+					int lang_start = config.find("Language:") + String("Language:").length();
+					if (lang_start - String("Language:").length() == -1) {
+						lang_start = config.find("X-Language:") + String("X-Language:").length();
+					}
+					int lang_end = config.find("\n", lang_start);
+					translation->set_locale(config.substr(lang_start, lang_end - lang_start).strip_edges());
 				}
 			}
 

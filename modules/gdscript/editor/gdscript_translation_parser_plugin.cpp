@@ -267,11 +267,11 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 			ids_ctx_plural->push_back(id_ctx_plural);
 		}
 	} else if (function_name == trn_func) {
-		// Extract from tr_n(id, plural, n, ctx).
+		// Extract from tr_n(n, id, plural, ctx).
 		Vector<int> indices;
-		indices.push_back(0);
-		indices.push_back(3);
 		indices.push_back(1);
+		indices.push_back(3);
+		indices.push_back(2);
 		for (int i = 0; i < indices.size(); i++) {
 			if (indices[i] >= p_call->arguments.size()) {
 				continue;
@@ -283,7 +283,10 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 				extract_id_ctx_plural = false;
 			}
 		}
+
 		if (extract_id_ctx_plural) {
+			// If plural is not given in tr_n(), ask user to provide it.
+			ERR_FAIL_COND_MSG(id_ctx_plural[2].empty(), "A plural message must be given to tr_n() function to generate POT, as PO files require the plural message field.");
 			ids_ctx_plural->push_back(id_ctx_plural);
 		}
 	} else if (first_arg_patterns.has(function_name)) {

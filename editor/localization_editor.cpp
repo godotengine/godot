@@ -364,7 +364,10 @@ void LocalizationEditor::_translation_filter_mode_changed(int p_mode) {
 }
 
 void LocalizationEditor::_pot_add(const String &p_path) {
-	PackedStringArray pot_translations = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+	PackedStringArray pot_translations;
+	if (ProjectSettings::get_singleton()->has_setting("locale/translations_pot_files")) {
+		pot_translations = ProjectSettings::get_singleton()->get("locale/translations_pot_files");
+	}
 
 	for (int i = 0; i < pot_translations.size(); i++) {
 		if (pot_translations[i] == p_path) {

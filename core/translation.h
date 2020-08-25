@@ -92,6 +92,8 @@ public:
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+	int get_plural_index(const String &p_locale, int p_n);
+	int get_plural_forms(const String &p_locale);
 	Ref<Translation> get_translation_object(const String &p_locale);
 
 	String get_locale_name(const String &p_locale) const;

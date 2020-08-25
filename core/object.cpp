@@ -1439,10 +1439,10 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 	return TranslationServer::get_singleton()->translate(p_message, p_context);
 }
 
-String Object::tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
+String Object::tr_n(int p_n, const StringName &p_message, const StringName &p_message_plural, const StringName &p_context) const {
 	if (!_can_translate || !TranslationServer::get_singleton()) {
-		// Return message based on English plural rule if translation is not possible.
-		if (p_n == 1) {
+		// If no plural message, just return the key (for CSV). Else, return message based on English plural rule.
+		if (p_message_plural == StringName() || p_n == 1) {
 			return p_message;
 		}
 		return p_message_plural;
@@ -1589,7 +1589,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_message_translation", "enable"), &Object::set_message_translation);
 	ClassDB::bind_method(D_METHOD("can_translate_messages"), &Object::can_translate_messages);
 	ClassDB::bind_method(D_METHOD("tr", "message", "context"), &Object::tr, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("tr_n", "n", "message", "plural_message", "context"), &Object::tr_n, DEFVAL(""), DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 
