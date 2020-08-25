@@ -183,6 +183,14 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+		<method name="looking_at">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="target" type="Vector2">
+			</argument>
+			<description>
+				Returns a copy of the transform rotated such that it's rotation on the X-axis points towards the [code]target[/code] position.
+				Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
@@ -208,6 +216,15 @@
 			</argument>
 			<description>
 				Scales the transform by the given scale factor, using matrix multiplication.
+			</description>
+		</method>
+		<method name="set_rotation">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="rotation" type="float">
+			</argument>
+			<description>
+				Sets the transform's rotation (in radians).
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">

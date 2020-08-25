@@ -53,13 +53,15 @@ void PhysicalBone2D::_notification(int p_what) {
 		set_physics_process_internal(true);
 	}
 
-	// Keep the child joint in the correct position.
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+		// Position the RigidBody in the correct position
+		if (follow_bone_when_simulating) {
+			_position_at_bone2d();
+		}
+
+		// Keep the child joint in the correct position.
 		if (child_joint && auto_configure_joint) {
-			CanvasItem *node_a = Object::cast_to<CanvasItem>(child_joint->get_node(child_joint->get_node_a()));
-			if (node_a) {
-				child_joint->set_global_position(node_a->get_global_transform().get_origin());
-			}
+			child_joint->set_global_position(get_global_position());
 		}
 
 		// Remove any collision layers and masks if we're disabled.
@@ -164,13 +166,12 @@ void PhysicalBone2D::_auto_configure_joint() {
 		if (potential_parent_bone) {
 			child_joint->set_node_a(child_joint->get_path_to(potential_parent_bone));
 			child_joint->set_node_b(child_joint->get_path_to(this));
-
-			// Place the child joint at the parent's position.
-			child_joint->set_global_position(potential_parent_bone->get_global_position());
-
 		} else {
 			WARN_PRINT("Cannot setup joint without a parent PhysicalBone2D node.");
 		}
+
+		// Place the child joint at this node's position.
+		child_joint->set_global_position(get_global_position());
 	}
 }
 
@@ -183,7 +184,9 @@ void PhysicalBone2D::_start_physics_simulation() {
 	_position_at_bone2d();
 
 	// Let the RigidBody executing its force integration.
-	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	if (!follow_bone_when_simulating) {
+		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	}
 
 	// Apply the layers and masks
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
@@ -271,6 +274,19 @@ int PhysicalBone2D::get_bone2d_index() const {
 	return bone2d_index;
 }
 
+void PhysicalBone2D::set_follow_bone_when_simulating(bool p_follow_bone) {
+	follow_bone_when_simulating = p_follow_bone;
+
+	if (_internal_simulate_physics) {
+		_stop_physics_simulation();
+		_start_physics_simulation();
+	}
+}
+
+bool PhysicalBone2D::get_follow_bone_when_simulating() const {
+	return follow_bone_when_simulating;
+}
+
 void PhysicalBone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint"), &PhysicalBone2D::get_joint);
 	ClassDB::bind_method(D_METHOD("get_auto_configure_joint"), &PhysicalBone2D::get_auto_configure_joint);
@@ -284,16 +300,20 @@ void PhysicalBone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone2d_nodepath"), &PhysicalBone2D::get_bone2d_nodepath);
 	ClassDB::bind_method(D_METHOD("set_bone2d_index", "bone_index"), &PhysicalBone2D::set_bone2d_index);
 	ClassDB::bind_method(D_METHOD("get_bone2d_index"), &PhysicalBone2D::get_bone2d_index);
+	ClassDB::bind_method(D_METHOD("set_follow_bone_when_simulating", "follow_bone"), &PhysicalBone2D::set_follow_bone_when_simulating);
+	ClassDB::bind_method(D_METHOD("get_follow_bone_when_simulating"), &PhysicalBone2D::get_follow_bone_when_simulating);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "bone2d_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D"), "set_bone2d_nodepath", "get_bone2d_nodepath");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone2d_index", PROPERTY_HINT_RANGE, "-1, 1000, 1"), "set_bone2d_index", "get_bone2d_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_configure_joint"), "set_auto_configure_joint", "get_auto_configure_joint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simulate_physics"), "set_simulate_physics", "get_simulate_physics");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_bone_when_simulating"), "set_follow_bone_when_simulating", "get_follow_bone_when_simulating");
 }
 
 PhysicalBone2D::PhysicalBone2D() {
 	// Stop the RigidBody from executing its force integration.
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
+	child_joint = nullptr;
 }
 
 PhysicalBone2D::~PhysicalBone2D() {

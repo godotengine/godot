@@ -331,8 +331,8 @@ int SkeletonModification2D::get_execution_mode() const {
 }
 
 void SkeletonModification2D::_bind_methods() {
-	BIND_VMETHOD(MethodInfo("execute"));
-	BIND_VMETHOD(MethodInfo("setup_modification"));
+	BIND_VMETHOD(MethodInfo("execute", PropertyInfo(Variant::FLOAT, "delta")));
+	BIND_VMETHOD(MethodInfo("setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);

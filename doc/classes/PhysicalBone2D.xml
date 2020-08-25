@@ -36,8 +36,11 @@
 		<member name="bone2d_nodepath" type="NodePath" setter="set_bone2d_nodepath" getter="get_bone2d_nodepath" default="NodePath(&quot;&quot;)">
 			The [NodePath] to the [Bone2D] node that this [code]PhysicalBone2D[/code] node is supposed to be simulating.
 		</member>
+		<member name="follow_bone_when_simulating" type="bool" setter="set_follow_bone_when_simulating" getter="get_follow_bone_when_simulating" default="false">
+			When [code]true[/code], the [code]PhysicalBone2D[/code] will keep the transform of the bone it is bound to when simulating physics.
+		</member>
 		<member name="simulate_physics" type="bool" setter="set_simulate_physics" getter="get_simulate_physics" default="false">
-			When true, the [code]PhysicalBone2D[/code] will start simulating using physics. When false, the [code]PhysicalBone2D[/code] will follow the transform of the [Bone2D] node.
+			When [code]true[/code], the [code]PhysicalBone2D[/code] will start simulating using physics. When false, the [code]PhysicalBone2D[/code] will follow the transform of the [Bone2D] node.
 			[b]Note[/b]: To have the Bone2D nodes visually follow the [code]PhysicalBone2D[/code] node, use a [SkeletonModification2DPhysicalBones] modification on the [Skeleton2D] node with the [Bone2D] nodes.
 		</member>
 	</members>

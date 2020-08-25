@@ -47,8 +47,8 @@ private:
 	Skeleton2D *parent_skeleton;
 	int bone2d_index = -1;
 	NodePath bone2d_nodepath;
+	bool follow_bone_when_simulating = false;
 
-	// TODO: make child joint only required if there is a PhysicalBone2D child. Root PhysicalBone2D nodes shouldn't need joints.
 	Joint2D *child_joint;
 	bool auto_configure_joint = true;
 
@@ -76,6 +76,8 @@ public:
 	NodePath get_bone2d_nodepath() const;
 	void set_bone2d_index(int p_bone_idx);
 	int get_bone2d_index() const;
+	void set_follow_bone_when_simulating(bool p_follow);
+	bool get_follow_bone_when_simulating() const;
 
 	String get_configuration_warning() const override;
 

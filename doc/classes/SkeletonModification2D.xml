@@ -28,6 +28,8 @@
 		<method name="execute" qualifiers="virtual">
 			<return type="void">
 			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
 			<description>
 				Executes the given modification. This is where the modification performs whatever function it is designed to do.
 			</description>
@@ -58,9 +60,9 @@
 		<method name="setup_modification" qualifiers="virtual">
 			<return type="void">
 			</return>
+			<argument index="0" name="modification_stack" type="SkeletonModificationStack2D">
+			</argument>
 			<description>
-				Sets up the modification so it can be executed. This function should be called automatically by the [SkeletonModificationStack2D] containing this modification.
-				If you need to initialize a modification before use, this is the place to do it!
 			</description>
 		</method>
 	</methods>
