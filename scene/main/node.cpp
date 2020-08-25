@@ -1327,6 +1327,9 @@ int Node::get_child_count() const {
 }
 
 Node *Node::get_child(int p_index) const {
+	if (p_index < 0) {
+		p_index += data.children.size();
+	}
 	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
 
 	return data.children[p_index];
