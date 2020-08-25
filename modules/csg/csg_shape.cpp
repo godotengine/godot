@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "csg_shape.h"
+#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "scene/3d/path_3d.h"
-#include "core/core_string_names.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
