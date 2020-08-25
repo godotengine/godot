@@ -375,11 +375,16 @@ private:
 	bool path_continuous_u;
 	bool path_joined;
 
+	bool path_interpolate;
+	Vector<Vector2> path_polygon2;
+	Ref<Curve> path_curve;
+
 	bool _is_editable_3d_polygon() const;
 	bool _has_editable_3d_polygon_no_depth() const;
 
 	void _path_changed();
 	void _path_exited();
+	void _path_curve_changed();
 
 protected:
 	static void _bind_methods();
@@ -425,6 +430,15 @@ public:
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_path_interpolate(bool p_path_interpolate);
+	bool get_path_interpolate() const;
+
+	void set_path_polygon2(const Vector<Vector2> &p_path_polygon2);
+	Vector<Vector2> get_path_polygon2() const;
+
+	void set_path_curve(const Ref<Curve> &p_path_curve);
+	Ref<Curve> get_path_curve() const;
 
 	CSGPolygon3D();
 };

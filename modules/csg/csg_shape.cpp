@@ -31,6 +31,7 @@
 #include "csg_shape.h"
 #include "core/math/geometry_2d.h"
 #include "scene/3d/path_3d.h"
+#include "core/core_string_names.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -2044,6 +2045,62 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					lookat_dir = (p2 - p1).normalized();
 				}
 
+				bool do_interpolation = path_interpolate;
+				Vector<Vector2> median_polygon = final_polygon;
+				Vector<Vector2> modified_polygon;
+				Vector<Vector2> final_polygon2 = final_polygon;
+				float curve_pos = 1.0;
+				float curve_pos2 = 1.0;
+				Ref<Curve> interpolate_curve;
+
+				if (do_interpolation) {
+					if (!path_curve.is_null() && path_polygon2.size() == final_polygon.size()) {
+
+						final_polygon2 = path_polygon2;
+						if (Triangulate::get_area(final_polygon2) > 0) { 
+							final_polygon2.invert(); 
+						}
+
+						float a = 2.0;
+						for (int i = 0; i < final_polygon.size(); i++) { // Check if both polygons arrays are egal
+							if (median_polygon[i] != final_polygon2[i]) {
+								a = 1.0;
+								break;
+							}
+						}
+						for (int i = 0; i < final_polygon.size(); i++) { // active scaling if both array are egal and precalculate part of interpolation
+							modified_polygon.push_back(Vector2(final_polygon2[i].x * a - median_polygon[i].x, final_polygon2[i].y * a - median_polygon[i].y));
+						}
+
+						curve_pos2 = path_curve->interpolate(0); 
+
+						if (path_joined && curve_pos2 != path_curve->interpolate(1.0)) {
+
+							interpolate_curve = path_curve->duplicate(); // duplication because I need modify the curve for path_joined
+							int a = path_curve->get_point_count() - 1;
+
+							if (a > 0 && path_curve->get_point_position(a).x == 1.0) {
+								interpolate_curve->add_point(Vector2(1.0 - CMP_EPSILON, interpolate_curve->interpolate(1.0)));
+							}
+							interpolate_curve->add_point(Vector2(1.0, curve_pos2));
+
+						} else {
+							interpolate_curve = path_curve; // if no path_joined, the curve is not duplicated
+						}
+
+					} else {
+						do_interpolation = false;
+
+						if (path_curve.is_null()) {
+							WARN_PRINT("path_curve is null, interpolation not effective");
+						} 
+						if (path_polygon2.size() != final_polygon.size())
+						 {
+							WARN_PRINT("path_polygon2 size is different of polygon size, interpolation not effective");
+						}
+					}
+				}
+
 				for (int i = 0; i <= splits; i++) {
 					float ofs = i * path_interval;
 					if (ofs > bl) {
@@ -2081,6 +2138,23 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							u2 += (prev_xf.origin - xf.origin).length();
 						};
 
+						if (do_interpolation) {
+							curve_pos = curve_pos2;
+							curve_pos2 = interpolate_curve->interpolate((float) i / (float) splits);
+
+							for (int j = 0; j < final_polygon.size(); j++) { // interpolation : A + (B - A) * t
+
+								final_polygon.set(j, Vector2(
+									median_polygon[j].x + modified_polygon[j].x * curve_pos, 
+									median_polygon[j].y + modified_polygon[j].y * curve_pos
+								));
+								final_polygon2.set(j, Vector2( 
+									median_polygon[j].x + modified_polygon[j].x * curve_pos2, 
+									median_polygon[j].y + modified_polygon[j].y * curve_pos2
+								));
+							}
+						}
+
 						//put triangles where they belong
 						//add triangles for depth
 						for (int j = 0; j < final_polygon.size(); j++) {
@@ -2089,8 +2163,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							Vector3 v[4] = {
 								prev_xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
 								prev_xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
-								xf.xform(Vector3(final_polygon[j_n].x, final_polygon[j_n].y, 0)),
-								xf.xform(Vector3(final_polygon[j].x, final_polygon[j].y, 0)),
+								xf.xform(Vector3(final_polygon2[j_n].x, final_polygon2[j_n].y, 0)),
+								xf.xform(Vector3(final_polygon2[j].x, final_polygon2[j].y, 0))
 							};
 
 							Vector2 u[4] = {
@@ -2132,7 +2206,33 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						}
 					}
 
-					if (i == 0 && !path_joined) {
+					else if (!path_joined) { // i == 0
+					
+						if (do_interpolation) {						
+							Vector2 p;
+							for (int j = 0; j < final_polygon.size(); j++) {
+
+								final_polygon.set(j, Vector2( 
+									median_polygon[j].x + modified_polygon[j].x * curve_pos2, 
+									median_polygon[j].y + modified_polygon[j].y * curve_pos2
+								));
+								   p = final_polygon[j];
+
+								if (j == 0) { // need to duplicate code to set up var with the interpolation
+									final_polygon_min = p;
+									final_polygon_max = final_polygon_min;
+								} else {
+									if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
+									if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
+
+									if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
+									if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+								}
+							}
+							final_polygon_size = final_polygon_max - final_polygon_min;
+							triangles = Geometry::triangulate_polygon(final_polygon);
+						}
+
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 1, 2 };
@@ -2150,10 +2250,31 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					}
 
 					if (i == splits && !path_joined) {
+
+						if (do_interpolation) { 
+							Vector2 p;
+							for (int j = 0; j < final_polygon2.size(); j++) {
+   								p = final_polygon2[j];
+
+								if (j == 0) {
+									final_polygon_min = p;
+									final_polygon_max = final_polygon_min;
+								} else {
+									if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
+									if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
+
+									if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
+									if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+								}
+							}
+							final_polygon_size = final_polygon_max - final_polygon_min;
+							triangles = Geometry::triangulate_polygon(final_polygon2);
+						}
+
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
 								int src[3] = { 0, 2, 1 };
-								Vector2 p = final_polygon[triangles[j + src[k]]];
+								Vector2 p = final_polygon2[triangles[j + src[k]]];
 								Vector3 v = Vector3(p.x, p.y, 0);
 								facesw[face * 3 + k] = xf.xform(v);
 								uvsw[face * 3 + k] = (p - final_polygon_min) / final_polygon_size;
@@ -2266,6 +2387,17 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPolygon3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPolygon3D::get_smooth_faces);
 
+	ClassDB::bind_method(D_METHOD("set_path_interpolate", "path_interpolate"), &CSGPolygon::set_path_interpolate);
+	ClassDB::bind_method(D_METHOD("get_path_interpolate"), &CSGPolygon::get_path_interpolate);
+
+	ClassDB::bind_method(D_METHOD("set_path_polygon2", "path_polygon2"), &CSGPolygon::set_path_polygon2);
+	ClassDB::bind_method(D_METHOD("get_path_polygon2"), &CSGPolygon::get_path_polygon2);
+
+	ClassDB::bind_method(D_METHOD("set_path_curve", "path_curve"), &CSGPolygon::set_path_curve);
+	ClassDB::bind_method(D_METHOD("get_path_curve"), &CSGPolygon::get_path_curve);
+
+	ClassDB::bind_method(D_METHOD("_path_curve_changed"), &CSGPolygon::_path_curve_changed);
+
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &CSGPolygon3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_has_editable_3d_polygon_no_depth"), &CSGPolygon3D::_has_editable_3d_polygon_no_depth);
 
@@ -2282,6 +2414,9 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "StandardMaterial3D,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_interpolate"), "set_path_interpolate", "get_path_interpolate");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "path_polygon2"), "set_path_polygon2", "get_path_polygon2");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "path_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_path_curve", "get_path_curve");
 
 	BIND_ENUM_CONSTANT(MODE_DEPTH);
 	BIND_ENUM_CONSTANT(MODE_SPIN);
@@ -2424,6 +2559,54 @@ Ref<Material> CSGPolygon3D::get_material() const {
 	return material;
 }
 
+void CSGPolygon::set_path_interpolate(const bool p_path_interpolate) {
+	path_interpolate = p_path_interpolate;
+	if (path_polygon2.empty()) {
+		path_polygon2 = polygon;
+	}
+	_make_dirty();
+	update_gizmo();
+}
+
+bool CSGPolygon::get_path_interpolate() const {
+	return path_interpolate;
+}
+
+void CSGPolygon::set_path_polygon2(const Vector<Vector2> &p_path_polygon2) {
+	path_polygon2 = p_path_polygon2;
+	_make_dirty();
+	update_gizmo();
+}
+
+Vector<Vector2> CSGPolygon::get_path_polygon2() const {
+	return path_polygon2;
+}
+
+void CSGPolygon::set_path_curve(const Ref<Curve> &p_path_curve) {
+	// Cleanup previous connection if any
+	if (path_curve.is_valid()) {
+		path_curve->disconnect(CoreStringNames::get_singleton()->changed, this, "_path_curve_changed");
+	}
+	path_curve = p_path_curve;
+		// Connect to the curve so the line will update when it is changed
+	if (path_curve.is_valid()) {
+		path_curve->connect(CoreStringNames::get_singleton()->changed, this, "_path_curve_changed");
+	}
+	_make_dirty();
+	update_gizmo();
+}
+
+Ref<Curve> CSGPolygon::get_path_curve() const {
+	return path_curve;
+}
+
+void CSGPolygon::_path_curve_changed() {
+	if (path_interpolate) {
+		_make_dirty();
+		update_gizmo();
+	}
+}
+
 bool CSGPolygon3D::_is_editable_3d_polygon() const {
 	return true;
 }
@@ -2449,4 +2632,5 @@ CSGPolygon3D::CSGPolygon3D() {
 	path_continuous_u = false;
 	path_joined = false;
 	path_cache = nullptr;
+	path_interpolate = false;
 }
