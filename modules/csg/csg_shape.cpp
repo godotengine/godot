@@ -2057,35 +2057,34 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					if (!path_curve.is_null() && path_polygon2.size() == final_polygon.size()) {
 
 						final_polygon2 = path_polygon2;
-						if (Triangulate::get_area(final_polygon2) > 0) { 
+						if (Triangulate::get_area(final_polygon2) > 0) {
 							final_polygon2.invert(); 
 						}
 
-						float a = 2.0;
-						for (int i = 0; i < final_polygon.size(); i++) { // Check if both polygons arrays are egal
+						float p = 2.0;
+						for (int i = 0; i < final_polygon.size(); i++) {
 							if (median_polygon[i] != final_polygon2[i]) {
-								a = 1.0;
+								p = 1.0;
 								break;
 							}
 						}
-						for (int i = 0; i < final_polygon.size(); i++) { // active scaling if both array are egal and precalculate part of interpolation
-							modified_polygon.push_back(Vector2(final_polygon2[i].x * a - median_polygon[i].x, final_polygon2[i].y * a - median_polygon[i].y));
+						for (int i = 0; i < final_polygon.size(); i++) {
+							modified_polygon.push_back(Vector2(final_polygon2[i].x * p - median_polygon[i].x, final_polygon2[i].y * p - median_polygon[i].y));
 						}
 
-						curve_pos2 = path_curve->interpolate(0); 
+						curve_pos2 = path_curve->interpolate(0);
 
 						if (path_joined && curve_pos2 != path_curve->interpolate(1.0)) {
 
-							interpolate_curve = path_curve->duplicate(); // duplication because I need modify the curve for path_joined
-							int a = path_curve->get_point_count() - 1;
+							interpolate_curve = path_curve->duplicate();
 
-							if (a > 0 && path_curve->get_point_position(a).x == 1.0) {
+							if (path_curve->get_point_count() > 1 && path_curve->get_point_position(path_curve->get_point_count() - 1).x == 1.0) {
 								interpolate_curve->add_point(Vector2(1.0 - CMP_EPSILON, interpolate_curve->interpolate(1.0)));
 							}
 							interpolate_curve->add_point(Vector2(1.0, curve_pos2));
 
 						} else {
-							interpolate_curve = path_curve; // if no path_joined, the curve is not duplicated
+							interpolate_curve = path_curve;
 						}
 
 					} else {
@@ -2093,7 +2092,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 						if (path_curve.is_null()) {
 							WARN_PRINT("path_curve is null, interpolation not effective");
-						} 
+						}
 						if (path_polygon2.size() != final_polygon.size())
 						 {
 							WARN_PRINT("path_polygon2 size is different of polygon size, interpolation not effective");
@@ -2142,8 +2141,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							curve_pos = curve_pos2;
 							curve_pos2 = interpolate_curve->interpolate((float) i / (float) splits);
 
-							for (int j = 0; j < final_polygon.size(); j++) { // interpolation : A + (B - A) * t
-
+							for (int j = 0; j < final_polygon.size(); j++) { 
+								// A + (B - A) * t
 								final_polygon.set(j, Vector2(
 									median_polygon[j].x + modified_polygon[j].x * curve_pos, 
 									median_polygon[j].y + modified_polygon[j].y * curve_pos
@@ -2206,8 +2205,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						}
 					}
 
-					else if (!path_joined) { // i == 0
-					
+					else if (!path_joined) {
+						// i == 0
 						if (do_interpolation) {						
 							Vector2 p;
 							for (int j = 0; j < final_polygon.size(); j++) {
@@ -2218,7 +2217,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 								));
 								   p = final_polygon[j];
 
-								if (j == 0) { // need to duplicate code to set up var with the interpolation
+								if (j == 0) {
 									final_polygon_min = p;
 									final_polygon_max = final_polygon_min;
 								} else {
