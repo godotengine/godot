@@ -384,9 +384,14 @@ def no_verbose(sys, env):
     link_library_message = "{}Linking Static Library {}==> {}$TARGET{}".format(
         colors["red"], colors["purple"], colors["yellow"], colors["end"]
     )
+
     ranlib_library_message = "{}Ranlib Library         {}==> {}$TARGET{}".format(
         colors["red"], colors["purple"], colors["yellow"], colors["end"]
     )
+    # The progress percentage isn't shown before this message, so it needs to be prepended manually to keep alignment.
+    if show_progress:
+        ranlib_library_message = "       " + ranlib_library_message
+
     link_shared_library_message = "{}Linking Shared Library {}==> {}$TARGET{}".format(
         colors["red"], colors["purple"], colors["yellow"], colors["end"]
     )
