@@ -393,7 +393,7 @@ void TileMap::update_dirty_quadrants() {
 
 			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE ||
 					tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-				z_index += tile_set->autotile_get_z_index(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+				z_index += tile_set->subtile_get_z_index(c.id, Vector2(c.subtile_coordinate_x, c.subtile_coordinate_y));
 			}
 
 			RID canvas_item;
@@ -436,9 +436,9 @@ void TileMap::update_dirty_quadrants() {
 
 			Rect2 r = tile_set->tile_get_region(c.id);
 			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-				int spacing = tile_set->autotile_get_spacing(c.id);
-				r.size = tile_set->autotile_get_size(c.id);
-				r.position += (r.size + Vector2(spacing, spacing)) * Vector2(c.autotile_coord_x, c.autotile_coord_y);
+				int spacing = tile_set->subtile_get_spacing(c.id);
+				r.size = tile_set->subtile_get_size(c.id);
+				r.position += (r.size + Vector2(spacing, spacing)) * Vector2(c.subtile_coordinate_x, c.subtile_coordinate_y);
 			}
 
 			Size2 s;
@@ -542,7 +542,7 @@ void TileMap::update_dirty_quadrants() {
 			for (int j = 0; j < shapes.size(); j++) {
 				Ref<Shape2D> shape = shapes[j].shape;
 				if (shape.is_valid()) {
-					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[j].autotile_coord.x == c.autotile_coord_x && shapes[j].autotile_coord.y == c.autotile_coord_y)) {
+					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[j].subtile_coordinate.x == c.subtile_coordinate_x && shapes[j].subtile_coordinate.y == c.subtile_coordinate_y)) {
 						Transform2D xform;
 						xform.set_origin(offset.floor());
 
@@ -584,7 +584,7 @@ void TileMap::update_dirty_quadrants() {
 				Ref<NavigationPolygon> navpoly;
 				Vector2 npoly_ofs;
 				if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-					navpoly = tile_set->autotile_get_navigation_polygon(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+					navpoly = tile_set->subtile_get_navigation_polygon(c.id, Vector2(c.subtile_coordinate_x, c.subtile_coordinate_y));
 					npoly_ofs = Vector2();
 				} else {
 					navpoly = tile_set->tile_get_navigation_polygon(c.id);
@@ -657,7 +657,7 @@ void TileMap::update_dirty_quadrants() {
 
 			Ref<OccluderPolygon2D> occluder;
 			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
-				occluder = tile_set->autotile_get_light_occluder(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+				occluder = tile_set->subtile_get_light_occluder(c.id, Vector2(c.subtile_coordinate_x, c.subtile_coordinate_y));
 			} else {
 				occluder = tile_set->tile_get_light_occluder(c.id);
 			}
@@ -828,13 +828,13 @@ void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_
 }
 
 void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
-	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_data["id"], v_flip_h = p_data["flip_h"], v_flip_v = p_data["flip_y"], v_transpose = p_data["transpose"], v_autotile_coord = p_data["auto_coord"];
-	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_autotile_coord };
+	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_data["id"], v_flip_h = p_data["flip_h"], v_flip_v = p_data["flip_y"], v_transpose = p_data["transpose"], v_subtile_coordinate = p_data["subtile_coordinate"];
+	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_subtile_coordinate };
 	Callable::CallError ce;
 	call("set_cell", args, 7, ce);
 }
 
-void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
+void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_subtile_coordinate) {
 	PosKey pk(p_x, p_y);
 
 	Map<PosKey, Cell>::Element *E = tile_map.find(pk);
@@ -872,7 +872,7 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 	} else {
 		ERR_FAIL_COND(!Q); // quadrant should exist...
 
-		if (E->get().id == p_tile && E->get().flip_h == p_flip_x && E->get().flip_v == p_flip_y && E->get().transpose == p_transpose && E->get().autotile_coord_x == (uint16_t)p_autotile_coord.x && E->get().autotile_coord_y == (uint16_t)p_autotile_coord.y) {
+		if (E->get().id == p_tile && E->get().flip_h == p_flip_x && E->get().flip_v == p_flip_y && E->get().transpose == p_transpose && E->get().subtile_coordinate_x == (uint16_t)p_subtile_coordinate.x && E->get().subtile_coordinate_y == (uint16_t)p_subtile_coordinate.y) {
 			return; //nothing changed
 		}
 	}
@@ -883,8 +883,8 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 	c.flip_h = p_flip_x;
 	c.flip_v = p_flip_y;
 	c.transpose = p_transpose;
-	c.autotile_coord_x = (uint16_t)p_autotile_coord.x;
-	c.autotile_coord_y = (uint16_t)p_autotile_coord.y;
+	c.subtile_coordinate_x = (uint16_t)p_subtile_coordinate.x;
+	c.subtile_coordinate_y = (uint16_t)p_subtile_coordinate.y;
 
 	_make_quadrant_dirty(Q);
 	used_size_cache_dirty = true;
@@ -993,22 +993,22 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 				}
 			}
 			Vector2 coord = tile_set->autotile_get_subtile_for_bitmask(id, mask, this, Vector2(p_x, p_y));
-			E->get().autotile_coord_x = (int)coord.x;
-			E->get().autotile_coord_y = (int)coord.y;
+			E->get().subtile_coordinate_x = (int)coord.x;
+			E->get().subtile_coordinate_y = (int)coord.y;
 
 			PosKey qk = p.to_quadrant(_get_quadrant_size());
 			Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 			_make_quadrant_dirty(Q);
 
 		} else if (tile_set->tile_get_tile_mode(id) == TileSet::SINGLE_TILE) {
-			E->get().autotile_coord_x = 0;
-			E->get().autotile_coord_y = 0;
+			E->get().subtile_coordinate_x = 0;
+			E->get().subtile_coordinate_y = 0;
 		} else if (tile_set->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
 			if (tile_set->autotile_get_bitmask(id, Vector2(p_x, p_y)) == TileSet::BIND_CENTER) {
 				Vector2 coord = tile_set->atlastile_get_subtile_by_priority(id, this, Vector2(p_x, p_y));
 
-				E->get().autotile_coord_x = (int)coord.x;
-				E->get().autotile_coord_y = (int)coord.y;
+				E->get().subtile_coordinate_x = (int)coord.x;
+				E->get().subtile_coordinate_y = (int)coord.y;
 			}
 		}
 	}
@@ -1078,7 +1078,7 @@ bool TileMap::is_cell_transposed(int p_x, int p_y) const {
 	return E->get().transpose;
 }
 
-void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) {
+void TileMap::set_cell_subtile_coordinate(int p_x, int p_y, const Vector2 &p_subtile_coordinate) {
 	PosKey pk(p_x, p_y);
 
 	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
@@ -1088,8 +1088,8 @@ void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) 
 	}
 
 	Cell c = E->get();
-	c.autotile_coord_x = p_coord.x;
-	c.autotile_coord_y = p_coord.y;
+	c.subtile_coordinate_x = p_subtile_coordinate.x;
+	c.subtile_coordinate_y = p_subtile_coordinate.y;
 	tile_map[pk] = c;
 
 	PosKey qk = pk.to_quadrant(_get_quadrant_size());
@@ -1102,16 +1102,16 @@ void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) 
 	_make_quadrant_dirty(Q);
 }
 
-Vector2 TileMap::get_cell_autotile_coord(int p_x, int p_y) const {
+Vector2 TileMap::get_cell_subtile_coordinate(int p_x, int p_y) const {
 	PosKey pk(p_x, p_y);
 
 	const Map<PosKey, Cell>::Element *E = tile_map.find(pk);
 
 	if (!E) {
-		return Vector2();
+		return Vector2(Math_INF, Math_INF);
 	}
 
-	return Vector2(E->get().autotile_coord_x, E->get().autotile_coord_y);
+	return Vector2(E->get().subtile_coordinate_x, E->get().subtile_coordinate_y);
 }
 
 void TileMap::_recreate_quadrants() {
@@ -1237,8 +1237,8 @@ Vector<int> TileMap::_get_tile_data() const {
 			val |= (1 << 31);
 		}
 		encode_uint32(val, &ptr[4]);
-		encode_uint16(E->get().autotile_coord_x, &ptr[8]);
-		encode_uint16(E->get().autotile_coord_y, &ptr[10]);
+		encode_uint16(E->get().subtile_coordinate_x, &ptr[8]);
+		encode_uint16(E->get().subtile_coordinate_y, &ptr[10]);
 		idx += 3;
 	}
 
@@ -1764,7 +1764,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &TileMap::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &TileMap::get_occluder_light_mask);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose", "autotile_coord"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
+	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose", "subtile_coordinate"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("set_cellv", "position", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_celld", "position", "data"), &TileMap::_set_celld);
 	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
@@ -1773,7 +1773,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
 
-	ClassDB::bind_method(D_METHOD("get_cell_autotile_coord", "x", "y"), &TileMap::get_cell_autotile_coord);
+	ClassDB::bind_method(D_METHOD("get_cell_subtile_coordinate", "x", "y"), &TileMap::get_cell_subtile_coordinate);
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);

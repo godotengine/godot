@@ -35,7 +35,7 @@
 				Returns the tile index of the given cell. If no tile exists in the cell, returns [constant INVALID_CELL].
 			</description>
 		</method>
-		<method name="get_cell_autotile_coord" qualifiers="const">
+		<method name="get_cell_subtile_coordinate" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="x" type="int">
@@ -43,7 +43,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the coordinate (subtile column and row) of the autotile variation in the tileset. Returns a zero vector if the cell doesn't have autotiling.
+				Returns the coordinate (subtile column and row) of the tile variation in the tileset. Returns a [constant Vector2.INF] if the cell is [constant INVALID_CELL].
 			</description>
 		</method>
 		<method name="get_cellv" qualifiers="const">
@@ -156,20 +156,20 @@
 			</argument>
 			<argument index="5" name="transpose" type="bool" default="false">
 			</argument>
-			<argument index="6" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="6" name="subtile_coordinate" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Sets the tile index for the cell given by a Vector2.
 				An index of [code]-1[/code] clears the cell.
-				Optionally, the tile can also be flipped, transposed, or given autotile coordinates. The autotile coordinate refers to the column and row of the subtile.
+				Optionally, the tile can also be flipped, transposed, or given subtile coordinate. The subtile coordinate refers to the column and row of the subtile.
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
 				[codeblock]
-				func set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				func set_cell(x, y, tile = false, flip_x = false, flip_y = false, transpose = false, subtile_coordinate = Vector2())
 				    # Write your custom logic here.
 				    # To call the default method:
-				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				    .set_cell(x, y, tile, flip_x, flip_y, transpose, subtile_coordinate)
 				[/codeblock]
 			</description>
 		</method>
