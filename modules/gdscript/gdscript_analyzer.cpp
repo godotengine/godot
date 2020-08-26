@@ -302,6 +302,16 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 		return ERR_PARSE_ERROR;
 	}
 
+	// Check for cyclic inheritance.
+	const GDScriptParser::ClassNode *base_class = result.class_type;
+	while (base_class) {
+		if (base_class->fqcn == p_class->fqcn) {
+			push_error("Cyclic inheritance.", p_class);
+			return ERR_PARSE_ERROR;
+		}
+		base_class = base_class->base_type.class_type;
+	}
+
 	p_class->base_type = result;
 	class_type.native_type = result.native_type;
 	p_class->set_datatype(class_type);
@@ -309,7 +319,10 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 	if (p_recursive) {
 		for (int i = 0; i < p_class->members.size(); i++) {
 			if (p_class->members[i].type == GDScriptParser::ClassNode::Member::CLASS) {
-				resolve_inheritance(p_class->members[i].m_class, true);
+				Error err = resolve_inheritance(p_class->members[i].m_class, true);
+				if (err) {
+					return err;
+				}
 			}
 		}
 	}
