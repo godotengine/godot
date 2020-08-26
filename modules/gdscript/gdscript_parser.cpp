@@ -1355,7 +1355,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			advance();
 			ReturnNode *n_return = alloc_node<ReturnNode>();
 			if (!is_statement_end()) {
-				if (current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
+				if (current_function && current_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
 					push_error(R"(Constructor cannot return a value.)");
 				}
 				n_return->return_value = parse_expression(false);
