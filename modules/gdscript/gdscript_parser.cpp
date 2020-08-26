@@ -631,7 +631,6 @@ void GDScriptParser::parse_extends() {
 		current_class->extends_path = previous.literal;
 
 		if (!match(GDScriptTokenizer::Token::PERIOD)) {
-			end_statement("superclass path");
 			return;
 		}
 	}
