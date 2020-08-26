@@ -820,7 +820,6 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						break;
 					case GDScriptParser::ClassNode::Member::SIGNAL:
 						if (p_only_functions || outer) {
-							clss = clss->outer;
 							continue;
 						}
 						option = ScriptCodeCompletionOption(member.signal->identifier->name, ScriptCodeCompletionOption::KIND_SIGNAL);
