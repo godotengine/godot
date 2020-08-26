@@ -182,7 +182,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 				return ERR_PARSE_ERROR;
 			}
 
-			Error err = parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+			Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 			if (err != OK) {
 				push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", p_class->extends_path), p_class);
 				return err;
@@ -208,7 +208,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 						return ERR_PARSE_ERROR;
 					}
 
-					Error err = parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+					Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 					if (err != OK) {
 						push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 						return err;
@@ -227,7 +227,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 					return ERR_PARSE_ERROR;
 				}
 
-				Error err = parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+				Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 				if (err != OK) {
 					push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 					return err;
@@ -3254,6 +3254,9 @@ Error GDScriptAnalyzer::resolve_program() {
 	List<String> parser_keys;
 	depended_parsers.get_key_list(&parser_keys);
 	for (const List<String>::Element *E = parser_keys.front(); E != nullptr; E = E->next()) {
+		if (depended_parsers[E->get()].is_null()) {
+			return ERR_PARSE_ERROR;
+		}
 		depended_parsers[E->get()]->raise_status(GDScriptParserRef::FULLY_SOLVED);
 	}
 	depended_parsers.clear();
