@@ -113,6 +113,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 
 	Rect2 rect = ci->get_rect();
 	Transform2D xform = p_transform * ci->xform;
+	xform.elements[2] =  xform.elements[2].floor() ; // Clean the undesirable fractional part distorting the final display position
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
