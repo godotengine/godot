@@ -70,7 +70,6 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -83,7 +82,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -165,8 +163,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public GodotRenderView mRenderView;
 	private boolean godot_initialized = false;
 
-	private PopupWindow mKeyboardWindow;
-
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private Sensor mGravity;
@@ -223,23 +219,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		containerLayout = new FrameLayout(activity);
 		containerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-		// Create a popup window with an invisible layout for the virtual keyboard,
-		// so the view can be resized to get the vk height without resizing the main godot view.
-		final FrameLayout keyboardLayout = new FrameLayout(activity);
-		keyboardLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-		keyboardLayout.setVisibility(View.INVISIBLE);
-		mKeyboardWindow = new PopupWindow(keyboardLayout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		mKeyboardWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-		mKeyboardWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
-		mKeyboardWindow.setFocusable(true); // for the text edit to work
-		mKeyboardWindow.setTouchable(false); // inputs need to go through
-
 		// GodotEditText layout
 		GodotEditText editText = new GodotEditText(activity);
-		editText.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-		editText.setKeyboardView(keyboardLayout);
-		// ...add to keyboard layout
-		keyboardLayout.addView(editText);
+		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		// ...add to FrameLayout
+		containerLayout.addView(editText);
 
 		GodotLib.setup(command_line);
 
@@ -256,13 +240,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		editText.setView(mRenderView);
 		io.setEdit(editText);
 
-		keyboardLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+		view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
 				Point fullSize = new Point();
 				activity.getWindowManager().getDefaultDisplay().getSize(fullSize);
 				Rect gameSize = new Rect();
-				mKeyboardWindow.getContentView().getWindowVisibleDisplayFrame(gameSize);
+				mRenderView.getView().getWindowVisibleDisplayFrame(gameSize);
 
 				final int keyboardHeight = fullSize.y - gameSize.bottom;
 				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
@@ -619,21 +603,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
-
-		mRenderView.getView().post(new Runnable() {
-			@Override
-			public void run() {
-				mKeyboardWindow.showAtLocation(getActivity().getWindow().getDecorView(), Gravity.NO_GRAVITY, 0, 0);
-			}
-		});
-	}
-
-	@Override
 	public void onDestroy() {
-		mKeyboardWindow.dismiss();
-
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onMainDestroy();
 		}
