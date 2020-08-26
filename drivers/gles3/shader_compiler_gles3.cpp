@@ -112,6 +112,8 @@ static int _get_datatype_size(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_SAMPLEREXT:
 			return 16;
+		case SL::TYPE_STRUCT:
+			return 0;
 	}
 
 	ERR_FAIL_V(0);
@@ -181,6 +183,8 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_SAMPLEREXT:
 			return 16;
+		case SL::TYPE_STRUCT:
+			return 0;
 	}
 
 	ERR_FAIL_V(0);
@@ -360,12 +364,20 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		r_to_add += "\n";
 
 		String header;
-		header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
+		if (fnode->return_type == SL::TYPE_STRUCT) {
+			header = _mkid(fnode->return_struct_name) + " " + _mkid(fnode->name) + "(";
+		} else {
+			header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
+		}
 		for (int i = 0; i < fnode->arguments.size(); i++) {
 			if (i > 0) {
 				header += ", ";
 			}
-			header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
+			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
+				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
+			} else {
+				header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
+			}
 		}
 
 		header += ")\n";
@@ -397,6 +409,35 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					Pair<int *, int> &p = p_actions.render_mode_values[pnode->render_modes[i]];
 					*p.first = p.second;
 				}
+			}
+
+			// structs
+
+			for (int i = 0; i < pnode->vstructs.size(); i++) {
+				SL::StructNode *st = pnode->vstructs[i].shader_struct;
+				String struct_code;
+
+				struct_code += "struct ";
+				struct_code += _mkid(pnode->vstructs[i].name);
+				struct_code += " ";
+				struct_code += "{\n";
+				for (int j = 0; j < st->members.size(); j++) {
+					SL::MemberNode *m = st->members[j];
+					if (m->datatype == SL::TYPE_STRUCT) {
+						struct_code += _mkid(m->struct_name);
+					} else {
+						struct_code += _prestr(m->precision);
+						struct_code += _typestr(m->datatype);
+					}
+					struct_code += " ";
+					struct_code += m->name;
+					struct_code += ";\n";
+				}
+				struct_code += "}";
+				struct_code += ";\n";
+
+				r_gen_code.vertex_global += struct_code;
+				r_gen_code.fragment_global += struct_code;
 			}
 
 			int max_texture_uniforms = 0;
@@ -494,8 +535,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			for (int i = 0; i < pnode->vconstants.size(); i++) {
 				String gcode;
 				gcode += "const ";
-				gcode += _prestr(pnode->vconstants[i].precision);
-				gcode += _typestr(pnode->vconstants[i].type);
+				if (pnode->vconstants[i].type == SL::TYPE_STRUCT) {
+					gcode += _mkid(pnode->vconstants[i].type_str);
+				} else {
+					gcode += _prestr(pnode->vconstants[i].precision);
+					gcode += _typestr(pnode->vconstants[i].type);
+				}
 				gcode += " " + _mkid(String(pnode->vconstants[i].name));
 				gcode += "=";
 				gcode += _dump_node_code(pnode->vconstants[i].initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
@@ -541,6 +586,8 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
+		case SL::Node::TYPE_STRUCT: {
+		} break;
 		case SL::Node::TYPE_FUNCTION: {
 		} break;
 		case SL::Node::TYPE_BLOCK: {
@@ -572,8 +619,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			if (vdnode->is_const) {
 				declaration += "const ";
 			}
-			declaration += _prestr(vdnode->precision);
-			declaration += _typestr(vdnode->datatype);
+			if (vdnode->datatype == SL::TYPE_STRUCT) {
+				declaration += _mkid(vdnode->struct_name);
+			} else {
+				declaration += _prestr(vdnode->precision);
+				declaration += _typestr(vdnode->datatype);
+			}
 			for (int i = 0; i < vdnode->declarations.size(); i++) {
 				if (i > 0) {
 					declaration += ",";
@@ -633,8 +684,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			if (adnode->is_const) {
 				declaration += "const ";
 			}
-			declaration += _prestr(adnode->precision);
-			declaration += _typestr(adnode->datatype);
+			if (adnode->datatype == SL::TYPE_STRUCT) {
+				declaration += _mkid(adnode->struct_name);
+			} else {
+				declaration += _prestr(adnode->precision);
+				declaration += _typestr(adnode->datatype);
+			}
 			for (int i = 0; i < adnode->declarations.size(); i++) {
 				if (i > 0) {
 					declaration += ",";
@@ -648,7 +703,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				int sz = adnode->declarations[i].initializer.size();
 				if (sz > 0) {
 					declaration += "=";
-					declaration += _typestr(adnode->datatype);
+					if (adnode->datatype == SL::TYPE_STRUCT) {
+						declaration += _mkid(adnode->struct_name);
+					} else {
+						declaration += _typestr(adnode->datatype);
+					}
 					declaration += "[";
 					declaration += itos(sz);
 					declaration += "]";
@@ -747,12 +806,15 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op);
 					break;
 				case SL::OP_CALL:
+				case SL::OP_STRUCT:
 				case SL::OP_CONSTRUCT: {
 					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
 
 					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
 
-					if (onode->op == SL::OP_CONSTRUCT) {
+					if (onode->op == SL::OP_STRUCT) {
+						code += _mkid(vnode->name);
+					} else if (onode->op == SL::OP_CONSTRUCT) {
 						code += String(vnode->name);
 					} else {
 						if (internal_functions.has(vnode->name)) {

@@ -1574,6 +1574,9 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 		pi.name = E->get();
 
 		switch (u.type) {
+			case ShaderLanguage::TYPE_STRUCT: {
+				pi.type = Variant::ARRAY;
+			} break;
 			case ShaderLanguage::TYPE_VOID: {
 				pi.type = Variant::NIL;
 			} break;
