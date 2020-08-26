@@ -99,6 +99,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	Rect2 rect = ci->get_rect();
 	Transform2D xform = p_transform * ci->xform;
 	Rect2 global_rect = xform.xform(rect);
+	xform.elements[2] =  xform.elements[2].floor() ; // Clean the undesirable fractional part distorting the final display position
 	global_rect.position += p_clip_rect.position;
 
 	if (ci->use_parent_material && p_material_owner)
