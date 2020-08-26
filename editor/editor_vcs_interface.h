@@ -134,6 +134,8 @@ protected:
 	Commit _convert_commit(Dictionary p_commit);
 	StatusFile _convert_status_file(Dictionary p_status_file);
 
+	void _popup_error(String p_msg);
+
 public:
 	static EditorVCSInterface *get_singleton();
 	static void set_singleton(EditorVCSInterface *p_singleton);

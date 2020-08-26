@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_vcs_interface.h"
+#include "editor_node.h"
 
 EditorVCSInterface *EditorVCSInterface::singleton = nullptr;
 
@@ -117,6 +118,10 @@ void EditorVCSInterface::_set_up_credentials(String p_username, String p_passwor
 	ERR_PRINT("Selected VCS addon does not implement \"" + String(__FUNCTION__) + "\"function. This warning will be suppressed.");
 }
 
+void EditorVCSInterface::_popup_error(String p_msg) {
+	EditorNode::get_singleton()->show_warning(p_msg, get_vcs_name() + TTR(": Error"));
+}
+
 bool EditorVCSInterface::initialize(String p_project_root_path) {
 	is_initialized = call("_initialize", p_project_root_path);
 	return is_initialized;
@@ -151,7 +156,6 @@ void EditorVCSInterface::unstage_file(String p_file_path) {
 
 void EditorVCSInterface::discard_file(String p_file_path) {
 	if (is_addon_ready()) {
-
 		call("_discard_file", p_file_path);
 	}
 }
@@ -170,7 +174,6 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_id
 	List<DiffFile> diff_files = List<DiffFile>();
 
 	if (is_addon_ready()) {
-
 		Array result = call("_get_file_diff", p_identifier, p_area);
 		for (int i = 0; i < result.size(); i++) {
 			diff_files.push_back(_convert_diff_file(result[i]));
@@ -183,7 +186,6 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_file_diff(String p_id
 List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits() {
 	List<EditorVCSInterface::Commit> commits = List<EditorVCSInterface::Commit>();
 	if (is_addon_ready()) {
-
 		Array result = call("_get_previous_commits");
 		for (int i = 0; i < result.size(); i++) {
 			commits.push_back(_convert_commit(result[i]));
@@ -196,7 +198,6 @@ List<String> EditorVCSInterface::get_branch_list() {
 	List<String> branch_list = List<String>();
 
 	if (is_addon_ready()) {
-
 		Array result = call("_get_branch_list");
 		for (int i = 0; i < result.size(); i++) {
 			branch_list.push_back(result[i]);
@@ -206,9 +207,7 @@ List<String> EditorVCSInterface::get_branch_list() {
 }
 
 bool EditorVCSInterface::checkout_branch(String p_branch) {
-
 	if (is_addon_ready()) {
-
 		return call("_checkout_branch", p_branch);
 	}
 	return false;
@@ -216,21 +215,18 @@ bool EditorVCSInterface::checkout_branch(String p_branch) {
 
 void EditorVCSInterface::pull() {
 	if (is_addon_ready()) {
-
 		call("_pull");
 	}
 }
 
 void EditorVCSInterface::push() {
 	if (is_addon_ready()) {
-
 		call("_push");
 	}
 }
 
 void EditorVCSInterface::fetch() {
 	if (is_addon_ready()) {
-
 		call("_fetch");
 	}
 }
@@ -260,7 +256,6 @@ String EditorVCSInterface::get_vcs_name() {
 }
 
 void EditorVCSInterface::set_up_credentials(String p_username, String p_password) {
-
 	call("_set_up_credentials", p_username, p_password);
 }
 
@@ -374,7 +369,6 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 }
 
 void EditorVCSInterface::_bind_methods() {
-
 	// Proxy end points that act as fallbacks to unavailability of a function in the VCS addon
 	ClassDB::bind_method(D_METHOD("_initialize", "project_root_path"), &EditorVCSInterface::_initialize);
 	ClassDB::bind_method(D_METHOD("_is_vcs_initialized"), &EditorVCSInterface::_is_vcs_initialized);
@@ -427,7 +421,7 @@ void EditorVCSInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_add_diff_hunks_into_diff_file", "p_diff_hunk", "p_line_diffs"), &EditorVCSInterface::_add_diff_hunks_into_diff_file);
 	ClassDB::bind_method(D_METHOD("_add_line_diffs_into_diff_hunk", "p_diff_files", "p_diff_hunks"), &EditorVCSInterface::_add_line_diffs_into_diff_hunk);
-
+	ClassDB::bind_method(D_METHOD("_popup_error", "p_msg"), &EditorVCSInterface::_popup_error);
 	ADD_SIGNAL(MethodInfo("stage_area_refreshed"));
 
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_NEW);
