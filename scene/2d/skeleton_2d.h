@@ -74,6 +74,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	Transform2D cache_transform;
+	bool copy_transform_to_cache = true;
+
 	void set_rest(const Transform2D &p_rest);
 	Transform2D get_rest() const;
 	void apply_rest();
@@ -121,7 +124,7 @@ class Skeleton2D : public Node2D {
 		Transform2D accum_transform;
 		Transform2D rest_inverse;
 
-		Transform2D local_pose_cache;
+		//Transform2D local_pose_cache;
 		Transform2D local_pose_override;
 		float local_pose_override_amount = 0;
 		bool local_pose_override_persistent = false;

@@ -112,6 +112,9 @@ void Bone2D::_notification(int p_what) {
 			skeleton->_make_bone_setup_dirty();
 		}
 
+		cache_transform = get_transform();
+		copy_transform_to_cache = true;
+
 #ifdef TOOLS_ENABLED
 		// Only draw the gizmo in the editor!
 		if (Engine::get_singleton()->is_editor_hint() == false) {
@@ -124,6 +127,9 @@ void Bone2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		if (skeleton) {
 			skeleton->_make_transform_dirty();
+		}
+		if (copy_transform_to_cache) {
+			cache_transform = get_transform();
 		}
 #ifdef TOOLS_ENABLED
 		// Only draw the gizmo in the editor!
@@ -145,6 +151,9 @@ void Bone2D::_notification(int p_what) {
 		if (skeleton) {
 			skeleton->_make_bone_setup_dirty();
 		}
+		if (copy_transform_to_cache) {
+			cache_transform = get_transform();
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -159,6 +168,7 @@ void Bone2D::_notification(int p_what) {
 			skeleton = nullptr;
 		}
 		parent_bone = nullptr;
+		set_transform(cache_transform);
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -503,6 +513,7 @@ Bone2D::Bone2D() {
 	for (int i = 0; i < 3; i++) {
 		rest[i] = Vector2(0, 0);
 	}
+	copy_transform_to_cache = true;
 }
 
 Bone2D::~Bone2D() {
@@ -700,10 +711,9 @@ void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
 		return;
 	}
 
-	// Cache the transform of the Bone2D before we apply any modifications to it.
+	// Do not cache the transform changes caused by the modifications!
 	for (int i = 0; i < bones.size(); i++) {
-		bones.write[i].local_pose_cache = bones[i].bone->get_transform();
-		bones[i].bone->set_transform(bones.write[i].local_pose_cache);
+		bones[i].bone->copy_transform_to_cache = false;
 	}
 
 	if (modification_stack->skeleton != this) {
@@ -714,16 +724,14 @@ void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
 
 	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
 	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
-		// A hack: Override the CanvasItem transform using the RenderingServer so the local pose override is taken into account.
 		for (int i = 0; i < bones.size(); i++) {
 			if (bones[i].local_pose_override_amount > 0) {
 				bones[i].bone->set_meta("_local_pose_override_enabled_", true);
-				bones[i].bone->set_transform(bones[i].local_pose_cache);
 
-				Transform2D final_trans = bones[i].local_pose_cache;
+				Transform2D final_trans = bones[i].bone->cache_transform;
 				final_trans = final_trans.interpolate_with(bones[i].local_pose_override, bones[i].local_pose_override_amount);
-
-				RenderingServer::get_singleton()->canvas_item_set_transform(bones[i].bone->get_canvas_item(), final_trans);
+				bones[i].bone->set_transform(final_trans);
+				bones[i].bone->propagate_call("force_update_transform");
 
 				if (bones[i].local_pose_override_persistent) {
 					bones.write[i].local_pose_override_amount = 0.0;
@@ -731,14 +739,14 @@ void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
 			} else {
 				// TODO: see if there is a way to undo the override without having to resort to setting every bone's transform.
 				bones[i].bone->remove_meta("_local_pose_override_enabled_");
-				bones[i].bone->set_transform(bones.write[i].local_pose_cache);
-				RenderingServer::get_singleton()->canvas_item_set_transform(bones[i].bone->get_canvas_item(), bones[i].local_pose_cache);
+				bones[i].bone->set_transform(bones[i].bone->cache_transform);
 			}
 		}
-	} else {
-		for (int i = 0; i < bones.size(); i++) {
-			bones[i].bone->set_transform(bones[i].local_pose_cache);
-		}
+	}
+
+	// Cache any future transform changes
+	for (int i = 0; i < bones.size(); i++) {
+		bones[i].bone->copy_transform_to_cache = true;
 	}
 }
 
