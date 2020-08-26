@@ -392,15 +392,23 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 
 	bool match = false;
 	if (get_keycode() == 0) {
-		uint32_t code = get_physical_keycode_with_modifiers();
-		uint32_t event_code = key->get_physical_keycode_with_modifiers();
+		uint32_t code = get_physical_keycode();
+		uint32_t event_code = key->get_physical_keycode();
 
-		match = get_physical_keycode() == key->get_physical_keycode() && (!key->is_pressed() || (code & event_code) == code);
+		// Get modifiers without keycode
+		uint32_t mods = get_physical_keycode_with_modifiers() & ~code;
+		uint32_t event_mods = key->get_physical_keycode_with_modifiers() & ~event_code;
+
+		match = code == event_code && (mods & event_mods) == mods;
 	} else {
-		uint32_t code = get_keycode_with_modifiers();
-		uint32_t event_code = key->get_keycode_with_modifiers();
+		uint32_t code = get_keycode();
+		uint32_t event_code = key->get_keycode();
 
-		match = get_keycode() == key->get_keycode() && (!key->is_pressed() || (code & event_code) == code);
+		// Get modifiers without keycode
+		uint32_t mods = get_keycode_with_modifiers() & ~code;
+		uint32_t event_mods = key->get_keycode_with_modifiers() & ~event_code;
+
+		match = code == event_code && (mods & event_mods) == mods;
 	}
 	if (match) {
 		if (p_pressed != nullptr) {
