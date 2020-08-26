@@ -7,7 +7,7 @@
 		Light3D is the [i]abstract[/i] base class for light nodes. As it can't be instanced, it shouldn't be used directly. Other types of light nodes inherit from it. Light3D contains the common variables and parameters used for lighting.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_param" qualifiers="const">
@@ -77,6 +77,8 @@
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast shadows.
 		</member>
+		<member name="shadow_fog_fade" type="float" setter="set_param" getter="get_param" default="1.0">
+		</member>
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="2.0">
 			Offsets the lookup into the shadow map by the object's normal. This can be used to reduce self-shadowing artifacts without using [member shadow_bias]. In practice, this value should be tweaked along with [member shadow_bias] to reduce artifacts as much as possible.
 		</member>
@@ -138,10 +140,12 @@
 		<constant name="PARAM_SHADOW_BLUR" value="16" enum="Param">
 			Constant for accessing [member shadow_blur].
 		</constant>
-		<constant name="PARAM_TRANSMITTANCE_BIAS" value="17" enum="Param">
+		<constant name="PARAM_SHADOW_VOLUMETRIC_FOG_FADE" value="17" enum="Param">
+		</constant>
+		<constant name="PARAM_TRANSMITTANCE_BIAS" value="18" enum="Param">
 			Constant for accessing [member shadow_transmittance_bias].
 		</constant>
-		<constant name="PARAM_MAX" value="18" enum="Param">
+		<constant name="PARAM_MAX" value="19" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">

@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
+		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">
@@ -690,52 +690,19 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="color" type="Color">
+			<argument index="2" name="light_color" type="Color">
 			</argument>
-			<argument index="3" name="sun_color" type="Color">
+			<argument index="3" name="light_energy" type="float">
 			</argument>
-			<argument index="4" name="sun_amount" type="float">
+			<argument index="4" name="sun_scatter" type="float">
 			</argument>
-			<description>
-				Sets the variables to be used with the scene fog. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_fog_depth">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
+			<argument index="5" name="density" type="float">
 			</argument>
-			<argument index="1" name="enable" type="bool">
+			<argument index="6" name="height" type="float">
 			</argument>
-			<argument index="2" name="depth_begin" type="float">
-			</argument>
-			<argument index="3" name="depth_end" type="float">
-			</argument>
-			<argument index="4" name="depth_curve" type="float">
-			</argument>
-			<argument index="5" name="transmit" type="bool">
-			</argument>
-			<argument index="6" name="transmit_curve" type="float">
+			<argument index="7" name="height_density" type="float">
 			</argument>
 			<description>
-				Sets the variables to be used with the fog depth effect. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_fog_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="min_height" type="float">
-			</argument>
-			<argument index="3" name="max_height" type="float">
-			</argument>
-			<argument index="4" name="height_curve" type="float">
-			</argument>
-			<description>
-				Sets the variables to be used with the fog height effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_glow">
@@ -3252,9 +3219,9 @@
 		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</constant>
-		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="17" enum="LightParam">
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="18" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="18" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="19" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">

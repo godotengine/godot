@@ -56,6 +56,8 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -75,6 +77,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -148,8 +151,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	private void setButtonPausedState(boolean paused) {
 		mStatePaused = paused;
-		int stringResourceID = paused ? R.string.text_button_resume :
-										R.string.text_button_pause;
+		int stringResourceID = paused ? R.string.text_button_resume : R.string.text_button_pause;
 		mPauseButton.setText(stringResourceID);
 	}
 
@@ -159,8 +161,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private ViewGroup containerLayout;
 	public GodotRenderView mRenderView;
 	private boolean godot_initialized = false;
-
-	private GodotEditText mEditText;
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
@@ -218,6 +218,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		containerLayout = new FrameLayout(activity);
 		containerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
+		// GodotEditText layout
+		GodotEditText editText = new GodotEditText(activity);
+		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+				(int)getResources().getDimension(R.dimen.text_edit_height)));
+		// ...add to FrameLayout
+		containerLayout.addView(editText);
+
 		GodotLib.setup(command_line);
 
 		final String videoDriver = GodotLib.getGlobal("rendering/quality/driver/driver_name");
@@ -230,9 +237,21 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		View view = mRenderView.getView();
 		containerLayout.addView(view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		editText.setView(mRenderView);
+		io.setEdit(editText);
 
-		mEditText = new GodotEditText(activity, mRenderView);
-		io.setEdit(mEditText);
+		view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				Point fullSize = new Point();
+				activity.getWindowManager().getDefaultDisplay().getSize(fullSize);
+				Rect gameSize = new Rect();
+				mRenderView.getView().getWindowVisibleDisplayFrame(gameSize);
+
+				final int keyboardHeight = fullSize.y - gameSize.bottom;
+				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+			}
+		});
 
 		mRenderView.queueOnRenderThread(new Runnable() {
 			@Override
@@ -448,7 +467,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final Activity activity = getActivity();
 		Window window = activity.getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		mClipboard = (ClipboardManager)activity.getSystemService(Context.CLIPBOARD_SERVICE);
 		pluginRegistry = GodotPluginRegistry.initializePluginRegistry(this);
 
@@ -585,21 +603,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
-
-		mRenderView.getView().post(new Runnable() {
-			@Override
-			public void run() {
-				mEditText.onInitView();
-			}
-		});
-	}
-
-	@Override
 	public void onDestroy() {
-		mEditText.onDestroyView();
-
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onMainDestroy();
 		}

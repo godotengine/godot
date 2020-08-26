@@ -261,33 +261,21 @@ Color Color::from_rgbe9995(uint32_t p_rgbe) {
 	return Color(rd, gd, bd, 1.0f);
 }
 
-static float _parse_col(const String &p_str, int p_ofs) {
-	int ig = 0;
+static int _parse_col4(const String &p_str, int p_ofs) {
+	char character = p_str[p_ofs];
 
-	for (int i = 0; i < 2; i++) {
-		int c = p_str[i + p_ofs];
-		int v = 0;
-
-		if (c >= '0' && c <= '9') {
-			v = c - '0';
-		} else if (c >= 'a' && c <= 'f') {
-			v = c - 'a';
-			v += 10;
-		} else if (c >= 'A' && c <= 'F') {
-			v = c - 'A';
-			v += 10;
-		} else {
-			return -1;
-		}
-
-		if (i == 0) {
-			ig += v * 16;
-		} else {
-			ig += v;
-		}
+	if (character >= '0' && character <= '9') {
+		return character - '0';
+	} else if (character >= 'a' && character <= 'f') {
+		return character + (10 - 'a');
+	} else if (character >= 'A' && character <= 'F') {
+		return character + (10 - 'A');
 	}
+	return -1;
+}
 
-	return ig;
+static int _parse_col8(const String &p_str, int p_ofs) {
+	return _parse_col4(p_str, p_ofs) * 16 + _parse_col4(p_str, p_ofs + 1);
 }
 
 Color Color::inverted() const {
@@ -302,49 +290,54 @@ Color Color::contrasted() const {
 	return c;
 }
 
-Color Color::html(const String &p_color) {
-	String color = p_color;
+Color Color::html(const String &p_rgba) {
+	String color = p_rgba;
 	if (color.length() == 0) {
 		return Color();
 	}
 	if (color[0] == '#') {
-		color = color.substr(1, color.length() - 1);
-	}
-	if (color.length() == 3 || color.length() == 4) {
-		String exp_color;
-		for (int i = 0; i < color.length(); i++) {
-			exp_color += color[i];
-			exp_color += color[i];
-		}
-		color = exp_color;
+		color = color.substr(1);
 	}
 
+	// If enabled, use 1 hex digit per channel instead of 2.
+	// Other sizes aren't in the HTML/CSS spec but we could add them if desired.
+	bool is_shorthand = color.length() < 5;
 	bool alpha = false;
 
 	if (color.length() == 8) {
 		alpha = true;
 	} else if (color.length() == 6) {
 		alpha = false;
+	} else if (color.length() == 4) {
+		alpha = true;
+	} else if (color.length() == 3) {
+		alpha = false;
 	} else {
-		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_color + ".");
+		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_rgba + ".");
 	}
 
-	int a = 255;
-	if (alpha) {
-		a = _parse_col(color, 0);
-		ERR_FAIL_COND_V_MSG(a < 0, Color(), "Invalid color code: " + p_color + ".");
+	float r, g, b, a = 1.0;
+	if (is_shorthand) {
+		r = _parse_col4(color, 0) / 15.0;
+		g = _parse_col4(color, 1) / 15.0;
+		b = _parse_col4(color, 2) / 15.0;
+		if (alpha) {
+			a = _parse_col4(color, 3) / 15.0;
+		}
+	} else {
+		r = _parse_col8(color, 0) / 255.0;
+		g = _parse_col8(color, 2) / 255.0;
+		b = _parse_col8(color, 4) / 255.0;
+		if (alpha) {
+			a = _parse_col8(color, 6) / 255.0;
+		}
 	}
+	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_rgba + ".");
+	ERR_FAIL_COND_V_MSG(g < 0, Color(), "Invalid color code: " + p_rgba + ".");
+	ERR_FAIL_COND_V_MSG(b < 0, Color(), "Invalid color code: " + p_rgba + ".");
+	ERR_FAIL_COND_V_MSG(a < 0, Color(), "Invalid color code: " + p_rgba + ".");
 
-	int from = alpha ? 2 : 0;
-
-	int r = _parse_col(color, from + 0);
-	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_color + ".");
-	int g = _parse_col(color, from + 2);
-	ERR_FAIL_COND_V_MSG(g < 0, Color(), "Invalid color code: " + p_color + ".");
-	int b = _parse_col(color, from + 4);
-	ERR_FAIL_COND_V_MSG(b < 0, Color(), "Invalid color code: " + p_color + ".");
-
-	return Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+	return Color(r, g, b, a);
 }
 
 bool Color::html_is_valid(const String &p_color) {
@@ -354,39 +347,20 @@ bool Color::html_is_valid(const String &p_color) {
 		return false;
 	}
 	if (color[0] == '#') {
-		color = color.substr(1, color.length() - 1);
+		color = color.substr(1);
 	}
 
-	bool alpha = false;
-
-	if (color.length() == 8) {
-		alpha = true;
-	} else if (color.length() == 6) {
-		alpha = false;
-	} else {
+	// Check if the amount of hex digits is valid.
+	int len = color.length();
+	if (!(len == 3 || len == 4 || len == 6 || len == 8)) {
 		return false;
 	}
 
-	if (alpha) {
-		int a = _parse_col(color, 0);
-		if (a < 0) {
+	// Check if each hex digit is valid.
+	for (int i = 0; i < len; i++) {
+		if (_parse_col4(color, i) == -1) {
 			return false;
 		}
-	}
-
-	int from = alpha ? 2 : 0;
-
-	int r = _parse_col(color, from + 0);
-	if (r < 0) {
-		return false;
-	}
-	int g = _parse_col(color, from + 2);
-	if (g < 0) {
-		return false;
-	}
-	int b = _parse_col(color, from + 4);
-	if (b < 0) {
-		return false;
 	}
 
 	return true;
@@ -438,7 +412,7 @@ String Color::to_html(bool p_alpha) const {
 	txt += _to_hex(g);
 	txt += _to_hex(b);
 	if (p_alpha) {
-		txt = _to_hex(a) + txt;
+		txt += _to_hex(a);
 	}
 	return txt;
 }

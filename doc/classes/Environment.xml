@@ -11,8 +11,8 @@
 		- Adjustments
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
+		<link title="Environment and post-processing">https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
+		<link title="Light transport in game engines">https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
 	</tutorials>
 	<methods>
 		<method name="is_glow_level_enabled" qualifiers="const">
@@ -95,47 +95,20 @@
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
 			The background mode. See [enum BGMode] for possible values.
 		</member>
-		<member name="fog_color" type="Color" setter="set_fog_color" getter="get_fog_color" default="Color( 0.5, 0.6, 0.7, 1 )">
-			The fog's [Color].
-		</member>
-		<member name="fog_depth_begin" type="float" setter="set_fog_depth_begin" getter="get_fog_depth_begin" default="10.0">
-			The fog's depth starting distance from the camera.
-		</member>
-		<member name="fog_depth_curve" type="float" setter="set_fog_depth_curve" getter="get_fog_depth_curve" default="1.0">
-			The fog depth's intensity curve. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
-		</member>
-		<member name="fog_depth_enabled" type="bool" setter="set_fog_depth_enabled" getter="is_fog_depth_enabled" default="true">
-			If [code]true[/code], the depth fog effect is enabled. When enabled, fog will appear in the distance (relative to the camera).
-		</member>
-		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
-			The fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera3D.far] value.
+		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.001">
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
-			If [code]true[/code], fog effects are enabled. [member fog_height_enabled] and/or [member fog_depth_enabled] must be set to [code]true[/code] to actually display fog.
+			If [code]true[/code], fog effects are enabled.
 		</member>
-		<member name="fog_height_curve" type="float" setter="set_fog_height_curve" getter="get_fog_height_curve" default="1.0">
-			The height fog's intensity. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
+		<member name="fog_height" type="float" setter="set_fog_height" getter="get_fog_height" default="0.0">
 		</member>
-		<member name="fog_height_enabled" type="bool" setter="set_fog_height_enabled" getter="is_fog_height_enabled" default="false">
-			If [code]true[/code], the height fog effect is enabled. When enabled, fog will appear in a defined height range, regardless of the distance from the camera. This can be used to simulate "deep water" effects with a lower performance cost compared to a dedicated shader.
+		<member name="fog_height_density" type="float" setter="set_fog_height_density" getter="get_fog_height_density" default="0.0">
 		</member>
-		<member name="fog_height_max" type="float" setter="set_fog_height_max" getter="get_fog_height_max" default="0.0">
-			The Y coordinate where the height fog will be the most intense. If this value is greater than [member fog_height_min], fog will be displayed from bottom to top. Otherwise, it will be displayed from top to bottom.
+		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color( 0.5, 0.6, 0.7, 1 )">
 		</member>
-		<member name="fog_height_min" type="float" setter="set_fog_height_min" getter="get_fog_height_min" default="10.0">
-			The Y coordinate where the height fog will be the least intense. If this value is greater than [member fog_height_max], fog will be displayed from top to bottom. Otherwise, it will be displayed from bottom to top.
+		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
 		</member>
-		<member name="fog_sun_amount" type="float" setter="set_fog_sun_amount" getter="get_fog_sun_amount" default="0.0">
-			The intensity of the depth fog color transition when looking towards the sun. The sun's direction is determined automatically using the DirectionalLight3D node in the scene.
-		</member>
-		<member name="fog_sun_color" type="Color" setter="set_fog_sun_color" getter="get_fog_sun_color" default="Color( 1, 0.9, 0.7, 1 )">
-			The depth fog's [Color] when looking towards the sun.
-		</member>
-		<member name="fog_transmit_curve" type="float" setter="set_fog_transmit_curve" getter="get_fog_transmit_curve" default="1.0">
-			The intensity of the fog light transmittance effect. Amount of light that the fog transmits.
-		</member>
-		<member name="fog_transmit_enabled" type="bool" setter="set_fog_transmit_enabled" getter="is_fog_transmit_enabled" default="false">
-			Enables fog's light transmission effect. If [code]true[/code], light will be more visible in the fog to simulate light scattering as in real life.
+		<member name="fog_sun_scatter" type="float" setter="set_fog_sun_scatter" getter="get_fog_sun_scatter" default="0.0">
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
 			The glow blending mode.
@@ -265,6 +238,22 @@
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
 			The white reference value for tonemapping. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR].
 		</member>
+		<member name="volumetric_fog_density" type="float" setter="set_volumetric_fog_density" getter="get_volumetric_fog_density" default="0.01">
+		</member>
+		<member name="volumetric_fog_detail_spread" type="float" setter="set_volumetric_fog_detail_spread" getter="get_volumetric_fog_detail_spread" default="2.0">
+		</member>
+		<member name="volumetric_fog_enabled" type="bool" setter="set_volumetric_fog_enabled" getter="is_volumetric_fog_enabled" default="false">
+		</member>
+		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="0.0">
+		</member>
+		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
+		</member>
+		<member name="volumetric_fog_light" type="Color" setter="set_volumetric_fog_light" getter="get_volumetric_fog_light" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
+		</member>
+		<member name="volumetric_fog_shadow_filter" type="int" setter="set_volumetric_fog_shadow_filter" getter="get_volumetric_fog_shadow_filter" enum="Environment.VolumetricFogShadowFilter" default="1">
+		</member>
 	</members>
 	<constants>
 		<constant name="BG_CLEAR_COLOR" value="0" enum="BGMode">
@@ -359,6 +348,14 @@
 		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="2" enum="SDFGIYScale">
+		</constant>
+		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED" value="0" enum="VolumetricFogShadowFilter">
+		</constant>
+		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_LOW" value="1" enum="VolumetricFogShadowFilter">
+		</constant>
+		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM" value="2" enum="VolumetricFogShadowFilter">
+		</constant>
+		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_HIGH" value="3" enum="VolumetricFogShadowFilter">
 		</constant>
 	</constants>
 </class>

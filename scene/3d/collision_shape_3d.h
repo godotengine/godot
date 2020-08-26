@@ -60,7 +60,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void make_convex_from_brothers();
+	void make_convex_from_siblings();
 
 	void set_shape(const Ref<Shape3D> &p_shape);
 	Ref<Shape3D> get_shape() const;

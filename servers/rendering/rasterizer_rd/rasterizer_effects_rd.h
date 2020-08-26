@@ -47,6 +47,7 @@
 #include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/screen_space_reflection_scale.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/shadow_reduce.glsl.gen.h"
+#include "servers/rendering/rasterizer_rd/shaders/sort.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/specular_merge.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/rendering/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
@@ -81,7 +82,8 @@ class RasterizerEffectsRD {
 		COPY_FLAG_GLOW_FIRST_PASS = (1 << 4),
 		COPY_FLAG_FLIP_Y = (1 << 5),
 		COPY_FLAG_FORCE_LUMINANCE = (1 << 6),
-		COPY_FLAG_ALL_SOURCE = (1 << 7)
+		COPY_FLAG_ALL_SOURCE = (1 << 7),
+		COPY_FLAG_HIGH_QUALITY_GLOW = (1 << 8)
 	};
 
 	struct CopyPushConstant {
@@ -544,8 +546,27 @@ class RasterizerEffectsRD {
 	struct ShadowReduce {
 		ShadowReduceShaderRD shader;
 		RID shader_version;
-		RID pipelines[2];
+		RID pipelines[SHADOW_REDUCE_MAX];
 	} shadow_reduce;
+
+	enum SortMode {
+		SORT_MODE_BLOCK,
+		SORT_MODE_STEP,
+		SORT_MODE_INNER,
+		SORT_MODE_MAX
+	};
+
+	struct Sort {
+		struct PushConstant {
+			uint32_t total_elements;
+			uint32_t pad[3];
+			int32_t job_params[4];
+		};
+
+		SortShaderRD shader;
+		RID shader_version;
+		RID pipelines[SORT_MODE_MAX];
+	} sort;
 
 	RID default_sampler;
 	RID default_mipmap_sampler;
@@ -586,7 +607,7 @@ public:
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst = false);
-	void gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
+	void gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
@@ -648,6 +669,8 @@ public:
 
 	void reduce_shadow(RID p_source_shadow, RID p_dest_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, int p_shrink_limit, RenderingDevice::ComputeListID compute_list);
 	void filter_shadow(RID p_shadow, RID p_backing_shadow, const Size2i &p_source_size, const Rect2i &p_source_rect, RS::EnvVolumetricFogShadowFilter p_filter, RenderingDevice::ComputeListID compute_list, bool p_vertical = true, bool p_horizontal = true);
+
+	void sort_buffer(RID p_uniform_set, int p_size);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();
