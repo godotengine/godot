@@ -183,7 +183,10 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 		if (E != values.front()) {
 			file->store_string("\n");
 		}
-		file->store_string("[" + E.key() + "]\n\n");
+		// Store section-less keys without any section header.
+		if (E.key() != "" || E != values.front()) {
+			file->store_string("[" + E.key() + "]\n\n");
+		}
 
 		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
 			String vstr;
@@ -270,7 +273,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 	int lines = 0;
 	String error_text;
 
-	String section;
+	String section = "";
 
 	while (true) {
 		assign = Variant();
