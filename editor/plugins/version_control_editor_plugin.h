@@ -105,6 +105,7 @@ private:
 	bool _load_addon(String p_path);
 	void _set_up();
 	void _set_credentials();
+	void _update_opened_tabs();
 
 	void _pull();
 	void _push();

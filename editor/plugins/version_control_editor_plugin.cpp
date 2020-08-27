@@ -228,7 +228,8 @@ void VersionControlEditorPlugin::_branch_item_selected(int index) {
 	_clear_diff();
 
 	// FIXIT: Editor is not adopting new changes
-	EditorFileSystem::get_singleton()->scan_changes();
+	// EditorFileSystem::get_singleton()->scan_changes();
+	_update_opened_tabs();
 }
 
 int VersionControlEditorPlugin::_get_item_count(Tree *p_tree) {
@@ -328,6 +329,17 @@ void VersionControlEditorPlugin::_pull() {
 	_refresh_branch_list();
 	_refresh_commit_list();
 	_clear_diff();
+	_update_opened_tabs();
+}
+
+void VersionControlEditorPlugin::_update_opened_tabs() {
+	Vector<EditorData::EditedScene> open_scenes = EditorNode::get_singleton()->get_editor_data().get_edited_scenes();
+	for (int i = 0; i < open_scenes.size(); i++) {
+		if (open_scenes[i].root == NULL) {
+			continue;
+		}
+		EditorNode::get_singleton()->reload_scene(open_scenes[i].path);
+	}
 }
 
 void VersionControlEditorPlugin::_push() {
