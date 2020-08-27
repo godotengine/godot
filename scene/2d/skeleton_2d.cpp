@@ -124,6 +124,7 @@ void Bone2D::_notification(int p_what) {
 		update();
 #endif // TOOLS_ENABLED
 	}
+
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		if (skeleton) {
 			skeleton->_make_transform_dirty();
@@ -147,6 +148,7 @@ void Bone2D::_notification(int p_what) {
 		}
 #endif // TOOLS_ENABLED
 	}
+
 	if (p_what == NOTIFICATION_MOVED_IN_PARENT) {
 		if (skeleton) {
 			skeleton->_make_bone_setup_dirty();
@@ -178,6 +180,12 @@ void Bone2D::_notification(int p_what) {
 	}
 
 #ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_EDITOR_PRE_SAVE || p_what == NOTIFICATION_EDITOR_POST_SAVE) {
+		Transform2D tmp_trans = get_transform();
+		set_transform(cache_transform);
+		cache_transform = tmp_trans;
+	}
+
 	// Bone2D Editor gizmo drawing:
 	if (p_what == NOTIFICATION_DRAW) {
 		// Only draw the gizmo in the editor!

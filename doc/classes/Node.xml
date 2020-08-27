@@ -969,6 +969,12 @@
 		<constant name="NOTIFICATION_POST_ENTER_TREE" value="27">
 			Notification received when the node is ready, just before [constant NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the node enters tree, instead of only once.
 		</constant>
+		<constant name="NOTIFICATION_EDITOR_PRE_SAVE" value="9001">
+			Notification received right before the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
+		</constant>
+		<constant name="NOTIFICATION_EDITOR_POST_SAVE" value="9002">
+			Notification received right after the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
+		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
 			Notification received from the OS when the mouse enters the game window.
 			Implemented on desktop and web platforms.
