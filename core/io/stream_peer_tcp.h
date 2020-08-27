@@ -79,6 +79,11 @@ public:
 	// Poll functions (wait or check for writable, readable)
 	Error poll(NetSocket::PollType p_type, int timeout = 0);
 
+	// Wait for socket readable,this will block until there has data to read
+	Error readable();
+	// Wait for socket writable,this will block until there has free buffer in socket's write buffer
+	Error writable();
+
 	// Read/Write from StreamPeer
 	Error put_data(const uint8_t *p_data, int p_bytes) override;
 	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;

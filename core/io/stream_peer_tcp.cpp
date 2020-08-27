@@ -273,6 +273,16 @@ Error StreamPeerTCP::poll(NetSocket::PollType p_type, int timeout) {
 	return _sock->poll(p_type, timeout);
 }
 
+Error StreamPeerTCP::readable() {
+	ERR_FAIL_COND_V(_sock.is_null() || !_sock->is_open(), ERR_UNAVAILABLE);
+	return _sock->poll(NetSocket::POLL_TYPE_IN, -1);
+}
+
+Error StreamPeerTCP::writable() {
+	ERR_FAIL_COND_V(_sock.is_null() || !_sock->is_open(), ERR_UNAVAILABLE);
+	return _sock->poll(NetSocket::POLL_TYPE_OUT, -1);
+}
+
 Error StreamPeerTCP::put_data(const uint8_t *p_data, int p_bytes) {
 	int total;
 	return write(p_data, p_bytes, total, true);
@@ -326,6 +336,8 @@ void StreamPeerTCP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);
 	ClassDB::bind_method(D_METHOD("disconnect_from_host"), &StreamPeerTCP::disconnect_from_host);
 	ClassDB::bind_method(D_METHOD("set_no_delay", "enabled"), &StreamPeerTCP::set_no_delay);
+	ClassDB::bind_method(D_METHOD("readable"), &StreamPeerTCP::readable);
+	ClassDB::bind_method(D_METHOD("writable"), &StreamPeerTCP::writable);
 
 	BIND_ENUM_CONSTANT(STATUS_NONE);
 	BIND_ENUM_CONSTANT(STATUS_CONNECTING);
