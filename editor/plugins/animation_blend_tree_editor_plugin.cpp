@@ -880,7 +880,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	if (blend_tree.is_null()) {
 		hide();
 	} else {
-    blend_tree->connect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
+		blend_tree->connect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 		blend_tree->connect("tree_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_tree_changed));
 		
 		_update_graph();
