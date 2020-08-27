@@ -49,11 +49,17 @@ GradientEdit::GradientEdit() {
 	popup = memnew(PopupPanel);
 	picker = memnew(ColorPicker);
 	popup->add_child(picker);
-
 	add_child(popup);
 
+	context_menu = memnew(PopupMenu);
+	context_menu->connect("id_pressed", callable_mp(this, &GradientEdit::_on_context_menu_item_selected));
+	context_menu->add_item(RTR("Invert Points"), CONTEXT_INVERT);
+	add_child(context_menu);
+
 	checker = Ref<ImageTexture>(memnew(ImageTexture));
-	Ref<Image> img = memnew(Image(checker_bg_png));
+	// We need to create an Image so it can be displayed. Otherwise, bright
+	// magenta is displayed as a background instead.
+	const Ref<Image> img = memnew(Image(checker_bg_png));
 }
 
 int GradientEdit::_get_point_from_pos(int x) {
@@ -106,15 +112,15 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	//Show color picker on double click.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_doubleclick() && mb->is_pressed()) {
+	// Show color picker on double-click.
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_doubleclick() && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		_show_color_picker();
 		accept_event();
 	}
 
-	//Delete point on right click
-	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
+	// Delete point on middle click.
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_MIDDLE && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		if (grabbed != -1) {
 			points.remove(grabbed);
@@ -126,8 +132,15 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	//Hold alt key to duplicate selected color
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed() && mb->get_alt()) {
+	// Show context menu on right click.
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+		context_menu->set_position(get_global_transform().xform(mb->get_position()));
+		context_menu->set_size(Size2(0, 0));
+		context_menu->popup();
+	}
+
+	// Hold Alt to duplicate the selected color.
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed() && mb->get_alt()) {
 		int x = mb->get_position().x;
 		grabbed = _get_point_from_pos(x);
 
@@ -150,13 +163,13 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	//select
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+	// Select.
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 		update();
 		int x = mb->get_position().x;
 		int total_w = get_size().width - get_size().height - SPACING;
 
-		//Check if color selector was clicked.
+		// Check if color selector was clicked.
 		if (x > total_w + SPACING) {
 			_show_color_picker();
 			return;
@@ -165,12 +178,12 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		grabbing = true;
 
 		grabbed = _get_point_from_pos(x);
-		//grab or select
+		// Grab or select.
 		if (grabbed != -1) {
 			return;
 		}
 
-		//insert
+		// Insert.
 		Gradient::Point newPoint;
 		newPoint.offset = CLAMP(x / float(total_w), 0, 1);
 
@@ -217,7 +230,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		emit_signal("ramp_changed");
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && !mb->is_pressed()) {
 		if (grabbing) {
 			grabbing = false;
 			emit_signal("ramp_changed");
@@ -291,6 +304,21 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		emit_signal("ramp_changed");
 
 		update();
+	}
+}
+
+void GradientEdit::_on_context_menu_item_selected(int p_action_id) {
+	switch (p_action_id) {
+		case CONTEXT_INVERT:
+			for (int i = 0; i < points.size(); ++i) {
+				points.write[i].offset = 1 - points[i].offset;
+			}
+
+			points.sort();
+			update();
+			emit_signal("ramp_changed");
+			accept_event();
+			break;
 	}
 }
 

@@ -41,6 +41,7 @@ class GradientEdit : public Control {
 
 	PopupPanel *popup;
 	ColorPicker *picker;
+	PopupMenu *context_menu;
 
 	Ref<ImageTexture> checker;
 
@@ -55,10 +56,16 @@ class GradientEdit : public Control {
 
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _on_context_menu_item_selected(int p_action_id);
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	enum ContextAction {
+		CONTEXT_INVERT,
+		CONTEXT_MAX,
+	};
+
 	void set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors);
 	Vector<float> get_offsets() const;
 	Vector<Color> get_colors() const;
