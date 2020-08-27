@@ -94,6 +94,8 @@ protected:
 
 	Camera2DProcessMode process_mode;
 
+	Size2 _get_camera_screen_size() const;
+
 protected:
 	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
