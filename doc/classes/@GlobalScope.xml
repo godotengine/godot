@@ -27,6 +27,9 @@
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>
+		<member name="EngineDebugger" type="EngineDebugger" setter="" getter="">
+			The [EngineDebugger] singleton.
+		</member>
 		<member name="Geometry2D" type="Geometry2D" setter="" getter="">
 			The [Geometry2D] singleton.
 		</member>
