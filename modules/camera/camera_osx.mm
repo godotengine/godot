@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 	Ref<CameraFeed> feed;
 	size_t width[2];
 	size_t height[2];
-	PoolVector<uint8_t> img_data[2];
+	Vector<uint8_t> img_data[2];
 
 	AVCaptureDeviceInput *input;
 	AVCaptureVideoDataOutput *output;
@@ -159,8 +159,8 @@
 				img_data[0].resize(new_width * new_height);
 			}
 
-			PoolVector<uint8_t>::Write w = img_data[0].write();
-			memcpy(w.ptr(), dataY, new_width * new_height);
+			uint8_t *w = img_data[0].ptrw();
+			memcpy(w, dataY, new_width * new_height);
 
 			img[0].instance();
 			img[0]->create(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
@@ -177,8 +177,8 @@
 				img_data[1].resize(2 * new_width * new_height);
 			}
 
-			PoolVector<uint8_t>::Write w = img_data[1].write();
-			memcpy(w.ptr(), dataCbCr, 2 * new_width * new_height);
+			uint8_t *w = img_data[1].ptrw();
+			memcpy(w, dataCbCr, 2 * new_width * new_height);
 
 			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
 			img[1].instance();
@@ -313,7 +313,12 @@ MyDeviceNotifications *device_notifications = nil;
 // CameraOSX - Subclass for our camera server on OSX
 
 void CameraOSX::update_feeds() {
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
+	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSArray *devices = session.devices;
+#else
 	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+#endif
 
 	// remove devices that are gone..
 	for (int i = feeds.size() - 1; i >= 0; i--) {
@@ -325,7 +330,6 @@ void CameraOSX::update_feeds() {
 		};
 	};
 
-	// add new devices..
 	for (AVCaptureDevice *device in devices) {
 		bool found = false;
 		for (int i = 0; i < feeds.size() && !found; i++) {

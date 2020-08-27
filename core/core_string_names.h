@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,14 +34,13 @@
 #include "core/string_name.h"
 
 class CoreStringNames {
-
 	friend void register_core_types();
 	friend void unregister_core_types();
 
 	static void create() { singleton = memnew(CoreStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	CoreStringNames();
@@ -90,6 +89,11 @@ public:
 	StringName g8;
 	StringName b8;
 	StringName a8;
+
+	StringName call;
+	StringName call_deferred;
+	StringName emit;
+	StringName notification;
 };
 
-#endif // SCENE_STRING_NAMES_H
+#endif // CORE_STRING_NAMES_H

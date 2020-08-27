@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ extern int godot_xhr_new();
 extern void godot_xhr_reset(int p_xhr_id);
 extern bool godot_xhr_free(int p_xhr_id);
 
-extern int godot_xhr_open(int p_xhr_id, const char *p_method, const char *p_url, const char *p_user = NULL, const char *p_password = NULL);
+extern int godot_xhr_open(int p_xhr_id, const char *p_method, const char *p_url, const char *p_user = nullptr, const char *p_password = nullptr);
 
 extern void godot_xhr_set_request_header(int p_xhr_id, const char *p_header, const char *p_value);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FuncRef" inherits="Reference" category="Core" version="3.2">
+<class name="FuncRef" inherits="Reference" version="4.0">
 	<brief_description>
 		Reference to a function in an object.
 	</brief_description>
@@ -36,7 +36,7 @@
 		<method name="set_function">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				The name of the referenced function to call on the object, without parentheses or any parameters.

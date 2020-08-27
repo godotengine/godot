@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Polygon2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Polygon2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		A 2D polygon.
 	</brief_description>
@@ -14,15 +14,17 @@
 			</return>
 			<argument index="0" name="path" type="NodePath">
 			</argument>
-			<argument index="1" name="weights" type="PoolRealArray">
+			<argument index="1" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
+				Adds a bone with the specified [code]path[/code] and [code]weights[/code].
 			</description>
 		</method>
 		<method name="clear_bones">
 			<return type="void">
 			</return>
 			<description>
+				Removes all bones from this [Polygon2D].
 			</description>
 		</method>
 		<method name="erase_bone">
@@ -31,12 +33,14 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Removes the specified bone from this [Polygon2D].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of bones in this [Polygon2D].
 			</description>
 		</method>
 		<method name="get_bone_path" qualifiers="const">
@@ -45,14 +49,16 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Returns the path to the node associated with the specified bone.
 			</description>
 		</method>
 		<method name="get_bone_weights" qualifiers="const">
-			<return type="PoolRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Returns the height values of the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_path">
@@ -63,6 +69,7 @@
 			<argument index="1" name="path" type="NodePath">
 			</argument>
 			<description>
+				Sets the path to the node associated with the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_weights">
@@ -70,9 +77,10 @@
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="weights" type="PoolRealArray">
+			<argument index="1" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
+				Sets the weight values for the specified bone.
 			</description>
 		</method>
 	</methods>
@@ -93,18 +101,28 @@
 		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert" default="false">
 			If [code]true[/code], polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code].
 		</member>
+		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
+			The normal map gives depth to the Polygon2D.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
+		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset applied to each vertex.
 		</member>
-		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" default="PoolVector2Array(  )">
+		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array(  )">
 			The polygon's list of vertices. The final point will be connected to the first.
-			[b]Note:[/b] This returns a copy of the [PoolVector2Array] rather than a reference.
+			[b]Note:[/b] This returns a copy of the [PackedVector2Array] rather than a reference.
 		</member>
 		<member name="polygons" type="Array" setter="set_polygons" getter="get_polygons" default="[  ]">
 		</member>
+		<member name="shininess" type="float" setter="set_shininess" getter="get_shininess" default="1.0">
+		</member>
 		<member name="skeleton" type="NodePath" setter="set_skeleton" getter="get_skeleton" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
+		</member>
+		<member name="specular_map" type="Texture2D" setter="set_specular_map" getter="get_specular_map">
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.
 		</member>
 		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2( 0, 0 )">
@@ -119,10 +137,10 @@
 		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale" default="Vector2( 1, 1 )">
 			Amount to multiply the [code]uv[/code] coordinates when using a [code]texture[/code]. Larger values make the texture smaller, and vice versa.
 		</member>
-		<member name="uv" type="PoolVector2Array" setter="set_uv" getter="get_uv" default="PoolVector2Array(  )">
+		<member name="uv" type="PackedVector2Array" setter="set_uv" getter="get_uv" default="PackedVector2Array(  )">
 			Texture coordinates for each vertex of the polygon. There should be one [code]uv[/code] per polygon vertex. If there are fewer, undefined vertices will use [code](0, 0)[/code].
 		</member>
-		<member name="vertex_colors" type="PoolColorArray" setter="set_vertex_colors" getter="get_vertex_colors" default="PoolColorArray(  )">
+		<member name="vertex_colors" type="PackedColorArray" setter="set_vertex_colors" getter="get_vertex_colors" default="PackedColorArray(  )">
 			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [code]color[/code].
 		</member>
 	</members>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@ jmethodID NetSocketAndroid::_multicast_lock_acquire = 0;
 jmethodID NetSocketAndroid::_multicast_lock_release = 0;
 
 void NetSocketAndroid::setup(jobject p_net_utils) {
-
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	net_utils = env->NewGlobalRef(p_net_utils);
@@ -70,11 +69,6 @@ NetSocket *NetSocketAndroid::_create_func() {
 
 void NetSocketAndroid::make_default() {
 	_create = _create_func;
-}
-
-NetSocketAndroid::NetSocketAndroid() :
-		wants_broadcast(false),
-		multicast_groups(0) {
 }
 
 NetSocketAndroid::~NetSocketAndroid() {

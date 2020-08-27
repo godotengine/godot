@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Decal" inherits="VisualInstance3D" version="4.0">
+	<brief_description>
+		Node that projects a texture onto a [MeshInstance3D].
+	</brief_description>
+	<description>
+		[Decal]s are used to project a texture onto a [Mesh] in the scene. Use Decals to add detail to a scene without affecting the underlying [Mesh]. They are often used to add weathering to building, add dirt or mud to the ground, or add variety to props. Decals can be moved at any time, making them suitable for things like blob shadows or laser sight dots.
+		They are made of an [AABB] and a group of [Texture2D]s specifying [Color], normal, ORM (ambient occlusion, roughness, metallic), and emission. Decals are projected within their [AABB] so altering the orientation of the Decal affects the direction in which they are projected. By default, Decals are projected down (i.e. from positive Y to negative Y).
+		The [Texture2D]s associated with the Decal are automatically stored in a texture atlas which is used for drawing the decals so all decals can be drawn at once. Godot uses clustered decals, meaning they are stored in cluster data and drawn when the mesh is drawn, they are not drawn as a postprocessing effect after.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture2D">
+			</return>
+			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
+			</argument>
+			<description>
+				Returns the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
+				For example, instead of [code]albedo_tex = $Decal.get_texture(Decal.TEXTURE_ALBEDO)[/code], use [code]albedo_tex = $Decal.texture_albedo[/code].
+				One case where this is better than accessing the texture directly is when you want to copy one Decal's textures to another. For example:
+				[codeblock]
+				for i in Decal.TEXTURE_MAX:
+				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
+			</argument>
+			<argument index="1" name="texture" type="Texture2D">
+			</argument>
+			<description>
+				Sets the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
+				For example, instead of [code]$Decal.set_texture(Decal.TEXTURE_ALBEDO, albedo_tex)[/code], use [code]$Decal.texture_albedo = albedo_tex[/code].
+				One case where this is better than accessing the texture directly is when you want to copy one Decal's textures to another. For example:
+				[codeblock]
+				for i in Decal.TEXTURE_MAX:
+				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="albedo_mix" type="float" setter="set_albedo_mix" getter="get_albedo_mix" default="1.0">
+			Blends the albedo [Color] of the decal with albedo [Color] of the underlying mesh.
+		</member>
+		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
+			Specifies which [member VisualInstance3D.layers] this decal will project on. By default, Decals affect all layers. This is used so you can specify which types of objects receive the Decal and which do not. This is especially useful so you an ensure that dynamic objects don't accidentally receive a Decal intended for the terrain under them.
+		</member>
+		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="10.0">
+			Distance from the camera at which the Decal begins to fade away.
+		</member>
+		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false">
+			If [code]true[/code], decals will smoothly fade away when far from the active [Camera3D] starting at [member distance_fade_begin]. The Decal will fade out over [member distance_fade_length], after which it will be culled and not sent to the shader at all. Use this to reduce the number of active Decals in a scene and thus improve performance.
+		</member>
+		<member name="distance_fade_length" type="float" setter="set_distance_fade_length" getter="get_distance_fade_length" default="1.0">
+			Distance over which the Decal fades. The Decal becomes slowly more transparent over this distance and is completely invisible at the end.
+		</member>
+		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
+			Energy multiplier for the emission texture. This will make the decal emit light at a higher intensity.
+		</member>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-extents[/code] to [code]extents[/code].
+		</member>
+		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
+			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB].
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+			Changes the [Color] of the Decal by multiplying it with this value.
+		</member>
+		<member name="normal_fade" type="float" setter="set_normal_fade" getter="get_normal_fade" default="0.0">
+			Fades the Decal if the angle between the Decal's [AABB] and the target surface becomes too large. A value of [code]0[/code] projects the Decal regardless of angle, a value of [code]1[/code] limits the Decal to surfaces that are nearly perpendicular.
+		</member>
+		<member name="texture_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] with the base [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
+		</member>
+		<member name="texture_emission" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] with the emission [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
+		</member>
+		<member name="texture_normal" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] with the per-pixel normalmap for the decal. Use this to add extra detail to decals.
+		</member>
+		<member name="texture_orm" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] storing ambient occlusion, roughness, and metallic for the decal. Use this to add extra detail to decals.
+		</member>
+		<member name="upper_fade" type="float" setter="set_upper_fade" getter="get_upper_fade" default="0.3">
+			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB].
+		</member>
+	</members>
+	<constants>
+		<constant name="TEXTURE_ALBEDO" value="0" enum="DecalTexture">
+			[Texture2D] corresponding to [member texture_albedo].
+		</constant>
+		<constant name="TEXTURE_NORMAL" value="1" enum="DecalTexture">
+			[Texture2D] corresponding to [member texture_normal].
+		</constant>
+		<constant name="TEXTURE_ORM" value="2" enum="DecalTexture">
+			[Texture2D] corresponding to [member texture_orm].
+		</constant>
+		<constant name="TEXTURE_EMISSION" value="3" enum="DecalTexture">
+			[Texture2D] corresponding to [member texture_emission].
+		</constant>
+		<constant name="TEXTURE_MAX" value="4" enum="DecalTexture">
+			Max size of [enum DecalTexture] enum.
+		</constant>
+	</constants>
+</class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureProgress" inherits="Range" category="Core" version="3.2">
+<class name="TextureProgress" inherits="Range" version="4.0">
 	<brief_description>
 		Texture-based progress bar. Useful for loading screens and life or stamina bars.
 	</brief_description>
@@ -58,15 +58,15 @@
 		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
 			The height of the 9-patch's top row.
 		</member>
-		<member name="texture_over" type="Texture" setter="set_over_texture" getter="get_over_texture">
-			[Texture] that draws over the progress bar. Use it to add highlights or an upper-frame that hides part of [member texture_progress].
+		<member name="texture_over" type="Texture2D" setter="set_over_texture" getter="get_over_texture">
+			[Texture2D] that draws over the progress bar. Use it to add highlights or an upper-frame that hides part of [member texture_progress].
 		</member>
-		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture">
-			[Texture] that clips based on the node's [code]value[/code] and [member fill_mode]. As [code]value[/code] increased, the texture fills up. It shows entirely when [code]value[/code] reaches [code]max_value[/code]. It doesn't show at all if [code]value[/code] is equal to [code]min_value[/code].
+		<member name="texture_progress" type="Texture2D" setter="set_progress_texture" getter="get_progress_texture">
+			[Texture2D] that clips based on the node's [code]value[/code] and [member fill_mode]. As [code]value[/code] increased, the texture fills up. It shows entirely when [code]value[/code] reaches [code]max_value[/code]. It doesn't show at all if [code]value[/code] is equal to [code]min_value[/code].
 			The [code]value[/code] property comes from [Range]. See [member Range.value], [member Range.min_value], [member Range.max_value].
 		</member>
-		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">
-			[Texture] that draws under the progress bar. The bar's background.
+		<member name="texture_under" type="Texture2D" setter="set_under_texture" getter="get_under_texture">
+			[Texture2D] that draws under the progress bar. The bar's background.
 		</member>
 		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over" default="Color( 1, 1, 1, 1 )">
 			Multiplies the color of the bar's [code]texture_over[/code] texture. The effect is similar to [member CanvasItem.modulate], except it only affects this specific texture instead of the entire node.
@@ -86,7 +86,7 @@
 			The [member texture_progress] fills from right to left.
 		</constant>
 		<constant name="FILL_TOP_TO_BOTTOM" value="2" enum="FillMode">
-			The [member texture_progress] fills from top to bototm.
+			The [member texture_progress] fills from top to bottom.
 		</constant>
 		<constant name="FILL_BOTTOM_TO_TOP" value="3" enum="FillMode">
 			The [member texture_progress] fills from bottom to top.

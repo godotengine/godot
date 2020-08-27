@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,6 @@ class FileAccess;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
-
 	GDCLASS(EditorFileSystemDirectory, Object);
 
 	String name;
@@ -104,13 +103,11 @@ public:
 };
 
 class EditorFileSystem : public Node {
-
 	GDCLASS(EditorFileSystem, Node);
 
 	_THREAD_SAFE_CLASS_
 
 	struct ItemAction {
-
 		enum Action {
 			ACTION_NONE,
 			ACTION_DIR_ADD,
@@ -129,9 +126,9 @@ class EditorFileSystem : public Node {
 
 		ItemAction() {
 			action = ACTION_NONE;
-			dir = NULL;
-			new_dir = NULL;
-			new_file = NULL;
+			dir = nullptr;
+			new_dir = nullptr;
+			new_file = nullptr;
 		}
 	};
 
@@ -145,6 +142,7 @@ class EditorFileSystem : public Node {
 	bool scanning;
 	bool importing;
 	bool first_scan;
+	bool scan_changes_pending;
 	float scan_total;
 	String filesystem_settings_version_for_import;
 	bool revalidate_import_files;
@@ -162,7 +160,6 @@ class EditorFileSystem : public Node {
 
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
-
 		String type;
 		uint64_t modification_time;
 		uint64_t import_modification_time;
@@ -177,7 +174,6 @@ class EditorFileSystem : public Node {
 	HashMap<String, FileCache> file_cache;
 
 	struct ScanProgress {
-
 		float low;
 		float hi;
 		mutable EditorProgressBG *progress;
@@ -239,7 +235,7 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String> > &group_files, Set<String> &groups_to_reimport);
+	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport);
 
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 

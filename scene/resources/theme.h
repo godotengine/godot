@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,26 +39,25 @@
 #include "scene/resources/texture.h"
 
 class Theme : public Resource {
-
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
 	void _emit_theme_changed();
 
-	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
-	HashMap<StringName, HashMap<StringName, Ref<StyleBox> > > style_map;
-	HashMap<StringName, HashMap<StringName, Ref<Font> > > font_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader> > > shader_map;
-	HashMap<StringName, HashMap<StringName, Color> > color_map;
-	HashMap<StringName, HashMap<StringName, int> > constant_map;
+	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
+	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
+	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
+	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
+	HashMap<StringName, HashMap<StringName, Color>> color_map;
+	HashMap<StringName, HashMap<StringName, int>> constant_map;
 
-	PoolVector<String> _get_icon_list(const String &p_type) const;
-	PoolVector<String> _get_stylebox_list(const String &p_type) const;
-	PoolVector<String> _get_stylebox_types(void) const;
-	PoolVector<String> _get_font_list(const String &p_type) const;
-	PoolVector<String> _get_color_list(const String &p_type) const;
-	PoolVector<String> _get_constant_list(const String &p_type) const;
-	PoolVector<String> _get_type_list(const String &p_type) const;
+	Vector<String> _get_icon_list(const String &p_type) const;
+	Vector<String> _get_stylebox_list(const String &p_type) const;
+	Vector<String> _get_stylebox_types() const;
+	Vector<String> _get_font_list(const String &p_type) const;
+	Vector<String> _get_color_list(const String &p_type) const;
+	Vector<String> _get_constant_list(const String &p_type) const;
+	Vector<String> _get_type_list(const String &p_type) const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -67,7 +66,7 @@ protected:
 
 	static Ref<Theme> project_default_theme;
 	static Ref<Theme> default_theme;
-	static Ref<Texture> default_icon;
+	static Ref<Texture2D> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
 
@@ -82,15 +81,15 @@ public:
 	static Ref<Theme> get_project_default();
 	static void set_project_default(const Ref<Theme> &p_project_default);
 
-	static void set_default_icon(const Ref<Texture> &p_icon);
+	static void set_default_icon(const Ref<Texture2D> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);
 	static void set_default_font(const Ref<Font> &p_font);
 
 	void set_default_theme_font(const Ref<Font> &p_default_font);
 	Ref<Font> get_default_theme_font() const;
 
-	void set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture> &p_icon);
-	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type) const;
+	void set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_type) const;
 	bool has_icon(const StringName &p_name, const StringName &p_type) const;
 	void clear_icon(const StringName &p_name, const StringName &p_type);
 	void get_icon_list(StringName p_type, List<StringName> *p_list) const;

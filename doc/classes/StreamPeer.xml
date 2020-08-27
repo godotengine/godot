@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeer" inherits="Reference" category="Core" version="3.2">
+<class name="StreamPeer" inherits="Reference" version="4.0">
 	<brief_description>
 		Abstraction and base class for stream-based protocols.
 	</brief_description>
@@ -171,7 +171,7 @@
 		<method name="put_data">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="data" type="PoolByteArray">
+			<argument index="0" name="data" type="PackedByteArray">
 			</argument>
 			<description>
 				Sends a chunk of data through the connection, blocking if necessary until the data is done sending. This function returns an [enum @GlobalScope.Error] code.
@@ -198,7 +198,7 @@
 		<method name="put_partial_data">
 			<return type="Array">
 			</return>
-			<argument index="0" name="data" type="PoolByteArray">
+			<argument index="0" name="data" type="PackedByteArray">
 			</argument>
 			<description>
 				Sends a chunk of data through the connection. If all the data could not be sent at once, only part of it will. This function returns two values, an [enum @GlobalScope.Error] code and an integer, describing how much data was actually sent.

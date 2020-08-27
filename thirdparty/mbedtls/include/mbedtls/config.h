@@ -9,7 +9,13 @@
  */
 /*
  *  Copyright (C) 2006-2018, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -22,6 +28,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -689,6 +716,13 @@
 #define MBEDTLS_CIPHER_PADDING_ZEROS_AND_LEN
 #define MBEDTLS_CIPHER_PADDING_ZEROS
 
+/** \def MBEDTLS_CTR_DRBG_USE_128_BIT_KEY
+ *
+ * Uncomment this macro to use a 128-bit key in the CTR_DRBG module.
+ * By default, CTR_DRBG uses a 256-bit key.
+ */
+//#define MBEDTLS_CTR_DRBG_USE_128_BIT_KEY
+
 /**
  * \def MBEDTLS_ENABLE_WEAK_CIPHERSUITES
  *
@@ -772,6 +806,28 @@
  * Comment this macro to disable NIST curves optimisation.
  */
 #define MBEDTLS_ECP_NIST_OPTIM
+
+/**
+ * \def MBEDTLS_ECP_NO_INTERNAL_RNG
+ *
+ * When this option is disabled, mbedtls_ecp_mul() will make use of an
+ * internal RNG when called with a NULL \c f_rng argument, in order to protect
+ * against some side-channel attacks.
+ *
+ * This protection introduces a dependency of the ECP module on one of the
+ * DRBG or SHA modules (HMAC-DRBG, CTR-DRBG, SHA-512 or SHA-256.) For very
+ * constrained applications that don't require this protection (for example,
+ * because you're only doing signature verification, so not manipulating any
+ * secret, or because local/physical side-channel attacks are outside your
+ * threat model), it might be desirable to get rid of that dependency.
+ *
+ * \warning Enabling this option makes some uses of ECP vulnerable to some
+ * side-channel attacks. Only enable it if you know that's not a problem for
+ * your use case.
+ *
+ * Uncomment this macro to disable some counter-measures in ECP.
+ */
+//#define MBEDTLS_ECP_NO_INTERNAL_RNG
 
 /**
  * \def MBEDTLS_ECP_RESTARTABLE
@@ -2149,7 +2205,11 @@
  *
  * Enable the CTR_DRBG AES-based random generator.
  * The CTR_DRBG generator uses AES-256 by default.
- * To use AES-128 instead, enable MBEDTLS_CTR_DRBG_USE_128_BIT_KEY below.
+ * To use AES-128 instead, enable \c MBEDTLS_CTR_DRBG_USE_128_BIT_KEY above.
+ *
+ * \note To achieve a 256-bit security strength with CTR_DRBG,
+ *       you must use AES-256 *and* use sufficient entropy.
+ *       See ctr_drbg.h for more details.
  *
  * Module:  library/ctr_drbg.c
  * Caller:
@@ -3043,7 +3103,6 @@
 //#define MBEDTLS_CTR_DRBG_MAX_INPUT                256 /**< Maximum number of additional input bytes */
 //#define MBEDTLS_CTR_DRBG_MAX_REQUEST             1024 /**< Maximum number of requested bytes per call */
 //#define MBEDTLS_CTR_DRBG_MAX_SEED_INPUT           384 /**< Maximum size of (re)seed buffer */
-//#define MBEDTLS_CTR_DRBG_USE_128_BIT_KEY              /**< Use 128-bit key for CTR_DRBG - may reduce security (see ctr_drbg.h) */
 
 /* HMAC_DRBG options */
 //#define MBEDTLS_HMAC_DRBG_RESEED_INTERVAL   10000 /**< Interval before reseed is performed by default */

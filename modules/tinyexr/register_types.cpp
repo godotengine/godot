@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,9 @@
 #include "image_loader_tinyexr.h"
 #include "image_saver_tinyexr.h"
 
-static ImageLoaderTinyEXR *image_loader_tinyexr = NULL;
+static ImageLoaderTinyEXR *image_loader_tinyexr = nullptr;
 
 void register_tinyexr_types() {
-
 	image_loader_tinyexr = memnew(ImageLoaderTinyEXR);
 	ImageLoader::add_image_format_loader(image_loader_tinyexr);
 
@@ -44,8 +43,7 @@ void register_tinyexr_types() {
 }
 
 void unregister_tinyexr_types() {
-
 	memdelete(image_loader_tinyexr);
 
-	Image::save_exr_func = NULL;
+	Image::save_exr_func = nullptr;
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicCollision2D" inherits="Reference" category="Core" version="3.2">
+<class name="KinematicCollision2D" inherits="Reference" version="4.0">
 	<brief_description>
 		Collision data for [KinematicBody2D] collisions.
 	</brief_description>
@@ -16,7 +16,7 @@
 			The colliding body.
 		</member>
 		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
-			The colliding body's unique [RID].
+			The colliding body's unique instance ID. See [method Object.get_instance_id].
 		</member>
 		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 			The colliding body's metadata. See [Object].
@@ -37,7 +37,7 @@
 			The colliding body's shape's normal at the point of collision.
 		</member>
 		<member name="position" type="Vector2" setter="" getter="get_position" default="Vector2( 0, 0 )">
-			The point of collision.
+			The point of collision, in global coordinates.
 		</member>
 		<member name="remainder" type="Vector2" setter="" getter="get_remainder" default="Vector2( 0, 0 )">
 			The moving object's remaining movement vector.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,13 +40,13 @@
  * @param env JNI environment instance. If null obtained by ThreadAndroid::get_env().
  * @return Godot string instance.
  */
-static inline String jstring_to_string(jstring source, JNIEnv *env = NULL) {
+static inline String jstring_to_string(jstring source, JNIEnv *env = nullptr) {
 	String result;
 	if (source) {
 		if (!env) {
 			env = ThreadAndroid::get_env();
 		}
-		const char *const source_utf8 = env->GetStringUTFChars(source, NULL);
+		const char *const source_utf8 = env->GetStringUTFChars(source, nullptr);
 		if (source_utf8) {
 			result.parse_utf8(source_utf8);
 			env->ReleaseStringUTFChars(source, source_utf8);

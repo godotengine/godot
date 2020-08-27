@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RID" category="Built-In Types" version="3.2">
+<class name="RID" version="4.0">
 	<brief_description>
 		Handle for a [Resource]'s unique ID.
 	</brief_description>
 	<description>
-		The RID type is used to access the unique integer ID of a resource. They are opaque, which means they do not grant access to the associated resource by themselves. They are used by and with the low-level Server classes such as [VisualServer].
+		The RID type is used to access the unique integer ID of a resource. They are opaque, which means they do not grant access to the associated resource by themselves. They are used by and with the low-level Server classes such as [RenderingServer].
 	</description>
 	<tutorials>
 	</tutorials>

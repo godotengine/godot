@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,12 +145,22 @@ Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst
 	return ret ? FAILED : OK;
 }
 
+Error CryptoCore::AESContext::encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, r_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::AESContext::decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, r_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
 // CryptoCore
 String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
 	int b64len = p_src_len / 3 * 4 + 4 + 1;
-	PoolVector<uint8_t> b64buff;
+	Vector<uint8_t> b64buff;
 	b64buff.resize(b64len);
-	PoolVector<uint8_t>::Write w64 = b64buff.write();
+	uint8_t *w64 = b64buff.ptrw();
 	size_t strlen = 0;
 	int ret = b64_encode(&w64[0], b64len, &strlen, p_src, p_src_len);
 	w64[strlen] = 0;

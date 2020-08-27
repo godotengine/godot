@@ -81,7 +81,7 @@ static WEBP_INLINE uint32_t ClampedAddSubtractHalf(uint32_t c0, uint32_t c1,
 
 // gcc <= 4.9 on ARM generates incorrect code in Select() when Sub3() is
 // inlined.
-#if defined(__arm__) && LOCAL_GCC_VERSION <= 0x409
+#if defined(__arm__) && defined(__GNUC__) && LOCAL_GCC_VERSION <= 0x409
 # define LOCAL_INLINE __attribute__ ((noinline))
 #else
 # define LOCAL_INLINE WEBP_INLINE
@@ -167,15 +167,20 @@ static uint32_t Predictor13_C(uint32_t left, const uint32_t* const top) {
   return pred;
 }
 
-GENERATE_PREDICTOR_ADD(Predictor0_C, PredictorAdd0_C)
+static void PredictorAdd0_C(const uint32_t* in, const uint32_t* upper,
+                            int num_pixels, uint32_t* out) {
+  int x;
+  (void)upper;
+  for (x = 0; x < num_pixels; ++x) out[x] = VP8LAddPixels(in[x], ARGB_BLACK);
+}
 static void PredictorAdd1_C(const uint32_t* in, const uint32_t* upper,
                             int num_pixels, uint32_t* out) {
   int i;
   uint32_t left = out[-1];
+  (void)upper;
   for (i = 0; i < num_pixels; ++i) {
     out[i] = left = VP8LAddPixels(in[i], left);
   }
-  (void)upper;
 }
 GENERATE_PREDICTOR_ADD(Predictor2_C, PredictorAdd2_C)
 GENERATE_PREDICTOR_ADD(Predictor3_C, PredictorAdd3_C)

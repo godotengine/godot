@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineMultisampleState" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="enable_alpha_to_coverage" type="bool" setter="set_enable_alpha_to_coverage" getter="get_enable_alpha_to_coverage" default="false">
+		</member>
+		<member name="enable_alpha_to_one" type="bool" setter="set_enable_alpha_to_one" getter="get_enable_alpha_to_one" default="false">
+		</member>
+		<member name="enable_sample_shading" type="bool" setter="set_enable_sample_shading" getter="get_enable_sample_shading" default="false">
+		</member>
+		<member name="min_sample_shading" type="float" setter="set_min_sample_shading" getter="get_min_sample_shading" default="0.0">
+		</member>
+		<member name="sample_count" type="int" setter="set_sample_count" getter="get_sample_count" enum="RenderingDevice.TextureSamples" default="0">
+		</member>
+		<member name="sample_masks" type="int[]" setter="set_sample_masks" getter="get_sample_masks" default="[  ]">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

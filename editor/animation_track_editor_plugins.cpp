@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,45 +33,45 @@
 #include "editor/audio_stream_preview.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
-#include "scene/2d/animated_sprite.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/animated_sprite_2d.h"
+#include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/animation/animation_player.h"
 #include "servers/audio/audio_stream.h"
 
 /// BOOL ///
 int AnimationTrackEditBool::get_key_height() const {
-
-	Ref<Texture> checked = get_icon("checked", "CheckBox");
+	Ref<Texture2D> checked = get_theme_icon("checked", "CheckBox");
 	return checked->get_height();
 }
-Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
 
-	Ref<Texture> checked = get_icon("checked", "CheckBox");
+Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
+	Ref<Texture2D> checked = get_theme_icon("checked", "CheckBox");
 	return Rect2(-checked->get_width() / 2, 0, checked->get_width(), get_size().height);
 }
 
 bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
-
 	return false;
 }
-void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
+void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	bool checked = get_animation()->track_get_key_value(get_track(), p_index);
-	Ref<Texture> icon = get_icon(checked ? "checked" : "unchecked", "CheckBox");
+	Ref<Texture2D> icon = get_theme_icon(checked ? "checked" : "unchecked", "CheckBox");
 
 	Vector2 ofs(p_x - icon->get_width() / 2, int(get_size().height - icon->get_height()) / 2);
 
-	if (ofs.x + icon->get_width() / 2 < p_clip_left)
+	if (ofs.x + icon->get_width() / 2 < p_clip_left) {
 		return;
+	}
 
-	if (ofs.x + icon->get_width() / 2 > p_clip_right)
+	if (ofs.x + icon->get_width() / 2 > p_clip_right) {
 		return;
+	}
 
 	draw_texture(icon, ofs);
 
 	if (p_selected) {
-		Color color = get_color("accent_color", "Editor");
+		Color color = get_theme_color("accent_color", "Editor");
 		draw_rect_clipped(Rect2(ofs, icon->get_size()), color, false);
 	}
 }
@@ -79,46 +79,44 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 /// COLOR ///
 
 int AnimationTrackEditColor::get_key_height() const {
-
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	return font->get_height() * 0.8;
 }
-Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 
-	Ref<Font> font = get_font("font", "Label");
+Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
+	Ref<Font> font = get_theme_font("font", "Label");
 	int fh = font->get_height() * 0.8;
 	return Rect2(-fh / 2, 0, fh, get_size().height);
 }
 
 bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
-
 	return false;
 }
 
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
-
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	int fh = (font->get_height() * 0.8);
 
 	int x_from = p_x + fh / 2 - 1;
 	int x_to = p_next_x - fh / 2 + 1;
 	fh /= 3;
 
-	if (x_from > p_clip_right || x_to < p_clip_left)
+	if (x_from > p_clip_right || x_to < p_clip_left) {
 		return;
+	}
 
 	Color color = get_animation()->track_get_key_value(get_track(), p_index);
 	Color color_next = get_animation()->track_get_key_value(get_track(), p_index + 1);
 
 	if (x_from < p_clip_left) {
 		float c = float(p_clip_left - x_from) / (x_to - x_from);
-		color = color.linear_interpolate(color_next, c);
+		color = color.lerp(color_next, c);
 		x_from = p_clip_left;
 	}
 
 	if (x_to > p_clip_right) {
 		float c = float(p_clip_right - x_from) / (x_to - x_from);
-		color_next = color.linear_interpolate(color_next, c);
+		color_next = color.lerp(color_next, c);
 		x_to = p_clip_right;
 	}
 
@@ -143,10 +141,9 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 }
 
 void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-
 	Color color = get_animation()->track_get_key_value(get_track(), p_index);
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	int fh = font->get_height() * 0.8;
 
 	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
@@ -158,7 +155,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	draw_rect_clipped(rect, color);
 
 	if (p_selected) {
-		Color accent = get_color("accent_color", "Editor");
+		Color accent = get_theme_color("accent_color", "Editor");
 		draw_rect_clipped(rect, accent, false);
 	}
 }
@@ -166,11 +163,11 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 /// AUDIO ///
 
 void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
-
 	Object *object = ObjectDB::get_instance(id);
 
-	if (!object)
+	if (!object) {
 		return;
+	}
 
 	Ref<AudioStream> stream = object->call("get_stream");
 
@@ -180,16 +177,15 @@ void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
 }
 
 int AnimationTrackEditAudio::get_key_height() const {
-
 	if (!ObjectDB::get_instance(id)) {
 		return AnimationTrackEdit::get_key_height();
 	}
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
-Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 
+Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -207,7 +203,6 @@ Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 		float len = stream->get_length();
 
 		if (len == 0) {
-
 			Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 			len = preview->get_length();
 		}
@@ -218,18 +213,17 @@ Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 
 		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 	} else {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
 }
 
 bool AnimationTrackEditAudio::is_key_selectable_by_distance() const {
-
 	return false;
 }
-void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
+void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -261,11 +255,13 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		int pixel_begin = p_x;
 		int pixel_end = p_x + pixel_len;
 
-		if (pixel_end < p_clip_left)
+		if (pixel_end < p_clip_left) {
 			return;
+		}
 
-		if (pixel_begin > p_clip_right)
+		if (pixel_begin > p_clip_right) {
 			return;
+		}
 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
@@ -276,10 +272,11 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			to_x = MIN(limit_x, to_x);
 		}
 
-		if (to_x <= from_x)
+		if (to_x <= from_x) {
 			return;
+		}
 
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		float fh = int(font->get_height() * 1.5);
 		Rect2 rect = Rect2(from_x, (get_size().height - fh) / 2, to_x - from_x, fh);
 		draw_rect(rect, Color(0.25, 0.25, 0.25));
@@ -289,7 +286,6 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		preview_len = preview->get_length();
 
 		for (int i = from_x; i < to_x; i++) {
-
 			float ofs = (i - pixel_begin) * preview_len / pixel_len;
 			float ofs_n = ((i + 1) - pixel_begin) * preview_len / pixel_len;
 			float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
@@ -303,53 +299,50 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		Vector<Color> color;
 		color.push_back(Color(0.75, 0.75, 0.75));
 
-		VS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
+		RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
 
 		if (p_selected) {
-			Color accent = get_color("accent_color", "Editor");
+			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
 		}
 	} else {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 0.8;
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
-		Color color = get_color("font_color", "Label");
+		Color color = get_theme_color("font_color", "Label");
 		draw_rect(rect, color);
 
 		if (p_selected) {
-			Color accent = get_color("accent_color", "Editor");
+			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
 		}
 	}
 }
 
 void AnimationTrackEditAudio::set_node(Object *p_object) {
-
 	id = p_object->get_instance_id();
 }
 
 void AnimationTrackEditAudio::_bind_methods() {
-	ClassDB::bind_method("_preview_changed", &AnimationTrackEditAudio::_preview_changed);
 }
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
 /// SPRITE FRAME / FRAME_COORDS ///
 
 int AnimationTrackEditSpriteFrame::get_key_height() const {
-
 	if (!ObjectDB::get_instance(id)) {
 		return AnimationTrackEdit::get_key_height();
 	}
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 2);
 }
-Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
 
+Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -358,9 +351,8 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 
 	Size2 size;
 
-	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
-
-		Ref<Texture> texture = object->call("get_texture");
+	if (Object::cast_to<Sprite2D>(object) || Object::cast_to<Sprite3D>(object)) {
+		Ref<Texture2D> texture = object->call("get_texture");
 		if (!texture.is_valid()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -380,8 +372,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 		if (vframes > 1) {
 			size.y /= vframes;
 		}
-	} else if (Object::cast_to<AnimatedSprite>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
-
+	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
 		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
 		if (sf.is_null()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
@@ -404,7 +395,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
-		Ref<Texture> texture = sf->get_frame(animation, frame);
+		Ref<Texture2D> texture = sf->get_frame(animation, frame);
 		if (!texture.is_valid()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -414,7 +405,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 
 	size = size.floor();
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	int height = int(font->get_height() * 2);
 	int width = height * size.width / size.height;
 
@@ -422,11 +413,10 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 }
 
 bool AnimationTrackEditSpriteFrame::is_key_selectable_by_distance() const {
-
 	return false;
 }
-void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
+void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -434,11 +424,10 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		return;
 	}
 
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 	Rect2 region;
 
-	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
-
+	if (Object::cast_to<Sprite2D>(object) || Object::cast_to<Sprite3D>(object)) {
 		texture = object->call("get_texture");
 		if (!texture.is_valid()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
@@ -460,7 +449,6 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		region.size = texture->get_size();
 
 		if (bool(object->call("is_region"))) {
-
 			region = Rect2(object->call("get_region_rect"));
 		}
 
@@ -474,8 +462,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		region.position.x += region.size.x * coords.x;
 		region.position.y += region.size.y * coords.y;
 
-	} else if (Object::cast_to<AnimatedSprite>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
-
+	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
 		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
 		if (sf.is_null()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
@@ -508,20 +495,22 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		region.size = texture->get_size();
 	}
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	int height = int(font->get_height() * 2);
 
 	int width = height * region.size.width / region.size.height;
 
 	Rect2 rect(p_x, int(get_size().height - height) / 2, width, height);
 
-	if (rect.position.x + rect.size.x < p_clip_left)
+	if (rect.position.x + rect.size.x < p_clip_left) {
 		return;
+	}
 
-	if (rect.position.x > p_clip_right)
+	if (rect.position.x > p_clip_right) {
 		return;
+	}
 
-	Color accent = get_color("accent_color", "Editor");
+	Color accent = get_theme_color("accent_color", "Editor");
 	Color bg = accent;
 	bg.a = 0.15;
 
@@ -535,28 +524,25 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 }
 
 void AnimationTrackEditSpriteFrame::set_node(Object *p_object) {
-
 	id = p_object->get_instance_id();
 }
 
 void AnimationTrackEditSpriteFrame::set_as_coords() {
-
 	is_coords = true;
 }
 
 /// SUB ANIMATION ///
 
 int AnimationTrackEditSubAnim::get_key_height() const {
-
 	if (!ObjectDB::get_instance(id)) {
 		return AnimationTrackEdit::get_key_height();
 	}
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
-Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 
+Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -572,7 +558,6 @@ Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 	String anim = get_animation()->track_get_key_value(get_track(), p_index);
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
-
 		float len = ap->get_animation(anim)->get_length();
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
@@ -581,18 +566,17 @@ Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 
 		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 	} else {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
 }
 
 bool AnimationTrackEditSubAnim::is_key_selectable_by_distance() const {
-
 	return false;
 }
-void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
+void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -610,7 +594,6 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 	String anim = get_animation()->track_get_key_value(get_track(), p_index);
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
-
 		float len = ap->get_animation(anim)->get_length();
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
@@ -622,24 +605,27 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		int pixel_begin = p_x;
 		int pixel_end = p_x + pixel_len;
 
-		if (pixel_end < p_clip_left)
+		if (pixel_end < p_clip_left) {
 			return;
+		}
 
-		if (pixel_begin > p_clip_right)
+		if (pixel_begin > p_clip_right) {
 			return;
+		}
 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
 
-		if (to_x <= from_x)
+		if (to_x <= from_x) {
 			return;
+		}
 
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 1.5;
 
 		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
 
-		Color color = get_color("font_color", "Label");
+		Color color = get_theme_color("font_color", "Label");
 		Color bg = color;
 		bg.r = 1 - color.r;
 		bg.g = 1 - color.g;
@@ -652,18 +638,17 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 			Ref<Animation> animation = ap->get_animation(anim);
 
 			for (int i = 0; i < animation->get_track_count(); i++) {
-
 				float h = (rect.size.height - 2) / animation->get_track_count();
 
 				int y = 2 + h * i + h / 2;
 
 				for (int j = 0; j < animation->track_get_key_count(i); j++) {
-
 					float ofs = animation->track_get_key_time(i, j);
 					int x = p_x + ofs * p_pixels_sec + 2;
 
-					if (x < from_x || x >= (to_x - 4))
+					if (x < from_x || x >= (to_x - 4)) {
 						continue;
+					}
 
 					lines.push_back(Point2(x, y));
 					lines.push_back(Point2(x + 1, y));
@@ -674,7 +659,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		}
 
 		if (lines.size() > 2) {
-			VS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
+			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
 		}
 
 		int limit = to_x - from_x - 4;
@@ -683,40 +668,37 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		}
 
 		if (p_selected) {
-			Color accent = get_color("accent_color", "Editor");
+			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
 		}
 	} else {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 0.8;
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
-		Color color = get_color("font_color", "Label");
+		Color color = get_theme_color("font_color", "Label");
 		draw_rect(rect, color);
 
 		if (p_selected) {
-			Color accent = get_color("accent_color", "Editor");
+			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
 		}
 	}
 }
 
 void AnimationTrackEditSubAnim::set_node(Object *p_object) {
-
 	id = p_object->get_instance_id();
 }
 
 //// VOLUME DB ////
 
 int AnimationTrackEditVolumeDB::get_key_height() const {
-
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_theme_icon("ColorTrackVu", "EditorIcons");
 	return volume_texture->get_height() * 1.2;
 }
 
 void AnimationTrackEditVolumeDB::draw_bg(int p_clip_left, int p_clip_right) {
-
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_theme_icon("ColorTrackVu", "EditorIcons");
 	int tex_h = volume_texture->get_height();
 
 	int y_from = (get_size().height - tex_h) / 2;
@@ -727,8 +709,7 @@ void AnimationTrackEditVolumeDB::draw_bg(int p_clip_left, int p_clip_right) {
 }
 
 void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
-
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_theme_icon("ColorTrackVu", "EditorIcons");
 	int tex_h = volume_texture->get_height();
 	int y_from = (get_size().height - tex_h) / 2;
 	int db0 = y_from + (24 / 80.0) * tex_h;
@@ -737,9 +718,9 @@ void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
 }
 
 void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
-
-	if (p_x > p_clip_right || p_next_x < p_clip_left)
+	if (p_x > p_clip_right || p_next_x < p_clip_left) {
 		return;
+	}
 
 	float db = get_animation()->track_get_key_value(get_track(), p_index);
 	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
@@ -763,12 +744,12 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 		to_x = p_clip_right;
 	}
 
-	Ref<Texture> volume_texture = get_icon("ColorTrackVu", "EditorIcons");
+	Ref<Texture2D> volume_texture = get_theme_icon("ColorTrackVu", "EditorIcons");
 	int tex_h = volume_texture->get_height();
 
 	int y_from = (get_size().height - tex_h) / 2;
 
-	Color color = get_color("font_color", "Label");
+	Color color = get_theme_color("font_color", "Label");
 	color.a *= 0.7;
 
 	draw_line(Point2(from_x, y_from + h * tex_h), Point2(to_x, y_from + h_n * tex_h), color, 2);
@@ -779,7 +760,6 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 /// AUDIO ///
 
 void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
-
 	for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
 		Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), i);
 		if (stream.is_valid() && stream->get_instance_id() == p_which) {
@@ -790,12 +770,11 @@ void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
 }
 
 int AnimationTrackEditTypeAudio::get_key_height() const {
-
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
-Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec) {
 
+Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec) {
 	Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
 
 	if (!stream.is_valid()) {
@@ -808,7 +787,6 @@ Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec)
 	float len = stream->get_length();
 
 	if (len == 0) {
-
 		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 		len = preview->get_length();
 	}
@@ -827,11 +805,10 @@ Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec)
 }
 
 bool AnimationTrackEditTypeAudio::is_key_selectable_by_distance() const {
-
 	return false;
 }
-void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
+void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
 
 	if (!stream.is_valid()) {
@@ -846,16 +823,18 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 		if (len_resizing_start) {
 			start_ofs += ofs_local;
-			if (start_ofs < 0)
+			if (start_ofs < 0) {
 				start_ofs = 0;
+			}
 		} else {
 			end_ofs += ofs_local;
-			if (end_ofs < 0)
+			if (end_ofs < 0) {
 				end_ofs = 0;
+			}
 		}
 	}
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	float fh = int(font->get_height() * 1.5);
 
 	float len = stream->get_length();
@@ -882,11 +861,13 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	int pixel_begin = p_x;
 	int pixel_end = p_x + pixel_len;
 
-	if (pixel_end < p_clip_left)
+	if (pixel_end < p_clip_left) {
 		return;
+	}
 
-	if (pixel_begin > p_clip_right)
+	if (pixel_begin > p_clip_right) {
 		return;
+	}
 
 	int from_x = MAX(pixel_begin, p_clip_left);
 	int to_x = MIN(pixel_end, p_clip_right);
@@ -910,7 +891,6 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	preview_len = preview->get_length();
 
 	for (int i = from_x; i < to_x; i++) {
-
 		float ofs = (i - pixel_begin) * preview_len / pixel_total_len;
 		float ofs_n = ((i + 1) - pixel_begin) * preview_len / pixel_total_len;
 		ofs += start_ofs;
@@ -927,9 +907,9 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	Vector<Color> color;
 	color.push_back(Color(0.75, 0.75, 0.75));
 
-	VS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
+	RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
 
-	Color cut_color = get_color("accent_color", "Editor");
+	Color cut_color = get_theme_color("accent_color", "Editor");
 	cut_color.a = 0.7;
 	if (start_ofs > 0 && pixel_begin > p_clip_left) {
 		draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
@@ -939,24 +919,21 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	}
 
 	if (p_selected) {
-		Color accent = get_color("accent_color", "Editor");
+		Color accent = get_theme_color("accent_color", "Editor");
 		draw_rect(rect, accent, false);
 	}
 }
 
 void AnimationTrackEditTypeAudio::_bind_methods() {
-	ClassDB::bind_method("_preview_changed", &AnimationTrackEditTypeAudio::_preview_changed);
 }
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
-	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", this, "_preview_changed");
+	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 	len_resizing = false;
 }
 
 bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-
 	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
-
 		Dictionary drag_data = p_data;
 		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 			Ref<AudioStream> res = drag_data["resource"];
@@ -966,7 +943,6 @@ bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Var
 		}
 
 		if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-
 			Vector<String> files = drag_data["files"];
 
 			if (files.size() == 1) {
@@ -981,16 +957,14 @@ bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Var
 
 	return AnimationTrackEdit::can_drop_data(p_point, p_data);
 }
+
 void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant &p_data) {
-
 	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
-
 		Ref<AudioStream> stream;
 		Dictionary drag_data = p_data;
 		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 			stream = drag_data["resource"];
 		} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-
 			Vector<String> files = drag_data["files"];
 
 			if (files.size() == 1) {
@@ -1000,7 +974,6 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 		}
 
 		if (stream.is_valid()) {
-
 			int x = p_point.x - get_timeline()->get_name_limit();
 			float ofs = x / get_timeline()->get_zoom_scale();
 			ofs += get_timeline()->get_value();
@@ -1025,12 +998,10 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 }
 
 void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;
 		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-
 			Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), i);
 
 			if (!stream.is_valid()) {
@@ -1088,7 +1059,6 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && get_default_cursor_shape() == CURSOR_HSIZE) {
-
 		len_resizing = true;
 		len_resizing_start = mb->get_shift();
 		len_resizing_from_px = mb->get_position().x;
@@ -1099,7 +1069,6 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-
 		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 		if (len_resizing_start) {
 			float prev_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), len_resizing_index);
@@ -1130,16 +1099,15 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 /// SUB ANIMATION ///
 
 int AnimationTrackEditTypeAnimation::get_key_height() const {
-
 	if (!ObjectDB::get_instance(id)) {
 		return AnimationTrackEdit::get_key_height();
 	}
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
-Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_sec) {
 
+Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -1155,7 +1123,6 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
-
 		float len = ap->get_animation(anim)->get_length();
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
@@ -1164,18 +1131,17 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 
 		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 	} else {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
 }
 
 bool AnimationTrackEditTypeAnimation::is_key_selectable_by_distance() const {
-
 	return false;
 }
-void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
+void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
 	if (!object) {
@@ -1193,7 +1159,6 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
-
 		float len = ap->get_animation(anim)->get_length();
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
@@ -1205,24 +1170,27 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		int pixel_begin = p_x;
 		int pixel_end = p_x + pixel_len;
 
-		if (pixel_end < p_clip_left)
+		if (pixel_end < p_clip_left) {
 			return;
+		}
 
-		if (pixel_begin > p_clip_right)
+		if (pixel_begin > p_clip_right) {
 			return;
+		}
 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
 
-		if (to_x <= from_x)
+		if (to_x <= from_x) {
 			return;
+		}
 
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 1.5;
 
 		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
 
-		Color color = get_color("font_color", "Label");
+		Color color = get_theme_color("font_color", "Label");
 		Color bg = color;
 		bg.r = 1 - color.r;
 		bg.g = 1 - color.g;
@@ -1235,18 +1203,17 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 			Ref<Animation> animation = ap->get_animation(anim);
 
 			for (int i = 0; i < animation->get_track_count(); i++) {
-
 				float h = (rect.size.height - 2) / animation->get_track_count();
 
 				int y = 2 + h * i + h / 2;
 
 				for (int j = 0; j < animation->track_get_key_count(i); j++) {
-
 					float ofs = animation->track_get_key_time(i, j);
 					int x = p_x + ofs * p_pixels_sec + 2;
 
-					if (x < from_x || x >= (to_x - 4))
+					if (x < from_x || x >= (to_x - 4)) {
 						continue;
+					}
 
 					lines.push_back(Point2(x, y));
 					lines.push_back(Point2(x + 1, y));
@@ -1257,7 +1224,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		}
 
 		if (lines.size() > 2) {
-			VS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
+			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
 		}
 
 		int limit = to_x - from_x - 4;
@@ -1266,26 +1233,25 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		}
 
 		if (p_selected) {
-			Color accent = get_color("accent_color", "Editor");
+			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
 		}
 	} else {
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 0.8;
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
-		Color color = get_color("font_color", "Label");
+		Color color = get_theme_color("font_color", "Label");
 		draw_rect(rect, color);
 
 		if (p_selected) {
-			Color accent = get_color("accent_color", "Editor");
+			Color accent = get_theme_color("accent_color", "Editor");
 			draw_rect(rect, accent, false);
 		}
 	}
 }
 
 void AnimationTrackEditTypeAnimation::set_node(Object *p_object) {
-
 	id = p_object->get_instance_id();
 }
 
@@ -1294,23 +1260,19 @@ AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 
 /////////
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
-
 	if (p_property == "playing" && (p_object->is_class("AudioStreamPlayer") || p_object->is_class("AudioStreamPlayer2D") || p_object->is_class("AudioStreamPlayer3D"))) {
-
 		AnimationTrackEditAudio *audio = memnew(AnimationTrackEditAudio);
 		audio->set_node(p_object);
 		return audio;
 	}
 
-	if (p_property == "frame" && (p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("AnimatedSprite") || p_object->is_class("AnimatedSprite3D"))) {
-
+	if (p_property == "frame" && (p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D") || p_object->is_class("AnimatedSprite2D") || p_object->is_class("AnimatedSprite3D"))) {
 		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
 		sprite->set_node(p_object);
 		return sprite;
 	}
 
-	if (p_property == "frame_coords" && (p_object->is_class("Sprite") || p_object->is_class("Sprite3D"))) {
-
+	if (p_property == "frame_coords" && (p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D"))) {
 		AnimationTrackEditSpriteFrame *sprite = memnew(AnimationTrackEditSpriteFrame);
 		sprite->set_as_coords();
 		sprite->set_node(p_object);
@@ -1318,14 +1280,12 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Obj
 	}
 
 	if (p_property == "current_animation" && (p_object->is_class("AnimationPlayer"))) {
-
 		AnimationTrackEditSubAnim *player = memnew(AnimationTrackEditSubAnim);
 		player->set_node(p_object);
 		return player;
 	}
 
 	if (p_property == "volume_db") {
-
 		AnimationTrackEditVolumeDB *vu = memnew(AnimationTrackEditVolumeDB);
 		return vu;
 	}
@@ -1337,16 +1297,14 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Obj
 		return memnew(AnimationTrackEditColor);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_audio_track_edit() {
-
 	return memnew(AnimationTrackEditTypeAudio);
 }
 
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_animation_track_edit(Object *p_object) {
-
 	AnimationTrackEditTypeAnimation *an = memnew(AnimationTrackEditTypeAnimation);
 	an->set_node(p_object);
 	return an;

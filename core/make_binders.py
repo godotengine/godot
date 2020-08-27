@@ -32,22 +32,22 @@ public:
 		return T::get_class_static();
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
 
 		T *instance=Object::cast_to<T>(p_object);
-		r_error.error=Variant::CallError::CALL_OK;
+		r_error.error=Callable::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
 
 		}
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
@@ -75,7 +75,7 @@ public:
 #endif
 
 		$ifret _set_returns(true); $
-	};
+	}
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -126,23 +126,23 @@ public:
 		return type_name;
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
 
 		__UnexistingClass *instance = (__UnexistingClass*)p_object;
 
-		r_error.error=Variant::CallError::CALL_OK;
+		r_error.error=Callable::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
 		}
 
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
@@ -170,7 +170,7 @@ public:
 		$ifret _set_returns(true); $
 
 
-	};
+	}
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -223,22 +223,22 @@ public:
 		return T::get_class_static();
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
 
 		T *instance=Object::cast_to<T>(p_object);
-		r_error.error=Variant::CallError::CALL_OK;
+		r_error.error=Callable::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument=get_argument_count();
 			return Variant();
 
 		}
 		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
 
-			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error=Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument=get_argument_count()-get_default_argument_count();
 			return Variant();
 		}
@@ -266,7 +266,7 @@ public:
 #endif
 
 		$ifret _set_returns(true); $
-	};
+	}
 };
 
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -280,58 +280,57 @@ MethodBind* create_method_bind($ifret R$ $ifnoret void$ (*p_method)($ifconst con
 """
 
 
-
 def make_version(template, nargs, argmax, const, ret):
 
     intext = template
     from_pos = 0
     outtext = ""
 
-    while(True):
+    while True:
         to_pos = intext.find("$", from_pos)
-        if (to_pos == -1):
+        if to_pos == -1:
             outtext += intext[from_pos:]
             break
         else:
             outtext += intext[from_pos:to_pos]
         end = intext.find("$", to_pos + 1)
-        if (end == -1):
+        if end == -1:
             break  # ignore
-        macro = intext[to_pos + 1:end]
+        macro = intext[to_pos + 1 : end]
         cmd = ""
         data = ""
 
-        if (macro.find(" ") != -1):
-            cmd = macro[0:macro.find(" ")]
-            data = macro[macro.find(" ") + 1:]
+        if macro.find(" ") != -1:
+            cmd = macro[0 : macro.find(" ")]
+            data = macro[macro.find(" ") + 1 :]
         else:
             cmd = macro
 
-        if (cmd == "argc"):
+        if cmd == "argc":
             outtext += str(nargs)
-        if (cmd == "ifret" and ret):
+        if cmd == "ifret" and ret:
             outtext += data
-        if (cmd == "ifargs" and nargs):
+        if cmd == "ifargs" and nargs:
             outtext += data
-        if (cmd == "ifretargs" and nargs and ret):
+        if cmd == "ifretargs" and nargs and ret:
             outtext += data
-        if (cmd == "ifconst" and const):
+        if cmd == "ifconst" and const:
             outtext += data
-        elif (cmd == "ifnoconst" and not const):
+        elif cmd == "ifnoconst" and not const:
             outtext += data
-        elif (cmd == "ifnoret" and not ret):
+        elif cmd == "ifnoret" and not ret:
             outtext += data
-        elif (cmd == "iftempl" and (nargs > 0 or ret)):
+        elif cmd == "iftempl" and (nargs > 0 or ret):
             outtext += data
-        elif (cmd == "arg,"):
+        elif cmd == "arg,":
             for i in range(1, nargs + 1):
-                if (i > 1):
+                if i > 1:
                     outtext += ", "
                 outtext += data.replace("@", str(i))
-        elif (cmd == "arg"):
+        elif cmd == "arg":
             for i in range(1, nargs + 1):
                 outtext += data.replace("@", str(i))
-        elif (cmd == "noarg"):
+        elif cmd == "noarg":
             for i in range(nargs + 1, argmax + 1):
                 outtext += data.replace("@", str(i))
 
@@ -342,13 +341,15 @@ def make_version(template, nargs, argmax, const, ret):
 
 def run(target, source, env):
 
-    versions = 13
+    versions = 15
     versions_ext = 6
     text = ""
     text_ext = ""
     text_free_func = "#ifndef METHOD_BIND_FREE_FUNC_H\n#define METHOD_BIND_FREE_FUNC_H\n"
     text_free_func += "\n//including this header file allows method binding to use free functions\n"
-    text_free_func += "//note that the free function must have a pointer to an instance of the class as its first parameter\n"
+    text_free_func += (
+        "//note that the free function must have a pointer to an instance of the class as its first parameter\n"
+    )
 
     for i in range(0, versions + 1):
 
@@ -361,7 +362,7 @@ def run(target, source, env):
         t += make_version(template_typed, i, versions, True, False)
         t += make_version(template, i, versions, True, True)
         t += make_version(template_typed, i, versions, True, True)
-        if (i >= versions_ext):
+        if i >= versions_ext:
             text_ext += t
         else:
             text += t
@@ -383,6 +384,7 @@ def run(target, source, env):
         f.write(text_free_func)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from platform_methods import subprocess_main
+
     subprocess_main(globals())

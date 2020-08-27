@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Expression" inherits="Reference" category="Core" version="3.2">
+<class name="Expression" inherits="Reference" version="4.0">
 	<brief_description>
 		A class that stores an expression you can execute.
 	</brief_description>
@@ -59,7 +59,7 @@
 			</return>
 			<argument index="0" name="expression" type="String">
 			</argument>
-			<argument index="1" name="input_names" type="PoolStringArray" default="PoolStringArray(  )">
+			<argument index="1" name="input_names" type="PackedStringArray" default="PackedStringArray(  )">
 			</argument>
 			<description>
 				Parses the expression and returns an [enum Error] code.

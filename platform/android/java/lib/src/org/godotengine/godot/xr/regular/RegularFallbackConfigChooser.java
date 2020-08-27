@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,15 +30,16 @@
 
 package org.godotengine.godot.xr.regular;
 
+import org.godotengine.godot.utils.GLUtils;
+
 import android.util.Log;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
-import org.godotengine.godot.utils.GLUtils;
 
 /* Fallback if 32bit View is not supported*/
 public class RegularFallbackConfigChooser extends RegularConfigChooser {
-
 	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
 	private RegularConfigChooser fallback;

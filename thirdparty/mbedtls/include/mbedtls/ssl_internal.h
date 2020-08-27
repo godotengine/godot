@@ -5,7 +5,13 @@
  */
 /*
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -18,6 +24,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -182,6 +209,12 @@
         : ( MBEDTLS_SSL_IN_CONTENT_LEN )                             \
         )
 
+/* Maximum size in bytes of list in sig-hash algorithm ext., RFC 5246 */
+#define MBEDTLS_SSL_MAX_SIG_HASH_ALG_LIST_LEN  65534
+
+/* Maximum size in bytes of list in supported elliptic curve ext., RFC 4492 */
+#define MBEDTLS_SSL_MAX_CURVE_LIST_LEN         65535
+
 /*
  * Check that we obey the standard's message size bounds
  */
@@ -235,6 +268,41 @@
  */
 #define MBEDTLS_TLS_EXT_SUPPORTED_POINT_FORMATS_PRESENT (1 << 0)
 #define MBEDTLS_TLS_EXT_ECJPAKE_KKPP_OK                 (1 << 1)
+
+/**
+ * \brief        This function checks if the remaining size in a buffer is
+ *               greater or equal than a needed space.
+ *
+ * \param cur    Pointer to the current position in the buffer.
+ * \param end    Pointer to one past the end of the buffer.
+ * \param need   Needed space in bytes.
+ *
+ * \return       Zero if the needed space is available in the buffer, non-zero
+ *               otherwise.
+ */
+static inline int mbedtls_ssl_chk_buf_ptr( const uint8_t *cur,
+                                           const uint8_t *end, size_t need )
+{
+    return( ( cur > end ) || ( need > (size_t)( end - cur ) ) );
+}
+
+/**
+ * \brief        This macro checks if the remaining size in a buffer is
+ *               greater or equal than a needed space. If it is not the case,
+ *               it returns an SSL_BUFFER_TOO_SMALL error.
+ *
+ * \param cur    Pointer to the current position in the buffer.
+ * \param end    Pointer to one past the end of the buffer.
+ * \param need   Needed space in bytes.
+ *
+ */
+#define MBEDTLS_SSL_CHK_BUF_PTR( cur, end, need )                        \
+    do {                                                                 \
+        if( mbedtls_ssl_chk_buf_ptr( ( cur ), ( end ), ( need ) ) != 0 ) \
+        {                                                                \
+            return( MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL );                  \
+        }                                                                \
+    } while( 0 )
 
 #ifdef __cplusplus
 extern "C" {

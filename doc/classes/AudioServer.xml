@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioServer" inherits="Object" category="Core" version="3.2">
+<class name="AudioServer" inherits="Object" version="4.0">
 	<brief_description>
 		Server interface for low-level audio access.
 	</brief_description>
 	<description>
-		AudioServer is a low-level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
+		[AudioServer] is a low-level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
@@ -32,6 +32,13 @@
 				Adds an [AudioEffect] effect to the bus [code]bus_idx[/code] at [code]at_position[/code].
 			</description>
 		</method>
+		<method name="capture_get_device">
+			<return type="String">
+			</return>
+			<description>
+				Name of the current device for audio input (see [method capture_get_device_list]).
+			</description>
+		</method>
 		<method name="capture_get_device_list">
 			<return type="Array">
 			</return>
@@ -39,18 +46,13 @@
 				Returns the names of all audio input devices detected on the system.
 			</description>
 		</method>
-		<method name="capture_start">
-			<return type="int" enum="Error">
+		<method name="capture_set_device">
+			<return type="void">
 			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
 			<description>
-				Attempts to start recording from the audio driver's capture device. On success, the return value is [constant OK].
-			</description>
-		</method>
-		<method name="capture_stop">
-			<return type="int" enum="Error">
-			</return>
-			<description>
-				Attempts to stop recording from the audio driver's capture device. On success, the return value is [constant OK].
+				Sets which audio input device is used for audio capture.
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
@@ -99,12 +101,13 @@
 			<argument index="2" name="channel" type="int" default="0">
 			</argument>
 			<description>
+				Returns the [AudioEffectInstance] assigned to the given bus and effect indices (and optionally channel).
 			</description>
 		</method>
 		<method name="get_bus_index" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="bus_name" type="String">
+			<argument index="0" name="bus_name" type="StringName">
 			</argument>
 			<description>
 				Returns the index of the bus with the name [code]bus_name[/code].
@@ -142,7 +145,7 @@
 			</description>
 		</method>
 		<method name="get_bus_send" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
@@ -159,32 +162,11 @@
 				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
 		</method>
-		<method name="get_capture_buffer">
-			<return type="PoolIntArray">
-			</return>
-			<description>
-				Returns an [PoolIntArray] containing audio frames from the capture device.
-			</description>
-		</method>
-		<method name="get_capture_position">
-			<return type="int">
-			</return>
-			<description>
-				Returns the write position of the capture device buffer.
-			</description>
-		</method>
-		<method name="get_capture_size">
-			<return type="int">
-			</return>
-			<description>
-				Returns the size of the capture device buffer.
-			</description>
-		</method>
 		<method name="get_device_list">
 			<return type="Array">
 			</return>
 			<description>
-				Returns the names of all audio output devices detected on the system.
+				Returns the names of all audio devices detected on the system.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
@@ -212,12 +194,14 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the relative time since the last mix occurred.
 			</description>
 		</method>
 		<method name="get_time_to_next_mix" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the relative time until the next mix occurs.
 			</description>
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">
@@ -262,7 +246,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the audio driver's main loop. Remember to unlock it afterwards.
+				Locks the audio driver's main loop.
+				[b]Note:[/b] Remember to unlock it afterwards.
 			</description>
 		</method>
 		<method name="move_bus">
@@ -356,7 +341,7 @@
 			</return>
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
-			<argument index="1" name="send" type="String">
+			<argument index="1" name="send" type="StringName">
 			</argument>
 			<description>
 				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/code].
@@ -409,9 +394,6 @@
 		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count" default="1">
 			Number of available audio buses.
 		</member>
-		<member name="capture_device" type="String" setter="capture_set_device" getter="capture_get_device" default="&quot;&quot;">
-			Name of the current device for audio input (see [method capture_get_device_list]).
-		</member>
 		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
 			Name of the current device for audio output (see [method get_device_list]).
 		</member>
@@ -420,14 +402,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="audio_mix_callback">
-			<description>
-			</description>
-		</signal>
-		<signal name="audio_update_callback">
-			<description>
-			</description>
-		</signal>
 		<signal name="bus_layout_changed">
 			<description>
 				Emitted when the [AudioBusLayout] changes.
@@ -442,10 +416,10 @@
 			A 3.1 channel surround setup was detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
-			A 5.1 channel surround setup was  detected.
+			A 5.1 channel surround setup was detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_71" value="3" enum="SpeakerMode">
-			A 7.1 channel surround setup was  detected.
+			A 7.1 channel surround setup was detected.
 		</constant>
 	</constants>
 </class>

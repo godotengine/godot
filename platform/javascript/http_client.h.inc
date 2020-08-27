@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,21 +33,21 @@
 Error prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers);
 
 int xhr_id;
-int read_limit;
-int response_read_offset;
-Status status;
+int read_limit = 4096;
+int response_read_offset = 0;
+Status status = STATUS_DISCONNECTED;
 
 String host;
-int port;
-bool use_tls;
+int port = -1;
+bool use_tls = false;
 String username;
 String password;
 
-int polled_response_code;
+int polled_response_code = 0;
 String polled_response_header;
-PoolByteArray polled_response;
+PackedByteArray polled_response;
 
 #ifdef DEBUG_ENABLED
-bool has_polled;
-uint64_t last_polling_frame;
+bool has_polled = false;
+uint64_t last_polling_frame = 0;
 #endif

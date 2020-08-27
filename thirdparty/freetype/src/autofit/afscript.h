@@ -4,7 +4,7 @@
  *
  *   Auto-fitter scripts (specification only).
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -290,6 +290,12 @@
           HB_SCRIPT_OSMANYA,
           HINTING_BOTTOM_TO_TOP,
           "\xF0\x90\x92\x86 \xF0\x90\x92\xA0" ) /* 𐒆 𐒠 */
+
+  SCRIPT( rohg, ROHG,
+          "Hanifi Rohingya",
+          HB_SCRIPT_HANIFI_ROHINGYA,
+          HINTING_BOTTOM_TO_TOP,
+          "\xF0\x90\xB4\xB0" ) /* 𐴰 */
 
   SCRIPT( saur, SAUR,
           "Saurashtra",

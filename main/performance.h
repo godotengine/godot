@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,12 @@
 #define PERFORMANCE_H
 
 #include "core/object.h"
+#include "core/ordered_hash_map.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
 
 class Performance : public Object {
-
 	GDCLASS(Performance, Object);
 
 	static Performance *singleton;
@@ -48,6 +48,19 @@ class Performance : public Object {
 	float _process_time;
 	float _physics_process_time;
 
+	class MonitorCall {
+		Callable _callable;
+		Vector<Variant> _arguments;
+
+	public:
+		MonitorCall(Callable p_callable, Vector<Variant> p_arguments);
+		MonitorCall();
+		Variant call(bool &r_error, String &r_error_message);
+	};
+
+	OrderedHashMap<StringName, MonitorCall> _monitor_map;
+	uint64_t _monitor_modification_time;
+
 public:
 	enum Monitor {
 
@@ -55,9 +68,7 @@ public:
 		TIME_PROCESS,
 		TIME_PHYSICS_PROCESS,
 		MEMORY_STATIC,
-		MEMORY_DYNAMIC,
 		MEMORY_STATIC_MAX,
-		MEMORY_DYNAMIC_MAX,
 		MEMORY_MESSAGE_BUFFER_MAX,
 		OBJECT_COUNT,
 		OBJECT_RESOURCE_COUNT,
@@ -97,6 +108,14 @@ public:
 
 	void set_process_time(float p_pt);
 	void set_physics_process_time(float p_pt);
+
+	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
+	void remove_custom_monitor(const StringName &p_id);
+	bool has_custom_monitor(const StringName &p_id);
+	Variant get_custom_monitor(const StringName &p_id);
+	Array get_custom_monitor_names();
+
+	uint64_t get_monitor_modification_time();
 
 	static Performance *get_singleton() { return singleton; }
 

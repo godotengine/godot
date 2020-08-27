@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton2D" inherits="Node2D" category="Core" version="3.2">
+<class name="Skeleton2D" inherits="Node2D" version="4.0">
 	<brief_description>
 		Skeleton for 2D characters and animated objects.
 	</brief_description>
 	<description>
+		Skeleton2D parents a hierarchy of [Bone2D] objects. It is a requirement of [Bone2D]. Skeleton2D holds a reference to the rest pose of its children and acts as a single point of access to its bones.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_bone">
@@ -15,19 +16,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The object to return is identified by the parameter [code]idx[/code]. Bones are indexed by descending the node hierarchy from top to bottom, adding the children of each branch before moving to the next sibling.
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of bones in the skeleton.
+				Returns the number of [Bone2D] nodes in the node hierarchy parented by Skeleton2D.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the [RID] of a Skeleton2D instance.
 			</description>
 		</method>
 	</methods>

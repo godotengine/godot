@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "servers/audio_server.h"
 
 struct AudioRBResampler {
-
 	uint32_t rb_bits;
 	uint32_t rb_len;
 	uint32_t rb_mask;
@@ -69,7 +68,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_ready() const {
-		return rb != NULL;
+		return rb != nullptr;
 	}
 
 	_FORCE_INLINE_ int get_total() const {
@@ -116,31 +115,24 @@ public:
 
 	_FORCE_INLINE_ float *get_write_buffer() { return read_buf; }
 	_FORCE_INLINE_ void write(uint32_t p_frames) {
-
 		ERR_FAIL_COND(p_frames >= rb_len);
 
 		switch (channels) {
 			case 1: {
-
 				for (uint32_t i = 0; i < p_frames; i++) {
-
 					rb[rb_write_pos] = read_buf[i];
 					rb_write_pos = (rb_write_pos + 1) & rb_mask;
 				}
 			} break;
 			case 2: {
-
 				for (uint32_t i = 0; i < p_frames; i++) {
-
 					rb[(rb_write_pos << 1) + 0] = read_buf[(i << 1) + 0];
 					rb[(rb_write_pos << 1) + 1] = read_buf[(i << 1) + 1];
 					rb_write_pos = (rb_write_pos + 1) & rb_mask;
 				}
 			} break;
 			case 4: {
-
 				for (uint32_t i = 0; i < p_frames; i++) {
-
 					rb[(rb_write_pos << 2) + 0] = read_buf[(i << 2) + 0];
 					rb[(rb_write_pos << 2) + 1] = read_buf[(i << 2) + 1];
 					rb[(rb_write_pos << 2) + 2] = read_buf[(i << 2) + 2];
@@ -149,9 +141,7 @@ public:
 				}
 			} break;
 			case 6: {
-
 				for (uint32_t i = 0; i < p_frames; i++) {
-
 					rb[(rb_write_pos * 6) + 0] = read_buf[(i * 6) + 0];
 					rb[(rb_write_pos * 6) + 1] = read_buf[(i * 6) + 1];
 					rb[(rb_write_pos * 6) + 2] = read_buf[(i * 6) + 2];

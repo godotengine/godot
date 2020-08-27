@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ private:
 	friend class AudioEffectSpectrumAnalyzer;
 	Ref<AudioEffectSpectrumAnalyzer> base;
 
-	Vector<Vector<AudioFrame> > fft_history;
+	Vector<Vector<AudioFrame>> fft_history;
 	Vector<float> temporal_fft;
 	int temporal_fft_pos;
 	int fft_size;
@@ -61,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 	Vector2 get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode = MAGNITUDE_MAX) const;
 };
 
@@ -90,7 +90,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
 	void set_tap_back_pos(float p_seconds);

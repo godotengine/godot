@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 static bool enet_ok = false;
 
 void register_enet_types() {
-
 	if (enet_initialize() != 0) {
 		ERR_PRINT("ENet initialization failure");
 	} else {
@@ -46,7 +45,7 @@ void register_enet_types() {
 }
 
 void unregister_enet_types() {
-
-	if (enet_ok)
+	if (enet_ok) {
 		enet_deinitialize();
+	}
 }

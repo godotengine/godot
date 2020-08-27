@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CylinderShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		Cylinder shape for collisions.
+	</brief_description>
+	<description>
+		Cylinder shape for collisions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The cylinder's height.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The cylinder's radius.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

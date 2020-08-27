@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,13 +39,15 @@ class Object;
 class StringName;
 
 class Array {
-
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;
 
-	int _clamp_index(int p_index) const;
-	static int _fix_slice_index(int p_index, int p_arr_len, int p_top_mod);
+	inline int _clamp_slice_index(int p_index) const;
+
+protected:
+	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void _assign(const Array &p_array);
 
 public:
 	Variant &operator[](int p_idx);
@@ -101,6 +103,7 @@ public:
 
 	const void *id() const;
 
+	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();
 	~Array();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,11 +37,16 @@
 
 #include "thirdparty/misc/open-simplex-noise.h"
 
+// The maximum number of octaves allowed. Note that these are statically allocated.
+// Higher values become exponentially slower, so this shouldn't be set too high
+// to avoid freezing the editor for long periods of time.
+#define MAX_OCTAVES 9
+
 class OpenSimplexNoise : public Resource {
 	GDCLASS(OpenSimplexNoise, Resource);
 	OBJ_SAVE_TYPE(OpenSimplexNoise);
 
-	osn_context contexts[6];
+	osn_context contexts[MAX_OCTAVES];
 
 	int seed;
 	float persistence; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.

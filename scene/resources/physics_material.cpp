@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #include "physics_material.h"
 
 void PhysicsMaterial::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicsMaterial::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicsMaterial::get_friction);
 
@@ -44,9 +43,9 @@ void PhysicsMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_absorbent", "absorbent"), &PhysicsMaterial::set_absorbent);
 	ClassDB::bind_method(D_METHOD("is_absorbent"), &PhysicsMaterial::is_absorbent);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction"), "set_friction", "get_friction");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rough"), "set_rough", "is_rough");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce"), "set_bounce", "get_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "absorbent"), "set_absorbent", "is_absorbent");
 }
 
@@ -69,9 +68,3 @@ void PhysicsMaterial::set_absorbent(bool p_val) {
 	absorbent = p_val;
 	emit_changed();
 }
-
-PhysicsMaterial::PhysicsMaterial() :
-		friction(1),
-		rough(false),
-		bounce(0),
-		absorbent(false) {}

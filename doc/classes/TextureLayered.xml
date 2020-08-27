@@ -1,44 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureLayered" inherits="Resource" category="Core" version="3.2">
+<class name="TextureLayered" inherits="Texture" version="4.0">
 	<brief_description>
+		Base class for 3D texture types.
 	</brief_description>
 	<description>
+		Base class for [Texture2DArray], [Cubemap] and [CubemapArray]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="create">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<argument index="1" name="height" type="int">
-			</argument>
-			<argument index="2" name="depth" type="int">
-			</argument>
-			<argument index="3" name="format" type="int" enum="Image.Format">
-			</argument>
-			<argument index="4" name="flags" type="int" default="4">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_depth" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
+				Returns the current format being used by this texture. See [enum Image.Format] for details.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the height of the texture. Height is typically represented by the Y-axis.
 			</description>
 		</method>
 		<method name="get_layer_data" qualifiers="const">
@@ -47,55 +29,41 @@
 			<argument index="0" name="layer" type="int">
 			</argument>
 			<description>
+				Returns an [Image] resource with the data from specified [code]layer[/code].
+			</description>
+		</method>
+		<method name="get_layered_type" qualifiers="const">
+			<return type="int" enum="TextureLayered.LayeredType">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_layers" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the width of the texture. Width is typically represented by the X-axis.
 			</description>
 		</method>
-		<method name="set_data_partial">
-			<return type="void">
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool">
 			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="x_offset" type="int">
-			</argument>
-			<argument index="2" name="y_offset" type="int">
-			</argument>
-			<argument index="3" name="layer" type="int">
-			</argument>
-			<argument index="4" name="mipmap" type="int" default="0">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_layer_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
 			<description>
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;depth&quot;: 0,&quot;flags&quot;: 4,&quot;format&quot;: 37,&quot;height&quot;: 0,&quot;layers&quot;: [  ],&quot;width&quot;: 0}">
-		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
-		</member>
-	</members>
 	<constants>
-		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
+		<constant name="LAYERED_TYPE_2D_ARRAY" value="0" enum="LayeredType">
 		</constant>
-		<constant name="FLAG_REPEAT" value="2" enum="Flags">
+		<constant name="LAYERED_TYPE_CUBEMAP" value="1" enum="LayeredType">
 		</constant>
-		<constant name="FLAG_FILTER" value="4" enum="Flags">
-		</constant>
-		<constant name="FLAGS_DEFAULT" value="4" enum="Flags">
+		<constant name="LAYERED_TYPE_CUBEMAP_ARRAY" value="2" enum="LayeredType">
 		</constant>
 	</constants>
 </class>

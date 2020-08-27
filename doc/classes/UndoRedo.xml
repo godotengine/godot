@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UndoRedo" inherits="Object" category="Core" version="3.2">
+<class name="UndoRedo" inherits="Object" version="4.0">
 	<brief_description>
 		Helper to manage undo/redo operations in the editor or custom tools.
 	</brief_description>
@@ -32,11 +32,11 @@
 	</tutorials>
 	<methods>
 		<method name="add_do_method" qualifiers="vararg">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Register a method that will be called when the action is committed.
@@ -47,7 +47,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -65,11 +65,11 @@
 			</description>
 		</method>
 		<method name="add_undo_method" qualifiers="vararg">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Register a method that will be called when the action is undone.
@@ -80,7 +80,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="StringName">
 			</argument>
 			<argument index="2" name="value" type="Variant">
 			</argument>
@@ -155,7 +155,7 @@
 				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
-		<method name="is_commiting_action" qualifiers="const">
+		<method name="is_committing_action" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>

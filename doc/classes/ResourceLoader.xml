@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceLoader" inherits="Object" category="Core" version="3.2">
+<class name="ResourceLoader" inherits="Object" version="4.0">
 	<brief_description>
 		Singleton used to load resource files.
 	</brief_description>
@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="get_dependencies">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -33,21 +33,12 @@
 			</description>
 		</method>
 		<method name="get_recognized_extensions_for_type">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
 				Returns the list of recognized extensions for a resource type.
-			</description>
-		</method>
-		<method name="has">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-				[i]Deprecated method.[/i] Use [method has_cached] or [method exists] instead.
 			</description>
 		</method>
 		<method name="has_cached">
@@ -57,7 +48,7 @@
 			</argument>
 			<description>
 				Returns whether a cached resource is available for the given [code]path[/code].
-				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] or [method load_interactive] methods will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
+				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
 		<method name="load">
@@ -77,16 +68,39 @@
 				Returns an empty resource if no ResourceFormatLoader could handle the file.
 			</description>
 		</method>
-		<method name="load_interactive">
-			<return type="ResourceInteractiveLoader">
+		<method name="load_threaded_get">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Returns the resource loaded by [method load_threaded_request].
+				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading.
+			</description>
+		</method>
+		<method name="load_threaded_get_status">
+			<return type="int" enum="ResourceLoader.ThreadLoadStatus">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="progress" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [code]path[/code]. See [enum ThreadLoadStatus] for possible return values.
+				An array variable can optionally be passed via [code]progress[/code], and will return a one-element array containing the percentage of completion of the threaded loading.
+			</description>
+		</method>
+		<method name="load_threaded_request">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="2" name="use_sub_threads" type="bool" default="false">
+			</argument>
 			<description>
-				Starts loading a resource interactively. The returned [ResourceInteractiveLoader] object allows to load with high granularity, calling its [method ResourceInteractiveLoader.poll] method successively to load chunks.
-				An optional [code]type_hint[/code] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader].
+				Loads the resource using threads. If [code]use_sub_threads[/code] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
 			</description>
 		</method>
 		<method name="set_abort_on_missing_resources">
@@ -100,5 +114,17 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="THREAD_LOAD_INVALID_RESOURCE" value="0" enum="ThreadLoadStatus">
+			The resource is invalid, or has not been loaded with [method load_threaded_request].
+		</constant>
+		<constant name="THREAD_LOAD_IN_PROGRESS" value="1" enum="ThreadLoadStatus">
+			The resource is still being loaded.
+		</constant>
+		<constant name="THREAD_LOAD_FAILED" value="2" enum="ThreadLoadStatus">
+			Some error occurred during loading and it failed.
+		</constant>
+		<constant name="THREAD_LOAD_LOADED" value="3" enum="ThreadLoadStatus">
+			The resource was loaded successfully and can be accessed via [method load_threaded_get].
+		</constant>
 	</constants>
 </class>

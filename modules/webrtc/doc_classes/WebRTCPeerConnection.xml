@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCPeerConnection" inherits="Reference" category="Core" version="3.2">
+<class name="WebRTCPeerConnection" inherits="Reference" version="4.0">
 	<brief_description>
 		Interface to a WebRTC peer connection.
 	</brief_description>
@@ -120,7 +120,7 @@
 			</argument>
 			<description>
 				Sets the SDP description of the local peer. This should be called in response to [signal session_description_created].
-				If [code]type[/code] is [code]answer[/code] the peer will start emitting [signal ice_candidate_created].
+				After calling this function the peer will start emitting [signal ice_candidate_created] (unless an [enum Error] different from [constant OK] is returned).
 			</description>
 		</method>
 		<method name="set_remote_description">
@@ -143,7 +143,7 @@
 			</argument>
 			<description>
 				Emitted when a new in-band channel is received, i.e. when the channel was created with [code]negotiated: false[/code] (default).
-				The object will be an instance of [WebRTCDataChannel]. You must keep a reference of it or it will be closed automatically. See [method create_data_channel]
+				The object will be an instance of [WebRTCDataChannel]. You must keep a reference of it or it will be closed automatically. See [method create_data_channel].
 			</description>
 		</signal>
 		<signal name="ice_candidate_created">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,11 @@
 #ifndef THREAD_DUMMY_H
 #define THREAD_DUMMY_H
 
-#include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
 class ThreadDummy : public Thread {
-
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings());
 
 public:
@@ -46,32 +44,7 @@ public:
 	static void make_default();
 };
 
-class MutexDummy : public Mutex {
-
-	static Mutex *create(bool p_recursive);
-
-public:
-	virtual void lock(){};
-	virtual void unlock(){};
-	virtual Error try_lock() { return OK; };
-
-	static void make_default();
-};
-
-class SemaphoreDummy : public Semaphore {
-
-	static Semaphore *create();
-
-public:
-	virtual Error wait() { return OK; };
-	virtual Error post() { return OK; };
-	virtual int get() const { return 0; }; ///< get semaphore value
-
-	static void make_default();
-};
-
 class RWLockDummy : public RWLock {
-
 	static RWLock *create();
 
 public:
@@ -86,4 +59,4 @@ public:
 	static void make_default();
 };
 
-#endif
+#endif // THREAD_DUMMY_H

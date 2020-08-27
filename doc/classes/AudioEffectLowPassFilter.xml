@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectLowPassFilter" inherits="AudioEffectFilter" category="Core" version="3.2">
+<class name="AudioEffectLowPassFilter" inherits="AudioEffectFilter" version="4.0">
 	<brief_description>
 		Adds a low-pass filter to the Audio bus.
 	</brief_description>

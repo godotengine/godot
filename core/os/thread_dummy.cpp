@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,32 +34,16 @@
 
 Thread *ThreadDummy::create(ThreadCreateCallback p_callback, void *p_user, const Thread::Settings &p_settings) {
 	return memnew(ThreadDummy);
-};
+}
 
 void ThreadDummy::make_default() {
 	Thread::create_func = &ThreadDummy::create;
-};
-
-Mutex *MutexDummy::create(bool p_recursive) {
-	return memnew(MutexDummy);
-};
-
-void MutexDummy::make_default() {
-	Mutex::create_func = &MutexDummy::create;
-};
-
-Semaphore *SemaphoreDummy::create() {
-	return memnew(SemaphoreDummy);
-};
-
-void SemaphoreDummy::make_default() {
-	Semaphore::create_func = &SemaphoreDummy::create;
-};
+}
 
 RWLock *RWLockDummy::create() {
 	return memnew(RWLockDummy);
-};
+}
 
 void RWLockDummy::make_default() {
 	RWLock::create_func = &RWLockDummy::create;
-};
+}

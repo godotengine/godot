@@ -468,7 +468,7 @@ void btQuantizedBvh::walkStacklessTreeAgainstRay(btNodeOverlapCallback* nodeCall
 
 #ifdef RAYAABB2
 	btVector3 rayDir = (rayTarget - raySource);
-	rayDir.normalize();
+	rayDir.safeNormalize();// stephengold changed normalize to safeNormalize 2020-02-17
 	lambda_max = rayDir.dot(rayTarget - raySource);
 	///what about division by zero? --> just set rayDirection[i] to 1.0
 	btVector3 rayDirectionInverse;
@@ -554,7 +554,7 @@ void btQuantizedBvh::walkStacklessQuantizedTreeAgainstRay(btNodeOverlapCallback*
 
 #ifdef RAYAABB2
 	btVector3 rayDirection = (rayTarget - raySource);
-	rayDirection.normalize();
+	rayDirection.safeNormalize();// stephengold changed normalize to safeNormalize 2020-02-17
 	lambda_max = rayDirection.dot(rayTarget - raySource);
 	///what about division by zero? --> just set rayDirection[i] to 1.0
 	rayDirection[0] = rayDirection[0] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDirection[0];

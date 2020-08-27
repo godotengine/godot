@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNode" inherits="Resource" category="Core" version="3.2">
+<class name="AnimationNode" inherits="Resource" version="4.0">
 	<brief_description>
 		Base resource for [AnimationTree] nodes.
 	</brief_description>
@@ -8,6 +8,7 @@
 	Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_input">
@@ -16,13 +17,13 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree]
+				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree].
 			</description>
 		</method>
 		<method name="blend_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="animation" type="String">
+			<argument index="0" name="animation" type="StringName">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -33,7 +34,7 @@
 			<argument index="4" name="blend" type="float">
 			</argument>
 			<description>
-				Blend an animation by "blend" amount (name must be valid in the linked [AnimationPlayer]). A time and delta mas be passed, as well as whether seek happened.
+				Blend an animation by [code]blend[/code] amount (name must be valid in the linked [AnimationPlayer]). A [code]time[/code] and [code]delta[/code] may be passed, as well as whether [code]seek[/code] happened.
 			</description>
 		</method>
 		<method name="blend_input">
@@ -52,13 +53,13 @@
 			<argument index="5" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
-				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. Time is a delta, unless "seek" is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed.
+				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed (see [enum FilterAction] for options).
 			</description>
 		</method>
 		<method name="blend_node">
 			<return type="float">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
@@ -118,7 +119,7 @@
 		<method name="get_parameter" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Gets the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
@@ -127,7 +128,7 @@
 		<method name="get_parameter_default_value" qualifiers="virtual">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
@@ -141,7 +142,7 @@
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">
-			<return type="String">
+			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
@@ -164,10 +165,9 @@
 			<argument index="1" name="seek" type="bool">
 			</argument>
 			<description>
-				Called when a custom node is processed. The argument "time" is relative, unless "seek" is [code]true[/code] (in which case it is absolute).
-			Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions.
-			You can also use [method get_parameter] and [method set_parameter] to modify local memory.
-			This function returns the time left for the current animation to finish (if unsure, just pass  the value from the main blend being called).
+				User-defined callback called when a custom node is processed. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute.
+				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
+				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
 			</description>
 		</method>
 		<method name="remove_input">
@@ -193,7 +193,7 @@
 		<method name="set_parameter">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -204,7 +204,7 @@
 	</methods>
 	<members>
 		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
-			Returns whether filtering is enabled.
+			If [code]true[/code], filtering is enabled.
 		</member>
 	</members>
 	<signals>

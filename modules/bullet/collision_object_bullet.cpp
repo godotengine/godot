@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,7 +60,7 @@ void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_tra
 }
 
 btTransform CollisionObjectBullet::ShapeWrapper::get_adjusted_transform() const {
-	if (shape->get_type() == PhysicsServer::SHAPE_HEIGHTMAP) {
+	if (shape->get_type() == PhysicsServer3D::SHAPE_HEIGHTMAP) {
 		const HeightMapShapeBullet *hm_shape = (const HeightMapShapeBullet *)shape; // should be safe to cast now
 		btTransform adjusted_transform;
 
@@ -79,28 +79,25 @@ btTransform CollisionObjectBullet::ShapeWrapper::get_adjusted_transform() const 
 }
 
 void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_scale) {
-	if (!bt_shape) {
-		if (active)
+	if (bt_shape == nullptr) {
+		if (active) {
 			bt_shape = shape->create_bt_shape(scale * body_scale);
-		else
+		} else {
 			bt_shape = ShapeBullet::create_shape_empty();
+		}
+	}
+}
+
+void CollisionObjectBullet::ShapeWrapper::release_bt_shape() {
+	if (bt_shape != nullptr) {
+		shape->destroy_bt_shape(bt_shape);
+		bt_shape = nullptr;
 	}
 }
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
-		type(p_type),
-		instance_id(0),
-		collisionLayer(0),
-		collisionMask(0),
-		collisionsEnabled(true),
-		m_isStatic(false),
-		ray_pickable(false),
-		bt_collision_object(NULL),
-		body_scale(1., 1., 1.),
-		force_shape_reset(false),
-		space(NULL),
-		isTransformChanged(false) {}
+		type(p_type) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it
@@ -147,22 +144,41 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.insert(p_ignoreCollisionObject->get_self());
-	if (!bt_collision_object)
+	if (!bt_collision_object) {
 		return;
+	}
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, true);
-	if (space)
+	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+	}
 }
 
 void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.erase(p_ignoreCollisionObject->get_self());
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, false);
-	if (space)
+	if (space) {
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
+	}
 }
 
 bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const {
 	return !bt_collision_object->checkCollideWith(p_otherCollisionObject->bt_collision_object);
+}
+
+void CollisionObjectBullet::reload_body() {
+	needs_body_reload = true;
+}
+
+void CollisionObjectBullet::dispatch_callbacks() {}
+
+void CollisionObjectBullet::pre_process() {
+	if (needs_body_reload) {
+		do_reload_body();
+	} else if (needs_collision_filters_reload) {
+		do_reload_collision_filters();
+	}
+	needs_body_reload = false;
+	needs_collision_filters_reload = false;
 }
 
 void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {
@@ -195,7 +211,6 @@ int CollisionObjectBullet::get_godot_object_flags() const {
 }
 
 void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
-
 	set_body_scale(p_global_transform.basis.get_scale_abs());
 
 	btTransform bt_transform;
@@ -225,11 +240,6 @@ void CollisionObjectBullet::notify_transform_changed() {
 	isTransformChanged = true;
 }
 
-RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
-		CollisionObjectBullet(p_type),
-		mainShape(NULL) {
-}
-
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	remove_all_shapes(true, true);
 	if (mainShape && mainShape->isCompound()) {
@@ -244,7 +254,7 @@ void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform
 }
 
 void RigidCollisionObjectBullet::set_shape(int p_index, ShapeBullet *p_shape) {
-	ShapeWrapper &shp = shapes.write[p_index];
+	ShapeWrapper &shp = shapes[p_index];
 	shp.shape->remove_owner(this);
 	p_shape->add_owner(this);
 	shp.shape = p_shape;
@@ -266,8 +276,9 @@ btCollisionShape *RigidCollisionObjectBullet::get_bt_shape(int p_index) const {
 int RigidCollisionObjectBullet::find_shape(ShapeBullet *p_shape) const {
 	const int size = shapes.size();
 	for (int i = 0; i < size; ++i) {
-		if (shapes[i].shape == p_shape)
+		if (shapes[i].shape == p_shape) {
 			return i;
+		}
 	}
 	return -1;
 }
@@ -297,14 +308,15 @@ void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBod
 		internal_shape_destroy(i, p_permanentlyFromThisBody);
 	}
 	shapes.clear();
-	if (!p_force_not_reload)
+	if (!p_force_not_reload) {
 		reload_shapes();
+	}
 }
 
 void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
-	shapes.write[p_index].set_transform(p_transform);
+	shapes[p_index].set_transform(p_transform);
 	shape_changed(p_index);
 }
 
@@ -319,9 +331,10 @@ Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
 }
 
 void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
-	if (shapes[p_index].active != p_disabled)
+	if (shapes[p_index].active != p_disabled) {
 		return;
-	shapes.write[p_index].active = !p_disabled;
+	}
+	shapes[p_index].active = !p_disabled;
 	shape_changed(p_index);
 }
 
@@ -329,59 +342,67 @@ bool RigidCollisionObjectBullet::is_shape_disabled(int p_index) {
 	return !shapes[p_index].active;
 }
 
-void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
-	ShapeWrapper &shp = shapes.write[p_shape_index];
-	if (shp.bt_shape == mainShape) {
-		mainShape = NULL;
+void RigidCollisionObjectBullet::pre_process() {
+	if (need_shape_reload) {
+		do_reload_shapes();
+		need_shape_reload = false;
 	}
-	bulletdelete(shp.bt_shape);
+	CollisionObjectBullet::pre_process();
+}
+
+void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
+	ShapeWrapper &shp = shapes[p_shape_index];
+	if (shp.bt_shape == mainShape) {
+		mainShape = nullptr;
+	}
+	shp.release_bt_shape();
 	reload_shapes();
 }
 
 void RigidCollisionObjectBullet::reload_shapes() {
+	need_shape_reload = true;
+}
 
+void RigidCollisionObjectBullet::do_reload_shapes() {
 	if (mainShape && mainShape->isCompound()) {
 		// Destroy compound
 		bulletdelete(mainShape);
 	}
 
-	mainShape = NULL;
+	mainShape = nullptr;
 
-	ShapeWrapper *shpWrapper;
 	const int shape_count = shapes.size();
 
-	// Reset shape if required
+	// Reset all shapes if required
 	if (force_shape_reset) {
 		for (int i(0); i < shape_count; ++i) {
-			shpWrapper = &shapes.write[i];
-			bulletdelete(shpWrapper->bt_shape);
+			shapes[i].release_bt_shape();
 		}
 		force_shape_reset = false;
 	}
 
 	const btVector3 body_scale(get_bt_body_scale());
 
-	// Try to optimize by not using compound
 	if (1 == shape_count) {
-		shpWrapper = &shapes.write[0];
-		btTransform transform = shpWrapper->get_adjusted_transform();
+		// Is it possible to optimize by not using compound?
+		btTransform transform = shapes[0].get_adjusted_transform();
 		if (transform.getOrigin().isZero() && transform.getBasis() == transform.getBasis().getIdentity()) {
-			shpWrapper->claim_bt_shape(body_scale);
-			mainShape = shpWrapper->bt_shape;
+			shapes[0].claim_bt_shape(body_scale);
+			mainShape = shapes[0].bt_shape;
 			main_shape_changed();
+			// Nothing more to do
 			return;
 		}
 	}
 
-	// Optimization not possible use a compound shape
+	// Optimization not possible use a compound shape.
 	btCompoundShape *compoundShape = bulletnew(btCompoundShape(enableDynamicAabbTree, shape_count));
 
 	for (int i(0); i < shape_count; ++i) {
-		shpWrapper = &shapes.write[i];
-		shpWrapper->claim_bt_shape(body_scale);
-		btTransform scaled_shape_transform(shpWrapper->get_adjusted_transform());
+		shapes[i].claim_bt_shape(body_scale);
+		btTransform scaled_shape_transform(shapes[i].get_adjusted_transform());
 		scaled_shape_transform.getOrigin() *= body_scale;
-		compoundShape->addChildShape(scaled_shape_transform, shpWrapper->bt_shape);
+		compoundShape->addChildShape(scaled_shape_transform, shapes[i].bt_shape);
 	}
 
 	compoundShape->recalculateLocalAabb();
@@ -395,10 +416,10 @@ void RigidCollisionObjectBullet::body_scale_changed() {
 }
 
 void RigidCollisionObjectBullet::internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody) {
-	ShapeWrapper &shp = shapes.write[p_index];
+	ShapeWrapper &shp = shapes[p_index];
 	shp.shape->remove_owner(this, p_permanentlyFromThisBody);
 	if (shp.bt_shape == mainShape) {
-		mainShape = NULL;
+		mainShape = nullptr;
 	}
-	bulletdelete(shp.bt_shape);
+	shp.release_bt_shape();
 }

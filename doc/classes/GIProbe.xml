@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GIProbe" inherits="VisualInstance" category="Core" version="3.2">
+<class name="GIProbe" inherits="VisualInstance3D" version="4.0">
 	<brief_description>
+		Real-time global illumination (GI) probe.
 	</brief_description>
 	<description>
+		[GIProbe]s are used to provide high-quality real-time indirect light to scenes. They precompute the effect of objects that emit light and the effect of static geometry to simulate the behavior of complex light in real-time. [GIProbe]s need to be baked before using, however, once baked, dynamic objects will receive light from them. Further, lights can be fully dynamic or baked.
+		Having [GIProbe]s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the [ProjectSettings] using [member ProjectSettings.rendering/quality/gi_probes/quality].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
@@ -16,45 +19,40 @@
 			<argument index="1" name="create_visual_debug" type="bool" default="false">
 			</argument>
 			<description>
+				Bakes the effect from all [GeometryInstance3D]s marked with [constant GeometryInstance3D.GI_MODE_BAKED] and [Light3D]s marked with either [constant Light3D.BAKE_DYNAMIC] or [constant Light3D.BAKE_STATIC]. If [code]create_visual_debug[/code] is [code]true[/code], after baking the light, this will generate a [MultiMesh] that has a cube representing each solid cell with each cube colored to the cell's albedo color. This can be used to visualize the [GIProbe]'s data and debug any issues that may be occurring.
 			</description>
 		</method>
 		<method name="debug_bake">
 			<return type="void">
 			</return>
 			<description>
+				Calls [method bake] with [code]create_visual_debug[/code] enabled.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="1.5">
-		</member>
-		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" default="false">
-		</member>
 		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data">
-		</member>
-		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" default="4">
-		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
+			The [GIProbeData] resource that holds the data for this [GIProbe].
 		</member>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
-		</member>
-		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
-		</member>
-		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" default="0.0">
-		</member>
-		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="0.7">
+			The size of the area covered by the [GIProbe]. If you make the extents larger without increasing the subdivisions with [member subdiv], the size of each cell will increase and result in lower detailed lighting.
 		</member>
 		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="GIProbe.Subdiv" default="1">
+			Number of times to subdivide the grid that the [GIProbe] operates on. A higher number results in finer detail and thus higher visual quality, while lower numbers result in better performance.
 		</member>
 	</members>
 	<constants>
 		<constant name="SUBDIV_64" value="0" enum="Subdiv">
+			Use 64 subdivisions. This is the lowest quality setting, but the fastest. Use it if you can, but especially use it on lower-end hardware.
 		</constant>
 		<constant name="SUBDIV_128" value="1" enum="Subdiv">
+			Use 128 subdivisions. This is the default quality setting.
 		</constant>
 		<constant name="SUBDIV_256" value="2" enum="Subdiv">
+			Use 256 subdivisions.
 		</constant>
 		<constant name="SUBDIV_512" value="3" enum="Subdiv">
+			Use 512 subdivisions. This is the highest quality setting, but the slowest. On lower-end hardware this could cause the GPU to stall.
 		</constant>
 		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
 			Represents the size of the [enum Subdiv] enum.

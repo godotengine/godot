@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CheckBox" inherits="Button" category="Core" version="3.2">
+<class name="CheckBox" inherits="Button" version="4.0">
 	<brief_description>
-		Binary choice user interface widget.
+		Binary choice user interface widget. See also [CheckButton].
 	</brief_description>
 	<description>
-		A checkbox allows the user to make a binary choice (choosing only one of two possible options).
+		A checkbox allows the user to make a binary choice (choosing only one of two possible options). It's similar to [CheckButton] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use CheckBox when toggling it has [b]no[/b] immediate effect on something. For instance, it should be used when toggling it will only do something once a confirmation button is pressed.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,41 +18,58 @@
 	</constants>
 	<theme_items>
 		<theme_item name="check_vadjust" type="int" default="0">
-			The vertical offset used when rendering the check icons.
+			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
-		<theme_item name="checked" type="Texture">
+		<theme_item name="checked" type="Texture2D">
+			The check icon to display when the [CheckBox] is checked.
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is disabled.
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is focused.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			The [Font] to use for the [CheckBox] text.
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			The [CheckBox] text's font color.
 		</theme_item>
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+			The [CheckBox] text's font color when it's disabled.
 		</theme_item>
 		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			The [CheckBox] text's font color when it's hovered.
 		</theme_item>
 		<theme_item name="font_color_hover_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+			The [CheckBox] text's font color when it's hovered and pressed.
 		</theme_item>
 		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+			The [CheckBox] text's font color when it's pressed.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is hovered.
 		</theme_item>
 		<theme_item name="hover_pressed" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is hovered and pressed.
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
+			The separation between the check icon and the text (in pixels).
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
+			The [StyleBox] to display as a background.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is pressed.
 		</theme_item>
-		<theme_item name="radio_checked" type="Texture">
+		<theme_item name="radio_checked" type="Texture2D">
+			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is checked.
 		</theme_item>
-		<theme_item name="radio_unchecked" type="Texture">
+		<theme_item name="radio_unchecked" type="Texture2D">
+			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is unchecked.
 		</theme_item>
-		<theme_item name="unchecked" type="Texture">
+		<theme_item name="unchecked" type="Texture2D">
+			The check icon to display when the [CheckBox] is unchecked.
 		</theme_item>
 	</theme_items>
 </class>

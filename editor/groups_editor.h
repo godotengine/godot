@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,12 +38,10 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-class GroupDialog : public WindowDialog {
-
-	GDCLASS(GroupDialog, WindowDialog);
+class GroupDialog : public AcceptDialog {
+	GDCLASS(GroupDialog, AcceptDialog);
 
 	ConfirmationDialog *error;
 
@@ -64,8 +62,8 @@ class GroupDialog : public WindowDialog {
 
 	Label *group_empty;
 
-	ToolButton *add_button;
-	ToolButton *remove_button;
+	Button *add_button;
+	Button *remove_button;
 
 	String selected_group;
 
@@ -104,7 +102,6 @@ public:
 };
 
 class GroupsEditor : public VBoxContainer {
-
 	GDCLASS(GroupsEditor, VBoxContainer);
 
 	Node *node;

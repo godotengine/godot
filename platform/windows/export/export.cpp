@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@
 static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
-
 	void _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
@@ -85,7 +84,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/timestamp_server_url"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/digest_algorithm", PROPERTY_HINT_ENUM, "SHA1,SHA256"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/description"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "codesign/custom_options"), PoolStringArray()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0"), ""));
@@ -105,7 +104,7 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	}
 
 	if (!FileAccess::exists(rcedit_path)) {
-		ERR_PRINTS("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
+		ERR_PRINT("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
 		return;
 	}
 
@@ -114,7 +113,7 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
 	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		ERR_PRINTS("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
+		ERR_PRINT("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
 		return;
 	}
 
@@ -188,7 +187,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #ifdef WINDOWS_ENABLED
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/signtool");
 	if (signtool_path != String() && !FileAccess::exists(signtool_path)) {
-		ERR_PRINTS("Could not find signtool executable at " + signtool_path + ", aborting.");
+		ERR_PRINT("Could not find signtool executable at " + signtool_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 	if (signtool_path == String()) {
@@ -197,7 +196,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #else
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/osslsigncode");
 	if (signtool_path != String() && !FileAccess::exists(signtool_path)) {
-		ERR_PRINTS("Could not find osslsigncode executable at " + signtool_path + ", aborting.");
+		ERR_PRINT("Could not find osslsigncode executable at " + signtool_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 	if (signtool_path == String()) {
@@ -297,7 +296,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 
 	//user options
-	PoolStringArray user_args = p_preset->get("codesign/custom_options");
+	PackedStringArray user_args = p_preset->get("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
 		if (!user_arg.empty()) {
@@ -315,7 +314,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #endif
 
 	String str;
-	Error err = OS::get_singleton()->execute(signtool_path, args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute(signtool_path, args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign (" + p_path + "): " + str);
@@ -331,7 +330,6 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 }
 
 void register_windows_exporter() {
-
 	EDITOR_DEF("export/windows/rcedit", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
 #ifdef WINDOWS_ENABLED
@@ -366,7 +364,6 @@ void register_windows_exporter() {
 }
 
 static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
-
 	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ_WRITE);
@@ -408,7 +405,6 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 	bool found = false;
 	for (int i = 0; i < num_sections; ++i) {
-
 		int64_t section_header_pos = section_table_pos + i * 40;
 		f->seek(section_header_pos);
 

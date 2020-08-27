@@ -17,7 +17,6 @@ subject to the following restrictions:
 #define BT_DISCRETE_DYNAMICS_WORLD_H
 
 #include "btDynamicsWorld.h"
-
 class btDispatcher;
 class btOverlappingPairCache;
 class btConstraintSolver;
@@ -26,6 +25,7 @@ class btTypedConstraint;
 class btActionInterface;
 class btPersistentManifold;
 class btIDebugDraw;
+
 struct InplaceSolverIslandCallback;
 
 #include "LinearMath/btAlignedObjectArray.h"
@@ -76,7 +76,7 @@ protected:
 
 	virtual void calculateSimulationIslands();
 
-	virtual void solveConstraints(btContactSolverInfo & solverInfo);
+	
 
 	virtual void updateActivationState(btScalar timeStep);
 
@@ -95,7 +95,7 @@ protected:
 	void serializeRigidBodies(btSerializer * serializer);
 
 	void serializeDynamicsWorldInfo(btSerializer * serializer);
-
+    
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
@@ -107,6 +107,8 @@ public:
 	///if maxSubSteps > 0, it will interpolate motion between fixedTimeStep's
 	virtual int stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.) / btScalar(60.));
 
+    virtual void solveConstraints(btContactSolverInfo & solverInfo);
+    
 	virtual void synchronizeMotionStates();
 
 	///this can be useful to synchronize a single rigid body -> graphics object
@@ -227,6 +229,16 @@ public:
 	{
 		return m_latencyMotionStateInterpolation;
 	}
+    
+    btAlignedObjectArray<btRigidBody*>& getNonStaticRigidBodies()
+    {
+        return m_nonStaticRigidBodies;
+    }
+    
+    const btAlignedObjectArray<btRigidBody*>& getNonStaticRigidBodies() const
+    {
+        return m_nonStaticRigidBodies;
+    }
 };
 
 #endif  //BT_DISCRETE_DYNAMICS_WORLD_H

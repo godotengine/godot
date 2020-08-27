@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 class ResourceSaverPNG : public ResourceFormatSaver {
 public:
 	static Error save_image(const String &p_path, const Ref<Image> &p_img);
+	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img);
 
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 	virtual bool recognize(const RES &p_resource) const;

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" category="Core" version="3.2">
+<class name="ItemList" inherits="Control" version="4.0">
 	<brief_description>
 		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
 	<description>
 		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
-		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing Enter.
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing [kbd]Enter[/kbd].
+		Item text only supports single-line strings, newline characters (e.g. [code]\n[/code]) in the string won't produce a newline. Text wrapping is enabled in [constant ICON_MODE_TOP] mode, but column's width is adjusted to fully fit its content by default. You need to set [member fixed_column_width] greater than zero to wrap the text.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +14,7 @@
 		<method name="add_icon_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="icon" type="Texture">
+			<argument index="0" name="icon" type="Texture2D">
 			</argument>
 			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
@@ -26,7 +27,7 @@
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="null">
+			<argument index="1" name="icon" type="Texture2D" default="null">
 			</argument>
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
@@ -57,7 +58,8 @@
 			<argument index="1" name="exact" type="bool" default="false">
 			</argument>
 			<description>
-				Given a position within the control return the item (if any) at that point.
+				Returns the item index at the given [code]position[/code].
+				When there is no item at that point, -1 will be returned if [code]exact[/code] is [code]true[/code], and the closest item index will be returned otherwise.
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
@@ -86,7 +88,7 @@
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -109,6 +111,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the region of item's icon used. The whole icon will be used if the region has no area.
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
@@ -139,7 +142,7 @@
 			</description>
 		</method>
 		<method name="get_selected_items">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 				Returns an array with the indexes of the selected items.
@@ -174,6 +177,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the item icon will be drawn transposed, i.e. the X and Y axes are swapped.
 			</description>
 		</method>
 		<method name="is_item_selectable" qualifiers="const">
@@ -274,7 +278,7 @@
 			</argument>
 			<description>
 				Disables (or enables) the item at the specified index.
-				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing Enter).
+				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing [kbd]Enter[/kbd]).
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -282,10 +286,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture2D">
 			</argument>
 			<description>
-				Sets (or replaces) the icon's [Texture] associated with the specified index.
+				Sets (or replaces) the icon's [Texture2D] associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_modulate">
@@ -307,6 +311,7 @@
 			<argument index="1" name="rect" type="Rect2">
 			</argument>
 			<description>
+				Sets the region of item's icon used. The whole icon will be used if the region has no area.
 			</description>
 		</method>
 		<method name="set_item_icon_transposed">
@@ -314,9 +319,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="rect" type="bool">
+			<argument index="1" name="transposed" type="bool">
 			</argument>
 			<description>
+				Sets whether the item icon will be drawn transposed.
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -409,26 +415,33 @@
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
-			Sets the default column width in pixels. If left to default value, each item will have a width equal to the width of its content and the columns will have an uneven width.
+			The width all columns will be adjusted to.
+			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
 		</member>
 		<member name="fixed_icon_size" type="Vector2" setter="set_fixed_icon_size" getter="get_fixed_icon_size" default="Vector2( 0, 0 )">
-			Sets the default icon size in pixels.
+			The size all icons will be adjusted to.
+			If either X or Y component is not greater than zero, icon size won't be affected.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode" default="1">
-			Sets the default position of the icon to either [constant ICON_MODE_LEFT] or [constant ICON_MODE_TOP].
+			The icon position, whether above or to the left of the text. See the [enum IconMode] constants.
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
-			Sets the icon size to its initial size multiplied by the specified scale.
+			The scale of icon applied after [member fixed_icon_size] and transposing takes effect.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
-			Sets the maximum columns the list will have. If set to anything other than the default, the content will be split among the specified columns.
+			Maximum columns the list will have.
+			If greater than zero, the content will be split among the specified columns.
+			A value of zero means unlimited columns, i.e. all items will be put in the same row.
 		</member>
 		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines" default="1">
+			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
+			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
-			If set to [code]true[/code], all columns will have the same width specified by [member fixed_column_width].
+			Whether all columns will have the same width.
+			If [code]true[/code], the width is equal to the largest column width of all columns.
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
 			Allows single or multiple item selection. See the [enum SelectMode] constants.
@@ -439,7 +452,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Triggered when specified list item is activated via double-clicking or by pressing Enter.
+				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
@@ -486,44 +499,60 @@
 	</signals>
 	<constants>
 		<constant name="ICON_MODE_TOP" value="0" enum="IconMode">
+			Icon is drawn above the text.
 		</constant>
 		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
+			Icon is drawn to the left of the text.
 		</constant>
 		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
 			Only allow selecting a single item.
 		</constant>
 		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
-			Allows selecting multiple items by holding Ctrl or Shift.
+			Allows selecting multiple items by holding [kbd]Ctrl[/kbd] or [kbd]Shift[/kbd].
 		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="bg" type="StyleBox">
+			Default [StyleBox] for the [ItemList], i.e. used when the control is not being focused.
 		</theme_item>
 		<theme_item name="bg_focus" type="StyleBox">
+			[StyleBox] used when the [ItemList] is being focused.
 		</theme_item>
 		<theme_item name="cursor" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is being focused.
 		</theme_item>
 		<theme_item name="cursor_unfocused" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			[Font] of the item's text.
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.63, 0.63, 0.63, 1 )">
+			Default text [Color] of the item.
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
+			Text [Color] used when the item is selected.
 		</theme_item>
 		<theme_item name="guide_color" type="Color" default="Color( 0, 0, 0, 0.1 )">
+			[Color] of the guideline. The guideline is a line drawn between each row of items.
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
+			The horizontal spacing between items.
 		</theme_item>
 		<theme_item name="icon_margin" type="int" default="4">
+			The spacing between item's icon and text.
 		</theme_item>
 		<theme_item name="line_separation" type="int" default="2">
+			The vertical spacing between each line of text.
 		</theme_item>
 		<theme_item name="selected" type="StyleBox">
+			[StyleBox] for the selected items, used when the [ItemList] is not being focused.
 		</theme_item>
 		<theme_item name="selected_focus" type="StyleBox">
+			[StyleBox] for the selected items, used when the [ItemList] is being focused.
 		</theme_item>
 		<theme_item name="vseparation" type="int" default="2">
+			The vertical spacing between items.
 		</theme_item>
 	</theme_items>
 </class>

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDScriptFunctionState" inherits="Reference" category="Core" version="3.2">
+<class name="GDScriptFunctionState" inherits="Reference" version="4.0">
 	<brief_description>
 		State of a function call after yielding.
 	</brief_description>
 	<description>
-		Calling [method @GDScript.yield] within a function will cause that function to yield and return its current state as an object of this type. The yielded function call can then be resumed later by calling [method resume] on this state object.
+		FIXME: Outdated docs as of GDScript rewrite in 4.0.
+		Calling [code]yield[/code] within a function will cause that function to yield and return its current state as an object of this type. The yielded function call can then be resumed later by calling [method resume] on this state object.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,14 +27,14 @@
 			</argument>
 			<description>
 				Resume execution of the yielded function call.
-				If handed an argument, return the argument from the [method @GDScript.yield] call in the yielded function call. You can pass e.g. an [Array] to hand multiple arguments.
+				If handed an argument, return the argument from the [code]yield[/code] call in the yielded function call. You can pass e.g. an [Array] to hand multiple arguments.
 				This function returns what the resumed function call returns, possibly another function state if yielded again.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="completed">
-			<argument index="0" name="result" type="Nil">
+			<argument index="0" name="result" type="Variant">
 			</argument>
 			<description>
 			</description>

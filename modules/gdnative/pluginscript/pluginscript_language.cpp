@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,7 @@ Ref<Script> PluginScriptLanguage::get_template(const String &p_class_name, const
 }
 
 bool PluginScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
-	PoolStringArray functions;
+	PackedStringArray functions;
 	if (_desc.validate) {
 		bool ret = _desc.validate(
 				_data,
@@ -118,7 +118,7 @@ bool PluginScriptLanguage::validate(const String &p_script, int &r_line_error, i
 				&r_col_error,
 				(godot_string *)&r_test_error,
 				(godot_string *)&p_path,
-				(godot_pool_string_array *)&functions);
+				(godot_packed_string_array *)&functions);
 		for (int i = 0; i < functions.size(); i++) {
 			r_functions->push_back(functions[i]);
 		}
@@ -149,9 +149,9 @@ int PluginScriptLanguage::find_function(const String &p_function, const String &
 	return -1;
 }
 
-String PluginScriptLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+String PluginScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 	if (_desc.make_function) {
-		godot_string tmp = _desc.make_function(_data, (godot_string *)&p_class, (godot_string *)&p_name, (godot_pool_string_array *)&p_args);
+		godot_string tmp = _desc.make_function(_data, (godot_string *)&p_class, (godot_string *)&p_name, (godot_packed_string_array *)&p_args);
 		String ret = *(String *)&tmp;
 		godot_string_destroy(&tmp);
 		return ret;
@@ -187,8 +187,7 @@ void PluginScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int
 }
 
 void PluginScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
-	const String variable = String(p_variable);
-	_desc.add_global_constant(_data, (godot_string *)&variable, (godot_variant *)&p_value);
+	_desc.add_global_constant(_data, (godot_string_name *)&p_variable, (godot_variant *)&p_value);
 }
 
 /* LOADER FUNCTIONS */
@@ -211,7 +210,7 @@ void PluginScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) c
 	}
 }
 
-void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_constants) const {
+void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 	// TODO: provide this statically in `godot_pluginscript_language_desc` ?
 	if (_desc.get_public_constants) {
 		Dictionary constants;
@@ -337,9 +336,9 @@ String PluginScriptLanguage::debug_get_stack_level_source(int p_level) const {
 
 void PluginScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_desc.debug_get_stack_level_locals) {
-		PoolStringArray locals;
+		PackedStringArray locals;
 		Array values;
-		_desc.debug_get_stack_level_locals(_data, p_level, (godot_pool_string_array *)&locals, (godot_array *)&values, p_max_subitems, p_max_depth);
+		_desc.debug_get_stack_level_locals(_data, p_level, (godot_packed_string_array *)&locals, (godot_array *)&values, p_max_subitems, p_max_depth);
 		for (int i = 0; i < locals.size(); i++) {
 			p_locals->push_back(locals[i]);
 		}
@@ -351,9 +350,9 @@ void PluginScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 void PluginScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_desc.debug_get_stack_level_members) {
-		PoolStringArray members;
+		PackedStringArray members;
 		Array values;
-		_desc.debug_get_stack_level_members(_data, p_level, (godot_pool_string_array *)&members, (godot_array *)&values, p_max_subitems, p_max_depth);
+		_desc.debug_get_stack_level_members(_data, p_level, (godot_packed_string_array *)&members, (godot_array *)&values, p_max_subitems, p_max_depth);
 		for (int i = 0; i < members.size(); i++) {
 			p_members->push_back(members[i]);
 		}
@@ -365,9 +364,9 @@ void PluginScriptLanguage::debug_get_stack_level_members(int p_level, List<Strin
 
 void PluginScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_desc.debug_get_globals) {
-		PoolStringArray locals;
+		PackedStringArray locals;
 		Array values;
-		_desc.debug_get_globals(_data, (godot_pool_string_array *)&locals, (godot_array *)&values, p_max_subitems, p_max_depth);
+		_desc.debug_get_globals(_data, (godot_packed_string_array *)&locals, (godot_array *)&values, p_max_subitems, p_max_depth);
 		for (int i = 0; i < locals.size(); i++) {
 			p_locals->push_back(locals[i]);
 		}
@@ -400,39 +399,18 @@ void PluginScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool 
 }
 
 void PluginScriptLanguage::lock() {
-#ifndef NO_THREADS
-	if (_lock) {
-		_lock->lock();
-	}
-#endif
+	_lock.lock();
 }
 
 void PluginScriptLanguage::unlock() {
-#ifndef NO_THREADS
-	if (_lock) {
-		_lock->unlock();
-	}
-#endif
+	_lock.unlock();
 }
 
 PluginScriptLanguage::PluginScriptLanguage(const godot_pluginscript_language_desc *desc) :
 		_desc(*desc) {
 	_resource_loader = Ref<ResourceFormatLoaderPluginScript>(memnew(ResourceFormatLoaderPluginScript(this)));
 	_resource_saver = Ref<ResourceFormatSaverPluginScript>(memnew(ResourceFormatSaverPluginScript(this)));
-
-// TODO: totally remove _lock attribute if NO_THREADS is set
-#ifdef NO_THREADS
-	_lock = NULL;
-#else
-	_lock = Mutex::create();
-#endif
 }
 
 PluginScriptLanguage::~PluginScriptLanguage() {
-#ifndef NO_THREADS
-	if (_lock) {
-		memdelete(_lock);
-		_lock = NULL;
-	}
-#endif
 }

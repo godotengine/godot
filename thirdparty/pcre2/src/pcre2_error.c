@@ -184,6 +184,8 @@ static const unsigned char compile_error_texts[] =
   /* 95 */
   "(*alpha_assertion) not recognized\0"
   "script runs require Unicode support, which this version of PCRE2 does not have\0"
+  "too many capturing groups (maximum 65535)\0"
+  "atomic assertion expected after (?( or (?(?C)\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -268,6 +270,7 @@ static const unsigned char match_error_texts[] =
   "invalid syntax\0"
   /* 65 */
   "internal error - duplicate substitution match\0"
+  "PCRE2_MATCH_INVALID_UTF is not supported for DFA matching\0"
   ;
 
 

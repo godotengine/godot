@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVec3Constant" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeVec3Constant" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		A [Vector3] constant to be used within the visual shader graph.
 	</brief_description>
 	<description>
+		A constant [Vector3], which can be used as an input node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,8 +12,8 @@
 	</methods>
 	<members>
 		<member name="constant" type="Vector3" setter="set_constant" getter="get_constant" default="Vector3( 0, 0, 0 )">
+			A [Vector3] constant which represents the state of this node.
 		</member>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
 	</members>
 	<constants>
 	</constants>

@@ -4,7 +4,7 @@
  *
  *   The FreeType glyph loader (body).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg
  *
  * This file is part of the FreeType project, and may only be used,
@@ -146,9 +146,9 @@
     FT_Outline*  current = &loader->current.outline;
 
 
-    current->points   = base->points   + base->n_points;
-    current->tags     = base->tags     + base->n_points;
-    current->contours = base->contours + base->n_contours;
+    current->points   = FT_OFFSET( base->points,   base->n_points );
+    current->tags     = FT_OFFSET( base->tags,     base->n_points );
+    current->contours = FT_OFFSET( base->contours, base->n_contours );
 
     /* handle extra points table - if any */
     if ( loader->use_extra )
@@ -168,6 +168,10 @@
     FT_Error   error;
     FT_Memory  memory = loader->memory;
 
+
+    if ( loader->max_points == 0           ||
+         loader->base.extra_points != NULL )
+      return FT_Err_Ok;
 
     if ( !FT_NEW_ARRAY( loader->base.extra_points, 2 * loader->max_points ) )
     {
@@ -189,7 +193,7 @@
     FT_GlyphLoad  current = &loader->current;
 
 
-    current->subglyphs = base->subglyphs + base->num_subglyphs;
+    current->subglyphs = FT_OFFSET( base->subglyphs, base->num_subglyphs );
   }
 
 
@@ -210,6 +214,10 @@
 
     FT_UInt      new_max, old_max;
 
+
+    error = FT_GlyphLoader_CreateExtra( loader );
+    if ( error )
+      return error;
 
     /* check points & tags */
     new_max = (FT_UInt)base->n_points + (FT_UInt)current->n_points +
@@ -243,6 +251,10 @@
       adjust = 1;
       loader->max_points = new_max;
     }
+
+    error = FT_GlyphLoader_CreateExtra( loader );
+    if ( error )
+      return error;
 
     /* check contours */
     old_max = loader->max_contours;

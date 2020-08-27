@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystemDirectory" inherits="Object" category="Core" version="3.2">
+<class name="EditorFileSystemDirectory" inherits="Object" version="4.0">
 	<brief_description>
 		A directory for the resource filesystem.
 	</brief_description>
@@ -67,6 +67,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the base class of the script class defined in the file at index [code]idx[/code]. If the file doesn't define a script class using the [code]class_name[/code] syntax, this will return an empty string.
 			</description>
 		</method>
 		<method name="get_file_script_class_name" qualifiers="const">
@@ -75,10 +76,11 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the script class defined in the file at index [code]idx[/code]. If the file doesn't define a script class using the [code]class_name[/code] syntax, this will return an empty string.
 			</description>
 		</method>
 		<method name="get_file_type" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

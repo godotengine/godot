@@ -1,19 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Dictionary" category="Built-In Types" version="3.2">
+<class name="Dictionary" version="4.0">
 	<brief_description>
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are always passed by reference.
-		Erasing elements while iterating over them [b]is not supported[/b].
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as an hash map or associative array.
+		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
+		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
+		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		Creating a dictionary:
 		[codeblock]
-		var d = {4: 5, "A key": "A value", 28: [1, 2, 3]}
+		var my_dir = {} # Creates an empty dictionary.
+		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+		var another_dir = {
+		    key1: value1,
+		    key2: value2,
+		    key3: value3,
+		}
+		[/codeblock]
+		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
+		[codeblock]
+		export(String, "White", "Yellow", "Orange") var my_color
+		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+
+		func _ready():
+		    # We can't use dot syntax here as `my_color` is a variable.
+		    var points = points_dir[my_color]
+		[/codeblock]
+		In the above code, [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
+		Dictionaries can contain more complex data:
+		[codeblock]
+		my_dir = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
 		[/codeblock]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
 		[codeblock]
-		d[4] = "hello"  # Add integer 4 as a key and assign the String "hello" as its value.
-		d["Godot"] = 3.01  # Add String "Godot" as a key and assign the value 3.01 to it.
+		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
+		points_dir["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
+		[/codeblock]
+		Finally, dictionaries can contain different types of keys and values in the same dictionary:
+		[codeblock]
+		# This is a valid dictionary.
+		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
+		# Indexing styles can be mixed and matched depending on your needs.
+		var my_dir = {
+		    "String Key": 5,
+		    4: [1, 2, 3],
+		    7: "Hello",
+		    "sub_dir": {"sub_key": "Nested value"},
+		}
+		[/codeblock]
+		[b]Note:[/b] Unlike [Array]s, you can't compare dictionaries directly:
+		[codeblock]
+		array1 = [1, 2, 3]
+		array2 = [1, 2, 3]
+
+		func compare_arrays():
+		    print(array1 == array2) # Will print true.
+
+		dir1 = {"a": 1, "b": 2, "c": 3}
+		dir2 = {"a": 1, "b": 2, "c": 3}
+
+		func compare_dictionaries():
+		    print(dir1 == dir2) # Will NOT print true.
+		[/codeblock]
+		You need to first calculate the dictionary's hash with [method hash] before you can compare them:
+		[codeblock]
+		dir1 = {"a": 1, "b": 2, "c": 3}
+		dir2 = {"a": 1, "b": 2, "c": 3}
+
+		func compare_dictionaries():
+		    print(dir1.hash() == dir2.hash()) # Will print true.
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -21,6 +77,8 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
+			<return type="void">
+			</return>
 			<description>
 				Clear the dictionary, removing all key/value pairs.
 			</description>
@@ -28,10 +86,10 @@
 		<method name="duplicate">
 			<return type="Dictionary">
 			</return>
-			<argument index="0" name="deep" type="bool" default="False">
+			<argument index="0" name="deep" type="bool" default="false">
 			</argument>
 			<description>
-				Creates a copy of the dictionary, and returns it.
+				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
 		<method name="empty">
@@ -55,7 +113,7 @@
 			</return>
 			<argument index="0" name="key" type="Variant">
 			</argument>
-			<argument index="1" name="default" type="Variant" default="Null">
+			<argument index="1" name="default" type="Variant" default="null">
 			</argument>
 			<description>
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
@@ -68,6 +126,13 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
+				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
+				[codeblock]
+				# Will evaluate to `true`.
+				if "godot" in {"godot": "engine"}:
+				    pass
+				[/codeblock]
+				This method (like the [code]in[/code] operator) will evaluate to [code]true[/code] as long as the key exists, even if the associated value is [code]null[/code].
 			</description>
 		</method>
 		<method name="has_all">
@@ -90,6 +155,7 @@
 				# The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
 				print(dict1.hash() == dict2.hash())
 				[/codeblock]
+				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
 		<method name="keys">

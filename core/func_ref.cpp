@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,16 +30,15 @@
 
 #include "func_ref.h"
 
-Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-
-	if (id == 0) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	if (id.is_null()) {
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 	Object *obj = ObjectDB::get_instance(id);
 
 	if (!obj) {
-		r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 
@@ -47,8 +46,7 @@ Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::Call
 }
 
 Variant FuncRef::call_funcv(const Array &p_args) {
-
-	ERR_FAIL_COND_V(id == 0, Variant());
+	ERR_FAIL_COND_V(id.is_null(), Variant());
 
 	Object *obj = ObjectDB::get_instance(id);
 
@@ -58,29 +56,28 @@ Variant FuncRef::call_funcv(const Array &p_args) {
 }
 
 void FuncRef::set_instance(Object *p_obj) {
-
 	ERR_FAIL_NULL(p_obj);
 	id = p_obj->get_instance_id();
 }
 
 void FuncRef::set_function(const StringName &p_func) {
-
 	function = p_func;
 }
 
 bool FuncRef::is_valid() const {
-	if (id == 0)
+	if (id.is_null()) {
 		return false;
+	}
 
 	Object *obj = ObjectDB::get_instance(id);
-	if (!obj)
+	if (!obj) {
 		return false;
+	}
 
 	return obj->has_method(function);
 }
 
 void FuncRef::_bind_methods() {
-
 	{
 		MethodInfo mi;
 		mi.name = "call_func";
@@ -93,8 +90,4 @@ void FuncRef::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);
 	ClassDB::bind_method(D_METHOD("set_function", "name"), &FuncRef::set_function);
 	ClassDB::bind_method(D_METHOD("is_valid"), &FuncRef::is_valid);
-}
-
-FuncRef::FuncRef() :
-		id(0) {
 }

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Callable" version="4.0">
+	<brief_description>
+		An object representing a method in a certain object that can be called.
+	</brief_description>
+	<description>
+		[Callable] is a first class object which can be held in variables and passed to functions. It represents a given method in an [Object], and is typically used for signal callbacks.
+		[b]Example:[/b]
+		[codeblock]
+		var callable = Callable(self, "print_args")
+		func print_args(arg1, arg2, arg3 = ""):
+		    prints(arg1, arg2, arg3)
+		func test():
+		    callable.call("hello", "world")  # Prints "hello world".
+		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(Node.gd)::print_args".
+		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="Callable">
+			<return type="Callable">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="method_name" type="StringName">
+			</argument>
+			<description>
+				Creates a new [Callable] for the method called [code]method_name[/code] in the specified [code]object[/code].
+			</description>
+		</method>
+		<method name="call" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<description>
+				Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
+			</description>
+		</method>
+		<method name="call_deferred" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+				Calls the method represented by this [Callable] in deferred mode, i.e. during the idle frame. Arguments can be passed and should match the method's signature.
+			</description>
+		</method>
+		<method name="get_method">
+			<return type="StringName">
+			</return>
+			<description>
+				Returns the name of the method represented by this [Callable].
+			</description>
+		</method>
+		<method name="get_object">
+			<return type="Object">
+			</return>
+			<description>
+				Returns the object on which this [Callable] is called.
+			</description>
+		</method>
+		<method name="get_object_id">
+			<return type="int">
+			</return>
+			<description>
+				Returns the ID of this [Callable]'s object (see [method Object.get_instance_id]).
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_custom">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_null">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_standard">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

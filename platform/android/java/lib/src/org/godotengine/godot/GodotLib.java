@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@ package org.godotengine.godot;
 
 import android.app.Activity;
 import android.hardware.SensorEvent;
+import android.view.Surface;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -39,7 +41,6 @@ import javax.microedition.khronos.opengles.GL10;
  * Wrapper for native library
  */
 public class GodotLib {
-
 	public static GodotIO io;
 
 	static {
@@ -49,13 +50,13 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void initialize(Activity activity, Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
-	 * @see Activity#onDestroy()
+	 * @see androidx.fragment.app.Fragment#onDestroy()
 	 */
-	public static native void ondestroy(Godot p_instance);
+	public static native void ondestroy();
 
 	/**
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
@@ -65,18 +66,19 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
-	 * @param width
-	 * @param height
+	 * @param p_surface
+	 * @param p_width
+	 * @param p_height
 	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
-	public static native void resize(int width, int height);
+	public static native void resize(Surface p_surface, int p_width, int p_height);
 
 	/**
-	 * Invoked on the GL thread when the underlying Android surface is created or recreated.
+	 * Invoked on the render thread when the underlying Android surface is created or recreated.
+	 * @param p_surface
 	 * @param p_32_bits
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
 	 */
-	public static native void newcontext(boolean p_32_bits);
+	public static native void newcontext(Surface p_surface, boolean p_32_bits);
 
 	/**
 	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.
@@ -98,6 +100,16 @@ public class GodotLib {
 	 * Forward hover events from the main thread to the GL thread.
 	 */
 	public static native void hover(int type, int x, int y);
+
+	/**
+	 * Forward double_tap events from the main thread to the GL thread.
+	 */
+	public static native void doubletap(int x, int y);
+
+	/**
+	 * Forward scroll events from the main thread to the GL thread.
+	 */
+	public static native void scroll(int x, int y);
 
 	/**
 	 * Forward accelerometer sensor events from the main thread to the GL thread.
@@ -126,7 +138,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events from the main thread to the GL thread.
 	 */
-	public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
+	public static native void key(int p_keycode, int p_scancode, int p_unicode_char, boolean p_pressed);
 
 	/**
 	 * Forward game device's key events from the main thread to the GL thread.
@@ -149,14 +161,14 @@ public class GodotLib {
 	public static native void joyconnectionchanged(int p_device, boolean p_connected, String p_name);
 
 	/**
-	 * Invoked when the Android activity resumes.
-	 * @see Activity#onResume()
+	 * Invoked when the Android app resumes.
+	 * @see androidx.fragment.app.Fragment#onResume()
 	 */
 	public static native void focusin();
 
 	/**
-	 * Invoked when the Android activity pauses.
-	 * @see Activity#onPause()
+	 * Invoked when the Android app pauses.
+	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
 
@@ -164,22 +176,6 @@ public class GodotLib {
 	 * Invoked when the audio thread is started.
 	 */
 	public static native void audio();
-
-	/**
-	 * Used to setup a {@link org.godotengine.godot.Godot.SingletonBase} instance.
-	 * @param p_name Name of the instance.
-	 * @param p_object Reference to the singleton instance.
-	 */
-	public static native void singleton(String p_name, Object p_object);
-
-	/**
-	 * Used to complete registration of the {@link org.godotengine.godot.Godot.SingletonBase} instance's methods.
-	 * @param p_sname Name of the instance
-	 * @param p_name Name of the method to register
-	 * @param p_ret Return type of the registered method
-	 * @param p_params Method parameters types
-	 */
-	public static native void method(String p_sname, String p_name, String p_ret, String[] p_params);
 
 	/**
 	 * Used to access Godot global properties.
@@ -194,7 +190,7 @@ public class GodotLib {
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
-	public static native void callobject(int p_id, String p_method, Object[] p_params);
+	public static native void callobject(long p_id, String p_method, Object[] p_params);
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id| during idle time.
@@ -202,7 +198,7 @@ public class GodotLib {
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
-	public static native void calldeferred(int p_id, String p_method, Object[] p_params);
+	public static native void calldeferred(long p_id, String p_method, Object[] p_params);
 
 	/**
 	 * Forward the results from a permission request.

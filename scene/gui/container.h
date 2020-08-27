@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Container : public Control {
-
 	GDCLASS(Container, Control);
 
 	bool pending_sort;
@@ -43,9 +42,9 @@ class Container : public Control {
 
 protected:
 	void queue_sort();
-	virtual void add_child_notify(Node *p_child);
-	virtual void move_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -57,7 +56,7 @@ public:
 
 	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	Container();
 };

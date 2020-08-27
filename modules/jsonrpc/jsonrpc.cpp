@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,8 +119,8 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			id = dict["id"];
 		}
 
-		if (object == NULL || !object->has_method(method)) {
-			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found", id);
+		if (object == nullptr || !object->has_method(method)) {
+			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
 		} else {
 			Variant call_ret = object->callv(method, args);
 			if (id.get_type() != Variant::NIL) {
@@ -147,8 +147,9 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 }
 
 String JSONRPC::process_string(const String &p_input) {
-
-	if (p_input.empty()) return String();
+	if (p_input.empty()) {
+		return String();
+	}
 
 	Variant ret;
 	Variant input;

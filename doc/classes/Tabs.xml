@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tabs" inherits="Control" category="Core" version="3.2">
+<class name="Tabs" inherits="Control" version="4.0">
 	<brief_description>
 		Tabs control.
 	</brief_description>
@@ -14,7 +14,7 @@
 			</return>
 			<argument index="0" name="title" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="null">
+			<argument index="1" name="icon" type="Texture2D" default="null">
 			</argument>
 			<description>
 				Adds a new tab.
@@ -33,6 +33,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the offset buttons (the ones that appear when there's not enough space for all tabs) are visible.
 			</description>
 		</method>
 		<method name="get_select_with_rmb" qualifiers="const">
@@ -59,18 +60,19 @@
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture].
+				Returns the [Texture2D] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
 		<method name="get_tab_offset" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of hidden tabs offsetted to the left.
 			</description>
 		</method>
 		<method name="get_tab_rect" qualifiers="const">
@@ -144,7 +146,7 @@
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture2D">
 			</argument>
 			<description>
 				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
@@ -179,11 +181,13 @@
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
+			if [code]true[/code], the mouse's scroll wheel cab be used to navigate the scroll view.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
-			The alignment of all tabs. See enum [code]TabAlign[/code] constants for details.
+			The alignment of all tabs. See [enum TabAlign] for details.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy" default="0">
+			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
 		</member>
 	</members>
 	<signals>
@@ -191,36 +195,42 @@
 			<argument index="0" name="idx_to" type="int">
 			</argument>
 			<description>
+				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
 			</description>
 		</signal>
 		<signal name="right_button_pressed">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is right-clicked.
 			</description>
 		</signal>
 		<signal name="tab_changed">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_clicked">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is clicked, even if it is the current tab.
 			</description>
 		</signal>
 		<signal name="tab_close">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is closed.
 			</description>
 		</signal>
 		<signal name="tab_hover">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
+				Emitted when a tab is hovered by the mouse.
 			</description>
 		</signal>
 	</signals>
@@ -238,10 +248,13 @@
 			Represents the size of the [enum TabAlign] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
+			Never show the close buttons.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1" enum="CloseButtonDisplayPolicy">
+			Only show the close button on the currently active tab.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
+			Show the close button on all tabs.
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
 			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
@@ -249,42 +262,51 @@
 	</constants>
 	<theme_items>
 		<theme_item name="button" type="StyleBox">
+			Background of the close button when it's being hovered with the cursor.
 		</theme_item>
 		<theme_item name="button_pressed" type="StyleBox">
+			Background of the close button when it's being pressed.
 		</theme_item>
-		<theme_item name="close" type="Texture">
+		<theme_item name="close" type="Texture2D">
+			The icon for the close button (see [member tab_close_display_policy]).
 		</theme_item>
-		<theme_item name="decrement" type="Texture">
+		<theme_item name="decrement" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
 		</theme_item>
-		<theme_item name="decrement_highlight" type="Texture">
+		<theme_item name="decrement_highlight" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			The font used to draw tab names.
 		</theme_item>
 		<theme_item name="font_color_bg" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
+			Font color of inactive tabs.
 		</theme_item>
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+			Font color of disabled tabs.
 		</theme_item>
 		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Font color of the currently selected tab.
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
+			The horizontal separation between the tabs.
 		</theme_item>
-		<theme_item name="increment" type="Texture">
+		<theme_item name="increment" type="Texture2D">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
 		</theme_item>
-		<theme_item name="increment_highlight" type="Texture">
-		</theme_item>
-		<theme_item name="label_valign_bg" type="int" default="2">
-		</theme_item>
-		<theme_item name="label_valign_fg" type="int" default="0">
+		<theme_item name="increment_highlight" type="Texture2D">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>
 		<theme_item name="tab_bg" type="StyleBox">
+			The style of an inactive tab.
 		</theme_item>
 		<theme_item name="tab_disabled" type="StyleBox">
+			The style of a disabled tab
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
-		</theme_item>
-		<theme_item name="top_margin" type="int" default="24">
+			The style of the currently selected tab.
 		</theme_item>
 	</theme_items>
 </class>

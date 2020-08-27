@@ -23,6 +23,7 @@
 #include "BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.cpp"
 #include "BulletCollision/CollisionDispatch/btSphereBoxCollisionAlgorithm.cpp"
 #include "BulletCollision/CollisionDispatch/btCollisionDispatcher.cpp"
+#include "BulletCollision/CollisionDispatch/btCollisionDispatcherMt.cpp"
 #include "BulletCollision/CollisionDispatch/btConvexPlaneCollisionAlgorithm.cpp"
 #include "BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.cpp"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.cpp"

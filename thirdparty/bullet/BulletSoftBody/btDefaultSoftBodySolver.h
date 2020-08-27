@@ -46,9 +46,9 @@ public:
 
 	virtual void copyBackToSoftBodies(bool bMove = true);
 
-	virtual void solveConstraints(float solverdt);
+	virtual void solveConstraints(btScalar solverdt);
 
-	virtual void predictMotion(float solverdt);
+	virtual void predictMotion(btScalar solverdt);
 
 	virtual void copySoftBodyToVertexBuffer(const btSoftBody *const softBody, btVertexBufferDescriptor *vertexBuffer);
 

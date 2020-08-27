@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,7 @@
 #include "core/map.h"
 #include "space_2d_sw.h"
 class BroadPhase2DBasic : public BroadPhase2DSW {
-
 	struct Element {
-
 		CollisionObject2DSW *owner;
 		bool _static;
 		Rect2 aabb;
@@ -48,7 +46,6 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 	ID current;
 
 	struct PairKey {
-
 		union {
 			struct {
 				ID a;
@@ -91,8 +88,8 @@ public:
 	virtual bool is_static(ID p_id) const;
 	virtual int get_subindex(ID p_id) const;
 
-	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
-	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
+	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = nullptr);
 
 	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
 	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);

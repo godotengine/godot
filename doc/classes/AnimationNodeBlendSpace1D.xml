@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlendSpace1D" inherits="AnimationRootNode" category="Core" version="3.2">
+<class name="AnimationNodeBlendSpace1D" inherits="AnimationRootNode" version="4.0">
 	<brief_description>
 		Blends linearly between two of any number of [AnimationNode] of any type placed on a virtual axis.
 	</brief_description>
 	<description>
 		A resource to add to an [AnimationNodeBlendTree].
 		This is a virtual axis on which you can add any type of [AnimationNode] using [method add_blend_point].
-		Outputs the linear blend of the two [code]AnimationNode[/code] closest to the node's current [code]value[/code].
+		Outputs the linear blend of the two [AnimationNode]s closest to the node's current value.
 		You can set the extents of the axis using the [member min_space] and [member max_space].
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_point">
@@ -22,7 +23,7 @@
 			<argument index="2" name="at_index" type="int" default="-1">
 			</argument>
 			<description>
-				Adds a new point that represents a [code]node[/code] on the virtual axis at a given position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
+				Adds a new point that represents a [code]node[/code] on the virtual axis at a given position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
@@ -38,7 +39,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Returns the [code]AnimationNode[/code] referenced by the point at index [code]point[/code].
+				Returns the [AnimationNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_blend_point_position" qualifiers="const">
@@ -67,7 +68,7 @@
 			<argument index="1" name="node" type="AnimationRootNode">
 			</argument>
 			<description>
-				Changes the AnimationNode referenced by the point at index [code]point[/code].
+				Changes the [AnimationNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_blend_point_position">

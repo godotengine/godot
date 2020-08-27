@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #ifndef ARKIT_INTERFACE_H
 #define ARKIT_INTERFACE_H
 
-#include "servers/arvr/arvr_interface.h"
-#include "servers/arvr/arvr_positional_tracker.h"
 #include "servers/camera/camera_feed.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_positional_tracker.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
@@ -44,8 +44,8 @@
 // forward declaration for some needed objects
 class ARKitShader;
 
-class ARKitInterface : public ARVRInterface {
-	GDCLASS(ARKitInterface, ARVRInterface);
+class ARKitInterface : public XRInterface {
+	GDCLASS(ARKitInterface, XRInterface);
 
 private:
 	bool initialized;
@@ -60,12 +60,12 @@ private:
 	float eye_height, z_near, z_far;
 
 	Ref<CameraFeed> feed;
-	int image_width[2];
-	int image_height[2];
-	PoolVector<uint8_t> img_data[2];
+	size_t image_width[2];
+	size_t image_height[2];
+	Vector<uint8_t> img_data[2];
 
 	struct anchor_map {
-		ARVRPositionalTracker *tracker;
+		XRPositionalTracker *tracker;
 		unsigned char uuid[16];
 	};
 
@@ -73,7 +73,7 @@ private:
 	unsigned int num_anchors;
 	unsigned int max_anchors;
 	anchor_map *anchors;
-	ARVRPositionalTracker *get_anchor_for_uuid(const unsigned char *p_uuid);
+	XRPositionalTracker *get_anchor_for_uuid(const unsigned char *p_uuid);
 	void remove_anchor_for_uuid(const unsigned char *p_uuid);
 	void remove_all_anchors();
 
@@ -84,9 +84,9 @@ public:
 	void start_session();
 	void stop_session();
 
-	bool get_anchor_detection_is_enabled() const;
-	void set_anchor_detection_is_enabled(bool p_enable);
-	virtual int get_camera_feed_id();
+	bool get_anchor_detection_is_enabled() const override;
+	void set_anchor_detection_is_enabled(bool p_enable) override;
+	virtual int get_camera_feed_id() override;
 
 	bool get_light_estimation_is_enabled() const;
 	void set_light_estimation_is_enabled(bool p_enable);
@@ -97,22 +97,22 @@ public:
 	/* while Godot has its own raycast logic this takes ARKits camera into account and hits on any ARAnchor */
 	Array raycast(Vector2 p_screen_coord);
 
-	void notification(int p_what);
+	virtual void notification(int p_what) override;
 
-	virtual StringName get_name() const;
-	virtual int get_capabilities() const;
+	virtual StringName get_name() const override;
+	virtual int get_capabilities() const override;
 
-	virtual bool is_initialized() const;
-	virtual bool initialize();
-	virtual void uninitialize();
+	virtual bool is_initialized() const override;
+	virtual bool initialize() override;
+	virtual void uninitialize() override;
 
-	virtual Size2 get_render_targetsize();
-	virtual bool is_stereo();
-	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform);
-	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
-	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
+	virtual Size2 get_render_targetsize() override;
+	virtual bool is_stereo() override;
+	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) override;
+	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
+	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
 
-	virtual void process();
+	virtual void process() override;
 
 	// called by delegate (void * because C++ and Obj-C don't always mix, should really change all platform/iphone/*.cpp files to .mm)
 	void _add_or_update_anchor(void *p_anchor);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef SHAPE_2D_2DSW_H
 #define SHAPE_2D_2DSW_H
 
-#include "servers/physics_2d_server.h"
+#include "servers/physics_server_2d.h"
 #define _SEGMENT_IS_VALID_SUPPORT_THRESHOLD 0.99998
 
 /*
@@ -48,7 +48,7 @@ SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_creat
 
 class Shape2DSW;
 
-class ShapeOwner2DSW : public RID_Data {
+class ShapeOwner2DSW {
 public:
 	virtual void _shape_changed() = 0;
 	virtual void remove_shape(Shape2DSW *p_shape) = 0;
@@ -56,8 +56,7 @@ public:
 	virtual ~ShapeOwner2DSW() {}
 };
 
-class Shape2DSW : public RID_Data {
-
+class Shape2DSW {
 	RID self;
 	Rect2 aabb;
 	bool configured;
@@ -72,7 +71,7 @@ public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
 
-	virtual Physics2DServer::ShapeType get_type() const = 0;
+	virtual PhysicsServer2D::ShapeType get_type() const = 0;
 
 	_FORCE_INLINE_ Rect2 get_aabb() const { return aabb; }
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
@@ -100,13 +99,12 @@ public:
 	const Map<ShapeOwner2DSW *, int> &get_owners() const;
 
 	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2 &p_cast, const Vector2 &p_normal, const Transform2D &p_xform, Vector2 *r_supports, int &r_amount) const {
-
 		get_supports(p_xform.basis_xform_inv(p_normal).normalized(), r_supports, r_amount);
-		for (int i = 0; i < r_amount; i++)
+		for (int i = 0; i < r_amount; i++) {
 			r_supports[i] = p_xform.xform(r_supports[i]);
+		}
 
 		if (r_amount == 1) {
-
 			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 				//make line because they are parallel
 				r_amount = 2;
@@ -117,7 +115,6 @@ public:
 			}
 
 		} else {
-
 			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 				//optimize line and make it larger because they are parallel
 				if ((r_supports[1] - r_supports[0]).dot(p_cast) > 0) {
@@ -145,7 +142,6 @@ public:
 		project_range_cast(p_cast, p_normal, p_transform, r_min, r_max);                                                                                         \
 	}                                                                                                                                                            \
 	_FORCE_INLINE_ void project_range_cast(const Vector2 &p_cast, const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { \
-                                                                                                                                                                 \
 		real_t mina, maxa;                                                                                                                                       \
 		real_t minb, maxb;                                                                                                                                       \
 		Transform2D ofsb = p_transform;                                                                                                                          \
@@ -157,7 +153,6 @@ public:
 	}
 
 class LineShape2DSW : public Shape2DSW {
-
 	Vector2 normal;
 	real_t d;
 
@@ -165,7 +160,7 @@ public:
 	_FORCE_INLINE_ Vector2 get_normal() const { return normal; }
 	_FORCE_INLINE_ real_t get_d() const { return d; }
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_LINE; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_LINE; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -195,7 +190,6 @@ public:
 };
 
 class RayShape2DSW : public Shape2DSW {
-
 	real_t length;
 	bool slips_on_slope;
 
@@ -203,7 +197,7 @@ public:
 	_FORCE_INLINE_ real_t get_length() const { return length; }
 	_FORCE_INLINE_ bool get_slips_on_slope() const { return slips_on_slope; }
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_RAY; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_RAY; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -220,7 +214,6 @@ public:
 		r_max = p_normal.dot(p_transform.get_origin());
 		r_min = p_normal.dot(p_transform.xform(Vector2(0, length)));
 		if (r_max < r_min) {
-
 			SWAP(r_max, r_min);
 		}
 	}
@@ -232,7 +225,6 @@ public:
 };
 
 class SegmentShape2DSW : public Shape2DSW {
-
 	Vector2 a;
 	Vector2 b;
 	Vector2 n;
@@ -242,10 +234,9 @@ public:
 	_FORCE_INLINE_ const Vector2 &get_b() const { return b; }
 	_FORCE_INLINE_ const Vector2 &get_normal() const { return n; }
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_SEGMENT; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_SEGMENT; }
 
 	_FORCE_INLINE_ Vector2 get_xformed_normal(const Transform2D &p_xform) const {
-
 		return (p_xform.xform(b) - p_xform.xform(a)).normalized().tangent();
 	}
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
@@ -263,7 +254,6 @@ public:
 		r_max = p_normal.dot(p_transform.xform(a));
 		r_min = p_normal.dot(p_transform.xform(b));
 		if (r_max < r_min) {
-
 			SWAP(r_max, r_min);
 		}
 	}
@@ -279,13 +269,12 @@ public:
 };
 
 class CircleShape2DSW : public Shape2DSW {
-
 	real_t radius;
 
 public:
 	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CIRCLE; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_CIRCLE; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -313,13 +302,12 @@ public:
 };
 
 class RectangleShape2DSW : public Shape2DSW {
-
 	Vector2 half_extents;
 
 public:
 	_FORCE_INLINE_ const Vector2 &get_half_extents() const { return half_extents; }
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_RECTANGLE; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_RECTANGLE; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -336,18 +324,18 @@ public:
 		r_max = -1e20;
 		r_min = 1e20;
 		for (int i = 0; i < 4; i++) {
-
 			real_t d = p_normal.dot(p_transform.xform(Vector2(((i & 1) * 2 - 1) * half_extents.x, ((i >> 1) * 2 - 1) * half_extents.y)));
 
-			if (d > r_max)
+			if (d > r_max) {
 				r_max = d;
-			if (d < r_min)
+			}
+			if (d < r_min) {
 				r_min = d;
+			}
 		}
 	}
 
 	_FORCE_INLINE_ Vector2 get_circle_axis(const Transform2D &p_xform, const Transform2D &p_xform_inv, const Vector2 &p_circle) const {
-
 		Vector2 local_v = p_xform_inv.xform(p_circle);
 
 		Vector2 he(
@@ -358,7 +346,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Vector2 get_box_axis(const Transform2D &p_xform, const Transform2D &p_xform_inv, const RectangleShape2DSW *p_B, const Transform2D &p_B_xform, const Transform2D &p_B_xform_inv) const {
-
 		Vector2 a, b;
 
 		{
@@ -387,7 +374,6 @@ public:
 };
 
 class CapsuleShape2DSW : public Shape2DSW {
-
 	real_t radius;
 	real_t height;
 
@@ -395,7 +381,7 @@ public:
 	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
 	_FORCE_INLINE_ const real_t &get_height() const { return height; }
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CAPSULE; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_CAPSULE; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -419,7 +405,6 @@ public:
 		r_min = p_normal.dot(p_transform.xform(-n));
 
 		if (r_max < r_min) {
-
 			SWAP(r_max, r_min);
 		}
 
@@ -430,9 +415,7 @@ public:
 };
 
 class ConvexPolygonShape2DSW : public Shape2DSW {
-
 	struct Point {
-
 		Vector2 pos;
 		Vector2 normal; //normal to next segment
 	};
@@ -445,14 +428,13 @@ public:
 	_FORCE_INLINE_ const Vector2 &get_point(int p_idx) const { return points[p_idx].pos; }
 	_FORCE_INLINE_ const Vector2 &get_segment_normal(int p_idx) const { return points[p_idx].normal; }
 	_FORCE_INLINE_ Vector2 get_xformed_segment_normal(const Transform2D &p_xform, int p_idx) const {
-
 		Vector2 a = points[p_idx].pos;
 		p_idx++;
 		Vector2 b = points[p_idx == point_count ? 0 : p_idx].pos;
 		return (p_xform.xform(b) - p_xform.xform(a)).normalized().tangent();
 	}
 
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CONVEX_POLYGON; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_CONVEX_POLYGON; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal, p_transform, r_min, r_max); }
 	virtual void get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const;
@@ -465,16 +447,20 @@ public:
 	virtual Variant get_data() const;
 
 	_FORCE_INLINE_ void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
-		// no matter the angle, the box is mirrored anyway
+		if (!points || point_count <= 0) {
+			r_min = r_max = 0;
+			return;
+		}
 
 		r_min = r_max = p_normal.dot(p_transform.xform(points[0].pos));
 		for (int i = 1; i < point_count; i++) {
-
 			real_t d = p_normal.dot(p_transform.xform(points[i].pos));
-			if (d > r_max)
+			if (d > r_max) {
 				r_max = d;
-			if (d < r_min)
+			}
+			if (d < r_min) {
 				r_min = d;
+			}
 		}
 	}
 
@@ -485,7 +471,6 @@ public:
 };
 
 class ConcaveShape2DSW : public Shape2DSW {
-
 public:
 	virtual bool is_concave() const { return true; }
 	typedef void (*Callback)(void *p_userdata, Shape2DSW *p_convex);
@@ -494,9 +479,7 @@ public:
 };
 
 class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
-
 	struct Segment {
-
 		int points[2];
 	};
 
@@ -504,7 +487,6 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 	Vector<Point2> points;
 
 	struct BVH {
-
 		Rect2 aabb;
 		int left, right;
 	};
@@ -513,17 +495,13 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 	int bvh_depth;
 
 	struct BVH_CompareX {
-
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
-
 			return (a.aabb.position.x + a.aabb.size.x * 0.5) < (b.aabb.position.x + b.aabb.size.x * 0.5);
 		}
 	};
 
 	struct BVH_CompareY {
-
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
-
 			return (a.aabb.position.y + a.aabb.size.y * 0.5) < (b.aabb.position.y + b.aabb.size.y * 0.5);
 		}
 	};
@@ -531,7 +509,7 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 	int _generate_bvh(BVH *p_bvh, int p_len, int p_depth);
 
 public:
-	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CONCAVE_POLYGON; }
+	virtual PhysicsServer2D::ShapeType get_type() const { return PhysicsServer2D::SHAPE_CONCAVE_POLYGON; }
 
 	virtual void project_rangev(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const { /*project_range(p_normal,p_transform,r_min,r_max);*/
 	}

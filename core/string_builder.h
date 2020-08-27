@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,10 @@
 #define STRING_BUILDER_H
 
 #include "core/ustring.h"
-
 #include "core/vector.h"
 
 class StringBuilder {
-
-	uint32_t string_length;
+	uint32_t string_length = 0;
 
 	Vector<String> strings;
 	Vector<const char *> c_strings;
@@ -80,9 +78,7 @@ public:
 		return as_string();
 	}
 
-	StringBuilder() {
-		string_length = 0;
-	}
+	StringBuilder() {}
 };
 
 #endif // STRING_BUILDER_H

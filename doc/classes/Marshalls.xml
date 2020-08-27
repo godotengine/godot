@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Marshalls" inherits="Reference" category="Core" version="3.2">
+<class name="Marshalls" inherits="Object" version="4.0">
 	<brief_description>
 		Data transformation (marshalling) and encoding helpers.
 	</brief_description>
@@ -10,12 +10,12 @@
 	</tutorials>
 	<methods>
 		<method name="base64_to_raw">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="base64_str" type="String">
 			</argument>
 			<description>
-				Returns a decoded [PoolByteArray] corresponding to the Base64-encoded string [code]base64_str[/code].
+				Returns a decoded [PackedByteArray] corresponding to the Base64-encoded string [code]base64_str[/code].
 			</description>
 		</method>
 		<method name="base64_to_utf8">
@@ -42,10 +42,10 @@
 		<method name="raw_to_base64">
 			<return type="String">
 			</return>
-			<argument index="0" name="array" type="PoolByteArray">
+			<argument index="0" name="array" type="PackedByteArray">
 			</argument>
 			<description>
-				Returns a Base64-encoded string of a given [PoolByteArray].
+				Returns a Base64-encoded string of a given [PackedByteArray].
 			</description>
 		</method>
 		<method name="utf8_to_base64">

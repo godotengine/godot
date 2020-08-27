@@ -1,16 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Performance" inherits="Object" category="Core" version="3.2">
+<class name="Performance" inherits="Object" version="4.0">
 	<brief_description>
 		Exposes performance-related data.
 	</brief_description>
 	<description>
 		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel. By using the [method get_monitor] method of this class, you can access this data from your code.
+		You can add custom monitors using the [method add_custom_monitor] method. Custom monitors are available in [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel together with built-in monitors.
 		[b]Note:[/b] A few of these monitors are only available in debug mode and will always return 0 when used in a release build.
 		[b]Note:[/b] Many of these monitors are not updated in real-time, so there may be a short delay between changes.
+		[b]Note:[/b] Custom monitors do not support negative values. Negative values are clamped to 0.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_custom_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<argument index="1" name="callable" type="Callable">
+			</argument>
+			<argument index="2" name="arguments" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Adds a custom monitor with name same as id. You can specify the category of monitor using '/' in id. If there are more than one '/' then default category is used. Default category is "Custom".
+				[codeblock]
+				Performance.add_custom_monitor("MyCategory/MyMonitor", some_callable) # Adds monitor with name "MyName" to category "MyCategory"
+				Performance.add_custom_monitor("MyMonitor", some_callable) # Adds monitor with name "MyName" to category "Custom"
+				# Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so above code is valid
+				Performance.add_custom_monitor("Custom/MyMonitor", some_callable) # Adds monitor with name "MyName" to category "Custom"
+				# Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so above code is valid
+				Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", some_callable) # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom"
+				[/codeblock]
+				The debugger calls the callable to get the value of custom monitor. The callable must return a number.
+				Callables are called with arguments supplied in argument array.
+				[b]Note:[/b] It throws an error if given id is already present.
+			</description>
+		</method>
+		<method name="get_custom_monitor">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Returns the value of custom monitor with given id. The callable is called to get the value of custom monitor.
+				[b]Note:[/b] It throws an error if the given id is absent.
+			</description>
+		</method>
+		<method name="get_custom_monitor_names">
+			<return type="Array">
+			</return>
+			<description>
+				Returns the names of active custom monitors in an array.
+			</description>
+		</method>
 		<method name="get_monitor" qualifiers="const">
 			<return type="float">
 			</return>
@@ -21,6 +64,32 @@
 				[codeblock]
 				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_monitor_modification_time">
+			<return type="int">
+			</return>
+			<description>
+				Returns the last tick in which custom monitor was added/removed.
+			</description>
+		</method>
+		<method name="has_custom_monitor">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Returns true if custom monitor with the given id is present otherwise returns false.
+			</description>
+		</method>
+		<method name="remove_custom_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="StringName">
+			</argument>
+			<description>
+				Removes the custom monitor with given id.
+				[b]Note:[/b] It throws an error if the given id is already absent.
 			</description>
 		</method>
 	</methods>
@@ -37,82 +106,76 @@
 		<constant name="MEMORY_STATIC" value="3" enum="Monitor">
 			Static memory currently used, in bytes. Not available in release builds.
 		</constant>
-		<constant name="MEMORY_DYNAMIC" value="4" enum="Monitor">
-			Dynamic memory currently used, in bytes. Not available in release builds.
-		</constant>
-		<constant name="MEMORY_STATIC_MAX" value="5" enum="Monitor">
+		<constant name="MEMORY_STATIC_MAX" value="4" enum="Monitor">
 			Available static memory. Not available in release builds.
 		</constant>
-		<constant name="MEMORY_DYNAMIC_MAX" value="6" enum="Monitor">
-			Available dynamic memory. Not available in release builds.
-		</constant>
-		<constant name="MEMORY_MESSAGE_BUFFER_MAX" value="7" enum="Monitor">
+		<constant name="MEMORY_MESSAGE_BUFFER_MAX" value="5" enum="Monitor">
 			Largest amount of memory the message queue buffer has used, in bytes. The message queue is used for deferred functions calls and notifications.
 		</constant>
-		<constant name="OBJECT_COUNT" value="8" enum="Monitor">
+		<constant name="OBJECT_COUNT" value="6" enum="Monitor">
 			Number of objects currently instanced (including nodes).
 		</constant>
-		<constant name="OBJECT_RESOURCE_COUNT" value="9" enum="Monitor">
+		<constant name="OBJECT_RESOURCE_COUNT" value="7" enum="Monitor">
 			Number of resources currently used.
 		</constant>
-		<constant name="OBJECT_NODE_COUNT" value="10" enum="Monitor">
+		<constant name="OBJECT_NODE_COUNT" value="8" enum="Monitor">
 			Number of nodes currently instanced in the scene tree. This also includes the root node.
 		</constant>
-		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="11" enum="Monitor">
+		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="9" enum="Monitor">
 			Number of orphan nodes, i.e. nodes which are not parented to a node of the scene tree.
 		</constant>
-		<constant name="RENDER_OBJECTS_IN_FRAME" value="12" enum="Monitor">
+		<constant name="RENDER_OBJECTS_IN_FRAME" value="10" enum="Monitor">
 			3D objects drawn per frame.
 		</constant>
-		<constant name="RENDER_VERTICES_IN_FRAME" value="13" enum="Monitor">
+		<constant name="RENDER_VERTICES_IN_FRAME" value="11" enum="Monitor">
 			Vertices drawn per frame. 3D only.
 		</constant>
-		<constant name="RENDER_MATERIAL_CHANGES_IN_FRAME" value="14" enum="Monitor">
+		<constant name="RENDER_MATERIAL_CHANGES_IN_FRAME" value="12" enum="Monitor">
 			Material changes per frame. 3D only.
 		</constant>
-		<constant name="RENDER_SHADER_CHANGES_IN_FRAME" value="15" enum="Monitor">
+		<constant name="RENDER_SHADER_CHANGES_IN_FRAME" value="13" enum="Monitor">
 			Shader changes per frame. 3D only.
 		</constant>
-		<constant name="RENDER_SURFACE_CHANGES_IN_FRAME" value="16" enum="Monitor">
+		<constant name="RENDER_SURFACE_CHANGES_IN_FRAME" value="14" enum="Monitor">
 			Render surface changes per frame. 3D only.
 		</constant>
-		<constant name="RENDER_DRAW_CALLS_IN_FRAME" value="17" enum="Monitor">
+		<constant name="RENDER_DRAW_CALLS_IN_FRAME" value="15" enum="Monitor">
 			Draw calls per frame. 3D only.
 		</constant>
-		<constant name="RENDER_VIDEO_MEM_USED" value="18" enum="Monitor">
+		<constant name="RENDER_VIDEO_MEM_USED" value="16" enum="Monitor">
 			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
-		<constant name="RENDER_TEXTURE_MEM_USED" value="19" enum="Monitor">
+		<constant name="RENDER_TEXTURE_MEM_USED" value="17" enum="Monitor">
 			The amount of texture memory used.
 		</constant>
-		<constant name="RENDER_VERTEX_MEM_USED" value="20" enum="Monitor">
+		<constant name="RENDER_VERTEX_MEM_USED" value="18" enum="Monitor">
 			The amount of vertex memory used.
 		</constant>
-		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="21" enum="Monitor">
-			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
+		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="19" enum="Monitor">
+			Unimplemented in the GLES2 rendering backend, always returns 0.
 		</constant>
-		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="22" enum="Monitor">
+		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="20" enum="Monitor">
 			Number of active [RigidBody2D] nodes in the game.
 		</constant>
-		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="23" enum="Monitor">
+		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="21" enum="Monitor">
 			Number of collision pairs in the 2D physics engine.
 		</constant>
-		<constant name="PHYSICS_2D_ISLAND_COUNT" value="24" enum="Monitor">
+		<constant name="PHYSICS_2D_ISLAND_COUNT" value="22" enum="Monitor">
 			Number of islands in the 2D physics engine.
 		</constant>
-		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="25" enum="Monitor">
-			Number of active [RigidBody] and [VehicleBody] nodes in the game.
+		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="23" enum="Monitor">
+			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game.
 		</constant>
-		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="26" enum="Monitor">
+		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="24" enum="Monitor">
 			Number of collision pairs in the 3D physics engine.
 		</constant>
-		<constant name="PHYSICS_3D_ISLAND_COUNT" value="27" enum="Monitor">
+		<constant name="PHYSICS_3D_ISLAND_COUNT" value="25" enum="Monitor">
 			Number of islands in the 3D physics engine.
 		</constant>
-		<constant name="AUDIO_OUTPUT_LATENCY" value="28" enum="Monitor">
+		<constant name="AUDIO_OUTPUT_LATENCY" value="26" enum="Monitor">
 			Output latency of the [AudioServer].
 		</constant>
-		<constant name="MONITOR_MAX" value="29" enum="Monitor">
+		<constant name="MONITOR_MAX" value="27" enum="Monitor">
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>

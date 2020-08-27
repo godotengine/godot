@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +31,15 @@
 #include "y_sort.h"
 
 void YSort::set_sort_enabled(bool p_enabled) {
-
 	sort_enabled = p_enabled;
-	VS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), sort_enabled);
+	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), sort_enabled);
 }
 
 bool YSort::is_sort_enabled() const {
-
 	return sort_enabled;
 }
 
 void YSort::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_sort_enabled", "enabled"), &YSort::set_sort_enabled);
 	ClassDB::bind_method(D_METHOD("is_sort_enabled"), &YSort::is_sort_enabled);
 
@@ -51,7 +48,6 @@ void YSort::_bind_methods() {
 }
 
 YSort::YSort() {
-
 	sort_enabled = true;
-	VS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), true);
+	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), true);
 }

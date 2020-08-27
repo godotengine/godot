@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CameraTexture" inherits="Texture" category="Core" version="3.2">
+<class name="CameraTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
-		This texture gives access to the camera texture provided by a [CameraFeed].
-		[b]Note:[/b] Many cameras supply YCbCr images which need to be converted in a shader.
+		Texture provided by a [CameraFeed].
 	</brief_description>
 	<description>
+		This texture gives access to the camera texture provided by a [CameraFeed].
+		[b]Note:[/b] Many cameras supply YCbCr images which need to be converted in a shader.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +18,6 @@
 		<member name="camera_is_active" type="bool" setter="set_camera_active" getter="get_camera_active" default="false">
 			Convenience property that gives access to the active property of the [CameraFeed].
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
 		<member name="which_feed" type="int" setter="set_which_feed" getter="get_which_feed" enum="CameraServer.FeedImage" default="0">
 			Which image within the [CameraFeed] we want access to, important if the camera image is split in a Y and CbCr component.
 		</member>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,11 +33,16 @@
 
 #include "../gdscript_parser.h"
 #include "core/variant.h"
+#include "editor/editor_file_system.h"
 #include "gdscript_extend_parser.h"
 #include "lsp.hpp"
 
 class GDScriptWorkspace : public Reference {
 	GDCLASS(GDScriptWorkspace, Reference);
+
+private:
+	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
+	Node *_get_owner_scene_node(String p_path);
 
 protected:
 	static void _bind_methods();
@@ -83,6 +88,7 @@ public:
 	const lsp::DocumentSymbol *resolve_native_symbol(const lsp::NativeSymbolInspectParams &p_params);
 	void resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
+	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
 
 	GDScriptWorkspace();
 	~GDScriptWorkspace();

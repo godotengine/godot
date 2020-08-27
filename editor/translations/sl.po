@@ -1,6 +1,6 @@
 # Slovenian translation of the Godot Engine editor
-# Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
+# Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # matevž lapajne <sivar.lapajne@gmail.com>, 2016-2018.
 # Matjaž Vitas <matjaz.vitas@gmail.com>, 2017-2018.
@@ -11,12 +11,13 @@
 # Andrej Poženel <andrej.pozenel@outlook.com>, 2019.
 # Arnold Marko <arnold.marko@gmail.com>, 2019.
 # Alex <alexrixhardson@gmail.com>, 2019.
+# Andrew Poženel <andrej.pozenel@outlook.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-10-26 03:53+0000\n"
-"Last-Translator: Alex <alexrixhardson@gmail.com>\n"
+"PO-Revision-Date: 2020-07-15 02:42+0000\n"
+"Last-Translator: Andrew Poženel <andrej.pozenel@outlook.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -25,18 +26,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 3.9.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Neveljavna vrsta argumenta za convert(), uporabite TYPE_* konstanto."
+msgstr "Neveljavna vrsta argumenta za convert(), uporabite TYPE_* konstante."
+
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
+msgstr "Pričakovan niz dolžine 1 (znak)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Ni dovolj bajtov za dekodiranje, ali pa format ni ustrezen."
+msgstr "Ni dovolj bajtov za dekodiranje, ali pa je neveljaven format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -44,7 +49,7 @@ msgstr "Napačen vnos %i(ni podan) v izrazu"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self ne more biti uporabljen, ker instanca ni null (ni podano)"
+msgstr "self ne more biti uporabljen, ker je instanca null (ni podano)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -111,9 +116,8 @@ msgid "Time:"
 msgstr "Čas:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Novo ime:"
+msgstr "Vrednost:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -128,14 +132,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Izbriši Izbran/e Ključ/e"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Dodaj točko"
+msgstr "Dodaj Bezierjevo točko"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Odstrani točko"
+msgstr "Premakni Bezierjevo točko"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -191,35 +193,33 @@ msgid "Anim Multi Change Call"
 msgstr "Animacija Spremeni klic"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Spremeni Ime Animacije:"
+msgstr "Spremeni dolžino animacije"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Spremeni ponavljanje animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Sled atributa"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "Preoblikovanje"
+msgstr "Sled 3D preoblikovanja"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Sled klica funkcije"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Sled Bezierjeve Krivulje"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Zvočna Sled"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -444,6 +444,10 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
@@ -718,8 +722,9 @@ msgid "Line Number:"
 msgstr "Številka Vrste:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Zamenjana %d ponovitev/e."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Zamenjaj"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -787,6 +792,11 @@ msgstr ""
 #, fuzzy
 msgid "Method in target node must be specified."
 msgstr "Metoda v ciljnem gradniku mora biti navedena!"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Method name must be a valid identifier."
+msgstr "Ime ni pravilen identifikator:"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -877,7 +887,6 @@ msgstr "Povezovanje Signala:"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -1243,8 +1252,22 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "Napaka pri odpiranju datoteke paketa, ker ni v formatu zip."
 
 #: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "%s (Already Exists)"
+msgstr "SamodejnoNalaganje '%s' že obstaja!"
+
+#: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Razširjenje Dodatkov"
+
+#: editor/editor_asset_installer.cpp editor/project_manager.cpp
+msgid "The following files failed extraction from package:"
+msgstr ""
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "And %s more files."
+msgstr "%d več datotek"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 #, fuzzy
@@ -1255,6 +1278,11 @@ msgstr "Paket je Uspešno Nameščen!"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
 msgstr "Uspelo je!"
+
+#: editor/editor_asset_installer.cpp
+#, fuzzy
+msgid "Package Contents:"
+msgstr "Vsebina:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1395,6 +1423,11 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "Neveljavna datoteka, ker ni postavitve zvočnega vodila."
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Error saving file: %s"
+msgstr "Napaka pri shranjevanju PloščnegaNiza!"
+
+#: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "Dodaj Vodilo"
 
@@ -1482,7 +1515,7 @@ msgstr "Premakni SamodejnoNalaganje"
 msgid "Remove Autoload"
 msgstr "Odstrani SamodejnoNalaganje"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Omogoči"
 
@@ -1490,18 +1523,9 @@ msgstr "Omogoči"
 msgid "Rearrange Autoloads"
 msgstr "Preuredi SamodejnoNalaganje"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Neveljavna Pot."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Datoteka ne obstaja."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Ni na poti virov."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1527,6 +1551,10 @@ msgstr "Ime"
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
 msgstr "Posameznik"
+
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Prilepi Parametre"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -1834,7 +1862,7 @@ msgstr "Pokaži V Upravitelju Datotek"
 msgid "New Folder..."
 msgstr "Nova Mapa..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Osveži"
@@ -2001,12 +2029,26 @@ msgstr "Podedovano od:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Brief Description"
-msgstr "Kratek Opis:"
+msgid "Description"
+msgstr "Opis:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Online Tutorials"
+msgstr "Spletne Vaje:"
 
 #: editor/editor_help.cpp
 msgid "Properties"
 msgstr "Lastnosti"
+
+#: editor/editor_help.cpp
+msgid "override:"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "default:"
+msgstr "Prevzeto"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2022,36 +2064,18 @@ msgid "Enumerations"
 msgstr "Oštevilčenja"
 
 #: editor/editor_help.cpp
-msgid "enum  "
-msgstr "oštevil  "
-
-#: editor/editor_help.cpp
 msgid "Constants"
 msgstr "Konstante"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description"
-msgstr "Opis"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Online Tutorials"
-msgstr "Spletne Vaje:"
-
-#: editor/editor_help.cpp
-msgid ""
-"There are currently no tutorials for this class, you can [color=$color][url="
-"$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
-"url][/color]."
-msgstr ""
-"Trenutno ni vaj za ta razred, lahko ga [color=$color][url=$url]prispevate[/"
-"url][/color] ali [color=$color][url=$url2]zahtevate enega[/url][/color]."
-
-#: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
 msgstr "Opis lastnosti:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "(value)"
+msgstr "Novo ime:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2078,6 +2102,16 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
 msgstr "Išči Pomoč"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Case Sensitive"
+msgstr "Zapri Prizor"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Show Hierarchy"
+msgstr "Iskanje"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
@@ -2123,6 +2157,30 @@ msgstr "Člani"
 #, fuzzy
 msgid "Class"
 msgstr "Razred:"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Method"
+msgstr "Metode"
+
+#: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Signal"
+msgstr "Signali"
+
+#: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Constant"
+msgstr "Konstanta"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Property"
+msgstr "Lastnosti"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Property"
+msgstr "Lastnosti"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2206,10 +2264,6 @@ msgstr ""
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Project export failed with error code %d."
-msgstr "Izvoz projekta ni uspelo s kodno napako %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
@@ -2385,10 +2439,6 @@ msgid "There is no defined scene to run."
 msgstr "Ni določene scene za zagon."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr "Trenutna scena ni bila shranjena, shranite jo pred zagonom."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Nemorem začeti podprocesa!"
 
@@ -2475,12 +2525,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Ni mogoče osvežiti scene, ki ni bila shranjena."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Povrni"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Shrani Prizor"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Tega dejanja ni mogoče razveljaviti. Vseeno povrni?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2777,10 +2830,6 @@ msgid "Redo"
 msgstr "Ponovi"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Povrni Prizor"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Različna projektna ali prizorska orodja."
 
@@ -3003,8 +3052,13 @@ msgid "Q&A"
 msgstr "V&O"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Sledilnik Napak"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Ponovno Uvozi"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3138,10 +3192,6 @@ msgstr "Uvozi Predloge iz ZIP Datoteke"
 msgid "Template Package"
 msgstr "Izvozni Upravitelj Predlog"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export Project"
-msgstr "Izvozi Projekt"
-
 #: editor/editor_node.cpp
 msgid "Export Library"
 msgstr "Izvozi Knjižnico"
@@ -3149,10 +3199,6 @@ msgstr "Izvozi Knjižnico"
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
 msgstr "Spoji z Obstoječim"
-
-#: editor/editor_node.cpp
-msgid "Password:"
-msgstr "Geslo:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
@@ -3438,6 +3484,10 @@ msgstr "Ni mogoče zagnati skripte:"
 msgid "Did you forget the '_run' method?"
 msgstr "Ali si pozabil metodo '_run' ?"
 
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
+
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Izberi Gradnik(e) za Uvoz"
@@ -3516,6 +3566,14 @@ msgstr "Razširjanje Izvoznih Predlog"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "Uvažanje:"
+
+#: editor/export_template_manager.cpp
+msgid "Error getting the list of mirrors."
+msgstr ""
+
+#: editor/export_template_manager.cpp
+msgid "Error parsing JSON of mirror list. Please report this issue!"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -4062,8 +4120,17 @@ msgid "Error running post-import script:"
 msgstr "Napaka pri zagonu skripte po uvozu:"
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Shranjevanje..."
+
+#: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Datoteke"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -4072,10 +4139,6 @@ msgstr "Nastavi kot Privzeto za '%s'"
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Počisti privzeto za '%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Datoteke"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4091,7 +4154,7 @@ msgid "Reimport"
 msgstr "Ponovno Uvozi"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -4125,10 +4188,6 @@ msgstr "Shrani Kot..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Kopiraj Parametre"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Prilepi Parametre"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -4674,7 +4733,6 @@ msgid "Animation Tools"
 msgstr "Animacijska Orodja"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animacija"
 
@@ -4781,6 +4839,11 @@ msgstr "Navzkrižna Animacija Časa Mešanice"
 #, fuzzy
 msgid "Move Node"
 msgstr "Način Premika"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition exists!"
+msgstr "Prehod"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -5805,6 +5868,11 @@ msgid "Auto Insert Key"
 msgstr "V Animacijo Vstavi Ključ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Animation Key and Pose Options"
+msgstr "Dolžina animacije (v sekundah)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
 msgstr ""
 
@@ -5912,6 +5980,22 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
 msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Solid Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Border Pixels"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Directed Border Pixels"
+msgstr "Mape & Datoteke:"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6039,12 +6123,12 @@ msgid "Mesh is empty!"
 msgstr "Model je prazen!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Ustvari Statično Telo TriModel"
+msgid "Couldn't create a Trimesh collision shape."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr ""
+msgid "Create Static Trimesh Body"
+msgstr "Ustvari Statično Telo TriModel"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6055,12 +6139,30 @@ msgid "Create Trimesh Static Shape"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "Ustvari Nov %s"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Mape ni mogoče ustvariti."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Ustvari Nov %s"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6080,7 +6182,6 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 
@@ -6113,16 +6214,54 @@ msgid "Create Trimesh Static Body"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Ustvarite Poligon"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6145,8 +6284,18 @@ msgstr ""
 msgid "Outline Size:"
 msgstr ""
 
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "UV Channel Debug"
+msgstr ""
+
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Remove item %d?"
+msgstr ""
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid ""
+"Update from existing scene?:\n"
+"%s"
 msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -6990,14 +7139,6 @@ msgid "Open Godot online documentation."
 msgstr "Odpri Nedavne"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -7054,11 +7195,6 @@ msgid "Source"
 msgstr "Viri"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Signal"
-msgstr "Signali"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Target"
 msgstr ""
 
@@ -7069,13 +7205,13 @@ msgid ""
 msgstr "Odklopite '%s' iz '%s'"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "[Ignore]"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Line"
 msgstr "Vrstica:"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7084,6 +7220,11 @@ msgstr "Dodaj Funkcijo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7449,6 +7590,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7503,6 +7648,10 @@ msgid "Cinematic Preview"
 msgstr "Ustvari Predogled Modela"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Not available when using the GLES2 renderer."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
 msgstr ""
 
@@ -7535,17 +7684,26 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid "XForm Dialog"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "XForm Dialog"
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7747,8 +7905,17 @@ msgstr "Ustvari Nov %s"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Mesh2D Preview"
+msgstr "Ustvari Predogled Modela"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create Polygon2D"
 msgstr "Ustvarite Poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Polygon2D Preview"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7757,7 +7924,17 @@ msgstr "Ustvarite Poligon"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "CollisionPolygon2D Preview"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Create LightOccluder2D"
+msgstr "Ustvarite Mapo"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "LightOccluder2D Preview"
 msgstr "Ustvarite Mapo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -7842,6 +8019,11 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr ""
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Unable to load images"
+msgstr "Napaka pri nalaganju vira."
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -8144,10 +8326,6 @@ msgstr ""
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Konstanta"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8577,6 +8755,16 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Make Convex"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Concave"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create Collision Polygon"
 msgstr "Ustvarite Poligon"
 
@@ -8599,7 +8787,7 @@ msgstr "Izvozi Ploščno Zbirko"
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr ""
 
@@ -9697,6 +9885,10 @@ msgid "Export PCK/Zip"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Export Project"
+msgstr "Izvozi Projekt"
+
+#: editor/project_export.cpp
 #, fuzzy
 msgid "Export mode?"
 msgstr "Izvozi Projekt"
@@ -9728,11 +9920,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr ""
+#, fuzzy
+msgid "The path specified doesn't exist."
+msgstr "Datoteka ne obstaja."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Napaka pri odpiranju datoteke paketa, ker ni v formatu zip."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9741,11 +9940,11 @@ msgstr "Izberite prazno mapo."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr "Izberite datoteko 'projekt.godot'."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9788,10 +9987,6 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
-
-#: editor/project_manager.cpp
-msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10021,6 +10216,13 @@ msgid ""
 msgstr ""
 "Trenutno nimate projektov.\n"
 "Želite raziskovati uradne primere projektov v Asset Library?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10413,6 +10615,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Trenutna Različica:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "Možnosti pripenjanja"
 
@@ -10451,7 +10658,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10482,10 +10689,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10494,11 +10697,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10517,6 +10720,15 @@ msgstr ""
 #, fuzzy
 msgid "Reset"
 msgstr "Ponastavi Povečavo/Pomanjšavo"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Veljavni znaki:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10581,8 +10793,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Odstrani Gradnik VizualnaSkripta"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10616,6 +10829,11 @@ msgstr ""
 #, fuzzy
 msgid "Make node as Root"
 msgstr "Shrani Prizor"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Izberi Gradnik"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10748,6 +10966,13 @@ msgid "Open Documentation"
 msgstr "Odpri Nedavne"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10798,12 +11023,14 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+#, fuzzy
+msgid "Detach the script from the selected node."
 msgstr ""
+"Naredi primer iz izbranih prizorov, ki bo naslednik izbranega gradnika."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -10932,6 +11159,10 @@ msgid "A directory with the same name exists."
 msgstr "Datoteka ali mapa s tem imenom že obstaja."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Datoteka ne obstaja."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Uporabiti moraš valjavno razširitev."
@@ -10976,6 +11207,11 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Invalid path."
+msgstr "Neveljavna Pot."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Invalid class name."
 msgstr "Neveljavno ime."
 
@@ -10986,7 +11222,7 @@ msgstr "Neveljaveno prevzeto ime ali pot nadrejenega"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "Drevo animacije je veljavno."
 
 #: editor/script_create_dialog.cpp
@@ -11007,6 +11243,17 @@ msgstr "Ustvari Nov %s"
 #, fuzzy
 msgid "Will load an existing script file."
 msgstr "Naloži obstoječo Postavitev Vodila."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Script file already exists."
+msgstr "SamodejnoNalaganje '%s' že obstaja!"
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -11087,6 +11334,10 @@ msgid "Copy Error"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "Izbriši točke"
@@ -11137,8 +11388,9 @@ msgid "Total:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr ""
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Izvozi Projekt"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11338,10 +11590,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "Expected a string of length 1 (a character)."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
 #, fuzzy
 msgid "Step argument is zero!"
 msgstr "stopnja argumenta je nič!"
@@ -11480,6 +11728,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Selects"
+msgstr "GridMap Izbriši Izbor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -11757,10 +12010,6 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
 msgstr "Dodaj prednaloženo vozlišče"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12051,6 +12300,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -12072,6 +12325,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "Neveljavno ime."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12273,6 +12552,12 @@ msgid ""
 "shape resource for it!"
 msgstr ""
 
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
@@ -12465,6 +12750,11 @@ msgid ""
 "don't use them."
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -12630,7 +12920,14 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Pick a color from the screen."
+msgid ""
+"Color: #%s\n"
+"LMB: Set color\n"
+"RMB: Remove preset"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the editor window."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -12711,6 +13008,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -12740,6 +13041,53 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr "Trenutna scena ni bila shranjena, shranite jo pred zagonom."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Ni na poti virov."
+
+#~ msgid "Revert"
+#~ msgstr "Povrni"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Tega dejanja ni mogoče razveljaviti. Vseeno povrni?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Povrni Prizor"
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Sledilnik Napak"
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Zamenjana %d ponovitev/e."
+
+#~ msgid ""
+#~ "There are currently no tutorials for this class, you can [color=$color]"
+#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
+#~ "$url2]request one[/url][/color]."
+#~ msgstr ""
+#~ "Trenutno ni vaj za ta razred, lahko ga [color=$color][url="
+#~ "$url]prispevate[/url][/color] ali [color=$color][url=$url2]zahtevate "
+#~ "enega[/url][/color]."
+
+#~ msgid "enum  "
+#~ msgstr "oštevil  "
+
+#, fuzzy
+#~ msgid "Brief Description"
+#~ msgstr "Kratek Opis:"
+
+#, fuzzy
+#~ msgid "Class Description"
+#~ msgstr "Opis"
+
+#~ msgid "Project export failed with error code %d."
+#~ msgstr "Izvoz projekta ni uspelo s kodno napako %d."
+
+#~ msgid "Password:"
+#~ msgstr "Geslo:"
 
 #~ msgid "Pause the scene"
 #~ msgstr "Zaustavi prizor"
@@ -12909,19 +13257,11 @@ msgstr "Konstante ni možno spreminjati."
 #~ msgid "Edit Variable:"
 #~ msgstr "Uredi Spremenljivko:"
 
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr ""
-#~ "Naredi primer iz izbranih prizorov, ki bo naslednik izbranega gradnika."
-
 #~ msgid "Line:"
 #~ msgstr "Vrstica:"
 
 #~ msgid "Col:"
 #~ msgstr "Stolpec:"
-
-#, fuzzy
-#~ msgid "Split already exists."
-#~ msgstr "SamodejnoNalaganje '%s' že obstaja!"
 
 #, fuzzy
 #~ msgid "Add Split"
@@ -12975,10 +13315,6 @@ msgstr "Konstante ni možno spreminjati."
 
 #~ msgid "GUI Theme Items:"
 #~ msgstr "Elementi GUI Teme:"
-
-#, fuzzy
-#~ msgid "Property: "
-#~ msgstr "Lastnosti"
 
 #, fuzzy
 #~ msgid "Toggle folder status as Favorite."

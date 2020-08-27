@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,9 +42,9 @@ class ARKitInterface;
 
 @property(nonatomic) ARKitInterface *arkit_interface;
 
-- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
+- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors API_AVAILABLE(ios(11.0));
+- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors API_AVAILABLE(ios(11.0));
+- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors API_AVAILABLE(ios(11.0));
 @end
 
 #endif /* !ARKIT_SESSION_DELEGATE_H */

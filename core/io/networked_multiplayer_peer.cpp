@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #include "networked_multiplayer_peer.h"
 
 void NetworkedMultiplayerPeer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_transfer_mode", "mode"), &NetworkedMultiplayerPeer::set_transfer_mode);
 	ClassDB::bind_method(D_METHOD("get_transfer_mode"), &NetworkedMultiplayerPeer::get_transfer_mode);
 	ClassDB::bind_method(D_METHOD("set_target_peer", "id"), &NetworkedMultiplayerPeer::set_target_peer);
@@ -65,7 +64,4 @@ void NetworkedMultiplayerPeer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("server_disconnected"));
 	ADD_SIGNAL(MethodInfo("connection_succeeded"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
-}
-
-NetworkedMultiplayerPeer::NetworkedMultiplayerPeer() {
 }

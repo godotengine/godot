@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ class PluginScriptLanguage : public ScriptLanguage {
 	const godot_pluginscript_language_desc _desc;
 	godot_pluginscript_language_data *_data;
 
-	Mutex *_lock;
+	Mutex _lock;
 	SelfList<PluginScript>::List _script_list;
 
 public:
@@ -74,13 +74,13 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
-	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const;
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint);
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
@@ -112,7 +112,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
-	virtual void get_public_constants(List<Pair<String, Variant> > *p_constants) const;
+	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const;
 
 	virtual void profiling_start();
 	virtual void profiling_stop();

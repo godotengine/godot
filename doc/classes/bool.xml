@@ -1,10 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="bool" category="Built-In Types" version="3.2">
+<class name="bool" version="4.0">
 	<brief_description>
 		Boolean built-in type.
 	</brief_description>
 	<description>
-		Boolean built-in type.
+		Boolean is a built-in type. There are two boolean values: [code]true[/code] and [code]false[/code]. You can think of it as an switch with on or off (1 or 0) setting. Booleans are used in programming for logic in condition statements, like [code]if[/code] statements.
+		Booleans can be directly used in [code]if[/code] statements. The code below demonstrates this on the [code]if can_shoot:[/code] line. You don't need to use [code]== true[/code], you only need [code]if can_shoot:[/code]. Similarly, use [code]if not can_shoot:[/code] rather than [code]== false[/code].
+		[codeblock]
+		var can_shoot = true
+
+		func shoot():
+		    if can_shoot:
+		        pass # Perform shooting actions here.
+		[/codeblock]
+		The following code will only create a bullet if both conditions are met: action "shoot" is pressed and if [code]can_shoot[/code] is [code]true[/code].
+		[b]Note:[/b] [code]Input.is_action_pressed("shoot")[/code] is also a boolean that is [code]true[/code] when "shoot" is pressed and [code]false[/code] when "shoot" isn't pressed.
+		[codeblock]
+		var can_shoot = true
+
+		func shoot():
+		    if can_shoot and Input.is_action_pressed("shoot"):
+		        create_bullet()
+		[/codeblock]
+		The following code will set [code]can_shoot[/code] to [code]false[/code] and start a timer. This will prevent player from shooting until the timer runs out. Next [code]can_shoot[/code] will be set to [code]true[/code] again allowing player to shoot once again.
+		[codeblock]
+		var can_shoot = true
+		onready var cool_down = $CoolDownTimer
+
+		func shoot():
+		    if can_shoot and Input.is_action_pressed("shoot"):
+		        create_bullet()
+		        can_shoot = false
+		        cool_down.start()
+
+		func _on_CoolDownTimer_timeout():
+		    can_shoot = true
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +46,7 @@
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
-				Cast an [int] value to a boolean value, this method will return [code]true[/code] if called with an integer value different to 0 and [code]false[/code] in other case.
+				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
 			</description>
 		</method>
 		<method name="bool">
@@ -24,7 +55,7 @@
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
-				Cast a [float] value to a boolean value, this method will return [code]true[/code] if called with a floating-point value different to 0 and [code]false[/code] in other case.
+				Cast a [float] value to a boolean value, this method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other floats.
 			</description>
 		</method>
 		<method name="bool">
@@ -33,7 +64,8 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Cast a [String] value to a boolean value, this method will return [code]true[/code] if called with a non-empty string and [code]false[/code] in other case. Examples: [code]bool("False")[/code] returns [code]true[/code], [code]bool("")[/code] returns [code]false[/code].
+				Cast a [String] value to a boolean value, this method will return [code]false[/code] if [code]""[/code] is passed in, and [code]true[/code] for all non-empty strings.
+				Examples: [code]bool("False")[/code] returns [code]true[/code], [code]bool("")[/code] returns [code]false[/code].
 			</description>
 		</method>
 	</methods>

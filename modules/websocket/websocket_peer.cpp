@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@ void WebSocketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close", "code", "reason"), &WebSocketPeer::close, DEFVAL(1000), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &WebSocketPeer::get_connected_host);
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &WebSocketPeer::get_connected_port);
+	ClassDB::bind_method(D_METHOD("set_no_delay", "enabled"), &WebSocketPeer::set_no_delay);
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);

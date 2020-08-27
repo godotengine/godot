@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 
 #include <wrl.h>
 
-// ANGLE doesn't provide a specific lib for GLES3, so we keep using GLES2
 #include "GLES2/gl2.h"
 #include "os_uwp.h"
 
@@ -46,7 +45,7 @@ namespace GodotUWP
 	ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
 	{
 	public:
-		App();
+		App() {}
 
 		// IFrameworkView Methods.
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
@@ -93,14 +92,14 @@ namespace GodotUWP
 
 		char** get_command_line(unsigned int* out_argc);
 
-		bool mWindowClosed;
-		bool mWindowVisible;
-		GLsizei mWindowWidth;
-		GLsizei mWindowHeight;
+		bool mWindowClosed = false;
+		bool mWindowVisible = true;
+		GLsizei mWindowWidth = 0;
+		GLsizei mWindowHeight = 0;
 
-		EGLDisplay mEglDisplay;
-		EGLContext mEglContext;
-		EGLSurface mEglSurface;
+		EGLDisplay mEglDisplay = EGL_NO_DISPLAY;
+		EGLContext mEglContext = EGL_NO_CONTEXT;
+		EGLSurface mEglSurface = EGL_NO_SURFACE;
 
 		CoreWindow^ window;
 		OS_UWP* os;

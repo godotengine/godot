@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve3D" inherits="Resource" category="Core" version="3.2">
+<class name="Curve3D" inherits="Resource" version="4.0">
 	<brief_description>
 		Describes a Bézier curve in 3D space.
 	</brief_description>
 	<description>
-		This class describes a Bézier curve in 3D space. It is mainly used to give a shape to a [Path], but can be manually sampled for other purposes.
+		This class describes a Bézier curve in 3D space. It is mainly used to give a shape to a [Path3D], but can be manually sampled for other purposes.
 		It keeps a cache of precalculated points along the curve, to speed up further calculations.
 	</description>
 	<tutorials>
@@ -41,24 +41,24 @@
 			</description>
 		</method>
 		<method name="get_baked_points" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
-				Returns the cache of points as a [PoolVector3Array].
+				Returns the cache of points as a [PackedVector3Array].
 			</description>
 		</method>
 		<method name="get_baked_tilts" qualifiers="const">
-			<return type="PoolRealArray">
+			<return type="PackedFloat32Array">
 			</return>
 			<description>
-				Returns the cache of tilts as a [PoolRealArray].
+				Returns the cache of tilts as a [PackedFloat32Array].
 			</description>
 		</method>
 		<method name="get_baked_up_vectors" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<description>
-				Returns the cache of up vectors as a [PoolVector3Array].
+				Returns the cache of up vectors as a [PackedVector3Array].
 				If [member up_vector_enabled] is [code]false[/code], the cache will be empty.
 			</description>
 		</method>
@@ -223,11 +223,11 @@
 			</argument>
 			<description>
 				Sets the tilt angle in radians for the point [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
-				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the [PathFollow] calculates.
+				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow3D], this tilt is an offset over the natural tilt the [PathFollow3D] calculates.
 			</description>
 		</method>
 		<method name="tessellate" qualifiers="const">
-			<return type="PoolVector3Array">
+			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="max_stages" type="int" default="5">
 			</argument>
@@ -246,7 +246,7 @@
 			The distance in meters between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
 		</member>
 		<member name="up_vector_enabled" type="bool" setter="set_up_vector_enabled" getter="is_up_vector_enabled" default="true">
-			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow.rotation_mode] is set to [constant PathFollow.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
+			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow3D.rotation_mode] is set to [constant PathFollow3D.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
 		</member>
 	</members>
 	<constants>

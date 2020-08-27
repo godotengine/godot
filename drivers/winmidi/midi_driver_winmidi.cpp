@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,14 +35,12 @@
 #include "core/print_string.h"
 
 void MIDIDriverWinMidi::read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
-
 	if (wMsg == MIM_DATA) {
 		receive_input_packet((uint64_t)dwParam2, (uint8_t *)&dwParam1, 3);
 	}
 }
 
 Error MIDIDriverWinMidi::open() {
-
 	for (UINT i = 0; i < midiInGetNumDevs(); i++) {
 		HMIDIIN midi_in;
 
@@ -53,12 +51,12 @@ Error MIDIDriverWinMidi::open() {
 		} else {
 			char err[256];
 			midiInGetErrorText(res, err, 256);
-			ERR_PRINTS("midiInOpen error: " + String(err));
+			ERR_PRINT("midiInOpen error: " + String(err));
 
 			MIDIINCAPS caps;
 			res = midiInGetDevCaps(i, &caps, sizeof(MIDIINCAPS));
 			if (res == MMSYSERR_NOERROR) {
-				ERR_PRINTS("Can't open MIDI device \"" + String(caps.szPname) + "\", is it being used by another application?");
+				ERR_PRINT("Can't open MIDI device \"" + String(caps.szPname) + "\", is it being used by another application?");
 			}
 		}
 	}
@@ -66,9 +64,8 @@ Error MIDIDriverWinMidi::open() {
 	return OK;
 }
 
-PoolStringArray MIDIDriverWinMidi::get_connected_inputs() {
-
-	PoolStringArray list;
+PackedStringArray MIDIDriverWinMidi::get_connected_inputs() {
+	PackedStringArray list;
 
 	for (int i = 0; i < connected_sources.size(); i++) {
 		HMIDIIN midi_in = connected_sources[i];
@@ -87,7 +84,6 @@ PoolStringArray MIDIDriverWinMidi::get_connected_inputs() {
 }
 
 void MIDIDriverWinMidi::close() {
-
 	for (int i = 0; i < connected_sources.size(); i++) {
 		HMIDIIN midi_in = connected_sources[i];
 		midiInStop(midi_in);
@@ -100,7 +96,6 @@ MIDIDriverWinMidi::MIDIDriverWinMidi() {
 }
 
 MIDIDriverWinMidi::~MIDIDriverWinMidi() {
-
 	close();
 }
 

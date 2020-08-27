@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CryptoKey" inherits="Resource" category="Core" version="3.2">
+<class name="CryptoKey" inherits="Resource" version="4.0">
 	<brief_description>
 		A cryptographic key (RSA).
 	</brief_description>
 	<description>
 		The CryptoKey class represents a cryptographic key. Keys can be loaded and saved like any other [Resource].
 		They can be used to generate a self-signed [X509Certificate] via [method Crypto.generate_self_signed_certificate] and as private key in [method StreamPeerSSL.accept_stream] along with the appropriate certificate.
+		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="is_public_only" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return [code]true[/code] if this CryptoKey only has the public part, and not the private one.
+			</description>
+		</method>
 		<method name="load">
 			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
+			<argument index="1" name="public_only" type="bool" default="false">
+			</argument>
 			<description>
-				Loads a key from [code]path[/code] ("*.key" file).
+				Loads a key from [code]path[/code]. If [code]public_only[/code] is [code]true[/code], only the public key will be loaded.
+				[b]Note[/b]: [code]path[/code] should should be a "*.pub" file if [code]public_only[/code] is [code]true[/code], a "*.key" file otherwise.
+			</description>
+		</method>
+		<method name="load_from_string">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="string_key" type="String">
+			</argument>
+			<argument index="1" name="public_only" type="bool" default="false">
+			</argument>
+			<description>
+				Loads a key from the given [code]string[/code]. If [code]public_only[/code] is [code]true[/code], only the public key will be loaded.
 			</description>
 		</method>
 		<method name="save">
@@ -24,8 +46,20 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
+			<argument index="1" name="public_only" type="bool" default="false">
+			</argument>
 			<description>
-				Saves a key to the given [code]path[/code] (should be a "*.key" file).
+				Saves a key to the given [code]path[/code]. If [code]public_only[/code] is [code]true[/code], only the public key will be saved.
+				[b]Note[/b]: [code]path[/code] should should be a "*.pub" file if [code]public_only[/code] is [code]true[/code], a "*.key" file otherwise.
+			</description>
+		</method>
+		<method name="save_to_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="public_only" type="bool" default="false">
+			</argument>
+			<description>
+				Returns a string containing the key in PEM format. If [code]public_only[/code] is [code]true[/code], only the public key will be included.
 			</description>
 		</method>
 	</methods>

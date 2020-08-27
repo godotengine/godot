@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -231,7 +231,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, default_font_size);
-	p_theme->set_default_theme_font(df);
+	p_theme->set_default_font(df); // Default theme font
 	p_theme->set_font("main", "EditorFonts", df);
 
 	// Bold font
@@ -247,14 +247,20 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_BOLD_FONT(df_doc_bold, int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
 	MAKE_BOLD_FONT(df_doc_title, int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
 	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
+	MAKE_SOURCE_FONT(df_doc_kbd, (int(EDITOR_GET("text_editor/help/help_source_font_size")) - 1) * EDSCALE);
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_bold", "EditorFonts", df_doc_bold);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
+	p_theme->set_font("doc_keyboard", "EditorFonts", df_doc_kbd);
 
 	// Ruler font
 	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
+
+	// Rotation widget font
+	MAKE_DEFAULT_FONT(df_rotation_control, 14 * EDSCALE);
+	p_theme->set_font("rotation_control", "EditorFonts", df_rotation_control);
 
 	// Code font
 	MAKE_SOURCE_FONT(df_code, int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);

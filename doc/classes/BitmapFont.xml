@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BitmapFont" inherits="Font" category="Core" version="3.2">
+<class name="BitmapFont" inherits="Font" version="4.0">
 	<brief_description>
-		Renders text using [code]*.fnt[/code] fonts.
+		Renders text using fonts under the [url=https://www.angelcode.com/products/bmfont/]BMFont[/url] format.
+		Handles files with the [code].fnt[/code] extension.
 	</brief_description>
 	<description>
 		Renders text using [code]*.fnt[/code] fonts containing texture atlases. Supports distance fields. For using vector font files like TTF directly, see [DynamicFont].
@@ -42,7 +43,7 @@
 		<method name="add_texture">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Adds a texture to the [BitmapFont].
@@ -64,17 +65,6 @@
 				Creates a BitmapFont from the [code]*.fnt[/code] file at [code]path[/code].
 			</description>
 		</method>
-		<method name="get_char_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="char" type="int">
-			</argument>
-			<argument index="1" name="next" type="int" default="0">
-			</argument>
-			<description>
-				Returns the size of a character, optionally taking kerning into account if the next character is provided.
-			</description>
-		</method>
 		<method name="get_kerning_pair" qualifiers="const">
 			<return type="int">
 			</return>
@@ -87,7 +77,7 @@
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

@@ -1,0 +1,123 @@
+name: 🏁 Windows Builds
+on: [push, pull_request]
+
+# Global Cache Settings
+# SCONS_CACHE for windows must be set in the build environment
+env:
+  GODOT_BASE_BRANCH: master
+  SCONS_CACHE_MSVC_CONFIG: true
+  SCONS_CACHE_LIMIT: 4096
+
+jobs:
+  windows-editor:
+    # Windows 10 with latest image
+    runs-on: "windows-latest"
+
+    # Windows Editor - checkout with the plugin
+    name: Editor (target=release_debug, tools=yes, tests=yes)
+
+    steps:
+    - uses: actions/checkout@v2
+
+      # Upload cache on completion and check it out now
+      # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
+    - name: Load .scons_cache directory
+      id: windows-editor-cache
+      uses: RevoluPowered/cache@v2.1
+      with:
+        path: /.scons_cache/
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+        restore-keys: |
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+
+    # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+        # Semantic version range syntax or exact version of a Python version
+        python-version: '3.x'
+        # Optional - x64 or x86 architecture, defaults to x64
+        architecture: 'x64'
+
+    # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
+    - name: Configuring Python packages
+      run: |
+        python -c "import sys; print(sys.version)"
+        python -m pip install scons pywin32
+        python --version
+        scons --version
+
+    # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
+    - name: Compilation
+      env:
+        SCONS_CACHE: /.scons_cache/
+      run: |
+        scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes tests=yes target=release_debug
+
+    # Execute unit tests for the editor
+    - name: Unit Tests
+      run: |
+        ./bin/godot.windows.opt.tools.64.exe --test
+
+# Build Product Upload (tested and working)
+# sorry this is disabled until github can give us some more space as we would hit our limit very quickly
+# tested this code and it works fine so just enable it to get them back
+#    - name: publishing godot windows-editor
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: windows-editor (x64)
+#        path: bin/godot.windows.opt.tools.64.exe
+
+  windows-template:
+    runs-on: "windows-latest"
+    name: Template (target=release, tools=no)
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Upload cache on completion and check it out now
+    # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
+    - name: Load .scons_cache directory
+      id: windows-template-cache
+      uses: RevoluPowered/cache@v2.1
+      with:
+        path: /.scons_cache/
+        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+        restore-keys: |
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+
+    # Use python 3.x release (works cross platform)
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+        # Semantic version range syntax or exact version of a Python version
+        python-version: '3.x'
+        # Optional - x64 or x86 architecture, defaults to x64
+        architecture: 'x64'
+
+    # You can test your matrix by printing the current Python version
+    - name: Configuring Python packages
+      run: |
+        python -c "import sys; print(sys.version)"
+        python -m pip install scons pywin32
+        python --version
+        scons --version
+
+    - name: Compilation
+      env:
+        SCONS_CACHE: /.scons_cache/
+      run: |
+        scons -j2 verbose=yes warnings=all werror=yes platform=windows target=release tools=no
+
+# Build Product Upload (tested and working)
+# sorry this is disabled until github can give us some more space as we would hit our limit very quickly
+# tested this code and it works fine so just enable it to get them back
+#    - name: publishing godot windows-template
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: windows-template (x64)
+#        path: bin/godot.windows.opt.64.exe

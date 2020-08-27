@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 	Ref<CameraFeed> feed;
 	size_t width[2];
 	size_t height[2];
-	PoolVector<uint8_t> img_data[2];
+	Vector<uint8_t> img_data[2];
 
 	AVCaptureDeviceInput *input;
 	AVCaptureVideoDataOutput *output;
@@ -158,25 +158,31 @@
 	} else if (dataCbCr == NULL) {
 		print_line("Couldn't access CbCr pixel buffer data");
 	} else {
-		UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+		UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+
+		if (@available(iOS 13, *)) {
+			orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
+#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
+		} else {
+			orientation = [[UIApplication sharedApplication] statusBarOrientation];
+#endif
+		}
+
 		Ref<Image> img[2];
 
 		{
 			// do Y
-			int new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-			int new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-			int _bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
 
 			if ((width[0] != new_width) || (height[0] != new_height)) {
-				// printf("Camera Y plane %i, %i - %i\n", new_width, new_height, bytes_per_row);
-
 				width[0] = new_width;
 				height[0] = new_height;
 				img_data[0].resize(new_width * new_height);
 			}
 
-			PoolVector<uint8_t>::Write w = img_data[0].write();
-			memcpy(w.ptr(), dataY, new_width * new_height);
+			uint8_t *w = img_data[0].ptrw();
+			memcpy(w, dataY, new_width * new_height);
 
 			img[0].instance();
 			img[0]->create(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
@@ -184,20 +190,17 @@
 
 		{
 			// do CbCr
-			int new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-			int new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-			int bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1);
+			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
 
 			if ((width[1] != new_width) || (height[1] != new_height)) {
-				// printf("Camera CbCr plane %i, %i - %i\n", new_width, new_height, bytes_per_row);
-
 				width[1] = new_width;
 				height[1] = new_height;
 				img_data[1].resize(2 * new_width * new_height);
 			}
 
-			PoolVector<uint8_t>::Write w = img_data[1].write();
-			memcpy(w.ptr(), dataCbCr, 2 * new_width * new_height);
+			uint8_t *w = img_data[1].ptrw();
+			memcpy(w, dataCbCr, 2 * new_width * new_height);
 
 			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
 			img[1].instance();
@@ -359,41 +362,59 @@ void CameraIOS::update_feeds() {
 	// this way of doing things is deprecated but still works,
 	// rewrite to using AVCaptureDeviceDiscoverySession
 
-	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInDualCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSMutableArray *deviceTypes = [NSMutableArray array];
 
-	// remove devices that are gone..
-	for (int i = feeds.size() - 1; i >= 0; i--) {
-		Ref<CameraFeedIOS> feed(feeds[i]);
+	if (@available(iOS 10, *)) {
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInWideAngleCamera];
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTelephotoCamera];
 
-		if (feed.is_null()) {
-			// feed not managed by us
-		} else if (![session.devices containsObject:feed->get_device()]) {
-			// remove it from our array, this will also destroy it ;)
-			remove_feed(feed);
-		};
-	};
+		if (@available(iOS 10.2, *)) {
+			[deviceTypes addObject:AVCaptureDeviceTypeBuiltInDualCamera];
+		}
 
-	// add new devices..
-	for (AVCaptureDevice *device in session.devices) {
-		bool found = false;
+		if (@available(iOS 11.1, *)) {
+			[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTrueDepthCamera];
+		}
 
-		for (int i = 0; i < feeds.size() && !found; i++) {
+		AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession
+				discoverySessionWithDeviceTypes:deviceTypes
+									  mediaType:AVMediaTypeVideo
+									   position:AVCaptureDevicePositionUnspecified];
+
+		// remove devices that are gone..
+		for (int i = feeds.size() - 1; i >= 0; i--) {
 			Ref<CameraFeedIOS> feed(feeds[i]);
 
 			if (feed.is_null()) {
 				// feed not managed by us
-			} else if (feed->get_device() == device) {
-				found = true;
+			} else if (![session.devices containsObject:feed->get_device()]) {
+				// remove it from our array, this will also destroy it ;)
+				remove_feed(feed);
 			};
 		};
 
-		if (!found) {
-			Ref<CameraFeedIOS> newfeed;
-			newfeed.instance();
-			newfeed->set_device(device);
-			add_feed(newfeed);
+		// add new devices..
+		for (AVCaptureDevice *device in session.devices) {
+			bool found = false;
+
+			for (int i = 0; i < feeds.size() && !found; i++) {
+				Ref<CameraFeedIOS> feed(feeds[i]);
+
+				if (feed.is_null()) {
+					// feed not managed by us
+				} else if (feed->get_device() == device) {
+					found = true;
+				};
+			};
+
+			if (!found) {
+				Ref<CameraFeedIOS> newfeed;
+				newfeed.instance();
+				newfeed->set_device(device);
+				add_feed(newfeed);
+			};
 		};
-	};
+	}
 };
 
 CameraIOS::CameraIOS() {

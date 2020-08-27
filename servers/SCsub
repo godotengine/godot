@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 env.servers_sources = []
 env.add_source_files(env.servers_sources, "*.cpp")
 
-SConscript('arvr/SCsub')
-SConscript('camera/SCsub')
-SConscript('physics/SCsub')
-SConscript('physics_2d/SCsub')
-SConscript('visual/SCsub')
-SConscript('audio/SCsub')
+SConscript("xr/SCsub")
+SConscript("camera/SCsub")
+SConscript("physics_3d/SCsub")
+SConscript("physics_2d/SCsub")
+SConscript("rendering/SCsub")
+SConscript("audio/SCsub")
 
 lib = env.add_library("servers", env.servers_sources)
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 package com.godot.game;
 
-import org.godotengine.godot.Godot;
+import org.godotengine.godot.FullScreenGodotApp;
 
 /**
  * Template activity for Godot Android custom builds.
  * Feel free to extend and modify this class for your custom logic.
  */
-public class GodotApp extends Godot {
+public class GodotApp extends FullScreenGodotApp {
 }

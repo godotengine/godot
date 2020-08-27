@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BakedLightmapData" inherits="Resource" category="Core" version="3.2">
+<class name="BakedLightmapData" inherits="Resource" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -12,9 +12,11 @@
 			</return>
 			<argument index="0" name="path" type="NodePath">
 			</argument>
-			<argument index="1" name="lightmap" type="Texture">
+			<argument index="1" name="lightmap" type="Rect2">
 			</argument>
-			<argument index="2" name="instance" type="int">
+			<argument index="2" name="offset" type="int">
+			</argument>
+			<argument index="3" name="arg3" type="int">
 			</argument>
 			<description>
 			</description>
@@ -31,14 +33,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_user_lightmap" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="user_idx" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_user_path" qualifiers="const">
 			<return type="NodePath">
 			</return>
@@ -47,17 +41,23 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_using_spherical_harmonics" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_uses_spherical_harmonics">
+			<return type="void">
+			</return>
+			<argument index="0" name="uses_spherical_harmonics" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds" default="AABB( 0, 0, 0, 0, 0, 0 )">
-		</member>
-		<member name="cell_space_transform" type="Transform" setter="set_cell_space_transform" getter="get_cell_space_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
-		</member>
-		<member name="cell_subdiv" type="int" setter="set_cell_subdiv" getter="get_cell_subdiv" default="1">
-		</member>
-		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
-		</member>
-		<member name="octree" type="PoolByteArray" setter="set_octree" getter="get_octree" default="PoolByteArray(  )">
+		<member name="light_texture" type="TextureLayered" setter="set_light_texture" getter="get_light_texture">
 		</member>
 	</members>
 	<constants>

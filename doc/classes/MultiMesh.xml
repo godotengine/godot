@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMesh" inherits="Resource" category="Core" version="3.2">
+<class name="MultiMesh" inherits="Resource" version="4.0">
 	<brief_description>
 		Provides high-performance mesh instancing.
 	</brief_description>
 	<description>
-		MultiMesh provides low-level mesh instancing. Drawing thousands of [MeshInstance] nodes can be slow, since each object is submitted to the GPU then drawn individually.
+		MultiMesh provides low-level mesh instancing. Drawing thousands of [MeshInstance3D] nodes can be slow, since each object is submitted to the GPU then drawn individually.
 		MultiMesh is much faster as it can draw thousands of instances with a single draw call, resulting in less API overhead.
 		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
@@ -56,17 +57,6 @@
 				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
-		<method name="set_as_bulk_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="array" type="PoolRealArray">
-			</argument>
-			<description>
-				Sets all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
-				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc...
-				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
-			</description>
-		</method>
 		<method name="set_instance_color">
 			<return type="void">
 			</return>
@@ -76,7 +66,7 @@
 			</argument>
 			<description>
 				Sets the color of a specific instance.
-				For the color to take effect, ensure that [member color_format] is non-[code]null[/code] on the [MultiMesh] and [member SpatialMaterial.vertex_color_use_as_albedo] is [code]true[/code] on the material.
+				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>
 		<method name="set_instance_custom_data">
@@ -87,7 +77,8 @@
 			<argument index="1" name="custom_data" type="Color">
 			</argument>
 			<description>
-				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 numbers.
+				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 floating point numbers.
+				For the custom data to be used, ensure that [member use_custom_data] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_instance_transform">
@@ -114,11 +105,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color_format" type="int" setter="set_color_format" getter="get_color_format" enum="MultiMesh.ColorFormat" default="0">
-			Format of colors in color array that gets passed to shader.
+		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array(  )">
 		</member>
-		<member name="custom_data_format" type="int" setter="set_custom_data_format" getter="get_custom_data_format" enum="MultiMesh.CustomDataFormat" default="0">
-			Format of custom data in custom data array that gets passed to shader.
+		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array">
+		</member>
+		<member name="custom_data_array" type="PackedColorArray" setter="_set_custom_data_array" getter="_get_custom_data_array">
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count" default="0">
 			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default, all instances are drawn but you can limit this with [member visible_instance_count].
@@ -126,8 +117,18 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.
 		</member>
+		<member name="transform_2d_array" type="PackedVector2Array" setter="_set_transform_2d_array" getter="_get_transform_2d_array">
+		</member>
+		<member name="transform_array" type="PackedVector3Array" setter="_set_transform_array" getter="_get_transform_array">
+		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
 			Format of transform used to transform mesh, either 2D or 3D.
+		</member>
+		<member name="use_colors" type="bool" setter="set_use_colors" getter="is_using_colors" default="false">
+			If [code]true[/code], the [MultiMesh] will use color data (see [member color_array]).
+		</member>
+		<member name="use_custom_data" type="bool" setter="set_use_custom_data" getter="is_using_custom_data" default="false">
+			If [code]true[/code], the [MultiMesh] will use custom data (see [member custom_data_array]).
 		</member>
 		<member name="visible_instance_count" type="int" setter="set_visible_instance_count" getter="get_visible_instance_count" default="-1">
 			Limits the number of instances drawn, -1 draws all instances. Changing this does not change the sizes of the buffers.
@@ -139,24 +140,6 @@
 		</constant>
 		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
 			Use this when using 3D transforms.
-		</constant>
-		<constant name="COLOR_NONE" value="0" enum="ColorFormat">
-			Use when you are not using per-instance [Color]s.
-		</constant>
-		<constant name="COLOR_8BIT" value="1" enum="ColorFormat">
-			Compress [Color] data into 8 bits when passing to shader. This uses less memory and can be faster, but the [Color] loses precision.
-		</constant>
-		<constant name="COLOR_FLOAT" value="2" enum="ColorFormat">
-			The [Color] passed into [method set_instance_color] will use 4 floats. Use this for highest precision [Color].
-		</constant>
-		<constant name="CUSTOM_DATA_NONE" value="0" enum="CustomDataFormat">
-			Use when you are not using per-instance custom data.
-		</constant>
-		<constant name="CUSTOM_DATA_8BIT" value="1" enum="CustomDataFormat">
-			Compress custom_data into 8 bits when passing to shader. This uses less memory and can be faster, but loses precision.
-		</constant>
-		<constant name="CUSTOM_DATA_FLOAT" value="2" enum="CustomDataFormat">
-			The [Color] passed into [method set_instance_custom_data] will use 4 floats. Use this for highest precision.
 		</constant>
 	</constants>
 </class>

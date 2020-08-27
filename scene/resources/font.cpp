@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,11 +65,11 @@ void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, co
 	int chars_drawn = 0;
 	bool with_outline = has_outline();
 	for (int i = 0; i < p_text.length(); i++) {
-
 		int width = get_char_size(p_text[i]).width;
 
-		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w)
+		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w) {
 			break; //clip
+		}
 
 		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], with_outline ? p_outline_modulate : p_modulate, with_outline);
 		++chars_drawn;
@@ -84,17 +84,16 @@ void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, co
 }
 
 void Font::update_changes() {
-
 	emit_changed();
 }
 
 void Font::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "string", "modulate", "clip_w", "outline_modulate"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("get_ascent"), &Font::get_ascent);
 	ClassDB::bind_method(D_METHOD("get_descent"), &Font::get_descent);
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
+	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next"), &Font::get_char_size, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
 	ClassDB::bind_method(D_METHOD("get_wordwrap_string_size", "string", "width"), &Font::get_wordwrap_string_size);
 	ClassDB::bind_method(D_METHOD("has_outline"), &Font::has_outline);
@@ -107,33 +106,30 @@ Font::Font() {
 
 /////////////////////////////////////////////////////////////////
 
-void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
-
+void BitmapFont::_set_chars(const Vector<int> &p_chars) {
 	int len = p_chars.size();
 	//char 1 charsize 1 texture, 4 rect, 2 align, advance 1
 	ERR_FAIL_COND(len % 9);
-	if (!len)
+	if (!len) {
 		return; //none to do
+	}
 	int chars = len / 9;
 
-	PoolVector<int>::Read r = p_chars.read();
+	const int *r = p_chars.ptr();
 	for (int i = 0; i < chars; i++) {
-
 		const int *data = &r[i * 9];
 		add_char(data[0], data[1], Rect2(data[2], data[3], data[4], data[5]), Size2(data[6], data[7]), data[8]);
 	}
 }
 
-PoolVector<int> BitmapFont::_get_chars() const {
+Vector<int> BitmapFont::_get_chars() const {
+	Vector<int> chars;
 
-	PoolVector<int> chars;
-
-	const CharType *key = NULL;
+	const CharType *key = nullptr;
 
 	while ((key = char_map.next(key))) {
-
 		const Character *c = char_map.getptr(*key);
-		ERR_FAIL_COND_V(!c, PoolVector<int>());
+		ERR_FAIL_COND_V(!c, Vector<int>());
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
 		chars.push_back(c->rect.position.x);
@@ -149,27 +145,24 @@ PoolVector<int> BitmapFont::_get_chars() const {
 	return chars;
 }
 
-void BitmapFont::_set_kernings(const PoolVector<int> &p_kernings) {
-
+void BitmapFont::_set_kernings(const Vector<int> &p_kernings) {
 	int len = p_kernings.size();
 	ERR_FAIL_COND(len % 3);
-	if (!len)
+	if (!len) {
 		return;
-	PoolVector<int>::Read r = p_kernings.read();
+	}
+	const int *r = p_kernings.ptr();
 
 	for (int i = 0; i < len / 3; i++) {
-
 		const int *data = &r[i * 3];
 		add_kerning_pair(data[0], data[1], data[2]);
 	}
 }
 
-PoolVector<int> BitmapFont::_get_kernings() const {
-
-	PoolVector<int> kernings;
+Vector<int> BitmapFont::_get_kernings() const {
+	Vector<int> kernings;
 
 	for (Map<KerningPairKey, int>::Element *E = kerning_map.front(); E; E = E->next()) {
-
 		kernings.push_back(E->key().A);
 		kernings.push_back(E->key().B);
 		kernings.push_back(E->get());
@@ -179,20 +172,19 @@ PoolVector<int> BitmapFont::_get_kernings() const {
 }
 
 void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
-
 	textures.clear();
 	for (int i = 0; i < p_textures.size(); i++) {
-		Ref<Texture> tex = p_textures[i];
+		Ref<Texture2D> tex = p_textures[i];
 		ERR_CONTINUE(!tex.is_valid());
 		add_texture(tex);
 	}
 }
 
 Vector<Variant> BitmapFont::_get_textures() const {
-
 	Vector<Variant> rtextures;
-	for (int i = 0; i < textures.size(); i++)
-		rtextures.push_back(textures[i].get_ref_ptr());
+	for (int i = 0; i < textures.size(); i++) {
+		rtextures.push_back(textures[i]);
+	}
 	return rtextures;
 }
 
@@ -207,7 +199,6 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 	clear();
 
 	while (true) {
-
 		String line = f->get_line();
 
 		int delimiter = line.find(" ");
@@ -215,62 +206,65 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 		int pos = delimiter + 1;
 		Map<String, String> keys;
 
-		while (pos < line.size() && line[pos] == ' ')
+		while (pos < line.size() && line[pos] == ' ') {
 			pos++;
+		}
 
 		while (pos < line.size()) {
-
 			int eq = line.find("=", pos);
-			if (eq == -1)
+			if (eq == -1) {
 				break;
+			}
 			String key = line.substr(pos, eq - pos);
 			int end = -1;
 			String value;
 			if (line[eq + 1] == '"') {
 				end = line.find("\"", eq + 2);
-				if (end == -1)
+				if (end == -1) {
 					break;
+				}
 				value = line.substr(eq + 2, end - 1 - eq - 1);
 				pos = end + 1;
 			} else {
 				end = line.find(" ", eq + 1);
-				if (end == -1)
+				if (end == -1) {
 					end = line.size();
+				}
 
 				value = line.substr(eq + 1, end - eq);
 
 				pos = end;
 			}
 
-			while (pos < line.size() && line[pos] == ' ')
+			while (pos < line.size() && line[pos] == ' ') {
 				pos++;
+			}
 
 			keys[key] = value;
 		}
 
 		if (type == "info") {
-
-			if (keys.has("face"))
+			if (keys.has("face")) {
 				set_name(keys["face"]);
+			}
 			/*
 			if (keys.has("size"))
 				font->set_height(keys["size"].to_int());
 			*/
 
 		} else if (type == "common") {
-
-			if (keys.has("lineHeight"))
+			if (keys.has("lineHeight")) {
 				set_height(keys["lineHeight"].to_int());
-			if (keys.has("base"))
+			}
+			if (keys.has("base")) {
 				set_ascent(keys["base"].to_int());
+			}
 
 		} else if (type == "page") {
-
 			if (keys.has("file")) {
-
 				String base_dir = p_file.get_base_dir();
 				String file = base_dir.plus_file(keys["file"]);
-				Ref<Texture> tex = ResourceLoader::load(file);
+				Ref<Texture2D> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");
 				} else {
@@ -278,55 +272,66 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 				}
 			}
 		} else if (type == "char") {
-
 			CharType idx = 0;
-			if (keys.has("id"))
+			if (keys.has("id")) {
 				idx = keys["id"].to_int();
+			}
 
 			Rect2 rect;
 
-			if (keys.has("x"))
+			if (keys.has("x")) {
 				rect.position.x = keys["x"].to_int();
-			if (keys.has("y"))
+			}
+			if (keys.has("y")) {
 				rect.position.y = keys["y"].to_int();
-			if (keys.has("width"))
+			}
+			if (keys.has("width")) {
 				rect.size.width = keys["width"].to_int();
-			if (keys.has("height"))
+			}
+			if (keys.has("height")) {
 				rect.size.height = keys["height"].to_int();
+			}
 
 			Point2 ofs;
 
-			if (keys.has("xoffset"))
+			if (keys.has("xoffset")) {
 				ofs.x = keys["xoffset"].to_int();
-			if (keys.has("yoffset"))
+			}
+			if (keys.has("yoffset")) {
 				ofs.y = keys["yoffset"].to_int();
+			}
 
 			int texture = 0;
-			if (keys.has("page"))
+			if (keys.has("page")) {
 				texture = keys["page"].to_int();
+			}
 			int advance = -1;
-			if (keys.has("xadvance"))
+			if (keys.has("xadvance")) {
 				advance = keys["xadvance"].to_int();
+			}
 
 			add_char(idx, texture, rect, ofs, advance);
 
 		} else if (type == "kerning") {
-
 			CharType first = 0, second = 0;
 			int k = 0;
 
-			if (keys.has("first"))
+			if (keys.has("first")) {
 				first = keys["first"].to_int();
-			if (keys.has("second"))
+			}
+			if (keys.has("second")) {
 				second = keys["second"].to_int();
-			if (keys.has("amount"))
+			}
+			if (keys.has("amount")) {
 				k = keys["amount"].to_int();
+			}
 
 			add_kerning_pair(first, second, -k);
 		}
 
-		if (f->eof_reached())
+		if (f->eof_reached()) {
 			break;
+		}
 	}
 
 	memdelete(f);
@@ -335,57 +340,57 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 }
 
 void BitmapFont::set_height(float p_height) {
-
 	height = p_height;
 }
-float BitmapFont::get_height() const {
 
+float BitmapFont::get_height() const {
 	return height;
 }
 
 void BitmapFont::set_ascent(float p_ascent) {
-
 	ascent = p_ascent;
 }
-float BitmapFont::get_ascent() const {
 
+float BitmapFont::get_ascent() const {
 	return ascent;
 }
-float BitmapFont::get_descent() const {
 
+float BitmapFont::get_descent() const {
 	return height - ascent;
 }
 
-void BitmapFont::add_texture(const Ref<Texture> &p_texture) {
+float BitmapFont::get_underline_position() const {
+	return 2;
+}
 
+float BitmapFont::get_underline_thickness() const {
+	return 1;
+}
+
+void BitmapFont::add_texture(const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
 	textures.push_back(p_texture);
 }
 
 int BitmapFont::get_texture_count() const {
-
 	return textures.size();
 };
 
-Ref<Texture> BitmapFont::get_texture(int p_idx) const {
-
-	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture>());
+Ref<Texture2D> BitmapFont::get_texture(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, textures.size(), Ref<Texture2D>());
 	return textures[p_idx];
 };
 
 int BitmapFont::get_character_count() const {
-
 	return char_map.size();
 };
 
 Vector<CharType> BitmapFont::get_char_keys() const {
-
 	Vector<CharType> chars;
 	chars.resize(char_map.size());
-	const CharType *ct = NULL;
+	const CharType *ct = nullptr;
 	int count = 0;
 	while ((ct = char_map.next(ct))) {
-
 		chars.write[count++] = *ct;
 	};
 
@@ -393,7 +398,6 @@ Vector<CharType> BitmapFont::get_char_keys() const {
 };
 
 BitmapFont::Character BitmapFont::get_character(CharType p_char) const {
-
 	if (!char_map.has(p_char)) {
 		ERR_FAIL_V(Character());
 	};
@@ -402,9 +406,9 @@ BitmapFont::Character BitmapFont::get_character(CharType p_char) const {
 };
 
 void BitmapFont::add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance) {
-
-	if (p_advance < 0)
+	if (p_advance < 0) {
 		p_advance = p_rect.size.width;
+	}
 
 	Character c;
 	c.rect = p_rect;
@@ -417,22 +421,18 @@ void BitmapFont::add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rec
 }
 
 void BitmapFont::add_kerning_pair(CharType p_A, CharType p_B, int p_kerning) {
-
 	KerningPairKey kpk;
 	kpk.A = p_A;
 	kpk.B = p_B;
 
 	if (p_kerning == 0 && kerning_map.has(kpk)) {
-
 		kerning_map.erase(kpk);
 	} else {
-
 		kerning_map[kpk] = p_kerning;
 	}
 }
 
 Vector<BitmapFont::KerningPairKey> BitmapFont::get_kerning_pair_keys() const {
-
 	Vector<BitmapFont::KerningPairKey> ret;
 	ret.resize(kerning_map.size());
 	int i = 0;
@@ -445,31 +445,28 @@ Vector<BitmapFont::KerningPairKey> BitmapFont::get_kerning_pair_keys() const {
 }
 
 int BitmapFont::get_kerning_pair(CharType p_A, CharType p_B) const {
-
 	KerningPairKey kpk;
 	kpk.A = p_A;
 	kpk.B = p_B;
 
 	const Map<KerningPairKey, int>::Element *E = kerning_map.find(kpk);
-	if (E)
+	if (E) {
 		return E->get();
+	}
 
 	return 0;
 }
 
 void BitmapFont::set_distance_field_hint(bool p_distance_field) {
-
 	distance_field_hint = p_distance_field;
 	emit_changed();
 }
 
 bool BitmapFont::is_distance_field_hint() const {
-
 	return distance_field_hint;
 }
 
 void BitmapFont::clear() {
-
 	height = 1;
 	ascent = 0;
 	char_map.clear();
@@ -479,16 +476,15 @@ void BitmapFont::clear() {
 }
 
 Size2 Font::get_string_size(const String &p_string) const {
-
 	float w = 0;
 
 	int l = p_string.length();
-	if (l == 0)
+	if (l == 0) {
 		return Size2(0, get_height());
+	}
 	const CharType *sptr = &p_string[0];
 
 	for (int i = 0; i < l; i++) {
-
 		w += get_char_size(sptr[i], sptr[i + 1]).width;
 	}
 
@@ -496,12 +492,12 @@ Size2 Font::get_string_size(const String &p_string) const {
 }
 
 Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) const {
-
 	ERR_FAIL_COND_V(p_width <= 0, Vector2(0, get_height()));
 
 	int l = p_string.length();
-	if (l == 0)
+	if (l == 0) {
 		return Size2(p_width, get_height());
+	}
 
 	float line_w = 0;
 	float h = 0;
@@ -527,8 +523,7 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 }
 
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
-
-	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
+	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != nullptr; fallback_child = fallback_child->get_fallback()) {
 		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -536,17 +531,16 @@ void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 }
 
 Ref<BitmapFont> BitmapFont::get_fallback() const {
-
 	return fallback;
 }
 
 float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
-
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
-		if (fallback.is_valid())
+		if (fallback.is_valid()) {
 			return fallback->draw_char(p_canvas_item, p_pos, p_char, p_next, p_modulate, p_outline);
+		}
 		return 0;
 	}
 
@@ -556,33 +550,31 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 		cpos.x += c->h_align;
 		cpos.y -= ascent;
 		cpos.y += c->v_align;
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
 	}
 
 	return get_char_size(p_char, p_next).width;
 }
 
 Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {
-
 	const Character *c = char_map.getptr(p_char);
 
 	if (!c) {
-		if (fallback.is_valid())
+		if (fallback.is_valid()) {
 			return fallback->get_char_size(p_char, p_next);
+		}
 		return Size2();
 	}
 
 	Size2 ret(c->advance, c->rect.size.y);
 
 	if (p_next) {
-
 		KerningPairKey kpk;
 		kpk.A = p_char;
 		kpk.B = p_next;
 
 		const Map<KerningPairKey, int>::Element *E = kerning_map.find(kpk);
 		if (E) {
-
 			ret.width -= E->get();
 		}
 	}
@@ -591,7 +583,6 @@ Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {
 }
 
 void BitmapFont::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("create_from_fnt", "path"), &BitmapFont::create_from_fnt);
 	ClassDB::bind_method(D_METHOD("set_height", "px"), &BitmapFont::set_height);
 
@@ -605,8 +596,6 @@ void BitmapFont::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_texture_count"), &BitmapFont::get_texture_count);
 	ClassDB::bind_method(D_METHOD("get_texture", "idx"), &BitmapFont::get_texture);
-
-	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next"), &BitmapFont::get_char_size, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_distance_field_hint", "enable"), &BitmapFont::set_distance_field_hint);
 
@@ -625,31 +614,29 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback"), &BitmapFont::get_fallback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_textures", "_get_textures");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_chars", "_get_chars");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_kernings", "_get_kernings");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_chars", "_get_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_kernings", "_get_kernings");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "-1024,1024,1"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ascent", PROPERTY_HINT_RANGE, "-1024,1024,1"), "set_ascent", "get_ascent");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "1,1024,1"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ascent", PROPERTY_HINT_RANGE, "0,1024,1"), "set_ascent", "get_ascent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_field"), "set_distance_field_hint", "is_distance_field_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE, "BitmapFont"), "set_fallback", "get_fallback");
 }
 
 BitmapFont::BitmapFont() {
-
 	clear();
 }
 
 BitmapFont::~BitmapFont() {
-
 	clear();
 }
 
 ////////////
 
-RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	if (r_error)
+RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
+	}
 
 	Ref<BitmapFont> font;
 	font.instance();
@@ -657,8 +644,9 @@ RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_origi
 	Error err = font->create_from_fnt(p_path);
 
 	if (err) {
-		if (r_error)
+		if (r_error) {
 			*r_error = err;
+		}
 		return RES();
 	}
 
@@ -666,19 +654,17 @@ RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_origi
 }
 
 void ResourceFormatLoaderBMFont::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("fnt");
 }
 
 bool ResourceFormatLoaderBMFont::handles_type(const String &p_type) const {
-
 	return (p_type == "BitmapFont");
 }
 
 String ResourceFormatLoaderBMFont::get_resource_type(const String &p_path) const {
-
 	String el = p_path.get_extension().to_lower();
-	if (el == "fnt")
+	if (el == "fnt") {
 		return "BitmapFont";
+	}
 	return "";
 }

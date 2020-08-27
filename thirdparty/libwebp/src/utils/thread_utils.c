@@ -73,7 +73,7 @@ typedef struct {
 #endif
 
 static int pthread_create(pthread_t* const thread, const void* attr,
-                          unsigned int (__stdcall *start)(void*), void* arg) {
+                          unsigned int (__stdcall* start)(void*), void* arg) {
   (void)attr;
 #ifdef USE_CREATE_THREAD
   *thread = CreateThread(NULL,   /* lpThreadAttributes */

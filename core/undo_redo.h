@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,6 @@
 #include "core/resource.h"
 
 class UndoRedo : public Object {
-
 	GDCLASS(UndoRedo, Object);
 	OBJ_SAVE_TYPE(UndoRedo);
 
@@ -47,15 +46,14 @@ public:
 	};
 
 	typedef void (*CommitNotifyCallback)(void *p_ud, const String &p_name);
-	Variant _add_do_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _add_undo_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	typedef void (*MethodNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
 	typedef void (*PropertyNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 private:
 	struct Operation {
-
 		enum Type {
 			TYPE_METHOD,
 			TYPE_PROPERTY,
@@ -65,7 +63,7 @@ private:
 		Type type;
 		Ref<Resource> resref;
 		ObjectID object;
-		String name;
+		StringName name;
 		Variant args[VARIANT_ARG_MAX];
 	};
 
@@ -77,25 +75,25 @@ private:
 	};
 
 	Vector<Action> actions;
-	int current_action;
-	int action_level;
-	MergeMode merge_mode;
-	bool merging;
-	uint64_t version;
+	int current_action = -1;
+	int action_level = 0;
+	MergeMode merge_mode = MERGE_DISABLE;
+	bool merging = false;
+	uint64_t version = 1;
 
 	void _pop_history_tail();
 	void _process_operation_list(List<Operation>::Element *E);
 	void _discard_redo();
 
-	CommitNotifyCallback callback;
-	void *callback_ud;
-	void *method_callbck_ud;
-	void *prop_callback_ud;
+	CommitNotifyCallback callback = nullptr;
+	void *callback_ud = nullptr;
+	void *method_callbck_ud = nullptr;
+	void *prop_callback_ud = nullptr;
 
-	MethodNotifyCallback method_callback;
-	PropertyNotifyCallback property_callback;
+	MethodNotifyCallback method_callback = nullptr;
+	PropertyNotifyCallback property_callback = nullptr;
 
-	int committing;
+	int committing = 0;
 
 protected:
 	static void _bind_methods();
@@ -103,10 +101,10 @@ protected:
 public:
 	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
 
-	void add_do_method(Object *p_object, const String &p_method, VARIANT_ARG_LIST);
-	void add_undo_method(Object *p_object, const String &p_method, VARIANT_ARG_LIST);
-	void add_do_property(Object *p_object, const String &p_property, const Variant &p_value);
-	void add_undo_property(Object *p_object, const String &p_property, const Variant &p_value);
+	void add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+	void add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+	void add_do_property(Object *p_object, const StringName &p_property, const Variant &p_value);
+	void add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
@@ -128,7 +126,7 @@ public:
 	void set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud);
 	void set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud);
 
-	UndoRedo();
+	UndoRedo() {}
 	~UndoRedo();
 };
 

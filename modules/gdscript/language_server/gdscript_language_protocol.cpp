@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,35 +29,113 @@
 /*************************************************************************/
 
 #include "gdscript_language_protocol.h"
+
 #include "core/io/json.h"
 #include "core/os/copymem.h"
 #include "core/project_settings.h"
+#include "editor/editor_log.h"
 #include "editor/editor_node.h"
 
-GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = NULL;
+GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
-void GDScriptLanguageProtocol::on_data_received(int p_id) {
-	lastest_client_id = p_id;
-	Ref<WebSocketPeer> peer = server->get_peer(p_id);
-	PoolByteArray data;
-	if (OK == peer->get_packet_buffer(data)) {
-		String message;
-		message.parse_utf8((const char *)data.read().ptr(), data.size());
-		if (message.begins_with("Content-Length:")) return;
-		String output = process_message(message);
-		if (!output.empty()) {
-			CharString charstr = output.utf8();
-			peer->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
+Error GDScriptLanguageProtocol::LSPeer::handle_data() {
+	int read = 0;
+	// Read headers
+	if (!has_header) {
+		while (true) {
+			if (req_pos >= LSP_MAX_BUFFER_SIZE) {
+				req_pos = 0;
+				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
+			}
+			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
+			if (err != OK) {
+				return FAILED;
+			} else if (read != 1) { // Busy, wait until next poll
+				return ERR_BUSY;
+			}
+			char *r = (char *)req_buf;
+			int l = req_pos;
+
+			// End of headers
+			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
+				r[l - 3] = '\0'; // Null terminate to read string
+				String header;
+				header.parse_utf8(r);
+				content_length = header.substr(16).to_int();
+				has_header = true;
+				req_pos = 0;
+				break;
+			}
+			req_pos++;
 		}
 	}
+	if (has_header) {
+		while (req_pos < content_length) {
+			if (req_pos >= LSP_MAX_BUFFER_SIZE) {
+				req_pos = 0;
+				has_header = false;
+				ERR_FAIL_COND_V_MSG(req_pos >= LSP_MAX_BUFFER_SIZE, ERR_OUT_OF_MEMORY, "Response content too big");
+			}
+			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
+			if (err != OK) {
+				return FAILED;
+			} else if (read != 1) {
+				return ERR_BUSY;
+			}
+			req_pos++;
+		}
+
+		// Parse data
+		String msg;
+		msg.parse_utf8((const char *)req_buf, req_pos);
+
+		// Reset to read again
+		req_pos = 0;
+		has_header = false;
+
+		// Response
+		String output = GDScriptLanguageProtocol::get_singleton()->process_message(msg);
+		if (!output.empty()) {
+			res_queue.push_back(output.utf8());
+		}
+	}
+	return OK;
 }
 
-void GDScriptLanguageProtocol::on_client_connected(int p_id, const String &p_protocal) {
-	clients.set(p_id, server->get_peer(p_id));
+Error GDScriptLanguageProtocol::LSPeer::send_data() {
+	int sent = 0;
+	if (!res_queue.empty()) {
+		CharString c_res = res_queue[0];
+		if (res_sent < c_res.size()) {
+			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
+			if (err != OK) {
+				return err;
+			}
+			res_sent += sent;
+		}
+		// Response sent
+		if (res_sent >= c_res.size() - 1) {
+			res_sent = 0;
+			res_queue.remove(0);
+		}
+	}
+	return OK;
 }
 
-void GDScriptLanguageProtocol::on_client_disconnected(int p_id, bool p_was_clean_close) {
-	clients.erase(p_id);
+Error GDScriptLanguageProtocol::on_client_connected() {
+	Ref<StreamPeerTCP> tcp_peer = server->take_connection();
+	ERR_FAIL_COND_V_MSG(clients.size() >= LSP_MAX_CLIENTS, FAILED, "Max client limits reached");
+	Ref<LSPeer> peer = memnew(LSPeer);
+	peer->connection = tcp_peer;
+	clients.set(next_client_id, peer);
+	next_client_id++;
+	EditorNode::get_log()->add_message("Connection Taken", EditorLog::MSG_TYPE_EDITOR);
+	return OK;
+}
+
+void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
+	clients.erase(p_client_id);
+	EditorNode::get_log()->add_message("Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
 String GDScriptLanguageProtocol::process_message(const String &p_text) {
@@ -70,7 +148,6 @@ String GDScriptLanguageProtocol::process_message(const String &p_text) {
 }
 
 String GDScriptLanguageProtocol::format_output(const String &p_text) {
-
 	String header = "Content-Length: ";
 	CharString charstr = p_text.utf8();
 	size_t len = charstr.length();
@@ -83,11 +160,9 @@ String GDScriptLanguageProtocol::format_output(const String &p_text) {
 void GDScriptLanguageProtocol::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("initialize", "params"), &GDScriptLanguageProtocol::initialize);
 	ClassDB::bind_method(D_METHOD("initialized", "params"), &GDScriptLanguageProtocol::initialized);
-	ClassDB::bind_method(D_METHOD("on_data_received"), &GDScriptLanguageProtocol::on_data_received);
 	ClassDB::bind_method(D_METHOD("on_client_connected"), &GDScriptLanguageProtocol::on_client_connected);
 	ClassDB::bind_method(D_METHOD("on_client_disconnected"), &GDScriptLanguageProtocol::on_client_disconnected);
-	ClassDB::bind_method(D_METHOD("notify_all_clients", "p_method", "p_params"), &GDScriptLanguageProtocol::notify_all_clients, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("notify_client", "p_method", "p_params", "p_client"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("notify_client", "method", "params"), &GDScriptLanguageProtocol::notify_client, DEFVAL(Variant()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_smart_resolve_enabled"), &GDScriptLanguageProtocol::is_smart_resolve_enabled);
 	ClassDB::bind_method(D_METHOD("get_text_document"), &GDScriptLanguageProtocol::get_text_document);
 	ClassDB::bind_method(D_METHOD("get_workspace"), &GDScriptLanguageProtocol::get_workspace);
@@ -95,7 +170,6 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-
 	lsp::InitializeResult ret;
 
 	String root_uri = p_params["rootUri"];
@@ -110,17 +184,19 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	if (root_uri.length() && is_same_workspace) {
 		workspace->root_uri = root_uri;
 	} else {
-
 		workspace->root_uri = "file://" + workspace->root;
 
 		Dictionary params;
 		params["path"] = workspace->root;
-		Dictionary request = make_notification("gdscrip_client/changeWorkspace", params);
-		if (Ref<WebSocketPeer> *peer = clients.getptr(lastest_client_id)) {
+		Dictionary request = make_notification("gdscript_client/changeWorkspace", params);
+
+		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
+				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
+		Ref<LSPeer> peer = clients.get(latest_client_id);
+		if (peer != nullptr) {
 			String msg = JSON::print(request);
 			msg = format_output(msg);
-			CharString charstr = msg.utf8();
-			(*peer)->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
+			(*peer)->res_queue.push_back(msg.utf8());
 		}
 	}
 
@@ -134,12 +210,10 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-
 	lsp::GodotCapabilities capabilities;
 
 	DocData *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
-
 		lsp::GodotNativeClassInfo gdclass;
 		gdclass.name = E->get().name;
 		gdclass.class_doc = &(E->get());
@@ -153,60 +227,62 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 }
 
 void GDScriptLanguageProtocol::poll() {
-	server->poll();
+	if (server->is_connection_available()) {
+		on_client_connected();
+	}
+	const int *id = nullptr;
+	while ((id = clients.next(id))) {
+		Ref<LSPeer> peer = clients.get(*id);
+		StreamPeerTCP::Status status = peer->connection->get_status();
+		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
+			on_client_disconnected(*id);
+			id = nullptr;
+		} else {
+			if (peer->connection->get_available_bytes() > 0) {
+				latest_client_id = *id;
+				Error err = peer->handle_data();
+				if (err != OK && err != ERR_BUSY) {
+					on_client_disconnected(*id);
+					id = nullptr;
+				}
+			}
+			Error err = peer->send_data();
+			if (err != OK && err != ERR_BUSY) {
+				on_client_disconnected(*id);
+				id = nullptr;
+			}
+		}
+	}
 }
 
-Error GDScriptLanguageProtocol::start(int p_port) {
-	if (server == NULL) {
-		server = dynamic_cast<WebSocketServer *>(ClassDB::instance("WebSocketServer"));
-		ERR_FAIL_COND_V(!server, FAILED);
-		server->set_buffers(8192, 1024, 8192, 1024); // 8mb should be way more than enough
-		server->connect("data_received", this, "on_data_received");
-		server->connect("client_connected", this, "on_client_connected");
-		server->connect("client_disconnected", this, "on_client_disconnected");
-	}
-	return server->listen(p_port);
+Error GDScriptLanguageProtocol::start(int p_port, const IP_Address &p_bind_ip) {
+	return server->listen(p_port, p_bind_ip);
 }
 
 void GDScriptLanguageProtocol::stop() {
-	const int *ptr = clients.next(NULL);
-	while (ptr) {
-		clients.get(*ptr)->close();
-		ptr = clients.next(ptr);
+	const int *id = nullptr;
+	while ((id = clients.next(id))) {
+		Ref<LSPeer> peer = clients.get(*id);
+		peer->connection->disconnect_from_host();
 	}
+
 	server->stop();
-	clients.clear();
 }
 
-void GDScriptLanguageProtocol::notify_all_clients(const String &p_method, const Variant &p_params) {
+void GDScriptLanguageProtocol::notify_client(const String &p_method, const Variant &p_params, int p_client_id) {
+	if (p_client_id == -1) {
+		ERR_FAIL_COND_MSG(latest_client_id == -1,
+				"GDScript LSP: Can't notify client as none was connected.");
+		p_client_id = latest_client_id;
+	}
+	ERR_FAIL_COND(!clients.has(p_client_id));
+	Ref<LSPeer> peer = clients.get(p_client_id);
+	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = JSON::print(message);
 	msg = format_output(msg);
-	CharString charstr = msg.utf8();
-	const int *p_id = clients.next(NULL);
-	while (p_id != NULL) {
-		Ref<WebSocketPeer> peer = clients.get(*p_id);
-		(*peer)->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
-		p_id = clients.next(p_id);
-	}
-}
-
-void GDScriptLanguageProtocol::notify_client(const String &p_method, const Variant &p_params, int p_client) {
-
-	if (p_client == -1) {
-		p_client = lastest_client_id;
-	}
-
-	Ref<WebSocketPeer> *peer = clients.getptr(p_client);
-	ERR_FAIL_COND(peer == NULL);
-
-	Dictionary message = make_notification(p_method, p_params);
-	String msg = JSON::print(message);
-	msg = format_output(msg);
-	CharString charstr = msg.utf8();
-
-	(*peer)->put_packet((const uint8_t *)charstr.ptr(), charstr.length());
+	peer->res_queue.push_back(msg.utf8());
 }
 
 bool GDScriptLanguageProtocol::is_smart_resolve_enabled() const {
@@ -218,18 +294,12 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 }
 
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
-	server = NULL;
+	server.instance();
 	singleton = this;
-	_initialized = false;
 	workspace.instance();
 	text_document.instance();
 	set_scope("textDocument", text_document.ptr());
 	set_scope("completionItem", text_document.ptr());
 	set_scope("workspace", workspace.ptr());
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
-}
-
-GDScriptLanguageProtocol::~GDScriptLanguageProtocol() {
-	memdelete(server);
-	server = NULL;
 }

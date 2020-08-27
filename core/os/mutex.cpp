@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,31 +30,21 @@
 
 #include "mutex.h"
 
-#include "core/error_macros.h"
-
-#include <stddef.h>
-
-Mutex *(*Mutex::create_func)(bool) = 0;
-
-Mutex *Mutex::create(bool p_recursive) {
-
-	ERR_FAIL_COND_V(!create_func, 0);
-
-	return create_func(p_recursive);
-}
-
-Mutex::~Mutex() {
-}
-
-Mutex *_global_mutex = NULL;
+static Mutex _global_mutex;
 
 void _global_lock() {
-
-	if (_global_mutex)
-		_global_mutex->lock();
+	_global_mutex.lock();
 }
+
 void _global_unlock() {
-
-	if (_global_mutex)
-		_global_mutex->unlock();
+	_global_mutex.unlock();
 }
+
+#ifndef NO_THREADS
+
+template class MutexImpl<std::recursive_mutex>;
+template class MutexImpl<std::mutex>;
+template class MutexLock<MutexImpl<std::recursive_mutex>>;
+template class MutexLock<MutexImpl<std::mutex>>;
+
+#endif

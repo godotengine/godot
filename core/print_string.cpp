@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,12 +34,11 @@
 
 #include <stdio.h>
 
-static PrintHandlerList *print_handler_list = NULL;
+static PrintHandlerList *print_handler_list = nullptr;
 bool _print_line_enabled = true;
 bool _print_error_enabled = true;
 
 void add_print_handler(PrintHandlerList *p_handler) {
-
 	_global_lock();
 	p_handler->next = print_handler_list;
 	print_handler_list = p_handler;
@@ -47,20 +46,18 @@ void add_print_handler(PrintHandlerList *p_handler) {
 }
 
 void remove_print_handler(PrintHandlerList *p_handler) {
-
 	_global_lock();
 
-	PrintHandlerList *prev = NULL;
+	PrintHandlerList *prev = nullptr;
 	PrintHandlerList *l = print_handler_list;
 
 	while (l) {
-
 		if (l == p_handler) {
-
-			if (prev)
+			if (prev) {
 				prev->next = l->next;
-			else
+			} else {
 				print_handler_list = l->next;
+			}
 			break;
 		}
 		prev = l;
@@ -69,20 +66,19 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 	//OS::get_singleton()->print("print handler list is %p\n",print_handler_list);
 
 	_global_unlock();
-	ERR_FAIL_COND(l == NULL);
+	ERR_FAIL_COND(l == nullptr);
 }
 
 void print_line(String p_string) {
-
-	if (!_print_line_enabled)
+	if (!_print_line_enabled) {
 		return;
+	}
 
 	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
 	while (l) {
-
 		l->printfunc(l->userdata, p_string, false);
 		l = l->next;
 	}
@@ -91,16 +87,15 @@ void print_line(String p_string) {
 }
 
 void print_error(String p_string) {
-
-	if (!_print_error_enabled)
+	if (!_print_error_enabled) {
 		return;
+	}
 
 	OS::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
 	while (l) {
-
 		l->printfunc(l->userdata, p_string, true);
 		l = l->next;
 	}
@@ -109,7 +104,6 @@ void print_error(String p_string) {
 }
 
 void print_verbose(String p_string) {
-
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(p_string);
 	}

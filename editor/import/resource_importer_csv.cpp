@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,16 +34,14 @@
 #include "core/os/file_access.h"
 
 String ResourceImporterCSV::get_importer_name() const {
-
 	return "csv";
 }
 
 String ResourceImporterCSV::get_visible_name() const {
-
 	return "CSV";
 }
-void ResourceImporterCSV::get_recognized_extensions(List<String> *p_extensions) const {
 
+void ResourceImporterCSV::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("csv");
 }
 
@@ -52,20 +50,18 @@ String ResourceImporterCSV::get_save_extension() const {
 }
 
 String ResourceImporterCSV::get_resource_type() const {
-
 	return "TextFile";
 }
 
 bool ResourceImporterCSV::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
 	return true;
 }
 
 int ResourceImporterCSV::get_preset_count() const {
 	return 0;
 }
-String ResourceImporterCSV::get_preset_name(int p_idx) const {
 
+String ResourceImporterCSV::get_preset_name(int p_idx) const {
 	return "";
 }
 

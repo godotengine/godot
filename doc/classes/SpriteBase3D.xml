@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpriteBase3D" inherits="GeometryInstance" category="Core" version="3.2">
+<class name="SpriteBase3D" inherits="GeometryInstance3D" version="4.0">
 	<brief_description>
 		2D sprite node in 3D environment.
 	</brief_description>
@@ -21,12 +21,14 @@
 			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
 			</argument>
 			<description>
+				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="get_item_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
+				Returns the rectangle representing this sprite.
 			</description>
 		</method>
 		<method name="set_draw_flag">
@@ -37,6 +39,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], the specified flag will be enabled.
 			</description>
 		</method>
 	</methods>
@@ -46,7 +49,7 @@
 		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="Vector3.Axis" default="2">
 			The direction in which the front of the texture faces.
 		</member>
-		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode" default="0">
+		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
@@ -73,7 +76,7 @@
 			The size of one pixel's width on the sprite to scale it in 3D.
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
-			If [code]true[/code], the [Light] in the [Environment] has effects on the sprite.
+			If [code]true[/code], the [Light3D] in the [Environment] has effects on the sprite.
 		</member>
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.

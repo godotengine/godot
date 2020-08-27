@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SphereShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		Sphere shape for 3D collisions.
+	</brief_description>
+	<description>
+		Sphere shape for 3D collisions, which can be set into a [PhysicsBody3D] or [Area3D]. This shape is useful for modeling sphere-like 3D objects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The sphere's radius. The shape's diameter is double the radius.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

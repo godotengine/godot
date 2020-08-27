@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOFRAME_H
-#define AUDIOFRAME_H
+#ifndef AUDIO_FRAME_H
+#define AUDIO_FRAME_H
 
 #include "core/math/vector2.h"
 #include "core/typedefs.h"
@@ -48,7 +48,6 @@ static inline float undenormalise(volatile float f) {
 }
 
 struct AudioFrame {
-
 	//left and right samples
 	float l, r;
 
@@ -104,8 +103,7 @@ struct AudioFrame {
 		r = ::undenormalise(r);
 	}
 
-	_FORCE_INLINE_ AudioFrame linear_interpolate(const AudioFrame &p_b, float p_t) const {
-
+	_FORCE_INLINE_ AudioFrame lerp(const AudioFrame &p_b, float p_t) const {
 		AudioFrame res = *this;
 
 		res.l += (p_t * (p_b.l - l));
@@ -140,4 +138,4 @@ struct AudioFrame {
 	_ALWAYS_INLINE_ AudioFrame() {}
 };
 
-#endif
+#endif // AUDIO_FRAME_H

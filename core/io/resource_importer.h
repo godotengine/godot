@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 class ResourceImporter;
 
 class ResourceFormatImporter : public ResourceFormatLoader {
-
 	struct PathAndType {
 		String path;
 		String type;
@@ -45,7 +44,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		Variant metadata;
 	};
 
-	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = NULL) const;
+	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = nullptr) const;
 
 	static ResourceFormatImporter *singleton;
 
@@ -54,11 +53,11 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		bool operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const;
 	};
 
-	Vector<Ref<ResourceImporter> > importers;
+	Vector<Ref<ResourceImporter>> importers;
 
 public:
 	static ResourceFormatImporter *get_singleton() { return singleton; }
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
@@ -83,7 +82,7 @@ public:
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
 	Ref<ResourceImporter> get_importer_by_extension(const String &p_extension) const;
-	void get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter> > *r_importers);
+	void get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers);
 
 	bool are_import_settings_valid(const String &p_path) const;
 	String get_import_settings_hash() const;
@@ -93,7 +92,6 @@ public:
 };
 
 class ResourceImporter : public Reference {
-
 	GDCLASS(ResourceImporter, Reference);
 
 public:
@@ -123,9 +121,9 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const = 0;
 	virtual String get_option_group_file() const { return String(); }
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL) = 0;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
 
-	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant> > &p_source_file_options, const Map<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
+	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
 };

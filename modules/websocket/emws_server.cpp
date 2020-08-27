@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/os/os.h"
 
 Error EMWSServer::listen(int p_port, Vector<String> p_protocols, bool gd_mp_api) {
-
 	return FAILED;
 }
 
@@ -50,22 +49,20 @@ bool EMWSServer::has_peer(int p_id) const {
 }
 
 Ref<WebSocketPeer> EMWSServer::get_peer(int p_id) const {
-	return NULL;
+	return nullptr;
 }
 
-PoolVector<String> EMWSServer::get_protocols() const {
-	PoolVector<String> out;
+Vector<String> EMWSServer::get_protocols() const {
+	Vector<String> out;
 
 	return out;
 }
 
 IP_Address EMWSServer::get_peer_address(int p_peer_id) const {
-
 	return IP_Address();
 }
 
 int EMWSServer::get_peer_port(int p_peer_id) const {
-
 	return 0;
 }
 

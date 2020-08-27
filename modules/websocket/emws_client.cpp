@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,6 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int 
 }
 
 Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
-
 	String proto_string;
 	for (int i = 0; i < p_protocols.size(); i++) {
 		if (i != 0)
@@ -91,10 +90,14 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	int peer_sock = EM_ASM_INT({
 		var proto_str = UTF8ToString($2);
 		var socket = null;
-		if (proto_str) {
-			socket = new WebSocket(UTF8ToString($1), proto_str.split(","));
-		} else {
-			socket = new WebSocket(UTF8ToString($1));
+		try {
+			if (proto_str) {
+				socket = new WebSocket(UTF8ToString($1), proto_str.split(","));
+			} else {
+				socket = new WebSocket(UTF8ToString($1));
+			}
+		} catch (e) {
+			return -1;
 		}
 		var c_ptr = Module.IDHandler.get($0);
 		socket.binaryType = "arraybuffer";
@@ -138,14 +141,14 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 
 			}
 			var len = buffer.length*buffer.BYTES_PER_ELEMENT;
-			var out = Module._malloc(len);
-			Module.HEAPU8.set(buffer, out);
+			var out = _malloc(len);
+			HEAPU8.set(buffer, out);
 			ccall("_esws_on_message",
 				"void",
 				["number", "number", "number", "number"],
 				[c_ptr, out, len, is_string]
 			);
-			Module._free(out);
+			_free(out);
 		});
 
 		socket.addEventListener("error", function (event) {
@@ -174,8 +177,10 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 		return Module.IDHandler.add(socket);
 	}, _js_id, str.utf8().get_data(), proto_string.utf8().get_data());
 	/* clang-format on */
+	if (peer_sock == -1)
+		return FAILED;
 
-	static_cast<Ref<EMWSPeer> >(_peer)->set_sock(peer_sock, _in_buf_size, _in_pkt_size);
+	static_cast<Ref<EMWSPeer>>(_peer)->set_sock(peer_sock, _in_buf_size, _in_pkt_size);
 
 	return OK;
 };
@@ -184,33 +189,28 @@ void EMWSClient::poll() {
 }
 
 Ref<WebSocketPeer> EMWSClient::get_peer(int p_peer_id) const {
-
 	return _peer;
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() const {
-
-	if (_peer->is_connected_to_host())
+	if (_peer->is_connected_to_host()) {
+		if (_is_connecting)
+			return CONNECTION_CONNECTING;
 		return CONNECTION_CONNECTED;
-
-	if (_is_connecting)
-		return CONNECTION_CONNECTING;
+	}
 
 	return CONNECTION_DISCONNECTED;
 };
 
 void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
-
 	_peer->close(p_code, p_reason);
 };
 
 IP_Address EMWSClient::get_connected_host() const {
-
 	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 };
 
 uint16_t EMWSClient::get_connected_port() const {
-
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
 
@@ -225,8 +225,9 @@ Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffe
 }
 
 EMWSClient::EMWSClient() {
-	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
-	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
+	_in_buf_size = DEF_BUF_SHIFT;
+	_in_pkt_size = DEF_PKT_SHIFT;
+
 	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
 	/* clang-format off */
@@ -237,7 +238,6 @@ EMWSClient::EMWSClient() {
 };
 
 EMWSClient::~EMWSClient() {
-
 	disconnect_from_host();
 	_peer = Ref<EMWSPeer>();
 	/* clang-format off */

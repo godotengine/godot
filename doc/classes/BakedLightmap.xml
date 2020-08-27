@@ -1,94 +1,81 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BakedLightmap" inherits="VisualInstance" category="Core" version="3.2">
+<class name="BakedLightmap" inherits="VisualInstance3D" version="4.0">
 	<brief_description>
-		Prerendered indirect light map for a scene.
 	</brief_description>
 	<description>
-		Baked lightmaps are an alternative workflow for adding indirect (or baked) lighting to a scene. Unlike the [GIProbe] approach, baked lightmaps work fine on low-end PCs and mobile devices as they consume almost no resources in run-time.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/baked_lightmaps.html</link>
 	</tutorials>
 	<methods>
-		<method name="bake">
-			<return type="int" enum="BakedLightmap.BakeError">
-			</return>
-			<argument index="0" name="from_node" type="Node" default="null">
-			</argument>
-			<argument index="1" name="create_visual_debug" type="bool" default="false">
-			</argument>
-			<description>
-				Bakes the lightmaps within the currently edited scene.
-			</description>
-		</method>
-		<method name="debug_bake">
-			<return type="void">
-			</return>
-			<description>
-				Executes a dry run bake of lightmaps within the currently edited scene.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="bake_cell_size" type="float" setter="set_bake_cell_size" getter="get_bake_cell_size" default="0.25">
-			Grid subdivision size for lightmapper calculation. The default value will work for most cases. Increase for better lighting on small details or if your scene is very large.
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 		</member>
-		<member name="bake_default_texels_per_unit" type="float" setter="set_bake_default_texels_per_unit" getter="get_bake_default_texels_per_unit" default="20.0">
-			If a [member Mesh.lightmap_size_hint] isn't specified, the lightmap baker will dynamically set the lightmap size using this value. This value is measured in texels per world unit. The maximum lightmap texture size is 4096x4096.
+		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="1">
 		</member>
-		<member name="bake_energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
-			Multiplies the light sources' intensity by this value. For instance, if the value is set to 2, lights will be twice as bright. If the value is set to 0.5, lights will be half as bright.
+		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
 		</member>
-		<member name="bake_extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 10, 10, 10 )">
-			The size of the affected area.
+		<member name="environment_custom_color" type="Color" setter="set_environment_custom_color" getter="get_environment_custom_color">
 		</member>
-		<member name="bake_hdr" type="bool" setter="set_hdr" getter="is_hdr" default="false">
-			If [code]true[/code], the lightmap can capture light values greater than [code]1.0[/code]. Turning this off will result in a smaller file size.
+		<member name="environment_custom_energy" type="float" setter="set_environment_custom_energy" getter="get_environment_custom_energy">
 		</member>
-		<member name="bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="BakedLightmap.BakeMode" default="0">
-			Lightmapping mode. See [enum BakeMode].
+		<member name="environment_custom_sky" type="Sky" setter="set_environment_custom_sky" getter="get_environment_custom_sky">
 		</member>
-		<member name="bake_propagation" type="float" setter="set_propagation" getter="get_propagation" default="1.0">
-			Defines how far the light will travel before it is no longer effective. The higher the number, the farther the light will travel. For instance, if the value is set to 2, the light will go twice as far. If the value is set to 0.5, the light will only go half as far.
+		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="BakedLightmap.EnvironmentMode" default="0">
 		</member>
-		<member name="bake_quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality" default="1">
-			Three quality modes are available. Higher quality requires more rendering time. See [enum BakeQuality].
+		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="BakedLightmap.GenerateProbes" default="0">
 		</member>
-		<member name="capture_cell_size" type="float" setter="set_capture_cell_size" getter="get_capture_cell_size" default="0.5">
-			Grid size used for real-time capture information on dynamic objects. Cannot be larger than [member bake_cell_size].
-		</member>
-		<member name="image_path" type="String" setter="set_image_path" getter="get_image_path" default="&quot;.&quot;">
-			The location where lightmaps will be saved.
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
 		</member>
 		<member name="light_data" type="BakedLightmapData" setter="set_light_data" getter="get_light_data">
-			The calculated light data.
+		</member>
+		<member name="max_texture_size" type="int" setter="set_max_texture_size" getter="get_max_texture_size" default="16384">
+		</member>
+		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality" default="1">
+		</member>
+		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
 		</member>
 	</members>
 	<constants>
 		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">
-			The lowest bake quality mode. Fastest to calculate.
 		</constant>
 		<constant name="BAKE_QUALITY_MEDIUM" value="1" enum="BakeQuality">
-			The default bake quality mode.
 		</constant>
 		<constant name="BAKE_QUALITY_HIGH" value="2" enum="BakeQuality">
-			The highest bake quality mode. Takes longer to calculate.
 		</constant>
-		<constant name="BAKE_MODE_CONE_TRACE" value="0" enum="BakeMode">
-			Less precise but faster bake mode.
+		<constant name="BAKE_QUALITY_ULTRA" value="3" enum="BakeQuality">
 		</constant>
-		<constant name="BAKE_MODE_RAY_TRACE" value="1" enum="BakeMode">
-			More precise bake mode but can take considerably longer to bake.
+		<constant name="GENERATE_PROBES_DISABLED" value="0" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_4" value="1" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_8" value="2" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_16" value="3" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_32" value="4" enum="GenerateProbes">
 		</constant>
 		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
 		</constant>
-		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="1" enum="BakeError">
+		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="1" enum="BakeError">
 		</constant>
-		<constant name="BAKE_ERROR_NO_MESHES" value="2" enum="BakeError">
+		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="2" enum="BakeError">
 		</constant>
-		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="3" enum="BakeError">
+		<constant name="BAKE_ERROR_NO_MESHES" value="3" enum="BakeError">
 		</constant>
-		<constant name="BAKE_ERROR_USER_ABORTED" value="4" enum="BakeError">
+		<constant name="BAKE_ERROR_MESHES_INVALID" value="4" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="5" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_USER_ABORTED" value="6" enum="BakeError">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_SCENE" value="1" enum="EnvironmentMode">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_SKY" value="2" enum="EnvironmentMode">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_COLOR" value="3" enum="EnvironmentMode">
 		</constant>
 	</constants>
 </class>

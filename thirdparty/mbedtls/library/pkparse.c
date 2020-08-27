@@ -2,7 +2,13 @@
  *  Public Key layer for parsing key files and structures
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -678,6 +705,32 @@ int mbedtls_pk_parse_subpubkey( unsigned char **p, const unsigned char *end,
 
 #if defined(MBEDTLS_RSA_C)
 /*
+ * Wrapper around mbedtls_asn1_get_mpi() that rejects zero.
+ *
+ * The value zero is:
+ * - never a valid value for an RSA parameter
+ * - interpreted as "omitted, please reconstruct" by mbedtls_rsa_complete().
+ *
+ * Since values can't be omitted in PKCS#1, passing a zero value to
+ * rsa_complete() would be incorrect, so reject zero values early.
+ */
+static int asn1_get_nonzero_mpi( unsigned char **p,
+                                 const unsigned char *end,
+                                 mbedtls_mpi *X )
+{
+    int ret;
+
+    ret = mbedtls_asn1_get_mpi( p, end, X );
+    if( ret != 0 )
+        return( ret );
+
+    if( mbedtls_mpi_cmp_int( X, 0 ) == 0 )
+        return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT );
+
+    return( 0 );
+}
+
+/*
  * Parse a PKCS#1 encoded private RSA key
  */
 static int pk_parse_key_pkcs1_der( mbedtls_rsa_context *rsa,
@@ -729,54 +782,84 @@ static int pk_parse_key_pkcs1_der( mbedtls_rsa_context *rsa,
     }
 
     /* Import N */
-    if( ( ret = mbedtls_asn1_get_tag( &p, end, &len,
-                                      MBEDTLS_ASN1_INTEGER ) ) != 0 ||
-        ( ret = mbedtls_rsa_import_raw( rsa, p, len, NULL, 0, NULL, 0,
-                                        NULL, 0, NULL, 0 ) ) != 0 )
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_rsa_import( rsa, &T, NULL, NULL,
+                                        NULL, NULL ) ) != 0 )
         goto cleanup;
-    p += len;
 
     /* Import E */
-    if( ( ret = mbedtls_asn1_get_tag( &p, end, &len,
-                                      MBEDTLS_ASN1_INTEGER ) ) != 0 ||
-        ( ret = mbedtls_rsa_import_raw( rsa, NULL, 0, NULL, 0, NULL, 0,
-                                        NULL, 0, p, len ) ) != 0 )
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_rsa_import( rsa, NULL, NULL, NULL,
+                                        NULL, &T ) ) != 0 )
         goto cleanup;
-    p += len;
 
     /* Import D */
-    if( ( ret = mbedtls_asn1_get_tag( &p, end, &len,
-                                      MBEDTLS_ASN1_INTEGER ) ) != 0 ||
-        ( ret = mbedtls_rsa_import_raw( rsa, NULL, 0, NULL, 0, NULL, 0,
-                                        p, len, NULL, 0 ) ) != 0 )
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_rsa_import( rsa, NULL, NULL, NULL,
+                                        &T, NULL ) ) != 0 )
         goto cleanup;
-    p += len;
 
     /* Import P */
-    if( ( ret = mbedtls_asn1_get_tag( &p, end, &len,
-                                      MBEDTLS_ASN1_INTEGER ) ) != 0 ||
-        ( ret = mbedtls_rsa_import_raw( rsa, NULL, 0, p, len, NULL, 0,
-                                        NULL, 0, NULL, 0 ) ) != 0 )
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_rsa_import( rsa, NULL, &T, NULL,
+                                        NULL, NULL ) ) != 0 )
         goto cleanup;
-    p += len;
 
     /* Import Q */
-    if( ( ret = mbedtls_asn1_get_tag( &p, end, &len,
-                                      MBEDTLS_ASN1_INTEGER ) ) != 0 ||
-        ( ret = mbedtls_rsa_import_raw( rsa, NULL, 0, NULL, 0, p, len,
-                                        NULL, 0, NULL, 0 ) ) != 0 )
-        goto cleanup;
-    p += len;
-
-    /* Complete the RSA private key */
-    if( ( ret = mbedtls_rsa_complete( rsa ) ) != 0 )
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_rsa_import( rsa, NULL, NULL, &T,
+                                        NULL, NULL ) ) != 0 )
         goto cleanup;
 
-    /* Check optional parameters */
-    if( ( ret = mbedtls_asn1_get_mpi( &p, end, &T ) ) != 0 ||
-        ( ret = mbedtls_asn1_get_mpi( &p, end, &T ) ) != 0 ||
-        ( ret = mbedtls_asn1_get_mpi( &p, end, &T ) ) != 0 )
+#if !defined(MBEDTLS_RSA_NO_CRT) && !defined(MBEDTLS_RSA_ALT)
+    /*
+    * The RSA CRT parameters DP, DQ and QP are nominally redundant, in
+    * that they can be easily recomputed from D, P and Q. However by
+    * parsing them from the PKCS1 structure it is possible to avoid
+    * recalculating them which both reduces the overhead of loading
+    * RSA private keys into memory and also avoids side channels which
+    * can arise when computing those values, since all of D, P, and Q
+    * are secret. See https://eprint.iacr.org/2020/055 for a
+    * description of one such attack.
+    */
+
+    /* Import DP */
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_mpi_copy( &rsa->DP, &T ) ) != 0 )
+       goto cleanup;
+
+    /* Import DQ */
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_mpi_copy( &rsa->DQ, &T ) ) != 0 )
+       goto cleanup;
+
+    /* Import QP */
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = mbedtls_mpi_copy( &rsa->QP, &T ) ) != 0 )
+       goto cleanup;
+
+#else
+    /* Verify existance of the CRT params */
+    if( ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 ||
+        ( ret = asn1_get_nonzero_mpi( &p, end, &T ) ) != 0 )
+       goto cleanup;
+#endif
+
+    /* rsa_complete() doesn't complete anything with the default
+     * implementation but is still called:
+     * - for the benefit of alternative implementation that may want to
+     *   pre-compute stuff beyond what's provided (eg Montgomery factors)
+     * - as is also sanity-checks the key
+     *
+     * Furthermore, we also check the public part for consistency with
+     * mbedtls_pk_parse_pubkey(), as it includes size minima for example.
+     */
+    if( ( ret = mbedtls_rsa_complete( rsa ) ) != 0 ||
+        ( ret = mbedtls_rsa_check_pubkey( rsa ) ) != 0 )
+    {
         goto cleanup;
+    }
 
     if( p != end )
     {

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DTLSServer" inherits="Reference" version="4.0">
+	<brief_description>
+		Helper class to implement a DTLS server.
+	</brief_description>
+	<description>
+		This class is used to store the state of a DTLS server. Upon [method setup] it converts connected [PacketPeerUDP] to [PacketPeerDTLS] accepting them via [method take_connection] as DTLS clients. Under the hood, this class is used to store the DTLS state and cookies of the server. The reason of why the state and cookies are needed is outside of the scope of this documentation.
+		Below a small example of how to use it:
+		[codeblock]
+		# server.gd
+		extends Node
+
+		var dtls := DTLSServer.new()
+		var server := UDPServer.new()
+		var peers = []
+
+		func _ready():
+		    server.listen(4242)
+		    var key = load("key.key") # Your private key.
+		    var cert = load("cert.crt") # Your X509 certificate.
+		    dtls.setup(key, cert)
+
+		func _process(delta):
+		    while server.is_connection_available():
+		        var peer : PacketPeerUDP = server.take_connection()
+		        var dtls_peer : PacketPeerDTLS = dtls.take_connection(peer)
+		        if dtls_peer.get_status() != PacketPeerDTLS.STATUS_HANDSHAKING:
+		            continue # It is normal that 50% of the connections fails due to cookie exchange.
+		        print("Peer connected!")
+		        peers.append(dtls_peer)
+		    for p in peers:
+		        p.poll() # Must poll to update the state.
+		        if p.get_status() == PacketPeerDTLS.STATUS_CONNECTED:
+		            while p.get_available_packet_count() &gt; 0:
+		                print("Received message from client: %s" % p.get_packet().get_string_from_utf8())
+		                p.put_packet("Hello DTLS client".to_utf8())
+		[/codeblock]
+		[codeblock]
+		# client.gd
+		extends Node
+
+		var dtls := PacketPeerDTLS.new()
+		var udp := PacketPeerUDP.new()
+		var connected = false
+
+		func _ready():
+		    udp.connect_to_host("127.0.0.1", 4242)
+		    dtls.connect_to_peer(udp, false) # Use true in production for certificate validation!
+
+		func _process(delta):
+		    dtls.poll()
+		    if dtls.get_status() == PacketPeerDTLS.STATUS_CONNECTED:
+		        if !connected:
+		            # Try to contact server
+		            dtls.put_packet("The answer is... 42!".to_utf8())
+		        while dtls.get_available_packet_count() &gt; 0:
+		            print("Connected: %s" % dtls.get_packet().get_string_from_utf8())
+		            connected = true
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="setup">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="key" type="CryptoKey">
+			</argument>
+			<argument index="1" name="certificate" type="X509Certificate">
+			</argument>
+			<argument index="2" name="chain" type="X509Certificate" default="null">
+			</argument>
+			<description>
+				Setup the DTLS server to use the given [code]private_key[/code] and provide the given [code]certificate[/code] to clients. You can pass the optional [code]chain[/code] parameter to provide additional CA chain information along with the certificate.
+			</description>
+		</method>
+		<method name="take_connection">
+			<return type="PacketPeerDTLS">
+			</return>
+			<argument index="0" name="udp_peer" type="PacketPeerUDP">
+			</argument>
+			<description>
+				Try to initiate the DTLS handshake with the given [code]udp_peer[/code] which must be already connected (see [method PacketPeerUDP.connect_to_host]).
+				[b]Note[/b]: You must check that the state of the return PacketPeerUDP is [constant PacketPeerDTLS.STATUS_HANDSHAKING], as it is normal that 50% of the new connections will be invalid due to cookie exchange.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

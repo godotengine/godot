@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiMeshInstance3D" inherits="GeometryInstance3D" version="4.0">
+	<brief_description>
+		Node that instances a [MultiMesh].
+	</brief_description>
+	<description>
+		[MultiMeshInstance3D] is a specialized node to instance [GeometryInstance3D]s based on a [MultiMesh] resource.
+		This is useful to optimize the rendering of a high amount of instances of a given mesh (for example trees in a forest or grass strands).
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_multi_mesh_instance.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
+			The [MultiMesh] resource that will be used and shared among all instances of the [MultiMeshInstance3D].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

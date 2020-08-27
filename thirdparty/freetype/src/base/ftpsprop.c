@@ -5,7 +5,7 @@
  *   Get and set properties of PostScript drivers (body).
  *   See `ftdriver.h' for available properties.
  *
- * Copyright (C) 2017-2019 by
+ * Copyright (C) 2017-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -165,9 +165,9 @@
           driver->hinting_engine = *hinting_engine;
         else
           error = FT_ERR( Unimplemented_Feature );
-
-        return error;
       }
+
+      return error;
     }
 
     else if ( !ft_strcmp( property_name, "no-stem-darkening" ) )

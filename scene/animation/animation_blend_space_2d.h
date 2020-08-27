@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,14 +88,14 @@ protected:
 	void _tree_changed();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
-	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
@@ -126,8 +126,8 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	virtual float process(float p_time, bool p_seek);
-	virtual String get_caption() const;
+	virtual float process(float p_time, bool p_seek) override;
+	virtual String get_caption() const override;
 
 	Vector2 get_closest_point(const Vector2 &p_point);
 
@@ -137,7 +137,7 @@ public:
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
 
-	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
 
 	AnimationNodeBlendSpace2D();
 	~AnimationNodeBlendSpace2D();
