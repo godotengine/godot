@@ -90,7 +90,7 @@ void RasterizerRD::begin_frame(double frame_step) {
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {
 #ifndef _MSC_VER
-#warning TODO: likely passa bool to swap buffers to avoid display?
+#warning TODO: likely pass a bool to swap buffers to avoid display?
 #endif
 	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
 }
