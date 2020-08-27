@@ -330,6 +330,7 @@ private:
 				return;
 			}
 		}
+
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
 		_path_text_changed(sp);
@@ -1012,7 +1013,7 @@ public:
 	void update_dock_menu();
 	void load_projects();
 	void set_search_term(String p_search_term);
-	void set_order_option(ProjectListFilter::FilterOption p_option);
+	void set_order_option(int p_option);
 	void sort_projects();
 	int get_project_count() const;
 	void select_project(int p_index);
@@ -1045,7 +1046,7 @@ private:
 	static void load_project_data(const String &p_property_key, Item &p_item, bool p_favorite);
 
 	String _search_term;
-	ProjectListFilter::FilterOption _order_option;
+	FilterOption _order_option;
 	Set<String> _selected_project_keys;
 	String _last_clicked; // Project key
 	VBoxContainer *_scroll_children;
@@ -1055,7 +1056,7 @@ private:
 };
 
 struct ProjectListComparator {
-	ProjectListFilter::FilterOption order_option;
+	FilterOption order_option;
 
 	// operator<
 	_FORCE_INLINE_ bool operator()(const ProjectList::Item &a, const ProjectList::Item &b) const {
@@ -1066,9 +1067,9 @@ struct ProjectListComparator {
 			return false;
 		}
 		switch (order_option) {
-			case ProjectListFilter::FILTER_PATH:
+			case FILTER_PATH:
 				return a.project_key < b.project_key;
-			case ProjectListFilter::FILTER_EDIT_DATE:
+			case FILTER_EDIT_DATE:
 				return a.last_edited > b.last_edited;
 			default:
 				return a.project_name < b.project_name;
@@ -1077,7 +1078,7 @@ struct ProjectListComparator {
 };
 
 ProjectList::ProjectList() {
-	_order_option = ProjectListFilter::FILTER_EDIT_DATE;
+	_order_option = FILTER_EDIT_DATE;
 
 	_scroll_children = memnew(VBoxContainer);
 	_scroll_children->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1391,9 +1392,9 @@ void ProjectList::set_search_term(String p_search_term) {
 	_search_term = p_search_term;
 }
 
-void ProjectList::set_order_option(ProjectListFilter::FilterOption p_option) {
+void ProjectList::set_order_option(int p_option) {
 	if (_order_option != p_option) {
-		_order_option = p_option;
+		_order_option = (FilterOption)p_option;
 		EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)_order_option);
 		EditorSettings::get_singleton()->save();
 	}
@@ -1798,6 +1799,8 @@ void ProjectList::_bind_methods() {
 void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			search_box->set_clear_button_enabled(true);
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
 		case NOTIFICATION_RESIZED: {
@@ -1813,7 +1816,7 @@ void ProjectManager::_notification(int p_what) {
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
 				// to search without having to reach for their mouse
-				project_filter->search_box->grab_focus();
+				search_box->grab_focus();
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1833,7 +1836,7 @@ void ProjectManager::_dim_window() {
 	// No transition is applied, as the effect needs to be visible immediately
 	float c = 0.5f;
 	Color dim_color = Color(c, c, c);
-	gui_base->set_modulate(dim_color);
+	set_modulate(dim_color);
 }
 
 void ProjectManager::_update_project_buttons() {
@@ -1930,7 +1933,7 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 			} break;
 			case KEY_F: {
 				if (k->get_command()) {
-					this->project_filter->search_box->grab_focus();
+					this->search_box->grab_focus();
 				} else {
 					keycode_handled = false;
 				}
@@ -1947,8 +1950,8 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 }
 
 void ProjectManager::_load_recent_projects() {
-	_project_list->set_order_option(project_order_filter->get_filter_option());
-	_project_list->set_search_term(project_filter->get_search_term());
+	_project_list->set_order_option(filter_option->get_selected());
+	_project_list->set_search_term(search_box->get_text().strip_edges());
 	_project_list->load_projects();
 
 	_update_project_buttons();
@@ -1970,7 +1973,7 @@ void ProjectManager::_on_projects_updated() {
 }
 
 void ProjectManager::_on_project_created(const String &dir) {
-	project_filter->clear();
+	search_box->clear();
 	int i = _project_list->refresh_project(dir);
 	_project_list->select_project(i);
 	_project_list->ensure_project_visible(i);
@@ -2113,7 +2116,6 @@ void ProjectManager::_run_project_confirm() {
 	}
 }
 
-// When you press the "Run" button
 void ProjectManager::_run_project() {
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
 
@@ -2226,8 +2228,6 @@ void ProjectManager::_erase_missing_projects() {
 void ProjectManager::_language_selected(int p_id) {
 	String lang = language_btn->get_item_metadata(p_id);
 	EditorSettings::get_singleton()->set("interface/editor/editor_language", lang);
-	language_btn->set_text(lang);
-	language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
 
 	language_restart_ask->set_text(TTR("Language changed.\nThe interface will update after restarting the editor or project manager."));
 	language_restart_ask->popup_centered();
@@ -2304,13 +2304,19 @@ void ProjectManager::_scan_multiple_folders(PackedStringArray p_files) {
 	}
 }
 
-void ProjectManager::_on_order_option_changed() {
-	_project_list->set_order_option(project_order_filter->get_filter_option());
-	_project_list->sort_projects();
+void ProjectManager::_on_order_option_changed(int p_idx) {
+	FilterOption selected = (FilterOption)(p_idx);
+	if (_current_filter != selected) {
+		_current_filter = selected;
+		if (is_inside_tree()) {
+			_project_list->set_order_option(p_idx);
+			_project_list->sort_projects();
+		}
+	}
 }
 
-void ProjectManager::_on_filter_option_changed() {
-	_project_list->set_search_term(project_filter->get_search_term());
+void ProjectManager::_on_search_term_changed(const String &p_term) {
+	_project_list->set_search_term(p_term);
 	_project_list->sort_projects();
 
 	// Select the first visible project in the list.
@@ -2341,7 +2347,6 @@ ProjectManager::ProjectManager() {
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
-		float custom_display_scale = EditorSettings::get_singleton()->get("interface/editor/custom_display_scale");
 
 		switch (display_scale) {
 			case 0: {
@@ -2372,9 +2377,8 @@ ProjectManager::ProjectManager() {
 			case 6:
 				editor_set_scale(2.0);
 				break;
-
 			default: {
-				editor_set_scale(custom_display_scale);
+				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
 			} break;
 		}
 
@@ -2385,27 +2389,25 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
 	}
 
+	String cp;
+	cp += 0xA9;
+	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
 	set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	set_theme(create_custom_theme());
 
-	gui_base = memnew(Control);
-	add_child(gui_base);
-	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	Panel *panel = memnew(Panel);
-	gui_base->add_child(panel);
+	add_child(panel);
 	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	panel->add_theme_style_override("panel", gui_base->get_theme_stylebox("Background", "EditorStyles"));
+	panel->add_theme_style_override("panel", get_theme_stylebox("Background", "EditorStyles"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
 	vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
-
-	String cp;
-	cp += 0xA9;
-	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2416,118 +2418,162 @@ ProjectManager::ProjectManager() {
 	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 
-	HBoxContainer *tree_hb = memnew(HBoxContainer);
-	projects_hb = tree_hb;
-
+	HBoxContainer *projects_hb = memnew(HBoxContainer);
 	projects_hb->set_name(TTR("Projects"));
+	tabs->add_child(projects_hb);
 
-	tabs->add_child(tree_hb);
+	{
+		// Projects + search bar
+		VBoxContainer *search_tree_vb = memnew(VBoxContainer);
+		projects_hb->add_child(search_tree_vb);
+		search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-	tree_hb->add_child(search_tree_vb);
-	search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		HBoxContainer *hb = memnew(HBoxContainer);
+		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		search_tree_vb->add_child(hb);
 
-	HBoxContainer *sort_filters = memnew(HBoxContainer);
-	Label *sort_label = memnew(Label);
-	sort_label->set_text(TTR("Sort:"));
-	sort_filters->add_child(sort_label);
-	Vector<String> sort_filter_titles;
-	sort_filter_titles.push_back(TTR("Name"));
-	sort_filter_titles.push_back(TTR("Path"));
-	sort_filter_titles.push_back(TTR("Last Edited"));
-	project_order_filter = memnew(ProjectListFilter);
-	project_order_filter->add_filter_option();
-	project_order_filter->_setup_filters(sort_filter_titles);
-	project_order_filter->set_filter_size(150);
-	sort_filters->add_child(project_order_filter);
-	project_order_filter->connect("filter_changed", callable_mp(this, &ProjectManager::_on_order_option_changed));
-	project_order_filter->set_custom_minimum_size(Size2(180, 10) * EDSCALE);
+		search_box = memnew(LineEdit);
+		search_box->set_placeholder(TTR("Search"));
+		search_box->set_tooltip(TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
+		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hb->add_child(search_box);
 
-	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
-	project_order_filter->set_filter_option((ProjectListFilter::FilterOption)projects_sorting_order);
+		hb->add_spacer();
 
-	sort_filters->add_spacer(true);
+		Label *sort_label = memnew(Label);
+		sort_label->set_text(TTR("Sort:"));
+		hb->add_child(sort_label);
 
-	project_filter = memnew(ProjectListFilter);
-	project_filter->add_search_box();
-	project_filter->connect("filter_changed", callable_mp(this, &ProjectManager::_on_filter_option_changed));
-	project_filter->set_custom_minimum_size(Size2(280, 10) * EDSCALE);
-	sort_filters->add_child(project_filter);
+		_current_filter = FilterOption::FILTER_NAME;
+		int default_sorting = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
 
-	search_tree_vb->add_child(sort_filters);
+		filter_option = memnew(OptionButton);
+		filter_option->set_clip_text(true);
+		filter_option->set_custom_minimum_size(Size2(150 * EDSCALE, 10 * EDSCALE));
+		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
+		filter_option->select(default_sorting);
+		hb->add_child(filter_option);
 
-	PanelContainer *pc = memnew(PanelContainer);
-	pc->add_theme_style_override("panel", gui_base->get_theme_stylebox("bg", "Tree"));
-	search_tree_vb->add_child(pc);
-	pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		Vector<String> sort_filter_titles;
+		sort_filter_titles.push_back(TTR("Name"));
+		sort_filter_titles.push_back(TTR("Path"));
+		sort_filter_titles.push_back(TTR("Last Edited"));
 
-	_project_list = memnew(ProjectList);
-	_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
-	_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
-	pc->add_child(_project_list);
-	_project_list->set_enable_h_scroll(false);
+		for (int i = 0; i < sort_filter_titles.size(); i++) {
+			filter_option->add_item(sort_filter_titles[i]);
+		}
 
-	VBoxContainer *tree_vb = memnew(VBoxContainer);
-	tree_hb->add_child(tree_vb);
+		PanelContainer *pc = memnew(PanelContainer);
+		pc->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+		pc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		search_tree_vb->add_child(pc);
 
-	Button *open = memnew(Button);
-	open->set_text(TTR("Edit"));
-	tree_vb->add_child(open);
-	open->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
-	open_btn = open;
+		_project_list = memnew(ProjectList);
+		_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
+		_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+		_project_list->set_enable_h_scroll(false);
+		pc->add_child(_project_list);
+	}
 
-	Button *run = memnew(Button);
-	run->set_text(TTR("Run"));
-	tree_vb->add_child(run);
-	run->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
-	run_btn = run;
+	{
+		// Project tab side bar
+		VBoxContainer *tree_vb = memnew(VBoxContainer);
+		projects_hb->add_child(tree_vb);
 
-	tree_vb->add_child(memnew(HSeparator));
+		Button *create = memnew(Button);
+		create->set_text(TTR("New Project"));
+		create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+		tree_vb->add_child(create);
 
-	Button *scan = memnew(Button);
-	scan->set_text(TTR("Scan"));
-	tree_vb->add_child(scan);
-	scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+		Button *import = memnew(Button);
+		import->set_text(TTR("Import"));
+		import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+		tree_vb->add_child(import);
 
-	tree_vb->add_child(memnew(HSeparator));
+		Button *scan = memnew(Button);
+		scan->set_text(TTR("Scan"));
+		scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+		tree_vb->add_child(scan);
 
-	scan_dir = memnew(FileDialog);
-	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
-	scan_dir->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
-	scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
-	scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
-	gui_base->add_child(scan_dir);
-	scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
+		tree_vb->add_child(memnew(HSeparator));
 
-	Button *create = memnew(Button);
-	create->set_text(TTR("New Project"));
-	tree_vb->add_child(create);
-	create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+		open_btn = memnew(Button);
+		open_btn->set_text(TTR("Edit"));
+		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+		tree_vb->add_child(open_btn);
 
-	Button *import = memnew(Button);
-	import->set_text(TTR("Import"));
-	tree_vb->add_child(import);
-	import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+		run_btn = memnew(Button);
+		run_btn->set_text(TTR("Run"));
+		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
+		tree_vb->add_child(run_btn);
 
-	Button *rename = memnew(Button);
-	rename->set_text(TTR("Rename"));
-	tree_vb->add_child(rename);
-	rename->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
-	rename_btn = rename;
+		rename_btn = memnew(Button);
+		rename_btn->set_text(TTR("Rename"));
+		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
+		tree_vb->add_child(rename_btn);
 
-	Button *erase = memnew(Button);
-	erase->set_text(TTR("Remove"));
-	tree_vb->add_child(erase);
-	erase->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
-	erase_btn = erase;
+		erase_btn = memnew(Button);
+		erase_btn->set_text(TTR("Remove"));
+		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
+		tree_vb->add_child(erase_btn);
 
-	Button *erase_missing = memnew(Button);
-	erase_missing->set_text(TTR("Remove Missing"));
-	tree_vb->add_child(erase_missing);
-	erase_missing->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
-	erase_missing_btn = erase_missing;
+		erase_missing_btn = memnew(Button);
+		erase_missing_btn->set_text(TTR("Remove Missing"));
+		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
+		tree_vb->add_child(erase_missing_btn);
+	}
 
-	tree_vb->add_spacer();
+	{
+		// Version info and language options
+		HBoxContainer *settings_hb = memnew(HBoxContainer);
+		settings_hb->set_alignment(BoxContainer::ALIGN_END);
+		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+
+		Label *version_label = memnew(Label);
+		String hash = String(VERSION_HASH);
+		if (hash.length() != 0) {
+			hash = "." + hash.left(9);
+		}
+		version_label->set_text("v" VERSION_FULL_BUILD "" + hash);
+		version_label->set_self_modulate(Color(1, 1, 1, 0.6));
+		version_label->set_align(Label::ALIGN_CENTER);
+		settings_hb->add_child(version_label);
+
+		language_btn = memnew(OptionButton);
+		language_btn->set_flat(true);
+		language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
+		language_btn->set_focus_mode(Control::FOCUS_NONE);
+		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
+
+		Vector<String> editor_languages;
+		List<PropertyInfo> editor_settings_properties;
+		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
+		for (List<PropertyInfo>::Element *E = editor_settings_properties.front(); E; E = E->next()) {
+			PropertyInfo &pi = E->get();
+			if (pi.name == "interface/editor/editor_language") {
+				editor_languages = pi.hint_string.split(",");
+				break;
+			}
+		}
+
+		String current_lang = EditorSettings::get_singleton()->get("interface/editor/editor_language");
+		language_btn->set_text(current_lang);
+
+		for (int i = 0; i < editor_languages.size(); i++) {
+			String lang = editor_languages[i];
+			String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
+			language_btn->add_item(lang_name + " [" + lang + "]", i);
+			language_btn->set_item_metadata(i, lang);
+			if (current_lang == lang) {
+				language_btn->select(i);
+			}
+		}
+
+		settings_hb->add_child(language_btn);
+		center_box->add_child(settings_hb);
+		settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+	}
 
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
@@ -2538,96 +2584,68 @@ ProjectManager::ProjectManager() {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
 
-	HBoxContainer *settings_hb = memnew(HBoxContainer);
-	settings_hb->set_alignment(BoxContainer::ALIGN_END);
-	settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	{
+		// Dialogs
+		language_restart_ask = memnew(ConfirmationDialog);
+		language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
+		language_restart_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
+		language_restart_ask->get_cancel()->set_text(TTR("Continue"));
+		add_child(language_restart_ask);
 
-	Label *version_label = memnew(Label);
-	String hash = String(VERSION_HASH);
-	if (hash.length() != 0) {
-		hash = "." + hash.left(9);
+		scan_dir = memnew(FileDialog);
+		scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
+		scan_dir->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
+		scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
+		scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
+		add_child(scan_dir);
+		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
+
+		erase_missing_ask = memnew(ConfirmationDialog);
+		erase_missing_ask->get_ok()->set_text(TTR("Remove All"));
+		erase_missing_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
+		add_child(erase_missing_ask);
+
+		erase_ask = memnew(ConfirmationDialog);
+		erase_ask->get_ok()->set_text(TTR("Remove"));
+		erase_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
+		add_child(erase_ask);
+
+		multi_open_ask = memnew(ConfirmationDialog);
+		multi_open_ask->get_ok()->set_text(TTR("Edit"));
+		multi_open_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
+		add_child(multi_open_ask);
+
+		multi_run_ask = memnew(ConfirmationDialog);
+		multi_run_ask->get_ok()->set_text(TTR("Run"));
+		multi_run_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
+		add_child(multi_run_ask);
+
+		multi_scan_ask = memnew(ConfirmationDialog);
+		multi_scan_ask->get_ok()->set_text(TTR("Scan"));
+		add_child(multi_scan_ask);
+
+		ask_update_settings = memnew(ConfirmationDialog);
+		ask_update_settings->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
+		add_child(ask_update_settings);
+
+		npdialog = memnew(ProjectDialog);
+		npdialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
+		npdialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
+		add_child(npdialog);
+
+		run_error_diag = memnew(AcceptDialog);
+		run_error_diag->set_title(TTR("Can't run project"));
+		add_child(run_error_diag);
+
+		dialog_error = memnew(AcceptDialog);
+		add_child(dialog_error);
+
+		open_templates = memnew(ConfirmationDialog);
+		open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
+		open_templates->get_ok()->set_text(TTR("Open Asset Library"));
+		open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
+		add_child(open_templates);
 	}
-	version_label->set_text("v" VERSION_FULL_BUILD "" + hash);
-	// Fade out the version label to be less prominent, but still readable
-	version_label->set_self_modulate(Color(1, 1, 1, 0.6));
-	version_label->set_align(Label::ALIGN_CENTER);
-	settings_hb->add_child(version_label);
-
-	language_btn = memnew(OptionButton);
-	language_btn->set_flat(true);
-	language_btn->set_focus_mode(Control::FOCUS_NONE);
-
-	Vector<String> editor_languages;
-	List<PropertyInfo> editor_settings_properties;
-	EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
-	for (List<PropertyInfo>::Element *E = editor_settings_properties.front(); E; E = E->next()) {
-		PropertyInfo &pi = E->get();
-		if (pi.name == "interface/editor/editor_language") {
-			editor_languages = pi.hint_string.split(",");
-		}
-	}
-	String current_lang = EditorSettings::get_singleton()->get("interface/editor/editor_language");
-	for (int i = 0; i < editor_languages.size(); i++) {
-		String lang = editor_languages[i];
-		String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
-		language_btn->add_item(lang_name + " [" + lang + "]", i);
-		language_btn->set_item_metadata(i, lang);
-		if (current_lang == lang) {
-			language_btn->select(i);
-			language_btn->set_text(lang);
-		}
-	}
-	language_btn->set_icon(get_theme_icon("Environment", "EditorIcons"));
-
-	settings_hb->add_child(language_btn);
-	language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
-
-	center_box->add_child(settings_hb);
-	settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
-
-	//////////////////////////////////////////////////////////////
-
-	language_restart_ask = memnew(ConfirmationDialog);
-	language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
-	language_restart_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
-	language_restart_ask->get_cancel()->set_text(TTR("Continue"));
-	gui_base->add_child(language_restart_ask);
-
-	erase_missing_ask = memnew(ConfirmationDialog);
-	erase_missing_ask->get_ok()->set_text(TTR("Remove All"));
-	erase_missing_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
-	gui_base->add_child(erase_missing_ask);
-
-	erase_ask = memnew(ConfirmationDialog);
-	erase_ask->get_ok()->set_text(TTR("Remove"));
-	erase_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
-	gui_base->add_child(erase_ask);
-
-	multi_open_ask = memnew(ConfirmationDialog);
-	multi_open_ask->get_ok()->set_text(TTR("Edit"));
-	multi_open_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
-	gui_base->add_child(multi_open_ask);
-
-	multi_run_ask = memnew(ConfirmationDialog);
-	multi_run_ask->get_ok()->set_text(TTR("Run"));
-	multi_run_ask->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
-	gui_base->add_child(multi_run_ask);
-
-	multi_scan_ask = memnew(ConfirmationDialog);
-	multi_scan_ask->get_ok()->set_text(TTR("Scan"));
-	gui_base->add_child(multi_scan_ask);
-
-	ask_update_settings = memnew(ConfirmationDialog);
-	ask_update_settings->get_ok()->connect("pressed", callable_mp(this, &ProjectManager::_confirm_update_settings));
-	gui_base->add_child(ask_update_settings);
-
-	OS::get_singleton()->set_low_processor_usage_mode(true);
-
-	npdialog = memnew(ProjectDialog);
-	gui_base->add_child(npdialog);
-
-	npdialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
-	npdialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
 
 	_load_recent_projects();
 
@@ -2637,101 +2655,11 @@ ProjectManager::ProjectManager() {
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
-	run_error_diag = memnew(AcceptDialog);
-	gui_base->add_child(run_error_diag);
-	run_error_diag->set_title(TTR("Can't run project"));
-
-	dialog_error = memnew(AcceptDialog);
-	gui_base->add_child(dialog_error);
-
-	open_templates = memnew(ConfirmationDialog);
-	open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-	open_templates->get_ok()->set_text(TTR("Open Asset Library"));
-	open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
-	add_child(open_templates);
+	OS::get_singleton()->set_low_processor_usage_mode(true);
 }
 
 ProjectManager::~ProjectManager() {
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
-	}
-}
-
-void ProjectListFilter::_setup_filters(Vector<String> options) {
-	filter_option->clear();
-	for (int i = 0; i < options.size(); i++) {
-		filter_option->add_item(options[i]);
-	}
-}
-
-void ProjectListFilter::_search_text_changed(const String &p_newtext) {
-	emit_signal("filter_changed");
-}
-
-String ProjectListFilter::get_search_term() {
-	return search_box->get_text().strip_edges();
-}
-
-ProjectListFilter::FilterOption ProjectListFilter::get_filter_option() {
-	return _current_filter;
-}
-
-void ProjectListFilter::set_filter_option(FilterOption option) {
-	filter_option->select((int)option);
-	_filter_option_selected(0);
-}
-
-void ProjectListFilter::_filter_option_selected(int p_idx) {
-	FilterOption selected = (FilterOption)(filter_option->get_selected());
-	if (_current_filter != selected) {
-		_current_filter = selected;
-		if (is_inside_tree()) {
-			emit_signal("filter_changed");
-		}
-	}
-}
-
-void ProjectListFilter::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE && has_search_box) {
-		search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
-		search_box->set_clear_button_enabled(true);
-	}
-}
-
-void ProjectListFilter::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("filter_changed"));
-}
-
-void ProjectListFilter::add_filter_option() {
-	filter_option = memnew(OptionButton);
-	filter_option->set_clip_text(true);
-	filter_option->connect("item_selected", callable_mp(this, &ProjectListFilter::_filter_option_selected));
-	add_child(filter_option);
-}
-
-void ProjectListFilter::add_search_box() {
-	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Search"));
-	search_box->set_tooltip(
-			TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
-	search_box->connect("text_changed", callable_mp(this, &ProjectListFilter::_search_text_changed));
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_child(search_box);
-
-	has_search_box = true;
-}
-
-void ProjectListFilter::set_filter_size(int h_size) {
-	filter_option->set_custom_minimum_size(Size2(h_size * EDSCALE, 10 * EDSCALE));
-}
-
-ProjectListFilter::ProjectListFilter() {
-	_current_filter = FILTER_NAME;
-	has_search_box = false;
-}
-
-void ProjectListFilter::clear() {
-	if (has_search_box) {
-		search_box->clear();
 	}
 }
