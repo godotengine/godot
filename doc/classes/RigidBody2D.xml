@@ -9,6 +9,7 @@
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
 		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
+		The center of mass is always located at the node's origin without taking into account the [CollisionShape2D] centroid offsets.
 	</description>
 	<tutorials>
 	</tutorials>
